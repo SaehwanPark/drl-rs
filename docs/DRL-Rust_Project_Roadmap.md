@@ -15,6 +15,13 @@ This document is the living execution tracker for **DRL-Rust** (`drl-rust`).
 
 It should be revisited continuously and updated as work progresses.
 
+This roadmap is the canonical project plan for milestone scope, ordering,
+status, and exit criteria. Root `SPEC.md` may unpack one active milestone slice
+into implementation-ready outcomes, verification, and non-goals, but it must
+not replace or silently broaden this roadmap. `ARCHITECTURE.md` records verified
+current structure and invariants; `CHANGELOG.md` records meaningful delivered
+history.
+
 Checkbox convention:
 
 ```text
@@ -65,25 +72,25 @@ Establish the project structure, development standards, architectural doctrine, 
 
 ### Repository
 
-- [ ] Create GitHub repository `drl-rust`.
-- [ ] Add root `README.md`.
-- [ ] Add `LICENSE` and document licensing strategy.
+- [x] Create GitHub repository `drl-rust`.
+- [x] Add root `README.md`.
+- [x] Add `LICENSE` and document licensing strategy.
 - [ ] Add `CONTRIBUTING.md`.
 - [ ] Add `CODE_OF_CONDUCT.md` if public contribution is expected.
-- [ ] Add `docs/` directory.
+- [x] Add `docs/` directory.
 - [ ] Add `docs/adr/`.
 - [ ] Add `docs/legacy-behavior/`.
 - [ ] Add `tests/fixtures/`.
 - [ ] Add `content/`.
-- [ ] Add `assets/`.
+- [x] Add `assets/`.
 
 ### Rust tooling
 
 - [ ] Initialize Cargo workspace.
-- [ ] Pin or document supported Rust toolchain/MSRV policy.
-- [ ] Configure `rustfmt`.
-- [ ] Configure `clippy`.
-- [ ] Configure `cargo test` in CI.
+- [x] Pin or document supported Rust toolchain/MSRV policy.
+- [x] Configure `rustfmt`.
+- [x] Configure `clippy`.
+- [x] Configure `cargo test` in CI.
 - [ ] Add dependency-audit/security tooling if appropriate.
 - [ ] Decide dependency update policy.
 
@@ -100,16 +107,16 @@ Establish the project structure, development standards, architectural doctrine, 
 
 ### Design doctrine
 
-- [ ] Add project principle: "Preserve the game; rewrite the machinery."
-- [ ] Document semantic fidelity vs operational fidelity.
-- [ ] Document explicit non-goals.
-- [ ] Document backward-compatibility opt-out.
-- [ ] Document Rust design priorities.
-- [ ] Document Clean Code principles adopted.
-- [ ] Document Clean Code/OO practices intentionally not adopted.
-- [ ] Document policy on globals/shared mutable state.
-- [ ] Document policy on deterministic randomness.
-- [ ] Document policy on side effects.
+- [x] Add project principle: "Preserve the game; rewrite the machinery."
+- [x] Document semantic fidelity vs operational fidelity.
+- [x] Document explicit non-goals.
+- [x] Document backward-compatibility opt-out.
+- [x] Document Rust design priorities.
+- [x] Document Clean Code principles adopted.
+- [x] Document Clean Code/OO practices intentionally not adopted.
+- [x] Document policy on globals/shared mutable state.
+- [x] Document policy on deterministic randomness.
+- [x] Document policy on side effects.
 
 ### Legacy archaeology
 
@@ -143,10 +150,10 @@ Establish the project structure, development standards, architectural doctrine, 
 
 ## Exit Criteria
 
-- [ ] `cargo test --workspace` succeeds.
+- [x] `cargo test --workspace` succeeds.
 - [ ] CI runs on macOS.
-- [ ] Architectural boundaries are documented.
-- [ ] Rewrite fidelity doctrine is explicit.
+- [x] Architectural boundaries are documented.
+- [x] Rewrite fidelity doctrine is explicit.
 - [ ] At least six major legacy behavior areas have an initial specification shell.
 - [ ] No gameplay implementation has forced premature architectural compromise.
 
@@ -1259,7 +1266,7 @@ Update this table as milestones advance.
 
 | Milestone | Status | Notes |
 |---|---|---|
-| M0 — Repository Foundation | Not started | |
+| M0 — Repository Foundation | In progress | Harness, SDD, formatting, and CI foundations added; remote CI and remaining M0 deliverables are pending. |
 | M1 — Headless Simulation Kernel | Not started | |
 | M2 — Action Economy + Combat | Not started | |
 | M3 — Lua Runtime | Not started | |
@@ -1280,11 +1287,11 @@ Update this table as milestones advance.
 
 If beginning implementation now, the first concrete tasks are:
 
-- [ ] Create `drl-rust`.
-- [ ] Add this proposal and roadmap to `docs/`.
+- [x] Create `drl-rust`.
+- [x] Add this proposal and roadmap to `docs/`.
 - [ ] Initialize Cargo workspace.
 - [ ] Create `drl-core`, `drl-protocol`, and `drl-app`.
-- [ ] Add macOS CI.
+- [x] Add macOS CI.
 - [ ] Write first ADRs.
 - [ ] Create the legacy behavior-spec template.
 - [ ] Document movement semantics.
