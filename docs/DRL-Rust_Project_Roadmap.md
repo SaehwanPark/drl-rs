@@ -1,0 +1,1300 @@
+---
+title: "DRL-Rust Project Roadmap"
+description: "Milestone-based execution roadmap and living progress checklist for the DRL-Rust reimplementation."
+project: "DRL-Rust"
+repository: "drl-rust"
+date: 2026-08-18
+status: "Living Roadmap"
+---
+
+# DRL-Rust Project Roadmap
+
+## 1. Purpose
+
+This document is the living execution tracker for **DRL-Rust** (`drl-rust`).
+
+It should be revisited continuously and updated as work progresses.
+
+Checkbox convention:
+
+```text
+[ ] Not started
+[x] Complete
+```
+
+For partially complete work, keep the parent task unchecked and mark completed subtasks individually.
+
+The roadmap is intentionally milestone-based rather than calendar-based. A milestone is complete when its **exit criteria** are satisfied, regardless of elapsed time.
+
+---
+
+## 2. Project Principles to Recheck at Every Milestone
+
+- [ ] Preserve **legacy gameplay intention and modeled behavior**, not exact Pascal execution traces.
+- [ ] Do not introduce backward compatibility requirements for legacy saves, mods, WAD formats, or RNG streams.
+- [ ] Keep `drl-core` independent of graphics, audio, OS APIs, MCP, and filesystem concerns.
+- [ ] Prefer typed domain models, ADTs, and explicit state transitions.
+- [ ] Use functional-core / imperative-shell patterns where they improve clarity.
+- [ ] Make gameplay randomness explicit and reproducible.
+- [ ] Ensure human UI, bots, replay tools, and MCP ultimately operate through the same semantic command model.
+- [ ] Keep Lua behind a narrow and intentional boundary.
+- [ ] Avoid premature framework/ECS/trait abstraction.
+- [ ] Add tests as behavioral rules become understood.
+- [ ] Document deliberate deviations from legacy implementation.
+- [ ] Keep the project runnable at every milestone.
+
+---
+
+# Milestone 0 — Repository Foundation and Rewrite Contract
+
+## Goal
+
+Establish the project structure, development standards, architectural doctrine, and legacy-behavior documentation process before substantial implementation.
+
+## Deliverables
+
+- Rust workspace
+- baseline CI
+- architecture documentation
+- coding conventions
+- behavioral-specification process
+- initial ADR structure
+- legal/provenance inventory
+
+## Checklist
+
+### Repository
+
+- [ ] Create GitHub repository `drl-rust`.
+- [ ] Add root `README.md`.
+- [ ] Add `LICENSE` and document licensing strategy.
+- [ ] Add `CONTRIBUTING.md`.
+- [ ] Add `CODE_OF_CONDUCT.md` if public contribution is expected.
+- [ ] Add `docs/` directory.
+- [ ] Add `docs/adr/`.
+- [ ] Add `docs/legacy-behavior/`.
+- [ ] Add `tests/fixtures/`.
+- [ ] Add `content/`.
+- [ ] Add `assets/`.
+
+### Rust tooling
+
+- [ ] Initialize Cargo workspace.
+- [ ] Pin or document supported Rust toolchain/MSRV policy.
+- [ ] Configure `rustfmt`.
+- [ ] Configure `clippy`.
+- [ ] Configure `cargo test` in CI.
+- [ ] Add dependency-audit/security tooling if appropriate.
+- [ ] Decide dependency update policy.
+
+### Initial crates
+
+- [ ] Create `drl-core`.
+- [ ] Create `drl-protocol`.
+- [ ] Create `drl-app`.
+- [ ] Create placeholder `drl-script`.
+- [ ] Create placeholder `drl-mcp`.
+- [ ] Create placeholder `drl-render`.
+- [ ] Create placeholder `drl-audio`.
+- [ ] Verify dependency direction prevents `drl-core` from depending on presentation/platform crates.
+
+### Design doctrine
+
+- [ ] Add project principle: "Preserve the game; rewrite the machinery."
+- [ ] Document semantic fidelity vs operational fidelity.
+- [ ] Document explicit non-goals.
+- [ ] Document backward-compatibility opt-out.
+- [ ] Document Rust design priorities.
+- [ ] Document Clean Code principles adopted.
+- [ ] Document Clean Code/OO practices intentionally not adopted.
+- [ ] Document policy on globals/shared mutable state.
+- [ ] Document policy on deterministic randomness.
+- [ ] Document policy on side effects.
+
+### Legacy archaeology
+
+- [ ] Inventory major Pascal source units.
+- [ ] Inventory major Lua source files.
+- [ ] Map major gameplay domains to legacy files.
+- [ ] Create initial `combat.md` behavioral-spec document.
+- [ ] Create initial `movement.md`.
+- [ ] Create initial `turn-economy.md`.
+- [ ] Create initial `items.md`.
+- [ ] Create initial `ai.md`.
+- [ ] Create initial `generation.md`.
+- [ ] Add a template for future behavior-spec notes.
+
+### ADRs
+
+- [ ] ADR: project architecture principles.
+- [ ] ADR: no legacy backward compatibility.
+- [ ] ADR: semantic command model.
+- [ ] ADR: explicit deterministic RNG.
+- [ ] ADR: Lua transitional strategy.
+- [ ] ADR: MCP semantic interface strategy.
+
+### Provenance
+
+- [ ] Document legacy code license.
+- [ ] Document art license.
+- [ ] Inventory audio/music/font provenance.
+- [ ] Document third-party asset redistribution questions.
+- [ ] Decide what assets can safely enter the new repository.
+
+## Exit Criteria
+
+- [ ] `cargo test --workspace` succeeds.
+- [ ] CI runs on macOS.
+- [ ] Architectural boundaries are documented.
+- [ ] Rewrite fidelity doctrine is explicit.
+- [ ] At least six major legacy behavior areas have an initial specification shell.
+- [ ] No gameplay implementation has forced premature architectural compromise.
+
+---
+
+# Milestone 1 — Headless Simulation Kernel
+
+## Goal
+
+Build the smallest coherent game simulation capable of representing a map, player, turn state, commands, observations, and deterministic execution.
+
+## Deliverables
+
+- typed world model
+- command model
+- observation model
+- deterministic RNG
+- minimal headless turn loop
+- replayable command sequence
+
+## Checklist
+
+### Core types
+
+- [ ] Define `EntityId`.
+- [ ] Define `ItemId`.
+- [ ] Define `LevelId`.
+- [ ] Define `Turn`.
+- [ ] Define `Position`.
+- [ ] Define map dimensions/types.
+- [ ] Define `Direction`.
+- [ ] Define `GameState`.
+- [ ] Define `Game`.
+- [ ] Define minimal `World`.
+- [ ] Define minimal `Actor`.
+
+### Commands
+
+- [ ] Define `Command`.
+- [ ] Implement `Move`.
+- [ ] Implement `Wait`.
+- [ ] Define command validation.
+- [ ] Return typed invalid-command errors.
+- [ ] Separate command legality from input bindings.
+
+### Observation
+
+- [ ] Define `Observation`.
+- [ ] Define player observation.
+- [ ] Define visible tile representation.
+- [ ] Define visible entity representation.
+- [ ] Implement player-visible observation generation.
+- [ ] Define explicit omniscient debug observation.
+
+### Events
+
+- [ ] Define core `GameEvent`.
+- [ ] Emit movement events.
+- [ ] Emit turn/action events.
+- [ ] Add event ordering rules where observable ordering matters.
+- [ ] Ensure core events do not depend on renderer/audio types.
+
+### RNG
+
+- [ ] Select deterministic RNG implementation.
+- [ ] Wrap it in domain-owned `GameRng`.
+- [ ] Prohibit ambient gameplay RNG.
+- [ ] Add seed initialization.
+- [ ] Add deterministic RNG unit tests.
+- [ ] Define deterministic iteration policy for simulation-relevant collections.
+
+### Minimal map
+
+- [ ] Implement walkable/blocking cells.
+- [ ] Implement map bounds.
+- [ ] Implement occupancy.
+- [ ] Prevent invalid blocking overlap.
+- [ ] Implement basic movement legality.
+
+### Headless executable
+
+- [ ] Add simple CLI/debug runner.
+- [ ] Start a fixed test map.
+- [ ] Accept a small sequence of commands.
+- [ ] Print structured observations/events.
+- [ ] Allow explicit seed input.
+
+### Replay prototype
+
+- [ ] Define minimal replay structure.
+- [ ] Store seed.
+- [ ] Store initial setup.
+- [ ] Store command sequence.
+- [ ] Re-run replay deterministically.
+- [ ] Add replay regression test.
+
+### Tests
+
+- [ ] Player cannot move outside map.
+- [ ] Player cannot move into blocked tile.
+- [ ] Player can wait.
+- [ ] Turn advances according to defined action semantics.
+- [ ] Same seed + same commands produce same state.
+- [ ] Player observation does not leak hidden world state.
+
+## Exit Criteria
+
+- [ ] A headless game can start, move, wait, observe, and replay.
+- [ ] Simulation is deterministic.
+- [ ] `drl-core` has no renderer, audio, OS, Lua, or MCP dependency.
+- [ ] Command and observation models are stable enough to build the next vertical slice.
+
+---
+
+# Milestone 2 — Action Economy, Actors, and Minimal Combat
+
+## Goal
+
+Implement enough of DRL's actor/action model to support a representative combat encounter.
+
+## Deliverables
+
+- action costs
+- actor scheduling
+- HP/damage
+- ranged or melee combat
+- death
+- combat events
+- representative scenario tests
+
+## Checklist
+
+### Legacy specification
+
+- [ ] Document legacy action-cost semantics.
+- [ ] Document movement cost.
+- [ ] Document attack cost.
+- [ ] Document wait cost.
+- [ ] Document speed interactions.
+- [ ] Document basic hit/damage semantics.
+- [ ] Identify behavior vs implementation artifacts.
+
+### Domain types
+
+- [ ] Define `HitPoints`.
+- [ ] Define `DamageAmount`.
+- [ ] Define `DamageType`.
+- [ ] Define `ActionCost`.
+- [ ] Define `Speed`.
+- [ ] Define `AttackOutcome`.
+- [ ] Define `DeathCause`.
+- [ ] Define `DamageSource`.
+
+### Turn/action system
+
+- [ ] Implement action scheduling.
+- [ ] Implement player action cost.
+- [ ] Implement monster action cost.
+- [ ] Validate deterministic actor ordering.
+- [ ] Test actor speed differences.
+- [ ] Test no actor receives invalid extra actions.
+
+### Combat
+
+- [ ] Implement one melee attack.
+- [ ] Implement one ranged weapon.
+- [ ] Implement hit resolution.
+- [ ] Implement damage application.
+- [ ] Implement death.
+- [ ] Implement basic knockback if required by chosen representative weapon.
+- [ ] Emit combat events.
+- [ ] Ensure combat functions do not perform presentation side effects.
+
+### Scenario fixture
+
+- [ ] Create minimal player-vs-monster scenario.
+- [ ] Add deterministic command replay.
+- [ ] Add expected semantic outcomes.
+- [ ] Add statistical test if a hit probability is involved.
+
+### Invariants
+
+- [ ] HP cannot violate defined bounds.
+- [ ] Dead actors cannot act.
+- [ ] Invalid targets are rejected.
+- [ ] Damage calculations are independently testable.
+- [ ] Actor occupancy remains valid after death/movement.
+
+## Exit Criteria
+
+- [ ] A complete headless combat encounter is playable.
+- [ ] Core combat is expressed through domain types.
+- [ ] Combat calculations are testable independently of `Game`.
+- [ ] Action economy is consistent enough to expand to real DRL mechanics.
+
+---
+
+# Milestone 3 — Lua Runtime and Transitional Content Layer
+
+## Goal
+
+Integrate Lua as a constrained content/behavior layer without recreating legacy global coupling.
+
+## Deliverables
+
+- Lua runtime
+- typed Rust/Lua boundary
+- representative legacy content loaded
+- Lua-driven behavior participating in simulation
+
+## Checklist
+
+### Runtime
+
+- [ ] Select Lua integration crate/runtime.
+- [ ] Enable compatibility with required legacy Lua semantics where useful.
+- [ ] Add isolated Lua runtime crate/module.
+- [ ] Implement controlled error propagation.
+- [ ] Add Lua execution diagnostics.
+- [ ] Add content reload strategy for development.
+
+### Boundary design
+
+- [ ] Define allowed Lua queries.
+- [ ] Define allowed Lua commands/actions.
+- [ ] Prohibit unrestricted mutable access to `Game`.
+- [ ] Define typed conversion layer.
+- [ ] Define stable entity references visible to Lua.
+- [ ] Define lifetime/ownership rules for Lua references.
+- [ ] Document API compatibility policy.
+
+### Content migration
+
+- [ ] Select a small representative legacy Lua subsystem.
+- [ ] Port/load representative actor prototype.
+- [ ] Port/load representative item.
+- [ ] Port/load representative AI policy.
+- [ ] Normalize Lua globals where needed.
+- [ ] Remove assumptions tied to Pascal internals.
+
+### Tests
+
+- [ ] Lua can create/load representative content.
+- [ ] Lua errors do not corrupt simulation state.
+- [ ] Invalid Lua commands are rejected safely.
+- [ ] Lua behavior is deterministic when supplied deterministic RNG.
+- [ ] Lua cannot access hidden APIs outside its contract.
+
+## Exit Criteria
+
+- [ ] At least one real gameplay element is defined or controlled through Lua.
+- [ ] Rust remains authoritative for world invariants.
+- [ ] Lua does not receive uncontrolled mutable world access.
+- [ ] The team is confident the boundary can scale to substantial existing content.
+
+---
+
+# Milestone 4 — Core DRL Gameplay Vertical Slice
+
+## Goal
+
+Create a small but recognizably DRL-like playable slice using representative weapons, enemies, items, visibility, and level flow.
+
+## Deliverables
+
+- visibility/FOV
+- targeting
+- inventory
+- ammunition/reload
+- several weapons
+- several monsters
+- item pickup/use
+- one generated level
+- basic level transition
+
+## Checklist
+
+### Visibility
+
+- [ ] Specify legacy visibility behavior.
+- [ ] Implement field of view.
+- [ ] Implement fog-of-war/memory policy.
+- [ ] Ensure observations expose only legal information.
+- [ ] Add visibility property/scenario tests.
+
+### Targeting
+
+- [ ] Define `Target`.
+- [ ] Implement target legality.
+- [ ] Implement line-of-fire checks.
+- [ ] Implement target selection metadata.
+- [ ] Test blocked shots.
+- [ ] Test out-of-range/invalid targets.
+
+### Inventory and equipment
+
+- [ ] Specify legacy capacity/equipment rules.
+- [ ] Define inventory model.
+- [ ] Define equipment slots.
+- [ ] Implement pickup.
+- [ ] Implement drop.
+- [ ] Implement equip/unequip.
+- [ ] Implement use.
+- [ ] Add capacity/invariant tests.
+
+### Weapons and ammunition
+
+- [ ] Define weapon domain types.
+- [ ] Define ammo types.
+- [ ] Implement ammunition consumption.
+- [ ] Implement reload.
+- [ ] Implement representative pistol.
+- [ ] Implement representative shotgun.
+- [ ] Implement representative melee weapon.
+- [ ] Implement weapon-specific action costs.
+- [ ] Implement representative spread/knockback behavior.
+- [ ] Add statistical tests for stochastic weapon behavior.
+
+### Monsters
+
+- [ ] Implement several representative enemy archetypes.
+- [ ] Implement basic melee AI.
+- [ ] Implement basic ranged AI.
+- [ ] Integrate Lua AI where appropriate.
+- [ ] Preserve behavioral character rather than exact old state-machine transitions.
+
+### Items
+
+- [ ] Implement health item.
+- [ ] Implement armor.
+- [ ] Implement ammunition pickup.
+- [ ] Implement one special-use item.
+- [ ] Add item interaction tests.
+
+### Level
+
+- [ ] Implement stairs/exit.
+- [ ] Implement level transition.
+- [ ] Create one simple procedural generator.
+- [ ] Add seed-based generation tests.
+- [ ] Validate connectivity/reachability invariants.
+
+### Headless gameplay
+
+- [ ] Start a complete mini-run.
+- [ ] Fight enemies.
+- [ ] Pick up equipment.
+- [ ] Reload/fire.
+- [ ] Reach exit.
+- [ ] Transition to next level.
+
+## Exit Criteria
+
+- [ ] A recognizably DRL-like headless vertical slice exists.
+- [ ] A test player can complete the slice without renderer support.
+- [ ] Core observations are sufficiently rich for automated agents.
+- [ ] Major gameplay domains have stable architectural homes.
+
+---
+
+# Milestone 5 — Replay, Scenario, and Test-Agent Infrastructure
+
+## Goal
+
+Turn the core simulation into a serious automated testing environment.
+
+## Deliverables
+
+- versioned replay format
+- scenario fixtures
+- scripted agents
+- batch-run tooling
+- metrics collection
+
+## Checklist
+
+### Replay format
+
+- [ ] Version replay schema.
+- [ ] Record build/content version.
+- [ ] Record seed.
+- [ ] Record initial character/configuration.
+- [ ] Record command stream.
+- [ ] Add replay validation.
+- [ ] Add replay error reporting with turn/command context.
+- [ ] Store selected failing replays as regression tests.
+
+### Scenario framework
+
+- [ ] Define fixture format.
+- [ ] Allow explicit maps.
+- [ ] Allow actor placement.
+- [ ] Allow inventory configuration.
+- [ ] Allow RNG seed.
+- [ ] Allow scripted random outcomes for focused tests if needed.
+- [ ] Add reusable assertion helpers.
+
+### Scripted bots
+
+- [ ] Define bot/agent trait or policy interface only if concretely useful.
+- [ ] Implement random legal-action bot.
+- [ ] Implement simple combat bot.
+- [ ] Implement simple exploration bot.
+- [ ] Implement survival-oriented bot.
+- [ ] Ensure bots consume ordinary `Observation`.
+- [ ] Ensure bots submit ordinary `Command`.
+
+### Batch simulation
+
+- [ ] Run many seeds headlessly.
+- [ ] Add configurable episode limits.
+- [ ] Collect outcome metrics.
+- [ ] Collect failure/crash artifacts.
+- [ ] Record pathological seeds.
+- [ ] Add machine-readable summary output.
+
+### Metrics
+
+- [ ] Run completion status.
+- [ ] Turns survived.
+- [ ] Damage dealt/taken.
+- [ ] Death cause.
+- [ ] Weapon usage.
+- [ ] Ammo consumption.
+- [ ] Item usage.
+- [ ] Level reached.
+- [ ] Enemy kill distribution.
+
+### CI
+
+- [ ] Add fast smoke-agent run.
+- [ ] Add replay regressions.
+- [ ] Separate long simulation suite from normal PR checks.
+- [ ] Upload failing replay artifacts.
+
+## Exit Criteria
+
+- [ ] Hundreds or thousands of headless episodes can run without GUI.
+- [ ] Failures are reproducible from artifacts.
+- [ ] Agent code does not bypass ordinary player information boundaries.
+- [ ] The project can detect behavioral regressions before native UI work dominates development.
+
+---
+
+# Milestone 6 — MCP Game Interface
+
+## Goal
+
+Expose DRL-Rust as a machine-operable semantic environment for AI-driven testing and integrated test play.
+
+## Deliverables
+
+- MCP server
+- observation tools/resources
+- semantic action tools
+- scenario lifecycle tools
+- developer-mode controls
+- integration tests
+
+## Checklist
+
+### MCP protocol design
+
+- [ ] Define MCP capabilities document.
+- [ ] Version MCP-facing schema.
+- [ ] Define game/session lifecycle.
+- [ ] Define player-visible observation representation.
+- [ ] Define legal-action representation.
+- [ ] Define semantic action submission.
+- [ ] Define error format.
+
+### Core tools
+
+- [ ] Start new seeded game.
+- [ ] Get current observation.
+- [ ] List available/legal actions.
+- [ ] Submit move.
+- [ ] Submit wait.
+- [ ] Submit fire.
+- [ ] Submit reload.
+- [ ] Submit pickup.
+- [ ] Submit use.
+- [ ] Submit equip.
+- [ ] Advance/query game only through ordinary simulation.
+
+### Test utilities
+
+- [ ] Reset game.
+- [ ] Load approved scenario fixture.
+- [ ] Save replay.
+- [ ] Return run summary.
+- [ ] Set bounded episode/turn limit.
+- [ ] Expose recent semantic events.
+
+### Security boundaries
+
+- [ ] Ordinary MCP agent cannot read omniscient world state.
+- [ ] Developer-only omniscient mode is clearly separated.
+- [ ] MCP does not expose arbitrary filesystem access.
+- [ ] MCP does not expose arbitrary shell execution.
+- [ ] Validate all tool arguments.
+- [ ] Bound resource usage for long episodes.
+
+### Integration tests
+
+- [ ] MCP can complete the Milestone 4 vertical slice.
+- [ ] MCP action results match direct simulation calls.
+- [ ] MCP observations match standard player observations.
+- [ ] Invalid actions fail cleanly.
+- [ ] Replay from an MCP-driven run reproduces the episode.
+
+### Practical agent tests
+
+- [ ] Run a rule-based agent through MCP.
+- [ ] Run an LLM-driven exploratory test session.
+- [ ] Capture examples of useful agent-found issues.
+- [ ] Document intended role of MCP in CI vs exploratory testing.
+
+## Exit Criteria
+
+- [ ] A remote/model-driven agent can play a complete headless episode semantically.
+- [ ] MCP uses the same core command model as all other clients.
+- [ ] Replays from MCP sessions are reproducible.
+- [ ] Player-information boundaries are preserved.
+
+---
+
+# Milestone 7 — Native macOS Rendering and Input
+
+## Goal
+
+Create the first real native macOS graphical frontend while preserving the headless core.
+
+## Deliverables
+
+- app window
+- GPU renderer
+- keyboard input
+- sprite/tile rendering
+- HUD
+- targeting UI
+- menus
+- high-DPI support
+
+## Checklist
+
+### Platform foundation
+
+- [ ] Select window/event-loop stack.
+- [ ] Select GPU rendering stack.
+- [ ] Create macOS app target.
+- [ ] Verify Apple Silicon build.
+- [ ] Verify high-DPI/Retina behavior.
+- [ ] Define window/fullscreen settings.
+- [ ] Use platform-appropriate app-data directories.
+
+### Renderer
+
+- [ ] Render tile map.
+- [ ] Render player.
+- [ ] Render monsters.
+- [ ] Render items.
+- [ ] Render fog/visibility.
+- [ ] Render targeting cursor.
+- [ ] Render effects/events.
+- [ ] Implement pixel-art scaling policy.
+- [ ] Handle window resize.
+
+### Input
+
+- [ ] Map keyboard events to semantic commands.
+- [ ] Implement movement bindings.
+- [ ] Implement fire/targeting bindings.
+- [ ] Implement reload.
+- [ ] Implement pickup/use.
+- [ ] Implement inventory navigation.
+- [ ] Keep physical key codes out of `drl-core`.
+
+### UI
+
+- [ ] HUD.
+- [ ] Message log.
+- [ ] Inventory screen.
+- [ ] Character/trait screen.
+- [ ] Main menu.
+- [ ] Pause/options.
+- [ ] Targeting interface.
+- [ ] Death/game-over screen.
+
+### Integration
+
+- [ ] Presentation consumes core events.
+- [ ] Renderer does not mutate gameplay state directly.
+- [ ] UI actions become `Command`s.
+- [ ] Headless tests continue to pass unchanged.
+
+## Exit Criteria
+
+- [ ] The Milestone 4 gameplay slice is playable in a native macOS window.
+- [ ] The same run remains playable headlessly.
+- [ ] No core architecture was weakened to accommodate rendering.
+
+---
+
+# Milestone 8 — Audio, Animation, and Game Feel
+
+## Goal
+
+Move from functional frontend to a convincing DRL-like player experience.
+
+## Deliverables
+
+- sound
+- music
+- animation/effect system
+- feedback tuning
+- UI responsiveness
+
+## Checklist
+
+### Audio
+
+- [ ] Select audio backend.
+- [ ] Implement semantic sound cue mapping.
+- [ ] Weapon sounds.
+- [ ] Monster sounds.
+- [ ] Item sounds.
+- [ ] UI sounds.
+- [ ] Music playback.
+- [ ] Music transitions.
+- [ ] Volume settings.
+- [ ] Mute controls.
+
+### Animation
+
+- [ ] Define presentation-only animation model.
+- [ ] Movement animation.
+- [ ] Projectile/shot effects.
+- [ ] Damage feedback.
+- [ ] Death effects.
+- [ ] Explosion effects.
+- [ ] Knockback visualization.
+- [ ] Screen/camera effects where appropriate.
+- [ ] Level transitions.
+
+### Game feel
+
+- [ ] Tune animation duration.
+- [ ] Tune input responsiveness.
+- [ ] Tune message timing.
+- [ ] Tune targeting UX.
+- [ ] Tune HUD readability.
+- [ ] Validate pixel-art scaling.
+- [ ] Conduct focused human playtests.
+
+### Architectural validation
+
+- [ ] No animation timing changes simulation outcomes.
+- [ ] Audio failures do not affect gameplay.
+- [ ] Presentation can be disabled for fast headless simulation.
+- [ ] Semantic events remain stable enough for alternative frontends.
+
+## Exit Criteria
+
+- [ ] Native gameplay feels responsive and coherent.
+- [ ] Presentation is recognizably aligned with DRL's identity.
+- [ ] Simulation remains fully decoupled from presentation timing.
+
+---
+
+# Milestone 9 — Gameplay Breadth and Legacy Semantic Coverage
+
+## Goal
+
+Expand from the vertical slice to broad DRL gameplay coverage.
+
+## Deliverables
+
+- weapon families
+- enemy roster
+- items
+- traits
+- classes
+- difficulty
+- generated levels
+- special levels
+- challenges
+- progression
+- end-game flow
+
+## Checklist
+
+### Tracking framework
+
+- [ ] Create master legacy-feature matrix.
+- [ ] For every feature, track:
+  - [ ] legacy source identified;
+  - [ ] intended behavior documented;
+  - [ ] Rust design decided;
+  - [ ] implementation complete;
+  - [ ] tests complete;
+  - [ ] human verification complete.
+
+### Combat breadth
+
+- [ ] Complete damage types.
+- [ ] Complete armor/resistance semantics.
+- [ ] Complete major weapon categories.
+- [ ] Complete reload variants.
+- [ ] Complete explosions.
+- [ ] Complete knockback.
+- [ ] Complete environmental damage.
+- [ ] Complete special attack modes.
+
+### Monsters
+
+- [ ] Implement major monster roster.
+- [ ] Implement major AI archetypes.
+- [ ] Implement special abilities.
+- [ ] Implement boss behavior.
+- [ ] Validate tactical identity through scenario/agent tests.
+
+### Items and equipment
+
+- [ ] Implement major consumables.
+- [ ] Implement armor families.
+- [ ] Implement boots/equipment.
+- [ ] Implement special/unique items.
+- [ ] Implement item generation rules.
+- [ ] Validate drop/use distributions statistically.
+
+### Player progression
+
+- [ ] Classes.
+- [ ] Experience.
+- [ ] Level-up.
+- [ ] Traits/perks.
+- [ ] Trait prerequisites.
+- [ ] Character statistics.
+- [ ] Score/progression semantics.
+
+### Difficulty
+
+- [ ] Document difficulty parameters.
+- [ ] Implement difficulty modifiers.
+- [ ] Add batch-agent comparisons by difficulty.
+- [ ] Verify expected ordering of challenge.
+
+### Level generation
+
+- [ ] Implement core generators.
+- [ ] Validate connectivity.
+- [ ] Validate item/enemy placement.
+- [ ] Validate structural distributions.
+- [ ] Add pathological-seed detection.
+- [ ] Port/replace selected Lua generation logic.
+
+### Special levels/challenges
+
+- [ ] Inventory special levels.
+- [ ] Document intended semantics.
+- [ ] Implement prioritized special levels.
+- [ ] Implement challenge modes.
+- [ ] Add representative scenario tests.
+
+### End-to-end progression
+
+- [ ] Start new game.
+- [ ] Play through multi-level run.
+- [ ] Progress character.
+- [ ] Reach late game.
+- [ ] Implement victory/ending.
+- [ ] Implement death/mortem summary.
+
+## Exit Criteria
+
+- [ ] The majority of canonical DRL gameplay systems are represented.
+- [ ] Remaining gaps are explicitly listed.
+- [ ] Automated agents can play long runs.
+- [ ] Human testers recognize the game as behaviorally faithful.
+
+---
+
+# Milestone 10 — New Save System and Stable Internal Formats
+
+## Goal
+
+Introduce durable DRL-Rust persistence after major domain structures have stabilized.
+
+## Deliverables
+
+- versioned save format
+- save/load UX
+- migration policy
+- stable replay schema
+- content-version checks
+
+## Checklist
+
+### Save schema
+
+- [ ] Choose serialization format.
+- [ ] Add explicit save version.
+- [ ] Add game/content version.
+- [ ] Define serialization DTOs separate from internal representation where appropriate.
+- [ ] Avoid serializing raw memory layout.
+- [ ] Avoid leaking unstable internal IDs where possible.
+
+### Save/load
+
+- [ ] Manual save.
+- [ ] Automatic save policy.
+- [ ] Load.
+- [ ] Corrupt-save error handling.
+- [ ] Version mismatch handling.
+- [ ] Atomic write strategy.
+- [ ] Backup/recovery behavior.
+
+### Migration
+
+- [ ] Define compatibility policy across DRL-Rust releases.
+- [ ] Implement at least one test migration fixture.
+- [ ] Document when save migrations may be dropped.
+
+### Replay stability
+
+- [ ] Version replay schema independently if appropriate.
+- [ ] Validate old replay rejection/migration behavior.
+- [ ] Preserve useful regression replays.
+
+## Exit Criteria
+
+- [ ] Saves survive ordinary application restarts and upgrades within the defined policy.
+- [ ] Persistence format is decoupled from Rust memory layout.
+- [ ] Legacy Pascal saves remain intentionally unsupported.
+
+---
+
+# Milestone 11 — Balance, Regression, and Large-Scale Automated Playtesting
+
+## Goal
+
+Use the architecture's testing advantages to characterize gameplay and identify regressions systematically.
+
+## Deliverables
+
+- batch simulation suite
+- balance dashboards/reports
+- regression thresholds
+- MCP exploratory workflows
+- curated pathological-seed corpus
+
+## Checklist
+
+### Batch experiment framework
+
+- [ ] Run thousands of seeds per build.
+- [ ] Parameterize difficulty.
+- [ ] Parameterize player archetype.
+- [ ] Parameterize bot policy.
+- [ ] Persist aggregate metrics.
+- [ ] Persist anomalous replays.
+
+### Metrics
+
+- [ ] Win rate.
+- [ ] Survival curve.
+- [ ] Level reached.
+- [ ] Death cause.
+- [ ] Weapon utilization.
+- [ ] Ammo scarcity.
+- [ ] Damage source composition.
+- [ ] Item consumption.
+- [ ] Trait choice.
+- [ ] Boss success rates.
+- [ ] Generation failures.
+
+### Regression policy
+
+- [ ] Define metrics that should remain approximately stable.
+- [ ] Define acceptable stochastic tolerance.
+- [ ] Avoid treating every distribution change as a bug.
+- [ ] Require investigation for unexplained large shifts.
+- [ ] Link significant shifts to code/behavior changes.
+
+### MCP workflows
+
+- [ ] Create standard exploratory-test prompts/tasks.
+- [ ] Test new features with MCP agents before merge where useful.
+- [ ] Capture agent reasoning separately from authoritative test results.
+- [ ] Convert discovered bugs into deterministic scenarios/replays.
+
+### Human validation
+
+- [ ] Run structured human playtests.
+- [ ] Compare human feedback with automated metrics.
+- [ ] Identify mechanics where automated agents are poor proxies.
+- [ ] Tune based on game feel as well as statistics.
+
+## Exit Criteria
+
+- [ ] Automated testing catches meaningful behavioral regressions.
+- [ ] MCP testing has demonstrated practical value beyond scripted bots.
+- [ ] Balance changes can be evaluated with reproducible evidence.
+
+---
+
+# Milestone 12 — macOS Productization
+
+## Goal
+
+Turn the developer build into a polished distributable macOS application.
+
+## Deliverables
+
+- app bundle
+- icon/metadata
+- signing
+- notarization
+- settings
+- crash diagnostics
+- release build pipeline
+
+## Checklist
+
+### Application bundle
+
+- [ ] Bundle resources correctly.
+- [ ] Set application identifier.
+- [ ] Add app icon.
+- [ ] Add version metadata.
+- [ ] Validate read-only bundled resource assumptions.
+- [ ] Validate writable app-data paths.
+
+### Configuration
+
+- [ ] Video settings.
+- [ ] Audio settings.
+- [ ] Key bindings.
+- [ ] Accessibility-related options where practical.
+- [ ] Reset settings.
+- [ ] Safe defaults.
+
+### macOS behavior
+
+- [ ] Window restoration policy.
+- [ ] Fullscreen behavior.
+- [ ] Retina rendering.
+- [ ] Keyboard focus handling.
+- [ ] App quit handling.
+- [ ] Crash/recovery behavior.
+
+### Distribution
+
+- [ ] Release profile optimization.
+- [ ] Code signing.
+- [ ] Hardened runtime if required.
+- [ ] Notarization.
+- [ ] Stapling.
+- [ ] Test clean-machine installation.
+- [ ] Test Gatekeeper behavior.
+- [ ] Generate distributable artifact.
+
+### CI/release automation
+
+- [ ] Build signed release in controlled CI/release workflow.
+- [ ] Generate checksums.
+- [ ] Generate release notes.
+- [ ] Archive symbols/debug artifacts as appropriate.
+
+## Exit Criteria
+
+- [ ] A non-developer macOS user can install and run DRL-Rust normally.
+- [ ] Application data is stored in appropriate macOS locations.
+- [ ] Release artifacts are reproducible and documented.
+
+---
+
+# Milestone 13 — Release Candidate and 1.0 Readiness
+
+## Goal
+
+Freeze major architecture, close critical gameplay gaps, validate stability, and prepare the first major public release.
+
+## Deliverables
+
+- feature-complete candidate
+- stability validation
+- documentation
+- known-issues list
+- 1.0 release
+
+## Checklist
+
+### Gameplay completeness
+
+- [ ] Review legacy-feature matrix.
+- [ ] Classify every remaining gap:
+  - [ ] must fix before 1.0;
+  - [ ] intentional difference;
+  - [ ] post-1.0;
+  - [ ] obsolete legacy artifact.
+- [ ] Resolve all must-fix gameplay gaps.
+
+### Stability
+
+- [ ] Long human sessions without crashes.
+- [ ] Long scripted-bot sessions without invariant failures.
+- [ ] Large MCP sessions without protocol corruption.
+- [ ] Save/load stress testing.
+- [ ] Replay stress testing.
+- [ ] Lua error-path testing.
+- [ ] Renderer/device-loss handling as applicable.
+
+### Performance
+
+- [ ] Profile startup.
+- [ ] Profile rendering.
+- [ ] Profile FOV/pathfinding.
+- [ ] Profile Lua-heavy scenarios.
+- [ ] Profile batch simulation.
+- [ ] Fix only evidence-based bottlenecks.
+
+### Documentation
+
+- [ ] User README.
+- [ ] Build instructions.
+- [ ] Developer architecture overview.
+- [ ] MCP usage documentation.
+- [ ] Replay documentation.
+- [ ] Save compatibility policy.
+- [ ] Asset/license attribution.
+- [ ] Contribution workflow.
+- [ ] Known intentional differences from legacy DRL.
+
+### Release validation
+
+- [ ] Fresh macOS installation.
+- [ ] New game.
+- [ ] Multi-level run.
+- [ ] Save/load.
+- [ ] Death.
+- [ ] Victory.
+- [ ] Audio.
+- [ ] Fullscreen/windowed.
+- [ ] Settings persistence.
+- [ ] MCP smoke test.
+- [ ] Replay smoke test.
+- [ ] Release artifact notarization validation.
+
+## Exit Criteria
+
+- [ ] No known critical crashes.
+- [ ] No known major invariant violations.
+- [ ] Core DRL identity is preserved.
+- [ ] Native macOS experience is polished.
+- [ ] Automated and MCP testing are functioning.
+- [ ] Documentation is sufficient for users and contributors.
+- [ ] DRL-Rust 1.0 is released.
+
+---
+
+# Post-1.0 Candidate Directions
+
+These should **not** influence the initial architecture unless concrete requirements emerge.
+
+- [ ] Linux frontend/distribution.
+- [ ] Windows frontend/distribution.
+- [ ] New mod/content API designed specifically for DRL-Rust.
+- [ ] Stable public Lua content SDK.
+- [ ] New non-Lua content format.
+- [ ] Headless tournament/agent environment.
+- [ ] Rich telemetry and comparative balance tooling.
+- [ ] Spectator/replay viewer.
+- [ ] Web-based replay analysis.
+- [ ] Accessibility expansion.
+- [ ] Controller-focused UI.
+- [ ] Alternative renderer/frontends.
+- [ ] Formal benchmark suite for AI agents.
+- [ ] New gameplay/content beyond canonical DRL.
+
+---
+
+# Cross-Milestone Definition of Done
+
+A feature should not be considered complete merely because it works in one playthrough.
+
+For gameplay features, the preferred completion checklist is:
+
+- [ ] Intended legacy behavior identified.
+- [ ] Implementation artifact vs canonical behavior distinguished.
+- [ ] Rust domain model designed.
+- [ ] Invariants documented.
+- [ ] Unit/scenario/property tests added as appropriate.
+- [ ] Randomness is explicit.
+- [ ] Headless execution works.
+- [ ] Observation representation is correct.
+- [ ] Replay behavior is reproducible.
+- [ ] MCP access works if the feature is player-operable.
+- [ ] Native presentation works if applicable.
+- [ ] Human playtest performed when game feel matters.
+- [ ] Documentation updated.
+- [ ] Deliberate differences recorded.
+
+---
+
+# Suggested Progress Summary
+
+Update this table as milestones advance.
+
+| Milestone | Status | Notes |
+|---|---|---|
+| M0 — Repository Foundation | Not started | |
+| M1 — Headless Simulation Kernel | Not started | |
+| M2 — Action Economy + Combat | Not started | |
+| M3 — Lua Runtime | Not started | |
+| M4 — Core Gameplay Vertical Slice | Not started | |
+| M5 — Replay + Test Agents | Not started | |
+| M6 — MCP Interface | Not started | |
+| M7 — Native macOS Frontend | Not started | |
+| M8 — Audio + Game Feel | Not started | |
+| M9 — Gameplay Breadth | Not started | |
+| M10 — Save System | Not started | |
+| M11 — Automated Playtesting | Not started | |
+| M12 — macOS Productization | Not started | |
+| M13 — Release / 1.0 | Not started | |
+
+---
+
+# Immediate Starting Checklist
+
+If beginning implementation now, the first concrete tasks are:
+
+- [ ] Create `drl-rust`.
+- [ ] Add this proposal and roadmap to `docs/`.
+- [ ] Initialize Cargo workspace.
+- [ ] Create `drl-core`, `drl-protocol`, and `drl-app`.
+- [ ] Add macOS CI.
+- [ ] Write first ADRs.
+- [ ] Create the legacy behavior-spec template.
+- [ ] Document movement semantics.
+- [ ] Document turn/action-cost semantics.
+- [ ] Document minimal combat semantics.
+- [ ] Define `EntityId`, `Position`, `Turn`, and `GameState`.
+- [ ] Define initial `Command`.
+- [ ] Define initial `Observation`.
+- [ ] Define initial `GameEvent`.
+- [ ] Select and wrap deterministic RNG.
+- [ ] Build the first headless fixed-map movement test.
+
+At that point, DRL-Rust will have crossed from proposal into an executable architecture.
