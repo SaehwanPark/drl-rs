@@ -13,3 +13,7 @@
 
 - [Proposal](docs/DRL-Rust_Project_Proposal.md)
 - [Roadmap](docs/DRL-Rust_Project_Roadmap.md)
+
+## Legacy Assets
+
+- Legacy music/sound assets cloned into `assets/legacy-drlhq/` this repository as well (git-ignored)
