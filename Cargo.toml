@@ -1,6 +1,26 @@
-[package]
-name = "drl-rust"
+[workspace]
+members = [
+  "crates/drl-app",
+  "crates/drl-audio",
+  "crates/drl-core",
+  "crates/drl-mcp",
+  "crates/drl-protocol",
+  "crates/drl-render",
+  "crates/drl-script",
+]
+resolver = "3"
+default-members = ["crates/drl-app"]
+
+[workspace.package]
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+authors = ["DRL-Rust Contributors"]
 
-[dependencies]
+[workspace.dependencies]
+drl-audio = { path = "crates/drl-audio", version = "0.1.0" }
+drl-core = { path = "crates/drl-core", version = "0.1.0" }
+drl-mcp = { path = "crates/drl-mcp", version = "0.1.0" }
+drl-protocol = { path = "crates/drl-protocol", version = "0.1.0" }
+drl-render = { path = "crates/drl-render", version = "0.1.0" }
+drl-script = { path = "crates/drl-script", version = "0.1.0" }

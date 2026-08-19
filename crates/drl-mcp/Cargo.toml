@@ -1,0 +1,11 @@
+[package]
+name = "drl-mcp"
+description = "Model Context Protocol interface and tools for DRL-Rust"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+drl-core = { workspace = true }
+drl-protocol = { workspace = true }

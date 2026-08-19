@@ -7,6 +7,13 @@ documented in this file.
 
 ### Added
 
+- Multi-crate Cargo workspace managing `drl-core`, `drl-protocol`, `drl-app`,
+  `drl-script`, `drl-mcp`, `drl-render`, and `drl-audio`.
+- Deterministic headless simulation core library (`drl-core`) and shared
+  protocol contract library (`drl-protocol`).
+- Default workspace application executable (`drl-app` / `drl-rust`).
+- Automated architectural boundary tests ensuring `drl-core` and `drl-protocol`
+  remain free of presentation, audio, and MCP dependencies.
 - A repo-local milestone-delivery harness with durable repository guidance.
 - A staged development and test-play team contract with explicit ownership,
   deterministic handoffs, and bounded delegation.

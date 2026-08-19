@@ -3,5 +3,50 @@
 version = 4
 
 [[package]]
-name = "drl-rust"
+name = "drl-app"
 version = "0.1.0"
+dependencies = [
+ "drl-core",
+ "drl-protocol",
+]
+
+[[package]]
+name = "drl-audio"
+version = "0.1.0"
+dependencies = [
+ "drl-protocol",
+]
+
+[[package]]
+name = "drl-core"
+version = "0.1.0"
+dependencies = [
+ "drl-protocol",
+]
+
+[[package]]
+name = "drl-mcp"
+version = "0.1.0"
+dependencies = [
+ "drl-core",
+ "drl-protocol",
+]
+
+[[package]]
+name = "drl-protocol"
+version = "0.1.0"
+
+[[package]]
+name = "drl-render"
+version = "0.1.0"
+dependencies = [
+ "drl-protocol",
+]
+
+[[package]]
+name = "drl-script"
+version = "0.1.0"
+dependencies = [
+ "drl-core",
+ "drl-protocol",
+]
