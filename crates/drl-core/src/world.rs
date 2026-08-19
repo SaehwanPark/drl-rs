@@ -1,14 +1,15 @@
-//! Simulation world state managing map terrain and actor entities.
+//! Simulation world state managing map terrain, actor entities, and ground items.
 
 use drl_protocol::{
-  ActorView, CommandError, EntityId, LevelId, OmniscientObservation, PlayerObservation, Position,
-  Turn,
+  ActorView, CommandError, EntityId, EquipmentSlot, GroundItemView, ItemId, LevelId,
+  OmniscientObservation, PlayerObservation, Position, Turn,
 };
 use std::collections::{BTreeMap, BTreeSet};
 
 use crate::actor::Actor;
 use crate::fov::{DEFAULT_VISION_RADIUS, compute_fov};
 use crate::grid::Map;
+use crate::item::Item;
 
 /// Physical world model for a single simulation level.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -16,9 +17,11 @@ pub struct World {
   level_id: LevelId,
   map: Map,
   actors: BTreeMap<EntityId, Actor>,
+  ground_items: BTreeMap<ItemId, (Position, Item)>,
   player_id: Option<EntityId>,
   explored_tiles: BTreeSet<Position>,
   next_entity_id: u64,
+  next_item_id: u64,
 }
 
 impl World {
@@ -29,16 +32,25 @@ impl World {
       level_id,
       map,
       actors: BTreeMap::new(),
+      ground_items: BTreeMap::new(),
       player_id: None,
       explored_tiles: BTreeSet::new(),
       next_entity_id: 1,
+      next_item_id: 1,
     }
   }
 
   /// Allocates a new unique `EntityId`.
-  fn allocate_entity_id(&mut self) -> EntityId {
+  pub fn allocate_entity_id(&mut self) -> EntityId {
     let id = EntityId::new(self.next_entity_id);
     self.next_entity_id += 1;
+    id
+  }
+
+  /// Allocates a new unique `ItemId`.
+  pub fn allocate_item_id(&mut self) -> ItemId {
+    let id = ItemId::new(self.next_item_id);
+    self.next_item_id += 1;
     id
   }
 
@@ -85,7 +97,7 @@ impl World {
     visible
   }
 
-  /// Spawns the player character at the given position.
+  /// Spawns the player character at the given position with default starting loadout.
   pub fn spawn_player(&mut self, pos: Position, name: &str) -> Result<EntityId, CommandError> {
     if !self.map.is_in_bounds(pos) {
       return Err(CommandError::OutOfBounds(pos));
@@ -101,7 +113,21 @@ impl World {
     }
 
     let id = self.allocate_entity_id();
-    let actor = Actor::new(id, pos, name, true);
+    let mut actor = Actor::new(id, pos, name, true);
+
+    // Initial player equipment & inventory loadout
+    let pistol_id = self.allocate_item_id();
+    let pistol = Item::pistol(pistol_id);
+    let _ = actor.equipment_mut().equip(EquipmentSlot::Weapon, pistol);
+
+    let ammo_id = self.allocate_item_id();
+    let ammo = Item::ammo_9mm(ammo_id, 30);
+    let _ = actor.inventory_mut().add_item(ammo);
+
+    let med_id = self.allocate_item_id();
+    let med = Item::small_medpack(med_id);
+    let _ = actor.inventory_mut().add_item(med);
+
     self.actors.insert(id, actor);
     self.player_id = Some(id);
     self.update_visibility();
@@ -170,6 +196,59 @@ impl World {
     );
     self.actors.insert(id, actor);
     Ok(id)
+  }
+
+  /// Spawns an item on the ground at a given position.
+  pub fn spawn_ground_item(&mut self, pos: Position, item: Item) -> Result<ItemId, CommandError> {
+    if !self.map.is_in_bounds(pos) {
+      return Err(CommandError::OutOfBounds(pos));
+    }
+    if !self.map.is_walkable(pos) {
+      return Err(CommandError::BlockedByTerrain(pos));
+    }
+    let id = item.id();
+    self.ground_items.insert(id, (pos, item));
+    Ok(id)
+  }
+
+  /// Picks up the first item lying on the ground at the given position.
+  pub fn pickup_ground_item(&mut self, pos: Position) -> Result<Item, CommandError> {
+    let target_id = self
+      .ground_items
+      .iter()
+      .find(|(_, (p, _))| *p == pos)
+      .map(|(id, _)| *id)
+      .ok_or(CommandError::NoItemAtPosition(pos))?;
+
+    let (_, item) = self.ground_items.remove(&target_id).unwrap();
+    Ok(item)
+  }
+
+  /// Drops an item to the ground at the specified position.
+  pub fn drop_item_to_ground(&mut self, pos: Position, item: Item) -> Result<ItemId, CommandError> {
+    if !self.map.is_in_bounds(pos) {
+      return Err(CommandError::OutOfBounds(pos));
+    }
+    let id = item.id();
+    self.ground_items.insert(id, (pos, item));
+    Ok(id)
+  }
+
+  /// Reference to all ground items in the world.
+  #[must_use]
+  pub const fn ground_items(&self) -> &BTreeMap<ItemId, (Position, Item)> {
+    &self.ground_items
+  }
+
+  /// Returns all items located on the ground at a specific position.
+  #[must_use]
+  pub fn ground_items_at(&self, pos: Position) -> Vec<&Item> {
+    self
+      .ground_items
+      .values()
+      .filter(|(p, _)| *p == pos)
+      .map(|(_, item)| item)
+      .collect()
   }
 
   /// Returns the player entity ID if spawned.
@@ -275,13 +354,20 @@ impl World {
   /// Creates a player observation snapshot.
   #[must_use]
   pub fn create_player_observation(&self, turn: Turn) -> PlayerObservation {
-    let (player_pos, visible_positions) = if let Some(player) = self.player() {
-      let pos = player.position();
-      let fov = compute_fov(&self.map, pos, DEFAULT_VISION_RADIUS);
-      (pos, fov)
-    } else {
-      (Position::new(0, 0), BTreeSet::new())
-    };
+    let (player_pos, visible_positions, inventory, equipped_weapon, equipped_armor) =
+      if let Some(player) = self.player() {
+        let pos = player.position();
+        let fov = compute_fov(&self.map, pos, DEFAULT_VISION_RADIUS);
+        (
+          pos,
+          fov,
+          player.inventory().to_views(),
+          player.equipment().weapon_view(),
+          player.equipment().armor_view(),
+        )
+      } else {
+        (Position::new(0, 0), BTreeSet::new(), Vec::new(), None, None)
+      };
 
     let mut visible_tiles = Vec::with_capacity(self.explored_tiles.len());
     for &pos in &self.explored_tiles {
@@ -299,11 +385,25 @@ impl World {
       .map(Actor::to_view)
       .collect();
 
+    let ground_items: Vec<GroundItemView> = self
+      .ground_items
+      .values()
+      .filter(|(pos, _)| self.explored_tiles.contains(pos))
+      .map(|(pos, item)| GroundItemView {
+        position: *pos,
+        item: item.to_view(),
+      })
+      .collect();
+
     PlayerObservation {
       turn,
       player_position: player_pos,
       visible_tiles,
       visible_actors,
+      inventory,
+      equipped_weapon,
+      equipped_armor,
+      ground_items,
     }
   }
 
@@ -316,6 +416,14 @@ impl World {
       height: self.map.height(),
       tiles: self.map.to_tile_views(true),
       actors: self.actors.values().map(Actor::to_view).collect(),
+      ground_items: self
+        .ground_items
+        .values()
+        .map(|(pos, item)| GroundItemView {
+          position: *pos,
+          item: item.to_view(),
+        })
+        .collect(),
     }
   }
 }
@@ -354,6 +462,29 @@ mod tests {
         entity_id: player_id,
       }
     );
+  }
+
+  #[test]
+  fn test_world_ground_items_and_pickup() {
+    let map = Map::simple_arena(10, 10);
+    let mut world = World::new(LevelId::new(1), map);
+    let _p_id = world.spawn_player(Position::new(1, 1), "Marine").unwrap();
+
+    let shotgun_id = world.allocate_item_id();
+    let shotgun = Item::shotgun(shotgun_id);
+    world
+      .spawn_ground_item(Position::new(2, 2), shotgun)
+      .unwrap();
+
+    assert_eq!(world.ground_items_at(Position::new(2, 2)).len(), 1);
+    assert_eq!(
+      world.ground_items_at(Position::new(2, 2))[0].name(),
+      "Shotgun"
+    );
+
+    let picked = world.pickup_ground_item(Position::new(2, 2)).unwrap();
+    assert_eq!(picked.name(), "Shotgun");
+    assert!(world.ground_items_at(Position::new(2, 2)).is_empty());
   }
 
   #[test]

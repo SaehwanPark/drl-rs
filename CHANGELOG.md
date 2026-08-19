@@ -7,6 +7,31 @@ documented in this file.
 
 ### Added
 
+- Item domain model (`item`) in `drl-core` and `drl-protocol` with physical item
+  properties, weapons, body armor, ammunition stacks, and consumables.
+- Bounded player inventory (`Inventory`) with automatic ammunition stacking, stack
+  draining, and capacity enforcement.
+- Equipment system (`Equipment`) supporting dedicated weapon and armor slots,
+  equipment swapping, and unequip validation.
+- Weapon and ammunition mechanics with magazine clip tracking, ammo consumption
+  on ranged attacks, clip exhaustion errors (`CommandError::NoAmmoInClip`), and
+  reloading (`Command::Reload`) from reserve inventory ammo stacks.
+- Representative weapons: Pistol (9mm caliber, 10-round clip), Shotgun (Shells,
+  8-round clip), Combat Knife (melee).
+- Representative items: 9mm Ammo, Shotgun Shells, Small MedPack (+10 HP), Large
+  MedPack (+25 HP), Green Armor (+5 armor protection).
+- Ground item tracking in `World` with deterministic `BTreeMap` storage, floor loot
+  spawning, pickup (`Command::Pickup`), and dropping (`Command::Drop`).
+- Perception filtering for ground items, exposing only floor items on explored
+  fog-of-war tiles in `PlayerObservation.ground_items`.
+- Armor damage protection mitigation reducing raw incoming damage in combat.
+- Replay recording and playback support for initial item spawns (`ItemSpawnSpec`).
+- Comprehensive integration test suite in `crates/drl-core/tests/inventory.rs`
+  verifying pickups, drops, capacity limits, equip/unequip cycles, medpack use,
+  weapon firing, and reload cycles.
+- Headless demo runner update in `drl-app` demonstrating item pickups, weapon
+  swapping, ranged combat, and healing with bit-exact replay determinism.
+
 - Field of View (FOV) calculation and Line of Sight (LOS) ray tracing module
   (`fov`) in `drl-core` supporting deterministic perimeter raycasting, obstacle
   occlusion, and transparency checks.

@@ -1,6 +1,7 @@
 //! Semantic command definitions and command failure errors.
 
-use crate::types::{Direction, EntityId, Position};
+use crate::item::EquipmentSlot;
+use crate::types::{Direction, EntityId, ItemId, Position};
 use std::fmt;
 
 /// Semantic player or actor command submitted to the simulation core.
@@ -14,6 +15,18 @@ pub enum Command {
   AttackRanged(Position),
   /// Wait in place for one turn.
   Wait,
+  /// Pick up an item lying on the current ground tile into inventory.
+  Pickup,
+  /// Drop an item from inventory to the ground at the current position.
+  Drop(ItemId),
+  /// Equip an item from inventory to its designated equipment slot.
+  Equip(ItemId),
+  /// Unequip an item from a designated slot back into inventory.
+  Unequip(EquipmentSlot),
+  /// Use/consume an item from inventory (e.g. MedPack).
+  Use(ItemId),
+  /// Reload the equipped ranged weapon from inventory ammo stacks.
+  Reload,
 }
 
 /// Errors returned when a command fails validation or execution.
@@ -40,6 +53,26 @@ pub enum CommandError {
   LineOfSightBlocked(Position),
   /// Dead actor cannot perform actions.
   DeadActorCannotAct(EntityId),
+  /// Inventory is full and cannot accept more items.
+  InventoryFull,
+  /// Specified item ID was not found in inventory or ground.
+  ItemNotFound(ItemId),
+  /// No item exists on the ground at the specified position.
+  NoItemAtPosition(Position),
+  /// Item cannot be equipped to an equipment slot.
+  CannotEquip(ItemId),
+  /// Item cannot be used or consumed.
+  CannotUse(ItemId),
+  /// Equipment slot is already empty.
+  SlotEmpty(EquipmentSlot),
+  /// Action requires an equipped weapon, but none is equipped.
+  NoEquippedWeapon,
+  /// Weapon has no ammunition loaded in its clip.
+  NoAmmoInClip,
+  /// No matching ammunition available in inventory for reloading.
+  NoMatchingAmmo,
+  /// Weapon clip is already full.
+  ClipAlreadyFull,
   /// Generic command validation failure.
   InvalidCommand(String),
 }
@@ -87,6 +120,18 @@ impl fmt::Display for CommandError {
       Self::DeadActorCannotAct(id) => {
         write!(f, "dead actor {} cannot perform actions", id.as_u64())
       }
+      Self::InventoryFull => write!(f, "inventory is full"),
+      Self::ItemNotFound(id) => write!(f, "item {} was not found", id.as_u64()),
+      Self::NoItemAtPosition(pos) => {
+        write!(f, "no item on ground at ({}, {})", pos.x, pos.y)
+      }
+      Self::CannotEquip(id) => write!(f, "item {} cannot be equipped", id.as_u64()),
+      Self::CannotUse(id) => write!(f, "item {} cannot be used", id.as_u64()),
+      Self::SlotEmpty(slot) => write!(f, "{slot} slot is empty"),
+      Self::NoEquippedWeapon => write!(f, "no weapon equipped"),
+      Self::NoAmmoInClip => write!(f, "weapon clip is empty - reload required"),
+      Self::NoMatchingAmmo => write!(f, "no matching ammunition in inventory"),
+      Self::ClipAlreadyFull => write!(f, "weapon clip is already full"),
       Self::InvalidCommand(msg) => write!(f, "invalid command: {msg}"),
     }
   }
@@ -126,5 +171,17 @@ mod tests {
       los_blocked.to_string(),
       "line of sight to target (8, 9) is blocked"
     );
+
+    let full = CommandError::InventoryFull;
+    assert_eq!(full.to_string(), "inventory is full");
+
+    let no_ammo = CommandError::NoAmmoInClip;
+    assert_eq!(
+      no_ammo.to_string(),
+      "weapon clip is empty - reload required"
+    );
+
+    let slot_empty = CommandError::SlotEmpty(EquipmentSlot::Weapon);
+    assert_eq!(slot_empty.to_string(), "weapon slot is empty");
   }
 }

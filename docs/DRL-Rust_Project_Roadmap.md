@@ -451,24 +451,24 @@ Create a small but recognizably DRL-like playable slice using representative wea
 ### Inventory and equipment
 
 - [ ] Specify legacy capacity/equipment rules.
-- [ ] Define inventory model.
-- [ ] Define equipment slots.
-- [ ] Implement pickup.
-- [ ] Implement drop.
-- [ ] Implement equip/unequip.
-- [ ] Implement use.
-- [ ] Add capacity/invariant tests.
+- [x] Define inventory model.
+- [x] Define equipment slots.
+- [x] Implement pickup.
+- [x] Implement drop.
+- [x] Implement equip/unequip.
+- [x] Implement use.
+- [x] Add capacity/invariant tests.
 
 ### Weapons and ammunition
 
-- [ ] Define weapon domain types.
-- [ ] Define ammo types.
-- [ ] Implement ammunition consumption.
-- [ ] Implement reload.
-- [ ] Implement representative pistol.
-- [ ] Implement representative shotgun.
-- [ ] Implement representative melee weapon.
-- [ ] Implement weapon-specific action costs.
+- [x] Define weapon domain types.
+- [x] Define ammo types.
+- [x] Implement ammunition consumption.
+- [x] Implement reload.
+- [x] Implement representative pistol.
+- [x] Implement representative shotgun.
+- [x] Implement representative melee weapon.
+- [x] Implement weapon-specific action costs.
 - [ ] Implement representative spread/knockback behavior.
 - [ ] Add statistical tests for stochastic weapon behavior.
 
@@ -482,11 +482,11 @@ Create a small but recognizably DRL-like playable slice using representative wea
 
 ### Items
 
-- [ ] Implement health item.
-- [ ] Implement armor.
-- [ ] Implement ammunition pickup.
+- [x] Implement health item.
+- [x] Implement armor.
+- [x] Implement ammunition pickup.
 - [ ] Implement one special-use item.
-- [ ] Add item interaction tests.
+- [x] Add item interaction tests.
 
 ### Level
 
@@ -500,8 +500,8 @@ Create a small but recognizably DRL-like playable slice using representative wea
 
 - [ ] Start a complete mini-run.
 - [ ] Fight enemies.
-- [ ] Pick up equipment.
-- [ ] Reload/fire.
+- [x] Pick up equipment.
+- [x] Reload/fire.
 - [ ] Reach exit.
 - [ ] Transition to next level.
 
