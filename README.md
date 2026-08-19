@@ -11,11 +11,23 @@ the planned simulation core remains portable and platform-independent.
 
 ## Project Status
 
-DRL-Rust has delivered its **Milestone 4: Core DRL Gameplay Vertical Slice**. The
+DRL-Rust has delivered its **Milestone 5: Replay, Scenario, and Test-Agent Infrastructure**. The
 current implementation is a multi-crate Rust 2024 workspace featuring:
 
 - pure, deterministic headless simulation core (`drl-core`) with 2D tile maps,
   grid coordinates, seedable PRNG, and turn-based movement, combat, inventory, and weapon mechanics;
+- versioned replay log schema (`ReplayVersion::V1`, `ReplayMetadata`) in `drl-protocol` and
+  `drl-core` with engine versioning, custom hero spawn configurations, explicit tile maps, and schema validation (`ReplayEngine::validate`);
+- diagnostic replay error reporting with `ReplayExecutionError` capturing exact turn numbers,
+  0-based command indices, failed commands, and underlying simulation error contexts;
+- declarative scenario fixture framework (`Scenario`, `ScenarioFixture`, `ScenarioMap`) with ASCII map
+  parsing (`Scenario::from_ascii`), custom monster/item placements, hero equipment configurations, and fluent assertion runners (`ScenarioRunner`);
+- scripted test agent policies (`AgentPolicy` trait) consuming strictly `PlayerObservation` without state leakage:
+  `RandomBot`, `GreedyCombatBot` (engaging enemies, reloading, healing, looting, and stairs descent), and `ExplorerBot`;
+- headless batch simulation runner (`BatchRunner`) executing large procedural and scenario sweeps across arbitrary seeds,
+  recording `EpisodeRecord` artifacts, and calculating statistical summaries (`BatchSummary`: win rates, average turns, damage, kills);
+- runtime metrics accumulation (`RunOutcome`, `EpisodeMetrics`) tracking completion status, damage telemetry,
+  kill distributions, item pickups, ammo expenditure, and level progression;
 - weapon kinetic knockback mechanics (`apply_knockback`) and `GameEvent::ActorKnockedBack`, pushing surviving targets
   away along the shot vector with obstacle, wall, and occupant collision safety;
 - tactical monster AI decision engine (`ai`) with line-of-sight checks, ranged projectile/fireball attacks,
@@ -47,12 +59,12 @@ current implementation is a multi-crate Rust 2024 workspace featuring:
 - combat resolution engine (`CombatResolver`) supporting melee bump-attacks, direct
   melee strikes, and ranged weapon fire with damage clamping and death handling;
 - shared semantic protocol schemas (`drl-protocol`) for commands, combat/item domain models,
-  observations, events, targets, and replays;
-- an executable application runner (`drl-app` / `drl-rust`) that runs a multi-level headless
-  combat, AI tactics, Phase Device teleportation, weapon knockback blasts, inventory, and stairs descent simulation demonstration and verifies replay reproducibility;
+  observations, events, targets, metrics, scenario fixtures, and replays;
+- an executable application runner (`drl-app` / `drl-rust`) that runs headless simulation,
+  tactical ranged monster combat, weapon knockback blasts, scenario fixtures, automated bot play, batch sweeps, and replay determinism verification;
 - automated architectural boundary tests, pure combat unit tests, FOV integration tests,
   inventory integration tests, AI & archetype tests, targeting tests, special item tests, level progression tests,
-  stochastic combat statistical validation suites, and deterministic scenario replay verification.
+  stochastic combat statistical validation suites, declarative scenario tests, agent policy tests, batch simulation tests, and replay versioning tests.
 
 
 

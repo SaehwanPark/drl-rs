@@ -24,7 +24,9 @@ shared semantic protocol contracts (`drl-protocol`), an executable application r
   errors (`CommandError`), events (`GameEvent::AttackResolved`, `GameEvent::DamageApplied`, `GameEvent::ActorDied`,
   `GameEvent::ActorKnockedBack`, `GameEvent::PlayerTeleported`, `GameEvent::LevelTransitioned`, `GameEvent::ItemDropped`,
   `GameEvent::ItemPickedUp`, `GameEvent::WeaponReloaded`), observations (`Observation`, `TileView`, `ActorView`,
-  `PlayerObservation`, `OmniscientObservation`), and replay specifications (`ReplayLog`, `MonsterSpawnSpec`, `ItemSpawnSpec`, `ItemSpawnKind`).
+  `PlayerObservation`, `OmniscientObservation`), metrics (`RunOutcome`, `EpisodeMetrics`, `BatchSummary`),
+  scenario fixtures (`ScenarioMap`, `ScenarioFixture`), and replay specifications (`ReplayLog`, `ReplayVersion`,
+  `ReplayMetadata`, `PlayerSpawnConfig`, `MonsterSpawnSpec`, `ItemSpawnSpec`, `ItemSpawnKind`, `ReplayExecutionError`).
 - `crates/drl-core` is the deterministic headless simulation core library containing:
   - `GameRng`: deterministic seedable PRNG (SplitMix64 + Xoshiro256++) with no ambient
     or global state;
@@ -55,10 +57,17 @@ shared semantic protocol contracts (`drl-protocol`), an executable application r
     clip ammo deduction, weapon reloading, kinetic knockback resolution with boundary/obstacle collision checks,
     item pickups/drops/equips/consumables, Phase Device teleportation, stairs descent and level transitions),
     monster AI responses, and deterministic event emissions;
-  - `ReplayEngine`: deterministic replay execution and bit-exact state verification across multi-level command streams.
+  - `scenario`: declarative scenario fixtures (`Scenario`, `ScenarioRunner`) with ASCII grid parser (`Scenario::from_ascii`),
+    arbitrary room layouts, monster and loot placements, custom player spawn configurations, and execution runners;
+  - `agent`: automated bot policies (`AgentPolicy` trait) consuming strictly `PlayerObservation` without information leakage,
+    featuring `RandomBot`, `GreedyCombatBot` (engaging enemies, reloading, healing, looting, stairs descent), and `ExplorerBot`;
+  - `batch`: batch simulation runner (`BatchRunner`) executing large volumes of procedural and scenario episodes across diverse seeds
+    and computing aggregate statistical metrics (`BatchSummary`);
+  - `replay`: deterministic replay execution engine (`ReplayEngine`) with schema validation (`ReplayEngine::validate`),
+    diagnostic execution (`run_with_diagnostics`), and bit-exact reproducibility verification across multi-level and scenario command streams.
 - `crates/drl-app` is the executable runner (`drl-rust`) that runs headless simulation,
   tactical ranged monster combat, weapon knockback blasts, FOV visibility, item/equipment/reload mechanics,
-  Phase Device teleportation, and multi-level stairs descent demonstrations and verifies replay reproducibility.
+  Phase Device teleportation, scenario fixture execution, automated agent play, batch simulation sweeps, and replay determinism verification.
 - `crates/drl-script`, `crates/drl-mcp`, `crates/drl-render`, and
   `crates/drl-audio` are placeholder workspace crates with bounded dependency
   declarations.
@@ -82,7 +91,14 @@ shared semantic protocol contracts (`drl-protocol`), an executable application r
   range bounds, LOS obstruction, and visible target queries.
 - `crates/drl-core/tests/visibility.rs` verifies FOV shadowcasting, fog-of-war exploration
   memory persistence, player observation entity hiding, and line-of-fire obstacle blocking.
-
+- `crates/drl-core/tests/scenarios.rs` verifies declarative scenario parsing, ASCII map layout loading,
+  custom starting equipment, and scenario execution assertions.
+- `crates/drl-core/tests/agents.rs` verifies `RandomBot`, `GreedyCombatBot`, and `ExplorerBot`
+  operating solely on player observations and reproducing bit-exact replay streams.
+- `crates/drl-core/tests/batch_simulation.rs` verifies `BatchRunner` multi-seed procedural sweeps,
+  statistical metrics collection, and failure artifact reproducibility.
+- `crates/drl-core/tests/replay_versioning.rs` verifies `ReplayVersion::V1` metadata headers,
+  boundary validation, and rich turn/command diagnostic error reporting.
 
 - `docs/DRL-Rust_Project_Roadmap.md` owns milestone planning and progress.
 - `SPEC.md` expands the active roadmap slice.
@@ -98,41 +114,28 @@ or persistence layer yet.
 
 ```text
 Roadmap milestone
-  -> active SPEC slice
-  -> optional evidence specialists
-  -> implementation and focused tests
-  -> capability-gated test play and determinism review
-  -> local and CI verification
-  -> architecture, changelog, and roadmap reconciliation
+  -> SPEC slice
+  -> drl-protocol schemas (commands, observations, events, metrics, fixtures, replays)
+  -> drl-core deterministic simulation (map, FOV, AI, items, combat, scenarios, agents, batch)
+  -> drl-core/tests verification suites (scenarios, agents, batch, replay versioning)
+  -> drl-app headless demo & replay verification
 ```
 
-The current executable flow is:
+## Milestone Boundaries
 
-```text
-cargo run -> crates/drl-app/src/main.rs -> drl-core (Game::new, Game::step) & drl-protocol -> headless simulation & replay verification
-```
+| Component | Responsibility in Milestone 5 |
+| --- | --- |
+| `drl-protocol` | Domain primitives, commands, observations, events, metrics, scenario fixtures, versioned replays |
+| `drl-core` | Pure deterministic simulation, FOV, AI, items, scenarios, bot policies, batch runner, replay validation |
+| `drl-app` | Headless execution, scenario bot demo, batch sweep metrics, replay determinism |
+| `drl-script` | Placeholder workspace crate |
+| `drl-mcp` | Placeholder workspace crate |
+| `drl-render` | Placeholder workspace crate |
+| `drl-audio` | Placeholder workspace crate |
 
-## Consequential Invariants
+## Next Architectural Invariants
 
-- The roadmap remains canonical for long-term scope and milestone status.
-- Planned architecture must not be described as implemented.
-- `drl-core` and `drl-protocol` must remain independent of graphics, audio,
-  operating-system, filesystem, and MCP concerns; automated tests enforce this.
-- Gameplay randomness must become explicit and reproducible.
-- Human UI, bots, replay tools, and MCP should eventually use the same semantic
-  command boundary (`drl-protocol`).
-- Legacy Pascal and Lua sources inform behavior, not Rust module structure or
-  execution order.
-- One milestone owner reconciles canonical documents; delegated workers are
-  read-only by default and cannot convert exploratory findings directly into
-  completion claims.
-- Unsupported test-play capabilities are reported as `NOT_RUN`; missing or
-  contradictory evidence remains `INCONCLUSIVE`.
-- Repository-controlled text uses spaces with indentation and tab width 2.
-
-## Planned Direction
-
-The proposal describes a headless deterministic simulation core, shared
-commands, observations and events, Lua-backed content, replay and test-agent
-support, an MCP interface, and a native macOS presentation layer. Those
-components are targets, not current dependencies or compatibility guarantees.
+- Keep `drl-core` pure Rust `std` with zero I/O, rendering, sound, or network dependencies.
+- Ensure all agent policies consume exclusively `PlayerObservation` and submit `Command`s.
+- Keep replays completely self-contained and reproducible without external asset dependencies.
+- Expose all batch metrics and scenario fixtures through typed protocol schemas.

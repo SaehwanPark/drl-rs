@@ -6,17 +6,24 @@
 pub mod command;
 pub mod event;
 pub mod item;
+pub mod metrics;
 pub mod observation;
 pub mod replay;
+pub mod scenario;
 pub mod types;
 
 pub use command::{Command, CommandError};
 pub use event::GameEvent;
 pub use item::{AmmoType, EquipmentSlot, GroundItemView, ItemCategory, ItemView};
+pub use metrics::{BatchSummary, EpisodeMetrics, RunOutcome};
 pub use observation::{
   ActorView, Observation, OmniscientObservation, PlayerObservation, TileKind, TileView,
 };
-pub use replay::{ItemSpawnKind, ItemSpawnSpec, MonsterSpawnSpec, ReplayLog};
+pub use replay::{
+  ItemSpawnKind, ItemSpawnSpec, MonsterSpawnSpec, PlayerSpawnConfig, ReplayExecutionError,
+  ReplayLog, ReplayMetadata, ReplayVersion,
+};
+pub use scenario::{ScenarioFixture, ScenarioMap};
 pub use types::{
   ActionCost, AttackOutcome, DamageSource, DamageType, DeathCause, Direction, EntityId, HitPoints,
   ItemId, LevelId, MonsterKind, Position, Speed, Target, Turn,
@@ -45,5 +52,6 @@ mod tests {
     assert_eq!(replay.commands.len(), 2);
     assert_eq!(replay.commands[0], Command::Move(Direction::East));
     assert_eq!(replay.commands[1], Command::Wait);
+    assert_eq!(replay.version, ReplayVersion::V1);
   }
 }

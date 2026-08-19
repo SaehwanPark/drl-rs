@@ -1,6 +1,8 @@
 //! Item domain models, weapon properties, armor, ammunition, and consumables.
 
-use drl_protocol::{ActionCost, AmmoType, EquipmentSlot, ItemCategory, ItemId, ItemView};
+use drl_protocol::{
+  ActionCost, AmmoType, EquipmentSlot, ItemCategory, ItemId, ItemSpawnKind, ItemView,
+};
 
 /// Physical properties for a weapon instance.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -445,6 +447,22 @@ impl Item {
       "Emergency phase-shift device. Instantly teleports the user across space.",
       ItemKind::PhaseDevice,
     )
+  }
+
+  /// Instantiates an `Item` from an `ItemSpawnKind`.
+  #[must_use]
+  pub fn from_spawn_kind(id: ItemId, kind: ItemSpawnKind) -> Self {
+    match kind {
+      ItemSpawnKind::Pistol => Self::pistol(id),
+      ItemSpawnKind::Shotgun => Self::shotgun(id),
+      ItemSpawnKind::CombatKnife => Self::combat_knife(id),
+      ItemSpawnKind::Ammo9mm(count) => Self::ammo_9mm(id, count),
+      ItemSpawnKind::AmmoShells(count) => Self::ammo_shells(id, count),
+      ItemSpawnKind::SmallMedPack => Self::small_medpack(id),
+      ItemSpawnKind::LargeMedPack => Self::large_medpack(id),
+      ItemSpawnKind::GreenArmor => Self::green_armor(id),
+      ItemSpawnKind::PhaseDevice => Self::phase_device(id),
+    }
   }
 }
 
