@@ -14,52 +14,59 @@ does not replace or duplicate the full roadmap.
   specification workflow was adopted.
 - The Milestone 0 documentation and harness foundation established durable
   agent guidance, team contracts, check scripts, and repository workflow.
+- Milestone 0 multi-crate Cargo workspace and initial crates boundary scaffolding
+  were established and validated with architectural boundary tests.
 
 ## Present
 
-### Milestone 0: Cargo Workspace and Initial Crates Boundary Scaffolding
+### Milestone 1: Headless Simulation Core — Domain Types, Grid Map, Deterministic RNG, and Movement Commands
 
 Status: Active
 
-This slice establishes the modular multi-crate Cargo workspace and validates
-architectural dependency boundaries for DRL-Rust.
+This slice establishes the fundamental headless simulation kernel in `drl-core` and
+shared semantic protocols in `drl-protocol`.
 
 Observable outcomes:
 
-- root `Cargo.toml` is configured as a multi-crate Cargo workspace managing all
-  first-party crates in `crates/`;
-- `crates/drl-core` is created as an independent, headless simulation library
-  with no dependencies on rendering, audio, MCP, or operating-system concerns;
-- `crates/drl-protocol` is created as the shared semantic contract library for
-  commands, observations, and events;
-- `crates/drl-app` is created as the application runner binary, configured as
-  the default workspace runnable;
-- placeholder crates `crates/drl-script`, `crates/drl-mcp`, `crates/drl-render`,
-  and `crates/drl-audio` are defined within the workspace with explicit
-  dependency directions;
-- automated architectural tests verify that `drl-core` and `drl-protocol`
-  remain free of disallowed presentation, audio, and MCP dependencies;
-- `sh scripts/check-repository.sh` runs formatting, clippy, harness, and test
-  checks across the workspace without warnings.
+- `drl-protocol` defines domain types (`Position`, `Direction`, `Turn`, `EntityId`,
+  `ItemId`, `LevelId`), commands (`Command::Move`, `Command::Wait`), typed errors
+  (`CommandError`), events (`GameEvent`), observations (`Observation`, `TileView`,
+  `ActorView`), and replay specifications (`ReplayLog`);
+- `drl-core` implements deterministic seedable random number generation (`GameRng`)
+  with no ambient or global RNG state, passing bit-exact reproducibility tests;
+- `drl-core` implements 2D tile grid maps (`Map`, `Tile`) with bounds checking,
+  walkability, blocking flags, and factory constructors (e.g., arena map);
+- `drl-core` implements actor state and a minimal deterministic `World` with
+  deterministic `BTreeMap` entity collections, actor spawning, and occupancy checking;
+- `drl-core` implements a turn execution step (`Game::step`, `Game::execute_player_command`)
+  validating movement legality against terrain and entity collisions, emitting ordered
+  game events, and updating game state deterministically;
+- `drl-core` implements replay playback (`ReplayEngine`) ensuring identical seeds and
+  command sequences produce bit-for-bit identical state and event logs;
+- `drl-app` provides an executable headless demonstration executing a deterministic
+  movement scenario and printing structured observations and events;
+- `sh scripts/check-repository.sh` runs formatting, clippy, harness, and all unit/integration
+  tests across the workspace without warnings.
 
 Verification:
 
 - `sh scripts/check-repository.sh` succeeds locally;
-- `cargo test --locked --workspace` passes all crate unit and architecture
-  boundary tests;
-- `cargo run` launches `drl-app` as the default workspace binary;
-- architectural dependency invariants are verified by automated test.
+- `cargo test --locked --workspace` passes all unit, integration, boundary, determinism,
+  and replay tests;
+- `cargo run` executes the headless simulation scenario demonstrating valid movement,
+  collision rejection, wait turns, and determinism verification;
+- tests verify that independent simulations with the same seed and commands yield
+  identical world states.
 
 Out of scope:
 
-- implementing core gameplay simulation mechanics (deferred to Milestone 1);
-- integrating external graphics or audio engine dependencies (deferred to
-  Milestone 7 and Milestone 8);
-- integrating a live Lua C/Rust runtime (deferred to Milestone 3);
-- implementing the live MCP server transport (deferred to Milestone 6).
+- combat, inventory, items, and AI behaviors (subsequent Milestone 1 slices);
+- level generation algorithms (Milestone 2);
+- live Lua scripting integration (Milestone 3);
+- MCP transport servers (Milestone 6);
+- presentation/GUI rendering and audio (Milestone 7 & 8).
 
 ## Future
 
-Proceed to Milestone 1 (Headless Simulation Kernel) starting with typed world
-entities, grid positions, and deterministic turn/command structures after this
-workspace foundation is verified.
+Proceed with combat mechanics, damage calculations, item models, and basic monster
+AI turns in subsequent Milestone 1 slices.

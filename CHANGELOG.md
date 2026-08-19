@@ -7,6 +7,22 @@ documented in this file.
 
 ### Added
 
+- Headless simulation kernel (`drl-core`) with deterministic seedable `GameRng`
+  (SplitMix64 + Xoshiro256++), 2D bounded tile maps (`Map`, `Tile`), and physical
+  world state (`World`) with deterministic entity storage.
+- Shared semantic protocol contracts (`drl-protocol`) including domain types
+  (`Position`, `Direction`, `Turn`, `EntityId`, `ItemId`, `LevelId`), commands
+  (`Command::Move`, `Command::Wait`), typed errors (`CommandError`), events
+  (`GameEvent`), observations (`Observation`, `TileView`, `ActorView`), and replay
+  logs (`ReplayLog`).
+- Deterministic turn loop execution kernel (`Game::step`) with movement validation,
+  collision detection against terrain and entities, and ordered event emission.
+- Deterministic replay execution engine (`ReplayEngine`) and validation tests
+  verifying bit-for-bit identical state reproduction across independent runs.
+- Executable headless simulation demonstration in `drl-app` running a multi-step
+  scenario and verifying replay determinism.
+- Comprehensive unit and end-to-end integration tests for movement, terrain bounds,
+  occupancy collisions, PRNG reproducibility, and observation snapshots.
 - Multi-crate Cargo workspace managing `drl-core`, `drl-protocol`, `drl-app`,
   `drl-script`, `drl-mcp`, `drl-render`, and `drl-audio`.
 - Deterministic headless simulation core library (`drl-core`) and shared

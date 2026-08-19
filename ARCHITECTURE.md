@@ -6,27 +6,37 @@ Status: Verified
 
 ## Overview
 
-DRL-Rust is organized as a multi-crate Cargo workspace. It provides the initial
-modular crate boundaries for a headless simulation core, shared semantic
-protocols, an executable application runner, and placeholder subsystems for
-rendering, audio, scripting, and MCP. The gameplay simulation and presentation
-implementations remain planned.
+DRL-Rust is organized as a multi-crate Cargo workspace. It provides
+modular crate boundaries for a headless deterministic simulation core (`drl-core`),
+shared semantic protocol contracts (`drl-protocol`), an executable application runner
+(`drl-app`), and placeholder subsystems for rendering, audio, scripting, and MCP.
 
 ## Current Components
 
 - Root `Cargo.toml` defines the Cargo workspace managing all crates under
   `crates/`.
-- `crates/drl-core` is the deterministic headless simulation core library with
-  no dependencies on rendering, audio, MCP, or operating-system APIs.
-- `crates/drl-protocol` is the shared contract library for semantic commands,
-  observations, and events.
-- `crates/drl-app` is the executable runner (`drl-rust`) that coordinates
-  crates and provides the default workspace entry point.
+- `crates/drl-protocol` is the shared contract library for semantic domain types
+  (`Position`, `Direction`, `Turn`, `EntityId`, `ItemId`, `LevelId`), commands
+  (`Command::Move`, `Command::Wait`), errors (`CommandError`), events (`GameEvent`),
+  observations (`Observation`, `TileView`, `ActorView`), and replay specifications
+  (`ReplayLog`).
+- `crates/drl-core` is the deterministic headless simulation core library containing:
+  - `GameRng`: deterministic seedable PRNG (SplitMix64 + Xoshiro256++) with no ambient
+    or global state;
+  - `Map` & `Tile`: 2D bounded grid representation with walkability and transparency;
+  - `World`: physical level state, deterministic `BTreeMap` actor storage, and collision checks;
+  - `Game`: turn progression kernel executing player commands, emitting ordered events,
+    and managing game state;
+  - `ReplayEngine`: deterministic replay execution and bit-exact state verification.
+- `crates/drl-app` is the executable runner (`drl-rust`) that runs headless simulation
+  demonstrations and verifies replay reproducibility.
 - `crates/drl-script`, `crates/drl-mcp`, `crates/drl-render`, and
   `crates/drl-audio` are placeholder workspace crates with bounded dependency
   declarations.
 - `crates/drl-core/tests/boundaries.rs` enforces architectural dependency
   direction via automated tests.
+- `crates/drl-core/tests/simulation.rs` verifies end-to-end multi-step movement, collision,
+  observation, and replay determinism.
 - `docs/DRL-Rust_Project_Roadmap.md` owns milestone planning and progress.
 - `SPEC.md` expands the active roadmap slice.
 - `AGENTS.md`, `docs/harness/drl-delivery/team-spec.md`, and repo-local skills
@@ -34,8 +44,8 @@ implementations remain planned.
 - `scripts/check-repository.sh` is the common local and CI verification entry
   point and includes formatting, clippy, test, and harness-structure validation.
 
-There is no active gameplay simulation, Lua runtime, live MCP server, GPU
-renderer, audio backend, or persistence layer yet.
+There is no live Lua runtime, live MCP server, GPU renderer, audio backend,
+or persistence layer yet.
 
 ## Current Flow
 
@@ -52,7 +62,7 @@ Roadmap milestone
 The current executable flow is:
 
 ```text
-cargo run -> crates/drl-app/src/main.rs -> drl-core & drl-protocol -> scaffold status
+cargo run -> crates/drl-app/src/main.rs -> drl-core (Game::new, Game::step) & drl-protocol -> headless simulation & replay verification
 ```
 
 ## Consequential Invariants
