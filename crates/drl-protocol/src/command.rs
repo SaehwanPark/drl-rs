@@ -27,6 +27,8 @@ pub enum Command {
   Use(ItemId),
   /// Reload the equipped ranged weapon from inventory ammo stacks.
   Reload,
+  /// Descend stairs at the current position to transition to the next level.
+  Descend,
 }
 
 /// Errors returned when a command fails validation or execution.
@@ -73,6 +75,8 @@ pub enum CommandError {
   NoMatchingAmmo,
   /// Weapon clip is already full.
   ClipAlreadyFull,
+  /// Action requires standing on a stairs tile, but none is present at the current position.
+  NotOnStairs(Position),
   /// Generic command validation failure.
   InvalidCommand(String),
 }
@@ -132,6 +136,13 @@ impl fmt::Display for CommandError {
       Self::NoAmmoInClip => write!(f, "weapon clip is empty - reload required"),
       Self::NoMatchingAmmo => write!(f, "no matching ammunition in inventory"),
       Self::ClipAlreadyFull => write!(f, "weapon clip is already full"),
+      Self::NotOnStairs(pos) => {
+        write!(
+          f,
+          "no stairs present at current position ({}, {})",
+          pos.x, pos.y
+        )
+      }
       Self::InvalidCommand(msg) => write!(f, "invalid command: {msg}"),
     }
   }
@@ -183,5 +194,11 @@ mod tests {
 
     let slot_empty = CommandError::SlotEmpty(EquipmentSlot::Weapon);
     assert_eq!(slot_empty.to_string(), "weapon slot is empty");
+
+    let not_on_stairs = CommandError::NotOnStairs(Position::new(2, 3));
+    assert_eq!(
+      not_on_stairs.to_string(),
+      "no stairs present at current position (2, 3)"
+    );
   }
 }

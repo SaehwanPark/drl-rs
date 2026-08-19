@@ -142,6 +142,23 @@ impl Inventory {
       .map(Item::id)
   }
 
+  /// Returns the total quantity of ammo of the given type across all inventory stacks.
+  #[must_use]
+  pub fn total_ammo(&self, ammo_type: AmmoType) -> u32 {
+    self
+      .items
+      .values()
+      .filter(|item| item.ammo_type() == Some(ammo_type))
+      .map(Item::count)
+      .sum()
+  }
+
+  /// Returns true if inventory contains at least `count` rounds of `ammo_type`.
+  #[must_use]
+  pub fn has_ammo(&self, ammo_type: AmmoType, count: u32) -> bool {
+    self.total_ammo(ammo_type) >= count
+  }
+
   /// Converts all inventory items into observation views.
   #[must_use]
   pub fn to_views(&self) -> Vec<ItemView> {
