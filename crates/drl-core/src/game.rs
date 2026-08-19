@@ -699,6 +699,15 @@ impl Game {
         if self.state.world.player_id() == Some(target_id) {
           self.state.is_game_over = true;
         }
+      } else {
+        let attacker_kb = self
+          .state
+          .world
+          .get_actor(attacker_id)
+          .map_or(0, |a| a.knockback());
+        if attacker_kb > 0 {
+          self.apply_knockback(attacker_id, target_id, attacker_kb, events)?;
+        }
       }
     }
 
@@ -831,6 +840,15 @@ impl Game {
 
         if let Some(drop_kind) = death_drop {
           self.spawn_death_drop(target_monster_id, target_pos, drop_kind, events)?;
+        }
+      } else {
+        let player_kb = self
+          .state
+          .world
+          .get_actor(player_id)
+          .map_or(0, |a| a.knockback());
+        if player_kb > 0 {
+          self.apply_knockback(player_id, target_monster_id, player_kb, events)?;
         }
       }
     }
@@ -1042,7 +1060,84 @@ impl Game {
           },
         });
         self.state.is_game_over = true;
+      } else {
+        let monster_kb = self
+          .state
+          .world
+          .get_actor(monster_id)
+          .map_or(0, |a| a.knockback());
+        if monster_kb > 0 {
+          self.apply_knockback(monster_id, player_id, monster_kb, events)?;
+        }
       }
+    }
+
+    Ok(())
+  }
+
+  /// Applies kinetic knockback to a defender, pushing them away from the attacker if the path is clear.
+  fn apply_knockback(
+    &mut self,
+    attacker_id: drl_protocol::EntityId,
+    defender_id: drl_protocol::EntityId,
+    power: u32,
+    events: &mut Vec<GameEvent>,
+  ) -> Result<(), CommandError> {
+    if power == 0 {
+      return Ok(());
+    }
+
+    let attacker_pos = self
+      .state
+      .world
+      .get_actor(attacker_id)
+      .ok_or(CommandError::EntityNotFound(attacker_id))?
+      .position();
+
+    let defender_pos = self
+      .state
+      .world
+      .get_actor(defender_id)
+      .ok_or(CommandError::EntityNotFound(defender_id))?
+      .position();
+
+    if attacker_pos == defender_pos {
+      return Ok(());
+    }
+
+    let dx = (defender_pos.x - attacker_pos.x).clamp(-1, 1);
+    let dy = (defender_pos.y - attacker_pos.y).clamp(-1, 1);
+
+    let mut current_pos = defender_pos;
+    for _ in 0..power {
+      let next_pos = Position::new(current_pos.x + dx, current_pos.y + dy);
+      if self.state.world.map().is_in_bounds(next_pos)
+        && self.state.world.map().is_walkable(next_pos)
+        && self.state.world.living_actor_at(next_pos).is_none()
+      {
+        current_pos = next_pos;
+      } else {
+        break;
+      }
+    }
+
+    if current_pos != defender_pos {
+      let defender = self
+        .state
+        .world
+        .get_actor_mut(defender_id)
+        .ok_or(CommandError::EntityNotFound(defender_id))?;
+      defender.set_position(current_pos);
+
+      if defender.is_player() {
+        self.state.world.update_visibility();
+      }
+
+      events.push(GameEvent::ActorKnockedBack {
+        entity_id: defender_id,
+        from: defender_pos,
+        to: current_pos,
+      });
     }
 
     Ok(())

@@ -12,6 +12,7 @@ pub struct WeaponProperties {
   pub damage: (u32, u32),
   pub range: u32,
   pub accuracy: i32,
+  pub knockback: u32,
   pub fire_cost: ActionCost,
   pub reload_cost: ActionCost,
 }
@@ -265,7 +266,7 @@ impl Item {
   /// Converts this item into an immutable `ItemView` for observations.
   #[must_use]
   pub fn to_view(&self) -> ItemView {
-    let (clip, damage, armor_val, heal_val) = match &self.kind {
+    let (clip, damage, armor_val, heal_val, knockback) = match &self.kind {
       ItemKind::Weapon(props) => (
         if props.is_ranged {
           Some((props.current_clip, props.clip_capacity))
@@ -275,10 +276,15 @@ impl Item {
         Some(props.damage),
         None,
         None,
+        if props.knockback > 0 {
+          Some(props.knockback)
+        } else {
+          None
+        },
       ),
-      ItemKind::Armor(props) => (None, None, Some(props.protection), None),
-      ItemKind::Ammo { .. } | ItemKind::PhaseDevice => (None, None, None, None),
-      ItemKind::MedPack(props) => (None, None, None, Some(props.heal_amount)),
+      ItemKind::Armor(props) => (None, None, Some(props.protection), None, None),
+      ItemKind::Ammo { .. } | ItemKind::PhaseDevice => (None, None, None, None, None),
+      ItemKind::MedPack(props) => (None, None, None, Some(props.heal_amount), None),
     };
 
     ItemView {
@@ -291,6 +297,7 @@ impl Item {
       damage,
       armor_value: armor_val,
       heal_amount: heal_val,
+      knockback,
     }
   }
 
@@ -311,6 +318,7 @@ impl Item {
         damage: (4, 8),
         range: 8,
         accuracy: 75,
+        knockback: 0,
         fire_cost: ActionCost::RANGED_ATTACK,
         reload_cost: ActionCost::STANDARD,
       }),
@@ -332,6 +340,7 @@ impl Item {
         damage: (8, 16),
         range: 5,
         accuracy: 65,
+        knockback: 1,
         fire_cost: ActionCost::RANGED_ATTACK,
         reload_cost: ActionCost::new(1200),
       }),
@@ -353,6 +362,7 @@ impl Item {
         damage: (5, 9),
         range: 1,
         accuracy: 85,
+        knockback: 0,
         fire_cost: ActionCost::MELEE_ATTACK,
         reload_cost: ActionCost::new(0),
       }),

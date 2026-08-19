@@ -26,62 +26,50 @@ does not replace or duplicate the full roadmap.
 - Milestone 4 established procedural dungeon level generation (`generator`), non-overlapping
   rooms, BFS reachability validation, exit stairs (`Tile::StairsDown`), level transitions
   (`Command::Descend`), player state persistence across level boundaries, and multi-level replay determinism.
+- Milestone 4 established representative enemy archetypes (`FormerHuman`, `FormerSergeant`, `Imp`, `Demon`),
+  tactical monster AI with ranged attacks and line-of-fire checks, monster death loot drops,
+  target validation and auto-targeting, and special-use Phase Device teleportation.
 
 ## Present
 
-### Milestone 4: Enemy Archetypes, Tactical Monster AI, Target Legality & Selection, and Special-Use Phase Device
+### Milestone 4: Weapon Knockback & Spread Mechanics, Statistical Weapon Tests, and Milestone 4 Completion
 
 Status: Active
 
-This slice implements representative enemy archetypes (Former Human, Former Sergeant, Imp, Demon/Pinky),
-tactical monster AI with ranged attack capabilities and line-of-fire evaluation, monster death loot drops,
-target validation and metadata querying, and special-use consumable items (Phase Device teleportation).
+This slice implements weapon kinetic knockback mechanics (specifically pump-action Shotgun and Former Sergeant
+shotgun attacks pushing surviving targets away along the firing ray), bounds and obstacle collision checks for knockback,
+statistical verification suites for stochastic weapon behaviors (accuracy scaling, distance penalties, uniform damage distributions),
+and final exit criteria verification for Milestone 4.
 
 Observable outcomes:
 
-- `drl-protocol` defines target domain models, enemy classifications, new events, and error variants:
-  - `Target` enum (`Target::Entity(EntityId)`, `Target::Position(Position)`, `Target::Direction(Direction)`);
-  - `MonsterKind` enum (`FormerHuman`, `FormerSergeant`, `Imp`, `Demon`) for typed spawns and replays;
-  - `GameEvent::PlayerTeleported { from: Position, to: Position }`;
-  - `GameEvent::ItemDropped { item_id: ItemId, position: Position, item_name: String }`;
-  - `CommandError::InvalidTarget(String)`, `CommandError::NoTargetInRange`;
-- `drl-core` implements enemy archetype models and death drop configurations:
-  - `Actor::former_human`: armed with pistol, ranged attacks, drops 9mm ammo on death;
-  - `Actor::former_sergeant`: armed with shotgun, high damage close/mid-range attacks, drops shells or shotgun;
-  - `Actor::imp`: hurling fireballs at range with LOS, slashing in melee, drops medpack;
-  - `Actor::demon`: fast melee charger (Speed 130), high HP, biting melee strikes;
-- `drl-core` implements tactical AI decision engine in isolated module `crates/drl-core/src/ai.rs`:
-  - `MonsterAi::decide_action`: pure evaluation determining whether a monster executes a melee strike,
-    ranged attack with line-of-fire validation, moves closer to close distance, or waits;
-  - Monsters with ranged capabilities fire upon the player when within maximum range and line-of-fire is clear;
-  - Monsters unable to fire or with pure melee attacks navigate towards the player's position;
-  - On monster death, configured loot drops are automatically placed on the ground at the death location;
-- `drl-core` implements target legality checking and target query helpers in `crates/drl-core/src/targeting.rs`:
-  - `TargetingSystem::validate_target`: verifies bounds, range, living status, and line of fire;
-  - `TargetingSystem::find_visible_targets`: queries and sorts hostile actors in the player's current field of view;
-  - `TargetingSystem::find_nearest_target`: selects closest visible hostile target for auto-targeting;
-- `drl-core` implements special-use consumable item mechanics:
-  - `Item::phase_device`: special consumable that teleports user to a safe, random walkable floor tile;
-  - `Game::execute_use_item` handles phase device usage, relocates player, updates FOV/fog-of-war exploration,
-    and emits `GameEvent::PlayerTeleported`;
-- `drl-core` integrates archetypes and special items into procedural generation:
-  - `LevelGenerator` populates diverse monster archetypes and phase devices across dungeon rooms;
-- `drl-app` demonstrates tactical monster engagements with ranged Former Sergeants, fast charging Demons,
-  and emergency Phase Device teleportation, verified by bit-exact replay determinism;
+- `drl-protocol` defines knockback events and view representations:
+  - `GameEvent::ActorKnockedBack { entity_id: EntityId, from: Position, to: Position }`;
+  - `ItemView` includes `knockback: Option<u32>` indicating kinetic push power;
+- `drl-core` implements weapon knockback properties and execution:
+  - `WeaponProperties` contains `knockback: u32` (`Item::shotgun` has knockback 1, `Item::pistol` and `Item::combat_knife` have knockback 0);
+  - `Actor` exposes `knockback(&self) -> u32` resolving equipped weapon properties or innate actor knockback (e.g. `Actor::former_sergeant`);
+  - `Game::apply_knockback` computes normalized push direction vector from attacker to defender and relocates the defender
+    along the vector if the destination tile is within map bounds, walkable, and unoccupied by any living actor;
+  - If a destination tile is blocked by terrain, map boundary, or another actor, knockback safely halts with no clipping;
+  - If the player character is knocked back, field of view (FOV) and fog-of-war exploration memory are updated immediately;
+  - Lethal blows do not displace targets, dropping loot corpses at the exact point of fatality;
+- `drl-core` provides statistical validation in `crates/drl-core/tests/stochastic_combat.rs`:
+  - Statistical tests verify accuracy scaling and distance penalties over large sample distributions ($N \ge 1,000$);
+  - Statistical tests verify uniform damage rolls and strict min/max bound enforcement for Pistol, Shotgun, Combat Knife, and monster attacks;
+  - Integration tests verify Shotgun knockback displacement, obstacle blocking, monster blocking, and bit-exact replay determinism;
+- `drl-app` displays knockback event telemetry during headless demo combat;
+- All Milestone 4 roadmap items and exit criteria are satisfied;
 - `sh scripts/check-repository.sh` runs all checks, formatting, clippy, and tests cleanly.
 
 Verification:
 
 - `sh scripts/check-repository.sh` succeeds locally;
 - `cargo test --locked --workspace` passes all unit, integration, boundary, combat,
-  visibility, inventory, generator, ai, targeting, and replay determinism tests;
-- unit tests in `crates/drl-core/src/ai.rs` and `crates/drl-core/src/targeting.rs` verify AI decision trees,
-  line-of-fire range checks, target querying, and sorting;
-- integration tests in `crates/drl-core/tests/monsters_ai.rs` verify monster ranged attacks, monster movement,
-  death loot drops, demon speed advantages, and replay determinism;
-- integration tests in `crates/drl-core/tests/special_items.rs` verify Phase Device consumption, player relocation,
-  bounds/walkability safety, and replay determinism;
-- `cargo run` executes the headless demo demonstrating multi-archetype combat, phase device escape, and replay verification.
+  visibility, inventory, generator, ai, targeting, special items, and stochastic combat tests;
+- integration tests in `crates/drl-core/tests/stochastic_combat.rs` verify statistical hit distributions,
+  damage roll bounds, knockback collision invariants, and multi-turn replay determinism;
+- `cargo run` executes the headless demo demonstrating Shotgun knockback and bit-exact replay verification.
 
 Out of scope:
 

@@ -21,6 +21,7 @@ pub struct Actor {
   ranged_damage: Option<(u32, u32)>,
   ranged_range: u32,
   accuracy: i32,
+  knockback: u32,
   monster_kind: Option<MonsterKind>,
   death_drop: Option<ItemSpawnKind>,
   inventory: Inventory,
@@ -46,6 +47,7 @@ impl Actor {
       ranged_damage: if is_player { Some((4, 8)) } else { None },
       ranged_range: if is_player { 8 } else { 0 },
       accuracy: 75,
+      knockback: 0,
       monster_kind: None,
       death_drop: None,
       inventory: Inventory::default(),
@@ -70,6 +72,13 @@ impl Actor {
     self.ranged_damage = ranged_damage;
     self.ranged_range = ranged_range;
     self.accuracy = accuracy;
+    self
+  }
+
+  /// Sets the innate knockback power.
+  #[must_use]
+  pub fn with_knockback(mut self, knockback: u32) -> Self {
+    self.knockback = knockback;
     self
   }
 
@@ -280,6 +289,16 @@ impl Actor {
     }
   }
 
+  /// Kinetic knockback power (tiles pushed on hit).
+  #[must_use]
+  pub fn knockback(&self) -> u32 {
+    if let Some(props) = self.equipment.weapon().and_then(Item::weapon_properties) {
+      props.knockback
+    } else {
+      self.knockback
+    }
+  }
+
   /// Monster archetype classification, if applicable.
   #[must_use]
   pub const fn monster_kind(&self) -> Option<MonsterKind> {
@@ -343,6 +362,7 @@ impl Actor {
         5,
         60,
       )
+      .with_knockback(1)
       .with_monster_kind(kind)
       .with_death_drop(Some(ItemSpawnKind::AmmoShells(4)))
   }

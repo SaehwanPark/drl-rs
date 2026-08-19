@@ -90,6 +90,12 @@ pub enum GameEvent {
   },
   /// The player teleported to a new grid position (e.g. via Phase Device).
   PlayerTeleported { from: Position, to: Position },
+  /// An actor was knocked back from one position to another by an attack.
+  ActorKnockedBack {
+    entity_id: EntityId,
+    from: Position,
+    to: Position,
+  },
   /// The current turn completed.
   TurnEnded { turn: Turn },
 }

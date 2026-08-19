@@ -85,6 +85,7 @@ pub struct ItemView {
   pub damage: Option<(u32, u32)>,
   pub armor_value: Option<u32>,
   pub heal_amount: Option<u32>,
+  pub knockback: Option<u32>,
 }
 
 /// Semantic view of an item lying on the dungeon floor.

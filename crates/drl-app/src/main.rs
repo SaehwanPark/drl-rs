@@ -194,6 +194,20 @@ fn run_headless_demo() {
                 from.x, from.y, to.x, to.y
               );
             }
+            drl_protocol::GameEvent::ActorKnockedBack {
+              entity_id,
+              from,
+              to,
+            } => {
+              println!(
+                "  -> Knockback: Kinetic blast pushed Actor {} from ({}, {}) to ({}, {})",
+                entity_id.as_u64(),
+                from.x,
+                from.y,
+                to.x,
+                to.y
+              );
+            }
             drl_protocol::GameEvent::WeaponReloaded {
               ammo_loaded,
               current_clip,
@@ -204,6 +218,7 @@ fn run_headless_demo() {
                 "  -> Reload: Loaded {ammo_loaded} rounds (clip: {current_clip}/{max_clip})"
               );
             }
+
             drl_protocol::GameEvent::LevelTransitioned {
               from_level,
               to_level,

@@ -21,8 +21,10 @@ shared semantic protocol contracts (`drl-protocol`), an executable application r
   item types (`AmmoType`, `EquipmentSlot`, `ItemCategory`, `ItemView`, `GroundItemView`),
   commands (`Command::Move`, `Command::AttackMelee`, `Command::AttackRanged`, `Command::Wait`,
   `Command::Pickup`, `Command::Drop`, `Command::Equip`, `Command::Unequip`, `Command::Use`, `Command::Reload`, `Command::Descend`),
-  errors (`CommandError`), events (`GameEvent`), observations (`Observation`, `TileView`, `ActorView`, `PlayerObservation`, `OmniscientObservation`),
-  and replay specifications (`ReplayLog`, `MonsterSpawnSpec`, `ItemSpawnSpec`, `ItemSpawnKind`).
+  errors (`CommandError`), events (`GameEvent::AttackResolved`, `GameEvent::DamageApplied`, `GameEvent::ActorDied`,
+  `GameEvent::ActorKnockedBack`, `GameEvent::PlayerTeleported`, `GameEvent::LevelTransitioned`, `GameEvent::ItemDropped`,
+  `GameEvent::ItemPickedUp`, `GameEvent::WeaponReloaded`), observations (`Observation`, `TileView`, `ActorView`,
+  `PlayerObservation`, `OmniscientObservation`), and replay specifications (`ReplayLog`, `MonsterSpawnSpec`, `ItemSpawnSpec`, `ItemSpawnKind`).
 - `crates/drl-core` is the deterministic headless simulation core library containing:
   - `GameRng`: deterministic seedable PRNG (SplitMix64 + Xoshiro256++) with no ambient
     or global state;
@@ -37,25 +39,26 @@ shared semantic protocol contracts (`drl-protocol`), an executable application r
     with non-overlapping room carving, L-shaped/straight corridor connections, down-stairs placement, BFS reachability validation,
     and deterministic monster/floor loot distribution;
   - `item`: domain item models (`Item`, `WeaponProperties`, `ArmorProperties`, `ConsumableProperties`,
-    ammo stacking, clip loading/consumption, Phase Device special-use teleportation, and factory constructors for Pistol,
-    Shotgun, Combat Knife, 9mm Ammo, Shells, MedPacks, Green Armor, and Phase Device);
+    ammo stacking, clip loading/consumption, Phase Device special-use teleportation, kinetic knockback power, and factory
+    constructors for Pistol, Shotgun, Combat Knife, 9mm Ammo, Shells, MedPacks, Green Armor, and Phase Device);
   - `inventory`: bounded player backpack inventory (`Inventory`) with automatic ammo merge/stacking
     and equipped gear tracking (`Equipment` for weapon and armor slots);
   - `Actor`: combat stats, durability, speed, energy, inventory, equipment, dynamic weapon damage/accuracy,
-    armor damage protection mitigation, living state, monster archetypes (`FormerHuman`, `FormerSergeant`, `Imp`, `Demon`),
-    and death drop loot specifications;
+    innate or weapon knockback, armor damage protection mitigation, living state, monster archetypes
+    (`FormerHuman`, `FormerSergeant`, `Imp`, `Demon`), and death drop loot specifications;
   - `CombatResolver`: pure, deterministic combat calculation routines for melee and ranged attacks;
   - `Scheduler`: energy-based action scheduling algorithm executing actor turns by relative speeds;
   - `World`: physical level state, deterministic `BTreeMap` actor storage, ground items mapping
     (`ground_items: BTreeMap<ItemId, (Position, Item)>`), monster and item spawning,
     fog-of-war map exploration memory (`explored_tiles`), and perception filtering for player observations;
   - `Game`: turn progression kernel executing player commands (movement, bump-attacks, ranged attacks with
-    clip ammo deduction, weapon reloading, item pickups/drops/equips/consumables, Phase Device teleportation,
-    stairs descent and level transitions), monster AI responses, and deterministic event emissions;
+    clip ammo deduction, weapon reloading, kinetic knockback resolution with boundary/obstacle collision checks,
+    item pickups/drops/equips/consumables, Phase Device teleportation, stairs descent and level transitions),
+    monster AI responses, and deterministic event emissions;
   - `ReplayEngine`: deterministic replay execution and bit-exact state verification across multi-level command streams.
 - `crates/drl-app` is the executable runner (`drl-rust`) that runs headless simulation,
-  tactical ranged monster combat, FOV visibility, item/equipment/reload mechanics, Phase Device teleportation,
-  and multi-level stairs descent demonstrations and verifies replay reproducibility.
+  tactical ranged monster combat, weapon knockback blasts, FOV visibility, item/equipment/reload mechanics,
+  Phase Device teleportation, and multi-level stairs descent demonstrations and verifies replay reproducibility.
 - `crates/drl-script`, `crates/drl-mcp`, `crates/drl-render`, and
   `crates/drl-audio` are placeholder workspace crates with bounded dependency
   declarations.
@@ -73,10 +76,13 @@ shared semantic protocol contracts (`drl-protocol`), an executable application r
   observation, and replay determinism.
 - `crates/drl-core/tests/special_items.rs` verifies Phase Device teleportation, destination safety invariants,
   FOV exploration updates, and replay determinism.
+- `crates/drl-core/tests/stochastic_combat.rs` verifies statistical accuracy scaling, uniform damage roll bounds,
+  kinetic knockback obstacle resistance, and multi-turn replay determinism.
 - `crates/drl-core/tests/targeting.rs` verifies targeting validation for Position/Entity/Direction targets,
   range bounds, LOS obstruction, and visible target queries.
 - `crates/drl-core/tests/visibility.rs` verifies FOV shadowcasting, fog-of-war exploration
   memory persistence, player observation entity hiding, and line-of-fire obstacle blocking.
+
 
 - `docs/DRL-Rust_Project_Roadmap.md` owns milestone planning and progress.
 - `SPEC.md` expands the active roadmap slice.
