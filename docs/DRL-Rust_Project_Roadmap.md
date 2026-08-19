@@ -470,8 +470,8 @@ Create a small but recognizably DRL-like playable slice using representative wea
 - [x] Implement representative shotgun.
 - [x] Implement representative melee weapon.
 - [x] Implement weapon-specific action costs.
-- [ ] Implement representative spread/knockback behavior.
-- [ ] Add statistical tests for stochastic weapon behavior.
+- [x] Implement representative spread/knockback behavior.
+- [x] Add statistical tests for stochastic weapon behavior.
 
 ### Monsters
 
@@ -509,14 +509,15 @@ Create a small but recognizably DRL-like playable slice using representative wea
 
 ## Exit Criteria
 
-- [ ] A recognizably DRL-like headless vertical slice exists.
-- [ ] A test player can complete the slice without renderer support.
-- [ ] Core observations are sufficiently rich for automated agents.
-- [ ] Major gameplay domains have stable architectural homes.
+- [x] A recognizably DRL-like headless vertical slice exists.
+- [x] A test player can complete the slice without renderer support.
+- [x] Core observations are sufficiently rich for automated agents.
+- [x] Major gameplay domains have stable architectural homes.
 
 ---
 
 # Milestone 5 — Replay, Scenario, and Test-Agent Infrastructure
+
 
 ## Goal
 

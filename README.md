@@ -11,15 +11,17 @@ the planned simulation core remains portable and platform-independent.
 
 ## Project Status
 
-DRL-Rust has delivered its **Milestone 4 Enemy Archetypes, Tactical AI, Target Legality & Selection, Special Items, and Level Progression**. The
+DRL-Rust has delivered its **Milestone 4: Core DRL Gameplay Vertical Slice**. The
 current implementation is a multi-crate Rust 2024 workspace featuring:
 
 - pure, deterministic headless simulation core (`drl-core`) with 2D tile maps,
   grid coordinates, seedable PRNG, and turn-based movement, combat, inventory, and weapon mechanics;
+- weapon kinetic knockback mechanics (`apply_knockback`) and `GameEvent::ActorKnockedBack`, pushing surviving targets
+  away along the shot vector with obstacle, wall, and occupant collision safety;
 - tactical monster AI decision engine (`ai`) with line-of-sight checks, ranged projectile/fireball attacks,
   adjacent melee strikes, and pathfinding pursuit;
 - representative enemy archetypes (`FormerHuman`, `FormerSergeant`, `Imp`, `Demon`) with distinct health,
-  speed, melee, ranged capabilities, and death loot drop tables;
+  speed, melee, ranged capabilities, innate/weapon knockback, and death loot drop tables;
 - targeting validation system (`targeting`) verifying `Target::Position`, `Target::Entity`, and `Target::Direction`
   against bounds, range limits, and line-of-sight obstruction, with visible enemy listing and nearest auto-selection;
 - special-use consumable item `Phase Device` enabling emergency spatial teleportation to safe walkable tiles;
@@ -47,9 +49,11 @@ current implementation is a multi-crate Rust 2024 workspace featuring:
 - shared semantic protocol schemas (`drl-protocol`) for commands, combat/item domain models,
   observations, events, targets, and replays;
 - an executable application runner (`drl-app` / `drl-rust`) that runs a multi-level headless
-  combat, AI tactics, Phase Device teleportation, inventory, and stairs descent simulation demonstration and verifies replay reproducibility;
+  combat, AI tactics, Phase Device teleportation, weapon knockback blasts, inventory, and stairs descent simulation demonstration and verifies replay reproducibility;
 - automated architectural boundary tests, pure combat unit tests, FOV integration tests,
-  inventory integration tests, AI & archetype tests, targeting tests, special item tests, level progression tests, and deterministic scenario replay verification.
+  inventory integration tests, AI & archetype tests, targeting tests, special item tests, level progression tests,
+  stochastic combat statistical validation suites, and deterministic scenario replay verification.
+
 
 
 Live Lua scripting integration (Milestone 3), MCP server transport (Milestone 6),

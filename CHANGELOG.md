@@ -7,7 +7,22 @@ documented in this file.
 
 ### Added
 
+- Weapon kinetic knockback mechanics in `drl-core` (`apply_knockback`) and `drl-protocol`
+  (`GameEvent::ActorKnockedBack { entity_id, from, to }`), enabling pump-action Shotgun
+  and Former Sergeant shotgun attacks to push surviving targets 1 tile backwards along the firing vector.
+- Map boundary, terrain obstacle, and actor collision checks for knockback resolution, ensuring
+  actors never clip into walls, out-of-bounds cells, or occupied tiles.
+- Weapon property `knockback: u32` in `WeaponProperties` and `ItemView`, configured with 1 for
+  `Item::shotgun` and `Actor::former_sergeant`.
+- Immediate FOV and fog-of-war exploration updates when the player character is knocked back by enemies.
+- Comprehensive statistical test suite in `crates/drl-core/tests/stochastic_combat.rs` validating
+  empirical accuracy scaling across distances, 3-sigma confidence intervals, uniform damage distributions,
+  and bit-exact multi-turn knockback replay determinism.
+- Completion of Milestone 4: Core DRL Gameplay Vertical Slice roadmap deliverables and exit criteria.
+- Headless demo runner update in `drl-app` displaying real-time kinetic knockback event telemetry.
+
 - Enemy archetypes domain and factory constructors in `drl-protocol` and `drl-core`
+
   (`FormerHuman`, `FormerSergeant`, `Imp`, `Demon`) with distinct health, speed,
   melee, ranged attack ranges, accuracies, and death loot drop tables.
 - Tactical Monster AI decision module (`ai`) in `drl-core` (`MonsterAi::decide_action`)
