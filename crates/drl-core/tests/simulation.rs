@@ -1,7 +1,7 @@
 //! End-to-end headless simulation integration tests.
 
 use drl_core::{Game, ReplayEngine};
-use drl_protocol::{Command, CommandError, Direction, Position, ReplayLog, Turn};
+use drl_protocol::{Command, Direction, Position, ReplayLog, Turn};
 
 #[test]
 fn test_deterministic_multi_step_scenario() {
@@ -63,7 +63,7 @@ fn test_replay_verification_identical_state() {
 }
 
 #[test]
-fn test_collision_with_monster_blocking() {
+fn test_melee_bump_attack_against_monster() {
   let mut game = Game::new_arena(123, 10, 10).expect("failed to init arena");
   let player_pos = game.world().player().expect("player missing").position();
   let monster_pos = player_pos + Direction::East;
@@ -73,17 +73,23 @@ fn test_collision_with_monster_blocking() {
     .spawn_actor(monster_pos, "Former Human", false)
     .expect("failed to spawn monster");
 
-  // Attempt to move into the cell occupied by the monster
-  let err = game.step(Command::Move(Direction::East)).unwrap_err();
-  assert_eq!(
-    err,
-    CommandError::BlockedByEntity {
-      position: monster_pos,
-      entity_id: monster_id,
-    }
-  );
+  // Step East into the cell occupied by the monster -> resolves as melee bump attack
+  let events = game
+    .step(Command::Move(Direction::East))
+    .expect("bump attack should succeed");
 
-  // Turn should NOT advance
-  assert_eq!(game.turn(), Turn::zero());
+  assert!(events.iter().any(|e| matches!(
+    e,
+    drl_protocol::GameEvent::AttackResolved {
+      attacker_id: _,
+      target_id,
+      outcome: _,
+      is_ranged: false,
+    } if *target_id == monster_id
+  )));
+
+  // Turn should advance
+  assert_eq!(game.turn(), Turn::new(1));
+  // Player remains at original position after melee attack
   assert_eq!(game.world().player().unwrap().position(), player_pos);
 }

@@ -1,6 +1,6 @@
 //! Actor entities representing creatures and the player character.
 
-use drl_protocol::{ActorView, EntityId, Position};
+use drl_protocol::{ActionCost, ActorView, EntityId, HitPoints, Position, Speed};
 
 /// Simulation actor instance.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -10,19 +10,56 @@ pub struct Actor {
   name: String,
   is_player: bool,
   blocks_movement: bool,
+  hp: HitPoints,
+  speed: Speed,
+  energy: i32,
+  is_alive: bool,
+  melee_damage: (u32, u32),
+  ranged_damage: Option<(u32, u32)>,
+  ranged_range: u32,
+  accuracy: i32,
 }
 
 impl Actor {
-  /// Creates a new actor.
+  /// Creates a new default actor.
   #[must_use]
   pub fn new(id: EntityId, position: Position, name: impl Into<String>, is_player: bool) -> Self {
+    let max_hp = if is_player { 50 } else { 20 };
     Self {
       id,
       position,
       name: name.into(),
       is_player,
       blocks_movement: true,
+      hp: HitPoints::full(max_hp),
+      speed: Speed::NORMAL,
+      energy: 0,
+      is_alive: true,
+      melee_damage: if is_player { (3, 6) } else { (2, 4) },
+      ranged_damage: if is_player { Some((4, 8)) } else { None },
+      ranged_range: if is_player { 8 } else { 0 },
+      accuracy: 75,
     }
+  }
+
+  /// Builder for configuring custom combat stats.
+  #[must_use]
+  pub fn with_stats(
+    mut self,
+    hp: HitPoints,
+    speed: Speed,
+    melee_damage: (u32, u32),
+    ranged_damage: Option<(u32, u32)>,
+    ranged_range: u32,
+    accuracy: i32,
+  ) -> Self {
+    self.hp = hp;
+    self.speed = speed;
+    self.melee_damage = melee_damage;
+    self.ranged_damage = ranged_damage;
+    self.ranged_range = ranged_range;
+    self.accuracy = accuracy;
+    self
   }
 
   /// Returns the actor's unique EntityId.
@@ -57,12 +94,108 @@ impl Actor {
   /// Returns true if this actor blocks movement into its tile.
   #[must_use]
   pub const fn blocks_movement(&self) -> bool {
-    self.blocks_movement
+    self.is_alive && self.blocks_movement
   }
 
   /// Sets whether this actor blocks movement.
   pub fn set_blocks_movement(&mut self, blocks: bool) {
     self.blocks_movement = blocks;
+  }
+
+  /// Current hit points.
+  #[must_use]
+  pub const fn hp(&self) -> HitPoints {
+    self.hp
+  }
+
+  /// Mutable reference to hit points.
+  pub fn hp_mut(&mut self) -> &mut HitPoints {
+    &mut self.hp
+  }
+
+  /// Returns true if the actor is alive.
+  #[must_use]
+  pub const fn is_alive(&self) -> bool {
+    self.is_alive
+  }
+
+  /// Applies damage to this actor. Returns actual damage taken and whether the blow was lethal.
+  pub fn take_damage(&mut self, amount: u32) -> (u32, bool) {
+    if !self.is_alive {
+      return (0, false);
+    }
+    let taken = self.hp.take_damage(amount);
+    if self.hp.is_dead() {
+      self.is_alive = false;
+      self.blocks_movement = false;
+      (taken, true)
+    } else {
+      (taken, false)
+    }
+  }
+
+  /// Heals this actor up to maximum HP. Returns actual health restored.
+  pub fn heal(&mut self, amount: u32) -> u32 {
+    if !self.is_alive {
+      return 0;
+    }
+    self.hp.heal(amount)
+  }
+
+  /// Speed of this actor.
+  #[must_use]
+  pub const fn speed(&self) -> Speed {
+    self.speed
+  }
+
+  /// Sets the actor's speed.
+  pub fn set_speed(&mut self, speed: Speed) {
+    self.speed = speed;
+  }
+
+  /// Current energy balance.
+  #[must_use]
+  pub const fn energy(&self) -> i32 {
+    self.energy
+  }
+
+  /// Sets current energy balance.
+  pub fn set_energy(&mut self, energy: i32) {
+    self.energy = energy;
+  }
+
+  /// Accumulates energy.
+  pub fn add_energy(&mut self, amount: i32) {
+    self.energy += amount;
+  }
+
+  /// Deducts action cost from energy.
+  pub fn spend_energy(&mut self, cost: ActionCost) {
+    self.energy -= cost.as_u32() as i32;
+  }
+
+  /// Melee damage range `(min, max)`.
+  #[must_use]
+  pub const fn melee_damage(&self) -> (u32, u32) {
+    self.melee_damage
+  }
+
+  /// Ranged damage range `(min, max)` if equipped with ranged weapon.
+  #[must_use]
+  pub const fn ranged_damage(&self) -> Option<(u32, u32)> {
+    self.ranged_damage
+  }
+
+  /// Maximum ranged attack distance.
+  #[must_use]
+  pub const fn ranged_range(&self) -> u32 {
+    self.ranged_range
+  }
+
+  /// Base accuracy percentage (e.g. 75).
+  #[must_use]
+  pub const fn accuracy(&self) -> i32 {
+    self.accuracy
   }
 
   /// Converts this actor to an immutable `ActorView` for observations.
@@ -73,6 +206,9 @@ impl Actor {
       position: self.position,
       is_player: self.is_player,
       name: self.name.clone(),
+      hp: Some(self.hp),
+      is_alive: self.is_alive,
+      speed: self.speed,
     }
   }
 }
@@ -88,9 +224,40 @@ mod tests {
     assert_eq!(actor.position(), Position::new(3, 4));
     assert!(actor.is_player());
     assert!(actor.blocks_movement());
+    assert!(actor.is_alive());
+    assert_eq!(actor.hp().current, 50);
 
     let view = actor.to_view();
     assert_eq!(view.id, EntityId::new(1));
     assert_eq!(view.name, "Marine");
+    assert_eq!(view.hp, Some(HitPoints::full(50)));
+    assert!(view.is_alive);
+  }
+
+  #[test]
+  fn test_actor_damage_and_death() {
+    let mut actor = Actor::new(EntityId::new(2), Position::new(1, 1), "Former Human", false);
+    assert_eq!(actor.hp().current, 20);
+
+    let (taken, lethal) = actor.take_damage(15);
+    assert_eq!(taken, 15);
+    assert!(!lethal);
+    assert!(actor.is_alive());
+    assert_eq!(actor.hp().current, 5);
+
+    let (taken2, lethal2) = actor.take_damage(10);
+    assert_eq!(taken2, 5);
+    assert!(lethal2);
+    assert!(!actor.is_alive());
+    assert!(!actor.blocks_movement());
+    assert!(actor.hp().is_dead());
+  }
+
+  #[test]
+  fn test_actor_energy_spending() {
+    let mut actor = Actor::new(EntityId::new(1), Position::new(0, 0), "Marine", true);
+    actor.set_energy(1500);
+    actor.spend_energy(ActionCost::MOVE);
+    assert_eq!(actor.energy(), 500);
   }
 }

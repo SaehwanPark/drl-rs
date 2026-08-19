@@ -1,6 +1,6 @@
 //! Observation models for player frontends, debug tools, bots, and MCP.
 
-use crate::types::{EntityId, Position, Turn};
+use crate::types::{EntityId, HitPoints, Position, Speed, Turn};
 
 /// High-level semantic tile classification for rendering and observation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
@@ -49,6 +49,9 @@ pub struct ActorView {
   pub position: Position,
   pub is_player: bool,
   pub name: String,
+  pub hp: Option<HitPoints>,
+  pub is_alive: bool,
+  pub speed: Speed,
 }
 
 /// Player-centric observation containing only what the player perceives.
