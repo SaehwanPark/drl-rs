@@ -88,6 +88,8 @@ pub enum GameEvent {
     from_level: LevelId,
     to_level: LevelId,
   },
+  /// The player teleported to a new grid position (e.g. via Phase Device).
+  PlayerTeleported { from: Position, to: Position },
   /// The current turn completed.
   TurnEnded { turn: Turn },
 }

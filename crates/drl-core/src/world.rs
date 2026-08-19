@@ -62,13 +62,21 @@ impl World {
     }
 
     for monster in level.monster_spawns {
-      let _ = world.spawn_monster(
-        monster.position,
-        &monster.name,
-        monster.hp,
-        monster.speed,
-        monster.melee_damage,
-      );
+      if let Some(kind) = monster.kind {
+        let _ = world.spawn_monster_kind(monster.position, kind);
+      } else {
+        let id = world.allocate_entity_id();
+        let mut actor = Actor::new(id, monster.position, &monster.name, false).with_stats(
+          drl_protocol::HitPoints::full(monster.hp),
+          drl_protocol::Speed::new(monster.speed),
+          monster.melee_damage,
+          monster.ranged_damage,
+          monster.ranged_range,
+          monster.accuracy,
+        );
+        actor.set_death_drop(monster.death_drop);
+        world.actors.insert(id, actor);
+      }
     }
 
     for (pos, item) in level.item_spawns {
@@ -240,6 +248,61 @@ impl World {
     );
     self.actors.insert(id, actor);
     Ok(id)
+  }
+
+  /// Spawns a monster actor based on a specific `MonsterKind`.
+  pub fn spawn_monster_kind(
+    &mut self,
+    pos: Position,
+    kind: drl_protocol::MonsterKind,
+  ) -> Result<EntityId, CommandError> {
+    if !self.map.is_in_bounds(pos) {
+      return Err(CommandError::OutOfBounds(pos));
+    }
+    if !self.map.is_walkable(pos) {
+      return Err(CommandError::BlockedByTerrain(pos));
+    }
+    if let Some(existing) = self.actor_at(pos) {
+      return Err(CommandError::BlockedByEntity {
+        position: pos,
+        entity_id: existing.id(),
+      });
+    }
+
+    let id = self.allocate_entity_id();
+    let actor = Actor::from_monster_kind(id, pos, kind);
+    self.actors.insert(id, actor);
+    Ok(id)
+  }
+
+  /// Returns true if there is an unblocked line of sight between two positions.
+  #[must_use]
+  pub fn has_line_of_sight(&self, from: Position, to: Position) -> bool {
+    crate::fov::has_line_of_sight(&self.map, from, to)
+  }
+
+  /// Finds a random walkable floor cell that is not occupied by any actor.
+  #[must_use]
+  pub fn find_random_walkable_unoccupied_cell(
+    &self,
+    rng: &mut crate::rng::GameRng,
+  ) -> Option<Position> {
+    let mut available = Vec::new();
+    for y in 0..self.map.height() {
+      for x in 0..self.map.width() {
+        let pos = Position::new(x as i32, y as i32);
+        if self.map.is_walkable(pos) && self.living_actor_at(pos).is_none() {
+          available.push(pos);
+        }
+      }
+    }
+
+    if available.is_empty() {
+      None
+    } else {
+      let idx = rng.gen_range(0..available.len() as u32) as usize;
+      Some(available[idx])
+    }
   }
 
   /// Spawns an item on the ground at a given position.

@@ -11,11 +11,19 @@ the planned simulation core remains portable and platform-independent.
 
 ## Project Status
 
-DRL-Rust has established its **Milestone 4 Procedural Level Generation, Combat, Inventory, Equipment, and Level Transitions**. The
+DRL-Rust has delivered its **Milestone 4 Enemy Archetypes, Tactical AI, Target Legality & Selection, Special Items, and Level Progression**. The
 current implementation is a multi-crate Rust 2024 workspace featuring:
 
 - pure, deterministic headless simulation core (`drl-core`) with 2D tile maps,
   grid coordinates, seedable PRNG, and turn-based movement, combat, inventory, and weapon mechanics;
+- tactical monster AI decision engine (`ai`) with line-of-sight checks, ranged projectile/fireball attacks,
+  adjacent melee strikes, and pathfinding pursuit;
+- representative enemy archetypes (`FormerHuman`, `FormerSergeant`, `Imp`, `Demon`) with distinct health,
+  speed, melee, ranged capabilities, and death loot drop tables;
+- targeting validation system (`targeting`) verifying `Target::Position`, `Target::Entity`, and `Target::Direction`
+  against bounds, range limits, and line-of-sight obstruction, with visible enemy listing and nearest auto-selection;
+- special-use consumable item `Phase Device` enabling emergency spatial teleportation to safe walkable tiles;
+- monster death loot drop mechanics spawning ground items upon lethal combat defeat;
 - procedural dungeon level generation (`generator`) with non-overlapping room carving,
   walkable corridor linking, down-stairs exit placement, BFS reachability validation, and monster/loot spawning;
 - down-stairs interaction and seamless level transitions (`Command::Descend`) carrying over player
@@ -30,18 +38,19 @@ current implementation is a multi-crate Rust 2024 workspace featuring:
 - weapon and ammunition mechanics with magazine clip tracking, ammo consumption
   on ranged fire, clip exhaustion rejection, and weapon reloading (`Command::Reload`);
 - representative equipment and items: Pistol, Shotgun, Combat Knife, 9mm Ammo, Shells,
-  Small/Large MedPacks, and Green Armor;
+  Small/Large MedPacks, Green Armor, and Phase Device;
 - line-of-fire validation for ranged weapon attacks rejecting obstructed shots;
 - action economy and energy-based actor scheduling (`Scheduler`) supporting relative
   speeds and deterministic turn progression;
 - combat resolution engine (`CombatResolver`) supporting melee bump-attacks, direct
   melee strikes, and ranged weapon fire with damage clamping and death handling;
 - shared semantic protocol schemas (`drl-protocol`) for commands, combat/item domain models,
-  observations, events, and replays;
+  observations, events, targets, and replays;
 - an executable application runner (`drl-app` / `drl-rust`) that runs a multi-level headless
-  combat, inventory, reload, and stairs descent simulation demonstration and verifies replay reproducibility;
+  combat, AI tactics, Phase Device teleportation, inventory, and stairs descent simulation demonstration and verifies replay reproducibility;
 - automated architectural boundary tests, pure combat unit tests, FOV integration tests,
-  inventory integration tests, level progression tests, and deterministic scenario replay verification.
+  inventory integration tests, AI & archetype tests, targeting tests, special item tests, level progression tests, and deterministic scenario replay verification.
+
 
 Live Lua scripting integration (Milestone 3), MCP server transport (Milestone 6),
 GPU rendering (Milestone 7), and audio playback (Milestone 8) are scheduled in subsequent roadmap milestones.

@@ -19,7 +19,7 @@ pub use observation::{
 pub use replay::{ItemSpawnKind, ItemSpawnSpec, MonsterSpawnSpec, ReplayLog};
 pub use types::{
   ActionCost, AttackOutcome, DamageSource, DamageType, DeathCause, Direction, EntityId, HitPoints,
-  ItemId, LevelId, Position, Speed, Turn,
+  ItemId, LevelId, MonsterKind, Position, Speed, Target, Turn,
 };
 
 /// Returns the protocol schema version for DRL-Rust.

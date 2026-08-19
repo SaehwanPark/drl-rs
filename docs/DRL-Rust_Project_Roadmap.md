@@ -441,10 +441,11 @@ Create a small but recognizably DRL-like playable slice using representative wea
 
 ### Targeting
 
-- [ ] Define `Target`.
-- [ ] Implement target legality.
+- [ ] Specify legacy targeting mechanics.
+- [x] Define `Target`.
+- [x] Implement target legality.
 - [x] Implement line-of-fire checks.
-- [ ] Implement target selection metadata.
+- [x] Implement target selection metadata.
 - [x] Test blocked shots.
 - [x] Test out-of-range/invalid targets.
 
@@ -474,19 +475,20 @@ Create a small but recognizably DRL-like playable slice using representative wea
 
 ### Monsters
 
-- [ ] Implement several representative enemy archetypes.
-- [ ] Implement basic melee AI.
-- [ ] Implement basic ranged AI.
+- [x] Implement several representative enemy archetypes.
+- [x] Implement basic melee AI.
+- [x] Implement basic ranged AI.
 - [ ] Integrate Lua AI where appropriate.
-- [ ] Preserve behavioral character rather than exact old state-machine transitions.
+- [x] Preserve behavioral character rather than exact old state-machine transitions.
 
 ### Items
 
 - [x] Implement health item.
 - [x] Implement armor.
 - [x] Implement ammunition pickup.
-- [ ] Implement one special-use item.
+- [x] Implement one special-use item.
 - [x] Add item interaction tests.
+
 
 ### Level
 

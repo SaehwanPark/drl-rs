@@ -45,6 +45,8 @@ pub enum ItemKind {
   },
   /// Usable medical supply.
   MedPack(ConsumableProperties),
+  /// Special consumable device (Phase Device).
+  PhaseDevice,
 }
 
 /// Physical item instance in the simulation world or actor inventory.
@@ -110,6 +112,7 @@ impl Item {
       ItemKind::Armor(_) => ItemCategory::Armor,
       ItemKind::Ammo { .. } => ItemCategory::Ammo,
       ItemKind::MedPack(_) => ItemCategory::MedPack,
+      ItemKind::PhaseDevice => ItemCategory::PhaseDevice,
     }
   }
 
@@ -131,10 +134,16 @@ impl Item {
     matches!(&self.kind, ItemKind::Ammo { .. })
   }
 
-  /// Returns true if this item is a consumable MedPack.
+  /// Returns true if this item is consumable (MedPack or PhaseDevice).
   #[must_use]
   pub const fn is_consumable(&self) -> bool {
-    matches!(&self.kind, ItemKind::MedPack(_))
+    matches!(&self.kind, ItemKind::MedPack(_) | ItemKind::PhaseDevice)
+  }
+
+  /// Returns true if this item is a Phase Device.
+  #[must_use]
+  pub const fn is_phase_device(&self) -> bool {
+    matches!(&self.kind, ItemKind::PhaseDevice)
   }
 
   /// Returns the equipment slot if this item is equippable.
@@ -268,7 +277,7 @@ impl Item {
         None,
       ),
       ItemKind::Armor(props) => (None, None, Some(props.protection), None),
-      ItemKind::Ammo { .. } => (None, None, None, None),
+      ItemKind::Ammo { .. } | ItemKind::PhaseDevice => (None, None, None, None),
       ItemKind::MedPack(props) => (None, None, None, Some(props.heal_amount)),
     };
 
@@ -416,6 +425,17 @@ impl Item {
       }),
     )
   }
+
+  /// Factory: Phase Device (emergency teleportation consumable).
+  #[must_use]
+  pub fn phase_device(id: ItemId) -> Self {
+    Self::new(
+      id,
+      "Phase Device",
+      "Emergency phase-shift device. Instantly teleports the user across space.",
+      ItemKind::PhaseDevice,
+    )
+  }
 }
 
 #[cfg(test)]
@@ -467,5 +487,11 @@ mod tests {
     assert!(armor.is_armor());
     assert_eq!(armor.equipment_slot(), Some(EquipmentSlot::Armor));
     assert_eq!(armor.to_view().armor_value, Some(5));
+
+    let device = Item::phase_device(ItemId::new(5));
+    assert!(device.is_consumable());
+    assert!(device.is_phase_device());
+    assert_eq!(device.category(), ItemCategory::PhaseDevice);
+    assert_eq!(device.to_view().name, "Phase Device");
   }
 }
