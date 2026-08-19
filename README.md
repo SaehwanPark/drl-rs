@@ -11,11 +11,20 @@ the planned simulation core remains portable and platform-independent.
 
 ## Project Status
 
-DRL-Rust is in its repository-foundation stage and is **not playable**. The
-current implementation is a multi-crate Rust 2024 workspace managing `drl-core`,
-`drl-protocol`, `drl-app`, and subsystem placeholders; running it prints a
-scaffold status message. Gameplay mechanics, live Lua integration, MCP server
-transport, GPU rendering, and audio playback have not been implemented.
+DRL-Rust has established its **Milestone 1 headless simulation kernel**. The
+current implementation is a multi-crate Rust 2024 workspace featuring:
+
+- pure, deterministic headless simulation core (`drl-core`) with 2D tile maps,
+  grid coordinates, seedable PRNG, and turn-based movement mechanics;
+- shared semantic protocol schemas (`drl-protocol`) for commands, observations,
+  events, and replays;
+- an executable application runner (`drl-app` / `drl-rust`) that runs a headless
+  simulation demonstration and verifies replay reproducibility;
+- automated architectural boundary tests and deterministic replay verification.
+
+Combat mechanics, procedural level generation, live Lua scripting integration,
+MCP server transport, GPU rendering, and audio playback are scheduled in subsequent
+roadmap milestones.
 
 The project intends to preserve DRL's modeled behavior and tactical character
 without translating the legacy Pascal architecture or execution traces
@@ -32,13 +41,11 @@ Planned design priorities include:
 - a narrow, intentional Lua boundary;
 - native macOS presentation outside the portable simulation.
 
-These are design goals, not claims about the current scaffold.
-
 ## Project Documents
 
 - [Roadmap](docs/DRL-Rust_Project_Roadmap.md): canonical milestone plan,
   progress tracker, and exit criteria.
-- [Specification](SPEC.md): implementation-ready expansion of the one active
+- [Specification](SPEC.md): implementation-ready expansion of the active
   roadmap slice.
 - [Architecture](ARCHITECTURE.md): verified current structure, invariants, and
   clearly labeled planned direction.
@@ -85,7 +92,8 @@ cd drl-rust
 cargo run
 ```
 
-The current output is only the scaffold's placeholder message.
+This runs the headless simulation demo, executes a deterministic command sequence,
+and verifies replay reproducibility.
 
 Run the same repository checks used by CI:
 

@@ -178,93 +178,93 @@ Build the smallest coherent game simulation capable of representing a map, playe
 
 ### Core types
 
-- [ ] Define `EntityId`.
-- [ ] Define `ItemId`.
-- [ ] Define `LevelId`.
-- [ ] Define `Turn`.
-- [ ] Define `Position`.
-- [ ] Define map dimensions/types.
-- [ ] Define `Direction`.
-- [ ] Define `GameState`.
-- [ ] Define `Game`.
-- [ ] Define minimal `World`.
-- [ ] Define minimal `Actor`.
+- [x] Define `EntityId`.
+- [x] Define `ItemId`.
+- [x] Define `LevelId`.
+- [x] Define `Turn`.
+- [x] Define `Position`.
+- [x] Define map dimensions/types.
+- [x] Define `Direction`.
+- [x] Define `GameState`.
+- [x] Define `Game`.
+- [x] Define minimal `World`.
+- [x] Define minimal `Actor`.
 
 ### Commands
 
-- [ ] Define `Command`.
-- [ ] Implement `Move`.
-- [ ] Implement `Wait`.
-- [ ] Define command validation.
-- [ ] Return typed invalid-command errors.
-- [ ] Separate command legality from input bindings.
+- [x] Define `Command`.
+- [x] Implement `Move`.
+- [x] Implement `Wait`.
+- [x] Define command validation.
+- [x] Return typed invalid-command errors.
+- [x] Separate command legality from input bindings.
 
 ### Observation
 
-- [ ] Define `Observation`.
-- [ ] Define player observation.
-- [ ] Define visible tile representation.
-- [ ] Define visible entity representation.
-- [ ] Implement player-visible observation generation.
-- [ ] Define explicit omniscient debug observation.
+- [x] Define `Observation`.
+- [x] Define player observation.
+- [x] Define visible tile representation.
+- [x] Define visible entity representation.
+- [x] Implement player-visible observation generation.
+- [x] Define explicit omniscient debug observation.
 
 ### Events
 
-- [ ] Define core `GameEvent`.
-- [ ] Emit movement events.
-- [ ] Emit turn/action events.
-- [ ] Add event ordering rules where observable ordering matters.
-- [ ] Ensure core events do not depend on renderer/audio types.
+- [x] Define core `GameEvent`.
+- [x] Emit movement events.
+- [x] Emit turn/action events.
+- [x] Add event ordering rules where observable ordering matters.
+- [x] Ensure core events do not depend on renderer/audio types.
 
 ### RNG
 
-- [ ] Select deterministic RNG implementation.
-- [ ] Wrap it in domain-owned `GameRng`.
-- [ ] Prohibit ambient gameplay RNG.
-- [ ] Add seed initialization.
-- [ ] Add deterministic RNG unit tests.
-- [ ] Define deterministic iteration policy for simulation-relevant collections.
+- [x] Select deterministic RNG implementation.
+- [x] Wrap it in domain-owned `GameRng`.
+- [x] Prohibit ambient gameplay RNG.
+- [x] Add seed initialization.
+- [x] Add deterministic RNG unit tests.
+- [x] Define deterministic iteration policy for simulation-relevant collections.
 
 ### Minimal map
 
-- [ ] Implement walkable/blocking cells.
-- [ ] Implement map bounds.
-- [ ] Implement occupancy.
-- [ ] Prevent invalid blocking overlap.
-- [ ] Implement basic movement legality.
+- [x] Implement walkable/blocking cells.
+- [x] Implement map bounds.
+- [x] Implement occupancy.
+- [x] Prevent invalid blocking overlap.
+- [x] Implement basic movement legality.
 
 ### Headless executable
 
-- [ ] Add simple CLI/debug runner.
-- [ ] Start a fixed test map.
-- [ ] Accept a small sequence of commands.
-- [ ] Print structured observations/events.
-- [ ] Allow explicit seed input.
+- [x] Add simple CLI/debug runner.
+- [x] Start a fixed test map.
+- [x] Accept a small sequence of commands.
+- [x] Print structured observations/events.
+- [x] Allow explicit seed input.
 
 ### Replay prototype
 
-- [ ] Define minimal replay structure.
-- [ ] Store seed.
-- [ ] Store initial setup.
-- [ ] Store command sequence.
-- [ ] Re-run replay deterministically.
-- [ ] Add replay regression test.
+- [x] Define minimal replay structure.
+- [x] Store seed.
+- [x] Store initial setup.
+- [x] Store command sequence.
+- [x] Re-run replay deterministically.
+- [x] Add replay regression test.
 
 ### Tests
 
-- [ ] Player cannot move outside map.
-- [ ] Player cannot move into blocked tile.
-- [ ] Player can wait.
-- [ ] Turn advances according to defined action semantics.
-- [ ] Same seed + same commands produce same state.
-- [ ] Player observation does not leak hidden world state.
+- [x] Player cannot move outside map.
+- [x] Player cannot move into blocked tile.
+- [x] Player can wait.
+- [x] Turn advances according to defined action semantics.
+- [x] Same seed + same commands produce same state.
+- [x] Player observation does not leak hidden world state.
 
 ## Exit Criteria
 
-- [ ] A headless game can start, move, wait, observe, and replay.
-- [ ] Simulation is deterministic.
-- [ ] `drl-core` has no renderer, audio, OS, Lua, or MCP dependency.
-- [ ] Command and observation models are stable enough to build the next vertical slice.
+- [x] A headless game can start, move, wait, observe, and replay.
+- [x] Simulation is deterministic.
+- [x] `drl-core` has no renderer, audio, OS, Lua, or MCP dependency.
+- [x] Command and observation models are stable enough to build the next vertical slice.
 
 ---
 
