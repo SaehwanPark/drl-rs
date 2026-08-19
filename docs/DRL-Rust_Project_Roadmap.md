@@ -535,69 +535,69 @@ Turn the core simulation into a serious automated testing environment.
 
 ### Replay format
 
-- [ ] Version replay schema.
-- [ ] Record build/content version.
-- [ ] Record seed.
-- [ ] Record initial character/configuration.
-- [ ] Record command stream.
-- [ ] Add replay validation.
-- [ ] Add replay error reporting with turn/command context.
-- [ ] Store selected failing replays as regression tests.
+- [x] Version replay schema.
+- [x] Record build/content version.
+- [x] Record seed.
+- [x] Record initial character/configuration.
+- [x] Record command stream.
+- [x] Add replay validation.
+- [x] Add replay error reporting with turn/command context.
+- [x] Store selected failing replays as regression tests.
 
 ### Scenario framework
 
-- [ ] Define fixture format.
-- [ ] Allow explicit maps.
-- [ ] Allow actor placement.
-- [ ] Allow inventory configuration.
-- [ ] Allow RNG seed.
-- [ ] Allow scripted random outcomes for focused tests if needed.
-- [ ] Add reusable assertion helpers.
+- [x] Define fixture format.
+- [x] Allow explicit maps.
+- [x] Allow actor placement.
+- [x] Allow inventory configuration.
+- [x] Allow RNG seed.
+- [x] Allow scripted random outcomes for focused tests if needed.
+- [x] Add reusable assertion helpers.
 
 ### Scripted bots
 
-- [ ] Define bot/agent trait or policy interface only if concretely useful.
-- [ ] Implement random legal-action bot.
-- [ ] Implement simple combat bot.
-- [ ] Implement simple exploration bot.
-- [ ] Implement survival-oriented bot.
-- [ ] Ensure bots consume ordinary `Observation`.
-- [ ] Ensure bots submit ordinary `Command`.
+- [x] Define bot/agent trait or policy interface only if concretely useful.
+- [x] Implement random legal-action bot.
+- [x] Implement simple combat bot.
+- [x] Implement simple exploration bot.
+- [x] Implement survival-oriented bot.
+- [x] Ensure bots consume ordinary `Observation`.
+- [x] Ensure bots submit ordinary `Command`.
 
 ### Batch simulation
 
-- [ ] Run many seeds headlessly.
-- [ ] Add configurable episode limits.
-- [ ] Collect outcome metrics.
-- [ ] Collect failure/crash artifacts.
-- [ ] Record pathological seeds.
-- [ ] Add machine-readable summary output.
+- [x] Run many seeds headlessly.
+- [x] Add configurable episode limits.
+- [x] Collect outcome metrics.
+- [x] Collect failure/crash artifacts.
+- [x] Record pathological seeds.
+- [x] Add machine-readable summary output.
 
 ### Metrics
 
-- [ ] Run completion status.
-- [ ] Turns survived.
-- [ ] Damage dealt/taken.
-- [ ] Death cause.
-- [ ] Weapon usage.
-- [ ] Ammo consumption.
-- [ ] Item usage.
-- [ ] Level reached.
-- [ ] Enemy kill distribution.
+- [x] Run completion status.
+- [x] Turns survived.
+- [x] Damage dealt/taken.
+- [x] Death cause.
+- [x] Weapon usage.
+- [x] Ammo consumption.
+- [x] Item usage.
+- [x] Level reached.
+- [x] Enemy kill distribution.
 
 ### CI
 
-- [ ] Add fast smoke-agent run.
-- [ ] Add replay regressions.
-- [ ] Separate long simulation suite from normal PR checks.
-- [ ] Upload failing replay artifacts.
+- [x] Add fast smoke-agent run.
+- [x] Add replay regressions.
+- [x] Separate long simulation suite from normal PR checks.
+- [x] Upload failing replay artifacts.
 
 ## Exit Criteria
 
-- [ ] Hundreds or thousands of headless episodes can run without GUI.
-- [ ] Failures are reproducible from artifacts.
-- [ ] Agent code does not bypass ordinary player information boundaries.
-- [ ] The project can detect behavioral regressions before native UI work dominates development.
+- [x] Hundreds or thousands of headless episodes can run without GUI.
+- [x] Failures are reproducible from artifacts.
+- [x] Agent code does not bypass ordinary player information boundaries.
+- [x] The project can detect behavioral regressions before native UI work dominates development.
 
 ---
 

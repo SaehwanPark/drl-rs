@@ -6,7 +6,9 @@
 //! and MCP transports.
 
 pub mod actor;
+pub mod agent;
 pub mod ai;
+pub mod batch;
 pub mod combat;
 pub mod fov;
 pub mod game;
@@ -16,12 +18,15 @@ pub mod inventory;
 pub mod item;
 pub mod replay;
 pub mod rng;
+pub mod scenario;
 pub mod scheduler;
 pub mod targeting;
 pub mod world;
 
 pub use actor::Actor;
+pub use agent::{AgentPolicy, ExplorerBot, GreedyCombatBot, RandomBot};
 pub use ai::{MonsterAction, MonsterAi};
+pub use batch::{BatchRunner, EpisodeRecord};
 pub use combat::CombatResolver;
 pub use fov::{DEFAULT_VISION_RADIUS, compute_fov, has_line_of_sight, line_points};
 pub use game::{Game, GameState};
@@ -31,6 +36,7 @@ pub use inventory::{DEFAULT_INVENTORY_CAPACITY, Equipment, Inventory};
 pub use item::Item;
 pub use replay::ReplayEngine;
 pub use rng::GameRng;
+pub use scenario::{Scenario, ScenarioRunner};
 pub use scheduler::{ACTION_THRESHOLD, Scheduler};
 pub use targeting::TargetingSystem;
 pub use world::World;

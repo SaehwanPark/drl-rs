@@ -5,7 +5,35 @@ documented in this file.
 
 ## Unreleased
 
-### Added
+- Versioned replay log schema (`ReplayVersion::V1`, `ReplayMetadata`) in `drl-protocol` and
+  `drl-core` supporting engine version headers, custom player spawn configurations (`PlayerSpawnConfig`),
+  and explicit tile override maps.
+- Diagnostic replay error reporting with `ReplayExecutionError` capturing exact turn numbers,
+  0-based command indices, failed commands, and underlying simulation error contexts.
+- Replay validation engine (`ReplayEngine::validate`) ensuring all coordinates, bounds, entities,
+  items, and stairs are physically consistent prior to execution.
+- Declarative scenario fixture framework (`Scenario`, `ScenarioFixture`, `ScenarioMap`) in `drl-protocol`
+  and `drl-core` supporting multi-room ASCII map parsing (`Scenario::from_ascii`), custom monster/item placements,
+  starting equipment, stairs configurations, and fluent assertion runners (`ScenarioRunner`).
+- Scripted test agent policies (`AgentPolicy` trait) consuming strictly `PlayerObservation` and emitting
+  `Command`s without information leakage:
+  - `RandomBot`: uniform random selection among legal walkable directions and interactions;
+  - `GreedyCombatBot`: tactical survival bot prioritizing health restoration, weapon reloading,
+    line-of-fire checks, ranged and melee engagements, item looting, and exit stairs descent;
+  - `ExplorerBot`: goal-directed exploration bot navigating uncharted maze corridors and descending stairs.
+- Headless batch simulation runner (`BatchRunner`) executing high-throughput procedural and scenario sweeps
+  across arbitrary seeds with configurable episode limits, recording `EpisodeRecord` artifacts, and aggregating
+  statistical summaries (`BatchSummary`: win rates, average turns, total kills, damage dealt/taken).
+- Runtime metrics accumulation (`RunOutcome`, `EpisodeMetrics`) tracking completion status, damage telemetry,
+  kill distributions, item pickups, ammo expenditure, and level progression.
+- Integration test suites in `crates/drl-core/tests/`:
+  - `scenarios.rs`: ASCII grid parsing, custom hero loadouts, and multi-step scenario metrics;
+  - `agents.rs`: headless policy execution, combat room clearing, maze navigation, and bit-exact replay determinism;
+  - `batch_simulation.rs`: multi-seed procedural batches, statistical validation, and sweep determinism;
+  - `replay_versioning.rs`: metadata header validation, boundary rejection, and diagnostic error locations.
+- Headless application runner update in `drl-app` executing declarative scenario fixtures, automated bot play,
+  batch sweeps, and replay determinism verification.
+- Completion of Milestone 5: Replay, Scenario, and Test-Agent Infrastructure deliverables and exit criteria.
 
 - Weapon kinetic knockback mechanics in `drl-core` (`apply_knockback`) and `drl-protocol`
   (`GameEvent::ActorKnockedBack { entity_id, from, to }`), enabling pump-action Shotgun

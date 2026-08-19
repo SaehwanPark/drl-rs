@@ -1,6 +1,9 @@
 //! Application executable entry point and headless demo runner for DRL-Rust.
 
+use drl_core::agent::GreedyCombatBot;
+use drl_core::batch::BatchRunner;
 use drl_core::item::Item;
+use drl_core::scenario::{Scenario, ScenarioRunner};
 use drl_core::{Game, ReplayEngine};
 use drl_protocol::{
   Command, Direction, ItemCategory, ItemSpawnKind, ItemSpawnSpec, MonsterSpawnSpec, Position,
@@ -15,6 +18,8 @@ fn main() {
   );
 
   run_headless_demo();
+  run_scenario_bot_demo();
+  run_batch_simulation_demo();
 }
 
 fn run_headless_demo() {
@@ -23,7 +28,7 @@ fn run_headless_demo() {
   let height = 10;
   let start_pos = Position::new(5, 5);
 
-  println!("Starting headless simulation arena ({width}x{height}) with seed {seed}...");
+  println!("\n=== Headless Simulation Arena Demo ({width}x{height}, Seed: {seed}) ===");
 
   let mut game =
     Game::new(seed, width, height, start_pos).expect("failed to initialize game simulation");
@@ -133,105 +138,6 @@ fn run_headless_demo() {
           total_explored,
           events.len()
         );
-        for event in &events {
-          match event {
-            drl_protocol::GameEvent::AttackResolved {
-              attacker_id,
-              target_id,
-              outcome,
-              is_ranged,
-            } => {
-              println!(
-                "  -> Combat: Actor {} attacked Actor {} (ranged: {}) -> outcome: {:?}",
-                attacker_id.as_u64(),
-                target_id.as_u64(),
-                is_ranged,
-                outcome
-              );
-            }
-            drl_protocol::GameEvent::DamageApplied {
-              target_id,
-              amount,
-              remaining_hp,
-              ..
-            } => {
-              println!(
-                "  -> Damage: Actor {} took {} damage (remaining HP: {})",
-                target_id.as_u64(),
-                amount,
-                remaining_hp
-              );
-            }
-            drl_protocol::GameEvent::ActorDied { entity_id, cause } => {
-              println!(
-                "  -> Death: Actor {} died (cause: {:?})",
-                entity_id.as_u64(),
-                cause
-              );
-            }
-            drl_protocol::GameEvent::ItemDropped {
-              item_name,
-              position,
-              ..
-            } => {
-              println!(
-                "  -> Loot Drop: Dropped {item_name} at ({}, {})",
-                position.x, position.y
-              );
-            }
-            drl_protocol::GameEvent::ItemPickedUp { item_name, .. } => {
-              println!("  -> Loot: Picked up {item_name}");
-            }
-            drl_protocol::GameEvent::ItemEquipped { slot, .. } => {
-              println!("  -> Equip: Equipped item into {slot} slot");
-            }
-            drl_protocol::GameEvent::ItemUsed { item_name, .. } => {
-              println!("  -> Item Use: Consumed {item_name}");
-            }
-            drl_protocol::GameEvent::PlayerTeleported { from, to } => {
-              println!(
-                "  -> Teleport: Phase shift relocated player from ({}, {}) to ({}, {})",
-                from.x, from.y, to.x, to.y
-              );
-            }
-            drl_protocol::GameEvent::ActorKnockedBack {
-              entity_id,
-              from,
-              to,
-            } => {
-              println!(
-                "  -> Knockback: Kinetic blast pushed Actor {} from ({}, {}) to ({}, {})",
-                entity_id.as_u64(),
-                from.x,
-                from.y,
-                to.x,
-                to.y
-              );
-            }
-            drl_protocol::GameEvent::WeaponReloaded {
-              ammo_loaded,
-              current_clip,
-              max_clip,
-              ..
-            } => {
-              println!(
-                "  -> Reload: Loaded {ammo_loaded} rounds (clip: {current_clip}/{max_clip})"
-              );
-            }
-
-            drl_protocol::GameEvent::LevelTransitioned {
-              from_level,
-              to_level,
-            } => {
-              println!(
-                "  -> Level: Descended stairs from Level {} to Level {}!",
-                from_level.as_u32(),
-                to_level.as_u32()
-              );
-            }
-            _ => {}
-          }
-        }
       }
       Err(err) => {
         println!("Command {:?} rejected: {err}", cmd);
@@ -269,6 +175,83 @@ fn run_headless_demo() {
     eprintln!("Simulation determinism check FAILED!");
     std::process::exit(1);
   }
+}
+
+fn run_scenario_bot_demo() {
+  println!("\n=== Declarative Scenario & Automated Bot Demo ===");
+  let ascii = r#"
+############
+#@...h...m.#
+#.####.###.#
+#...S...d..#
+#........>.#
+############
+"#;
+
+  let scenario = Scenario::from_ascii(
+    "MiniChamber",
+    "Automated bot clearing enemies and reaching stairs",
+    ascii,
+  )
+  .expect("failed to parse ASCII scenario");
+
+  println!(
+    "Loaded Scenario '{}' ({}x{}) with {} monsters and {} items",
+    scenario.name,
+    scenario.width,
+    scenario.height,
+    scenario.monsters.len(),
+    scenario.items.len()
+  );
+
+  let mut bot = GreedyCombatBot::new();
+  let (game, events, metrics, replay) =
+    ScenarioRunner::run_policy(&scenario, &mut bot, 40).expect("failed to run bot policy");
+
+  println!(
+    "Bot completed episode in {} turns. Outcome: {:?}, Damage Dealt: {}, Enemies Killed: {}, Level: {}",
+    metrics.turns_survived,
+    metrics.outcome,
+    metrics.damage_dealt,
+    metrics.enemies_killed,
+    metrics.level_reached.0
+  );
+
+  let (replayed_game, replayed_events) =
+    ReplayEngine::run(&replay).expect("replay verification failed");
+  assert_eq!(game, replayed_game);
+  assert_eq!(events, replayed_events);
+  println!("Bot Replay Determinism: PASSED (bit-for-bit identical)");
+}
+
+fn run_batch_simulation_demo() {
+  println!("\n=== Headless Batch Simulation & Metrics Summary ===");
+  let ascii = r#"
+##########
+#@..h..m.#
+#...d....#
+#.......>#
+##########
+"#;
+
+  let scenario = Scenario::from_ascii("BatchArena", "Sweep scenario across seeds", ascii).unwrap();
+  let seeds = [101, 202, 303, 404, 505, 606, 707, 808, 909, 1001];
+
+  let (summary, _) = BatchRunner::run_scenario_batch(&scenario, &seeds, 35, GreedyCombatBot::new)
+    .expect("batch simulation failed");
+
+  println!(
+    "Batch Sweep Results ({} episodes across seeds {:?}):",
+    summary.total_episodes, seeds
+  );
+  println!("  Victories:         {}", summary.victories);
+  println!("  Deaths:            {}", summary.deaths);
+  println!("  Timeouts:          {}", summary.timeouts);
+  println!("  Win Rate:          {:.1}%", summary.win_rate * 100.0);
+  println!("  Total Turns:       {}", summary.total_turns);
+  println!("  Average Turns/Run: {:.1}", summary.average_turns);
+  println!("  Total Kills:       {}", summary.total_enemies_killed);
+  println!("  Total Damage:      {}", summary.total_damage_dealt);
 }
 
 #[cfg(test)]

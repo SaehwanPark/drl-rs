@@ -26,57 +26,54 @@ does not replace or duplicate the full roadmap.
 - Milestone 4 established procedural dungeon level generation (`generator`), non-overlapping
   rooms, BFS reachability validation, exit stairs (`Tile::StairsDown`), level transitions
   (`Command::Descend`), player state persistence across level boundaries, and multi-level replay determinism.
-- Milestone 4 established representative enemy archetypes (`FormerHuman`, `FormerSergeant`, `Imp`, `Demon`),
-  tactical monster AI with ranged attacks and line-of-fire checks, monster death loot drops,
-  target validation and auto-targeting, and special-use Phase Device teleportation.
+- Milestone 4 established weapon kinetic knockback mechanics, bounds collision safety,
+  stochastic combat statistical validation suites, and completed Milestone 4 exit criteria.
 
 ## Present
 
-### Milestone 4: Weapon Knockback & Spread Mechanics, Statistical Weapon Tests, and Milestone 4 Completion
+### Milestone 5: Versioned Replays, Scenario Fixture Framework, Scripted Agent Policies, and Episode Metrics
 
 Status: Active
 
-This slice implements weapon kinetic knockback mechanics (specifically pump-action Shotgun and Former Sergeant
-shotgun attacks pushing surviving targets away along the firing ray), bounds and obstacle collision checks for knockback,
-statistical verification suites for stochastic weapon behaviors (accuracy scaling, distance penalties, uniform damage distributions),
-and final exit criteria verification for Milestone 4.
+This slice implements the automated testing, scenario fixture, replay diagnostics, scripted bot policy,
+and batch simulation infrastructure for Milestone 5.
 
 Observable outcomes:
 
-- `drl-protocol` defines knockback events and view representations:
-  - `GameEvent::ActorKnockedBack { entity_id: EntityId, from: Position, to: Position }`;
-  - `ItemView` includes `knockback: Option<u32>` indicating kinetic push power;
-- `drl-core` implements weapon knockback properties and execution:
-  - `WeaponProperties` contains `knockback: u32` (`Item::shotgun` has knockback 1, `Item::pistol` and `Item::combat_knife` have knockback 0);
-  - `Actor` exposes `knockback(&self) -> u32` resolving equipped weapon properties or innate actor knockback (e.g. `Actor::former_sergeant`);
-  - `Game::apply_knockback` computes normalized push direction vector from attacker to defender and relocates the defender
-    along the vector if the destination tile is within map bounds, walkable, and unoccupied by any living actor;
-  - If a destination tile is blocked by terrain, map boundary, or another actor, knockback safely halts with no clipping;
-  - If the player character is knocked back, field of view (FOV) and fog-of-war exploration memory are updated immediately;
-  - Lethal blows do not displace targets, dropping loot corpses at the exact point of fatality;
-- `drl-core` provides statistical validation in `crates/drl-core/tests/stochastic_combat.rs`:
-  - Statistical tests verify accuracy scaling and distance penalties over large sample distributions ($N \ge 1,000$);
-  - Statistical tests verify uniform damage rolls and strict min/max bound enforcement for Pistol, Shotgun, Combat Knife, and monster attacks;
-  - Integration tests verify Shotgun knockback displacement, obstacle blocking, monster blocking, and bit-exact replay determinism;
-- `drl-app` displays knockback event telemetry during headless demo combat;
-- All Milestone 4 roadmap items and exit criteria are satisfied;
+- `drl-protocol` defines versioned replay schema, scenario fixtures, and simulation metrics:
+  - `ReplayVersion` (`V1`) enum and `ReplayMetadata` with engine versioning;
+  - `PlayerSpawnConfig` recording custom starting HP, speed, inventory, and equipment;
+  - `ReplayLog` updated with versioning, metadata, and optional `PlayerSpawnConfig`;
+  - `ReplayExecutionError` capturing failed turn number, command index, offending command, and `CommandError`;
+  - `ScenarioMap` and `ScenarioFixture` representing explicit scenario layouts, spawns, and configurations;
+  - `RunOutcome`, `EpisodeMetrics`, and `BatchSummary` capturing runtime telemetry (damage dealt/taken, kills, turns survived, win rate);
+- `drl-core` implements scenario parsing, execution, replay validation, and automated bot agents:
+  - `scenario` module providing ASCII grid parsing (`Scenario::from_ascii`), scenario instantiation, execution, and fluent assertion helpers (`ScenarioRunner`);
+  - `replay` module with `ReplayEngine::validate` checking schema consistency and `run_with_diagnostics` returning `EpisodeMetrics` and `ReplayExecutionError`;
+  - `agent` module defining the `AgentPolicy` trait operating strictly on `PlayerObservation` and emitting `Command`s;
+  - Built-in agent policies: `RandomBot`, `GreedyCombatBot` (engaging enemies, reloading, healing, looting), and `ExplorerBot` (dungeon exploration and stairs descent);
+  - `batch` module (`BatchRunner`) executing large automated episode runs across arbitrary seeds and aggregating statistical `BatchSummary`;
+- `drl-core` provides comprehensive test suites in `crates/drl-core/tests/`:
+  - `tests/scenarios.rs`: scenario fixture parsing, custom monster/item setups, and fluent scenario assertions;
+  - `tests/agents.rs`: automated bot policies operating headlessly through observations without state leakage;
+  - `tests/batch_simulation.rs`: multi-seed batch runs, metrics collection, and failure artifact reproducibility;
+  - `tests/replay_versioning.rs`: versioned replay validation and error context reporting;
+- `drl-app` updates its CLI demonstration to include scenario execution, automated agent play, and batch metrics summary;
 - `sh scripts/check-repository.sh` runs all checks, formatting, clippy, and tests cleanly.
 
 Verification:
 
 - `sh scripts/check-repository.sh` succeeds locally;
-- `cargo test --locked --workspace` passes all unit, integration, boundary, combat,
-  visibility, inventory, generator, ai, targeting, special items, and stochastic combat tests;
-- integration tests in `crates/drl-core/tests/stochastic_combat.rs` verify statistical hit distributions,
-  damage roll bounds, knockback collision invariants, and multi-turn replay determinism;
-- `cargo run` executes the headless demo demonstrating Shotgun knockback and bit-exact replay verification.
+- `cargo test --locked --workspace` passes all unit, integration, scenario, agent, batch, and replay tests;
+- automated agent policies successfully complete deterministic scenario fixtures and multi-level procedural runs;
+- `cargo run` executes scenario simulations and batch summaries headlessly.
 
 Out of scope:
 
 - live Lua scripting integration (Milestone 3);
-- MCP transport servers (Milestone 6);
+- MCP JSON-RPC wire servers (Milestone 6);
 - presentation/GUI rendering (Milestone 7) and audio (Milestone 8).
 
 ## Future
 
-Proceed with Milestone 5 replay suite, scripted bots, and automated scenario frameworks.
+Proceed with Milestone 6 MCP game interface and Milestone 7 native macOS rendering.

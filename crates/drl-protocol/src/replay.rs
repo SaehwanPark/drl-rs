@@ -1,7 +1,91 @@
 //! Replay log schema for deterministic recording and playback.
 
-use crate::command::Command;
-use crate::types::Position;
+use crate::command::{Command, CommandError};
+use crate::observation::TileKind;
+use crate::types::{Position, Turn};
+
+/// Supported version identifiers for replay log schema.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum ReplayVersion {
+  /// Initial stable schema format.
+  V1 = 1,
+}
+
+/// Metadata header describing engine environment and replay context.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ReplayMetadata {
+  /// Schema format version.
+  pub version: ReplayVersion,
+  /// Engine name string.
+  pub engine_name: String,
+  /// Engine crate version string.
+  pub engine_version: String,
+}
+
+impl Default for ReplayMetadata {
+  fn default() -> Self {
+    Self {
+      version: ReplayVersion::V1,
+      engine_name: "DRL-Rust".to_string(),
+      engine_version: env!("CARGO_PKG_VERSION").to_string(),
+    }
+  }
+}
+
+/// Configuration for player character starting stats and equipment in replays/scenarios.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PlayerSpawnConfig {
+  /// Current hit points.
+  pub hp: u32,
+  /// Maximum hit points.
+  pub max_hp: u32,
+  /// Movement/action speed.
+  pub speed: u32,
+  /// Initial items in backpack inventory.
+  pub initial_items: Vec<ItemSpawnKind>,
+  /// Weapon equipped in active weapon slot.
+  pub equipped_weapon: Option<ItemSpawnKind>,
+  /// Armor equipped in active armor slot.
+  pub equipped_armor: Option<ItemSpawnKind>,
+}
+
+impl Default for PlayerSpawnConfig {
+  fn default() -> Self {
+    Self {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: Vec::new(),
+      equipped_weapon: Some(ItemSpawnKind::Pistol),
+      equipped_armor: None,
+    }
+  }
+}
+
+/// Rich diagnostic error capturing execution failure with turn and command index.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ReplayExecutionError {
+  /// Turn counter when the command failed.
+  pub turn: Turn,
+  /// 0-based index of the command within `ReplayLog.commands`.
+  pub command_index: usize,
+  /// The command that produced the failure.
+  pub command: Command,
+  /// The underlying simulation error.
+  pub error: CommandError,
+}
+
+impl core::fmt::Display for ReplayExecutionError {
+  fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+    write!(
+      f,
+      "Replay execution failed at turn {} (command #{} {:?}): {}",
+      self.turn.count, self.command_index, self.command, self.error
+    )
+  }
+}
+
+impl std::error::Error for ReplayExecutionError {}
 
 /// Specification for representative item spawns in replays.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -43,6 +127,7 @@ pub struct MonsterSpawnSpec {
   pub ranged_damage: Option<(u32, u32)>,
   pub ranged_range: u32,
   pub accuracy: i32,
+  pub death_drop: Option<ItemSpawnKind>,
 }
 
 impl MonsterSpawnSpec {
@@ -64,6 +149,7 @@ impl MonsterSpawnSpec {
       ranged_damage: None,
       ranged_range: 0,
       accuracy: 65,
+      death_drop: None,
     }
   }
 
@@ -75,11 +161,24 @@ impl MonsterSpawnSpec {
     self.accuracy = accuracy;
     self
   }
+
+  /// Sets the death loot drop specification.
+  #[must_use]
+  pub fn with_death_drop(mut self, drop: Option<ItemSpawnKind>) -> Self {
+    self.death_drop = drop;
+    self
+  }
 }
 
 /// Serialized log of a game session sufficient to reproduce the run deterministically.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ReplayLog {
+  /// Schema format version.
+  pub version: ReplayVersion,
+  /// Replay metadata header.
+  pub metadata: ReplayMetadata,
+  /// Optional custom player spawn configuration.
+  pub player_config: Option<PlayerSpawnConfig>,
   /// RNG seed used to initialize the simulation.
   pub seed: u64,
   /// Initial level map width.
@@ -94,6 +193,8 @@ pub struct ReplayLog {
   pub initial_monsters: Vec<MonsterSpawnSpec>,
   /// Initial items spawned on the ground prior to command execution.
   pub initial_items: Vec<ItemSpawnSpec>,
+  /// Optional explicit tile overrides (e.g. for custom scenario fixtures).
+  pub custom_tiles: Vec<(Position, TileKind)>,
   /// Ordered sequence of commands executed by the player.
   pub commands: Vec<Command>,
 }
@@ -103,6 +204,9 @@ impl ReplayLog {
   #[must_use]
   pub fn new(seed: u64, width: u32, height: u32, player_start: Position) -> Self {
     Self {
+      version: ReplayVersion::V1,
+      metadata: ReplayMetadata::default(),
+      player_config: None,
       seed,
       width,
       height,
@@ -110,8 +214,28 @@ impl ReplayLog {
       initial_stairs: None,
       initial_monsters: Vec::new(),
       initial_items: Vec::new(),
+      custom_tiles: Vec::new(),
       commands: Vec::new(),
     }
+  }
+
+  /// Sets custom player spawn configuration.
+  #[must_use]
+  pub fn with_player_config(mut self, config: PlayerSpawnConfig) -> Self {
+    self.player_config = Some(config);
+    self
+  }
+
+  /// Sets custom replay metadata header.
+  #[must_use]
+  pub fn with_metadata(mut self, metadata: ReplayMetadata) -> Self {
+    self.metadata = metadata;
+    self
+  }
+
+  /// Records an explicit custom tile override in the replay.
+  pub fn record_tile(&mut self, position: Position, kind: TileKind) {
+    self.custom_tiles.push((position, kind));
   }
 
   /// Records an initial down-stairs position in the replay.
