@@ -2,7 +2,7 @@
 
 use crate::item::EquipmentSlot;
 use crate::types::{
-  ActionCost, AttackOutcome, DamageSource, DeathCause, EntityId, ItemId, Position, Turn,
+  ActionCost, AttackOutcome, DamageSource, DeathCause, EntityId, ItemId, LevelId, Position, Turn,
 };
 
 /// Game event emitted deterministically by the simulation core.
@@ -82,6 +82,11 @@ pub enum GameEvent {
     ammo_loaded: u32,
     current_clip: u32,
     max_clip: u32,
+  },
+  /// The player descended stairs and transitioned to a new level.
+  LevelTransitioned {
+    from_level: LevelId,
+    to_level: LevelId,
   },
   /// The current turn completed.
   TurnEnded { turn: Turn },

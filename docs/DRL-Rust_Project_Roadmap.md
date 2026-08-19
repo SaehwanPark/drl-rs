@@ -490,20 +490,20 @@ Create a small but recognizably DRL-like playable slice using representative wea
 
 ### Level
 
-- [ ] Implement stairs/exit.
-- [ ] Implement level transition.
-- [ ] Create one simple procedural generator.
-- [ ] Add seed-based generation tests.
-- [ ] Validate connectivity/reachability invariants.
+- [x] Implement stairs/exit.
+- [x] Implement level transition.
+- [x] Create one simple procedural generator.
+- [x] Add seed-based generation tests.
+- [x] Validate connectivity/reachability invariants.
 
 ### Headless gameplay
 
-- [ ] Start a complete mini-run.
-- [ ] Fight enemies.
+- [x] Start a complete mini-run.
+- [x] Fight enemies.
 - [x] Pick up equipment.
 - [x] Reload/fire.
-- [ ] Reach exit.
-- [ ] Transition to next level.
+- [x] Reach exit.
+- [x] Transition to next level.
 
 ## Exit Criteria
 

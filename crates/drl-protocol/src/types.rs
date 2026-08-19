@@ -250,6 +250,12 @@ impl LevelId {
   pub const fn as_u32(self) -> u32 {
     self.0
   }
+
+  /// Returns the next sequential level ID.
+  #[must_use]
+  pub const fn next(self) -> Self {
+    Self(self.0 + 1)
+  }
 }
 
 /// Actor health points representing current and maximum durability.

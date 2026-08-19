@@ -11,11 +11,15 @@ the planned simulation core remains portable and platform-independent.
 
 ## Project Status
 
-DRL-Rust has established its **Milestone 4 Field of View, Fog-of-War, Combat, Inventory, and Equipment System**. The
+DRL-Rust has established its **Milestone 4 Procedural Level Generation, Combat, Inventory, Equipment, and Level Transitions**. The
 current implementation is a multi-crate Rust 2024 workspace featuring:
 
 - pure, deterministic headless simulation core (`drl-core`) with 2D tile maps,
   grid coordinates, seedable PRNG, and turn-based movement, combat, inventory, and weapon mechanics;
+- procedural dungeon level generation (`generator`) with non-overlapping room carving,
+  walkable corridor linking, down-stairs exit placement, BFS reachability validation, and monster/loot spawning;
+- down-stairs interaction and seamless level transitions (`Command::Descend`) carrying over player
+  health, inventory backpack, equipped weapon/armor, clip ammunition, and action energy;
 - field of view (FOV) calculation and line-of-sight (LOS) raycasting (`fov`) with
   deterministic perimeter raycasting, obstacle occlusion, and perimeter illumination;
 - fog-of-war map exploration memory in `World` and strict perception filtering in
@@ -34,13 +38,13 @@ current implementation is a multi-crate Rust 2024 workspace featuring:
   melee strikes, and ranged weapon fire with damage clamping and death handling;
 - shared semantic protocol schemas (`drl-protocol`) for commands, combat/item domain models,
   observations, events, and replays;
-- an executable application runner (`drl-app` / `drl-rust`) that runs a headless
-  combat, inventory, reload, and visibility simulation demonstration and verifies replay reproducibility;
+- an executable application runner (`drl-app` / `drl-rust`) that runs a multi-level headless
+  combat, inventory, reload, and stairs descent simulation demonstration and verifies replay reproducibility;
 - automated architectural boundary tests, pure combat unit tests, FOV integration tests,
-  inventory integration tests, and deterministic scenario replay verification.
+  inventory integration tests, level progression tests, and deterministic scenario replay verification.
 
-Procedural level generation, live Lua scripting integration, MCP server transport,
-GPU rendering, and audio playback are scheduled in subsequent roadmap milestones.
+Live Lua scripting integration (Milestone 3), MCP server transport (Milestone 6),
+GPU rendering (Milestone 7), and audio playback (Milestone 8) are scheduled in subsequent roadmap milestones.
 
 The project intends to preserve DRL's modeled behavior and tactical character
 without translating the legacy Pascal architecture or execution traces

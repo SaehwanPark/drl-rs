@@ -28,6 +28,13 @@ fn run_headless_demo() {
   let mut game =
     Game::new(seed, width, height, start_pos).expect("failed to initialize game simulation");
 
+  // Place stairs at (7, 5)
+  let stairs_pos = Position::new(7, 5);
+  game
+    .world_mut()
+    .map_mut()
+    .set_tile(stairs_pos, drl_core::Tile::StairsDown);
+
   // Spawn ground loot at (6, 5): Shotgun and Shells
   let ground_pos = Position::new(6, 5);
   let shotgun_id = game.world_mut().allocate_item_id();
@@ -52,10 +59,12 @@ fn run_headless_demo() {
     .expect("failed to spawn monster");
 
   println!(
-    "Turn {}: Player spawned at ({}, {}) with equipped Pistol & 30x 9mm ammo, Shotgun & Shells on floor at ({}, {}), Former Human at ({}, {})",
+    "Turn {}: Level 1 - Player at ({}, {}), Stairs at ({}, {}), Floor Loot at ({}, {}), Monster at ({}, {})",
     game.turn().count,
     start_pos.x,
     start_pos.y,
+    stairs_pos.x,
+    stairs_pos.y,
     ground_pos.x,
     ground_pos.y,
     monster_pos.x,
@@ -70,10 +79,13 @@ fn run_headless_demo() {
     Command::Equip(shotgun_id),         // 5. Equip Shotgun
     Command::AttackRanged(Position::new(7, 5)), // 6. Blast monster at (7, 5) with Shotgun
     Command::Move(Direction::East),     // 7. Melee bump-attack to finish monster
-    Command::Move(Direction::East),     // 8. Step onto (7, 5)
+    Command::Move(Direction::East),     // 8. Step onto (7, 5) stairs down
+    Command::Descend,                   // 9. Descend stairs -> transition to Level 2!
+    Command::Move(Direction::East),     // 10. Step East on Level 2
   ];
 
   let mut replay = ReplayLog::new(seed, width, height, start_pos);
+  replay.record_stairs(stairs_pos);
   replay.record_item(ItemSpawnSpec::new(ground_pos, ItemSpawnKind::Shotgun));
   replay.record_item(ItemSpawnSpec::new(
     ground_pos,
@@ -98,6 +110,7 @@ fn run_headless_demo() {
         let obs = game.observe_player();
         let visible_in_fov = obs.visible_tiles.iter().filter(|t| t.is_visible).count();
         let total_explored = obs.visible_tiles.len();
+        let level_id = game.world().level_id().as_u32();
         let weapon_name = obs
           .equipped_weapon
           .as_ref()
@@ -110,8 +123,9 @@ fn run_headless_demo() {
           });
 
         println!(
-          "Turn {}: Executed {:?} -> Player at ({}, {}), Weapon: {}, Inventory: {} item(s), FOV: {}/{} tiles, Events: {}",
+          "Turn {} (Level {}): Executed {:?} -> Player at ({}, {}), Weapon: {}, Inventory: {} item(s), FOV: {}/{} tiles, Events: {}",
           game.turn().count,
+          level_id,
           cmd,
           p_pos.x,
           p_pos.y,
@@ -173,6 +187,16 @@ fn run_headless_demo() {
                 "  -> Reload: Loaded {ammo_loaded} rounds (clip: {current_clip}/{max_clip})"
               );
             }
+            drl_protocol::GameEvent::LevelTransitioned {
+              from_level,
+              to_level,
+            } => {
+              println!(
+                "  -> Level: Descended stairs from Level {} to Level {}!",
+                from_level.as_u32(),
+                to_level.as_u32()
+              );
+            }
             _ => {}
           }
         }
@@ -192,9 +216,11 @@ fn run_headless_demo() {
     replay.record_command(Command::Use(med_id));
     if let Ok(events) = game.step(Command::Use(med_id)) {
       let cur_hp = game.world().player().map_or(0, |p| p.hp().current);
+      let level_id = game.world().level_id().as_u32();
       println!(
-        "Turn {}: Used MedPack -> Player HP restored to {}, emitted {} event(s)",
+        "Turn {} (Level {}): Used MedPack -> Player HP restored to {}, emitted {} event(s)",
         game.turn().count,
+        level_id,
         cur_hp,
         events.len()
       );

@@ -6,6 +6,7 @@ use drl_protocol::{
 };
 
 use crate::combat::CombatResolver;
+use crate::generator::{LevelGenerator, LevelGeneratorConfig};
 use crate::grid::Map;
 use crate::rng::GameRng;
 use crate::scheduler::{ACTION_THRESHOLD, Scheduler};
@@ -58,6 +59,32 @@ impl Game {
     let start_x = (width / 2) as i32;
     let start_y = (height / 2) as i32;
     Self::new(seed, width, height, Position::new(start_x, start_y))
+  }
+
+  /// Initializes a new game instance with a procedurally generated dungeon level.
+  pub fn new_procedural(seed: u64, config: LevelGeneratorConfig) -> Result<Self, CommandError> {
+    let mut rng = GameRng::from_seed(seed);
+    let mut item_counter = 0;
+    let generated = LevelGenerator::generate(&config, &mut rng, &mut item_counter);
+
+    let mut world = World::from_generated_level(LevelId::new(1), generated, None);
+
+    let player_id = world
+      .player_id()
+      .ok_or_else(|| CommandError::InvalidCommand("no player spawned in level".to_string()))?;
+
+    if let Some(player) = world.get_actor_mut(player_id) {
+      player.set_energy(ACTION_THRESHOLD);
+    }
+
+    let state = GameState {
+      turn: Turn::zero(),
+      world,
+      rng,
+      is_game_over: false,
+    };
+
+    Ok(Self { state })
   }
 
   /// Current turn.
@@ -218,6 +245,9 @@ impl Game {
       }
       Command::Reload => {
         action_cost = self.execute_player_reload(player_id, &mut events)?;
+      }
+      Command::Descend => {
+        action_cost = self.execute_player_descend(player_id, &mut events)?;
       }
     }
 
@@ -512,6 +542,60 @@ impl Game {
     });
 
     Ok(reload_cost)
+  }
+
+  /// Executes player descending stairs to transition to the next level.
+  fn execute_player_descend(
+    &mut self,
+    player_id: drl_protocol::EntityId,
+    events: &mut Vec<GameEvent>,
+  ) -> Result<ActionCost, CommandError> {
+    let p_pos = self
+      .state
+      .world
+      .get_actor(player_id)
+      .ok_or(CommandError::EntityNotFound(player_id))?
+      .position();
+
+    let is_on_stairs = self
+      .state
+      .world
+      .map()
+      .get_tile(p_pos)
+      .is_some_and(|tile| tile == crate::grid::Tile::StairsDown);
+
+    if !is_on_stairs {
+      return Err(CommandError::NotOnStairs(p_pos));
+    }
+
+    let current_level = self.state.world.level_id();
+    let next_level = current_level.next();
+
+    // Extract player actor from current world to preserve state
+    let player_actor = self
+      .state
+      .world
+      .take_player()
+      .ok_or(CommandError::EntityNotFound(player_id))?;
+
+    // Generate new level layout
+    let config = LevelGeneratorConfig {
+      width: self.state.world.map().width(),
+      height: self.state.world.map().height(),
+      ..Default::default()
+    };
+    let mut next_item_counter = 1000 * next_level.as_u32() as u64;
+    let generated = LevelGenerator::generate(&config, &mut self.state.rng, &mut next_item_counter);
+
+    // Replace world with next floor
+    self.state.world = World::from_generated_level(next_level, generated, Some(player_actor));
+
+    events.push(GameEvent::LevelTransitioned {
+      from_level: current_level,
+      to_level: next_level,
+    });
+
+    Ok(ActionCost::STANDARD)
   }
 
   /// Executes a melee attack between attacker and defender.
@@ -1051,5 +1135,60 @@ mod tests {
         ..
       } if *target_id == m_id
     )));
+  }
+
+  #[test]
+  fn test_game_new_procedural() {
+    let config = LevelGeneratorConfig::default();
+    let game = Game::new_procedural(777, config).unwrap();
+    assert_eq!(game.world().level_id(), LevelId::new(1));
+    assert!(game.world().player().is_some());
+    assert!(game.world().player().unwrap().is_alive());
+  }
+
+  #[test]
+  fn test_game_step_descend_when_not_on_stairs_fails() {
+    let mut game = Game::new(100, 10, 10, Position::new(2, 2)).unwrap();
+    // Tile at (2, 2) is Floor, not StairsDown
+    let err = game.step(Command::Descend).unwrap_err();
+    assert_eq!(err, CommandError::NotOnStairs(Position::new(2, 2)));
+    assert_eq!(game.world().level_id(), LevelId::new(1));
+  }
+
+  #[test]
+  fn test_game_step_descend_stairs_transitions_level() {
+    let mut game = Game::new(200, 10, 10, Position::new(2, 2)).unwrap();
+    // Place stairs down at player position (2, 2)
+    game
+      .world_mut()
+      .map_mut()
+      .set_tile(Position::new(2, 2), crate::grid::Tile::StairsDown);
+
+    // Give player custom equipment/stats to verify preservation across transition
+    let p_id = game.world().player_id().unwrap();
+    game
+      .world_mut()
+      .get_actor_mut(p_id)
+      .unwrap()
+      .hp_mut()
+      .take_damage(10);
+    assert_eq!(game.world().player().unwrap().hp().current, 40);
+
+    let events = game.step(Command::Descend).unwrap();
+    assert!(events.iter().any(|e| matches!(
+      e,
+      GameEvent::LevelTransitioned {
+        from_level,
+        to_level,
+      } if *from_level == LevelId::new(1) && *to_level == LevelId::new(2)
+    )));
+
+    // World is now Level 2
+    assert_eq!(game.world().level_id(), LevelId::new(2));
+    // Player HP and inventory are preserved
+    let p2 = game.world().player().unwrap();
+    assert_eq!(p2.hp().current, 40);
+    assert!(p2.equipment().weapon().is_some());
+    assert_eq!(p2.equipment().weapon().unwrap().name(), "Pistol");
   }
 }

@@ -8,6 +8,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use crate::actor::Actor;
 use crate::fov::{DEFAULT_VISION_RADIUS, compute_fov};
+use crate::generator::GeneratedLevel;
 use crate::grid::Map;
 use crate::item::Item;
 
@@ -38,6 +39,49 @@ impl World {
       next_entity_id: 1,
       next_item_id: 1,
     }
+  }
+
+  /// Constructs a new World populated from a `GeneratedLevel`, transferring or spawning the player actor.
+  #[must_use]
+  pub fn from_generated_level(
+    level_id: LevelId,
+    level: GeneratedLevel,
+    existing_player: Option<Actor>,
+  ) -> Self {
+    let mut world = Self::new(level_id, level.map);
+
+    if let Some(mut player) = existing_player {
+      player.set_position(level.player_spawn);
+      let id = player.id();
+      world.next_entity_id = id.as_u64() + 1;
+      world.actors.insert(id, player);
+      world.player_id = Some(id);
+      world.update_visibility();
+    } else {
+      let _ = world.spawn_player(level.player_spawn, "Marine");
+    }
+
+    for monster in level.monster_spawns {
+      let _ = world.spawn_monster(
+        monster.position,
+        &monster.name,
+        monster.hp,
+        monster.speed,
+        monster.melee_damage,
+      );
+    }
+
+    for (pos, item) in level.item_spawns {
+      let _ = world.spawn_ground_item(pos, item);
+    }
+
+    world
+  }
+
+  /// Removes and returns the player actor from the world (used during level transitions).
+  pub fn take_player(&mut self) -> Option<Actor> {
+    let id = self.player_id.take()?;
+    self.actors.remove(&id)
   }
 
   /// Allocates a new unique `EntityId`.

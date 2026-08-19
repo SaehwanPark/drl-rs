@@ -21,73 +21,68 @@ does not replace or duplicate the full roadmap.
   movement validation, and replay determinism.
 - Milestone 4 established Field of View (FOV) calculation, line-of-sight raycasting,
   fog-of-war exploration memory, entity observation filtering, and line-of-fire obstacle blocking.
+- Milestone 4 established item domain models, player inventory capacity, equipment slots (weapon
+  and armor), ground item pickup/drop, weapon reload mechanics, ammo tracking, and consumable medpacks.
 
 ## Present
 
-### Milestone 4: Item Domain Models, Inventory Management, Equipment Slots, and Weapon/Ammo Mechanics
+### Milestone 4: Procedural Level Generation, Stairs, Level Transitions, and Multi-Level Headless Mini-Run
 
 Status: Active
 
-This slice implements DRL's item domain models, player inventory capacity, equipment slots
-(weapon and armor), ground item placement, pickup and drop actions, medpack consumption,
-ammunition tracking, weapon reload mechanics, and ammo-dependent ranged combat.
+This slice implements procedural level generation (connected rooms and corridors with reachability
+invariants), exit stairs, player descent commands, seamless multi-level world transitions (carrying
+over player stats, health, inventory, and equipped items), and a complete multi-level headless mini-run.
 
 Observable outcomes:
 
-- `drl-protocol` defines domain types and enumerations for items:
-  - `AmmoType`: 9mm (`Ammo9mm`), Shotgun shells (`Shells`), Rockets (`Rocket`), Plasma cells (`Cell`);
-  - `ItemCategory`: Weapon, Armor, Ammo, MedPack / Consumable;
-  - `EquipmentSlot`: Weapon, Armor;
-  - `ItemView` and `GroundItemView` representing observed items and ground stacks;
 - `drl-protocol` defines new semantic player commands and error conditions:
-  - `Command::Pickup` (picks up item from current cell into inventory);
-  - `Command::Drop(ItemId)` (drops item from inventory to the ground at current cell);
-  - `Command::Equip(ItemId)` (equips an item from inventory to its designated slot);
-  - `Command::Unequip(EquipmentSlot)` (unequips item back into inventory);
-  - `Command::Use(ItemId)` (consumes a usable item like a MedPack);
-  - `Command::Reload` (reloads the currently equipped weapon using matching ammo in inventory);
-  - Typed error variants in `CommandError` (`InventoryFull`, `ItemNotFound`, `NoItemAtPosition`,
-    `CannotEquip`, `CannotUse`, `SlotEmpty`, `NoEquippedWeapon`, `NoAmmoInClip`, `NoMatchingAmmo`,
-    `ClipAlreadyFull`);
+  - `Command::Descend` (descends stairs at current position to transition to the next level);
+  - Typed error variant in `CommandError` (`NotOnStairs(Position)`);
 - `drl-protocol` defines new semantic game events:
-  - `GameEvent::ItemPickedUp`, `GameEvent::ItemDropped`, `GameEvent::ItemEquipped`,
-    `GameEvent::ItemUnequipped`, `GameEvent::ItemUsed`, `GameEvent::WeaponReloaded`;
-- `drl-protocol` expands `PlayerObservation` and `OmniscientObservation` to include player
-  inventory, equipped items, and ground items (with perception filtering for fog of war / FOV);
-- `drl-core` implements an isolated `item` and `inventory` module:
-  - `Inventory`: capacity-constrained container with stack management for ammunition;
-  - `Equipment`: slot management for equipped weapon and armor;
-  - Representative weapons: Pistol (9mm, clip 10), Shotgun (Shells, clip 8), Combat Knife (melee);
-  - Representative ammo: 9mm (packs of 10-30), Shells (packs of 8-16);
-  - Representative consumables: Small MedPack (+10 HP), Large MedPack (+25 HP);
-  - Representative armor: Green Armor (+5 armor protection);
-- `drl-core` integrates weapons and ammo into combat resolution:
-  - `Command::AttackRanged` deducts 1 ammunition from the equipped weapon's clip;
-  - Firing with an empty clip fails with `CommandError::NoAmmoInClip`;
-  - Ranged damage, range, and accuracy derive from the equipped weapon;
-  - `Command::Reload` transfers ammo from inventory stacks up to weapon clip capacity;
-  - `Command::Use` on a MedPack restores player HP up to maximum and consumes the item;
-- `drl-core` tracks ground items in `World` with FOV/fog-of-war perception filtering;
-- `drl-app` demonstrates inventory management, weapon reloading, ground pickup, and healing;
+  - `GameEvent::LevelTransitioned { from_level: LevelId, to_level: LevelId }`;
+- `drl-core` implements an isolated procedural map generator in `crates/drl-core/src/generator.rs`:
+  - `LevelGenerator`: deterministic procedural generation of non-overlapping rectangular rooms connected
+    by walkable L-shaped and straight corridors with surrounding perimeter walls;
+  - Configurable room count, room dimension constraints, monster spawn density, and item spawn density;
+  - Automatic placement of player spawn in the starting room and `Tile::StairsDown` in the exit room;
+  - Formal reachability and connectivity verification (BFS flood-fill) ensuring all rooms and the exit
+    stairs are reachable from the player spawn point;
+  - Populates rooms with representative monsters (Former Humans, Imps) and floor loot (Ammo, MedPacks, Shotguns);
+  - Deterministic generation: identical seed produces identical map layout, actor spawns, and floor items;
+- `drl-core` implements level transition logic in `World` and `Game`:
+  - `Command::Descend` verifies the player stands on `Tile::StairsDown`;
+  - On valid descent, preserves player actor entity state (current/max HP, inventory backpack, equipped weapon
+    with magazine clip state, equipped armor, and action energy) and transitions to `LevelId(current + 1)`;
+  - Instantiates new `World` with generated map, resets fog-of-war exploration for the new floor, places player
+    at new level spawn point, and populates floor monsters and loot;
+  - Emits `GameEvent::LevelTransitioned`;
+- `drl-core` supports multi-level deterministic replay execution:
+  - `ReplayEngine` accurately records and replays multi-level command streams with bit-exact state reproduction;
+- `drl-app` demonstrates a multi-level headless mini-run:
+  - Level 1: exploration, engaging monsters, looting ammo/weapons, healing, reaching stairs, descending;
+  - Level 2: continuation with preserved inventory/health, further combat and exploration;
+  - Bit-exact replay verification across the full multi-level run;
 - `sh scripts/check-repository.sh` runs all checks, formatting, clippy, and tests cleanly.
 
 Verification:
 
 - `sh scripts/check-repository.sh` succeeds locally;
 - `cargo test --locked --workspace` passes all unit, integration, boundary, combat,
-  visibility, inventory, and replay determinism tests;
-- integration tests in `crates/drl-core/tests/inventory.rs` verify pickup/drop, inventory
-  capacity limits, equip/unequip cycles, medpack healing, weapon ammo consumption, and reloading;
-- `cargo run` executes the headless demo demonstrating item pickups, weapon firing, reloading,
-  and replay reproducibility.
+  visibility, inventory, generator, and replay determinism tests;
+- unit tests in `crates/drl-core/src/generator.rs` verify deterministic generation, room count,
+  and flood-fill reachability;
+- integration tests in `crates/drl-core/tests/level_progression.rs` verify stairs descent validation,
+  level transition events, player state persistence across level transitions, and multi-level replay determinism;
+- `cargo run` executes the headless demo demonstrating procedural level exploration, combat, looting,
+  stairs descent, and replay verification.
 
 Out of scope:
 
-- procedural level generation algorithms;
-- live Lua scripting integration;
-- MCP transport servers;
-- presentation/GUI rendering and audio.
+- live Lua scripting integration (Milestone 3);
+- MCP transport servers (Milestone 6);
+- presentation/GUI rendering (Milestone 7) and audio (Milestone 8).
 
 ## Future
 
-Proceed with procedural level generation, stairs, and level flow in Milestone 4.
+Proceed with Milestone 5 replay suite, scripted bots, and automated scenario frameworks.

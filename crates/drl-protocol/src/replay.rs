@@ -72,6 +72,8 @@ pub struct ReplayLog {
   pub height: u32,
   /// Player starting position.
   pub player_start: Position,
+  /// Optional stairs down position placed on initial level.
+  pub initial_stairs: Option<Position>,
   /// Initial monsters spawned in the level prior to command execution.
   pub initial_monsters: Vec<MonsterSpawnSpec>,
   /// Initial items spawned on the ground prior to command execution.
@@ -89,10 +91,16 @@ impl ReplayLog {
       width,
       height,
       player_start,
+      initial_stairs: None,
       initial_monsters: Vec::new(),
       initial_items: Vec::new(),
       commands: Vec::new(),
     }
+  }
+
+  /// Records an initial down-stairs position in the replay.
+  pub fn record_stairs(&mut self, position: Position) {
+    self.initial_stairs = Some(position);
   }
 
   /// Records an initial monster spawn in the replay.

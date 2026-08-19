@@ -19,6 +19,13 @@ impl ReplayEngine {
       replay.player_start,
     )?;
 
+    if let Some(stairs_pos) = replay.initial_stairs {
+      game
+        .world_mut()
+        .map_mut()
+        .set_tile(stairs_pos, crate::grid::Tile::StairsDown);
+    }
+
     for monster in &replay.initial_monsters {
       game.world_mut().spawn_monster(
         monster.position,

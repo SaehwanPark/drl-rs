@@ -7,6 +7,27 @@ documented in this file.
 
 ### Added
 
+- Procedural dungeon level generator (`generator`) in `drl-core` producing bounded
+  maps with non-overlapping rectangular rooms connected by walkable L-shaped and
+  straight corridors, border walls, and entry/exit placements.
+- Invariant reachability and connectivity validation using Breadth-First Search (BFS)
+  guaranteeing walkable paths from player spawn to down-stairs and between all rooms.
+- Room-based entity and loot distribution spawning representative monsters (Former
+  Humans, Imps) and floor items (9mm ammo, Shotgun shells, MedPacks, Shotguns, Armor).
+- Exit stairs interaction and level transitions via `Command::Descend`, validating
+  stairs presence with `CommandError::NotOnStairs` and transitioning the world to `LevelId(n + 1)`.
+- Player state preservation across level transitions, carrying over player health,
+  inventory backpack, equipped weapons/armor, clip ammunition, and energy into new levels.
+- Replay recording and playback support for down-stairs positions (`ReplayLog.initial_stairs`)
+  and multi-level command streams with bit-exact reproducibility.
+- Semantic protocol event `GameEvent::LevelTransitioned { from_level, to_level }`
+  and command `Command::Descend`.
+- Comprehensive integration test suite in `crates/drl-core/tests/level_progression.rs`
+  verifying procedural generator connectivity, stairs validation, player state retention,
+  and multi-level replay determinism.
+- Headless demo runner update in `drl-app` demonstrating combat, floor looting, stairs
+  descent, level transition from Level 1 to Level 2, and replay determinism.
+
 - Item domain model (`item`) in `drl-core` and `drl-protocol` with physical item
   properties, weapons, body armor, ammunition stacks, and consumables.
 - Bounded player inventory (`Inventory`) with automatic ammunition stacking, stack
