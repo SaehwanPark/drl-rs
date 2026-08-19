@@ -1,4 +1,6 @@
 /target
 
+# Assets
 /assets/*
 !/assets/drl-rust-banner.png
+!/assets/README.md
