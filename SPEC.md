@@ -23,59 +23,65 @@ does not replace or duplicate the full roadmap.
   fog-of-war exploration memory, entity observation filtering, and line-of-fire obstacle blocking.
 - Milestone 4 established item domain models, player inventory capacity, equipment slots (weapon
   and armor), ground item pickup/drop, weapon reload mechanics, ammo tracking, and consumable medpacks.
+- Milestone 4 established procedural dungeon level generation (`generator`), non-overlapping
+  rooms, BFS reachability validation, exit stairs (`Tile::StairsDown`), level transitions
+  (`Command::Descend`), player state persistence across level boundaries, and multi-level replay determinism.
 
 ## Present
 
-### Milestone 4: Procedural Level Generation, Stairs, Level Transitions, and Multi-Level Headless Mini-Run
+### Milestone 4: Enemy Archetypes, Tactical Monster AI, Target Legality & Selection, and Special-Use Phase Device
 
 Status: Active
 
-This slice implements procedural level generation (connected rooms and corridors with reachability
-invariants), exit stairs, player descent commands, seamless multi-level world transitions (carrying
-over player stats, health, inventory, and equipped items), and a complete multi-level headless mini-run.
+This slice implements representative enemy archetypes (Former Human, Former Sergeant, Imp, Demon/Pinky),
+tactical monster AI with ranged attack capabilities and line-of-fire evaluation, monster death loot drops,
+target validation and metadata querying, and special-use consumable items (Phase Device teleportation).
 
 Observable outcomes:
 
-- `drl-protocol` defines new semantic player commands and error conditions:
-  - `Command::Descend` (descends stairs at current position to transition to the next level);
-  - Typed error variant in `CommandError` (`NotOnStairs(Position)`);
-- `drl-protocol` defines new semantic game events:
-  - `GameEvent::LevelTransitioned { from_level: LevelId, to_level: LevelId }`;
-- `drl-core` implements an isolated procedural map generator in `crates/drl-core/src/generator.rs`:
-  - `LevelGenerator`: deterministic procedural generation of non-overlapping rectangular rooms connected
-    by walkable L-shaped and straight corridors with surrounding perimeter walls;
-  - Configurable room count, room dimension constraints, monster spawn density, and item spawn density;
-  - Automatic placement of player spawn in the starting room and `Tile::StairsDown` in the exit room;
-  - Formal reachability and connectivity verification (BFS flood-fill) ensuring all rooms and the exit
-    stairs are reachable from the player spawn point;
-  - Populates rooms with representative monsters (Former Humans, Imps) and floor loot (Ammo, MedPacks, Shotguns);
-  - Deterministic generation: identical seed produces identical map layout, actor spawns, and floor items;
-- `drl-core` implements level transition logic in `World` and `Game`:
-  - `Command::Descend` verifies the player stands on `Tile::StairsDown`;
-  - On valid descent, preserves player actor entity state (current/max HP, inventory backpack, equipped weapon
-    with magazine clip state, equipped armor, and action energy) and transitions to `LevelId(current + 1)`;
-  - Instantiates new `World` with generated map, resets fog-of-war exploration for the new floor, places player
-    at new level spawn point, and populates floor monsters and loot;
-  - Emits `GameEvent::LevelTransitioned`;
-- `drl-core` supports multi-level deterministic replay execution:
-  - `ReplayEngine` accurately records and replays multi-level command streams with bit-exact state reproduction;
-- `drl-app` demonstrates a multi-level headless mini-run:
-  - Level 1: exploration, engaging monsters, looting ammo/weapons, healing, reaching stairs, descending;
-  - Level 2: continuation with preserved inventory/health, further combat and exploration;
-  - Bit-exact replay verification across the full multi-level run;
+- `drl-protocol` defines target domain models, enemy classifications, new events, and error variants:
+  - `Target` enum (`Target::Entity(EntityId)`, `Target::Position(Position)`, `Target::Direction(Direction)`);
+  - `MonsterKind` enum (`FormerHuman`, `FormerSergeant`, `Imp`, `Demon`) for typed spawns and replays;
+  - `GameEvent::PlayerTeleported { from: Position, to: Position }`;
+  - `GameEvent::ItemDropped { item_id: ItemId, position: Position, item_name: String }`;
+  - `CommandError::InvalidTarget(String)`, `CommandError::NoTargetInRange`;
+- `drl-core` implements enemy archetype models and death drop configurations:
+  - `Actor::former_human`: armed with pistol, ranged attacks, drops 9mm ammo on death;
+  - `Actor::former_sergeant`: armed with shotgun, high damage close/mid-range attacks, drops shells or shotgun;
+  - `Actor::imp`: hurling fireballs at range with LOS, slashing in melee, drops medpack;
+  - `Actor::demon`: fast melee charger (Speed 130), high HP, biting melee strikes;
+- `drl-core` implements tactical AI decision engine in isolated module `crates/drl-core/src/ai.rs`:
+  - `MonsterAi::decide_action`: pure evaluation determining whether a monster executes a melee strike,
+    ranged attack with line-of-fire validation, moves closer to close distance, or waits;
+  - Monsters with ranged capabilities fire upon the player when within maximum range and line-of-fire is clear;
+  - Monsters unable to fire or with pure melee attacks navigate towards the player's position;
+  - On monster death, configured loot drops are automatically placed on the ground at the death location;
+- `drl-core` implements target legality checking and target query helpers in `crates/drl-core/src/targeting.rs`:
+  - `TargetingSystem::validate_target`: verifies bounds, range, living status, and line of fire;
+  - `TargetingSystem::find_visible_targets`: queries and sorts hostile actors in the player's current field of view;
+  - `TargetingSystem::find_nearest_target`: selects closest visible hostile target for auto-targeting;
+- `drl-core` implements special-use consumable item mechanics:
+  - `Item::phase_device`: special consumable that teleports user to a safe, random walkable floor tile;
+  - `Game::execute_use_item` handles phase device usage, relocates player, updates FOV/fog-of-war exploration,
+    and emits `GameEvent::PlayerTeleported`;
+- `drl-core` integrates archetypes and special items into procedural generation:
+  - `LevelGenerator` populates diverse monster archetypes and phase devices across dungeon rooms;
+- `drl-app` demonstrates tactical monster engagements with ranged Former Sergeants, fast charging Demons,
+  and emergency Phase Device teleportation, verified by bit-exact replay determinism;
 - `sh scripts/check-repository.sh` runs all checks, formatting, clippy, and tests cleanly.
 
 Verification:
 
 - `sh scripts/check-repository.sh` succeeds locally;
 - `cargo test --locked --workspace` passes all unit, integration, boundary, combat,
-  visibility, inventory, generator, and replay determinism tests;
-- unit tests in `crates/drl-core/src/generator.rs` verify deterministic generation, room count,
-  and flood-fill reachability;
-- integration tests in `crates/drl-core/tests/level_progression.rs` verify stairs descent validation,
-  level transition events, player state persistence across level transitions, and multi-level replay determinism;
-- `cargo run` executes the headless demo demonstrating procedural level exploration, combat, looting,
-  stairs descent, and replay verification.
+  visibility, inventory, generator, ai, targeting, and replay determinism tests;
+- unit tests in `crates/drl-core/src/ai.rs` and `crates/drl-core/src/targeting.rs` verify AI decision trees,
+  line-of-fire range checks, target querying, and sorting;
+- integration tests in `crates/drl-core/tests/monsters_ai.rs` verify monster ranged attacks, monster movement,
+  death loot drops, demon speed advantages, and replay determinism;
+- integration tests in `crates/drl-core/tests/special_items.rs` verify Phase Device consumption, player relocation,
+  bounds/walkability safety, and replay determinism;
+- `cargo run` executes the headless demo demonstrating multi-archetype combat, phase device escape, and replay verification.
 
 Out of scope:
 

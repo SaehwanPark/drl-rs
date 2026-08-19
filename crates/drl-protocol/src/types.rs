@@ -415,6 +415,87 @@ pub enum AttackOutcome {
   Blocked,
 }
 
+/// Target specification for actions, targeting queries, and line-of-fire checks.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Target {
+  /// Targeted grid position.
+  Position(Position),
+  /// Targeted actor entity.
+  Entity(EntityId),
+  /// Directional target line.
+  Direction(Direction),
+}
+
+/// Standard representative monster archetypes in DRL.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum MonsterKind {
+  /// Pistol-wielding former human soldier.
+  FormerHuman,
+  /// Shotgun-wielding former sergeant.
+  FormerSergeant,
+  /// Demonic imp hurling fireballs and slashing in melee.
+  Imp,
+  /// Fast, aggressive pinky demon rushing into melee.
+  Demon,
+}
+
+impl MonsterKind {
+  /// Display name of the monster archetype.
+  #[must_use]
+  pub const fn name(self) -> &'static str {
+    match self {
+      Self::FormerHuman => "Former Human",
+      Self::FormerSergeant => "Former Sergeant",
+      Self::Imp => "Imp",
+      Self::Demon => "Demon",
+    }
+  }
+
+  /// Default max hit points for this archetype.
+  #[must_use]
+  pub const fn default_hp(self) -> u32 {
+    match self {
+      Self::FormerHuman => 15,
+      Self::FormerSergeant => 25,
+      Self::Imp => 30,
+      Self::Demon => 45,
+    }
+  }
+
+  /// Default speed rating percentage for this archetype.
+  #[must_use]
+  pub const fn default_speed(self) -> u32 {
+    match self {
+      Self::FormerHuman => 100,
+      Self::FormerSergeant => 90,
+      Self::Imp => 100,
+      Self::Demon => 130,
+    }
+  }
+
+  /// Default melee damage range `(min, max)`.
+  #[must_use]
+  pub const fn default_melee_damage(self) -> (u32, u32) {
+    match self {
+      Self::FormerHuman => (2, 4),
+      Self::FormerSergeant => (3, 6),
+      Self::Imp => (4, 8),
+      Self::Demon => (8, 16),
+    }
+  }
+
+  /// Default ranged damage range `(min, max)`, range, and accuracy, if any.
+  #[must_use]
+  pub const fn default_ranged_stats(self) -> Option<((u32, u32), u32, i32)> {
+    match self {
+      Self::FormerHuman => Some(((4, 8), 7, 65)),
+      Self::FormerSergeant => Some(((8, 14), 5, 60)),
+      Self::Imp => Some(((5, 10), 8, 70)),
+      Self::Demon => None,
+    }
+  }
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -488,5 +569,21 @@ mod tests {
 
     let cost = ActionCost::default();
     assert_eq!(cost.as_u32(), 1000);
+  }
+
+  #[test]
+  fn test_target_and_monster_kind() {
+    let t_pos = Target::Position(Position::new(5, 5));
+    let t_ent = Target::Entity(EntityId::new(42));
+    let t_dir = Target::Direction(Direction::East);
+    assert_ne!(t_pos, t_dir);
+    assert_ne!(t_pos, t_ent);
+
+    assert_eq!(MonsterKind::FormerHuman.name(), "Former Human");
+    assert_eq!(MonsterKind::FormerHuman.default_hp(), 15);
+    assert_eq!(MonsterKind::Demon.name(), "Demon");
+    assert_eq!(MonsterKind::Demon.default_speed(), 130);
+    assert!(MonsterKind::Demon.default_ranged_stats().is_none());
+    assert!(MonsterKind::Imp.default_ranged_stats().is_some());
   }
 }

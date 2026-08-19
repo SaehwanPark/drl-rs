@@ -27,13 +27,16 @@ impl ReplayEngine {
     }
 
     for monster in &replay.initial_monsters {
-      game.world_mut().spawn_monster(
-        monster.position,
-        &monster.name,
-        monster.hp,
-        monster.speed,
+      let id = game.world_mut().allocate_entity_id();
+      let actor = crate::actor::Actor::new(id, monster.position, &monster.name, false).with_stats(
+        drl_protocol::HitPoints::full(monster.hp),
+        drl_protocol::Speed::new(monster.speed),
         monster.melee_damage,
-      )?;
+        monster.ranged_damage,
+        monster.ranged_range,
+        monster.accuracy,
+      );
+      game.world_mut().actors_mut().insert(id, actor);
     }
 
     for item_spec in &replay.initial_items {
@@ -47,6 +50,7 @@ impl ReplayEngine {
         ItemSpawnKind::SmallMedPack => Item::small_medpack(item_id),
         ItemSpawnKind::LargeMedPack => Item::large_medpack(item_id),
         ItemSpawnKind::GreenArmor => Item::green_armor(item_id),
+        ItemSpawnKind::PhaseDevice => Item::phase_device(item_id),
       };
       game
         .world_mut()

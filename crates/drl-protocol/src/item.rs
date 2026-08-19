@@ -57,6 +57,8 @@ pub enum ItemCategory {
   Ammo,
   /// Medical supply or consumable item.
   MedPack,
+  /// Special consumable device (e.g. Phase Device).
+  PhaseDevice,
 }
 
 impl fmt::Display for ItemCategory {
@@ -66,6 +68,7 @@ impl fmt::Display for ItemCategory {
       Self::Armor => write!(f, "Armor"),
       Self::Ammo => write!(f, "Ammo"),
       Self::MedPack => write!(f, "MedPack"),
+      Self::PhaseDevice => write!(f, "PhaseDevice"),
     }
   }
 }

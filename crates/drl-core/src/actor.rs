@@ -1,6 +1,6 @@
-//! Actor entities representing creatures and the player character.
-
-use drl_protocol::{ActionCost, ActorView, EntityId, HitPoints, Position, Speed};
+use drl_protocol::{
+  ActionCost, ActorView, EntityId, HitPoints, ItemSpawnKind, MonsterKind, Position, Speed,
+};
 
 use crate::inventory::{Equipment, Inventory};
 use crate::item::Item;
@@ -21,6 +21,8 @@ pub struct Actor {
   ranged_damage: Option<(u32, u32)>,
   ranged_range: u32,
   accuracy: i32,
+  monster_kind: Option<MonsterKind>,
+  death_drop: Option<ItemSpawnKind>,
   inventory: Inventory,
   equipment: Equipment,
 }
@@ -44,6 +46,8 @@ impl Actor {
       ranged_damage: if is_player { Some((4, 8)) } else { None },
       ranged_range: if is_player { 8 } else { 0 },
       accuracy: 75,
+      monster_kind: None,
+      death_drop: None,
       inventory: Inventory::default(),
       equipment: Equipment::new(),
     }
@@ -66,6 +70,20 @@ impl Actor {
     self.ranged_damage = ranged_damage;
     self.ranged_range = ranged_range;
     self.accuracy = accuracy;
+    self
+  }
+
+  /// Sets the monster archetype.
+  #[must_use]
+  pub fn with_monster_kind(mut self, kind: MonsterKind) -> Self {
+    self.monster_kind = Some(kind);
+    self
+  }
+
+  /// Sets the death loot drop specification.
+  #[must_use]
+  pub fn with_death_drop(mut self, drop: Option<ItemSpawnKind>) -> Self {
+    self.death_drop = drop;
     self
   }
 
@@ -262,6 +280,23 @@ impl Actor {
     }
   }
 
+  /// Monster archetype classification, if applicable.
+  #[must_use]
+  pub const fn monster_kind(&self) -> Option<MonsterKind> {
+    self.monster_kind
+  }
+
+  /// Death loot drop specification, if any.
+  #[must_use]
+  pub const fn death_drop(&self) -> Option<ItemSpawnKind> {
+    self.death_drop
+  }
+
+  /// Sets the death loot drop specification.
+  pub fn set_death_drop(&mut self, drop: Option<ItemSpawnKind>) {
+    self.death_drop = drop;
+  }
+
   /// Converts this actor to an immutable `ActorView` for observations.
   #[must_use]
   pub fn to_view(&self) -> ActorView {
@@ -273,6 +308,87 @@ impl Actor {
       hp: Some(self.hp),
       is_alive: self.is_alive,
       speed: self.speed,
+    }
+  }
+
+  // --- Factory constructors for representative DRL monster archetypes ---
+
+  /// Factory: Former Human (pistol zombie).
+  #[must_use]
+  pub fn former_human(id: EntityId, position: Position) -> Self {
+    let kind = MonsterKind::FormerHuman;
+    Self::new(id, position, kind.name(), false)
+      .with_stats(
+        HitPoints::full(kind.default_hp()),
+        Speed::new(kind.default_speed()),
+        kind.default_melee_damage(),
+        Some((4, 8)),
+        7,
+        65,
+      )
+      .with_monster_kind(kind)
+      .with_death_drop(Some(ItemSpawnKind::Ammo9mm(10)))
+  }
+
+  /// Factory: Former Sergeant (shotgun sergeant).
+  #[must_use]
+  pub fn former_sergeant(id: EntityId, position: Position) -> Self {
+    let kind = MonsterKind::FormerSergeant;
+    Self::new(id, position, kind.name(), false)
+      .with_stats(
+        HitPoints::full(kind.default_hp()),
+        Speed::new(kind.default_speed()),
+        kind.default_melee_damage(),
+        Some((8, 14)),
+        5,
+        60,
+      )
+      .with_monster_kind(kind)
+      .with_death_drop(Some(ItemSpawnKind::AmmoShells(4)))
+  }
+
+  /// Factory: Demonic Imp (fireball thrower).
+  #[must_use]
+  pub fn imp(id: EntityId, position: Position) -> Self {
+    let kind = MonsterKind::Imp;
+    Self::new(id, position, kind.name(), false)
+      .with_stats(
+        HitPoints::full(kind.default_hp()),
+        Speed::new(kind.default_speed()),
+        kind.default_melee_damage(),
+        Some((5, 10)),
+        8,
+        70,
+      )
+      .with_monster_kind(kind)
+      .with_death_drop(Some(ItemSpawnKind::SmallMedPack))
+  }
+
+  /// Factory: Pinky Demon (fast melee rusher).
+  #[must_use]
+  pub fn demon(id: EntityId, position: Position) -> Self {
+    let kind = MonsterKind::Demon;
+    Self::new(id, position, kind.name(), false)
+      .with_stats(
+        HitPoints::full(kind.default_hp()),
+        Speed::new(kind.default_speed()),
+        kind.default_melee_damage(),
+        None,
+        0,
+        75,
+      )
+      .with_monster_kind(kind)
+      .with_death_drop(None)
+  }
+
+  /// Constructs an actor from a given `MonsterKind`.
+  #[must_use]
+  pub fn from_monster_kind(id: EntityId, position: Position, kind: MonsterKind) -> Self {
+    match kind {
+      MonsterKind::FormerHuman => Self::former_human(id, position),
+      MonsterKind::FormerSergeant => Self::former_sergeant(id, position),
+      MonsterKind::Imp => Self::imp(id, position),
+      MonsterKind::Demon => Self::demon(id, position),
     }
   }
 }
@@ -343,5 +459,33 @@ mod tests {
     actor.set_energy(1500);
     actor.spend_energy(ActionCost::MOVE);
     assert_eq!(actor.energy(), 500);
+  }
+
+  #[test]
+  fn test_monster_archetypes_and_death_drops() {
+    let zombie = Actor::former_human(EntityId::new(10), Position::new(2, 3));
+    assert_eq!(zombie.name(), "Former Human");
+    assert_eq!(zombie.hp().current, 15);
+    assert_eq!(zombie.monster_kind(), Some(MonsterKind::FormerHuman));
+    assert_eq!(zombie.death_drop(), Some(ItemSpawnKind::Ammo9mm(10)));
+    assert_eq!(zombie.ranged_range(), 7);
+
+    let sergeant = Actor::former_sergeant(EntityId::new(11), Position::new(4, 5));
+    assert_eq!(sergeant.name(), "Former Sergeant");
+    assert_eq!(sergeant.hp().current, 25);
+    assert_eq!(sergeant.speed().as_u32(), 90);
+    assert_eq!(sergeant.death_drop(), Some(ItemSpawnKind::AmmoShells(4)));
+
+    let imp = Actor::imp(EntityId::new(12), Position::new(6, 7));
+    assert_eq!(imp.name(), "Imp");
+    assert_eq!(imp.hp().current, 30);
+    assert_eq!(imp.death_drop(), Some(ItemSpawnKind::SmallMedPack));
+
+    let demon = Actor::demon(EntityId::new(13), Position::new(8, 9));
+    assert_eq!(demon.name(), "Demon");
+    assert_eq!(demon.hp().current, 45);
+    assert_eq!(demon.speed().as_u32(), 130);
+    assert!(demon.ranged_damage().is_none());
+    assert_eq!(demon.death_drop(), None);
   }
 }

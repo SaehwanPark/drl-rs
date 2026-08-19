@@ -14,6 +14,7 @@ pub enum ItemSpawnKind {
   SmallMedPack,
   LargeMedPack,
   GreenArmor,
+  PhaseDevice,
 }
 
 /// Initial item spawn specification recorded in a replay log.
@@ -39,10 +40,13 @@ pub struct MonsterSpawnSpec {
   pub hp: u32,
   pub speed: u32,
   pub melee_damage: (u32, u32),
+  pub ranged_damage: Option<(u32, u32)>,
+  pub ranged_range: u32,
+  pub accuracy: i32,
 }
 
 impl MonsterSpawnSpec {
-  /// Creates a new monster spawn specification.
+  /// Creates a new monster spawn specification with default melee combat stats.
   #[must_use]
   pub fn new(
     position: Position,
@@ -57,7 +61,19 @@ impl MonsterSpawnSpec {
       hp,
       speed,
       melee_damage,
+      ranged_damage: None,
+      ranged_range: 0,
+      accuracy: 65,
     }
+  }
+
+  /// Sets ranged combat stats on this monster spawn specification.
+  #[must_use]
+  pub fn with_ranged_combat(mut self, damage: (u32, u32), range: u32, accuracy: i32) -> Self {
+    self.ranged_damage = Some(damage);
+    self.ranged_range = range;
+    self.accuracy = accuracy;
+    self
   }
 }
 

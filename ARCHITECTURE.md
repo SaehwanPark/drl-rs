@@ -17,7 +17,7 @@ shared semantic protocol contracts (`drl-protocol`), an executable application r
   `crates/`.
 - `crates/drl-protocol` is the shared contract library for semantic domain types
   (`Position`, `Direction`, `Turn`, `EntityId`, `ItemId`, `LevelId`, `HitPoints`,
-  `Speed`, `ActionCost`, `DamageType`, `DamageSource`, `DeathCause`, `AttackOutcome`),
+  `Speed`, `ActionCost`, `DamageType`, `DamageSource`, `DeathCause`, `AttackOutcome`, `Target`, `MonsterKind`),
   item types (`AmmoType`, `EquipmentSlot`, `ItemCategory`, `ItemView`, `GroundItemView`),
   commands (`Command::Move`, `Command::AttackMelee`, `Command::AttackRanged`, `Command::Wait`,
   `Command::Pickup`, `Command::Drop`, `Command::Equip`, `Command::Unequip`, `Command::Use`, `Command::Reload`, `Command::Descend`),
@@ -29,27 +29,33 @@ shared semantic protocol contracts (`drl-protocol`), an executable application r
   - `Map` & `Tile`: 2D bounded grid representation with walkability, transparency, and exit stairs (`Tile::StairsDown`);
   - `fov`: pure, deterministic field-of-view (`compute_fov`), line-of-sight raycasting (`has_line_of_sight`),
     and discrete ray tracing (`line_points`);
+  - `targeting`: pure targeting validation (`TargetingSystem::validate_target`), visible targets query (`find_visible_targets`),
+    and nearest enemy auto-selection (`find_nearest_target`);
+  - `ai`: deterministic monster tactical AI decision kernel (`MonsterAi::decide_action`, `MonsterAction`)
+    resolving melee attacks, ranged attacks with line-of-sight checks, and pathfinding pursuit;
   - `generator`: procedural dungeon level generator (`LevelGenerator`, `LevelGeneratorConfig`, `GeneratedLevel`, `Room`, `MonsterSpawn`)
     with non-overlapping room carving, L-shaped/straight corridor connections, down-stairs placement, BFS reachability validation,
     and deterministic monster/floor loot distribution;
   - `item`: domain item models (`Item`, `WeaponProperties`, `ArmorProperties`, `ConsumableProperties`,
-    ammo stacking, clip loading/consumption, and factory constructors for Pistol, Shotgun, Combat Knife,
-    9mm Ammo, Shells, MedPacks, and Green Armor);
+    ammo stacking, clip loading/consumption, Phase Device special-use teleportation, and factory constructors for Pistol,
+    Shotgun, Combat Knife, 9mm Ammo, Shells, MedPacks, Green Armor, and Phase Device);
   - `inventory`: bounded player backpack inventory (`Inventory`) with automatic ammo merge/stacking
     and equipped gear tracking (`Equipment` for weapon and armor slots);
   - `Actor`: combat stats, durability, speed, energy, inventory, equipment, dynamic weapon damage/accuracy,
-    armor damage protection mitigation, and living state;
+    armor damage protection mitigation, living state, monster archetypes (`FormerHuman`, `FormerSergeant`, `Imp`, `Demon`),
+    and death drop loot specifications;
   - `CombatResolver`: pure, deterministic combat calculation routines for melee and ranged attacks;
   - `Scheduler`: energy-based action scheduling algorithm executing actor turns by relative speeds;
   - `World`: physical level state, deterministic `BTreeMap` actor storage, ground items mapping
     (`ground_items: BTreeMap<ItemId, (Position, Item)>`), monster and item spawning,
     fog-of-war map exploration memory (`explored_tiles`), and perception filtering for player observations;
   - `Game`: turn progression kernel executing player commands (movement, bump-attacks, ranged attacks with
-    clip ammo deduction, weapon reloading, item pickups/drops/equips/consumables, stairs descent and level transitions),
-    monster AI responses, and deterministic event emissions;
+    clip ammo deduction, weapon reloading, item pickups/drops/equips/consumables, Phase Device teleportation,
+    stairs descent and level transitions), monster AI responses, and deterministic event emissions;
   - `ReplayEngine`: deterministic replay execution and bit-exact state verification across multi-level command streams.
 - `crates/drl-app` is the executable runner (`drl-rust`) that runs headless simulation,
-  combat, FOV visibility, item/equipment/reload mechanics, and multi-level stairs descent demonstrations and verifies replay reproducibility.
+  tactical ranged monster combat, FOV visibility, item/equipment/reload mechanics, Phase Device teleportation,
+  and multi-level stairs descent demonstrations and verifies replay reproducibility.
 - `crates/drl-script`, `crates/drl-mcp`, `crates/drl-render`, and
   `crates/drl-audio` are placeholder workspace crates with bounded dependency
   declarations.
@@ -61,10 +67,17 @@ shared semantic protocol contracts (`drl-protocol`), an executable application r
   weapon swapping, armor damage mitigation, ammo consumption, reloading, and medpack healing.
 - `crates/drl-core/tests/level_progression.rs` verifies procedural generation connectivity, stairs descent
   validation, player state persistence across level boundaries, and multi-level replay determinism.
+- `crates/drl-core/tests/monsters_ai.rs` verifies monster archetypes, tactical ranged AI with LOS checks,
+  speed turn frequencies, monster death loot drops, and combat replay determinism.
 - `crates/drl-core/tests/simulation.rs` verifies multi-step movement, collision,
   observation, and replay determinism.
+- `crates/drl-core/tests/special_items.rs` verifies Phase Device teleportation, destination safety invariants,
+  FOV exploration updates, and replay determinism.
+- `crates/drl-core/tests/targeting.rs` verifies targeting validation for Position/Entity/Direction targets,
+  range bounds, LOS obstruction, and visible target queries.
 - `crates/drl-core/tests/visibility.rs` verifies FOV shadowcasting, fog-of-war exploration
   memory persistence, player observation entity hiding, and line-of-fire obstacle blocking.
+
 - `docs/DRL-Rust_Project_Roadmap.md` owns milestone planning and progress.
 - `SPEC.md` expands the active roadmap slice.
 - `AGENTS.md`, `docs/harness/drl-delivery/team-spec.md`, and repo-local skills

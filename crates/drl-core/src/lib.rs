@@ -6,6 +6,7 @@
 //! and MCP transports.
 
 pub mod actor;
+pub mod ai;
 pub mod combat;
 pub mod fov;
 pub mod game;
@@ -16,9 +17,11 @@ pub mod item;
 pub mod replay;
 pub mod rng;
 pub mod scheduler;
+pub mod targeting;
 pub mod world;
 
 pub use actor::Actor;
+pub use ai::{MonsterAction, MonsterAi};
 pub use combat::CombatResolver;
 pub use fov::{DEFAULT_VISION_RADIUS, compute_fov, has_line_of_sight, line_points};
 pub use game::{Game, GameState};
@@ -29,6 +32,7 @@ pub use item::Item;
 pub use replay::ReplayEngine;
 pub use rng::GameRng;
 pub use scheduler::{ACTION_THRESHOLD, Scheduler};
+pub use targeting::TargetingSystem;
 pub use world::World;
 
 /// Returns the core simulation engine name.

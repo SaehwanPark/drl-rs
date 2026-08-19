@@ -7,6 +7,31 @@ documented in this file.
 
 ### Added
 
+- Enemy archetypes domain and factory constructors in `drl-protocol` and `drl-core`
+  (`FormerHuman`, `FormerSergeant`, `Imp`, `Demon`) with distinct health, speed,
+  melee, ranged attack ranges, accuracies, and death loot drop tables.
+- Tactical Monster AI decision module (`ai`) in `drl-core` (`MonsterAi::decide_action`)
+  supporting adjacent melee attacks, ranged projectile/fireball attacks with line-of-sight checks,
+  and pathfinding pursuit towards the player.
+- Targeting system module (`targeting`) in `drl-core` (`TargetingSystem`) providing
+  pure validation for `Target::Position`, `Target::Entity`, and `Target::Direction`
+  with out-of-bounds, range limit, and line-of-sight obstruction checks, as well as visible
+  target listing and nearest enemy auto-targeting.
+- Special-use consumable item `Phase Device` in `drl-protocol` and `drl-core` allowing
+  emergency spatial relocation to random walkable unoccupied cells, updating FOV and fog of war.
+- Monster death loot drop mechanics spawning floor items upon lethal combat resolution
+  at the monster's exact position and emitting `GameEvent::ItemDropped`.
+- Semantic protocol event `GameEvent::PlayerTeleported { from, to }`, `Target` enum,
+  `MonsterKind` enum, and `ItemCategory::PhaseDevice`.
+- Replay logging support for ranged monster specs with builder `with_ranged_combat`
+  and `ItemSpawnKind::PhaseDevice`.
+- Integration test suites in `crates/drl-core/tests/monsters_ai.rs`, `crates/drl-core/tests/special_items.rs`,
+  and `crates/drl-core/tests/targeting.rs` verifying tactical AI behaviors, Phase Device safety,
+  target validation, and bit-exact replay determinism.
+- Headless demo runner update in `drl-app` demonstrating tactical ranged monster combat,
+  loot drops, Phase Device emergency teleportation, and replay determinism.
+
+
 - Procedural dungeon level generator (`generator`) in `drl-core` producing bounded
   maps with non-overlapping rectangular rooms connected by walkable L-shaped and
   straight corridors, border walls, and entry/exit placements.

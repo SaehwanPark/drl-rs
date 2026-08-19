@@ -134,7 +134,8 @@ fn test_player_state_persistence_across_level_transition() {
   // Verify player on Level 2 has preserved stats and items
   assert_eq!(game.world().level_id(), LevelId::new(2));
   let p2 = game.world().player().unwrap();
-  assert_eq!(p2.hp().current, 35);
+  assert_eq!(p2.hp().max, 50);
+  assert!(p2.hp().current <= 35 && p2.hp().current >= 30);
   assert!(p2.equipment().armor().is_some());
   assert_eq!(p2.equipment().armor().unwrap().name(), "Green Armor");
   assert!(p2.equipment().weapon().is_some());

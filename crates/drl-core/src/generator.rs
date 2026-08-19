@@ -4,7 +4,7 @@
 //! walkable tunnels, places entry and down-stairs exits, verifies reachability
 //! via flood fill, and populates rooms with monsters and floor items.
 
-use drl_protocol::{ItemId, Position};
+use drl_protocol::{ItemId, ItemSpawnKind, MonsterKind, Position};
 use std::collections::{HashSet, VecDeque};
 
 use crate::grid::{Map, Tile};
@@ -86,10 +86,47 @@ impl Default for LevelGeneratorConfig {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MonsterSpawn {
   pub position: Position,
+  pub kind: Option<MonsterKind>,
   pub name: String,
   pub hp: u32,
   pub speed: u32,
   pub melee_damage: (u32, u32),
+  pub ranged_damage: Option<(u32, u32)>,
+  pub ranged_range: u32,
+  pub accuracy: i32,
+  pub death_drop: Option<ItemSpawnKind>,
+}
+
+impl MonsterSpawn {
+  /// Creates a monster spawn from a predefined archetype.
+  #[must_use]
+  pub fn from_kind(position: Position, kind: MonsterKind) -> Self {
+    let ranged_stats = kind.default_ranged_stats();
+    let (ranged_damage, ranged_range, accuracy) = match ranged_stats {
+      Some((dmg, range, acc)) => (Some(dmg), range, acc),
+      None => (None, 0, 75),
+    };
+
+    let death_drop = match kind {
+      MonsterKind::FormerHuman => Some(ItemSpawnKind::Ammo9mm(10)),
+      MonsterKind::FormerSergeant => Some(ItemSpawnKind::AmmoShells(4)),
+      MonsterKind::Imp => Some(ItemSpawnKind::SmallMedPack),
+      MonsterKind::Demon => None,
+    };
+
+    Self {
+      position,
+      kind: Some(kind),
+      name: kind.name().to_string(),
+      hp: kind.default_hp(),
+      speed: kind.default_speed(),
+      melee_damage: kind.default_melee_damage(),
+      ranged_damage,
+      ranged_range,
+      accuracy,
+      death_drop,
+    }
+  }
 }
 
 /// The result of a procedural level generation step.
@@ -209,25 +246,17 @@ impl LevelGenerator {
         let pos = Position::new(mx, my);
 
         if pos != stairs_position && map.is_walkable(pos) {
-          let is_imp = rng.gen_bool(0.35);
-          let monster = if is_imp {
-            MonsterSpawn {
-              position: pos,
-              name: "Imp".to_string(),
-              hp: 20,
-              speed: 100,
-              melee_damage: (3, 6),
-            }
+          let roll = rng.gen_range(0..100);
+          let kind = if roll < 40 {
+            MonsterKind::FormerHuman
+          } else if roll < 65 {
+            MonsterKind::Imp
+          } else if roll < 85 {
+            MonsterKind::FormerSergeant
           } else {
-            MonsterSpawn {
-              position: pos,
-              name: "Former Human".to_string(),
-              hp: 15,
-              speed: 100,
-              melee_damage: (2, 4),
-            }
+            MonsterKind::Demon
           };
-          monster_spawns.push(monster);
+          monster_spawns.push(MonsterSpawn::from_kind(pos, kind));
         }
       }
 
@@ -242,16 +271,18 @@ impl LevelGenerator {
           let item_id = ItemId::new(*item_id_counter);
 
           let roll = rng.gen_range(0..100);
-          let item = if roll < 40 {
+          let item = if roll < 35 {
             Item::ammo_9mm(item_id, 20)
-          } else if roll < 65 {
+          } else if roll < 55 {
             Item::small_medpack(item_id)
-          } else if roll < 85 {
+          } else if roll < 70 {
             Item::ammo_shells(item_id, 8)
-          } else if roll < 95 {
+          } else if roll < 85 {
             Item::shotgun(item_id)
-          } else {
+          } else if roll < 95 {
             Item::green_armor(item_id)
+          } else {
+            Item::phase_device(item_id)
           };
           item_spawns.push((pos, item));
         }

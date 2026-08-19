@@ -35,7 +35,7 @@ fn run_headless_demo() {
     .map_mut()
     .set_tile(stairs_pos, drl_core::Tile::StairsDown);
 
-  // Spawn ground loot at (6, 5): Shotgun and Shells
+  // Spawn ground loot at (6, 5): Shotgun and Phase Device
   let ground_pos = Position::new(6, 5);
   let shotgun_id = game.world_mut().allocate_item_id();
   let shotgun = Item::shotgun(shotgun_id);
@@ -44,22 +44,24 @@ fn run_headless_demo() {
     .spawn_ground_item(ground_pos, shotgun)
     .expect("failed to spawn ground shotgun");
 
-  let shells_id = game.world_mut().allocate_item_id();
-  let shells = Item::ammo_shells(shells_id, 16);
+  let phase_id = game.world_mut().allocate_item_id();
+  let phase_device = Item::phase_device(phase_id);
   game
     .world_mut()
-    .spawn_ground_item(ground_pos, shells)
-    .expect("failed to spawn ground shells");
+    .spawn_ground_item(ground_pos, phase_device)
+    .expect("failed to spawn ground phase device");
 
-  // Spawn representative monster (Former Human) at (8, 5)
+  // Spawn representative monster (Former Sergeant) at (8, 5)
   let monster_pos = Position::new(8, 5);
-  let _monster_id = game
+  let sergeant =
+    drl_core::Actor::former_sergeant(game.world_mut().allocate_entity_id(), monster_pos);
+  game
     .world_mut()
-    .spawn_monster(monster_pos, "Former Human", 15, 100, (2, 4))
-    .expect("failed to spawn monster");
+    .actors_mut()
+    .insert(sergeant.id(), sergeant);
 
   println!(
-    "Turn {}: Level 1 - Player at ({}, {}), Stairs at ({}, {}), Floor Loot at ({}, {}), Monster at ({}, {})",
+    "Turn {}: Level 1 - Player at ({}, {}), Stairs at ({}, {}), Floor Loot at ({}, {}), Former Sergeant at ({}, {})",
     game.turn().count,
     start_pos.x,
     start_pos.y,
@@ -75,29 +77,25 @@ fn run_headless_demo() {
     Command::AttackRanged(monster_pos), // 1. Fire equipped Pistol at (8, 5)
     Command::Move(Direction::East),     // 2. Step onto (6, 5) with ground items
     Command::Pickup,                    // 3. Pick up Shotgun
-    Command::Pickup,                    // 4. Pick up Shells
+    Command::Pickup,                    // 4. Pick up Phase Device
     Command::Equip(shotgun_id),         // 5. Equip Shotgun
-    Command::AttackRanged(Position::new(7, 5)), // 6. Blast monster at (7, 5) with Shotgun
-    Command::Move(Direction::East),     // 7. Melee bump-attack to finish monster
-    Command::Move(Direction::East),     // 8. Step onto (7, 5) stairs down
-    Command::Descend,                   // 9. Descend stairs -> transition to Level 2!
-    Command::Move(Direction::East),     // 10. Step East on Level 2
+    Command::AttackRanged(Position::new(8, 5)), // 6. Blast monster at (8, 5) with Shotgun
+    Command::Move(Direction::East),     // 7. Step to (7, 5)
+    Command::Use(phase_id),             // 8. Emergency Phase Device teleport across space!
+    Command::Wait,                      // 9. Catch breath
   ];
 
   let mut replay = ReplayLog::new(seed, width, height, start_pos);
   replay.record_stairs(stairs_pos);
   replay.record_item(ItemSpawnSpec::new(ground_pos, ItemSpawnKind::Shotgun));
-  replay.record_item(ItemSpawnSpec::new(
-    ground_pos,
-    ItemSpawnKind::AmmoShells(16),
-  ));
-  replay.record_monster(MonsterSpawnSpec::new(
-    monster_pos,
-    "Former Human",
-    15,
-    100,
-    (2, 4),
-  ));
+  replay.record_item(ItemSpawnSpec::new(ground_pos, ItemSpawnKind::PhaseDevice));
+  replay.record_monster(
+    MonsterSpawnSpec::new(monster_pos, "Former Sergeant", 25, 90, (3, 6)).with_ranged_combat(
+      (8, 14),
+      5,
+      60,
+    ),
+  );
 
   for cmd in commands {
     match game.step(cmd) {
@@ -171,11 +169,30 @@ fn run_headless_demo() {
                 cause
               );
             }
+            drl_protocol::GameEvent::ItemDropped {
+              item_name,
+              position,
+              ..
+            } => {
+              println!(
+                "  -> Loot Drop: Dropped {item_name} at ({}, {})",
+                position.x, position.y
+              );
+            }
             drl_protocol::GameEvent::ItemPickedUp { item_name, .. } => {
               println!("  -> Loot: Picked up {item_name}");
             }
             drl_protocol::GameEvent::ItemEquipped { slot, .. } => {
               println!("  -> Equip: Equipped item into {slot} slot");
+            }
+            drl_protocol::GameEvent::ItemUsed { item_name, .. } => {
+              println!("  -> Item Use: Consumed {item_name}");
+            }
+            drl_protocol::GameEvent::PlayerTeleported { from, to } => {
+              println!(
+                "  -> Teleport: Phase shift relocated player from ({}, {}) to ({}, {})",
+                from.x, from.y, to.x, to.y
+              );
             }
             drl_protocol::GameEvent::WeaponReloaded {
               ammo_loaded,
@@ -207,7 +224,7 @@ fn run_headless_demo() {
     }
   }
 
-  // Demonstrate MedPack healing
+  // Demonstrate MedPack healing if available
   if let Some(med_id) = game
     .world()
     .player()

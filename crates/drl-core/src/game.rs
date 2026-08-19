@@ -8,6 +8,7 @@ use drl_protocol::{
 use crate::combat::CombatResolver;
 use crate::generator::{LevelGenerator, LevelGeneratorConfig};
 use crate::grid::Map;
+use crate::item::Item;
 use crate::rng::GameRng;
 use crate::scheduler::{ACTION_THRESHOLD, Scheduler};
 use crate::world::World;
@@ -463,7 +464,7 @@ impl Game {
     let player = self
       .state
       .world
-      .get_actor_mut(player_id)
+      .get_actor(player_id)
       .ok_or(CommandError::EntityNotFound(player_id))?;
 
     let item = player
@@ -471,22 +472,48 @@ impl Game {
       .get_item(item_id)
       .ok_or(CommandError::ItemNotFound(item_id))?;
 
-    let heal_amount = if let Some(props) = item.consumable_properties() {
-      props.heal_amount
-    } else {
-      return Err(CommandError::CannotUse(item_id));
-    };
-
     let item_name = item.name().to_string();
-    player.heal(heal_amount);
-    player.inventory_mut().remove_item(item_id)?;
 
-    events.push(GameEvent::ItemUsed {
-      entity_id: player_id,
-      item_id,
-      item_name,
-    });
-    Ok(())
+    if item.is_phase_device() {
+      let old_pos = player.position();
+      let new_pos = self
+        .state
+        .world
+        .find_random_walkable_unoccupied_cell(&mut self.state.rng)
+        .ok_or_else(|| {
+          CommandError::InvalidCommand("no valid teleport destination available".to_string())
+        })?;
+
+      let player_mut = self.state.world.get_actor_mut(player_id).unwrap();
+      player_mut.inventory_mut().remove_item(item_id)?;
+      player_mut.set_position(new_pos);
+      self.state.world.update_visibility();
+
+      events.push(GameEvent::PlayerTeleported {
+        from: old_pos,
+        to: new_pos,
+      });
+      events.push(GameEvent::ItemUsed {
+        entity_id: player_id,
+        item_id,
+        item_name,
+      });
+      Ok(())
+    } else if let Some(props) = item.consumable_properties() {
+      let heal_amount = props.heal_amount;
+      let player_mut = self.state.world.get_actor_mut(player_id).unwrap();
+      player_mut.heal(heal_amount);
+      player_mut.inventory_mut().remove_item(item_id)?;
+
+      events.push(GameEvent::ItemUsed {
+        entity_id: player_id,
+        item_id,
+        item_name,
+      });
+      Ok(())
+    } else {
+      Err(CommandError::CannotUse(item_id))
+    }
   }
 
   /// Executes reloading the player's equipped weapon.
@@ -653,11 +680,21 @@ impl Game {
       });
 
       if is_lethal {
+        let death_drop = self
+          .state
+          .world
+          .get_actor(target_id)
+          .and_then(|a| a.death_drop());
+        let drop_pos = self.state.world.get_actor(target_id).map(|a| a.position());
         let cause = death_cause.unwrap_or(DeathCause::MeleeAttack { attacker_id });
         events.push(GameEvent::ActorDied {
           entity_id: target_id,
           cause,
         });
+
+        if let (Some(drop_kind), Some(pos)) = (death_drop, drop_pos) {
+          self.spawn_death_drop(target_id, pos, drop_kind, events)?;
+        }
 
         if self.state.world.player_id() == Some(target_id) {
           self.state.is_game_over = true;
@@ -780,16 +817,56 @@ impl Game {
       });
 
       if is_lethal {
+        let death_drop = self
+          .state
+          .world
+          .get_actor(target_monster_id)
+          .and_then(|a| a.death_drop());
         events.push(GameEvent::ActorDied {
           entity_id: target_monster_id,
           cause: DeathCause::RangedAttack {
             attacker_id: player_id,
           },
         });
+
+        if let Some(drop_kind) = death_drop {
+          self.spawn_death_drop(target_monster_id, target_pos, drop_kind, events)?;
+        }
       }
     }
 
     Ok(fire_cost)
+  }
+
+  /// Spawns a loot drop on the ground when a monster dies.
+  fn spawn_death_drop(
+    &mut self,
+    entity_id: drl_protocol::EntityId,
+    pos: Position,
+    kind: drl_protocol::ItemSpawnKind,
+    events: &mut Vec<GameEvent>,
+  ) -> Result<(), CommandError> {
+    let item_id = self.state.world.allocate_item_id();
+    let item = match kind {
+      drl_protocol::ItemSpawnKind::Pistol => Item::pistol(item_id),
+      drl_protocol::ItemSpawnKind::Shotgun => Item::shotgun(item_id),
+      drl_protocol::ItemSpawnKind::CombatKnife => Item::combat_knife(item_id),
+      drl_protocol::ItemSpawnKind::Ammo9mm(count) => Item::ammo_9mm(item_id, count),
+      drl_protocol::ItemSpawnKind::AmmoShells(count) => Item::ammo_shells(item_id, count),
+      drl_protocol::ItemSpawnKind::SmallMedPack => Item::small_medpack(item_id),
+      drl_protocol::ItemSpawnKind::LargeMedPack => Item::large_medpack(item_id),
+      drl_protocol::ItemSpawnKind::GreenArmor => Item::green_armor(item_id),
+      drl_protocol::ItemSpawnKind::PhaseDevice => Item::phase_device(item_id),
+    };
+    let item_name = item.name().to_string();
+    self.state.world.spawn_ground_item(pos, item)?;
+    events.push(GameEvent::ItemDropped {
+      entity_id,
+      item_id,
+      item_name,
+      position: pos,
+    });
+    Ok(())
   }
 
   /// Runs scheduled monster turns until the player is ready to act again.
@@ -855,37 +932,17 @@ impl Game {
       return Ok(());
     }
 
-    let Some(player) = self.state.world.get_actor(player_id) else {
-      return Ok(());
-    };
-    if !player.is_alive() {
-      return Ok(());
-    }
+    let action = crate::ai::MonsterAi::decide_action(monster, &self.state.world, player_id);
 
-    let m_pos = monster.position();
-    let p_pos = player.position();
-    let dist = m_pos.distance_chebyshev(p_pos);
-
-    if dist == 1 {
-      // Adjacent to player -> melee attack player!
-      self.execute_melee_attack(monster_id, player_id, events)?;
-    } else {
-      // Step towards player by choosing best walkable direction (preferring straight lines)
-      let best_dir = Direction::ALL_8WAY
-        .into_iter()
-        .filter(|&dir| {
-          let target = m_pos + dir;
-          self.state.world.map().is_in_bounds(target) && !self.state.world.is_cell_blocked(target)
-        })
-        .min_by_key(|&dir| {
-          let target = m_pos + dir;
-          (
-            target.distance_chebyshev(p_pos),
-            target.distance_squared(p_pos),
-          )
-        });
-
-      if let Some(dir) = best_dir {
+    match action {
+      crate::ai::MonsterAction::Melee(target_id) => {
+        self.execute_melee_attack(monster_id, target_id, events)?;
+      }
+      crate::ai::MonsterAction::Ranged(target_pos) => {
+        self.execute_monster_ranged_attack(monster_id, player_id, target_pos, events)?;
+      }
+      crate::ai::MonsterAction::Move(dir) => {
+        let m_pos = monster.position();
         let new_pos = m_pos + dir;
         if let Some(m) = self.state.world.get_actor_mut(monster_id) {
           m.set_position(new_pos);
@@ -895,7 +952,9 @@ impl Game {
           from: m_pos,
           to: new_pos,
         });
-      } else {
+      }
+      crate::ai::MonsterAction::Wait => {
+        let m_pos = monster.position();
         events.push(GameEvent::EntityWaited {
           entity_id: monster_id,
           position: m_pos,
@@ -910,6 +969,80 @@ impl Game {
         entity_id: monster_id,
         cost: ActionCost::STANDARD,
       });
+    }
+
+    Ok(())
+  }
+
+  /// Executes a monster ranged attack targeting the player.
+  fn execute_monster_ranged_attack(
+    &mut self,
+    monster_id: drl_protocol::EntityId,
+    player_id: drl_protocol::EntityId,
+    target_pos: Position,
+    events: &mut Vec<GameEvent>,
+  ) -> Result<(), CommandError> {
+    let m_pos = self
+      .state
+      .world
+      .get_actor(monster_id)
+      .ok_or(CommandError::EntityNotFound(monster_id))?
+      .position();
+
+    let distance = m_pos.distance_chebyshev(target_pos);
+
+    let monster = self
+      .state
+      .world
+      .get_actor(monster_id)
+      .ok_or(CommandError::EntityNotFound(monster_id))?;
+    let player = self
+      .state
+      .world
+      .get_actor(player_id)
+      .ok_or(CommandError::EntityNotFound(player_id))?;
+
+    let outcome =
+      CombatResolver::resolve_ranged_attack(monster, player, distance, &mut self.state.rng);
+
+    events.push(GameEvent::AttackResolved {
+      attacker_id: monster_id,
+      target_id: player_id,
+      outcome,
+      is_ranged: true,
+    });
+
+    if let AttackOutcome::Hit { damage, is_lethal } = outcome
+      && damage > 0
+    {
+      let (taken, _, _) =
+        self
+          .state
+          .world
+          .apply_damage(player_id, damage, DamageSource::Actor(monster_id))?;
+
+      let remaining = self
+        .state
+        .world
+        .get_actor(player_id)
+        .map_or(0, |a| a.hp().current);
+
+      events.push(GameEvent::DamageApplied {
+        target_id: player_id,
+        amount: taken,
+        remaining_hp: remaining,
+        source: DamageSource::Actor(monster_id),
+      });
+
+      if is_lethal {
+        events.push(GameEvent::ActorDied {
+          entity_id: player_id,
+          cause: DeathCause::RangedAttack {
+            attacker_id: monster_id,
+          },
+        });
+        self.state.is_game_over = true;
+      }
     }
 
     Ok(())
