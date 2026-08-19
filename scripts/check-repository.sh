@@ -24,6 +24,8 @@ if [ -n "$whitespace_hits" ]; then
   exit 1
 fi
 
+git diff HEAD --check --
+sh scripts/check-agent-harness.sh
 cargo fmt --all -- --check
 cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
 cargo test --locked --workspace

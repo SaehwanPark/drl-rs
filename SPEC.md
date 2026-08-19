@@ -26,6 +26,13 @@ Observable outcomes:
 - repository-wide agent guidance identifies canonical documents and checks;
 - one repo-local skill drives a bounded roadmap slice through specification,
   implementation, verification, and documentation reconciliation;
+- a staged delivery team contract keeps one milestone owner while selectively
+  routing legacy archaeology, test play, and determinism review;
+- test-play modes are activated only by implemented repository capability, with
+  unsupported modes reported as `NOT_RUN` and unresolved evidence as
+  `INCONCLUSIVE`;
+- optional cross-agent handoffs use deterministic ignored paths and statuses
+  without duplicating canonical project state;
 - architecture, specification, and changelog state distinguish verified facts
   from planned design;
 - repository-controlled text uses spaces with an indentation and tab width of
@@ -36,6 +43,8 @@ Observable outcomes:
 Verification:
 
 - `sh scripts/check-repository.sh` succeeds locally;
+- `sh scripts/check-agent-harness.sh` validates skill frontmatter, required
+  contracts and harness paths, plus required handoff and status vocabulary;
 - `git diff --check` succeeds;
 - document links and source-of-truth relationships agree across `AGENTS.md`,
   this file, `ARCHITECTURE.md`, `CHANGELOG.md`, and the roadmap;
@@ -45,6 +54,8 @@ Out of scope:
 
 - converting the package into the planned multi-crate workspace;
 - implementing gameplay or legacy behavior specifications;
+- running DRL-Rust gameplay, replay, bot, MCP, statistical, or human play
+  modes that have not been implemented;
 - creating ADR, contribution-policy, or provenance inventories;
 - selecting Lua, rendering, audio, ECS, or MCP dependencies.
 

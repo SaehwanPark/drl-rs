@@ -17,10 +17,10 @@ the [project proposal](docs/DRL-Rust_Project_Proposal.md) remains planned.
   message.
 - `docs/DRL-Rust_Project_Roadmap.md` owns milestone planning and progress.
 - `SPEC.md` expands the active roadmap slice.
-- `AGENTS.md` and `.agents/skills/drl-milestone-delivery/SKILL.md` define the
-  repository-local development harness.
+- `AGENTS.md`, `docs/harness/drl-delivery/team-spec.md`, and repo-local skills
+  define the development and test-play harness.
 - `scripts/check-repository.sh` is the common local and CI verification entry
-  point.
+  point and includes deterministic harness-structure validation.
 
 There is no library API, multi-crate workspace, game state, command protocol,
 Lua runtime, MCP server, renderer, audio system, persistence layer, or gameplay
@@ -31,7 +31,9 @@ implementation yet.
 ```text
 Roadmap milestone
   -> active SPEC slice
-  -> implementation and tests
+  -> optional evidence specialists
+  -> implementation and focused tests
+  -> capability-gated test play and determinism review
   -> local and CI verification
   -> architecture, changelog, and roadmap reconciliation
 ```
@@ -53,6 +55,11 @@ cargo run -> src/main.rs -> placeholder standard output
   command boundary.
 - Legacy Pascal and Lua sources inform behavior, not Rust module structure or
   execution order.
+- One milestone owner reconciles canonical documents; delegated workers are
+  read-only by default and cannot convert exploratory findings directly into
+  completion claims.
+- Unsupported test-play capabilities are reported as `NOT_RUN`; missing or
+  contradictory evidence remains `INCONCLUSIVE`.
 - Repository-controlled text uses spaces with indentation and tab width 2.
 
 ## Planned Direction

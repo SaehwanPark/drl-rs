@@ -24,6 +24,10 @@
   slice, applicable architecture constraints, and relevant implementation or
   legacy evidence.
 - Use `.agents/skills/drl-milestone-delivery/SKILL.md` for milestone work.
+- For coordinated work, follow `docs/harness/drl-delivery/team-spec.md`; keep
+  one milestone owner and serialize canonical-document writes.
+- Use `.agents/skills/drl-test-play/SKILL.md` for test play. Run only modes
+  enabled by implemented repository capabilities.
 - Use spaces with an indentation and tab width of 2. Run:
 
   ```sh
