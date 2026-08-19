@@ -16,26 +16,32 @@ shared semantic protocol contracts (`drl-protocol`), an executable application r
 - Root `Cargo.toml` defines the Cargo workspace managing all crates under
   `crates/`.
 - `crates/drl-protocol` is the shared contract library for semantic domain types
-  (`Position`, `Direction`, `Turn`, `EntityId`, `ItemId`, `LevelId`), commands
-  (`Command::Move`, `Command::Wait`), errors (`CommandError`), events (`GameEvent`),
-  observations (`Observation`, `TileView`, `ActorView`), and replay specifications
-  (`ReplayLog`).
+  (`Position`, `Direction`, `Turn`, `EntityId`, `ItemId`, `LevelId`, `HitPoints`,
+  `Speed`, `ActionCost`, `DamageType`, `DamageSource`, `DeathCause`, `AttackOutcome`),
+  commands (`Command::Move`, `Command::AttackMelee`, `Command::AttackRanged`, `Command::Wait`),
+  errors (`CommandError`), events (`GameEvent`), observations (`Observation`, `TileView`, `ActorView`),
+  and replay specifications (`ReplayLog`, `MonsterSpawnSpec`).
 - `crates/drl-core` is the deterministic headless simulation core library containing:
   - `GameRng`: deterministic seedable PRNG (SplitMix64 + Xoshiro256++) with no ambient
     or global state;
   - `Map` & `Tile`: 2D bounded grid representation with walkability and transparency;
-  - `World`: physical level state, deterministic `BTreeMap` actor storage, and collision checks;
-  - `Game`: turn progression kernel executing player commands, emitting ordered events,
-    and managing game state;
+  - `Actor`: combat stats, durability, speed, energy, damage ranges, and living state;
+  - `CombatResolver`: pure, deterministic combat calculation routines for melee and ranged attacks;
+  - `Scheduler`: energy-based action scheduling algorithm executing actor turns by relative speeds;
+  - `World`: physical level state, deterministic `BTreeMap` actor storage, monster spawning, and collision checks;
+  - `Game`: turn progression kernel executing player commands, bump-attacks, ranged fire, monster AI responses,
+    and event emissions;
   - `ReplayEngine`: deterministic replay execution and bit-exact state verification.
 - `crates/drl-app` is the executable runner (`drl-rust`) that runs headless simulation
-  demonstrations and verifies replay reproducibility.
+  and combat demonstrations and verifies replay reproducibility.
 - `crates/drl-script`, `crates/drl-mcp`, `crates/drl-render`, and
   `crates/drl-audio` are placeholder workspace crates with bounded dependency
   declarations.
 - `crates/drl-core/tests/boundaries.rs` enforces architectural dependency
   direction via automated tests.
-- `crates/drl-core/tests/simulation.rs` verifies end-to-end multi-step movement, collision,
+- `crates/drl-core/tests/combat.rs` verifies end-to-end combat encounters, ranged attacks,
+  monster response, death transitions, and replay determinism.
+- `crates/drl-core/tests/simulation.rs` verifies multi-step movement, collision,
   observation, and replay determinism.
 - `docs/DRL-Rust_Project_Roadmap.md` owns milestone planning and progress.
 - `SPEC.md` expands the active roadmap slice.

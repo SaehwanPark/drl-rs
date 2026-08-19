@@ -6,8 +6,12 @@ use std::fmt;
 /// Semantic player or actor command submitted to the simulation core.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Command {
-  /// Move or attempt to step in a direction.
+  /// Move or attempt to step in a direction (initiates bump-attack if enemy present).
   Move(Direction),
+  /// Direct melee attack in a direction.
+  AttackMelee(Direction),
+  /// Direct ranged attack targeting a grid position.
+  AttackRanged(Position),
   /// Wait in place for one turn.
   Wait,
 }
@@ -28,6 +32,12 @@ pub enum CommandError {
   EntityNotFound(EntityId),
   /// Direction supplied is invalid for the requested action.
   InvalidDirection(Direction),
+  /// Target position is out of range for the chosen weapon or action.
+  TargetOutOfRange(Position),
+  /// Target position contains no valid target.
+  InvalidTarget(Position),
+  /// Dead actor cannot perform actions.
+  DeadActorCannotAct(EntityId),
   /// Generic command validation failure.
   InvalidCommand(String),
 }
@@ -55,6 +65,19 @@ impl fmt::Display for CommandError {
       }
       Self::EntityNotFound(id) => write!(f, "entity {} was not found", id.as_u64()),
       Self::InvalidDirection(dir) => write!(f, "invalid direction: {dir:?}"),
+      Self::TargetOutOfRange(pos) => {
+        write!(f, "target position ({}, {}) is out of range", pos.x, pos.y)
+      }
+      Self::InvalidTarget(pos) => {
+        write!(
+          f,
+          "target position ({}, {}) contains no valid target",
+          pos.x, pos.y
+        )
+      }
+      Self::DeadActorCannotAct(id) => {
+        write!(f, "dead actor {} cannot perform actions", id.as_u64())
+      }
       Self::InvalidCommand(msg) => write!(f, "invalid command: {msg}"),
     }
   }
@@ -78,6 +101,15 @@ mod tests {
     assert_eq!(
       blocked.to_string(),
       "position (3, 4) is blocked by entity 42"
+    );
+
+    let dead = CommandError::DeadActorCannotAct(EntityId::new(7));
+    assert_eq!(dead.to_string(), "dead actor 7 cannot perform actions");
+
+    let out_range = CommandError::TargetOutOfRange(Position::new(10, 10));
+    assert_eq!(
+      out_range.to_string(),
+      "target position (10, 10) is out of range"
     );
   }
 }

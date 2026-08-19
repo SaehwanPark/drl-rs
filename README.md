@@ -11,20 +11,24 @@ the planned simulation core remains portable and platform-independent.
 
 ## Project Status
 
-DRL-Rust has established its **Milestone 1 headless simulation kernel**. The
+DRL-Rust has established its **Milestone 2 Action Economy and Combat System**. The
 current implementation is a multi-crate Rust 2024 workspace featuring:
 
 - pure, deterministic headless simulation core (`drl-core`) with 2D tile maps,
-  grid coordinates, seedable PRNG, and turn-based movement mechanics;
-- shared semantic protocol schemas (`drl-protocol`) for commands, observations,
-  events, and replays;
+  grid coordinates, seedable PRNG, and turn-based movement and combat mechanics;
+- action economy and energy-based actor scheduling (`Scheduler`) supporting relative
+  speeds and deterministic turn progression;
+- combat resolution engine (`CombatResolver`) supporting melee bump-attacks, direct
+  melee strikes, and ranged weapon fire with damage clamping and death handling;
+- shared semantic protocol schemas (`drl-protocol`) for commands, combat domain models,
+  observations, events, and replays;
 - an executable application runner (`drl-app` / `drl-rust`) that runs a headless
-  simulation demonstration and verifies replay reproducibility;
-- automated architectural boundary tests and deterministic replay verification.
+  combat simulation demonstration and verifies replay reproducibility;
+- automated architectural boundary tests, pure combat unit tests, and deterministic
+  scenario replay verification.
 
-Combat mechanics, procedural level generation, live Lua scripting integration,
-MCP server transport, GPU rendering, and audio playback are scheduled in subsequent
-roadmap milestones.
+Procedural level generation, live Lua scripting integration, MCP server transport,
+GPU rendering, and audio playback are scheduled in subsequent roadmap milestones.
 
 The project intends to preserve DRL's modeled behavior and tactical character
 without translating the legacy Pascal architecture or execution traces

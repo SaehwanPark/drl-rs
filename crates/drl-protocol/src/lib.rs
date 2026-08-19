@@ -14,8 +14,11 @@ pub use event::GameEvent;
 pub use observation::{
   ActorView, Observation, OmniscientObservation, PlayerObservation, TileKind, TileView,
 };
-pub use replay::ReplayLog;
-pub use types::{Direction, EntityId, ItemId, LevelId, Position, Turn};
+pub use replay::{MonsterSpawnSpec, ReplayLog};
+pub use types::{
+  ActionCost, AttackOutcome, DamageSource, DamageType, DeathCause, Direction, EntityId, HitPoints,
+  ItemId, LevelId, Position, Speed, Turn,
+};
 
 /// Returns the protocol schema version for DRL-Rust.
 #[must_use]

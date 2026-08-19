@@ -18,6 +18,16 @@ impl ReplayEngine {
       replay.player_start,
     )?;
 
+    for monster in &replay.initial_monsters {
+      game.world_mut().spawn_monster(
+        monster.position,
+        &monster.name,
+        monster.hp,
+        monster.speed,
+        monster.melee_damage,
+      )?;
+    }
+
     let mut all_events = Vec::new();
     for &cmd in &replay.commands {
       let step_events = game.step(cmd)?;

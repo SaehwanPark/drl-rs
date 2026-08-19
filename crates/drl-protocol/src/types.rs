@@ -252,6 +252,163 @@ impl LevelId {
   }
 }
 
+/// Actor health points representing current and maximum durability.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+pub struct HitPoints {
+  pub current: u32,
+  pub max: u32,
+}
+
+impl HitPoints {
+  /// Creates hit points with explicit current and maximum values.
+  #[must_use]
+  pub const fn new(current: u32, max: u32) -> Self {
+    let cur = if current > max { max } else { current };
+    Self { current: cur, max }
+  }
+
+  /// Creates full hit points with current equal to max.
+  #[must_use]
+  pub const fn full(max: u32) -> Self {
+    Self { current: max, max }
+  }
+
+  /// Returns true if hit points have reached zero (dead).
+  #[must_use]
+  pub const fn is_dead(&self) -> bool {
+    self.current == 0
+  }
+
+  /// Returns true if current hit points are at maximum.
+  #[must_use]
+  pub const fn is_full(&self) -> bool {
+    self.current >= self.max
+  }
+
+  /// Deducts damage from current hit points, clamping to zero.
+  /// Returns the actual damage deducted.
+  pub fn take_damage(&mut self, amount: u32) -> u32 {
+    let damage = if amount >= self.current {
+      self.current
+    } else {
+      amount
+    };
+    self.current -= damage;
+    damage
+  }
+
+  /// Restores health up to maximum. Returns the actual amount healed.
+  pub fn heal(&mut self, amount: u32) -> u32 {
+    let missing = self.max.saturating_sub(self.current);
+    let healed = if amount > missing { missing } else { amount };
+    self.current += healed;
+    healed
+  }
+}
+
+/// Relative movement and action speed (percentage modifier, standard = 100).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct Speed(pub u32);
+
+impl Speed {
+  /// Standard normal actor speed (100%).
+  pub const NORMAL: Self = Self(100);
+
+  /// Creates a speed instance with a percentage rating.
+  #[must_use]
+  pub const fn new(percentage: u32) -> Self {
+    Self(percentage)
+  }
+
+  /// Raw percentage value.
+  #[must_use]
+  pub const fn as_u32(self) -> u32 {
+    self.0
+  }
+}
+
+impl Default for Speed {
+  fn default() -> Self {
+    Self::NORMAL
+  }
+}
+
+/// Time / energy cost required to execute an action (standard action = 1000).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct ActionCost(pub u32);
+
+impl ActionCost {
+  /// Standard action cost units (1000).
+  pub const STANDARD: Self = Self(1000);
+  /// Standard movement cost.
+  pub const MOVE: Self = Self(1000);
+  /// Standard wait cost.
+  pub const WAIT: Self = Self(1000);
+  /// Standard melee attack cost.
+  pub const MELEE_ATTACK: Self = Self(1000);
+  /// Standard ranged attack cost.
+  pub const RANGED_ATTACK: Self = Self(1000);
+
+  /// Creates an action cost with custom units.
+  #[must_use]
+  pub const fn new(units: u32) -> Self {
+    Self(units)
+  }
+
+  /// Raw cost in energy/time units.
+  #[must_use]
+  pub const fn as_u32(self) -> u32 {
+    self.0
+  }
+}
+
+impl Default for ActionCost {
+  fn default() -> Self {
+    Self::STANDARD
+  }
+}
+
+/// Damage type classification.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+pub enum DamageType {
+  #[default]
+  Physical,
+  Plasma,
+  Acid,
+  Fire,
+}
+
+/// Source that caused damage or destruction.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum DamageSource {
+  /// Damage originated from an actor's direct action.
+  Actor(EntityId),
+  /// Damage originated from environmental hazard or terrain.
+  Environment,
+}
+
+/// Cause of actor death.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum DeathCause {
+  /// Killed by a melee strike from an actor.
+  MeleeAttack { attacker_id: EntityId },
+  /// Killed by a ranged attack from an actor.
+  RangedAttack { attacker_id: EntityId },
+  /// Killed by environmental hazard.
+  Environment,
+}
+
+/// Result of an attack action resolution.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum AttackOutcome {
+  /// Attack connected and dealt damage.
+  Hit { damage: u32, is_lethal: bool },
+  /// Attack missed the target.
+  Miss,
+  /// Attack was blocked or absorbed completely.
+  Blocked,
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -289,5 +446,41 @@ mod tests {
     let t1 = t0.next();
     assert_eq!(t0.count, 0);
     assert_eq!(t1.count, 1);
+  }
+
+  #[test]
+  fn test_hit_points_mechanics() {
+    let mut hp = HitPoints::full(50);
+    assert_eq!(hp.current, 50);
+    assert_eq!(hp.max, 50);
+    assert!(hp.is_full());
+    assert!(!hp.is_dead());
+
+    let taken = hp.take_damage(20);
+    assert_eq!(taken, 20);
+    assert_eq!(hp.current, 30);
+    assert!(!hp.is_full());
+
+    let healed = hp.heal(10);
+    assert_eq!(healed, 10);
+    assert_eq!(hp.current, 40);
+
+    let over_healed = hp.heal(100);
+    assert_eq!(over_healed, 10);
+    assert_eq!(hp.current, 50);
+
+    let lethal = hp.take_damage(100);
+    assert_eq!(lethal, 50);
+    assert_eq!(hp.current, 0);
+    assert!(hp.is_dead());
+  }
+
+  #[test]
+  fn test_speed_and_action_cost_defaults() {
+    let speed = Speed::default();
+    assert_eq!(speed.as_u32(), 100);
+
+    let cost = ActionCost::default();
+    assert_eq!(cost.as_u32(), 1000);
   }
 }

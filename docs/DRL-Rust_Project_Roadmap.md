@@ -298,56 +298,56 @@ Implement enough of DRL's actor/action model to support a representative combat 
 
 ### Domain types
 
-- [ ] Define `HitPoints`.
-- [ ] Define `DamageAmount`.
-- [ ] Define `DamageType`.
-- [ ] Define `ActionCost`.
-- [ ] Define `Speed`.
-- [ ] Define `AttackOutcome`.
-- [ ] Define `DeathCause`.
-- [ ] Define `DamageSource`.
+- [x] Define `HitPoints`.
+- [x] Define `DamageAmount`.
+- [x] Define `DamageType`.
+- [x] Define `ActionCost`.
+- [x] Define `Speed`.
+- [x] Define `AttackOutcome`.
+- [x] Define `DeathCause`.
+- [x] Define `DamageSource`.
 
 ### Turn/action system
 
-- [ ] Implement action scheduling.
-- [ ] Implement player action cost.
-- [ ] Implement monster action cost.
-- [ ] Validate deterministic actor ordering.
-- [ ] Test actor speed differences.
-- [ ] Test no actor receives invalid extra actions.
+- [x] Implement action scheduling.
+- [x] Implement player action cost.
+- [x] Implement monster action cost.
+- [x] Validate deterministic actor ordering.
+- [x] Test actor speed differences.
+- [x] Test no actor receives invalid extra actions.
 
 ### Combat
 
-- [ ] Implement one melee attack.
-- [ ] Implement one ranged weapon.
-- [ ] Implement hit resolution.
-- [ ] Implement damage application.
-- [ ] Implement death.
+- [x] Implement one melee attack.
+- [x] Implement one ranged weapon.
+- [x] Implement hit resolution.
+- [x] Implement damage application.
+- [x] Implement death.
 - [ ] Implement basic knockback if required by chosen representative weapon.
-- [ ] Emit combat events.
-- [ ] Ensure combat functions do not perform presentation side effects.
+- [x] Emit combat events.
+- [x] Ensure combat functions do not perform presentation side effects.
 
 ### Scenario fixture
 
-- [ ] Create minimal player-vs-monster scenario.
-- [ ] Add deterministic command replay.
-- [ ] Add expected semantic outcomes.
-- [ ] Add statistical test if a hit probability is involved.
+- [x] Create minimal player-vs-monster scenario.
+- [x] Add deterministic command replay.
+- [x] Add expected semantic outcomes.
+- [x] Add statistical test if a hit probability is involved.
 
 ### Invariants
 
-- [ ] HP cannot violate defined bounds.
-- [ ] Dead actors cannot act.
-- [ ] Invalid targets are rejected.
-- [ ] Damage calculations are independently testable.
-- [ ] Actor occupancy remains valid after death/movement.
+- [x] HP cannot violate defined bounds.
+- [x] Dead actors cannot act.
+- [x] Invalid targets are rejected.
+- [x] Damage calculations are independently testable.
+- [x] Actor occupancy remains valid after death/movement.
 
 ## Exit Criteria
 
-- [ ] A complete headless combat encounter is playable.
-- [ ] Core combat is expressed through domain types.
-- [ ] Combat calculations are testable independently of `Game`.
-- [ ] Action economy is consistent enough to expand to real DRL mechanics.
+- [x] A complete headless combat encounter is playable.
+- [x] Core combat is expressed through domain types.
+- [x] Combat calculations are testable independently of `Game`.
+- [x] Action economy is consistent enough to expand to real DRL mechanics.
 
 ---
 

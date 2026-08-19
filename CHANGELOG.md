@@ -7,6 +7,24 @@ documented in this file.
 
 ### Added
 
+- Action economy and energy-based actor scheduling system (`Scheduler`) in `drl-core`
+  supporting relative actor speeds and deterministic turn ordering.
+- Pure, deterministic combat calculation module (`CombatResolver`) in `drl-core`
+  resolving melee and ranged attacks with explicit seedable RNG.
+- Melee bump-attacks, direct melee attacks (`Command::AttackMelee`), and targeted
+  ranged attacks (`Command::AttackRanged`) with range and obstacle validation.
+- Domain models in `drl-protocol` for combat stats (`HitPoints`, `Speed`, `ActionCost`,
+  `DamageAmount`, `DamageType`, `DamageSource`, `DeathCause`, `AttackOutcome`).
+- Combat and scheduling events (`GameEvent::AttackResolved`, `GameEvent::DamageApplied`,
+  `GameEvent::ActorDied`, `GameEvent::ActionCostPaid`).
+- Autonomous monster AI turn execution during scheduled energy intervals, reacting
+  to player positions and executing attacks.
+- Actor health tracking, damage deduction with clamping, death state transitions,
+  and dead actor occupancy unblocking.
+- Replay support for monster spawns and combat command streams via `MonsterSpawnSpec`.
+- Headless combat demonstration in `drl-app` running a multi-turn tactical scenario
+  and verifying bit-for-bit replay determinism.
+- Comprehensive unit and end-to-end integration test suites in `crates/drl-core/tests/combat.rs`.
 - Headless simulation kernel (`drl-core`) with deterministic seedable `GameRng`
   (SplitMix64 + Xoshiro256++), 2D bounded tile maps (`Map`, `Tile`), and physical
   world state (`World`) with deterministic entity storage.

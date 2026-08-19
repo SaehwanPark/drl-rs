@@ -16,57 +16,64 @@ does not replace or duplicate the full roadmap.
   agent guidance, team contracts, check scripts, and repository workflow.
 - Milestone 0 multi-crate Cargo workspace and initial crates boundary scaffolding
   were established and validated with architectural boundary tests.
+- Milestone 1 established the deterministic headless simulation kernel in `drl-core`
+  and shared protocol contracts in `drl-protocol`, including 2D grid maps, seedable RNG,
+  movement validation, and replay determinism.
 
 ## Present
 
-### Milestone 1: Headless Simulation Core — Domain Types, Grid Map, Deterministic RNG, and Movement Commands
+### Milestone 2: Action Economy, Actor Scheduling, and Minimal Combat (Melee & Ranged)
 
 Status: Active
 
-This slice establishes the fundamental headless simulation kernel in `drl-core` and
-shared semantic protocols in `drl-protocol`.
+This slice implements DRL's action economy, energy scheduling, actor combat stats,
+damage calculation, melee/ranged combat resolution, death handling, and scenario replay.
 
 Observable outcomes:
 
-- `drl-protocol` defines domain types (`Position`, `Direction`, `Turn`, `EntityId`,
-  `ItemId`, `LevelId`), commands (`Command::Move`, `Command::Wait`), typed errors
-  (`CommandError`), events (`GameEvent`), observations (`Observation`, `TileView`,
-  `ActorView`), and replay specifications (`ReplayLog`);
-- `drl-core` implements deterministic seedable random number generation (`GameRng`)
-  with no ambient or global RNG state, passing bit-exact reproducibility tests;
-- `drl-core` implements 2D tile grid maps (`Map`, `Tile`) with bounds checking,
-  walkability, blocking flags, and factory constructors (e.g., arena map);
-- `drl-core` implements actor state and a minimal deterministic `World` with
-  deterministic `BTreeMap` entity collections, actor spawning, and occupancy checking;
-- `drl-core` implements a turn execution step (`Game::step`, `Game::execute_player_command`)
-  validating movement legality against terrain and entity collisions, emitting ordered
-  game events, and updating game state deterministically;
-- `drl-core` implements replay playback (`ReplayEngine`) ensuring identical seeds and
-  command sequences produce bit-for-bit identical state and event logs;
-- `drl-app` provides an executable headless demonstration executing a deterministic
-  movement scenario and printing structured observations and events;
+- `drl-protocol` defines domain types for combat and action economy: `HitPoints` (current,
+  max, damage/heal with clamping), `Speed` (relative percentage), `ActionCost` (time units,
+  standard = 1000), `DamageAmount`, `DamageType` (Physical, Plasma, Acid, Fire),
+  `DamageSource` (`Actor`, `Environment`), `DeathCause` (`MeleeAttack`, `RangedAttack`,
+  `Environment`), and `AttackOutcome` (`Hit`, `Miss`, `Blocked`);
+- `drl-protocol` defines combat commands: `Command::AttackMelee(Direction)`,
+  `Command::AttackRanged(Position)`, and bump-to-attack semantics for `Command::Move`;
+- `drl-protocol` defines combat events: `GameEvent::AttackResolved`, `GameEvent::DamageApplied`,
+  `GameEvent::ActorDied`, and `GameEvent::TurnEnded`;
+- `drl-protocol` extends `ActorView` to expose health status (`hp`), living state (`is_alive`),
+  and speed for player and omniscient observations;
+- `drl-core` implements an isolated, pure `combat` module for deterministic hit chance
+  calculations and damage rolls, testable independently of `Game`;
+- `drl-core` implements an energy-based action scheduler (`scheduler` module) executing actor
+  turns according to `Speed` and `ActionCost`, breaking ties deterministically by `EntityId`;
+- `drl-core` implements actor health tracking, damage application, death transitions, and
+  dead actor occupancy cleanup (dead actors no longer block movement);
+- `drl-core` implements monster AI turns (approach player or melee attack when adjacent)
+  when scheduled between player actions;
+- `drl-core` supports deterministic recording and playback of combat encounters via `ReplayEngine`;
+- `drl-app` demonstrates a multi-turn combat encounter with ranged and melee attacks,
+  verifying bit-for-bit replay determinism;
 - `sh scripts/check-repository.sh` runs formatting, clippy, harness, and all unit/integration
   tests across the workspace without warnings.
 
 Verification:
 
 - `sh scripts/check-repository.sh` succeeds locally;
-- `cargo test --locked --workspace` passes all unit, integration, boundary, determinism,
-  and replay tests;
-- `cargo run` executes the headless simulation scenario demonstrating valid movement,
-  collision rejection, wait turns, and determinism verification;
-- tests verify that independent simulations with the same seed and commands yield
-  identical world states.
+- `cargo test --locked --workspace` passes all unit, integration, boundary, combat,
+  scheduling, and replay determinism tests;
+- `cargo run` executes the headless combat scenario demonstrating ranged attacks, melee
+  finishing blows, monster actions, death transitions, and determinism verification;
+- tests verify that combat calculations and energy scheduling are deterministic and
+  independent of external presentation concerns.
 
 Out of scope:
 
-- combat, inventory, items, and AI behaviors (subsequent Milestone 1 slices);
-- level generation algorithms (Milestone 2);
+- inventory management, equipment slots, and item pickups (Milestone 4);
+- procedural level generation algorithms (Milestone 4);
 - live Lua scripting integration (Milestone 3);
 - MCP transport servers (Milestone 6);
 - presentation/GUI rendering and audio (Milestone 7 & 8).
 
 ## Future
 
-Proceed with combat mechanics, damage calculations, item models, and basic monster
-AI turns in subsequent Milestone 1 slices.
+Proceed with Lua runtime boundary and transitional content loading in Milestone 3.

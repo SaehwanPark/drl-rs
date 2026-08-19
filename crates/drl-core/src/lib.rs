@@ -6,17 +6,21 @@
 //! and MCP transports.
 
 pub mod actor;
+pub mod combat;
 pub mod game;
 pub mod grid;
 pub mod replay;
 pub mod rng;
+pub mod scheduler;
 pub mod world;
 
 pub use actor::Actor;
+pub use combat::CombatResolver;
 pub use game::{Game, GameState};
 pub use grid::{Map, Tile};
 pub use replay::ReplayEngine;
 pub use rng::GameRng;
+pub use scheduler::{ACTION_THRESHOLD, Scheduler};
 pub use world::World;
 
 /// Returns the core simulation engine name.
