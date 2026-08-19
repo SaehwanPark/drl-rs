@@ -94,16 +94,17 @@ sh scripts/check-repository.sh
 ```
 
 This checks the repo-wide spaces-only policy with indentation and tab width 2,
-Rust formatting, Clippy warnings, and tests. CI runs the same command on macOS.
+the agent-harness structure, Rust formatting, Clippy warnings, and tests. CI
+runs the same command on macOS.
 
 ## Repository Layout
 
 ```text
 .
-├── .agents/                         Repo-local milestone-delivery skill
+├── .agents/                         Repo-local delivery specialist skills
 ├── .github/workflows/               macOS CI
 ├── assets/                          Tracked project assets
-├── docs/                            Proposal and canonical roadmap
+├── docs/                            Project plans and harness team contract
 ├── scripts/                         Shared repository checks
 ├── src/                             Current Rust binary scaffold
 ├── AGENTS.md                        Durable agent and contributor guidance
@@ -125,6 +126,26 @@ Rust formatting, Clippy warnings, and tests. CI runs the same command on macOS.
 The repo-local
 [`drl-milestone-delivery`](.agents/skills/drl-milestone-delivery/SKILL.md)
 skill contains the complete workflow and stop conditions.
+
+## Optional Agent Team Workflow
+
+Keep small, tightly coupled changes with one milestone owner. When legacy
+research, stage-aware test play, or an independent determinism review provides
+clear value, use the
+[DRL delivery team specification](docs/harness/drl-delivery/team-spec.md).
+It defines role selection, serialized ownership of canonical documents,
+deterministic handoffs, and partial-failure behavior.
+
+The repository currently has no playable simulation. Test play at this stage
+means scaffold smoke checks or structured legacy-behavior probes, not DRL-Rust
+gameplay. The
+[`drl-test-play`](.agents/skills/drl-test-play/SKILL.md) skill activates seeded
+headless scenarios, replays, bots, MCP sessions, statistical studies, and
+human play only after the corresponding capabilities are implemented.
+
+Runtime handoffs are optional and ignored under `_workspace/`. Direct work
+should continue to report a bounded handoff without creating coordination
+files.
 
 ## Optional Legacy Research Setup
 

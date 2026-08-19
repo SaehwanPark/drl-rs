@@ -1266,7 +1266,7 @@ Update this table as milestones advance.
 
 | Milestone | Status | Notes |
 |---|---|---|
-| M0 — Repository Foundation | In progress | Harness, SDD, formatting, and CI foundations added; remote CI and remaining M0 deliverables are pending. |
+| M0 — Repository Foundation | In progress | Staged delivery/test-play harness, SDD, formatting, and CI foundations added; remote CI and remaining M0 deliverables are pending. |
 | M1 — Headless Simulation Kernel | Not started | |
 | M2 — Action Economy + Combat | Not started | |
 | M3 — Lua Runtime | Not started | |

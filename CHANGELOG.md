@@ -8,6 +8,12 @@ documented in this file.
 ### Added
 
 - A repo-local milestone-delivery harness with durable repository guidance.
+- A staged development and test-play team contract with explicit ownership,
+  deterministic handoffs, and bounded delegation.
+- Reusable legacy-archaeology, capability-gated test-play, and independent
+  determinism-review skills.
+- Repository checks for skill structure, required harness paths, and handoff
+  and result-status vocabulary.
 - Lightweight specification, architecture, and changelog documents governed by
   the canonical project roadmap.
 - Dependency-light two-space formatting checks shared by local development and
