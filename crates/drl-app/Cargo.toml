@@ -1,0 +1,15 @@
+[package]
+name = "drl-app"
+description = "Application executable runner for DRL-Rust"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[[bin]]
+name = "drl-rust"
+path = "src/main.rs"
+
+[dependencies]
+drl-core = { workspace = true }
+drl-protocol = { workspace = true }

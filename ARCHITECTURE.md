@@ -1,30 +1,41 @@
 # Architecture
 
-Last Reviewed: 2026-08-18
+Last Reviewed: 2026-08-19
 
 Status: Verified
 
 ## Overview
 
-DRL-Rust is currently a single Rust 2024 binary package. It is a repository
-scaffold, not an implemented game architecture. The broader target design in
-the [project proposal](docs/DRL-Rust_Project_Proposal.md) remains planned.
+DRL-Rust is organized as a multi-crate Cargo workspace. It provides the initial
+modular crate boundaries for a headless simulation core, shared semantic
+protocols, an executable application runner, and placeholder subsystems for
+rendering, audio, scripting, and MCP. The gameplay simulation and presentation
+implementations remain planned.
 
 ## Current Components
 
-- `Cargo.toml` defines the `drl-rust` package without dependencies.
-- `src/main.rs` is the only executable entry point and prints a placeholder
-  message.
+- Root `Cargo.toml` defines the Cargo workspace managing all crates under
+  `crates/`.
+- `crates/drl-core` is the deterministic headless simulation core library with
+  no dependencies on rendering, audio, MCP, or operating-system APIs.
+- `crates/drl-protocol` is the shared contract library for semantic commands,
+  observations, and events.
+- `crates/drl-app` is the executable runner (`drl-rust`) that coordinates
+  crates and provides the default workspace entry point.
+- `crates/drl-script`, `crates/drl-mcp`, `crates/drl-render`, and
+  `crates/drl-audio` are placeholder workspace crates with bounded dependency
+  declarations.
+- `crates/drl-core/tests/boundaries.rs` enforces architectural dependency
+  direction via automated tests.
 - `docs/DRL-Rust_Project_Roadmap.md` owns milestone planning and progress.
 - `SPEC.md` expands the active roadmap slice.
 - `AGENTS.md`, `docs/harness/drl-delivery/team-spec.md`, and repo-local skills
   define the development and test-play harness.
 - `scripts/check-repository.sh` is the common local and CI verification entry
-  point and includes deterministic harness-structure validation.
+  point and includes formatting, clippy, test, and harness-structure validation.
 
-There is no library API, multi-crate workspace, game state, command protocol,
-Lua runtime, MCP server, renderer, audio system, persistence layer, or gameplay
-implementation yet.
+There is no active gameplay simulation, Lua runtime, live MCP server, GPU
+renderer, audio backend, or persistence layer yet.
 
 ## Current Flow
 
@@ -38,21 +49,21 @@ Roadmap milestone
   -> architecture, changelog, and roadmap reconciliation
 ```
 
-The current executable flow is only:
+The current executable flow is:
 
 ```text
-cargo run -> src/main.rs -> placeholder standard output
+cargo run -> crates/drl-app/src/main.rs -> drl-core & drl-protocol -> scaffold status
 ```
 
 ## Consequential Invariants
 
 - The roadmap remains canonical for long-term scope and milestone status.
 - Planned architecture must not be described as implemented.
-- Future simulation code must remain independent from graphics, audio,
-  operating-system, filesystem, and MCP concerns.
+- `drl-core` and `drl-protocol` must remain independent of graphics, audio,
+  operating-system, filesystem, and MCP concerns; automated tests enforce this.
 - Gameplay randomness must become explicit and reproducible.
 - Human UI, bots, replay tools, and MCP should eventually use the same semantic
-  command boundary.
+  command boundary (`drl-protocol`).
 - Legacy Pascal and Lua sources inform behavior, not Rust module structure or
   execution order.
 - One milestone owner reconciles canonical documents; delegated workers are
@@ -68,6 +79,3 @@ The proposal describes a headless deterministic simulation core, shared
 commands, observations and events, Lua-backed content, replay and test-agent
 support, an MCP interface, and a native macOS presentation layer. Those
 components are targets, not current dependencies or compatibility guarantees.
-
-Crate boundaries and technology choices remain undecided until their roadmap
-slices are specified and verified.

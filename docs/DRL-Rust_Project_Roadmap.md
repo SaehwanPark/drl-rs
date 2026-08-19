@@ -86,7 +86,7 @@ Establish the project structure, development standards, architectural doctrine, 
 
 ### Rust tooling
 
-- [ ] Initialize Cargo workspace.
+- [x] Initialize Cargo workspace.
 - [x] Pin or document supported Rust toolchain/MSRV policy.
 - [x] Configure `rustfmt`.
 - [x] Configure `clippy`.
@@ -96,14 +96,14 @@ Establish the project structure, development standards, architectural doctrine, 
 
 ### Initial crates
 
-- [ ] Create `drl-core`.
-- [ ] Create `drl-protocol`.
-- [ ] Create `drl-app`.
-- [ ] Create placeholder `drl-script`.
-- [ ] Create placeholder `drl-mcp`.
-- [ ] Create placeholder `drl-render`.
-- [ ] Create placeholder `drl-audio`.
-- [ ] Verify dependency direction prevents `drl-core` from depending on presentation/platform crates.
+- [x] Create `drl-core`.
+- [x] Create `drl-protocol`.
+- [x] Create `drl-app`.
+- [x] Create placeholder `drl-script`.
+- [x] Create placeholder `drl-mcp`.
+- [x] Create placeholder `drl-render`.
+- [x] Create placeholder `drl-audio`.
+- [x] Verify dependency direction prevents `drl-core` from depending on presentation/platform crates.
 
 ### Design doctrine
 
@@ -1289,8 +1289,8 @@ If beginning implementation now, the first concrete tasks are:
 
 - [x] Create `drl-rust`.
 - [x] Add this proposal and roadmap to `docs/`.
-- [ ] Initialize Cargo workspace.
-- [ ] Create `drl-core`, `drl-protocol`, and `drl-app`.
+- [x] Initialize Cargo workspace.
+- [x] Create `drl-core`, `drl-protocol`, and `drl-app`.
 - [x] Add macOS CI.
 - [ ] Write first ADRs.
 - [ ] Create the legacy behavior-spec template.

@@ -12,10 +12,10 @@ the planned simulation core remains portable and platform-independent.
 ## Project Status
 
 DRL-Rust is in its repository-foundation stage and is **not playable**. The
-current implementation is one Rust 2024 binary package without dependencies;
-running it prints a placeholder message. Gameplay, the planned multi-crate
-architecture, Lua integration, MCP support, rendering, audio, and release
-packaging have not been implemented.
+current implementation is a multi-crate Rust 2024 workspace managing `drl-core`,
+`drl-protocol`, `drl-app`, and subsystem placeholders; running it prints a
+scaffold status message. Gameplay mechanics, live Lua integration, MCP server
+transport, GPU rendering, and audio playback have not been implemented.
 
 The project intends to preserve DRL's modeled behavior and tactical character
 without translating the legacy Pascal architecture or execution traces
@@ -104,9 +104,16 @@ runs the same command on macOS.
 ├── .agents/                         Repo-local delivery specialist skills
 ├── .github/workflows/               macOS CI
 ├── assets/                          Tracked project assets
+├── crates/                          Multi-crate workspace members
+│   ├── drl-app/                     Application runner executable
+│   ├── drl-audio/                   Audio layer placeholder
+│   ├── drl-core/                    Deterministic simulation core
+│   ├── drl-mcp/                     Model Context Protocol placeholder
+│   ├── drl-protocol/                Shared command/observation/event schema
+│   ├── drl-render/                  Presentation layer placeholder
+│   └── drl-script/                  Scripting/content integration placeholder
 ├── docs/                            Project plans and harness team contract
 ├── scripts/                         Shared repository checks
-├── src/                             Current Rust binary scaffold
 ├── AGENTS.md                        Durable agent and contributor guidance
 ├── ARCHITECTURE.md                  Verified architecture state
 ├── CHANGELOG.md                     Delivered project history
