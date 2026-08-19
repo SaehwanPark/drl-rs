@@ -25,15 +25,18 @@ shared semantic protocol contracts (`drl-protocol`), an executable application r
   - `GameRng`: deterministic seedable PRNG (SplitMix64 + Xoshiro256++) with no ambient
     or global state;
   - `Map` & `Tile`: 2D bounded grid representation with walkability and transparency;
+  - `fov`: pure, deterministic field-of-view (`compute_fov`), line-of-sight raycasting (`has_line_of_sight`),
+    and discrete ray tracing (`line_points`);
   - `Actor`: combat stats, durability, speed, energy, damage ranges, and living state;
   - `CombatResolver`: pure, deterministic combat calculation routines for melee and ranged attacks;
   - `Scheduler`: energy-based action scheduling algorithm executing actor turns by relative speeds;
-  - `World`: physical level state, deterministic `BTreeMap` actor storage, monster spawning, and collision checks;
-  - `Game`: turn progression kernel executing player commands, bump-attacks, ranged fire, monster AI responses,
-    and event emissions;
+  - `World`: physical level state, deterministic `BTreeMap` actor storage, monster spawning,
+    fog-of-war map exploration memory (`explored_tiles`), and perception filtering;
+  - `Game`: turn progression kernel executing player commands, bump-attacks, line-of-fire-validated
+    ranged fire, monster AI responses, and event emissions;
   - `ReplayEngine`: deterministic replay execution and bit-exact state verification.
-- `crates/drl-app` is the executable runner (`drl-rust`) that runs headless simulation
-  and combat demonstrations and verifies replay reproducibility.
+- `crates/drl-app` is the executable runner (`drl-rust`) that runs headless simulation,
+  combat, and FOV visibility demonstrations and verifies replay reproducibility.
 - `crates/drl-script`, `crates/drl-mcp`, `crates/drl-render`, and
   `crates/drl-audio` are placeholder workspace crates with bounded dependency
   declarations.
@@ -43,6 +46,8 @@ shared semantic protocol contracts (`drl-protocol`), an executable application r
   monster response, death transitions, and replay determinism.
 - `crates/drl-core/tests/simulation.rs` verifies multi-step movement, collision,
   observation, and replay determinism.
+- `crates/drl-core/tests/visibility.rs` verifies FOV shadowcasting, fog-of-war exploration
+  memory persistence, player observation entity hiding, and line-of-fire obstacle blocking.
 - `docs/DRL-Rust_Project_Roadmap.md` owns milestone planning and progress.
 - `SPEC.md` expands the active roadmap slice.
 - `AGENTS.md`, `docs/harness/drl-delivery/team-spec.md`, and repo-local skills

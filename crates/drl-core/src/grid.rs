@@ -137,9 +137,21 @@ impl Map {
     self.get_tile(pos).is_some_and(Tile::is_transparent)
   }
 
+  /// Converts a single tile position to a `TileView`.
+  #[must_use]
+  pub fn to_tile_view(&self, pos: Position, is_visible: bool) -> Option<TileView> {
+    self.get_tile(pos).map(|tile| TileView {
+      position: pos,
+      kind: tile.to_kind(),
+      is_walkable: tile.is_walkable(),
+      is_transparent: tile.is_transparent(),
+      is_visible,
+    })
+  }
+
   /// Exports all tile views for observation snapshots.
   #[must_use]
-  pub fn to_tile_views(&self) -> Vec<TileView> {
+  pub fn to_tile_views(&self, is_visible: bool) -> Vec<TileView> {
     self
       .tiles
       .iter()
@@ -149,6 +161,7 @@ impl Map {
         kind: tile.to_kind(),
         is_walkable: tile.is_walkable(),
         is_transparent: tile.is_transparent(),
+        is_visible,
       })
       .collect()
   }

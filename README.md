@@ -11,11 +11,16 @@ the planned simulation core remains portable and platform-independent.
 
 ## Project Status
 
-DRL-Rust has established its **Milestone 2 Action Economy and Combat System**. The
+DRL-Rust has established its **Milestone 4 Field of View, Fog-of-War, and Combat System**. The
 current implementation is a multi-crate Rust 2024 workspace featuring:
 
 - pure, deterministic headless simulation core (`drl-core`) with 2D tile maps,
   grid coordinates, seedable PRNG, and turn-based movement and combat mechanics;
+- field of view (FOV) calculation and line-of-sight (LOS) raycasting (`fov`) with
+  deterministic perimeter raycasting, obstacle occlusion, and perimeter illumination;
+- fog-of-war map exploration memory in `World` and strict perception filtering in
+  `PlayerObservation` preventing information leaks for hidden enemies;
+- line-of-fire validation for ranged weapon attacks rejecting obstructed shots;
 - action economy and energy-based actor scheduling (`Scheduler`) supporting relative
   speeds and deterministic turn progression;
 - combat resolution engine (`CombatResolver`) supporting melee bump-attacks, direct
@@ -23,9 +28,9 @@ current implementation is a multi-crate Rust 2024 workspace featuring:
 - shared semantic protocol schemas (`drl-protocol`) for commands, combat domain models,
   observations, events, and replays;
 - an executable application runner (`drl-app` / `drl-rust`) that runs a headless
-  combat simulation demonstration and verifies replay reproducibility;
-- automated architectural boundary tests, pure combat unit tests, and deterministic
-  scenario replay verification.
+  combat and visibility simulation demonstration and verifies replay reproducibility;
+- automated architectural boundary tests, pure combat unit tests, FOV integration tests,
+  and deterministic scenario replay verification.
 
 Procedural level generation, live Lua scripting integration, MCP server transport,
 GPU rendering, and audio playback are scheduled in subsequent roadmap milestones.

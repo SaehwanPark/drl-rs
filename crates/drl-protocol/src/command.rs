@@ -36,6 +36,8 @@ pub enum CommandError {
   TargetOutOfRange(Position),
   /// Target position contains no valid target.
   InvalidTarget(Position),
+  /// Line of sight / line of fire to the target position is blocked by an obstacle.
+  LineOfSightBlocked(Position),
   /// Dead actor cannot perform actions.
   DeadActorCannotAct(EntityId),
   /// Generic command validation failure.
@@ -75,6 +77,13 @@ impl fmt::Display for CommandError {
           pos.x, pos.y
         )
       }
+      Self::LineOfSightBlocked(pos) => {
+        write!(
+          f,
+          "line of sight to target ({}, {}) is blocked",
+          pos.x, pos.y
+        )
+      }
       Self::DeadActorCannotAct(id) => {
         write!(f, "dead actor {} cannot perform actions", id.as_u64())
       }
@@ -110,6 +119,12 @@ mod tests {
     assert_eq!(
       out_range.to_string(),
       "target position (10, 10) is out of range"
+    );
+
+    let los_blocked = CommandError::LineOfSightBlocked(Position::new(8, 9));
+    assert_eq!(
+      los_blocked.to_string(),
+      "line of sight to target (8, 9) is blocked"
     );
   }
 }
