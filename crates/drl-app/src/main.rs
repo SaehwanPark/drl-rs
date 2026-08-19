@@ -1,7 +1,11 @@
 //! Application executable entry point and headless demo runner for DRL-Rust.
 
+use drl_core::item::Item;
 use drl_core::{Game, ReplayEngine};
-use drl_protocol::{Command, Direction, MonsterSpawnSpec, Position, ReplayLog};
+use drl_protocol::{
+  Command, Direction, ItemCategory, ItemSpawnKind, ItemSpawnSpec, MonsterSpawnSpec, Position,
+  ReplayLog,
+};
 
 fn main() {
   println!(
@@ -24,6 +28,22 @@ fn run_headless_demo() {
   let mut game =
     Game::new(seed, width, height, start_pos).expect("failed to initialize game simulation");
 
+  // Spawn ground loot at (6, 5): Shotgun and Shells
+  let ground_pos = Position::new(6, 5);
+  let shotgun_id = game.world_mut().allocate_item_id();
+  let shotgun = Item::shotgun(shotgun_id);
+  game
+    .world_mut()
+    .spawn_ground_item(ground_pos, shotgun)
+    .expect("failed to spawn ground shotgun");
+
+  let shells_id = game.world_mut().allocate_item_id();
+  let shells = Item::ammo_shells(shells_id, 16);
+  game
+    .world_mut()
+    .spawn_ground_item(ground_pos, shells)
+    .expect("failed to spawn ground shells");
+
   // Spawn representative monster (Former Human) at (8, 5)
   let monster_pos = Position::new(8, 5);
   let _monster_id = game
@@ -32,24 +52,33 @@ fn run_headless_demo() {
     .expect("failed to spawn monster");
 
   println!(
-    "Turn {}: Player spawned at ({}, {}), Former Human spawned at ({}, {})",
+    "Turn {}: Player spawned at ({}, {}) with equipped Pistol & 30x 9mm ammo, Shotgun & Shells on floor at ({}, {}), Former Human at ({}, {})",
     game.turn().count,
     start_pos.x,
     start_pos.y,
+    ground_pos.x,
+    ground_pos.y,
     monster_pos.x,
     monster_pos.y
   );
 
   let commands = [
-    Command::AttackRanged(monster_pos),
-    Command::Move(Direction::East),
-    Command::Move(Direction::East),
-    Command::Move(Direction::East), // Melee bump attack against monster
-    Command::Move(Direction::East), // Finish monster
-    Command::Move(Direction::East), // Step onto defeated monster tile
+    Command::AttackRanged(monster_pos), // 1. Fire equipped Pistol at (8, 5)
+    Command::Move(Direction::East),     // 2. Step onto (6, 5) with ground items
+    Command::Pickup,                    // 3. Pick up Shotgun
+    Command::Pickup,                    // 4. Pick up Shells
+    Command::Equip(shotgun_id),         // 5. Equip Shotgun
+    Command::AttackRanged(Position::new(7, 5)), // 6. Blast monster at (7, 5) with Shotgun
+    Command::Move(Direction::East),     // 7. Melee bump-attack to finish monster
+    Command::Move(Direction::East),     // 8. Step onto (7, 5)
   ];
 
   let mut replay = ReplayLog::new(seed, width, height, start_pos);
+  replay.record_item(ItemSpawnSpec::new(ground_pos, ItemSpawnKind::Shotgun));
+  replay.record_item(ItemSpawnSpec::new(
+    ground_pos,
+    ItemSpawnKind::AmmoShells(16),
+  ));
   replay.record_monster(MonsterSpawnSpec::new(
     monster_pos,
     "Former Human",
@@ -59,9 +88,9 @@ fn run_headless_demo() {
   ));
 
   for cmd in commands {
-    replay.record_command(cmd);
     match game.step(cmd) {
       Ok(events) => {
+        replay.record_command(cmd);
         let p_pos = game
           .world()
           .player()
@@ -69,12 +98,25 @@ fn run_headless_demo() {
         let obs = game.observe_player();
         let visible_in_fov = obs.visible_tiles.iter().filter(|t| t.is_visible).count();
         let total_explored = obs.visible_tiles.len();
+        let weapon_name = obs
+          .equipped_weapon
+          .as_ref()
+          .map_or("None".to_string(), |w| {
+            if let Some((cur, max)) = w.clip {
+              format!("{} ({}/{})", w.name, cur, max)
+            } else {
+              w.name.clone()
+            }
+          });
+
         println!(
-          "Turn {}: Executed {:?} -> Player at ({}, {}), FOV: {} visible / {} explored tiles, emitted {} event(s)",
+          "Turn {}: Executed {:?} -> Player at ({}, {}), Weapon: {}, Inventory: {} item(s), FOV: {}/{} tiles, Events: {}",
           game.turn().count,
           cmd,
           p_pos.x,
           p_pos.y,
+          weapon_name,
+          obs.inventory.len(),
           visible_in_fov,
           total_explored,
           events.len()
@@ -115,6 +157,22 @@ fn run_headless_demo() {
                 cause
               );
             }
+            drl_protocol::GameEvent::ItemPickedUp { item_name, .. } => {
+              println!("  -> Loot: Picked up {item_name}");
+            }
+            drl_protocol::GameEvent::ItemEquipped { slot, .. } => {
+              println!("  -> Equip: Equipped item into {slot} slot");
+            }
+            drl_protocol::GameEvent::WeaponReloaded {
+              ammo_loaded,
+              current_clip,
+              max_clip,
+              ..
+            } => {
+              println!(
+                "  -> Reload: Loaded {ammo_loaded} rounds (clip: {current_clip}/{max_clip})"
+              );
+            }
             _ => {}
           }
         }
@@ -122,6 +180,24 @@ fn run_headless_demo() {
       Err(err) => {
         println!("Command {:?} rejected: {err}", cmd);
       }
+    }
+  }
+
+  // Demonstrate MedPack healing
+  if let Some(med_id) = game
+    .world()
+    .player()
+    .and_then(|p| p.inventory().find_first_by_category(ItemCategory::MedPack))
+  {
+    replay.record_command(Command::Use(med_id));
+    if let Ok(events) = game.step(Command::Use(med_id)) {
+      let cur_hp = game.world().player().map_or(0, |p| p.hp().current);
+      println!(
+        "Turn {}: Used MedPack -> Player HP restored to {}, emitted {} event(s)",
+        game.turn().count,
+        cur_hp,
+        events.len()
+      );
     }
   }
 

@@ -1,6 +1,9 @@
 //! Simulation game events emitted during turn processing.
 
-use crate::types::{ActionCost, AttackOutcome, DamageSource, DeathCause, EntityId, Position, Turn};
+use crate::item::EquipmentSlot;
+use crate::types::{
+  ActionCost, AttackOutcome, DamageSource, DeathCause, EntityId, ItemId, Position, Turn,
+};
 
 /// Game event emitted deterministically by the simulation core.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -41,6 +44,44 @@ pub enum GameEvent {
   ActionCostPaid {
     entity_id: EntityId,
     cost: ActionCost,
+  },
+  /// An item was picked up from the ground into inventory.
+  ItemPickedUp {
+    entity_id: EntityId,
+    item_id: ItemId,
+    item_name: String,
+  },
+  /// An item was dropped from inventory to the ground.
+  ItemDropped {
+    entity_id: EntityId,
+    item_id: ItemId,
+    item_name: String,
+    position: Position,
+  },
+  /// An item was equipped to an equipment slot.
+  ItemEquipped {
+    entity_id: EntityId,
+    item_id: ItemId,
+    slot: EquipmentSlot,
+  },
+  /// An item was unequipped from an equipment slot back into inventory.
+  ItemUnequipped {
+    entity_id: EntityId,
+    item_id: ItemId,
+    slot: EquipmentSlot,
+  },
+  /// An item was used or consumed (e.g. MedPack).
+  ItemUsed {
+    entity_id: EntityId,
+    item_id: ItemId,
+    item_name: String,
+  },
+  /// A weapon was reloaded with ammunition from inventory.
+  WeaponReloaded {
+    entity_id: EntityId,
+    ammo_loaded: u32,
+    current_clip: u32,
+    max_clip: u32,
   },
   /// The current turn completed.
   TurnEnded { turn: Turn },

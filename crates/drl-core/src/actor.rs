@@ -2,6 +2,9 @@
 
 use drl_protocol::{ActionCost, ActorView, EntityId, HitPoints, Position, Speed};
 
+use crate::inventory::{Equipment, Inventory};
+use crate::item::Item;
+
 /// Simulation actor instance.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Actor {
@@ -18,6 +21,8 @@ pub struct Actor {
   ranged_damage: Option<(u32, u32)>,
   ranged_range: u32,
   accuracy: i32,
+  inventory: Inventory,
+  equipment: Equipment,
 }
 
 impl Actor {
@@ -39,6 +44,8 @@ impl Actor {
       ranged_damage: if is_player { Some((4, 8)) } else { None },
       ranged_range: if is_player { 8 } else { 0 },
       accuracy: 75,
+      inventory: Inventory::default(),
+      equipment: Equipment::new(),
     }
   }
 
@@ -119,12 +126,15 @@ impl Actor {
     self.is_alive
   }
 
-  /// Applies damage to this actor. Returns actual damage taken and whether the blow was lethal.
-  pub fn take_damage(&mut self, amount: u32) -> (u32, bool) {
+  /// Applies damage to this actor, mitigated by equipped armor protection.
+  /// Returns actual damage taken and whether the blow was lethal.
+  pub fn take_damage(&mut self, raw_amount: u32) -> (u32, bool) {
     if !self.is_alive {
       return (0, false);
     }
-    let taken = self.hp.take_damage(amount);
+    let armor_prot = self.armor_protection();
+    let net_amount = raw_amount.saturating_sub(armor_prot).max(1);
+    let taken = self.hp.take_damage(net_amount);
     if self.hp.is_dead() {
       self.is_alive = false;
       self.blocks_movement = false;
@@ -174,28 +184,82 @@ impl Actor {
     self.energy -= cost.as_u32() as i32;
   }
 
-  /// Melee damage range `(min, max)`.
+  /// Reference to actor's inventory.
   #[must_use]
-  pub const fn melee_damage(&self) -> (u32, u32) {
-    self.melee_damage
+  pub const fn inventory(&self) -> &Inventory {
+    &self.inventory
+  }
+
+  /// Mutable reference to actor's inventory.
+  pub fn inventory_mut(&mut self) -> &mut Inventory {
+    &mut self.inventory
+  }
+
+  /// Reference to actor's equipment.
+  #[must_use]
+  pub const fn equipment(&self) -> &Equipment {
+    &self.equipment
+  }
+
+  /// Mutable reference to actor's equipment.
+  pub fn equipment_mut(&mut self) -> &mut Equipment {
+    &mut self.equipment
+  }
+
+  /// Returns equipped armor protection value, if any.
+  #[must_use]
+  pub fn armor_protection(&self) -> u32 {
+    self
+      .equipment
+      .armor()
+      .and_then(|a| a.armor_properties())
+      .map_or(0, |p| p.protection)
+  }
+
+  /// Melee damage range `(min, max)`, factoring in equipped weapon.
+  #[must_use]
+  pub fn melee_damage(&self) -> (u32, u32) {
+    if let Some(props) = self.equipment.weapon().and_then(Item::weapon_properties)
+      && !props.is_ranged
+    {
+      props.damage
+    } else {
+      self.melee_damage
+    }
   }
 
   /// Ranged damage range `(min, max)` if equipped with ranged weapon.
   #[must_use]
-  pub const fn ranged_damage(&self) -> Option<(u32, u32)> {
-    self.ranged_damage
+  pub fn ranged_damage(&self) -> Option<(u32, u32)> {
+    if let Some(props) = self.equipment.weapon().and_then(Item::weapon_properties)
+      && props.is_ranged
+    {
+      Some(props.damage)
+    } else {
+      self.ranged_damage
+    }
   }
 
   /// Maximum ranged attack distance.
   #[must_use]
-  pub const fn ranged_range(&self) -> u32 {
-    self.ranged_range
+  pub fn ranged_range(&self) -> u32 {
+    if let Some(props) = self.equipment.weapon().and_then(Item::weapon_properties)
+      && props.is_ranged
+    {
+      props.range
+    } else {
+      self.ranged_range
+    }
   }
 
   /// Base accuracy percentage (e.g. 75).
   #[must_use]
-  pub const fn accuracy(&self) -> i32 {
-    self.accuracy
+  pub fn accuracy(&self) -> i32 {
+    if let Some(props) = self.equipment.weapon().and_then(Item::weapon_properties) {
+      props.accuracy
+    } else {
+      self.accuracy
+    }
   }
 
   /// Converts this actor to an immutable `ActorView` for observations.
@@ -216,6 +280,8 @@ impl Actor {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::item::Item;
+  use drl_protocol::{EquipmentSlot, ItemId};
 
   #[test]
   fn test_actor_creation_and_view() {
@@ -251,6 +317,24 @@ mod tests {
     assert!(!actor.is_alive());
     assert!(!actor.blocks_movement());
     assert!(actor.hp().is_dead());
+  }
+
+  #[test]
+  fn test_actor_equipment_and_armor_protection() {
+    let mut actor = Actor::new(EntityId::new(1), Position::new(0, 0), "Marine", true);
+    assert_eq!(actor.armor_protection(), 0);
+
+    let armor = Item::green_armor(ItemId::new(10));
+    actor
+      .equipment_mut()
+      .equip(EquipmentSlot::Armor, armor)
+      .unwrap();
+    assert_eq!(actor.armor_protection(), 5);
+
+    // Damage of 10 mitigated by 5 armor = 5 net damage
+    let (taken, _) = actor.take_damage(10);
+    assert_eq!(taken, 5);
+    assert_eq!(actor.hp().current, 45);
   }
 
   #[test]

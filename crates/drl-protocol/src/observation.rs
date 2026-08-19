@@ -1,5 +1,6 @@
 //! Observation models for player frontends, debug tools, bots, and MCP.
 
+use crate::item::{GroundItemView, ItemView};
 use crate::types::{EntityId, HitPoints, Position, Speed, Turn};
 
 /// High-level semantic tile classification for rendering and observation.
@@ -62,6 +63,10 @@ pub struct PlayerObservation {
   pub player_position: Position,
   pub visible_tiles: Vec<TileView>,
   pub visible_actors: Vec<ActorView>,
+  pub inventory: Vec<ItemView>,
+  pub equipped_weapon: Option<ItemView>,
+  pub equipped_armor: Option<ItemView>,
+  pub ground_items: Vec<GroundItemView>,
 }
 
 /// Omniscient debug observation containing the complete world state snapshot.
@@ -72,11 +77,12 @@ pub struct OmniscientObservation {
   pub height: u32,
   pub tiles: Vec<TileView>,
   pub actors: Vec<ActorView>,
+  pub ground_items: Vec<GroundItemView>,
 }
 
 /// Semantic observation delivered to observers, frontends, bots, and MCP.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Observation {
-  Player(PlayerObservation),
+  Player(Box<PlayerObservation>),
   Omniscient(OmniscientObservation),
 }

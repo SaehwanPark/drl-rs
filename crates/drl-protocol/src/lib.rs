@@ -5,16 +5,18 @@
 
 pub mod command;
 pub mod event;
+pub mod item;
 pub mod observation;
 pub mod replay;
 pub mod types;
 
 pub use command::{Command, CommandError};
 pub use event::GameEvent;
+pub use item::{AmmoType, EquipmentSlot, GroundItemView, ItemCategory, ItemView};
 pub use observation::{
   ActorView, Observation, OmniscientObservation, PlayerObservation, TileKind, TileView,
 };
-pub use replay::{MonsterSpawnSpec, ReplayLog};
+pub use replay::{ItemSpawnKind, ItemSpawnSpec, MonsterSpawnSpec, ReplayLog};
 pub use types::{
   ActionCost, AttackOutcome, DamageSource, DamageType, DeathCause, Direction, EntityId, HitPoints,
   ItemId, LevelId, Position, Speed, Turn,

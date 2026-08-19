@@ -19,58 +19,70 @@ does not replace or duplicate the full roadmap.
 - Milestone 1 established the deterministic headless simulation kernel in `drl-core`
   and shared protocol contracts in `drl-protocol`, including 2D grid maps, seedable RNG,
   movement validation, and replay determinism.
-- Milestone 2 established the action economy, energy scheduling, actor combat stats,
-  pure combat calculations, melee/ranged resolution, and deterministic replay.
+- Milestone 4 established Field of View (FOV) calculation, line-of-sight raycasting,
+  fog-of-war exploration memory, entity observation filtering, and line-of-fire obstacle blocking.
 
 ## Present
 
-### Milestone 4: Field of View (FOV), Fog-of-War Map Memory, and Line-of-Fire Targeting
+### Milestone 4: Item Domain Models, Inventory Management, Equipment Slots, and Weapon/Ammo Mechanics
 
 Status: Active
 
-This slice implements DRL's field of view (FOV) calculation, line-of-sight (LOS) raycasting,
-fog-of-war map exploration and memory, player observation filtering (preventing information
-leaks for hidden entities), and line-of-fire validation for ranged attacks.
+This slice implements DRL's item domain models, player inventory capacity, equipment slots
+(weapon and armor), ground item placement, pickup and drop actions, medpack consumption,
+ammunition tracking, weapon reload mechanics, and ammo-dependent ranged combat.
 
 Observable outcomes:
 
-- `drl-protocol` defines `CommandError::LineOfSightBlocked(Position)` when a ranged attack
-  or targeting action cannot trace an unblocked line to the target cell;
-- `drl-protocol` extends `TileView` with an `is_visible` flag distinguishing cells
-  currently in the player's active field of view from cells remembered in fog of war;
-- `drl-core` implements an isolated, pure `fov` module providing:
-  - Bresenham-based discrete line-of-sight ray tracing (`has_line_of_sight`);
-  - field of view calculation (`compute_fov`) for a configurable vision radius;
-  - proper occlusion handling (opaque walls and closed doors block sight, while
-    transparent floors, open doors, and stairs transmit sight);
-  - perimeter illumination so walls facing the player are visible;
-- `drl-core` implements fog-of-war map exploration tracking in `World`:
-  - previously visited/seen tiles are remembered as explored;
-  - unexplored tiles remain completely hidden from `PlayerObservation`;
-- `drl-core` ensures `PlayerObservation` strictly filters entities:
-  - `visible_actors` contains ONLY living actors that currently reside within the
-    player's active field of view;
-  - monsters behind walls or in unexplored/fog-of-war areas are never leaked to the player;
-- `drl-core` enforces line-of-fire validation on `Command::AttackRanged`:
-  - attacks targeting entities through walls or opaque obstacles are rejected with
-    `CommandError::LineOfSightBlocked`;
-- `drl-app` demonstrates FOV visibility in the headless scenario, reporting visible
-  tile counts and confirming that hidden enemies become visible only upon entering LOS;
-- `sh scripts/check-repository.sh` runs formatting, clippy, harness, and all unit/integration
-  tests across the workspace without warnings.
+- `drl-protocol` defines domain types and enumerations for items:
+  - `AmmoType`: 9mm (`Ammo9mm`), Shotgun shells (`Shells`), Rockets (`Rocket`), Plasma cells (`Cell`);
+  - `ItemCategory`: Weapon, Armor, Ammo, MedPack / Consumable;
+  - `EquipmentSlot`: Weapon, Armor;
+  - `ItemView` and `GroundItemView` representing observed items and ground stacks;
+- `drl-protocol` defines new semantic player commands and error conditions:
+  - `Command::Pickup` (picks up item from current cell into inventory);
+  - `Command::Drop(ItemId)` (drops item from inventory to the ground at current cell);
+  - `Command::Equip(ItemId)` (equips an item from inventory to its designated slot);
+  - `Command::Unequip(EquipmentSlot)` (unequips item back into inventory);
+  - `Command::Use(ItemId)` (consumes a usable item like a MedPack);
+  - `Command::Reload` (reloads the currently equipped weapon using matching ammo in inventory);
+  - Typed error variants in `CommandError` (`InventoryFull`, `ItemNotFound`, `NoItemAtPosition`,
+    `CannotEquip`, `CannotUse`, `SlotEmpty`, `NoEquippedWeapon`, `NoAmmoInClip`, `NoMatchingAmmo`,
+    `ClipAlreadyFull`);
+- `drl-protocol` defines new semantic game events:
+  - `GameEvent::ItemPickedUp`, `GameEvent::ItemDropped`, `GameEvent::ItemEquipped`,
+    `GameEvent::ItemUnequipped`, `GameEvent::ItemUsed`, `GameEvent::WeaponReloaded`;
+- `drl-protocol` expands `PlayerObservation` and `OmniscientObservation` to include player
+  inventory, equipped items, and ground items (with perception filtering for fog of war / FOV);
+- `drl-core` implements an isolated `item` and `inventory` module:
+  - `Inventory`: capacity-constrained container with stack management for ammunition;
+  - `Equipment`: slot management for equipped weapon and armor;
+  - Representative weapons: Pistol (9mm, clip 10), Shotgun (Shells, clip 8), Combat Knife (melee);
+  - Representative ammo: 9mm (packs of 10-30), Shells (packs of 8-16);
+  - Representative consumables: Small MedPack (+10 HP), Large MedPack (+25 HP);
+  - Representative armor: Green Armor (+5 armor protection);
+- `drl-core` integrates weapons and ammo into combat resolution:
+  - `Command::AttackRanged` deducts 1 ammunition from the equipped weapon's clip;
+  - Firing with an empty clip fails with `CommandError::NoAmmoInClip`;
+  - Ranged damage, range, and accuracy derive from the equipped weapon;
+  - `Command::Reload` transfers ammo from inventory stacks up to weapon clip capacity;
+  - `Command::Use` on a MedPack restores player HP up to maximum and consumes the item;
+- `drl-core` tracks ground items in `World` with FOV/fog-of-war perception filtering;
+- `drl-app` demonstrates inventory management, weapon reloading, ground pickup, and healing;
+- `sh scripts/check-repository.sh` runs all checks, formatting, clippy, and tests cleanly.
 
 Verification:
 
 - `sh scripts/check-repository.sh` succeeds locally;
 - `cargo test --locked --workspace` passes all unit, integration, boundary, combat,
-  visibility, scheduling, and replay determinism tests;
-- integration tests in `crates/drl-core/tests/visibility.rs` verify shadowcasting/LOS,
-  actor filtering in observations, fog-of-war persistence, and line-of-fire blocking;
-- `cargo run` executes the headless demo demonstrating FOV raycasting and line-of-fire checks.
+  visibility, inventory, and replay determinism tests;
+- integration tests in `crates/drl-core/tests/inventory.rs` verify pickup/drop, inventory
+  capacity limits, equip/unequip cycles, medpack healing, weapon ammo consumption, and reloading;
+- `cargo run` executes the headless demo demonstrating item pickups, weapon firing, reloading,
+  and replay reproducibility.
 
 Out of scope:
 
-- inventory management, equipment slots, and item pickups;
 - procedural level generation algorithms;
 - live Lua scripting integration;
 - MCP transport servers;
@@ -78,4 +90,4 @@ Out of scope:
 
 ## Future
 
-Proceed with inventory, equipment, weapons, and level flow in Milestone 4.
+Proceed with procedural level generation, stairs, and level flow in Milestone 4.

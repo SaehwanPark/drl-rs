@@ -18,25 +18,35 @@ shared semantic protocol contracts (`drl-protocol`), an executable application r
 - `crates/drl-protocol` is the shared contract library for semantic domain types
   (`Position`, `Direction`, `Turn`, `EntityId`, `ItemId`, `LevelId`, `HitPoints`,
   `Speed`, `ActionCost`, `DamageType`, `DamageSource`, `DeathCause`, `AttackOutcome`),
-  commands (`Command::Move`, `Command::AttackMelee`, `Command::AttackRanged`, `Command::Wait`),
-  errors (`CommandError`), events (`GameEvent`), observations (`Observation`, `TileView`, `ActorView`),
-  and replay specifications (`ReplayLog`, `MonsterSpawnSpec`).
+  item types (`AmmoType`, `EquipmentSlot`, `ItemCategory`, `ItemView`, `GroundItemView`),
+  commands (`Command::Move`, `Command::AttackMelee`, `Command::AttackRanged`, `Command::Wait`,
+  `Command::Pickup`, `Command::Drop`, `Command::Equip`, `Command::Unequip`, `Command::Use`, `Command::Reload`),
+  errors (`CommandError`), events (`GameEvent`), observations (`Observation`, `TileView`, `ActorView`, `PlayerObservation`, `OmniscientObservation`),
+  and replay specifications (`ReplayLog`, `MonsterSpawnSpec`, `ItemSpawnSpec`, `ItemSpawnKind`).
 - `crates/drl-core` is the deterministic headless simulation core library containing:
   - `GameRng`: deterministic seedable PRNG (SplitMix64 + Xoshiro256++) with no ambient
     or global state;
   - `Map` & `Tile`: 2D bounded grid representation with walkability and transparency;
   - `fov`: pure, deterministic field-of-view (`compute_fov`), line-of-sight raycasting (`has_line_of_sight`),
     and discrete ray tracing (`line_points`);
-  - `Actor`: combat stats, durability, speed, energy, damage ranges, and living state;
+  - `item`: domain item models (`Item`, `WeaponProperties`, `ArmorProperties`, `ConsumableProperties`,
+    ammo stacking, clip loading/consumption, and factory constructors for Pistol, Shotgun, Combat Knife,
+    9mm Ammo, Shells, MedPacks, and Green Armor);
+  - `inventory`: bounded player backpack inventory (`Inventory`) with automatic ammo merge/stacking
+    and equipped gear tracking (`Equipment` for weapon and armor slots);
+  - `Actor`: combat stats, durability, speed, energy, inventory, equipment, dynamic weapon damage/accuracy,
+    armor damage protection mitigation, and living state;
   - `CombatResolver`: pure, deterministic combat calculation routines for melee and ranged attacks;
   - `Scheduler`: energy-based action scheduling algorithm executing actor turns by relative speeds;
-  - `World`: physical level state, deterministic `BTreeMap` actor storage, monster spawning,
-    fog-of-war map exploration memory (`explored_tiles`), and perception filtering;
-  - `Game`: turn progression kernel executing player commands, bump-attacks, line-of-fire-validated
-    ranged fire, monster AI responses, and event emissions;
+  - `World`: physical level state, deterministic `BTreeMap` actor storage, ground items mapping
+    (`ground_items: BTreeMap<ItemId, (Position, Item)>`), monster and item spawning,
+    fog-of-war map exploration memory (`explored_tiles`), and perception filtering for player observations;
+  - `Game`: turn progression kernel executing player commands (movement, bump-attacks, ranged attacks with
+    clip ammo deduction, weapon reloading, item pickups/drops/equips/consumables), monster AI responses,
+    and deterministic event emissions;
   - `ReplayEngine`: deterministic replay execution and bit-exact state verification.
 - `crates/drl-app` is the executable runner (`drl-rust`) that runs headless simulation,
-  combat, and FOV visibility demonstrations and verifies replay reproducibility.
+  combat, FOV visibility, and item/equipment/reload demonstrations and verifies replay reproducibility.
 - `crates/drl-script`, `crates/drl-mcp`, `crates/drl-render`, and
   `crates/drl-audio` are placeholder workspace crates with bounded dependency
   declarations.
@@ -44,6 +54,8 @@ shared semantic protocol contracts (`drl-protocol`), an executable application r
   direction via automated tests.
 - `crates/drl-core/tests/combat.rs` verifies end-to-end combat encounters, ranged attacks,
   monster response, death transitions, and replay determinism.
+- `crates/drl-core/tests/inventory.rs` verifies ground item pickups, drops, inventory capacity limits,
+  weapon swapping, armor damage mitigation, ammo consumption, reloading, and medpack healing.
 - `crates/drl-core/tests/simulation.rs` verifies multi-step movement, collision,
   observation, and replay determinism.
 - `crates/drl-core/tests/visibility.rs` verifies FOV shadowcasting, fog-of-war exploration

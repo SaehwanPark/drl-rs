@@ -3,6 +3,34 @@
 use crate::command::Command;
 use crate::types::Position;
 
+/// Specification for representative item spawns in replays.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ItemSpawnKind {
+  Pistol,
+  Shotgun,
+  CombatKnife,
+  Ammo9mm(u32),
+  AmmoShells(u32),
+  SmallMedPack,
+  LargeMedPack,
+  GreenArmor,
+}
+
+/// Initial item spawn specification recorded in a replay log.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ItemSpawnSpec {
+  pub position: Position,
+  pub kind: ItemSpawnKind,
+}
+
+impl ItemSpawnSpec {
+  /// Creates a new item spawn specification.
+  #[must_use]
+  pub const fn new(position: Position, kind: ItemSpawnKind) -> Self {
+    Self { position, kind }
+  }
+}
+
 /// Initial monster spawn specification recorded in a replay log.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MonsterSpawnSpec {
@@ -46,6 +74,8 @@ pub struct ReplayLog {
   pub player_start: Position,
   /// Initial monsters spawned in the level prior to command execution.
   pub initial_monsters: Vec<MonsterSpawnSpec>,
+  /// Initial items spawned on the ground prior to command execution.
+  pub initial_items: Vec<ItemSpawnSpec>,
   /// Ordered sequence of commands executed by the player.
   pub commands: Vec<Command>,
 }
@@ -60,6 +90,7 @@ impl ReplayLog {
       height,
       player_start,
       initial_monsters: Vec::new(),
+      initial_items: Vec::new(),
       commands: Vec::new(),
     }
   }
@@ -67,6 +98,11 @@ impl ReplayLog {
   /// Records an initial monster spawn in the replay.
   pub fn record_monster(&mut self, monster: MonsterSpawnSpec) {
     self.initial_monsters.push(monster);
+  }
+
+  /// Records an initial ground item spawn in the replay.
+  pub fn record_item(&mut self, item: ItemSpawnSpec) {
+    self.initial_items.push(item);
   }
 
   /// Appends a command to the log.
