@@ -7,6 +7,22 @@ documented in this file.
 
 ### Added
 
+- Field of View (FOV) calculation and Line of Sight (LOS) ray tracing module
+  (`fov`) in `drl-core` supporting deterministic perimeter raycasting, obstacle
+  occlusion, and transparency checks.
+- Fog-of-war map exploration memory in `World` tracking explored tiles and
+  revealing previously seen terrain.
+- Perception filtering in `PlayerObservation` strictly hiding unobserved entities
+  and monsters behind obstacles or outside the active field of view.
+- Line-of-fire obstacle checks for ranged attacks (`Command::AttackRanged`),
+  rejecting blocked shots with `CommandError::LineOfSightBlocked`.
+- Extended `TileView` in `drl-protocol` with `is_visible` flag distinguishing
+  active FOV cells from remembered fog-of-war cells.
+- End-to-end integration test suite in `crates/drl-core/tests/visibility.rs`
+  verifying shadowcasting, fog-of-war exploration persistence, entity filtering,
+  and line-of-fire validation.
+- Headless demo update in `drl-app` displaying active FOV and explored fog-of-war
+  tile metrics per turn.
 - Action economy and energy-based actor scheduling system (`Scheduler`) in `drl-core`
   supporting relative actor speeds and deterministic turn ordering.
 - Pure, deterministic combat calculation module (`CombatResolver`) in `drl-core`

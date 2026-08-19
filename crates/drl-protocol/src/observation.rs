@@ -40,6 +40,7 @@ pub struct TileView {
   pub kind: TileKind,
   pub is_walkable: bool,
   pub is_transparent: bool,
+  pub is_visible: bool,
 }
 
 /// View of an actor in an observation.

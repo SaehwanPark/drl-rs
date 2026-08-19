@@ -66,12 +66,17 @@ fn run_headless_demo() {
           .world()
           .player()
           .map_or(Position::new(0, 0), |p| p.position());
+        let obs = game.observe_player();
+        let visible_in_fov = obs.visible_tiles.iter().filter(|t| t.is_visible).count();
+        let total_explored = obs.visible_tiles.len();
         println!(
-          "Turn {}: Executed {:?} -> Player at ({}, {}), emitted {} event(s)",
+          "Turn {}: Executed {:?} -> Player at ({}, {}), FOV: {} visible / {} explored tiles, emitted {} event(s)",
           game.turn().count,
           cmd,
           p_pos.x,
           p_pos.y,
+          visible_in_fov,
+          total_explored,
           events.len()
         );
         for event in &events {

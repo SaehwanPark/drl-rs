@@ -236,6 +236,8 @@ impl Game {
       .ok_or(CommandError::EntityNotFound(player_id))?;
     player.set_position(to);
 
+    self.state.world.update_visibility();
+
     events.push(GameEvent::EntityMoved {
       entity_id: player_id,
       from,
@@ -359,6 +361,10 @@ impl Game {
       .get_actor(player_id)
       .ok_or(CommandError::EntityNotFound(player_id))?
       .position();
+
+    if !crate::fov::has_line_of_sight(self.state.world.map(), p_pos, target_pos) {
+      return Err(CommandError::LineOfSightBlocked(target_pos));
+    }
 
     let distance = p_pos.distance_chebyshev(target_pos);
 
@@ -646,5 +652,27 @@ mod tests {
         ..
       } if *target_id == m_id
     )));
+  }
+
+  #[test]
+  fn test_game_step_ranged_attack_blocked_by_wall() {
+    let mut game = Game::new(300, 10, 10, Position::new(2, 2)).unwrap();
+    // Spawn monster at (5, 2)
+    game
+      .world_mut()
+      .spawn_monster(Position::new(5, 2), "Imp", 20, 100, (2, 4))
+      .unwrap();
+
+    // Build wall between player (2, 2) and monster (5, 2) at (3, 2)
+    game
+      .world_mut()
+      .map_mut()
+      .set_tile(Position::new(3, 2), crate::grid::Tile::Wall);
+
+    // Attack should be rejected because line of sight is blocked
+    let err = game
+      .step(Command::AttackRanged(Position::new(5, 2)))
+      .unwrap_err();
+    assert_eq!(err, CommandError::LineOfSightBlocked(Position::new(5, 2)));
   }
 }

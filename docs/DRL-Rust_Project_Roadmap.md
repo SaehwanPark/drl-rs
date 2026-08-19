@@ -434,19 +434,19 @@ Create a small but recognizably DRL-like playable slice using representative wea
 ### Visibility
 
 - [ ] Specify legacy visibility behavior.
-- [ ] Implement field of view.
-- [ ] Implement fog-of-war/memory policy.
-- [ ] Ensure observations expose only legal information.
-- [ ] Add visibility property/scenario tests.
+- [x] Implement field of view.
+- [x] Implement fog-of-war/memory policy.
+- [x] Ensure observations expose only legal information.
+- [x] Add visibility property/scenario tests.
 
 ### Targeting
 
 - [ ] Define `Target`.
 - [ ] Implement target legality.
-- [ ] Implement line-of-fire checks.
+- [x] Implement line-of-fire checks.
 - [ ] Implement target selection metadata.
-- [ ] Test blocked shots.
-- [ ] Test out-of-range/invalid targets.
+- [x] Test blocked shots.
+- [x] Test out-of-range/invalid targets.
 
 ### Inventory and equipment
 

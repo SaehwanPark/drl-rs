@@ -2,11 +2,12 @@
 
 use drl_protocol::{
   ActorView, CommandError, EntityId, LevelId, OmniscientObservation, PlayerObservation, Position,
-  TileView, Turn,
+  Turn,
 };
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use crate::actor::Actor;
+use crate::fov::{DEFAULT_VISION_RADIUS, compute_fov};
 use crate::grid::Map;
 
 /// Physical world model for a single simulation level.
@@ -16,6 +17,7 @@ pub struct World {
   map: Map,
   actors: BTreeMap<EntityId, Actor>,
   player_id: Option<EntityId>,
+  explored_tiles: BTreeSet<Position>,
   next_entity_id: u64,
 }
 
@@ -28,6 +30,7 @@ impl World {
       map,
       actors: BTreeMap::new(),
       player_id: None,
+      explored_tiles: BTreeSet::new(),
       next_entity_id: 1,
     }
   }
@@ -56,6 +59,32 @@ impl World {
     self.level_id
   }
 
+  /// Explored tiles remembered by the player.
+  #[must_use]
+  pub const fn explored_tiles(&self) -> &BTreeSet<Position> {
+    &self.explored_tiles
+  }
+
+  /// Returns true if the position has been explored by the player.
+  #[must_use]
+  pub fn is_explored(&self, pos: Position) -> bool {
+    self.explored_tiles.contains(&pos)
+  }
+
+  /// Updates the player's field of view and adds visible tiles to explored memory.
+  pub fn update_visibility(&mut self) -> BTreeSet<Position> {
+    let visible = if let Some(player) = self.player() {
+      compute_fov(&self.map, player.position(), DEFAULT_VISION_RADIUS)
+    } else {
+      BTreeSet::new()
+    };
+
+    for &pos in &visible {
+      self.explored_tiles.insert(pos);
+    }
+    visible
+  }
+
   /// Spawns the player character at the given position.
   pub fn spawn_player(&mut self, pos: Position, name: &str) -> Result<EntityId, CommandError> {
     if !self.map.is_in_bounds(pos) {
@@ -75,6 +104,7 @@ impl World {
     let actor = Actor::new(id, pos, name, true);
     self.actors.insert(id, actor);
     self.player_id = Some(id);
+    self.update_visibility();
     Ok(id)
   }
 
@@ -245,9 +275,29 @@ impl World {
   /// Creates a player observation snapshot.
   #[must_use]
   pub fn create_player_observation(&self, turn: Turn) -> PlayerObservation {
-    let player_pos = self.player().map_or(Position::new(0, 0), Actor::position);
-    let visible_tiles: Vec<TileView> = self.map.to_tile_views();
-    let visible_actors: Vec<ActorView> = self.actors.values().map(Actor::to_view).collect();
+    let (player_pos, visible_positions) = if let Some(player) = self.player() {
+      let pos = player.position();
+      let fov = compute_fov(&self.map, pos, DEFAULT_VISION_RADIUS);
+      (pos, fov)
+    } else {
+      (Position::new(0, 0), BTreeSet::new())
+    };
+
+    let mut visible_tiles = Vec::with_capacity(self.explored_tiles.len());
+    for &pos in &self.explored_tiles {
+      if let Some(tile_view) = self.map.to_tile_view(pos, visible_positions.contains(&pos)) {
+        visible_tiles.push(tile_view);
+      }
+    }
+
+    let visible_actors: Vec<ActorView> = self
+      .actors
+      .values()
+      .filter(|actor| {
+        actor.is_alive() && (actor.is_player() || visible_positions.contains(&actor.position()))
+      })
+      .map(Actor::to_view)
+      .collect();
 
     PlayerObservation {
       turn,
@@ -264,7 +314,7 @@ impl World {
       turn,
       width: self.map.width(),
       height: self.map.height(),
-      tiles: self.map.to_tile_views(),
+      tiles: self.map.to_tile_views(true),
       actors: self.actors.values().map(Actor::to_view).collect(),
     }
   }
@@ -338,5 +388,43 @@ mod tests {
 
     // Dead actor no longer blocks cell
     assert!(world.actor_at(Position::new(1, 2)).is_none());
+  }
+
+  #[test]
+  fn test_world_visibility_and_player_observation_filtering() {
+    let mut map = Map::simple_arena(20, 20);
+    // Add wall separating room at x = 10
+    for y in 0..20 {
+      map.set_tile(Position::new(10, y), crate::grid::Tile::Wall);
+    }
+
+    let mut world = World::new(LevelId::new(1), map);
+    let _p_id = world.spawn_player(Position::new(5, 5), "Marine").unwrap();
+
+    // Visible monster on player's side of wall
+    let m1_id = world
+      .spawn_monster(Position::new(7, 5), "Imp", 15, 100, (2, 4))
+      .unwrap();
+
+    // Hidden monster behind wall
+    let m2_id = world
+      .spawn_monster(Position::new(15, 5), "Baron", 50, 100, (4, 8))
+      .unwrap();
+
+    let obs = world.create_player_observation(Turn::zero());
+
+    // Player position is correct
+    assert_eq!(obs.player_position, Position::new(5, 5));
+
+    // Visible actors contains player and Imp (m1), but NOT Baron (m2)
+    let visible_ids: Vec<EntityId> = obs.visible_actors.iter().map(|a| a.id).collect();
+    assert!(visible_ids.contains(&m1_id));
+    assert!(!visible_ids.contains(&m2_id));
+
+    // Omniscient observation still contains all entities
+    let omni = world.create_omniscient_observation(Turn::zero());
+    let omni_ids: Vec<EntityId> = omni.actors.iter().map(|a| a.id).collect();
+    assert!(omni_ids.contains(&m1_id));
+    assert!(omni_ids.contains(&m2_id));
   }
 }

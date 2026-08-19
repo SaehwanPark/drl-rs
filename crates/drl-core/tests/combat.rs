@@ -119,6 +119,24 @@ fn test_ranged_attack_error_cases() {
     err_range,
     CommandError::TargetOutOfRange(Position::new(12, 2))
   );
+
+  // Spawn monster within range at (6, 2), but blocked by wall at (4, 2)
+  game
+    .world_mut()
+    .spawn_monster(Position::new(6, 2), "Blocked Demon", 30, 100, (2, 4))
+    .expect("failed to spawn");
+  game
+    .world_mut()
+    .map_mut()
+    .set_tile(Position::new(4, 2), drl_core::Tile::Wall);
+
+  let err_los = game
+    .step(Command::AttackRanged(Position::new(6, 2)))
+    .unwrap_err();
+  assert_eq!(
+    err_los,
+    CommandError::LineOfSightBlocked(Position::new(6, 2))
+  );
 }
 
 #[test]

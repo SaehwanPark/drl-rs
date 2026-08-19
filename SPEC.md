@@ -19,40 +19,43 @@ does not replace or duplicate the full roadmap.
 - Milestone 1 established the deterministic headless simulation kernel in `drl-core`
   and shared protocol contracts in `drl-protocol`, including 2D grid maps, seedable RNG,
   movement validation, and replay determinism.
+- Milestone 2 established the action economy, energy scheduling, actor combat stats,
+  pure combat calculations, melee/ranged resolution, and deterministic replay.
 
 ## Present
 
-### Milestone 2: Action Economy, Actor Scheduling, and Minimal Combat (Melee & Ranged)
+### Milestone 4: Field of View (FOV), Fog-of-War Map Memory, and Line-of-Fire Targeting
 
 Status: Active
 
-This slice implements DRL's action economy, energy scheduling, actor combat stats,
-damage calculation, melee/ranged combat resolution, death handling, and scenario replay.
+This slice implements DRL's field of view (FOV) calculation, line-of-sight (LOS) raycasting,
+fog-of-war map exploration and memory, player observation filtering (preventing information
+leaks for hidden entities), and line-of-fire validation for ranged attacks.
 
 Observable outcomes:
 
-- `drl-protocol` defines domain types for combat and action economy: `HitPoints` (current,
-  max, damage/heal with clamping), `Speed` (relative percentage), `ActionCost` (time units,
-  standard = 1000), `DamageAmount`, `DamageType` (Physical, Plasma, Acid, Fire),
-  `DamageSource` (`Actor`, `Environment`), `DeathCause` (`MeleeAttack`, `RangedAttack`,
-  `Environment`), and `AttackOutcome` (`Hit`, `Miss`, `Blocked`);
-- `drl-protocol` defines combat commands: `Command::AttackMelee(Direction)`,
-  `Command::AttackRanged(Position)`, and bump-to-attack semantics for `Command::Move`;
-- `drl-protocol` defines combat events: `GameEvent::AttackResolved`, `GameEvent::DamageApplied`,
-  `GameEvent::ActorDied`, and `GameEvent::TurnEnded`;
-- `drl-protocol` extends `ActorView` to expose health status (`hp`), living state (`is_alive`),
-  and speed for player and omniscient observations;
-- `drl-core` implements an isolated, pure `combat` module for deterministic hit chance
-  calculations and damage rolls, testable independently of `Game`;
-- `drl-core` implements an energy-based action scheduler (`scheduler` module) executing actor
-  turns according to `Speed` and `ActionCost`, breaking ties deterministically by `EntityId`;
-- `drl-core` implements actor health tracking, damage application, death transitions, and
-  dead actor occupancy cleanup (dead actors no longer block movement);
-- `drl-core` implements monster AI turns (approach player or melee attack when adjacent)
-  when scheduled between player actions;
-- `drl-core` supports deterministic recording and playback of combat encounters via `ReplayEngine`;
-- `drl-app` demonstrates a multi-turn combat encounter with ranged and melee attacks,
-  verifying bit-for-bit replay determinism;
+- `drl-protocol` defines `CommandError::LineOfSightBlocked(Position)` when a ranged attack
+  or targeting action cannot trace an unblocked line to the target cell;
+- `drl-protocol` extends `TileView` with an `is_visible` flag distinguishing cells
+  currently in the player's active field of view from cells remembered in fog of war;
+- `drl-core` implements an isolated, pure `fov` module providing:
+  - Bresenham-based discrete line-of-sight ray tracing (`has_line_of_sight`);
+  - field of view calculation (`compute_fov`) for a configurable vision radius;
+  - proper occlusion handling (opaque walls and closed doors block sight, while
+    transparent floors, open doors, and stairs transmit sight);
+  - perimeter illumination so walls facing the player are visible;
+- `drl-core` implements fog-of-war map exploration tracking in `World`:
+  - previously visited/seen tiles are remembered as explored;
+  - unexplored tiles remain completely hidden from `PlayerObservation`;
+- `drl-core` ensures `PlayerObservation` strictly filters entities:
+  - `visible_actors` contains ONLY living actors that currently reside within the
+    player's active field of view;
+  - monsters behind walls or in unexplored/fog-of-war areas are never leaked to the player;
+- `drl-core` enforces line-of-fire validation on `Command::AttackRanged`:
+  - attacks targeting entities through walls or opaque obstacles are rejected with
+    `CommandError::LineOfSightBlocked`;
+- `drl-app` demonstrates FOV visibility in the headless scenario, reporting visible
+  tile counts and confirming that hidden enemies become visible only upon entering LOS;
 - `sh scripts/check-repository.sh` runs formatting, clippy, harness, and all unit/integration
   tests across the workspace without warnings.
 
@@ -60,20 +63,19 @@ Verification:
 
 - `sh scripts/check-repository.sh` succeeds locally;
 - `cargo test --locked --workspace` passes all unit, integration, boundary, combat,
-  scheduling, and replay determinism tests;
-- `cargo run` executes the headless combat scenario demonstrating ranged attacks, melee
-  finishing blows, monster actions, death transitions, and determinism verification;
-- tests verify that combat calculations and energy scheduling are deterministic and
-  independent of external presentation concerns.
+  visibility, scheduling, and replay determinism tests;
+- integration tests in `crates/drl-core/tests/visibility.rs` verify shadowcasting/LOS,
+  actor filtering in observations, fog-of-war persistence, and line-of-fire blocking;
+- `cargo run` executes the headless demo demonstrating FOV raycasting and line-of-fire checks.
 
 Out of scope:
 
-- inventory management, equipment slots, and item pickups (Milestone 4);
-- procedural level generation algorithms (Milestone 4);
-- live Lua scripting integration (Milestone 3);
-- MCP transport servers (Milestone 6);
-- presentation/GUI rendering and audio (Milestone 7 & 8).
+- inventory management, equipment slots, and item pickups;
+- procedural level generation algorithms;
+- live Lua scripting integration;
+- MCP transport servers;
+- presentation/GUI rendering and audio.
 
 ## Future
 
-Proceed with Lua runtime boundary and transitional content loading in Milestone 3.
+Proceed with inventory, equipment, weapons, and level flow in Milestone 4.

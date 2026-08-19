@@ -7,6 +7,7 @@
 
 pub mod actor;
 pub mod combat;
+pub mod fov;
 pub mod game;
 pub mod grid;
 pub mod replay;
@@ -16,6 +17,7 @@ pub mod world;
 
 pub use actor::Actor;
 pub use combat::CombatResolver;
+pub use fov::{DEFAULT_VISION_RADIUS, compute_fov, has_line_of_sight, line_points};
 pub use game::{Game, GameState};
 pub use grid::{Map, Tile};
 pub use replay::ReplayEngine;
