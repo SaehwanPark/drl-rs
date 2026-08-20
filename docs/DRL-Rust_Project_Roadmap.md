@@ -3,7 +3,7 @@ title: "DRL-Rust Project Roadmap"
 description: "Milestone-based execution roadmap and living progress checklist for the DRL-Rust reimplementation."
 project: "DRL-Rust"
 repository: "drl-rust"
-date: 2026-08-18
+date: 2026-08-20
 status: "Living Roadmap"
 ---
 
@@ -75,11 +75,11 @@ Establish the project structure, development standards, architectural doctrine, 
 - [x] Create GitHub repository `drl-rust`.
 - [x] Add root `README.md`.
 - [x] Add `LICENSE` and document licensing strategy.
-- [ ] Add `CONTRIBUTING.md`.
+- [x] Add `CONTRIBUTING.md`.
 - [ ] Add `CODE_OF_CONDUCT.md` if public contribution is expected.
 - [x] Add `docs/` directory.
-- [ ] Add `docs/adr/`.
-- [ ] Add `docs/legacy-behavior/`.
+- [x] Add `docs/adr/`.
+- [x] Add `docs/legacy-behavior/`.
 - [ ] Add `tests/fixtures/`.
 - [ ] Add `content/`.
 - [x] Add `assets/`.
@@ -123,22 +123,22 @@ Establish the project structure, development standards, architectural doctrine, 
 - [ ] Inventory major Pascal source units.
 - [ ] Inventory major Lua source files.
 - [ ] Map major gameplay domains to legacy files.
-- [ ] Create initial `combat.md` behavioral-spec document.
-- [ ] Create initial `movement.md`.
-- [ ] Create initial `turn-economy.md`.
+- [x] Create initial `combat.md` behavioral-spec document.
+- [x] Create initial `movement.md`.
+- [x] Create initial `turn-economy.md`.
 - [ ] Create initial `items.md`.
 - [ ] Create initial `ai.md`.
 - [ ] Create initial `generation.md`.
-- [ ] Add a template for future behavior-spec notes.
+- [x] Add a template for future behavior-spec notes.
 
 ### ADRs
 
-- [ ] ADR: project architecture principles.
-- [ ] ADR: no legacy backward compatibility.
-- [ ] ADR: semantic command model.
-- [ ] ADR: explicit deterministic RNG.
-- [ ] ADR: Lua transitional strategy.
-- [ ] ADR: MCP semantic interface strategy.
+- [x] ADR: project architecture principles.
+- [x] ADR: no legacy backward compatibility.
+- [x] ADR: semantic command model.
+- [x] ADR: explicit deterministic RNG.
+- [x] ADR: Lua transitional strategy.
+- [x] ADR: MCP semantic interface strategy.
 
 ### Provenance
 
@@ -154,7 +154,7 @@ Establish the project structure, development standards, architectural doctrine, 
 - [ ] CI runs on macOS.
 - [x] Architectural boundaries are documented.
 - [x] Rewrite fidelity doctrine is explicit.
-- [ ] At least six major legacy behavior areas have an initial specification shell.
+- [x] At least six major legacy behavior areas have an initial specification shell.
 - [ ] No gameplay implementation has forced premature architectural compromise.
 
 ---
@@ -1269,13 +1269,13 @@ Update this table as milestones advance.
 
 | Milestone | Status | Notes |
 |---|---|---|
-| M0 — Repository Foundation | In progress | Staged delivery/test-play harness, SDD, formatting, and CI foundations added; remote CI and remaining M0 deliverables are pending. |
-| M1 — Headless Simulation Kernel | Not started | |
-| M2 — Action Economy + Combat | Not started | |
+| M0 — Repository Foundation | Partially complete | CONTRIBUTING.md, ADRs (0001–0006), and legacy-behavior shells (movement, turn-economy, combat) delivered. Remote CI macOS run, CODE_OF_CONDUCT.md, tests/fixtures/, content/, dependency-audit, and provenance inventory remain open. |
+| M1 — Headless Simulation Kernel | Complete | Deterministic headless simulation kernel, seedable RNG, 2D grid maps, movement validation, and replay determinism delivered. |
+| M2 — Action Economy + Combat | Complete | Energy-based actor scheduling, melee/ranged combat, HP/damage domain types, death transitions, and combat events delivered. |
 | M3 — Lua Runtime | Not started | |
-| M4 — Core Gameplay Vertical Slice | Not started | |
-| M5 — Replay + Test Agents | Not started | |
-| M6 — MCP Interface | Not started | |
+| M4 — Core Gameplay Vertical Slice | Complete | FOV, fog-of-war, targeting, inventory, equipment, weapons, ammo, procedural generation, level transitions, knockback, and vertical slice delivered. |
+| M5 — Replay + Test Agents | Complete | Versioned replays, scenario fixtures, scripted bots (RandomBot, GreedyCombatBot, ExplorerBot), and batch simulation delivered. |
+| M6 — MCP Interface | Complete | MCP JSON-RPC 2.0 server, semantic tool suite, resources, security boundaries, stdio transport, and integration test suites delivered. |
 | M7 — Native macOS Frontend | Not started | |
 | M8 — Audio + Game Feel | Not started | |
 | M9 — Gameplay Breadth | Not started | |

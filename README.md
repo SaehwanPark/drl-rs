@@ -241,17 +241,23 @@ new Rust ownership, module, mutation, or random-number architecture.
 
 ## Contributing
 
-The project is early and the roadmap still contains foundational decisions.
-Before changing code or documentation:
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full developer guide covering
+workspace layout, prerequisites, code style, branch and PR conventions, and
+the architectural rules that must not be broken.
+
+Quick reference:
 
 - choose a bounded active roadmap slice;
-- preserve the roadmap/SDD source-of-truth hierarchy;
+- read `SPEC.md` before writing code;
+- preserve the roadmap/SPEC source-of-truth hierarchy;
 - distinguish verified current behavior from planned design;
 - keep unrelated milestone work out of the change;
 - run `sh scripts/check-repository.sh`;
-- report checks, deviations, and unresolved provenance or design questions.
+- report checks, deviations, and unresolved design questions.
 
-Dedicated contribution policy and conduct documents remain Milestone 0 work.
+Architecture Decision Records in [`docs/adr/`](docs/adr/) document the
+key accepted decisions for architecture principles, backward compatibility
+policy, command model, RNG strategy, Lua integration, and MCP interface design.
 
 ## Licensing and Provenance
 
