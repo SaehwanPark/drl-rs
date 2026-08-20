@@ -12,4 +12,5 @@ path = "src/main.rs"
 
 [dependencies]
 drl-core = { workspace = true }
+drl-mcp = { workspace = true }
 drl-protocol = { workspace = true }

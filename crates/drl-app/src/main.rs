@@ -1,25 +1,42 @@
-//! Application executable entry point and headless demo runner for DRL-Rust.
+//! Application executable entry point, headless demo runner, and MCP server for DRL-Rust.
 
 use drl_core::agent::GreedyCombatBot;
 use drl_core::batch::BatchRunner;
 use drl_core::item::Item;
 use drl_core::scenario::{Scenario, ScenarioRunner};
 use drl_core::{Game, ReplayEngine};
+use drl_mcp::McpServer;
+use drl_mcp::json::JsonValue;
 use drl_protocol::{
   Command, Direction, ItemCategory, ItemSpawnKind, ItemSpawnSpec, MonsterSpawnSpec, Position,
   ReplayLog,
 };
+use std::io;
 
 fn main() {
+  // If invoked with `--mcp` or `mcp`, launch the stdio MCP server loop.
+  if std::env::args().any(|arg| arg == "--mcp" || arg == "mcp") {
+    let mut server = McpServer::new();
+    let stdin = io::stdin();
+    let stdout = io::stdout();
+    if let Err(err) = server.run_stdio(stdin.lock(), stdout.lock()) {
+      eprintln!("MCP Server error: {err}");
+      std::process::exit(1);
+    }
+    return;
+  }
+
   println!(
-    "DRL-Rust ({}, protocol {}) initialized.",
+    "DRL-Rust ({}, protocol {}, mcp {}) initialized.",
     drl_core::engine_name(),
-    drl_protocol::protocol_version()
+    drl_protocol::protocol_version(),
+    drl_mcp::mcp_name()
   );
 
   run_headless_demo();
   run_scenario_bot_demo();
   run_batch_simulation_demo();
+  run_mcp_interface_demo();
 }
 
 fn run_headless_demo() {
@@ -254,6 +271,76 @@ fn run_batch_simulation_demo() {
   println!("  Total Damage:      {}", summary.total_damage_dealt);
 }
 
+fn run_mcp_interface_demo() {
+  println!("\n=== Model Context Protocol (MCP) Interface Demo ===");
+
+  let mut server = McpServer::new();
+
+  // 1. Initialize
+  let init_req = r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}"#;
+  let init_resp = server.handle_request(init_req);
+  println!("MCP Initialize Response: {init_resp}");
+
+  // 2. Tools List
+  let list_req = r#"{"jsonrpc":"2.0","id":2,"method":"tools/list"}"#;
+  let list_resp = server.handle_request(list_req);
+  let parsed = JsonValue::parse(&list_resp).unwrap();
+  let count = parsed
+    .get("result")
+    .unwrap()
+    .get("tools")
+    .unwrap()
+    .as_array()
+    .unwrap()
+    .len();
+  println!("Registered MCP Tools: {count} tools available");
+
+  // 3. Start Game via MCP
+  let start_req = r#"{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":888,"width":20,"height":10}}}"#;
+  let start_resp = server.handle_request(start_req);
+  let parsed_start = JsonValue::parse(&start_resp).unwrap();
+  let obs = parsed_start
+    .get("result")
+    .unwrap()
+    .get("data")
+    .unwrap()
+    .get("observation")
+    .unwrap();
+  let p_pos = obs.get("player_position").unwrap();
+  println!(
+    "Started MCP Game Session (Seed 888) -> Player at ({}, {})",
+    p_pos.get("x").unwrap(),
+    p_pos.get("y").unwrap()
+  );
+
+  // 4. Submit Semantic Action via MCP
+  let step_req = r#"{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"wait"}}}"#;
+  let step_resp = server.handle_request(step_req);
+  let parsed_step = JsonValue::parse(&step_resp).unwrap();
+  let events_count = parsed_step
+    .get("result")
+    .unwrap()
+    .get("data")
+    .unwrap()
+    .get("events")
+    .unwrap()
+    .as_array()
+    .unwrap()
+    .len();
+  println!("Stepped semantic Wait action over MCP -> Emitted {events_count} game event(s)");
+
+  // 5. Query Metrics via MCP
+  let metrics_req = r#"{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"game_get_metrics","arguments":{}}}"#;
+  let metrics_resp = server.handle_request(metrics_req);
+  let parsed_metrics = JsonValue::parse(&metrics_resp).unwrap();
+  let metrics_data = parsed_metrics.get("result").unwrap().get("data").unwrap();
+  println!(
+    "MCP Session Telemetry: Turns Survived: {}, Level: {}",
+    metrics_data.get("turns_survived").unwrap(),
+    metrics_data.get("level_reached").unwrap()
+  );
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -262,6 +349,7 @@ mod tests {
   fn test_app_initialization() {
     assert_eq!(drl_core::engine_name(), "drl-core");
     assert_eq!(drl_protocol::protocol_version(), "0.1.0");
+    assert_eq!(drl_mcp::mcp_name(), "drl-mcp");
   }
 
   #[test]

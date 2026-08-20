@@ -11,11 +11,19 @@ the planned simulation core remains portable and platform-independent.
 
 ## Project Status
 
-DRL-Rust has delivered its **Milestone 5: Replay, Scenario, and Test-Agent Infrastructure**. The
+DRL-Rust has delivered its **Milestone 6: MCP Game Interface**. The
 current implementation is a multi-crate Rust 2024 workspace featuring:
 
 - pure, deterministic headless simulation core (`drl-core`) with 2D tile maps,
   grid coordinates, seedable PRNG, and turn-based movement, combat, inventory, and weapon mechanics;
+- Model Context Protocol (MCP) server engine (`drl-mcp`) exposing standard JSON-RPC 2.0
+  game session tools, resources, and semantic actions for AI test agents and playtesting;
+- comprehensive MCP tool suite: `game_start`, `game_load_scenario`, `game_get_observation`,
+  `game_list_actions`, `game_step_action`, `game_reset`, `game_get_metrics`, `game_save_replay`, and `game_get_dev_state`;
+- static and dynamic MCP game resources (`drl://rules/game`, `drl://rules/actions`, `drl://session/metrics`, `drl://session/events`);
+- zero-external-dependency JSON parser, serializer, and JSON-RPC 2.0 dispatcher implemented in pure standard Rust;
+- strict fairness and security boundaries ensuring AI agents receive only standard `PlayerObservation` unless operating in guarded developer mode;
+- stdio transport runner for MCP clients and AI agent integration via `cargo run -p drl-app -- --mcp`;
 - versioned replay log schema (`ReplayVersion::V1`, `ReplayMetadata`) in `drl-protocol` and
   `drl-core` with engine versioning, custom hero spawn configurations, explicit tile maps, and schema validation (`ReplayEngine::validate`);
 - diagnostic replay error reporting with `ReplayExecutionError` capturing exact turn numbers,
@@ -61,15 +69,14 @@ current implementation is a multi-crate Rust 2024 workspace featuring:
 - shared semantic protocol schemas (`drl-protocol`) for commands, combat/item domain models,
   observations, events, targets, metrics, scenario fixtures, and replays;
 - an executable application runner (`drl-app` / `drl-rust`) that runs headless simulation,
-  tactical ranged monster combat, weapon knockback blasts, scenario fixtures, automated bot play, batch sweeps, and replay determinism verification;
+  tactical ranged monster combat, weapon knockback blasts, scenario fixtures, automated bot play, batch sweeps, stdio MCP server, and replay determinism verification;
 - automated architectural boundary tests, pure combat unit tests, FOV integration tests,
   inventory integration tests, AI & archetype tests, targeting tests, special item tests, level progression tests,
-  stochastic combat statistical validation suites, declarative scenario tests, agent policy tests, batch simulation tests, and replay versioning tests.
+  stochastic combat statistical validation suites, declarative scenario tests, agent policy tests, batch simulation tests,
+  replay versioning tests, and MCP JSON-RPC protocol/virtual AI player tests.
 
-
-
-Live Lua scripting integration (Milestone 3), MCP server transport (Milestone 6),
-GPU rendering (Milestone 7), and audio playback (Milestone 8) are scheduled in subsequent roadmap milestones.
+Live Lua scripting integration (Milestone 3), GPU rendering (Milestone 7), and audio playback (Milestone 8)
+are scheduled in subsequent roadmap milestones.
 
 The project intends to preserve DRL's modeled behavior and tactical character
 without translating the legacy Pascal architecture or execution traces

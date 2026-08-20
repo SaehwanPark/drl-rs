@@ -620,67 +620,67 @@ Expose DRL-Rust as a machine-operable semantic environment for AI-driven testing
 
 ### MCP protocol design
 
-- [ ] Define MCP capabilities document.
-- [ ] Version MCP-facing schema.
-- [ ] Define game/session lifecycle.
-- [ ] Define player-visible observation representation.
-- [ ] Define legal-action representation.
-- [ ] Define semantic action submission.
-- [ ] Define error format.
+- [x] Define MCP capabilities document.
+- [x] Version MCP-facing schema.
+- [x] Define game/session lifecycle.
+- [x] Define player-visible observation representation.
+- [x] Define legal-action representation.
+- [x] Define semantic action submission.
+- [x] Define error format.
 
 ### Core tools
 
-- [ ] Start new seeded game.
-- [ ] Get current observation.
-- [ ] List available/legal actions.
-- [ ] Submit move.
-- [ ] Submit wait.
-- [ ] Submit fire.
-- [ ] Submit reload.
-- [ ] Submit pickup.
-- [ ] Submit use.
-- [ ] Submit equip.
-- [ ] Advance/query game only through ordinary simulation.
+- [x] Start new seeded game.
+- [x] Get current observation.
+- [x] List available/legal actions.
+- [x] Submit move.
+- [x] Submit wait.
+- [x] Submit fire.
+- [x] Submit reload.
+- [x] Submit pickup.
+- [x] Submit use.
+- [x] Submit equip.
+- [x] Advance/query game only through ordinary simulation.
 
 ### Test utilities
 
-- [ ] Reset game.
-- [ ] Load approved scenario fixture.
-- [ ] Save replay.
-- [ ] Return run summary.
-- [ ] Set bounded episode/turn limit.
-- [ ] Expose recent semantic events.
+- [x] Reset game.
+- [x] Load approved scenario fixture.
+- [x] Save replay.
+- [x] Return run summary.
+- [x] Set bounded episode/turn limit.
+- [x] Expose recent semantic events.
 
 ### Security boundaries
 
-- [ ] Ordinary MCP agent cannot read omniscient world state.
-- [ ] Developer-only omniscient mode is clearly separated.
-- [ ] MCP does not expose arbitrary filesystem access.
-- [ ] MCP does not expose arbitrary shell execution.
-- [ ] Validate all tool arguments.
-- [ ] Bound resource usage for long episodes.
+- [x] Ordinary MCP agent cannot read omniscient world state.
+- [x] Developer-only omniscient mode is clearly separated.
+- [x] MCP does not expose arbitrary filesystem access.
+- [x] MCP does not expose arbitrary shell execution.
+- [x] Validate all tool arguments.
+- [x] Bound resource usage for long episodes.
 
 ### Integration tests
 
-- [ ] MCP can complete the Milestone 4 vertical slice.
-- [ ] MCP action results match direct simulation calls.
-- [ ] MCP observations match standard player observations.
-- [ ] Invalid actions fail cleanly.
-- [ ] Replay from an MCP-driven run reproduces the episode.
+- [x] MCP can complete the Milestone 4 vertical slice.
+- [x] MCP action results match direct simulation calls.
+- [x] MCP observations match standard player observations.
+- [x] Invalid actions fail cleanly.
+- [x] Replay from an MCP-driven run reproduces the episode.
 
 ### Practical agent tests
 
-- [ ] Run a rule-based agent through MCP.
-- [ ] Run an LLM-driven exploratory test session.
-- [ ] Capture examples of useful agent-found issues.
-- [ ] Document intended role of MCP in CI vs exploratory testing.
+- [x] Run a rule-based agent through MCP.
+- [x] Run an LLM-driven exploratory test session.
+- [x] Capture examples of useful agent-found issues.
+- [x] Document intended role of MCP in CI vs exploratory testing.
 
 ## Exit Criteria
 
-- [ ] A remote/model-driven agent can play a complete headless episode semantically.
-- [ ] MCP uses the same core command model as all other clients.
-- [ ] Replays from MCP sessions are reproducible.
-- [ ] Player-information boundaries are preserved.
+- [x] A remote/model-driven agent can play a complete headless episode semantically.
+- [x] MCP uses the same core command model as all other clients.
+- [x] Replays from MCP sessions are reproducible.
+- [x] Player-information boundaries are preserved.
 
 ---
 

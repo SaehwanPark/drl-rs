@@ -67,12 +67,24 @@ shared semantic protocol contracts (`drl-protocol`), an executable application r
     diagnostic execution (`run_with_diagnostics`), and bit-exact reproducibility verification across multi-level and scenario command streams.
 - `crates/drl-app` is the executable runner (`drl-rust`) that runs headless simulation,
   tactical ranged monster combat, weapon knockback blasts, FOV visibility, item/equipment/reload mechanics,
-  Phase Device teleportation, scenario fixture execution, automated agent play, batch simulation sweeps, and replay determinism verification.
-- `crates/drl-script`, `crates/drl-mcp`, `crates/drl-render`, and
-  `crates/drl-audio` are placeholder workspace crates with bounded dependency
-  declarations.
-- `crates/drl-core/tests/boundaries.rs` enforces architectural dependency
-  direction via automated tests.
+  Phase Device teleportation, scenario fixture execution, automated agent play, batch simulation sweeps,
+  replay determinism verification, and stdio MCP server execution (`--mcp`).
+- `crates/drl-mcp` is the Model Context Protocol (MCP) server and semantic environment library containing:
+  - `json`: pure-Rust zero-dependency JSON parser and serializer (`JsonValue`);
+  - `protocol`: typed JSON-RPC 2.0 request/response/error envelope, MCP versioning (`MCP_PROTOCOL_VERSION`, `DRL_MCP_VERSION`),
+    and `ToolDefinition`/`ResourceDefinition` metadata;
+  - `session`: `McpSession` managing simulation lifecycle, turn limits, replay logs, episode metrics,
+    and dynamic `LegalAction` synthesis from player observations;
+  - `tools`: MCP tool handlers (`game_start`, `game_load_scenario`, `game_get_observation`, `game_list_actions`,
+    `game_step_action`, `game_reset`, `game_get_metrics`, `game_save_replay`, `game_get_dev_state`);
+  - `resources`: MCP resources (`drl://rules/game`, `drl://rules/actions`, `drl://session/metrics`, `drl://session/events`);
+  - `server`: `McpServer` JSON-RPC dispatcher and stdio stream runner (`run_stdio`);
+  - `crates/drl-mcp/tests/protocol_jsonrpc.rs`: verifies handshake, error codes, tools/resources listing;
+  - `crates/drl-mcp/tests/tools_gameplay.rs`: verifies full semantic gameplay lifecycle via MCP tools;
+  - `crates/drl-mcp/tests/security_and_fairness.rs`: verifies developer-mode boundaries, FOV observation masking, turn limits;
+  - `crates/drl-mcp/tests/virtual_ai_player.rs`: verifies an automated AI test player completing an episode via JSON-RPC.
+- `crates/drl-script`, `crates/drl-render`, and `crates/drl-audio` are placeholder workspace crates with bounded dependency declarations.
+- `crates/drl-core/tests/boundaries.rs` enforces architectural dependency direction via automated tests.
 - `crates/drl-core/tests/combat.rs` verifies end-to-end combat encounters, ranged attacks,
   monster response, death transitions, and replay determinism.
 - `crates/drl-core/tests/inventory.rs` verifies ground item pickups, drops, inventory capacity limits,
@@ -107,8 +119,7 @@ shared semantic protocol contracts (`drl-protocol`), an executable application r
 - `scripts/check-repository.sh` is the common local and CI verification entry
   point and includes formatting, clippy, test, and harness-structure validation.
 
-There is no live Lua runtime, live MCP server, GPU renderer, audio backend,
-or persistence layer yet.
+There is no live Lua runtime, GPU renderer, audio backend, or persistence layer yet.
 
 ## Current Flow
 
@@ -117,25 +128,26 @@ Roadmap milestone
   -> SPEC slice
   -> drl-protocol schemas (commands, observations, events, metrics, fixtures, replays)
   -> drl-core deterministic simulation (map, FOV, AI, items, combat, scenarios, agents, batch)
-  -> drl-core/tests verification suites (scenarios, agents, batch, replay versioning)
-  -> drl-app headless demo & replay verification
+  -> drl-mcp semantic server (JSON-RPC 2.0, tools, resources, legal action synthesis, session lifecycle)
+  -> drl-mcp/tests verification suites (protocol, tools, security, virtual AI player)
+  -> drl-app headless demo, stdio MCP runner & replay verification
 ```
 
 ## Milestone Boundaries
 
-| Component | Responsibility in Milestone 5 |
+| Component | Responsibility in Milestone 6 |
 | --- | --- |
 | `drl-protocol` | Domain primitives, commands, observations, events, metrics, scenario fixtures, versioned replays |
 | `drl-core` | Pure deterministic simulation, FOV, AI, items, scenarios, bot policies, batch runner, replay validation |
-| `drl-app` | Headless execution, scenario bot demo, batch sweep metrics, replay determinism |
+| `drl-mcp` | MCP JSON-RPC 2.0 server, semantic tools, resources, observation boundaries, legal action synthesis |
+| `drl-app` | Headless execution, scenario bot demo, batch sweep metrics, stdio MCP server runner |
 | `drl-script` | Placeholder workspace crate |
-| `drl-mcp` | Placeholder workspace crate |
 | `drl-render` | Placeholder workspace crate |
 | `drl-audio` | Placeholder workspace crate |
 
 ## Next Architectural Invariants
 
 - Keep `drl-core` pure Rust `std` with zero I/O, rendering, sound, or network dependencies.
-- Ensure all agent policies consume exclusively `PlayerObservation` and submit `Command`s.
-- Keep replays completely self-contained and reproducible without external asset dependencies.
-- Expose all batch metrics and scenario fixtures through typed protocol schemas.
+- Ensure all MCP agent interactions translate strictly into standard `drl-protocol::Command`s without bypassing simulation rules.
+- Guarantee that AI agents receive only `PlayerObservation` unless explicitly operating in guarded developer mode.
+- Maintain bit-exact replay determinism across human, scripted bot, and MCP-driven simulation episodes.

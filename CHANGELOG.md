@@ -5,6 +5,27 @@ documented in this file.
 
 ## Unreleased
 
+- Full Model Context Protocol (MCP) server implementation (`crates/drl-mcp`) providing machine-operable semantic
+  gameplay interfaces for AI-driven testing, playtesting, and evaluation.
+- Zero-dependency JSON-RPC 2.0 communication engine in pure Rust `std` (`drl_mcp::json`, `drl_mcp::protocol`) supporting
+  standard MCP protocol methods (`initialize`, `ping`, `tools/list`, `tools/call`, `resources/list`, `resources/read`).
+- Semantic tool suite:
+  - `game_start`: initialize seeded procedural dungeon sessions with configurable dimensions and turn limits;
+  - `game_load_scenario`: parse and load declarative ASCII scenario layouts;
+  - `game_get_observation`: retrieve fair player-visible world views (FOV tiles, visible actors, inventory, equipment);
+  - `game_list_actions`: dynamically synthesize available legal actions (`Move`, `AttackRanged`, `Reload`, `Pickup`,
+    `Use`, `Equip`, `Unequip`, `Drop`, `Wait`, `Descend`);
+  - `game_step_action`: execute semantic actions directly through the simulation core;
+  - `game_reset`: reset session back to starting configuration;
+  - `game_get_metrics`: fetch real-time episode telemetry and terminal outcomes;
+  - `game_save_replay`: export deterministic session replay logs;
+  - `game_get_dev_state`: developer-only omniscient world state inspection gated by explicit `dev_mode` flag.
+- Static and dynamic game resources (`drl://rules/game`, `drl://rules/actions`, `drl://session/metrics`, `drl://session/events`).
+- Stdio transport runner (`McpServer::run_stdio`) and CLI integration in `drl-app` (`drl-rust --mcp` or `drl-rust mcp`).
+- Comprehensive MCP integration test suites (`protocol_jsonrpc.rs`, `tools_gameplay.rs`, `security_and_fairness.rs`,
+  `virtual_ai_player.rs`) verifying information boundaries, error handling, tool workflows, and bit-exact replay determinism.
+- Completion of Milestone 6: MCP Game Interface deliverables and exit criteria.
+
 - Versioned replay log schema (`ReplayVersion::V1`, `ReplayMetadata`) in `drl-protocol` and
   `drl-core` supporting engine version headers, custom player spawn configurations (`PlayerSpawnConfig`),
   and explicit tile override maps.

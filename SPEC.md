@@ -28,52 +28,60 @@ does not replace or duplicate the full roadmap.
   (`Command::Descend`), player state persistence across level boundaries, and multi-level replay determinism.
 - Milestone 4 established weapon kinetic knockback mechanics, bounds collision safety,
   stochastic combat statistical validation suites, and completed Milestone 4 exit criteria.
+- Milestone 5 established versioned replays (`ReplayVersion::V1`), rich turn/command diagnostics
+  (`ReplayExecutionError`), declarative scenario fixtures (`Scenario`, `ScenarioRunner`), automated bot
+  policies (`AgentPolicy`, `RandomBot`, `GreedyCombatBot`, `ExplorerBot`), and headless batch simulation (`BatchRunner`).
 
 ## Present
 
-### Milestone 5: Versioned Replays, Scenario Fixture Framework, Scripted Agent Policies, and Episode Metrics
+### Milestone 6: Model Context Protocol (MCP) Game Interface, Semantic Tools, and Integration Suite
 
-Status: Active
+Status: Complete / Active Slice
 
-This slice implements the automated testing, scenario fixture, replay diagnostics, scripted bot policy,
-and batch simulation infrastructure for Milestone 5.
+This slice implements the complete Model Context Protocol (MCP) server, JSON-RPC 2.0 dispatching engine,
+semantic session management, legal action synthesis, and integration test suites for Milestone 6.
 
 Observable outcomes:
 
-- `drl-protocol` defines versioned replay schema, scenario fixtures, and simulation metrics:
-  - `ReplayVersion` (`V1`) enum and `ReplayMetadata` with engine versioning;
-  - `PlayerSpawnConfig` recording custom starting HP, speed, inventory, and equipment;
-  - `ReplayLog` updated with versioning, metadata, and optional `PlayerSpawnConfig`;
-  - `ReplayExecutionError` capturing failed turn number, command index, offending command, and `CommandError`;
-  - `ScenarioMap` and `ScenarioFixture` representing explicit scenario layouts, spawns, and configurations;
-  - `RunOutcome`, `EpisodeMetrics`, and `BatchSummary` capturing runtime telemetry (damage dealt/taken, kills, turns survived, win rate);
-- `drl-core` implements scenario parsing, execution, replay validation, and automated bot agents:
-  - `scenario` module providing ASCII grid parsing (`Scenario::from_ascii`), scenario instantiation, execution, and fluent assertion helpers (`ScenarioRunner`);
-  - `replay` module with `ReplayEngine::validate` checking schema consistency and `run_with_diagnostics` returning `EpisodeMetrics` and `ReplayExecutionError`;
-  - `agent` module defining the `AgentPolicy` trait operating strictly on `PlayerObservation` and emitting `Command`s;
-  - Built-in agent policies: `RandomBot`, `GreedyCombatBot` (engaging enemies, reloading, healing, looting), and `ExplorerBot` (dungeon exploration and stairs descent);
-  - `batch` module (`BatchRunner`) executing large automated episode runs across arbitrary seeds and aggregating statistical `BatchSummary`;
-- `drl-core` provides comprehensive test suites in `crates/drl-core/tests/`:
-  - `tests/scenarios.rs`: scenario fixture parsing, custom monster/item setups, and fluent scenario assertions;
-  - `tests/agents.rs`: automated bot policies operating headlessly through observations without state leakage;
-  - `tests/batch_simulation.rs`: multi-seed batch runs, metrics collection, and failure artifact reproducibility;
-  - `tests/replay_versioning.rs`: versioned replay validation and error context reporting;
-- `drl-app` updates its CLI demonstration to include scenario execution, automated agent play, and batch metrics summary;
+- `drl-mcp` implements a zero-external-dependency JSON and MCP JSON-RPC 2.0 communication engine:
+  - `json` module providing pure-Rust recursive-descent parser and serializer (`JsonValue`, `JsonObject`, `JsonArray`);
+  - `protocol` module defining JSON-RPC 2.0 envelopes (`JsonRpcRequest`, `JsonRpcResponse`, `JsonRpcError`),
+    error codes (`PARSE_ERROR`, `INVALID_REQUEST`, `METHOD_NOT_FOUND`, `INVALID_PARAMS`, `SESSION_NOT_ACTIVE`, `PERMISSION_DENIED`),
+    MCP version constants (`MCP_PROTOCOL_VERSION`, `DRL_MCP_VERSION`), and `ToolDefinition`/`ResourceDefinition` models;
+  - `session` module (`McpSession`) managing procedural and scenario game simulation lifecycle, turn limits,
+    cumulative `EpisodeMetrics`, `ReplayLog` recording, and fair `PlayerObservation` perception filtering;
+  - Dynamic legal action synthesis (`compute_legal_actions`) generating available actions (`Move`, `AttackRanged`, `Reload`,
+    `Pickup`, `Use`, `Equip`, `Unequip`, `Drop`, `Wait`, `Descend`) with structured tool parameter payloads;
+  - `tools` module exposing complete game tools: `game_start`, `game_load_scenario`, `game_get_observation`,
+    `game_list_actions`, `game_step_action`, `game_reset`, `game_get_metrics`, `game_save_replay`, and `game_get_dev_state`;
+  - `resources` module exposing static and live resources: `drl://rules/game`, `drl://rules/actions`,
+    `drl://session/metrics`, and `drl://session/events`;
+  - `server` module (`McpServer`) implementing standard JSON-RPC dispatching and stdio transport loop (`run_stdio`);
+- Security and fairness boundaries strictly enforced:
+  - Default observation masks unseen entities and unrevealed tiles;
+  - `game_get_dev_state` rejects omniscient world access unless explicit `dev_mode` is enabled;
+  - No filesystem access or shell execution commands exposed;
+- `drl-mcp` integration test suites in `crates/drl-mcp/tests/`:
+  - `tests/protocol_jsonrpc.rs`: handshake, tool/resource listing, ping, and malformed request handling;
+  - `tests/tools_gameplay.rs`: procedural and scenario game lifecycles, combat, reload, loot, and medpack usage;
+  - `tests/security_and_fairness.rs`: dev mode access gating, visibility masking, and turn limit cutoffs;
+  - `tests/virtual_ai_player.rs`: virtual AI agent playing a scenario run entirely over MCP JSON-RPC with replay verification;
+- `drl-app` updates CLI entry point to support `--mcp` / `mcp` stdio server mode and MCP interactive demo;
 - `sh scripts/check-repository.sh` runs all checks, formatting, clippy, and tests cleanly.
 
 Verification:
 
 - `sh scripts/check-repository.sh` succeeds locally;
-- `cargo test --locked --workspace` passes all unit, integration, scenario, agent, batch, and replay tests;
-- automated agent policies successfully complete deterministic scenario fixtures and multi-level procedural runs;
-- `cargo run` executes scenario simulations and batch summaries headlessly.
+- `cargo test --workspace` passes all unit, integration, protocol, and virtual AI player test suites;
+- `cargo run` demonstrates MCP initialization, tool queries, and semantic actions;
+- virtual AI player completes scenario execution over MCP JSON-RPC with bit-exact replay determinism.
 
 Out of scope:
 
 - live Lua scripting integration (Milestone 3);
-- MCP JSON-RPC wire servers (Milestone 6);
-- presentation/GUI rendering (Milestone 7) and audio (Milestone 8).
+- native macOS windowing and GPU rendering (Milestone 7);
+- native audio engine (Milestone 8).
 
 ## Future
 
-Proceed with Milestone 6 MCP game interface and Milestone 7 native macOS rendering.
+Proceed with Milestone 7 native macOS rendering and input interface.
