@@ -1,0 +1,1021 @@
+//! MCP semantic session manager, legal action synthesis, and simulation bridge.
+
+use crate::json::JsonValue;
+use drl_core::Game;
+use drl_core::generator::LevelGeneratorConfig;
+use drl_core::scenario::Scenario;
+use drl_protocol::{
+  Command, Direction, EpisodeMetrics, EquipmentSlot, GameEvent, ItemCategory, ItemId, ItemView,
+  OmniscientObservation, PlayerObservation, Position, ReplayLog, RunOutcome, TileKind,
+};
+use std::collections::BTreeMap;
+
+/// Represents a legal semantic action that an MCP agent or AI player can submit.
+#[derive(Debug, Clone, PartialEq)]
+pub struct LegalAction {
+  /// Category / action name string (e.g. "Move", "AttackRanged", "Reload", "Wait").
+  pub action: String,
+  /// Human-readable explanation of what this action achieves.
+  pub description: String,
+  /// Underlying typed engine command.
+  pub command: Command,
+  /// Structured parameters representation for MCP tool arguments.
+  pub params: JsonValue,
+}
+
+impl LegalAction {
+  /// Converts this legal action into a JSON object.
+  #[must_use]
+  pub fn to_json_value(&self) -> JsonValue {
+    let mut map = BTreeMap::new();
+    map.insert("action".to_string(), JsonValue::String(self.action.clone()));
+    map.insert(
+      "description".to_string(),
+      JsonValue::String(self.description.clone()),
+    );
+    map.insert("params".to_string(), self.params.clone());
+    JsonValue::Object(map)
+  }
+}
+
+/// Computes the set of valid legal actions from the current player observation.
+#[must_use]
+pub fn compute_legal_actions(obs: &PlayerObservation) -> Vec<LegalAction> {
+  let mut actions = Vec::new();
+
+  // 1. Wait is always available
+  let mut wait_params = BTreeMap::new();
+  wait_params.insert("action".to_string(), JsonValue::from("wait"));
+  actions.push(LegalAction {
+    action: "Wait".to_string(),
+    description: "Wait in place for 1 turn (costs standard energy)".to_string(),
+    command: Command::Wait,
+    params: JsonValue::Object(wait_params),
+  });
+
+  // 2. Cardinal and diagonal movement / bump-attack directions
+  let directions = [
+    (Direction::North, "North"),
+    (Direction::South, "South"),
+    (Direction::East, "East"),
+    (Direction::West, "West"),
+    (Direction::NorthEast, "NorthEast"),
+    (Direction::NorthWest, "NorthWest"),
+    (Direction::SouthEast, "SouthEast"),
+    (Direction::SouthWest, "SouthWest"),
+  ];
+
+  for (dir, dir_name) in directions {
+    let target_pos = obs.player_position + dir;
+
+    // Check if target position is walkable or occupied by visible monster
+    let is_walkable_tile = obs
+      .visible_tiles
+      .iter()
+      .any(|t| t.position == target_pos && t.is_walkable);
+    let monster_at_pos = obs
+      .visible_actors
+      .iter()
+      .find(|a| a.position == target_pos && !a.is_player && a.is_alive);
+
+    if is_walkable_tile || monster_at_pos.is_some() {
+      let desc = if let Some(m) = monster_at_pos {
+        format!("Melee bump-attack {} to the {dir_name}", m.name)
+      } else {
+        format!("Step {dir_name} to ({}, {})", target_pos.x, target_pos.y)
+      };
+
+      let mut p = BTreeMap::new();
+      p.insert("action".to_string(), JsonValue::from("move"));
+      p.insert("direction".to_string(), JsonValue::from(dir_name));
+
+      actions.push(LegalAction {
+        action: "Move".to_string(),
+        description: desc,
+        command: Command::Move(dir),
+        params: JsonValue::Object(p),
+      });
+    }
+  }
+
+  // 3. Ranged attacks (if ranged weapon equipped with ammo)
+  if let Some(ref weapon) = obs.equipped_weapon {
+    let has_ammo = weapon.clip.is_none_or(|(loaded, _)| loaded > 0);
+    if has_ammo {
+      for actor in &obs.visible_actors {
+        if !actor.is_player && actor.is_alive {
+          let mut p = BTreeMap::new();
+          p.insert("action".to_string(), JsonValue::from("fire"));
+          p.insert("target_x".to_string(), JsonValue::from(actor.position.x));
+          p.insert("target_y".to_string(), JsonValue::from(actor.position.y));
+
+          actions.push(LegalAction {
+            action: "Fire".to_string(),
+            description: format!(
+              "Fire {} at {} at ({}, {})",
+              weapon.name, actor.name, actor.position.x, actor.position.y
+            ),
+            command: Command::AttackRanged(actor.position),
+            params: JsonValue::Object(p),
+          });
+        }
+      }
+    }
+  }
+
+  // 4. Reload weapon (if weapon not full and matching ammo exists in inventory)
+  if let Some(ref weapon) = obs.equipped_weapon
+    && let Some((loaded, max_clip)) = weapon.clip
+  {
+    let has_matching_ammo = obs
+      .inventory
+      .iter()
+      .any(|item| item.category == ItemCategory::Ammo && item.count > 0);
+    if loaded < max_clip && has_matching_ammo {
+      let mut p = BTreeMap::new();
+      p.insert("action".to_string(), JsonValue::from("reload"));
+      actions.push(LegalAction {
+        action: "Reload".to_string(),
+        description: format!(
+          "Reload {} ({loaded}/{max_clip}) from inventory ammo",
+          weapon.name
+        ),
+        command: Command::Reload,
+        params: JsonValue::Object(p),
+      });
+    }
+  }
+
+  // 5. Pickup ground items (if standing on ground item)
+  for ground in &obs.ground_items {
+    if ground.position == obs.player_position {
+      let mut p = BTreeMap::new();
+      p.insert("action".to_string(), JsonValue::from("pickup"));
+      actions.push(LegalAction {
+        action: "Pickup".to_string(),
+        description: format!("Pick up {} from floor", ground.item.name),
+        command: Command::Pickup,
+        params: JsonValue::Object(p),
+      });
+    }
+  }
+
+  // 6. Use / consume inventory items (MedPacks, Phase Devices)
+  for item in &obs.inventory {
+    if item.category == ItemCategory::MedPack || item.category == ItemCategory::PhaseDevice {
+      let mut p = BTreeMap::new();
+      p.insert("action".to_string(), JsonValue::from("use"));
+      p.insert("item_id".to_string(), JsonValue::from(item.id.as_u64()));
+
+      actions.push(LegalAction {
+        action: "Use".to_string(),
+        description: format!("Use/consume item {} ({})", item.name, item.id.as_u64()),
+        command: Command::Use(item.id),
+        params: JsonValue::Object(p),
+      });
+    }
+  }
+
+  // 7. Equip items from inventory
+  for item in &obs.inventory {
+    if item.category == ItemCategory::Weapon {
+      let mut p = BTreeMap::new();
+      p.insert("action".to_string(), JsonValue::from("equip"));
+      p.insert("item_id".to_string(), JsonValue::from(item.id.as_u64()));
+      p.insert("slot".to_string(), JsonValue::from("Weapon"));
+
+      actions.push(LegalAction {
+        action: "Equip".to_string(),
+        description: format!("Equip weapon {} into Weapon slot", item.name),
+        command: Command::Equip(item.id),
+        params: JsonValue::Object(p),
+      });
+    } else if item.category == ItemCategory::Armor {
+      let mut p = BTreeMap::new();
+      p.insert("action".to_string(), JsonValue::from("equip"));
+      p.insert("item_id".to_string(), JsonValue::from(item.id.as_u64()));
+      p.insert("slot".to_string(), JsonValue::from("Armor"));
+
+      actions.push(LegalAction {
+        action: "Equip".to_string(),
+        description: format!("Equip armor {} into Armor slot", item.name),
+        command: Command::Equip(item.id),
+        params: JsonValue::Object(p),
+      });
+    }
+  }
+
+  // 8. Drop items from inventory
+  for item in &obs.inventory {
+    let mut p = BTreeMap::new();
+    p.insert("action".to_string(), JsonValue::from("drop"));
+    p.insert("item_id".to_string(), JsonValue::from(item.id.as_u64()));
+
+    actions.push(LegalAction {
+      action: "Drop".to_string(),
+      description: format!("Drop {} onto the ground", item.name),
+      command: Command::Drop(item.id),
+      params: JsonValue::Object(p),
+    });
+  }
+
+  // 9. Descend stairs (if standing on StairsDown)
+  let on_stairs = obs
+    .visible_tiles
+    .iter()
+    .any(|t| t.position == obs.player_position && t.kind == TileKind::StairsDown);
+  if on_stairs {
+    let mut p = BTreeMap::new();
+    p.insert("action".to_string(), JsonValue::from("descend"));
+
+    actions.push(LegalAction {
+      action: "Descend".to_string(),
+      description: "Descend stairs to transition to the next dungeon level".to_string(),
+      command: Command::Descend,
+      params: JsonValue::Object(p),
+    });
+  }
+
+  actions
+}
+
+/// Parses a direction string (e.g. "North", "n", "East", "e") into a typed `Direction`.
+pub fn parse_direction(s: &str) -> Option<Direction> {
+  match s.to_lowercase().as_str() {
+    "north" | "n" | "up" | "k" => Some(Direction::North),
+    "south" | "s" | "down" | "j" => Some(Direction::South),
+    "east" | "e" | "right" | "l" => Some(Direction::East),
+    "west" | "w" | "left" | "h" => Some(Direction::West),
+    "northeast" | "ne" | "u" => Some(Direction::NorthEast),
+    "northwest" | "nw" | "y" => Some(Direction::NorthWest),
+    "southeast" | "se" | "n_key" | "b" => Some(Direction::SouthEast),
+    "southwest" | "sw" | "m" => Some(Direction::SouthWest),
+    "none" | "wait" | "." => Some(Direction::None),
+    _ => None,
+  }
+}
+
+/// Parses a JSON value into a simulation `Command`.
+pub fn json_to_command(val: &JsonValue) -> Result<Command, String> {
+  let obj = val
+    .as_object()
+    .ok_or_else(|| "Action arguments must be a JSON object".to_string())?;
+
+  let action = obj
+    .get("action")
+    .or_else(|| obj.get("command"))
+    .and_then(|v| v.as_str())
+    .ok_or_else(|| "Missing 'action' or 'command' field in arguments".to_string())?
+    .to_lowercase();
+
+  match action.as_str() {
+    "move" => {
+      let dir_str = obj
+        .get("direction")
+        .and_then(|v| v.as_str())
+        .ok_or_else(|| "Missing 'direction' parameter for move action".to_string())?;
+      let dir =
+        parse_direction(dir_str).ok_or_else(|| format!("Invalid direction value: '{dir_str}'"))?;
+      Ok(Command::Move(dir))
+    }
+    "attack_melee" | "melee" => {
+      let dir_str = obj
+        .get("direction")
+        .and_then(|v| v.as_str())
+        .ok_or_else(|| "Missing 'direction' parameter for melee attack".to_string())?;
+      let dir =
+        parse_direction(dir_str).ok_or_else(|| format!("Invalid direction value: '{dir_str}'"))?;
+      Ok(Command::AttackMelee(dir))
+    }
+    "attack_ranged" | "fire" | "shoot" => {
+      let target_x = obj
+        .get("target_x")
+        .or_else(|| obj.get("x"))
+        .and_then(|v| v.as_i64())
+        .ok_or_else(|| "Missing 'target_x' / 'x' parameter for ranged attack".to_string())?;
+      let target_y = obj
+        .get("target_y")
+        .or_else(|| obj.get("y"))
+        .and_then(|v| v.as_i64())
+        .ok_or_else(|| "Missing 'target_y' / 'y' parameter for ranged attack".to_string())?;
+      Ok(Command::AttackRanged(Position::new(
+        target_x as i32,
+        target_y as i32,
+      )))
+    }
+    "wait" => Ok(Command::Wait),
+    "pickup" => Ok(Command::Pickup),
+    "drop" => {
+      let item_id = obj
+        .get("item_id")
+        .and_then(|v| v.as_u64())
+        .ok_or_else(|| "Missing 'item_id' parameter for drop action".to_string())?;
+      Ok(Command::Drop(ItemId::new(item_id)))
+    }
+    "equip" => {
+      let item_id = obj
+        .get("item_id")
+        .and_then(|v| v.as_u64())
+        .ok_or_else(|| "Missing 'item_id' parameter for equip action".to_string())?;
+      Ok(Command::Equip(ItemId::new(item_id)))
+    }
+    "unequip" => {
+      let slot_str = obj
+        .get("slot")
+        .and_then(|v| v.as_str())
+        .ok_or_else(|| "Missing 'slot' parameter for unequip action".to_string())?;
+      let slot = match slot_str.to_lowercase().as_str() {
+        "weapon" => EquipmentSlot::Weapon,
+        "armor" => EquipmentSlot::Armor,
+        other => return Err(format!("Unknown equipment slot '{other}'")),
+      };
+      Ok(Command::Unequip(slot))
+    }
+    "use" => {
+      let item_id = obj
+        .get("item_id")
+        .and_then(|v| v.as_u64())
+        .ok_or_else(|| "Missing 'item_id' parameter for use action".to_string())?;
+      Ok(Command::Use(ItemId::new(item_id)))
+    }
+    "reload" => Ok(Command::Reload),
+    "descend" => Ok(Command::Descend),
+    other => Err(format!("Unknown action type: '{other}'")),
+  }
+}
+
+/// Converts a `PlayerObservation` to a JSON representation.
+#[must_use]
+pub fn player_observation_to_json(obs: &PlayerObservation) -> JsonValue {
+  let mut map = BTreeMap::new();
+  map.insert("turn".to_string(), JsonValue::from(obs.turn.count));
+  map.insert(
+    "player_position".to_string(),
+    position_to_json(obs.player_position),
+  );
+
+  let mut tiles = Vec::with_capacity(obs.visible_tiles.len());
+  for t in &obs.visible_tiles {
+    let mut tm = BTreeMap::new();
+    tm.insert("position".to_string(), position_to_json(t.position));
+    tm.insert("kind".to_string(), JsonValue::from(format!("{:?}", t.kind)));
+    tm.insert("walkable".to_string(), JsonValue::Bool(t.is_walkable));
+    tm.insert("visible".to_string(), JsonValue::Bool(t.is_visible));
+    tiles.push(JsonValue::Object(tm));
+  }
+  map.insert("visible_tiles".to_string(), JsonValue::Array(tiles));
+
+  let mut actors = Vec::with_capacity(obs.visible_actors.len());
+  for a in &obs.visible_actors {
+    let mut am = BTreeMap::new();
+    am.insert("id".to_string(), JsonValue::from(a.id.as_u64()));
+    am.insert("name".to_string(), JsonValue::from(a.name.as_str()));
+    am.insert("is_player".to_string(), JsonValue::Bool(a.is_player));
+    am.insert("position".to_string(), position_to_json(a.position));
+    am.insert("alive".to_string(), JsonValue::Bool(a.is_alive));
+    am.insert("speed".to_string(), JsonValue::from(a.speed.as_u32()));
+    if let Some(hp) = a.hp {
+      let mut hpm = BTreeMap::new();
+      hpm.insert("current".to_string(), JsonValue::from(hp.current));
+      hpm.insert("max".to_string(), JsonValue::from(hp.max));
+      am.insert("hp".to_string(), JsonValue::Object(hpm));
+    }
+    actors.push(JsonValue::Object(am));
+  }
+  map.insert("visible_actors".to_string(), JsonValue::Array(actors));
+
+  let mut inv = Vec::with_capacity(obs.inventory.len());
+  for item in &obs.inventory {
+    inv.push(item_view_to_json(item));
+  }
+  map.insert("inventory".to_string(), JsonValue::Array(inv));
+
+  if let Some(ref w) = obs.equipped_weapon {
+    map.insert("equipped_weapon".to_string(), item_view_to_json(w));
+  } else {
+    map.insert("equipped_weapon".to_string(), JsonValue::Null);
+  }
+
+  if let Some(ref a) = obs.equipped_armor {
+    map.insert("equipped_armor".to_string(), item_view_to_json(a));
+  } else {
+    map.insert("equipped_armor".to_string(), JsonValue::Null);
+  }
+
+  let mut ground = Vec::with_capacity(obs.ground_items.len());
+  for g in &obs.ground_items {
+    let mut gm = BTreeMap::new();
+    gm.insert("position".to_string(), position_to_json(g.position));
+    gm.insert("item".to_string(), item_view_to_json(&g.item));
+    ground.push(JsonValue::Object(gm));
+  }
+  map.insert("ground_items".to_string(), JsonValue::Array(ground));
+
+  JsonValue::Object(map)
+}
+
+/// Converts an `OmniscientObservation` to JSON.
+#[must_use]
+pub fn omniscient_observation_to_json(obs: &OmniscientObservation) -> JsonValue {
+  let mut map = BTreeMap::new();
+  map.insert("turn".to_string(), JsonValue::from(obs.turn.count));
+  map.insert("width".to_string(), JsonValue::from(obs.width));
+  map.insert("height".to_string(), JsonValue::from(obs.height));
+
+  let mut tiles = Vec::with_capacity(obs.tiles.len());
+  for t in &obs.tiles {
+    let mut tm = BTreeMap::new();
+    tm.insert("position".to_string(), position_to_json(t.position));
+    tm.insert("kind".to_string(), JsonValue::from(format!("{:?}", t.kind)));
+    tm.insert("walkable".to_string(), JsonValue::Bool(t.is_walkable));
+    tiles.push(JsonValue::Object(tm));
+  }
+  map.insert("tiles".to_string(), JsonValue::Array(tiles));
+
+  let mut actors = Vec::with_capacity(obs.actors.len());
+  for a in &obs.actors {
+    let mut am = BTreeMap::new();
+    am.insert("id".to_string(), JsonValue::from(a.id.as_u64()));
+    am.insert("name".to_string(), JsonValue::from(a.name.as_str()));
+    am.insert("is_player".to_string(), JsonValue::Bool(a.is_player));
+    am.insert("position".to_string(), position_to_json(a.position));
+    am.insert("alive".to_string(), JsonValue::Bool(a.is_alive));
+    if let Some(hp) = a.hp {
+      let mut hpm = BTreeMap::new();
+      hpm.insert("current".to_string(), JsonValue::from(hp.current));
+      hpm.insert("max".to_string(), JsonValue::from(hp.max));
+      am.insert("hp".to_string(), JsonValue::Object(hpm));
+    }
+    actors.push(JsonValue::Object(am));
+  }
+  map.insert("actors".to_string(), JsonValue::Array(actors));
+
+  let mut ground = Vec::with_capacity(obs.ground_items.len());
+  for g in &obs.ground_items {
+    let mut gm = BTreeMap::new();
+    gm.insert("position".to_string(), position_to_json(g.position));
+    gm.insert("item".to_string(), item_view_to_json(&g.item));
+    ground.push(JsonValue::Object(gm));
+  }
+  map.insert("ground_items".to_string(), JsonValue::Array(ground));
+
+  JsonValue::Object(map)
+}
+
+fn item_view_to_json(item: &ItemView) -> JsonValue {
+  let mut map = BTreeMap::new();
+  map.insert("id".to_string(), JsonValue::from(item.id.as_u64()));
+  map.insert("name".to_string(), JsonValue::from(item.name.as_str()));
+  map.insert(
+    "category".to_string(),
+    JsonValue::from(item.category.to_string()),
+  );
+  map.insert("count".to_string(), JsonValue::from(item.count));
+  map.insert(
+    "description".to_string(),
+    JsonValue::from(item.description.as_str()),
+  );
+  if let Some((curr, max)) = item.clip {
+    let mut cm = BTreeMap::new();
+    cm.insert("current".to_string(), JsonValue::from(curr));
+    cm.insert("max".to_string(), JsonValue::from(max));
+    map.insert("clip".to_string(), JsonValue::Object(cm));
+  }
+  if let Some((min_d, max_d)) = item.damage {
+    let mut dm = BTreeMap::new();
+    dm.insert("min".to_string(), JsonValue::from(min_d));
+    dm.insert("max".to_string(), JsonValue::from(max_d));
+    map.insert("damage".to_string(), JsonValue::Object(dm));
+  }
+  if let Some(armor) = item.armor_value {
+    map.insert("armor_value".to_string(), JsonValue::from(armor));
+  }
+  if let Some(heal) = item.heal_amount {
+    map.insert("heal_amount".to_string(), JsonValue::from(heal));
+  }
+  JsonValue::Object(map)
+}
+
+fn position_to_json(pos: Position) -> JsonValue {
+  let mut map = BTreeMap::new();
+  map.insert("x".to_string(), JsonValue::from(pos.x));
+  map.insert("y".to_string(), JsonValue::from(pos.y));
+  JsonValue::Object(map)
+}
+
+/// Converts a `GameEvent` to JSON.
+#[must_use]
+pub fn game_event_to_json(event: &GameEvent) -> JsonValue {
+  let mut map = BTreeMap::new();
+  match event {
+    GameEvent::TurnStarted { turn } => {
+      map.insert("type".to_string(), JsonValue::from("TurnStarted"));
+      map.insert("turn".to_string(), JsonValue::from(turn.count));
+    }
+    GameEvent::EntityMoved {
+      entity_id,
+      from,
+      to,
+    } => {
+      map.insert("type".to_string(), JsonValue::from("EntityMoved"));
+      map.insert("entity_id".to_string(), JsonValue::from(entity_id.as_u64()));
+      map.insert("from".to_string(), position_to_json(*from));
+      map.insert("to".to_string(), position_to_json(*to));
+    }
+    GameEvent::EntityWaited {
+      entity_id,
+      position,
+    } => {
+      map.insert("type".to_string(), JsonValue::from("EntityWaited"));
+      map.insert("entity_id".to_string(), JsonValue::from(entity_id.as_u64()));
+      map.insert("position".to_string(), position_to_json(*position));
+    }
+    GameEvent::AttackResolved {
+      attacker_id,
+      target_id,
+      outcome,
+      is_ranged,
+    } => {
+      map.insert("type".to_string(), JsonValue::from("AttackResolved"));
+      map.insert(
+        "attacker_id".to_string(),
+        JsonValue::from(attacker_id.as_u64()),
+      );
+      map.insert("target_id".to_string(), JsonValue::from(target_id.as_u64()));
+      map.insert("is_ranged".to_string(), JsonValue::Bool(*is_ranged));
+      match outcome {
+        drl_protocol::AttackOutcome::Hit { damage, is_lethal } => {
+          map.insert("hit".to_string(), JsonValue::Bool(true));
+          map.insert("damage".to_string(), JsonValue::from(*damage));
+          map.insert("is_lethal".to_string(), JsonValue::Bool(*is_lethal));
+        }
+        drl_protocol::AttackOutcome::Miss => {
+          map.insert("hit".to_string(), JsonValue::Bool(false));
+          map.insert("damage".to_string(), JsonValue::from(0));
+        }
+        drl_protocol::AttackOutcome::Blocked => {
+          map.insert("hit".to_string(), JsonValue::Bool(false));
+          map.insert("blocked".to_string(), JsonValue::Bool(true));
+          map.insert("damage".to_string(), JsonValue::from(0));
+        }
+      }
+    }
+    GameEvent::DamageApplied {
+      target_id,
+      amount,
+      remaining_hp,
+      ..
+    } => {
+      map.insert("type".to_string(), JsonValue::from("DamageApplied"));
+      map.insert("target_id".to_string(), JsonValue::from(target_id.as_u64()));
+      map.insert("amount".to_string(), JsonValue::from(*amount));
+      map.insert("remaining_hp".to_string(), JsonValue::from(*remaining_hp));
+    }
+    GameEvent::ActorDied { entity_id, cause } => {
+      map.insert("type".to_string(), JsonValue::from("ActorDied"));
+      map.insert("entity_id".to_string(), JsonValue::from(entity_id.as_u64()));
+      map.insert("cause".to_string(), JsonValue::from(format!("{cause:?}")));
+    }
+    GameEvent::ItemPickedUp {
+      entity_id,
+      item_name,
+      ..
+    } => {
+      map.insert("type".to_string(), JsonValue::from("ItemPickedUp"));
+      map.insert("entity_id".to_string(), JsonValue::from(entity_id.as_u64()));
+      map.insert("item_name".to_string(), JsonValue::from(item_name.as_str()));
+    }
+    GameEvent::ItemDropped {
+      entity_id,
+      item_name,
+      position,
+      ..
+    } => {
+      map.insert("type".to_string(), JsonValue::from("ItemDropped"));
+      map.insert("entity_id".to_string(), JsonValue::from(entity_id.as_u64()));
+      map.insert("item_name".to_string(), JsonValue::from(item_name.as_str()));
+      map.insert("position".to_string(), position_to_json(*position));
+    }
+    GameEvent::ItemEquipped {
+      entity_id,
+      slot,
+      item_id,
+    } => {
+      map.insert("type".to_string(), JsonValue::from("ItemEquipped"));
+      map.insert("entity_id".to_string(), JsonValue::from(entity_id.as_u64()));
+      map.insert("slot".to_string(), JsonValue::from(slot.to_string()));
+      map.insert("item_id".to_string(), JsonValue::from(item_id.as_u64()));
+    }
+    GameEvent::ItemUnequipped {
+      entity_id,
+      slot,
+      item_id,
+    } => {
+      map.insert("type".to_string(), JsonValue::from("ItemUnequipped"));
+      map.insert("entity_id".to_string(), JsonValue::from(entity_id.as_u64()));
+      map.insert("slot".to_string(), JsonValue::from(slot.to_string()));
+      map.insert("item_id".to_string(), JsonValue::from(item_id.as_u64()));
+    }
+    GameEvent::ItemUsed {
+      entity_id,
+      item_name,
+      ..
+    } => {
+      map.insert("type".to_string(), JsonValue::from("ItemUsed"));
+      map.insert("entity_id".to_string(), JsonValue::from(entity_id.as_u64()));
+      map.insert("item_name".to_string(), JsonValue::from(item_name.as_str()));
+    }
+    GameEvent::WeaponReloaded {
+      entity_id,
+      ammo_loaded,
+      current_clip,
+      max_clip,
+    } => {
+      map.insert("type".to_string(), JsonValue::from("WeaponReloaded"));
+      map.insert("entity_id".to_string(), JsonValue::from(entity_id.as_u64()));
+      map.insert("ammo_loaded".to_string(), JsonValue::from(*ammo_loaded));
+      map.insert("current_clip".to_string(), JsonValue::from(*current_clip));
+      map.insert("max_clip".to_string(), JsonValue::from(*max_clip));
+    }
+    GameEvent::LevelTransitioned {
+      from_level,
+      to_level,
+    } => {
+      map.insert("type".to_string(), JsonValue::from("LevelTransitioned"));
+      map.insert("from_level".to_string(), JsonValue::from(from_level.0));
+      map.insert("to_level".to_string(), JsonValue::from(to_level.0));
+    }
+    GameEvent::PlayerTeleported { from, to } => {
+      map.insert("type".to_string(), JsonValue::from("PlayerTeleported"));
+      map.insert("from".to_string(), position_to_json(*from));
+      map.insert("to".to_string(), position_to_json(*to));
+    }
+    GameEvent::ActorKnockedBack {
+      entity_id,
+      from,
+      to,
+    } => {
+      map.insert("type".to_string(), JsonValue::from("ActorKnockedBack"));
+      map.insert("entity_id".to_string(), JsonValue::from(entity_id.as_u64()));
+      map.insert("from".to_string(), position_to_json(*from));
+      map.insert("to".to_string(), position_to_json(*to));
+    }
+    GameEvent::ActionCostPaid { entity_id, cost } => {
+      map.insert("type".to_string(), JsonValue::from("ActionCostPaid"));
+      map.insert("entity_id".to_string(), JsonValue::from(entity_id.as_u64()));
+      map.insert("cost".to_string(), JsonValue::from(cost.as_u32()));
+    }
+    GameEvent::TurnEnded { turn } => {
+      map.insert("type".to_string(), JsonValue::from("TurnEnded"));
+      map.insert("turn".to_string(), JsonValue::from(turn.count));
+    }
+  }
+  JsonValue::Object(map)
+}
+
+/// Converts `EpisodeMetrics` to JSON.
+#[must_use]
+pub fn episode_metrics_to_json(metrics: &EpisodeMetrics) -> JsonValue {
+  let mut map = BTreeMap::new();
+  map.insert(
+    "turns_survived".to_string(),
+    JsonValue::from(metrics.turns_survived),
+  );
+  map.insert(
+    "damage_dealt".to_string(),
+    JsonValue::from(metrics.damage_dealt),
+  );
+  map.insert(
+    "damage_taken".to_string(),
+    JsonValue::from(metrics.damage_taken),
+  );
+  map.insert(
+    "enemies_killed".to_string(),
+    JsonValue::from(metrics.enemies_killed),
+  );
+  map.insert(
+    "shots_fired".to_string(),
+    JsonValue::from(metrics.shots_fired),
+  );
+  map.insert("shots_hit".to_string(), JsonValue::from(metrics.shots_hit));
+  map.insert(
+    "items_picked_up".to_string(),
+    JsonValue::from(metrics.items_picked_up),
+  );
+  map.insert(
+    "items_used".to_string(),
+    JsonValue::from(metrics.items_used),
+  );
+  map.insert(
+    "level_reached".to_string(),
+    JsonValue::from(metrics.level_reached.0),
+  );
+
+  let outcome_str = match &metrics.outcome {
+    RunOutcome::InProgress => "InProgress".to_string(),
+    RunOutcome::Victory => "Victory".to_string(),
+    RunOutcome::Death { cause } => format!("Death({cause:?})"),
+    RunOutcome::TurnLimitReached => "TurnLimitReached".to_string(),
+    RunOutcome::Stalled => "Stalled".to_string(),
+  };
+  map.insert("outcome".to_string(), JsonValue::from(outcome_str));
+
+  JsonValue::Object(map)
+}
+
+/// Session configuration snapshot.
+#[derive(Debug, Clone)]
+pub struct SessionConfig {
+  pub seed: u64,
+  pub max_turns: Option<u64>,
+  pub scenario_ascii: Option<String>,
+  pub width: Option<u32>,
+  pub height: Option<u32>,
+}
+
+/// Active MCP game session manager.
+#[derive(Debug)]
+pub struct McpSession {
+  game: Option<Game>,
+  config: Option<SessionConfig>,
+  dev_mode: bool,
+  max_turns: Option<u64>,
+  turn_count: u64,
+  replay_log: Option<ReplayLog>,
+  metrics: EpisodeMetrics,
+  recent_events: Vec<GameEvent>,
+}
+
+impl Default for McpSession {
+  fn default() -> Self {
+    Self::new()
+  }
+}
+
+impl McpSession {
+  /// Creates a new inactive MCP session.
+  #[must_use]
+  pub fn new() -> Self {
+    Self {
+      game: None,
+      config: None,
+      dev_mode: false,
+      max_turns: None,
+      turn_count: 0,
+      replay_log: None,
+      metrics: EpisodeMetrics::new(),
+      recent_events: Vec::new(),
+    }
+  }
+
+  /// Sets developer mode. When disabled (default), omniscient world access is forbidden.
+  pub fn set_dev_mode(&mut self, enabled: bool) {
+    self.dev_mode = enabled;
+  }
+
+  /// Returns true if developer mode is enabled.
+  #[must_use]
+  pub fn is_dev_mode(&self) -> bool {
+    self.dev_mode
+  }
+
+  /// Returns true if a game session is currently initialized and active.
+  #[must_use]
+  pub fn is_active(&self) -> bool {
+    self.game.is_some()
+  }
+
+  /// Starts a new procedural dungeon game session.
+  pub fn start_game(
+    &mut self,
+    seed: u64,
+    max_turns: Option<u64>,
+    width: Option<u32>,
+    height: Option<u32>,
+  ) -> Result<PlayerObservation, String> {
+    let w = width.unwrap_or(40);
+    let h = height.unwrap_or(20);
+
+    let config = LevelGeneratorConfig {
+      width: w,
+      height: h,
+      max_rooms: 5,
+      min_room_size: 4,
+      max_room_size: 8,
+      max_monsters_per_room: 2,
+      max_items_per_room: 2,
+    };
+
+    let game = Game::new_procedural(seed, config)
+      .map_err(|e| format!("Failed to generate procedural game: {e}"))?;
+
+    let p_pos = game.observe_player().player_position;
+    let replay = ReplayLog::new(seed, w, h, p_pos);
+
+    self.config = Some(SessionConfig {
+      seed,
+      max_turns,
+      scenario_ascii: None,
+      width: Some(w),
+      height: Some(h),
+    });
+    self.max_turns = max_turns;
+    self.turn_count = 0;
+    self.metrics = EpisodeMetrics::new();
+    self.recent_events.clear();
+    self.replay_log = Some(replay);
+
+    let obs = game.observe_player();
+    self.game = Some(game);
+    Ok(obs)
+  }
+
+  /// Loads an explicit scenario fixture into this session.
+  pub fn load_scenario(
+    &mut self,
+    ascii_map: &str,
+    max_turns: Option<u64>,
+  ) -> Result<PlayerObservation, String> {
+    let scenario = Scenario::from_ascii("McpScenario", "Scenario loaded via MCP", ascii_map)
+      .map_err(|e| format!("Failed to parse scenario ASCII: {e}"))?;
+
+    let game = scenario
+      .instantiate()
+      .map_err(|e| format!("Failed to instantiate scenario: {e}"))?;
+
+    let p_pos = game.observe_player().player_position;
+    let w = game.world().map().width();
+    let h = game.world().map().height();
+    let replay = ReplayLog::new(0, w, h, p_pos);
+
+    self.config = Some(SessionConfig {
+      seed: 0,
+      max_turns,
+      scenario_ascii: Some(ascii_map.to_string()),
+      width: Some(w),
+      height: Some(h),
+    });
+    self.max_turns = max_turns;
+    self.turn_count = 0;
+    self.metrics = EpisodeMetrics::new();
+    self.recent_events.clear();
+    self.replay_log = Some(replay);
+
+    let obs = game.observe_player();
+    self.game = Some(game);
+    Ok(obs)
+  }
+
+  /// Resets the current game session back to its starting configuration.
+  pub fn reset(&mut self) -> Result<PlayerObservation, String> {
+    let cfg = self
+      .config
+      .clone()
+      .ok_or_else(|| "No active session configuration to reset".to_string())?;
+
+    if let Some(ref ascii) = cfg.scenario_ascii {
+      self.load_scenario(ascii, cfg.max_turns)
+    } else {
+      self.start_game(cfg.seed, cfg.max_turns, cfg.width, cfg.height)
+    }
+  }
+
+  /// Retrieves the current player observation.
+  pub fn get_observation(&self) -> Result<PlayerObservation, String> {
+    let game = self
+      .game
+      .as_ref()
+      .ok_or_else(|| "No active game session".to_string())?;
+    Ok(game.observe_player())
+  }
+
+  /// Retrieves the omniscient world state (developer mode required).
+  pub fn get_dev_state(&self) -> Result<OmniscientObservation, String> {
+    if !self.dev_mode {
+      return Err(
+        "Developer mode is disabled. Omniscient observation access is forbidden.".to_string(),
+      );
+    }
+    let game = self
+      .game
+      .as_ref()
+      .ok_or_else(|| "No active game session".to_string())?;
+    Ok(game.observe_omniscient())
+  }
+
+  /// Executes a single semantic command in the simulation.
+  pub fn step(
+    &mut self,
+    command: Command,
+  ) -> Result<(Vec<GameEvent>, PlayerObservation, Option<RunOutcome>), String> {
+    let game = self
+      .game
+      .as_mut()
+      .ok_or_else(|| "No active game session".to_string())?;
+
+    let player_id = game
+      .world()
+      .player_id()
+      .ok_or_else(|| "No player entity in world".to_string())?;
+
+    let events = game
+      .step(command)
+      .map_err(|e| format!("Simulation step error: {e}"))?;
+
+    // Ingest events into metrics
+    for ev in &events {
+      self.metrics.record_event(player_id, ev);
+    }
+
+    self.turn_count += 1;
+    self.recent_events.clone_from(&events);
+
+    if let Some(ref mut replay) = self.replay_log {
+      replay.record_command(command);
+    }
+
+    let obs = game.observe_player();
+
+    // Check terminal conditions
+    let player_alive = game
+      .world()
+      .get_actor(player_id)
+      .is_some_and(|p| p.is_alive());
+    let outcome = if !player_alive {
+      let death_outcome = self.metrics.outcome.clone();
+      Some(death_outcome)
+    } else if let Some(max_t) = self.max_turns {
+      if self.turn_count >= max_t {
+        self.metrics.outcome = RunOutcome::TurnLimitReached;
+        Some(RunOutcome::TurnLimitReached)
+      } else {
+        None
+      }
+    } else {
+      None
+    };
+
+    Ok((events, obs, outcome))
+  }
+
+  /// Retrieves current episode telemetry metrics.
+  #[must_use]
+  pub fn get_metrics(&self) -> &EpisodeMetrics {
+    &self.metrics
+  }
+
+  /// Exports the recorded replay log for the current session.
+  pub fn export_replay(&self) -> Result<&ReplayLog, String> {
+    self
+      .replay_log
+      .as_ref()
+      .ok_or_else(|| "No replay log available for session".to_string())
+  }
+
+  /// Retrieves recent game events.
+  #[must_use]
+  pub fn recent_events(&self) -> &[GameEvent] {
+    &self.recent_events
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_legal_actions_synthesis() {
+    let mut session = McpSession::new();
+    let obs = session
+      .start_game(42, Some(100), Some(20), Some(15))
+      .unwrap();
+    let actions = compute_legal_actions(&obs);
+    assert!(!actions.is_empty());
+    assert!(actions.iter().any(|a| a.action == "Wait"));
+  }
+
+  #[test]
+  fn test_json_to_command_parsing() {
+    let raw = r#"{"action":"move","direction":"North"}"#;
+    let val = JsonValue::parse(raw).unwrap();
+    let cmd = json_to_command(&val).unwrap();
+    assert_eq!(cmd, Command::Move(Direction::North));
+
+    let raw_fire = r#"{"action":"fire","target_x":5,"target_y":10}"#;
+    let val_fire = JsonValue::parse(raw_fire).unwrap();
+    let cmd_fire = json_to_command(&val_fire).unwrap();
+    assert_eq!(cmd_fire, Command::AttackRanged(Position::new(5, 10)));
+  }
+
+  #[test]
+  fn test_security_dev_state_boundary() {
+    let mut session = McpSession::new();
+    session.start_game(123, None, None, None).unwrap();
+    assert!(!session.is_dev_mode());
+    assert!(session.get_dev_state().is_err());
+
+    session.set_dev_mode(true);
+    assert!(session.is_dev_mode());
+    assert!(session.get_dev_state().is_ok());
+  }
+}
