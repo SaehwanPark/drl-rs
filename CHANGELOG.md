@@ -5,6 +5,46 @@ documented in this file.
 
 ## Unreleased
 
+- `CONTRIBUTING.md` added at the repository root, covering workspace crate
+  map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch
+  naming and commit conventions, pull request workflow, local check procedure
+  (`sh scripts/check-repository.sh`), and architectural do-not-cross rules.
+- `docs/adr/` directory created with six initial Architecture Decision Records:
+  - `0001` — Project architecture principles (functional-core/imperative-shell,
+    typed domain, ADTs, explicit state, no ambient state, clean boundaries,
+    testability, no premature abstraction);
+  - `0002` — No legacy backward compatibility (no saves, mods, WAD, or RNG
+    stream compatibility with the Pascal implementation);
+  - `0003` — Semantic command model (all clients submit `Command` through the
+    same simulation API; no privileged mutation paths);
+  - `0004` — Explicit deterministic RNG (`GameRng` wraps SplitMix64 +
+    Xoshiro256++; no global or ambient RNG in `drl-core`);
+  - `0005` — Lua transitional strategy (Lua behind a narrow typed boundary;
+    Rust owns all simulation invariants; Lua errors are isolated);
+  - `0006` — MCP semantic interface strategy (MCP as first-class agent/test
+    interface via JSON-RPC 2.0 stdio; not a simulation bypass; player
+    information boundaries enforced; replay determinism preserved).
+- `docs/legacy-behavior/` directory created with four documents:
+  - `_template.md` — reusable template distinguishing verified behaviors,
+    inferred design intent, legacy implementation artifacts, deliberate
+    DRL-Rust decisions, and open questions;
+  - `movement.md` — movement semantics shell covering grid movement, bounds
+    enforcement, occupancy, diagonal movement, level exit, and action cost;
+  - `turn-economy.md` — action-cost semantics shell covering the energy-based
+    scheduling model, actor speed, action cost uniformity, and dead actor
+    handling;
+  - `combat.md` — combat semantics shell covering hit resolution (accuracy
+    roll, range penalty, LOS requirement), damage calculation (uniform roll,
+    armor mitigation, HP clamping), death, knockback, and loot drops.
+- Roadmap progress table updated: M0 status corrected to "Partially complete";
+  M1, M2, M4, M5, M6 statuses updated to "Complete" with delivery summaries.
+- M0 roadmap checklist items marked complete: `CONTRIBUTING.md`, `docs/adr/`,
+  `docs/legacy-behavior/`, all six ADRs, `combat.md`/`movement.md`/
+  `turn-economy.md` behavior shells, behavior-spec template, and the
+  "at least six major legacy behavior areas" exit criterion.
+- `ARCHITECTURE.md` updated to document `docs/adr/` and `docs/legacy-behavior/`
+  as recognized structural components.
+
 - Full Model Context Protocol (MCP) server implementation (`crates/drl-mcp`) providing machine-operable semantic
   gameplay interfaces for AI-driven testing, playtesting, and evaluation.
 - Zero-dependency JSON-RPC 2.0 communication engine in pure Rust `std` (`drl_mcp::json`, `drl_mcp::protocol`) supporting

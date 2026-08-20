@@ -1,6 +1,6 @@
 # Architecture
 
-Last Reviewed: 2026-08-19
+Last Reviewed: 2026-08-20
 
 Status: Verified
 
@@ -118,6 +118,14 @@ shared semantic protocol contracts (`drl-protocol`), an executable application r
   define the development and test-play harness.
 - `scripts/check-repository.sh` is the common local and CI verification entry
   point and includes formatting, clippy, test, and harness-structure validation.
+- `docs/adr/` contains Architecture Decision Records (ADRs 0001–0006) documenting
+  accepted decisions on architecture principles, no legacy backward compatibility,
+  the semantic command model, explicit deterministic RNG, Lua transitional strategy,
+  and the MCP semantic interface strategy.
+- `docs/legacy-behavior/` contains behavioral specification shells documenting
+  verified behaviors, inferred design intent, implementation artifacts, deliberate
+  DRL-Rust decisions, and open questions for the movement, turn-economy, and
+  combat domains, plus a reusable `_template.md`.
 
 There is no live Lua runtime, GPU renderer, audio backend, or persistence layer yet.
 
