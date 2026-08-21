@@ -28,7 +28,7 @@ automated regressions, and human review.
   Linux x86-64; see `docs/reference-captures/manifest.md`.
 - M7 browser session/WebGPU/WASM implementation is present locally. A Chrome
   151 WebGPU smoke playthrough (including explicit audio-gated recovery state)
-  and remote web-CI run `32537824075` now pass for `a43402e`;
+  and remote web-CI run `32538238323` now pass for `bb449e2`;
   reference-scene comparison remains open because legacy captures are `NOT_RUN`.
 - `SPEC.md` contains the single active M7 slice; it is not a second roadmap.
 

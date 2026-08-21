@@ -72,7 +72,7 @@ scripts/build-web.sh                         PASS (release bundle in ignored dis
 Chrome 151 WebGPU smoke playthrough          PASS (Apple Metal-3, 1280x720, DPR 1;
                                              start with explicit gesture-gated
                                              audio state, move, mute, restart)
-GitHub Actions run 32537824075               PASS (repository + Ubuntu WASM jobs)
+GitHub Actions run 32538238323               PASS (repository + Ubuntu WASM jobs)
 ```
 
 The local and remote functional gates pass. The run records browser/version,
