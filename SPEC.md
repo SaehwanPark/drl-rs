@@ -17,8 +17,8 @@ progress. This file expands exactly one active implementation slice.
 
 ## Present — M7 Browser-playable M4 slice
 
-Status: Implemented locally; browser manual and remote web-CI acceptance
-pending.
+Status: Functional acceptance passed locally and in remote web CI; the
+capture-backed fidelity comparison remains open.
 
 ### Observable behavior
 
@@ -43,6 +43,10 @@ pending.
   presentation timing does not submit commands.
 - The static HTTPS shell provides accessible start/status/HUD/log/inventory
   regions and prevents page scrolling only while the canvas owns focus.
+- The browser shell applies mute status after the asynchronous audio-unlock
+  retry, so the visible status cannot report a stale unlock result.
+- Mute and volume controls serialize audio-unlock/settings operations, so rapid
+  presentation events cannot apply a stale setting or advance simulation.
 
 ### Public contracts
 
@@ -64,12 +68,17 @@ sh scripts/check-assets.sh                  PASS (32 PNGs, license, hashes)
 cargo check --locked -p drl-web --target wasm32-unknown-unknown  PASS
 scripts/check-web.sh                        PASS for native/WASM builds;
                                              browser runner NOT_RUN if Chrome absent
+scripts/build-web.sh                         PASS (release bundle in ignored dist/)
+Chrome 151 WebGPU smoke playthrough          PASS (Apple Metal-3, 1280x720, DPR 1;
+                                             start with explicit gesture-gated
+                                             audio state, move, mute, restart)
+GitHub Actions run 32538238323               PASS (repository + Ubuntu WASM jobs)
 ```
 
-The remote web-CI job and a current desktop Chrome/Edge WebGPU playthrough
-must pass before this slice is marked complete. The playthrough records
-browser/version, OS, adapter/backend, viewport, DPR, build revision, audio
-state, and comparisons against `docs/reference-captures/fidelity-matrix.md`.
+The local and remote functional gates pass. The run records browser/version,
+OS, adapter/backend, viewport, DPR, build revision, and audio unlock/mute
+state, but the fidelity-matrix comparison remains `NOT_RUN` until a controlled
+legacy capture is available.
 
 ### Explicit non-goals
 
@@ -83,6 +92,7 @@ state, and comparisons against `docs/reference-captures/fidelity-matrix.md`.
 
 ## Next
 
-After the M7 local/remote gates pass, move this slice to Past and activate the
-first bounded M8 audiovisual-parity slice. Do not claim M8 fidelity from the
-current placeholder atlas rectangles or the `NOT_RUN` legacy captures.
+After the controlled capture and reference-scene comparison pass, move this
+slice to Past and activate the first bounded M8 audiovisual-parity slice. Do
+not claim M8 fidelity from the current placeholder atlas rectangles or the
+`NOT_RUN` legacy captures.

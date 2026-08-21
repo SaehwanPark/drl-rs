@@ -7,9 +7,10 @@ gesture-unlocked Web Audio. Headless Rust and MCP remain supported for agents,
 replays, and regression testing.
 
 The current repository contains a playable browser-slice implementation and a
-complete deterministic M4 simulation. Full audiovisual equivalence, broader
-content, PWA persistence, and other browsers are staged roadmap work; do not
-read the placeholder M7 atlas rectangles as a fidelity claim.
+complete deterministic M4 simulation. M7 functional checks pass locally and in
+remote web CI; full audiovisual equivalence, broader content, PWA persistence,
+and other browsers remain staged roadmap work. Do not read the placeholder M7
+atlas rectangles as a fidelity claim.
 
 ## Quick start
 

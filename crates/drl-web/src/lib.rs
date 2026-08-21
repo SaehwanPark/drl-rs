@@ -973,7 +973,7 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
     AUDIO.with(|audio_slot| {
       let mut audio_ref = audio_slot.borrow_mut();
       let Some(mixer) = audio_ref.as_mut() else {
-        return "Press Start first.".to_string();
+        return "Audio unavailable; gameplay continues.".to_string();
       };
       let settings = mixer.settings();
       mixer.set_settings(muted, settings.volume);
@@ -992,7 +992,7 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
     AUDIO.with(|audio_slot| {
       let mut audio_ref = audio_slot.borrow_mut();
       let Some(mixer) = audio_ref.as_mut() else {
-        return "Press Start first.".to_string();
+        return "Audio unavailable; gameplay continues.".to_string();
       };
       let settings = mixer.settings();
       mixer.set_settings(settings.muted, volume);

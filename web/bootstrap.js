@@ -9,10 +9,24 @@ const inventory = document.querySelector("#inventory");
 const mute = document.querySelector("#mute-button");
 const volume = document.querySelector("#volume-control");
 let started = false;
+let audioTask = Promise.resolve();
 
 function writeStatus(message) {
   status.textContent = message;
   log.textContent = message;
+}
+
+function queueAudioSetting(setting) {
+  // Web Audio unlock temporarily takes the mixer out of WASM storage. Queue
+  // all control changes so rapid UI events cannot observe a missing mixer or
+  // apply an older setting after a newer one.
+  audioTask = audioTask
+    .catch(() => {})
+    .then(async () => {
+      await unlock_audio();
+      writeStatus(setting());
+    })
+    .catch(() => writeStatus("Audio unavailable; gameplay continues."));
 }
 
 start.addEventListener("click", async () => {
@@ -23,7 +37,9 @@ start.addEventListener("click", async () => {
     started = true;
     start.disabled = true;
     canvas.focus();
-    writeStatus(`Ready (${result}). Audio unlocked from this gesture.`);
+    // `boot()` writes the accurate ready/suspended/unavailable audio state.
+    // Keep that message and mirror it to the log instead of assuming success.
+    log.textContent = status.textContent || `Ready (${result}).`;
   } catch (error) {
     writeStatus(`Browser graphics unavailable: ${error}`);
   }
@@ -41,16 +57,15 @@ restart.addEventListener("click", () => {
 
 mute.addEventListener("click", () => {
   if (!started) return;
-  unlock_audio().then(writeStatus);
   const muted = mute.getAttribute("aria-pressed") !== "true";
   mute.setAttribute("aria-pressed", String(muted));
   mute.textContent = muted ? "Unmute" : "Mute";
-  writeStatus(set_muted(muted));
+  queueAudioSetting(() => set_muted(muted));
 });
 
 volume.addEventListener("input", () => {
   if (started) {
-    unlock_audio().then(() => writeStatus(set_volume(Number(volume.value))));
+    queueAudioSetting(() => set_volume(Number(volume.value)));
   }
 });
 
