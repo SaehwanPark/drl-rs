@@ -118,9 +118,19 @@ impl RenderScene {
       .filter(|actor| !actor.is_player)
       .map(|actor| actor.position)
       .collect();
+    // Ground-item memory may include an explored tile that is currently out
+    // of sight. Do not draw or otherwise surface those items in the browser
+    // scene; the frontend must never turn remembered state into hidden-world
+    // disclosure.
     let items = observation
       .ground_items
       .iter()
+      .filter(|ground| {
+        observation
+          .visible_tiles
+          .iter()
+          .any(|tile| tile.position == ground.position && tile.is_visible)
+      })
       .map(|ground| SceneItem {
         position: ground.position,
         item: ground.item.clone(),
