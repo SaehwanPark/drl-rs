@@ -1,7 +1,7 @@
 //! Item domain models, weapon properties, armor, ammunition, and consumables.
 
 use drl_protocol::{
-  ActionCost, AmmoType, EquipmentSlot, ItemCategory, ItemId, ItemSpawnKind, ItemView,
+  ActionCost, AmmoType, EquipmentSlot, ItemArchetype, ItemCategory, ItemId, ItemSpawnKind, ItemView,
 };
 
 /// Physical properties for a weapon instance.
@@ -291,6 +291,7 @@ impl Item {
 
     ItemView {
       id: self.id,
+      archetype: self.archetype(),
       name: self.name.clone(),
       category: self.category(),
       count: self.count(),
@@ -300,6 +301,23 @@ impl Item {
       armor_value: armor_val,
       heal_amount: heal_val,
       knockback,
+    }
+  }
+
+  /// Returns the stable presentation archetype for this item instance.
+  #[must_use]
+  pub fn archetype(&self) -> ItemArchetype {
+    match self.name.as_str() {
+      "Pistol" => ItemArchetype::Pistol,
+      "Shotgun" => ItemArchetype::Shotgun,
+      "Combat Knife" => ItemArchetype::CombatKnife,
+      "9mm Ammo" => ItemArchetype::Ammo9mm,
+      "Shotgun Shells" => ItemArchetype::AmmoShells,
+      "Small MedPack" => ItemArchetype::SmallMedPack,
+      "Large MedPack" => ItemArchetype::LargeMedPack,
+      "Green Armor" => ItemArchetype::GreenArmor,
+      "Phase Device" => ItemArchetype::PhaseDevice,
+      _ => ItemArchetype::Unknown,
     }
   }
 
@@ -479,6 +497,7 @@ mod tests {
 
     let view = pistol.to_view();
     assert_eq!(view.name, "Pistol");
+    assert_eq!(view.archetype, drl_protocol::ItemArchetype::Pistol);
     assert_eq!(view.clip, Some((10, 10)));
     assert_eq!(view.damage, Some((4, 8)));
 

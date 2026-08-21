@@ -1,6 +1,6 @@
 # ADR 0005 — Lua Transitional Strategy
 
-**Status:** Accepted (implementation pending — Milestone 3)
+**Status:** Superseded by ADR 0008 (build-time migration)
 
 **Date:** 2026-08-18
 

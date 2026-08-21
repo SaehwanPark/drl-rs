@@ -3,7 +3,9 @@
 ## What
 
 - DRL-Rust is a ground-up Rust reimplementation of Doom the Roguelike.
-- The project is currently a Rust 2024 binary scaffold, not a playable game.
+- The project is a Rust 2024 workspace with a deterministic headless kernel
+  and a bounded browser/WASM playable slice; full audiovisual parity remains
+  staged.
 - `docs/DRL-Rust_Project_Roadmap.md` is the canonical project plan and progress
   tracker. `SPEC.md` expands only the active milestone slice.
 - `ARCHITECTURE.md` records verified current structure and invariants.
@@ -36,3 +38,6 @@
 
 - Update the roadmap only from verified evidence. Keep incomplete work active
   and do not claim remote CI success until the remote check has passed.
+- Browser acceptance records browser/version, OS, GPU backend, viewport, DPR,
+  build revision, and audio state. Unsupported WebGPU/audio or unavailable
+  Linux legacy captures are `NOT_RUN`, not inferred passes.

@@ -150,3 +150,19 @@ Stop and report rather than improvise when:
 - Unsupported checks are reported as `NOT_RUN`; missing evidence remains
   `INCONCLUSIVE`.
 - `sh scripts/check-repository.sh` succeeds.
+
+## Browser Slice Rules
+
+- Treat browser/WASM presentation as an effect boundary: `drl-core` and
+  `drl-protocol` remain free of GPU, Web Audio, DOM, filesystem, and wall-clock
+  dependencies.
+- For a browser slice, record the WASM target, Rust/tool versions, browser
+  version, GPU adapter/backend, viewport, device-pixel ratio, and audio unlock
+  state in the handoff.
+- Require player-observation parity with direct headless execution. A scene or
+  cue builder may consume observations and semantic events only; animation,
+  audio failure, resize, tab visibility, and GPU loss must not submit a
+  command or advance simulation.
+- Asset imports require a source revision, dirty-state record, license/
+  attribution, and checksum manifest. Unclear audio, music, or font rights are
+  `INCONCLUSIVE`/`NOT_RUN`, never silently bundled.

@@ -8,3 +8,17 @@ authors.workspace = true
 
 [dependencies]
 drl-protocol = { workspace = true }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+js-sys = "=0.3.104"
+wasm-bindgen = "=0.2.127"
+wasm-bindgen-futures = "=0.4.77"
+web-sys = { version = "=0.3.104", features = [
+  "AudioContext",
+  "AudioContextState",
+  "AudioDestinationNode",
+  "AudioParam",
+  "GainNode",
+  "OscillatorNode",
+  "OscillatorType",
+] }

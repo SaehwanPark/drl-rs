@@ -1,7 +1,12 @@
 /target
 /_workspace
+/dist
 
 # Assets
 /assets/*
 !/assets/drl-rust-banner.png
 !/assets/README.md
+!/assets/legacy/
+!/assets/legacy/drl/
+!/assets/legacy/drl/graphics/
+!/assets/legacy/drl/graphics/**

@@ -77,11 +77,12 @@ frontmatter_value() {
   ' "$file"
 }
 
-for skill in \
-  .agents/skills/drl-milestone-delivery/SKILL.md \
-  .agents/skills/drl-legacy-archaeology/SKILL.md \
-  .agents/skills/drl-test-play/SKILL.md \
-  .agents/skills/drl-determinism-review/SKILL.md
+skill_files=$(find .agents/skills -type f -name SKILL.md | LC_ALL=C sort)
+if [ -z "$skill_files" ]; then
+  report_failure "No repo-local skills were discovered under .agents/skills"
+fi
+
+for skill in $skill_files
 do
   if [ ! -f "$skill" ]; then
     report_failure "Missing required harness skill: $skill"
@@ -140,7 +141,16 @@ for path in \
   .agents/skills/drl-legacy-archaeology/SKILL.md \
   .agents/skills/drl-test-play/SKILL.md \
   .agents/skills/drl-test-play/references/test-play-modes.md \
-  .agents/skills/drl-determinism-review/SKILL.md
+  .agents/skills/drl-determinism-review/SKILL.md \
+  docs/adr/0007-browser-first-product.md \
+  docs/adr/0008-build-time-legacy-content-migration.md \
+  docs/legacy-behavior/asset-provenance.md \
+  docs/legacy-behavior/presentation.md \
+  docs/legacy-behavior/audio.md \
+  docs/reference-captures/manifest.md \
+  docs/reference-captures/fidelity-matrix.md \
+  scripts/check-assets.sh \
+  scripts/check-web.sh
 do
   require_file "$path"
 done
@@ -183,6 +193,13 @@ do
   require_text "$skill" "run identifier"
   require_text "$skill" "predecessor artifact"
 done
+
+require_text "docs/harness/drl-delivery/team-spec.md" "browser/version"
+require_text "docs/harness/drl-delivery/validation-scenarios.md" "Browser capability failure"
+require_text "docs/harness/drl-delivery/validation-scenarios.md" "Unlicensed asset"
+require_text "docs/harness/drl-delivery/validation-scenarios.md" "Background-tab timing"
+require_text "docs/adr/0007-browser-first-product.md" "Rust/WASM"
+require_text "docs/adr/0008-build-time-legacy-content-migration.md" "no Lua VM"
 
 if [ "$failures" -ne 0 ]; then
   printf '%s\n' "Agent harness validation failed with $failures issue(s)." >&2

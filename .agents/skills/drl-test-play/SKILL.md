@@ -107,3 +107,18 @@ diagnostic fixtures or replays selected through the active milestone workflow.
   tolerance.
 - No playability, fidelity, replay, MCP, or remote-execution claim exceeds the
   exact mode that ran.
+
+## Browser Human-Play Mode
+
+- Activate human frontend play only when a browser bundle and start/error
+  recovery path exist. Record browser/version, OS, GPU adapter/backend,
+  viewport, DPR, build revision, seed, input ownership/focus, and audio state.
+- Test WebGPU unavailable, device/GPU loss, resize/DPR changes, background-tab
+  visibility, blocked or suspended audio, and page-scroll prevention as
+  recovery cases. These presentation failures must not change turn, state, or
+  replay output.
+- Compare named scenes against approved legacy reference captures with stated
+  tolerances and structured human review. A subjective impression without a
+  capture manifest is `INCONCLUSIVE`.
+- Keep DOM inventory actions and keyboard mappings as semantic-command
+  assertions, and verify hidden actors/items never enter a player scene.

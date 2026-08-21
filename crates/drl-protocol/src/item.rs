@@ -61,6 +61,43 @@ pub enum ItemCategory {
   PhaseDevice,
 }
 
+/// Stable presentation identifier for an item family.
+///
+/// Unlike the display name, this identifier is safe to use in asset lookup
+/// tables and remains stable when localized or reformatted text changes.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+pub enum ItemArchetype {
+  #[default]
+  Unknown,
+  Pistol,
+  Shotgun,
+  CombatKnife,
+  Ammo9mm,
+  AmmoShells,
+  SmallMedPack,
+  LargeMedPack,
+  GreenArmor,
+  PhaseDevice,
+}
+
+impl fmt::Display for ItemArchetype {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    let value = match self {
+      Self::Unknown => "unknown",
+      Self::Pistol => "pistol",
+      Self::Shotgun => "shotgun",
+      Self::CombatKnife => "combat_knife",
+      Self::Ammo9mm => "ammo_9mm",
+      Self::AmmoShells => "ammo_shells",
+      Self::SmallMedPack => "small_medpack",
+      Self::LargeMedPack => "large_medpack",
+      Self::GreenArmor => "green_armor",
+      Self::PhaseDevice => "phase_device",
+    };
+    write!(f, "{value}")
+  }
+}
+
 impl fmt::Display for ItemCategory {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     match self {
@@ -77,6 +114,7 @@ impl fmt::Display for ItemCategory {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ItemView {
   pub id: ItemId,
+  pub archetype: ItemArchetype,
   pub name: String,
   pub category: ItemCategory,
   pub count: u32,

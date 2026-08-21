@@ -131,9 +131,22 @@ evidence.
 
 Activation:
 
-- the tested frontend and interaction path are implemented;
+- the tested browser frontend and interaction path are implemented;
 - the task protocol and build are fixed;
 - simulation outcomes can be separated from presentation timing.
+
+Browser-first requirements:
+
+- test desktop Chrome/Edge with WebGPU first and record browser version, OS,
+  adapter/backend, viewport, DPR, build revision, focus ownership, and audio
+  unlock/mute state;
+- compare named scenes against a revisioned reference-capture manifest with
+  explicit tolerances; missing rights or capture metadata is `INCONCLUSIVE`;
+- exercise unsupported WebGPU, GPU loss, blocked/suspended audio,
+  background-tab visibility, resize/DPR, and page-scroll recovery; none may
+  change simulation state;
+- keep Firefox/Safari/WebGL2 fallback, mobile/touch, controllers, and native
+  desktop packaging post-1.0 until their acceptance gates are implemented.
 
 Use structured tasks for:
 

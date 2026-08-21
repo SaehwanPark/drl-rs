@@ -116,3 +116,16 @@ rather than choosing a convenient interpretation.
   are visibly separate.
 - Stochastic evidence does not claim exact legacy RNG compatibility.
 - No milestone, implementation, or completion claim exceeds the evidence.
+
+## Browser and Asset Evidence
+
+- When researching presentation, classify atlas layers, emissive/mask/shadow
+  behavior, LUTs, particles, animation, HUD, and audio cues separately from
+  gameplay rules.
+- Record browser-reference capture setup as part of the evidence: legacy
+  revision and dirty state, executable hash, frontend/configuration, viewport,
+  DPR, capture tools, ordered actions, and whether media is committed or kept
+  in ignored `_workspace/` storage.
+- Never use a dirty legacy checkout for imported assets or reference captures;
+  read Git objects at the named revision. Track each asset group independently
+  so uncertain fonts/audio/music do not contaminate a cleared graphics import.

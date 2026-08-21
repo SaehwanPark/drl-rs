@@ -24,3 +24,23 @@ jobs:
           rustup default stable
       - name: Run repository checks
         run: sh scripts/check-repository.sh
+
+  web:
+    name: WASM browser checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Install stable Rust and WASM target
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          rustup target add wasm32-unknown-unknown
+      - name: Install wasm-pack 0.15.0
+        run: cargo install wasm-pack --version 0.15.0 --locked
+      - name: Install Chrome
+        uses: browser-actions/setup-chrome@v1
+      - name: Run web checks and headless Chrome tests
+        run: sh scripts/check-web.sh
+      - name: Build release bundle
+        run: sh scripts/build-web.sh
