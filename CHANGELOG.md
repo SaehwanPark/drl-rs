@@ -21,8 +21,9 @@ documented in this file.
 - Verified the M7 functional gate with a Chrome 151 WebGPU smoke playthrough
   (Apple Metal-3, 1280x720, DPR 1; explicit gesture-gated audio state) and
   remote CI run `32537824075`; fixed startup and mute-control status races so
-  the visible status reflects the actual or applied audio state. Legacy
-  reference-capture comparison remains open and explicitly `NOT_RUN`.
+  the visible status reflects the actual or applied audio state, and serialized
+  rapid audio-control events to prevent stale settings. Legacy reference-capture
+  comparison remains open and explicitly `NOT_RUN`.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch

@@ -9,10 +9,24 @@ const inventory = document.querySelector("#inventory");
 const mute = document.querySelector("#mute-button");
 const volume = document.querySelector("#volume-control");
 let started = false;
+let audioTask = Promise.resolve();
 
 function writeStatus(message) {
   status.textContent = message;
   log.textContent = message;
+}
+
+function queueAudioSetting(setting) {
+  // Web Audio unlock temporarily takes the mixer out of WASM storage. Queue
+  // all control changes so rapid UI events cannot observe a missing mixer or
+  // apply an older setting after a newer one.
+  audioTask = audioTask
+    .catch(() => {})
+    .then(async () => {
+      await unlock_audio();
+      writeStatus(setting());
+    })
+    .catch(() => writeStatus("Audio unavailable; gameplay continues."));
 }
 
 start.addEventListener("click", async () => {
@@ -46,14 +60,12 @@ mute.addEventListener("click", () => {
   const muted = mute.getAttribute("aria-pressed") !== "true";
   mute.setAttribute("aria-pressed", String(muted));
   mute.textContent = muted ? "Unmute" : "Mute";
-  // Apply the setting after the unlock attempt so its status cannot be
-  // overwritten by the asynchronous gesture retry.
-  unlock_audio().then(() => writeStatus(set_muted(muted)));
+  queueAudioSetting(() => set_muted(muted));
 });
 
 volume.addEventListener("input", () => {
   if (started) {
-    unlock_audio().then(() => writeStatus(set_volume(Number(volume.value))));
+    queueAudioSetting(() => set_volume(Number(volume.value)));
   }
 });
 

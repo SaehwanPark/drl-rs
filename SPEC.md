@@ -45,6 +45,8 @@ capture-backed fidelity comparison remains open.
   regions and prevents page scrolling only while the canvas owns focus.
 - The browser shell applies mute status after the asynchronous audio-unlock
   retry, so the visible status cannot report a stale unlock result.
+- Mute and volume controls serialize audio-unlock/settings operations, so rapid
+  presentation events cannot apply a stale setting or advance simulation.
 
 ### Public contracts
 
