@@ -20,7 +20,7 @@ documented in this file.
   build/check/serve scripts. Native headless and MCP contracts remain intact.
 - Verified the M7 functional gate with a Chrome 151 WebGPU smoke playthrough
   (Apple Metal-3, 1280x720, DPR 1; explicit gesture-gated audio state) and
-  remote CI run `32494306203`; fixed startup and mute-control status races so
+  remote CI run `32537824075`; fixed startup and mute-control status races so
   the visible status reflects the actual or applied audio state. Legacy
   reference-capture comparison remains open and explicitly `NOT_RUN`.
 
