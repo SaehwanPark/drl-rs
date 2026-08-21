@@ -56,6 +56,7 @@ pub enum ItemKind {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Item {
   id: ItemId,
+  archetype: ItemArchetype,
   name: String,
   description: String,
   kind: ItemKind,
@@ -72,6 +73,7 @@ impl Item {
   ) -> Self {
     Self {
       id,
+      archetype: ItemArchetype::Unknown,
       name: name.into(),
       description: description.into(),
       kind,
@@ -105,6 +107,13 @@ impl Item {
   /// Mutable reference to the item's kind.
   pub fn kind_mut(&mut self) -> &mut ItemKind {
     &mut self.kind
+  }
+
+  /// Assigns the stable presentation archetype used by a factory item.
+  #[must_use]
+  fn with_archetype(mut self, archetype: ItemArchetype) -> Self {
+    self.archetype = archetype;
+    self
   }
 
   /// Returns the semantic category of this item.
@@ -307,18 +316,7 @@ impl Item {
   /// Returns the stable presentation archetype for this item instance.
   #[must_use]
   pub fn archetype(&self) -> ItemArchetype {
-    match self.name.as_str() {
-      "Pistol" => ItemArchetype::Pistol,
-      "Shotgun" => ItemArchetype::Shotgun,
-      "Combat Knife" => ItemArchetype::CombatKnife,
-      "9mm Ammo" => ItemArchetype::Ammo9mm,
-      "Shotgun Shells" => ItemArchetype::AmmoShells,
-      "Small MedPack" => ItemArchetype::SmallMedPack,
-      "Large MedPack" => ItemArchetype::LargeMedPack,
-      "Green Armor" => ItemArchetype::GreenArmor,
-      "Phase Device" => ItemArchetype::PhaseDevice,
-      _ => ItemArchetype::Unknown,
-    }
+    self.archetype
   }
 
   // --- Factory constructors for representative DRL items ---
@@ -343,6 +341,7 @@ impl Item {
         reload_cost: ActionCost::STANDARD,
       }),
     )
+    .with_archetype(ItemArchetype::Pistol)
   }
 
   /// Factory: standard pump-action Shotgun.
@@ -365,6 +364,7 @@ impl Item {
         reload_cost: ActionCost::new(1200),
       }),
     )
+    .with_archetype(ItemArchetype::Shotgun)
   }
 
   /// Factory: Combat Knife melee weapon.
@@ -387,6 +387,7 @@ impl Item {
         reload_cost: ActionCost::new(0),
       }),
     )
+    .with_archetype(ItemArchetype::CombatKnife)
   }
 
   /// Factory: 9mm ammunition box.
@@ -402,6 +403,7 @@ impl Item {
         max_stack: 100,
       },
     )
+    .with_archetype(ItemArchetype::Ammo9mm)
   }
 
   /// Factory: shotgun shells box.
@@ -417,6 +419,7 @@ impl Item {
         max_stack: 50,
       },
     )
+    .with_archetype(ItemArchetype::AmmoShells)
   }
 
   /// Factory: Small MedPack (+10 HP).
@@ -428,6 +431,7 @@ impl Item {
       "Compact medical kit providing rapid first aid (+10 HP).",
       ItemKind::MedPack(ConsumableProperties { heal_amount: 10 }),
     )
+    .with_archetype(ItemArchetype::SmallMedPack)
   }
 
   /// Factory: Large MedPack (+25 HP).
@@ -439,6 +443,7 @@ impl Item {
       "Comprehensive field surgery kit (+25 HP).",
       ItemKind::MedPack(ConsumableProperties { heal_amount: 25 }),
     )
+    .with_archetype(ItemArchetype::LargeMedPack)
   }
 
   /// Factory: Green Armor (+5 armor protection, 100 durability).
@@ -454,6 +459,7 @@ impl Item {
         max_durability: 100,
       }),
     )
+    .with_archetype(ItemArchetype::GreenArmor)
   }
 
   /// Factory: Phase Device (emergency teleportation consumable).
@@ -465,6 +471,7 @@ impl Item {
       "Emergency phase-shift device. Instantly teleports the user across space.",
       ItemKind::PhaseDevice,
     )
+    .with_archetype(ItemArchetype::PhaseDevice)
   }
 
   /// Instantiates an `Item` from an `ItemSpawnKind`.
