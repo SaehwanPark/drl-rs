@@ -107,3 +107,16 @@ Return `blocked` with the exact missing input or decision.
 - Local, remote, playability, replay, fidelity, and MCP claims are evaluated
   independently.
 - The review does not modify producer output or silently expand scope.
+
+## Browser Boundary Checks
+
+- Inspect the full path `Command -> Game -> observation/events -> scene/cues ->
+  WebGPU/Web Audio`; presentation callbacks, RAF timing, tab visibility, and
+  device-pixel-ratio changes must not mutate the game.
+- Reproduce an identical seed and semantic command stream through the browser
+  session and direct core, comparing events, final observation, and replay.
+- Check that GPU loss, blocked audio, unsupported WebGPU, and failed asset
+  loads produce an explicit status/error without hidden-state access or a
+  simulation step.
+- Treat a remote web-CI result and a local browser playthrough as separate
+  claims; do not promote either from `NOT_RUN` or `INCONCLUSIVE` by inference.

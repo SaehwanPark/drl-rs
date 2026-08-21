@@ -461,19 +461,27 @@ impl World {
   /// Creates a player observation snapshot.
   #[must_use]
   pub fn create_player_observation(&self, turn: Turn) -> PlayerObservation {
-    let (player_pos, visible_positions, inventory, equipped_weapon, equipped_armor) =
+    let (player_pos, player_hp, visible_positions, inventory, equipped_weapon, equipped_armor) =
       if let Some(player) = self.player() {
         let pos = player.position();
         let fov = compute_fov(&self.map, pos, DEFAULT_VISION_RADIUS);
         (
           pos,
+          Some(player.hp()),
           fov,
           player.inventory().to_views(),
           player.equipment().weapon_view(),
           player.equipment().armor_view(),
         )
       } else {
-        (Position::new(0, 0), BTreeSet::new(), Vec::new(), None, None)
+        (
+          Position::new(0, 0),
+          None,
+          BTreeSet::new(),
+          Vec::new(),
+          None,
+          None,
+        )
       };
 
     let mut visible_tiles = Vec::with_capacity(self.explored_tiles.len());
@@ -504,7 +512,10 @@ impl World {
 
     PlayerObservation {
       turn,
+      map_width: self.map.width(),
+      map_height: self.map.height(),
       player_position: player_pos,
+      player_hp,
       visible_tiles,
       visible_actors,
       inventory,
@@ -653,6 +664,9 @@ mod tests {
 
     // Player position is correct
     assert_eq!(obs.player_position, Position::new(5, 5));
+    assert_eq!(obs.map_width, 20);
+    assert_eq!(obs.map_height, 20);
+    assert_eq!(obs.player_hp.map(|hp| hp.max), Some(50));
 
     // Visible actors contains player and Imp (m1), but NOT Baron (m2)
     let visible_ids: Vec<EntityId> = obs.visible_actors.iter().map(|a| a.id).collect();

@@ -4,8 +4,8 @@ use crate::game::Game;
 use crate::item::Item;
 use crate::scheduler::ACTION_THRESHOLD;
 use drl_protocol::{
-  Command, CommandError, EpisodeMetrics, EquipmentSlot, GameEvent, HitPoints, Position,
-  ReplayExecutionError, ReplayLog, RunOutcome, Speed, Turn,
+  Command, CommandError, EpisodeMetrics, EquipmentSlot, GameEvent, HitPoints, MonsterKind,
+  Position, ReplayExecutionError, ReplayLog, RunOutcome, Speed, Turn,
 };
 
 /// Engine for replaying recorded game sessions deterministically with rich diagnostics.
@@ -159,6 +159,11 @@ impl ReplayEngine {
           monster.accuracy,
         )
         .with_death_drop(monster.death_drop);
+      let actor = if let Some(kind) = MonsterKind::from_name(&monster.name) {
+        actor.with_monster_kind(kind)
+      } else {
+        actor
+      };
       game.world_mut().actors_mut().insert(id, actor);
     }
 

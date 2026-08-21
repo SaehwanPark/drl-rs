@@ -440,6 +440,18 @@ pub enum MonsterKind {
 }
 
 impl MonsterKind {
+  /// Resolves an archetype from its canonical display name.
+  #[must_use]
+  pub fn from_name(name: &str) -> Option<Self> {
+    match name {
+      "Former Human" => Some(Self::FormerHuman),
+      "Former Sergeant" => Some(Self::FormerSergeant),
+      "Imp" => Some(Self::Imp),
+      "Demon" => Some(Self::Demon),
+      _ => None,
+    }
+  }
+
   /// Display name of the monster archetype.
   #[must_use]
   pub const fn name(self) -> &'static str {

@@ -30,9 +30,11 @@ DRL-Rust is a Cargo workspace. All crates live under `crates/`.
 | `drl-core` | Deterministic headless simulation kernel (no I/O, no rendering, no audio) |
 | `drl-mcp` | MCP JSON-RPC 2.0 server and semantic tool suite |
 | `drl-app` | Executable entry point: headless demo, bot play, batch sweeps, MCP stdio runner |
-| `drl-script` | Placeholder — future Lua scripting boundary |
-| `drl-render` | Placeholder — future native macOS GPU renderer |
-| `drl-audio` | Placeholder — future audio backend |
+| `drl-script` | Build-time content/Lua conversion boundary; no runtime Lua |
+| `drl-assets` | Platform-neutral atlas identifiers, provenance, and mappings |
+| `drl-render` | Pure scene/presentation builders consumed by browser renderers |
+| `drl-audio` | Semantic cues and WASM Web Audio mixer |
+| `drl-web` | Browser session, WASM exports, wgpu surface, DOM/keyboard shell |
 
 Key documents:
 
@@ -52,6 +54,8 @@ Key documents:
 - **Rust** — stable toolchain, Rust 2024 edition. See `rust-toolchain.toml` or
   `Cargo.toml` for the current MSRV policy.
 - **Git** — standard version control.
+- Browser work additionally needs the `wasm32-unknown-unknown` target and
+  pinned `wasm-pack 0.15.0`.
 
 No additional tools are required. The project uses only `std` and a small set
 of declared workspace dependencies.
@@ -76,7 +80,15 @@ This script runs in order:
 6. Runs `cargo clippy --locked --workspace --all-targets --all-features -- -D warnings`.
 7. Runs `cargo test --locked --workspace`.
 
-All seven steps must pass before a PR is opened.
+All seven steps must pass before a PR is opened. Browser changes also run:
+
+```sh
+sh scripts/check-assets.sh
+scripts/check-web.sh
+```
+
+The web script reports a missing local Chrome runner as `NOT_RUN`; remote web
+CI and manual Chrome/Edge acceptance remain separate gates.
 
 ---
 
@@ -129,7 +141,8 @@ refactor/<short-description>
 test/<short-description>
 ```
 
-Use lowercase with hyphens. Keep descriptions concise.
+Use lowercase with hyphens (the repository default branch prefix is `codex/`
+for agent-created branches). Keep descriptions concise.
 
 ### Commit messages
 
@@ -210,6 +223,22 @@ outputs. Document exceptions explicitly.
 Game events (`GameEvent`) are the only output mechanism from simulation steps.
 Rendering, audio, and UI reactions must be driven by consuming those events
 outside the core.
+
+### Browser boundary
+
+Browser input must map to ordinary `drl-protocol::Command` values. `drl-web`
+may consume only `PlayerObservation` and `GameEvent`; it must not read
+`World`, expose hidden actors/items, or let animation, audio policy,
+resize/DPR, tab visibility, or GPU loss advance simulation. Start/error/help,
+HUD, and inventory controls remain semantic DOM regions even when the world is
+drawn on a pixel-scaled WebGPU canvas.
+
+### Asset provenance
+
+Import only from the pinned legacy Git revision recorded in the asset manifest,
+never from a dirty checkout. Keep source path, attribution, license, and
+checksum records with every asset group. The graphics atlas is CC BY-SA 4.0;
+legacy code, audio/music, and fonts require separate rights decisions.
 
 ---
 

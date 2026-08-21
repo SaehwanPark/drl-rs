@@ -327,6 +327,7 @@ impl Actor {
       hp: Some(self.hp),
       is_alive: self.is_alive,
       speed: self.speed,
+      monster_kind: self.monster_kind,
     }
   }
 
@@ -433,6 +434,7 @@ mod tests {
     assert_eq!(view.id, EntityId::new(1));
     assert_eq!(view.name, "Marine");
     assert_eq!(view.hp, Some(HitPoints::full(50)));
+    assert_eq!(view.monster_kind, None);
     assert!(view.is_alive);
   }
 

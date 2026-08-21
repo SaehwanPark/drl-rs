@@ -54,13 +54,20 @@ pub struct ActorView {
   pub hp: Option<HitPoints>,
   pub is_alive: bool,
   pub speed: Speed,
+  /// Stable monster classification, when this actor is not the player.
+  pub monster_kind: Option<crate::types::MonsterKind>,
 }
 
 /// Player-centric observation containing only what the player perceives.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct PlayerObservation {
   pub turn: Turn,
+  /// Complete map dimensions needed to lay out a fair board renderer.
+  pub map_width: u32,
+  pub map_height: u32,
   pub player_position: Position,
+  /// Player HP is exposed explicitly so a frontend never needs `World` access.
+  pub player_hp: Option<HitPoints>,
   pub visible_tiles: Vec<TileView>,
   pub visible_actors: Vec<ActorView>,
   pub inventory: Vec<ItemView>,

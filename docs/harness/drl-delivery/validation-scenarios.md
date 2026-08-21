@@ -144,6 +144,70 @@ Expected behavior:
 - the milestone owner replaces or locally archives the old run files;
 - final acceptance uses one coherent run lineage.
 
+## 10. Browser capability failure: unavailable WebGPU and blocked audio
+
+Request:
+
+> Validate the first WASM slice on a machine without WebGPU and with browser
+> audio still suspended.
+
+Expected behavior:
+
+- the test-play operator records browser/version, adapter/backend, viewport,
+  DPR, build revision, and audio state;
+- the unsupported-device screen and audio recovery path are checked when the
+  required browser controls exist;
+- GPU/audio failure does not advance the deterministic session or expose
+  hidden observation data;
+- a missing browser/tool is `NOT_RUN`, while an implemented recovery path that
+  fails is `FAIL`; no headless pass is substituted for frontend acceptance.
+
+## 11. Unlicensed asset
+
+Request:
+
+> A proposed atlas, audio cue, font, or music file has no attributable license
+> and checksum record.
+
+Expected behavior:
+
+- the asset check rejects the import and the browser bundle does not include
+  the file;
+- the missing rights are recorded as `INCONCLUSIVE`/`NOT_RUN`, not inferred
+  from the legacy repository's general license;
+- implementation proceeds with a generated or already-cleared replacement
+  only when its own provenance is recorded.
+
+## 12. Background-tab timing
+
+Request:
+
+> Hide the browser tab during an animation or resize, then return and submit a
+> command.
+
+Expected behavior:
+
+- visibility and animation callbacks pause or discard presentation work;
+- turn, observation, event stream, and replay remain unchanged until the
+  explicit command is submitted;
+- the result records viewport/DPR and reports any unavailable browser timing
+  controls as `NOT_RUN`.
+
+## 13. Reference-capture disagreement
+
+Request:
+
+> The browser scene differs from a legacy capture, but the capture manifest is
+> missing executable hash or rights information.
+
+Expected behavior:
+
+- the comparison is `INCONCLUSIVE` and the provenance gap is reported;
+- no screenshot or audio is promoted to a golden expectation;
+- the owner requests a controlled capture with source revision, configuration,
+  viewport/DPR, actions, tool versions, and stated tolerances before claiming
+  audiovisual parity.
+
 ## Acceptance Checklist
 
 - The selected roles are the smallest set justified by the request.

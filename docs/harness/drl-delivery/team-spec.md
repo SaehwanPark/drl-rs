@@ -215,11 +215,18 @@ The detailed mode contract lives in
 - Replay and scripted-bot play require the corresponding Milestone 5
   infrastructure.
 - MCP play requires the Milestone 6 semantic interface.
-- Native human play requires an implemented frontend; game-feel conclusions
-  require the relevant Milestone 7 or later surface.
+- Browser human play requires the implemented WASM frontend; game-feel or
+  audiovisual conclusions require the relevant M7/M8 surface and reference
+  captures. Native desktop play is post-1.0.
 - Statistical play activates when the selected slice has batch execution,
   declared metrics, fixed cohorts, sample size, and tolerance policy.
   Milestone 11 broadens this into systematic balance analysis.
+
+Browser test-play additionally records browser/version, OS, adapter/backend,
+viewport, DPR, build revision, input focus, and audio state. Unsupported
+WebGPU, blocked audio, GPU loss, background-tab timing, or resize behavior is
+reported as `NOT_RUN`/`INCONCLUSIVE` for the affected claim rather than
+silently substituted with a headless result.
 
 ## Validation
 

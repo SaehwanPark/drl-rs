@@ -5,6 +5,20 @@ documented in this file.
 
 ## Unreleased
 
+- Browser-first steering and playable-slice implementation: accepted ADRs
+  0007/0008, reconciled proposal/roadmap/spec/architecture/README/contributor
+  guidance, browser-aware agent harness rules, and dynamic repo-local skill
+  validation.
+- Added `drl-assets` with the complete tracked legacy graphics import,
+  CC BY-SA attribution, pinned source revision, and SHA-256 manifest. Legacy
+  audio/music/fonts remain redistribution-gated; controlled runtime captures
+  are recorded as `NOT_RUN` on the arm64 macOS host, with a capture-to-M7/M8
+  fidelity matrix.
+- Added additive fair observation identifiers, pure `PresentationStep` and
+  `RenderScene` builders, semantic audio cues, transactional `BrowserSession`,
+  WASM/WebGPU/Web Audio bindings, accessible static browser shell, and web
+  build/check/serve scripts. Native headless and MCP contracts remain intact.
+
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch
   naming and commit conventions, pull request workflow, local check procedure
@@ -36,12 +50,13 @@ documented in this file.
   - `combat.md` — combat semantics shell covering hit resolution (accuracy
     roll, range penalty, LOS requirement), damage calculation (uniform roll,
     armor mitigation, HP clamping), death, knockback, and loot drops.
-- Roadmap progress table updated: M0 status corrected to "Partially complete";
+- Roadmap progress table updated: M0 status corrected to "Complete";
   M1, M2, M4, M5, M6 statuses updated to "Complete" with delivery summaries.
 - M0 roadmap checklist items marked complete: `CONTRIBUTING.md`, `docs/adr/`,
-  `docs/legacy-behavior/`, all six ADRs, `combat.md`/`movement.md`/
-  `turn-economy.md` behavior shells, behavior-spec template, and the
-  "at least six major legacy behavior areas" exit criterion.
+  `docs/legacy-behavior/`, the three implemented behavior shells
+  (`combat.md`, `movement.md`, `turn-economy.md`), behavior-spec template, and
+  the harness/documentation checks. The earlier “six behavior areas” wording
+  was corrected; three shells are present.
 - `ARCHITECTURE.md` updated to document `docs/adr/` and `docs/legacy-behavior/`
   as recognized structural components.
 

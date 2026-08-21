@@ -1,7 +1,7 @@
 //! Item domain models, weapon properties, armor, ammunition, and consumables.
 
 use drl_protocol::{
-  ActionCost, AmmoType, EquipmentSlot, ItemCategory, ItemId, ItemSpawnKind, ItemView,
+  ActionCost, AmmoType, EquipmentSlot, ItemArchetype, ItemCategory, ItemId, ItemSpawnKind, ItemView,
 };
 
 /// Physical properties for a weapon instance.
@@ -56,6 +56,7 @@ pub enum ItemKind {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Item {
   id: ItemId,
+  archetype: ItemArchetype,
   name: String,
   description: String,
   kind: ItemKind,
@@ -72,6 +73,7 @@ impl Item {
   ) -> Self {
     Self {
       id,
+      archetype: ItemArchetype::Unknown,
       name: name.into(),
       description: description.into(),
       kind,
@@ -105,6 +107,13 @@ impl Item {
   /// Mutable reference to the item's kind.
   pub fn kind_mut(&mut self) -> &mut ItemKind {
     &mut self.kind
+  }
+
+  /// Assigns the stable presentation archetype used by a factory item.
+  #[must_use]
+  fn with_archetype(mut self, archetype: ItemArchetype) -> Self {
+    self.archetype = archetype;
+    self
   }
 
   /// Returns the semantic category of this item.
@@ -291,6 +300,7 @@ impl Item {
 
     ItemView {
       id: self.id,
+      archetype: self.archetype(),
       name: self.name.clone(),
       category: self.category(),
       count: self.count(),
@@ -301,6 +311,12 @@ impl Item {
       heal_amount: heal_val,
       knockback,
     }
+  }
+
+  /// Returns the stable presentation archetype for this item instance.
+  #[must_use]
+  pub fn archetype(&self) -> ItemArchetype {
+    self.archetype
   }
 
   // --- Factory constructors for representative DRL items ---
@@ -325,6 +341,7 @@ impl Item {
         reload_cost: ActionCost::STANDARD,
       }),
     )
+    .with_archetype(ItemArchetype::Pistol)
   }
 
   /// Factory: standard pump-action Shotgun.
@@ -347,6 +364,7 @@ impl Item {
         reload_cost: ActionCost::new(1200),
       }),
     )
+    .with_archetype(ItemArchetype::Shotgun)
   }
 
   /// Factory: Combat Knife melee weapon.
@@ -369,6 +387,7 @@ impl Item {
         reload_cost: ActionCost::new(0),
       }),
     )
+    .with_archetype(ItemArchetype::CombatKnife)
   }
 
   /// Factory: 9mm ammunition box.
@@ -384,6 +403,7 @@ impl Item {
         max_stack: 100,
       },
     )
+    .with_archetype(ItemArchetype::Ammo9mm)
   }
 
   /// Factory: shotgun shells box.
@@ -399,6 +419,7 @@ impl Item {
         max_stack: 50,
       },
     )
+    .with_archetype(ItemArchetype::AmmoShells)
   }
 
   /// Factory: Small MedPack (+10 HP).
@@ -410,6 +431,7 @@ impl Item {
       "Compact medical kit providing rapid first aid (+10 HP).",
       ItemKind::MedPack(ConsumableProperties { heal_amount: 10 }),
     )
+    .with_archetype(ItemArchetype::SmallMedPack)
   }
 
   /// Factory: Large MedPack (+25 HP).
@@ -421,6 +443,7 @@ impl Item {
       "Comprehensive field surgery kit (+25 HP).",
       ItemKind::MedPack(ConsumableProperties { heal_amount: 25 }),
     )
+    .with_archetype(ItemArchetype::LargeMedPack)
   }
 
   /// Factory: Green Armor (+5 armor protection, 100 durability).
@@ -436,6 +459,7 @@ impl Item {
         max_durability: 100,
       }),
     )
+    .with_archetype(ItemArchetype::GreenArmor)
   }
 
   /// Factory: Phase Device (emergency teleportation consumable).
@@ -447,6 +471,7 @@ impl Item {
       "Emergency phase-shift device. Instantly teleports the user across space.",
       ItemKind::PhaseDevice,
     )
+    .with_archetype(ItemArchetype::PhaseDevice)
   }
 
   /// Instantiates an `Item` from an `ItemSpawnKind`.
@@ -479,6 +504,7 @@ mod tests {
 
     let view = pistol.to_view();
     assert_eq!(view.name, "Pistol");
+    assert_eq!(view.archetype, drl_protocol::ItemArchetype::Pistol);
     assert_eq!(view.clip, Some((10, 10)));
     assert_eq!(view.damage, Some((4, 8)));
 
