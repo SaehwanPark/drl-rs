@@ -26,8 +26,10 @@ automated regressions, and human review.
 - M3 graphics import/checks are delivered. Controlled legacy runtime captures
   are `NOT_RUN` on the current arm64 macOS host because the available binary is
   Linux x86-64; see `docs/reference-captures/manifest.md`.
-- M7 browser session/WebGPU/WASM implementation is present locally. Browser
-  manual acceptance and the new remote web-CI run remain open.
+- M7 browser session/WebGPU/WASM implementation is present locally. A Chrome
+  151 WebGPU smoke playthrough (including explicit audio-gated recovery state)
+  and remote web-CI run now pass for `bba0fc4`;
+  reference-scene comparison remains open because legacy captures are `NOT_RUN`.
 - `SPEC.md` contains the single active M7 slice; it is not a second roadmap.
 
 ## Milestones
@@ -84,7 +86,7 @@ and deterministic batch execution.
 Zero-dependency JSON-RPC/MCP lifecycle, tools/resources, fairness boundaries,
 stdio runner, and replay-verified virtual-agent tests.
 
-### M7 — Browser-playable M4 slice (implemented; acceptance pending)
+### M7 — Browser-playable M4 slice (functional acceptance passed; fidelity gate open)
 
 - Add `drl-web` as `cdylib + rlib` with pinned `wgpu 30.0.0`, `winit 0.30.12`,
   `wasm-bindgen 0.2.127`, matching web bindings, and `wasm-bindgen-test`.
@@ -99,8 +101,10 @@ stdio runner, and replay-verified virtual-agent tests.
   inventory actions, restart/game-over, and recoverable GPU/audio errors.
 - Add host-agnostic web build/check/serve scripts, ignored `dist/`, and an
   Ubuntu web-CI job with the pinned `wasm-pack 0.15.0` and headless Chrome.
-- Exit only after local WASM checks, a current Chrome/Edge WebGPU playthrough,
-  reference-scene comparison, and the remote web-CI run pass.
+- Functional exit checks pass locally and in remote web CI, including a current
+  Chrome 151 WebGPU smoke playthrough. Final exit still requires the
+  capture-backed reference-scene comparison; legacy capture execution remains
+  `NOT_RUN` on this host.
 
 ### M8 — Audiovisual parity (planned)
 
