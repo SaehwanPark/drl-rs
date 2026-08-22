@@ -132,6 +132,9 @@ documented in this file.
 - Added caller-supplied normalized-progress layer planning: evidenced animated
   descriptors can select frame-specific UVs deterministically, while the
   existing frame-zero plan and browser output remain unchanged.
+- Added pure elapsed-millisecond animation frame selection with explicit loop
+  and clamp policies over validated sprite metadata; callers retain ownership
+  of clocks, browser scheduling, and sprite/effect association.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch

@@ -4,6 +4,10 @@
 //! browser or native renderer may turn the resulting scene into pixels, but
 //! presentation timing can never advance the simulation.
 
+mod animation;
+
+pub use animation::{AnimationPlayback, animation_frame_index_at_elapsed};
+
 use drl_assets::{
   AtlasId, AtlasTextureSource, LayerRole, SpriteAnimation, SpriteDescriptor, SpriteLayer, SpriteUv,
   actor_sprite, item_sprite, tile_sprite,
