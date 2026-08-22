@@ -58,8 +58,10 @@ automated regressions, and human review.
   tint for visible ground items/player equipped armor and the byte-quantized
   Phase Device tint for visible ground items; other current archetypes remain
   neutral. Additional per-sprite tint sourcing, outline/glow role compositing
-  and capture-backed parity remain open. Pure frontend effect progress and
-  caller-supplied animation frame selection are now available; legacy
+  and capture-backed parity remain open. The optional outline-mask source is
+  now transported into the browser binding with a transparent fallback, but
+  visible outline/glow blending remains open. Pure frontend effect progress
+  and caller-supplied animation frame selection are now available; legacy
   animation timing and frame metadata remain capture-gated.
 - `SPEC.md` contains the single active M8 slice; it is not a second roadmap.
 
@@ -154,9 +156,10 @@ operations; the renderer now retains a 24-source GPU texture cache and samples
 base-color sprites with linear normalized atlas storage, a native-tested WGSL
 contract, fair lighting, the emissive red-channel floor, the legacy alpha
 cutoff, optional mask sampling with bounded Green Armor and Phase Device tint
-mappings, and pure caller-supplied animation frame selection.
-Remaining work is additional per-sprite tint sourcing, outline/glow
-role-specific shader sampling/layer compositing, legacy animation timing, and
+mappings, outline-mask GPU transport, and pure caller-supplied animation frame
+selection.
+Remaining work is visible outline/glow role-specific shader blending/layer
+compositing, additional per-sprite tint sourcing, legacy animation timing, and
 frame metadata;
 implement
 capture-backed lighting/LUT parity,

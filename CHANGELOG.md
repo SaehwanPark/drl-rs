@@ -119,6 +119,11 @@ documented in this file.
   using the pinned legacy blue `coscolor`, explicitly quantized at the existing
   byte vertex boundary; player equipment and other roles remain unchanged, and
   capture-backed display-color parity remains open.
+- Added bounded outline-mask GPU transport: optional shadow sources now travel
+  from fair sprite composites into source-specific WebGPU bindings, with the
+  transparent fallback for atlases without shadows. The WGSL contract receives
+  the resource without blending it; visible outline/glow equations remain
+  capture- and shader-evidence-gated.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch

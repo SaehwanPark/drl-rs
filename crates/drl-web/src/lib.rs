@@ -68,7 +68,8 @@ struct VertexOutput {
 @group(0) @binding(0) var base_texture: texture_2d<f32>;
 @group(0) @binding(1) var emissive_texture: texture_2d<f32>;
 @group(0) @binding(2) var mask_texture: texture_2d<f32>;
-@group(0) @binding(3) var base_sampler: sampler;
+@group(0) @binding(3) var outline_texture: texture_2d<f32>;
+@group(0) @binding(4) var base_sampler: sampler;
 
 @vertex
 fn vs_main(input: VertexInput) -> VertexOutput {
@@ -85,6 +86,9 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
   let sampled = textureSample(base_texture, base_sampler, input.uv);
   let emissive = textureSample(emissive_texture, base_sampler, input.uv).r;
   let mask = textureSample(mask_texture, base_sampler, input.uv);
+  // Outline transport is wired; glow/outline compositing remains deferred
+  // until pinned shader/capture evidence is available.
+  let _outline = textureSample(outline_texture, base_sampler, input.uv);
   let colorized = sampled.rgb + mask.rgb * input.colorization.rgb;
   let lighting = max(input.lighting.rgb, vec3<f32>(emissive));
   let output = vec4<f32>(colorized * lighting, sampled.a);
@@ -1434,6 +1438,23 @@ mod tests {
   }
 
   #[test]
+  fn outline_role_registration_preserves_optional_atlas_boundary() {
+    assert!(
+      AtlasId::Enemies
+        .layers()
+        .contains(&drl_assets::SpriteLayer::Shadow)
+    );
+    assert!(
+      !AtlasId::Levels
+        .layers()
+        .contains(&drl_assets::SpriteLayer::Shadow)
+    );
+    let source = AtlasId::Enemies.texture_source(drl_assets::SpriteLayer::Shadow);
+    assert_eq!(source.path, "enemies_shadow.png");
+    assert_eq!((source.width, source.height), (512, 192));
+  }
+
+  #[test]
   fn textured_alpha_cutoff_matches_legacy_boundary() {
     assert!(!retains_textured_fragment(0.0));
     assert!(!retains_textured_fragment(0.099));
@@ -1446,6 +1467,8 @@ mod tests {
     assert!(BASE_TEXTURE_SHADER.contains("textureSample(base_texture"));
     assert!(BASE_TEXTURE_SHADER.contains("textureSample(emissive_texture"));
     assert!(BASE_TEXTURE_SHADER.contains("textureSample(mask_texture"));
+    assert!(BASE_TEXTURE_SHADER.contains("outline_texture: texture_2d<f32>"));
+    assert!(BASE_TEXTURE_SHADER.contains("textureSample(outline_texture"));
     assert!(BASE_TEXTURE_SHADER.contains("mask.rgb * input.colorization.rgb"));
     assert!(BASE_TEXTURE_SHADER.contains("output.colorization = input.colorization"));
     assert!(BASE_TEXTURE_SHADER.contains("max(input.lighting.rgb"));

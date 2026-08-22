@@ -25,10 +25,11 @@ pub(crate) struct GpuTextureCache {
   entries: Vec<UploadedTexture>,
 }
 
-/// One source-specific bind group used by the base/mask/emissive pass.
+/// One source-specific bind group used by the base/mask/emissive/outline pass.
 pub(crate) struct TextureBinding {
   pub(crate) source: AtlasTextureSource,
   pub(crate) mask: Option<AtlasTextureSource>,
+  pub(crate) outline: Option<AtlasTextureSource>,
   pub(crate) emissive: Option<AtlasTextureSource>,
   pub(crate) bind_group: wgpu::BindGroup,
 }
@@ -123,42 +124,57 @@ impl GpuTextureCache {
         .iter()
         .find(|layer| **layer == SpriteLayer::Mask)
         .map(|_| atlas.texture_source(SpriteLayer::Mask));
+      let outline = atlas
+        .layers()
+        .iter()
+        .find(|layer| **layer == SpriteLayer::Shadow)
+        .map(|_| atlas.texture_source(SpriteLayer::Shadow));
       let emissive = atlas.texture_source(SpriteLayer::Emissive);
       for mask_source in [None, mask] {
-        for emissive_source in [None, Some(emissive)] {
-          let mask_view = mask_source
-            .and_then(|source| self.view(source))
-            .unwrap_or(fallback_view);
-          let emissive_view = emissive_source
-            .and_then(|source| self.view(source))
-            .unwrap_or(fallback_view);
-          bindings.push(TextureBinding {
-            source: base,
-            mask: mask_source,
-            emissive: emissive_source,
-            bind_group: device.create_bind_group(&wgpu::BindGroupDescriptor {
-              label: Some(base.path),
-              layout,
-              entries: &[
-                wgpu::BindGroupEntry {
-                  binding: 0,
-                  resource: wgpu::BindingResource::TextureView(base_view),
-                },
-                wgpu::BindGroupEntry {
-                  binding: 1,
-                  resource: wgpu::BindingResource::TextureView(emissive_view),
-                },
-                wgpu::BindGroupEntry {
-                  binding: 2,
-                  resource: wgpu::BindingResource::TextureView(mask_view),
-                },
-                wgpu::BindGroupEntry {
-                  binding: 3,
-                  resource: wgpu::BindingResource::Sampler(sampler),
-                },
-              ],
-            }),
-          });
+        for outline_source in [None, outline] {
+          for emissive_source in [None, Some(emissive)] {
+            let mask_view = mask_source
+              .and_then(|source| self.view(source))
+              .unwrap_or(fallback_view);
+            let outline_view = outline_source
+              .and_then(|source| self.view(source))
+              .unwrap_or(fallback_view);
+            let emissive_view = emissive_source
+              .and_then(|source| self.view(source))
+              .unwrap_or(fallback_view);
+            bindings.push(TextureBinding {
+              source: base,
+              mask: mask_source,
+              outline: outline_source,
+              emissive: emissive_source,
+              bind_group: device.create_bind_group(&wgpu::BindGroupDescriptor {
+                label: Some(base.path),
+                layout,
+                entries: &[
+                  wgpu::BindGroupEntry {
+                    binding: 0,
+                    resource: wgpu::BindingResource::TextureView(base_view),
+                  },
+                  wgpu::BindGroupEntry {
+                    binding: 1,
+                    resource: wgpu::BindingResource::TextureView(emissive_view),
+                  },
+                  wgpu::BindGroupEntry {
+                    binding: 2,
+                    resource: wgpu::BindingResource::TextureView(mask_view),
+                  },
+                  wgpu::BindGroupEntry {
+                    binding: 3,
+                    resource: wgpu::BindingResource::TextureView(outline_view),
+                  },
+                  wgpu::BindGroupEntry {
+                    binding: 4,
+                    resource: wgpu::BindingResource::Sampler(sampler),
+                  },
+                ],
+              }),
+            });
+          }
         }
       }
     }
@@ -166,7 +182,7 @@ impl GpuTextureCache {
   }
 }
 
-/// Pipeline and source-specific bind groups for the partial base/mask/emissive pass.
+/// Pipeline and source-specific bind groups for the partial textured pass.
 pub(crate) struct BaseTexturePipeline {
   pipeline: wgpu::RenderPipeline,
   bindings: Vec<TextureBinding>,
@@ -175,7 +191,7 @@ pub(crate) struct BaseTexturePipeline {
 }
 
 impl BaseTexturePipeline {
-  /// Builds a nearest-filtered base/mask/emissive pipeline and its source bindings.
+  /// Builds a nearest-filtered base/mask/emissive/outline pipeline and bindings.
   pub(crate) fn new(
     device: &wgpu::Device,
     queue: &wgpu::Queue,
@@ -217,6 +233,16 @@ impl BaseTexturePipeline {
         },
         wgpu::BindGroupLayoutEntry {
           binding: 3,
+          visibility: wgpu::ShaderStages::FRAGMENT,
+          ty: wgpu::BindingType::Texture {
+            sample_type: wgpu::TextureSampleType::Float { filterable: true },
+            view_dimension: wgpu::TextureViewDimension::D2,
+            multisampled: false,
+          },
+          count: None,
+        },
+        wgpu::BindGroupLayoutEntry {
+          binding: 4,
           visibility: wgpu::ShaderStages::FRAGMENT,
           ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
           count: None,
@@ -348,6 +374,7 @@ impl BaseTexturePipeline {
         self.bindings.iter().any(|binding| {
           binding.source == batch.source
             && binding.mask == batch.mask
+            && binding.outline == batch.outline
             && binding.emissive == batch.emissive
         })
       })
@@ -394,6 +421,7 @@ impl BaseTexturePipeline {
       if let Some(binding) = self.bindings.iter().find(|binding| {
         binding.source == batch.source
           && binding.mask == batch.mask
+          && binding.outline == batch.outline
           && binding.emissive == batch.emissive
       }) {
         pass.set_bind_group(0, &binding.bind_group, &[]);
@@ -406,6 +434,7 @@ impl BaseTexturePipeline {
 struct TextureBatch {
   source: AtlasTextureSource,
   mask: Option<AtlasTextureSource>,
+  outline: Option<AtlasTextureSource>,
   emissive: Option<AtlasTextureSource>,
   start: u32,
   count: u32,
@@ -479,6 +508,7 @@ fn base_texture_vertices(
     batches.push(TextureBatch {
       source: composite.base,
       mask: composite.mask,
+      outline: composite.shadow,
       emissive: composite.emissive,
       start,
       count: 6,
