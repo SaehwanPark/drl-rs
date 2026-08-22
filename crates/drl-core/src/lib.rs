@@ -18,6 +18,7 @@ pub mod inventory;
 pub mod item;
 pub mod item_definition;
 pub mod loot_definition;
+pub mod monster_roll_definition;
 pub mod replay;
 pub mod rng;
 pub mod scenario;

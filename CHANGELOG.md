@@ -239,6 +239,10 @@ documented in this file.
   roll-bound table while preserving thresholds, fixed ammo payloads, RNG/ID
   ordering, and canonical item construction. This is not a balance or legacy
   parity claim.
+- Centralized the four current procedural monster-roll outcomes in an immutable
+  roll-bound table while preserving one-roll RNG consumption, spawn metadata,
+  ordering, and `MonsterKind` definitions. This is not a balance or legacy
+  parity claim.
 - Added a versioned fixed-session snapshot codec with strict size/corruption
   handling, deterministic replay restore, and best-effort WASM localStorage
   save/load controls. The static bundle now includes a manually versioned

@@ -155,6 +155,11 @@ selection in an immutable six-entry table (`0..35` 9mm ammo with 20 rounds,
 `85..95` green armor, and `95..100` Phase Device). It preserves the single
 roll, item-ID allocation, spawn ordering, and canonical item factory; it is
 not a balance or legacy-parity claim.
+The current generated-monster follow-up similarly centralizes the four existing
+roll outcomes (`0..40` Former Human, `40..65` Imp, `65..85` Former Sergeant,
+and `85..100` Demon). It preserves one roll per accepted candidate, spawn
+metadata/order, and `MonsterKind`/replay/protocol boundaries; it does not claim
+legacy random-placement parity or balance conclusions.
 The current M10 follow-ups add a versioned fixed-M4 command-history snapshot
 token with a bounded codec, transactional deterministic replay, a best-effort
 WASM `localStorage` boundary, and a versioned same-origin service-worker cache

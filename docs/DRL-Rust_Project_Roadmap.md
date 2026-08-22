@@ -226,6 +226,10 @@ The current generated-loot follow-up centralizes the six existing procedural
 room-item outcomes and their exact roll bounds/fixed ammo payloads while
 preserving one-roll RNG consumption, item IDs, ordering, and factory behavior;
 broader balance, conversion, and legacy parity remain open.
+The current generated-monster follow-up centralizes the four existing
+procedural monster outcomes and exact roll bounds while preserving one-roll
+RNG consumption, spawn metadata/order, and shared monster definitions; broader
+actor/level migration, balance, and legacy parity remain open.
 The current M10 follow-ups add a versioned fixed-M4 command-history snapshot,
 bounded corruption/version handling, transactional replay restore, a
 best-effort WASM localStorage boundary with save/load/clear controls, and a

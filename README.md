@@ -6,33 +6,28 @@ with WebGPU in desktop Chrome/Edge, with an accessible HTML shell and
 gesture-unlocked Web Audio. Headless Rust and MCP remain supported for agents,
 replays, and regression testing.
 
-The current repository contains a playable browser-slice implementation and a
-complete deterministic M4 simulation. M7 functional checks pass locally and in
-remote web CI; M8 presentation work now keeps browser map cells square with
-deterministic pixel-grid letterboxing, shared visible/explored lighting bands,
-measured legacy atlas slots, registered layer metadata, normalized sprite UVs,
-renderer-neutral layer draw plans with imported source metadata, fair lighting
-factors, explicit legacy shader input roles, grouped sprite composite plans,
-and validated browser texture-source loading, renderer-owned GPU texture
-uploads using linear normalized atlas storage, a native-tested partial
-nearest-filtered base/mask/emissive textured pass with evidence-backed Green
-Armor and Phase Device ground colorization tint boundaries, the verified
-emissive lighting floor, optional outline-mask GPU transport, and evidenced
-player/actor/Phase Device animation metadata and progress-selected frame UVs,
-plus pure effect progress, caller-supplied animation frame selection,
-elapsed-time playback math and layer plans, a
-low-health scene tone, a pure source-derived low-health pulse target, and
-event-ordered timing, pure low-health pulse smoothing, the source-derived
-three-phase explosion-mark selector, signed effect-segment arithmetic, and
-caller-owned kill-animation segment selection and FX frame selection, plus
-caller-owned movement progress selection, missile step selection, missile
-ray-spacing selection, screen-shake fade timing, particle-burst origin math,
-a Rust-owned typed monster and item definition table, canonical item
-spawn-factory routing for death drops, table-driven generated loot, plus pure
-post-process
-glow/LUT math contracts. Full audiovisual equivalence, broader content, PWA
-persistence, and other browsers remain staged roadmap work. Do not read the
-placeholder M7 atlas rectangles as a fidelity claim.
+## Current capabilities
+
+- Deterministic simulation:
+  - Complete M4 headless game loop with combat, FOV/fog, AI, levels, replay,
+    scenarios, bots, batches, inventory, and MCP tooling.
+  - Stable item and monster definitions, canonical item factories, and
+    table-driven generated item/monster selection with preserved RNG boundaries.
+- Browser and presentation slice:
+  - M7 functional checks pass locally and in remote web CI.
+  - M8 provides square pixel-grid letterboxing, shared lighting bands, measured
+    atlas slots, normalized UVs, renderer-neutral layer/composite plans, fair
+    observation-derived presentation, and validated texture-source loading.
+  - Native-tested base/mask/emissive rendering includes evidence-backed Green
+    Armor, Phase Device, and StairsDown tint boundaries, an emissive lighting
+    floor, optional outline transport, and animation frame metadata/selection.
+  - Pure contracts cover effect timing, low-health tone/pulse, explosion marks,
+    movement and missile progress, screen-shake fade, particle origins, and
+    post-process glow/LUT math without claiming full backend fidelity.
+- Staged work:
+  - Full audiovisual equivalence, broader content migration, PWA persistence,
+    and support for other browsers remain roadmap work.
+  - Placeholder M7 atlas rectangles are not a fidelity claim.
 
 ## Quick start
 
@@ -98,46 +93,22 @@ legacy graphics metadata; it is not a dependency of the core.
   scenarios, bots, batches, and replays.
 - `crates/drl-protocol`: commands, observations, events, identifiers, and
   compatibility-sensitive MCP/replay contracts.
-- `crates/drl-assets`: atlas IDs, dimensions, measured rectangles, registered
-  layers and shader input roles, normalized UVs, texture-source bindings,
-  semantic asset mapping, and
-  legacy revision identity.
-- `crates/drl-render`: pure scene construction, deterministic pixel viewport
-  layout, atlas/layer draw-plan geometry with source metadata, roles, grouped
-  composites, lighting, normalized effect progress, caller-supplied animation
-  frame selection, elapsed-time playback math and layer plans, and the
-  observed Green Armor/Phase Device/StairsDown tint mappings, outline-mask
-  transport,
-  renderer-neutral animation metadata, and progress-selected frame UVs.
-  It also exposes the pure source-derived low-health pulse target and a
-  caller-owned smoothing/decay step from fair health and elapsed time; texture
-  compositing remains presentation-backend work. The post-process helpers preserve the pinned
-  glow add, LUT coordinate math, and direct/captured pass ordering without
-  creating a browser post-process pipeline, and the blur-tap planner exposes
-  normalized caller-sized offsets without executing sampling; its pure
-  five-sample reducer preserves weighted RGB and center-only alpha. The
-  explosion-mark phase helper, signed effect-segment selector,
-  kill-animation segment selector, and FX frame selector remain
-  palette/sprite/lifecycle agnostic; the movement progress helper remains
-  coordinate/light/entity agnostic; the missile step helper remains
-  path/visibility/particle agnostic; the missile ray-spacing helper remains
-  metric/visibility/render agnostic and preserves the source overshoot; the
-  screen-shake fade helper remains frequency/offset/render agnostic; the
-  particle-burst origin helper remains coordinate-base/particle-engine agnostic.
-  Typed monster definitions are current Rust-owned content and do not claim
-  legacy numeric parity.
+- `crates/drl-assets`:
+  - Atlas IDs/dimensions, measured rectangles, registered layers and shader
+    roles, normalized UVs, texture-source bindings, and semantic asset mapping.
+  - Pinned legacy revision identity and licensing metadata.
+- `crates/drl-render`:
+  - Pure scene construction, pixel viewport layout, layer/composite plans,
+    lighting, animation selection, and observed tint mappings.
+  - Source-derived contracts for health tone/pulse, effect and missile timing,
+    screen shake, particle origins, and post-process glow/LUT math.
+  - Renderer/backend and full audiovisual equivalence remain staged work.
 - `crates/drl-audio`: semantic cues and WASM Web Audio mixer.
-- `crates/drl-web`: browser session, validated same-origin texture-source
-  loading, renderer-owned WebGPU texture uploads, the partial base/mask/
-  emissive textured pass with Green Armor/Phase Device/StairsDown colorization
-  tint,
-  optional outline-mask transport, renderer-neutral animation metadata,
-  progress-selected frame UVs, elapsed-time playback math and layer plans,
-  caller-driven elapsed WebGPU rendering, bounded requestAnimationFrame
-  scheduling with visibility-lifecycle rebasing, versioned fixed-session
-  snapshots with bounded corruption handling, best-effort localStorage save/load,
-  a versioned static service-worker cache for the generated bundle, and legacy
-  alpha cutoff, Winit/WebGPU scene surface, DOM shell, and WASM exports.
+- `crates/drl-web`:
+  - Browser session, fair observation boundary, validated texture loading,
+    renderer-owned WebGPU uploads, and the partial textured pass.
+  - Animation playback, bounded scheduling, fixed-session snapshots,
+    best-effort localStorage, and the generated-bundle service-worker cache.
 - `crates/drl-mcp`: JSON-RPC/MCP server and fairness boundary.
 - `crates/drl-app`: native headless demo and MCP stdio runner.
 - `docs/DRL-Rust_Project_Roadmap.md`: canonical milestones and gates.
