@@ -17,6 +17,7 @@ pub mod grid;
 pub mod inventory;
 pub mod item;
 pub mod item_definition;
+pub mod level_definition;
 pub mod loot_definition;
 pub mod monster_roll_definition;
 pub mod replay;
@@ -37,6 +38,7 @@ pub use generator::{GeneratedLevel, LevelGenerator, LevelGeneratorConfig, Monste
 pub use grid::{Map, Tile};
 pub use inventory::{DEFAULT_INVENTORY_CAPACITY, Equipment, Inventory};
 pub use item::Item;
+pub use level_definition::{LEVEL_DEFINITIONS, LevelDefinition, standard_procedural};
 pub use replay::ReplayEngine;
 pub use rng::GameRng;
 pub use scenario::{Scenario, ScenarioRunner};

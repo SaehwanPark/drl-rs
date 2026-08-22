@@ -9,6 +9,7 @@ use crate::combat::CombatResolver;
 use crate::generator::{LevelGenerator, LevelGeneratorConfig};
 use crate::grid::Map;
 use crate::item::Item;
+use crate::level_definition::standard_procedural;
 use crate::rng::GameRng;
 use crate::scheduler::{ACTION_THRESHOLD, Scheduler};
 use crate::world::World;
@@ -606,11 +607,10 @@ impl Game {
       .ok_or(CommandError::EntityNotFound(player_id))?;
 
     // Generate new level layout
-    let config = LevelGeneratorConfig {
-      width: self.state.world.map().width(),
-      height: self.state.world.map().height(),
-      ..Default::default()
-    };
+    let config = standard_procedural().config_for_dimensions(
+      self.state.world.map().width(),
+      self.state.world.map().height(),
+    );
     let mut next_item_counter = 1000 * next_level.as_u32() as u64;
     let generated = LevelGenerator::generate(&config, &mut self.state.rng, &mut next_item_counter);
 

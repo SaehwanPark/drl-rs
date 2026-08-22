@@ -247,6 +247,10 @@ documented in this file.
   semantics and routed core tile physical flags through it. Map behavior,
   observations, replay V1, and protocol schemas remain unchanged; no legacy
   parity is claimed.
+- Added one immutable Rust-owned `standard-procedural` level definition for
+  the existing core default and level-descent policy. Custom generator
+  configurations and the MCP five-room policy remain unchanged; no topology,
+  balance, or legacy-parity claim is made.
 - Added a versioned fixed-session snapshot codec with strict size/corruption
   handling, deterministic replay restore, and best-effort WASM localStorage
   save/load controls. The static bundle now includes a manually versioned

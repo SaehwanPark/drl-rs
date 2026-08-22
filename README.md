@@ -11,8 +11,9 @@ replays, and regression testing.
 - Deterministic simulation:
   - Complete M4 headless game loop with combat, FOV/fog, AI, levels, replay,
     scenarios, bots, batches, inventory, and MCP tooling.
-  - Stable tile, item, and monster definitions, canonical item factories, and
-    table-driven generated item/monster selection with preserved RNG boundaries.
+  - Stable tile, item, monster, and standard-level definitions, canonical item
+    factories, and table-driven generated item/monster selection with preserved
+    RNG boundaries.
 - Browser and presentation slice:
   - M7 functional checks pass locally and in remote web CI.
   - M8 provides square pixel-grid letterboxing, shared lighting bands, measured
