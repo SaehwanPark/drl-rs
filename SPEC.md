@@ -15,7 +15,7 @@ progress. This file expands exactly one active implementation slice.
   redistribution-gated; its controlled reference-capture gate is `NOT_RUN` on
   arm64 macOS and remains an M8 acceptance dependency.
 
-## Present — M8 outline-mask GPU transport
+## Present — M8 renderer-neutral animation metadata
 
 Status: The M7 browser slice passed functional acceptance locally and in
 remote web CI. The delivered M8 pixel-grid, visibility-band, low-health tone,
@@ -37,9 +37,11 @@ fair item scene metadata and the existing vertex tint path. This slice carries
 the renderer-neutral `SpriteComposite::shadow` source into an optional
 outline-mask WebGPU binding, using the retained transparent fallback when an
 atlas has no shadow source. The shader receives the resource but leaves output
-unchanged; visible outline/glow equations, general tint provenance,
-asset-specific animation timing, and capture-backed audiovisual equivalence
-remain open.
+unchanged. It also carries pinned two-frame/500 ms metadata for the current
+player, actors, and Phase Device into renderer-neutral descriptors and grouped
+draws; frame selection remains caller-supplied and no wall-clock scheduling is
+introduced. Visible outline/glow equations, broader animation timing/content,
+and capture-backed audiovisual equivalence remain open.
 
 ### Observable behavior
 
@@ -160,6 +162,10 @@ remain open.
   bind the transparent 1x1 fallback; the WGSL contract declares and samples
   the resource but does not blend it into the output in this transport-only
   slice.
+- `SpriteDescriptor` carries pinned two-frame/500 ms metadata for the player,
+  current actors, and Phase Device. Layer draws and grouped composites preserve
+  that metadata; `frame_rect` advances one atlas row with bounds checks, while
+  presentation still chooses progress and timing.
 - The WGSL source is shared with a native shader-contract test that checks the
   base/emissive/mask samples, fair-lighting `max`, tint forwarding, neutral
   fallback input, alpha cutout, and output path; native tests therefore guard
@@ -234,10 +240,10 @@ capture is available.
 - Legacy audio/music/fonts are not shipped until rights are documented.
 - Full audiovisual equivalence is M8: capture-backed tolerances, visual
   regressions, cue timing, and structured human comparison.
-- Visible outline/glow equations, additional per-sprite tint sources, legacy
-  animation timing/frame metadata, and capture-backed legacy shader equivalence
-  remain future M8 slices; this pass is intentionally limited to outline-mask
-  transport.
+- Visible outline/glow equations, broader content-specific animation timing,
+  additional per-sprite tint sources, and capture-backed legacy shader
+  equivalence remain future M8 slices; this pass is intentionally limited to
+  renderer-neutral metadata.
 
 ## Next
 
@@ -246,9 +252,10 @@ metadata, fair lighting factors, effect progress, layer input roles, grouped
 sprite composites, validated browser source loading, renderer-owned GPU
 texture upload, base-color sampling, the emissive lighting floor, the legacy
 alpha cutoff, optional mask sampling, the Green Armor and Phase Device tint
-boundaries, outline-mask GPU transport, and caller-supplied frame selection
-are covered by local checks and hosted WASM browser jobs. Continue M8 with
-visible outline/glow compositing, additional tint sources, legacy animation
-timing, or capture-backed measurement of lighting, effects, typography, and
-audio. Do not claim audiovisual parity from renderer-neutral grouping or the
-`NOT_RUN` legacy captures.
+boundaries, outline-mask GPU transport, caller-supplied frame selection, and
+the evidenced player/actor/Phase Device animation metadata are covered by
+local checks and hosted WASM browser jobs. Continue M8 with visible
+outline/glow compositing, broader animation scheduling/content, additional
+tint sources, or capture-backed measurement of lighting, effects, typography,
+and audio. Do not claim audiovisual parity from renderer-neutral grouping or
+the `NOT_RUN` legacy captures.
