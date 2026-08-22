@@ -27,7 +27,7 @@ replays, and regression testing.
   - Outcome comparisons accept one finite, non-negative per-category rate
     tolerance and expose a deterministic pass/fail gate.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.0`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.1`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:

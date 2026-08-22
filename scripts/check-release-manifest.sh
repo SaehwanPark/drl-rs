@@ -12,7 +12,9 @@ fi
 python3 - "$manifest" <<'PY'
 import hashlib
 import json
+import os
 import pathlib
+import subprocess
 import sys
 
 manifest_path = pathlib.Path(sys.argv[1])
@@ -31,6 +33,14 @@ if source_revision != "unknown" and (
     or any(character not in "0123456789abcdef" for character in source_revision)
 ):
     raise SystemExit("release manifest source revision is not a lowercase Git object identity")
+try:
+    expected_revision = os.environ.get("DRL_BUILD_REVISION") or subprocess.check_output(
+        ["git", "rev-parse", "HEAD"], cwd=pathlib.Path.cwd(), text=True, stderr=subprocess.DEVNULL
+    ).strip()
+except (OSError, subprocess.CalledProcessError):
+    expected_revision = "unknown"
+if expected_revision != "unknown" and source_revision != expected_revision:
+    raise SystemExit("release manifest source revision does not match the built checkout")
 if data.get("generated") != [
     "release-manifest.json",
     "release-manifest.sha256",
