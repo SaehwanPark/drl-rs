@@ -163,9 +163,8 @@ GitHub Actions run 32548718408               PASS (repository + Ubuntu WASM
                                              effect-progress slice)
 ```
 
-The local functional gates pass for this texture-loader slice; hosted
-verification for this branch is recorded in its handoff artifact after PR CI
-completes.
+The local and hosted functional gates pass for this texture-loader slice; the
+hosted run is recorded in the handoff artifact.
 
 local browser execution remains `NOT_RUN` when the runner is unavailable. The
 existing Chrome run records browser/version, OS,
