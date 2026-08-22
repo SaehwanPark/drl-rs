@@ -37,17 +37,17 @@ automated regressions, and human review.
   letterboxing through `drl-render::PixelViewport`; hosted run `32539486760`
   passes the repository and WASM browser jobs. Full audiovisual parity is still
   planned and capture-gated.
-- The active follow-up M8 slice centralizes visible-versus-explored lighting
+- The delivered follow-up M8 slice centralizes visible-versus-explored lighting
   bands in `drl-render`; this remains a presentation rule, not a legacy parity
   claim.
 - A further M8 slice centralizes the existing quarter-health scene tone in
   `drl-render::SceneTone`; capture-backed low-life LUT/glow parity remains open.
-- The active M8 follow-up adds event-ordered `drl-render::EffectSpan` timing;
+- The delivered M8 follow-up adds event-ordered `drl-render::EffectSpan` timing;
   capture-backed animation/effect durations remain open.
 - The browser effect handoff now carries ordered spans in successful
   `PresentationStep` results with visibility filtering; visual frame mapping
   remains capture-gated.
-- The current M8 atlas-descriptor slice replaces placeholder cells with
+- The delivered M8 atlas-descriptor slice replaces placeholder cells with
   pinned-legacy 32-pixel sprite slots and verified imported-sheet dimensions;
   the follow-up layer metadata now preserves registered source-layer order;
   normalized UV geometry, a renderer-neutral layer draw plan, and deterministic
@@ -76,7 +76,7 @@ automated regressions, and human review.
   content animation and capture parity remain open. A read-only capture
   manifest preflight now validates pinned metadata, rights, media hashes, and
   evidence status while preserving `NOT_RUN`.
-- `SPEC.md` contains the single active M8 outline-mask-compositing
+- `SPEC.md` contains the single active M12 manifest-checkout-identity-binding
   slice; it is not a second roadmap.
 - The first bounded M11 cohort slice adds explicit fixed-seed sample
   definitions and reports around the existing headless batch runner. Reports
@@ -108,6 +108,9 @@ automated regressions, and human review.
 - The delivered M12 release-audit follow-up rejects malformed source revision
   identities before manifest/cache policy is accepted; signed history
   authenticity remains open.
+- The active M12 checkout-identity follow-up requires a generated source
+  revision to match Git `HEAD` (or `DRL_BUILD_REVISION`) when available, while
+  preserving `unknown` for unverifiable source archives.
 - The M12 diagnostics slice adds a local accessible browser-support and
   startup-error panel with recovery guidance; it sends no telemetry and does
   not extend the tested WebGPU browser claim.
@@ -325,7 +328,7 @@ absolute per-category rate deltas without adding a tolerance or significance
 claim. The delivered tolerance gate applies a caller-owned finite non-negative
 bound without adding statistical interpretation.
 
-### M12 — Static web productization and release hardening (manifest, cache, diagnostics, accessibility, sidecar, worker-contract, and source-audit slices delivered; hardening open)
+### M12 — Static web productization and release hardening (manifest, cache, diagnostics, accessibility, sidecar, worker-contract, and source-audit slices delivered; checkout binding active)
 
 Produce reproducible static HTTPS/PWA bundles, asset license notices,
 cache/version policy, accessibility audit, browser support/error screens,
@@ -339,7 +342,9 @@ slice adds a local accessible browser-support/startup-diagnostics panel with rec
  deterministic SHA-256 sidecar for the manifest and precaches it. The delivered
  follow-up runs dependency-free mocked service-worker lifecycle/fetch checks;
  full browser-offline acceptance remains open. The delivered release-audit
- follow-up validates source revision identity syntax. Signing, release audits, broader
+ follow-up validates source revision identity syntax. The active checkout-binding
+ follow-up requires that identity to match the built checkout when available.
+ Signing, release audits, broader
 invalidation policy, dynamic accessibility acceptance, and untested-browser
 support remain open. WebGPU remains the 1.0 baseline; do not imply support for
 untested browsers.

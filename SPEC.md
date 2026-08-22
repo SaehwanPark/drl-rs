@@ -39,7 +39,7 @@ carries the pinned yellow `StairsDown` tile color through that same mask path.
 Earlier M8 work carries the renderer-neutral `SpriteComposite::shadow` source
 into an optional
 outline-mask WebGPU binding, using the retained transparent fallback when an
-atlas has no shadow source. The current bounded follow-up composites the
+atlas has no shadow source. The delivered bounded follow-up composites the
 optional outline behind the base sprite with a tested straight-alpha equation;
 opaque base pixels remain unchanged and the resolved output still uses the
 verified alpha cutoff. It also carries pinned two-frame/500 ms metadata for the current
@@ -314,15 +314,23 @@ participates in release-manifest and cache-version checks. This rejects
 malformed provenance without requiring signed releases or claiming repository
 history authenticity.
 
-## Present — M8 outline-mask compositing
+## Delivered — M8 outline-mask compositing
 
-Status: the active slice adds a renderer-neutral straight-alpha contract for
+Status: the delivered slice adds a renderer-neutral straight-alpha contract for
 the optional shadow/outline source and applies the same outside-base equation
 in the WebGPU textured pass. Transparent fallback textures remain inert,
 opaque base pixels retain their color, and the resolved alpha continues through
 the existing `0.1` fragment cutoff. This is a bounded compositing behavior,
 not a claim that the exact legacy glow/outline equation or capture parity is
 recovered.
+
+## Present — M12 manifest checkout-identity binding
+
+Status: the active slice requires a generated manifest's source revision to
+match the current Git `HEAD` when Git metadata (or `DRL_BUILD_REVISION`) is
+available. This prevents a valid-looking but unrelated object identity from
+being accepted for a bundle built from another checkout; source archives retain
+the explicit `unknown` fallback when no identity can be observed.
 
 ### Observable behavior
 
@@ -371,6 +379,9 @@ recovered.
   base sprite with straight-alpha weights and caller-supplied lighting;
   `drl-web` applies the same equation to the optional outline texture before
   the existing alpha cutoff.
+- Release-manifest checks reject a source revision that does not match the
+  available checkout identity; they preserve `unknown` only when no identity
+  can be observed.
 - `drl-audio` maps events to semantic cues. The WASM mixer uses generated tones,
   mute/volume settings, and user-gesture unlock; blocked audio never blocks
   gameplay.
@@ -651,7 +662,7 @@ scripts/check-release-manifest.sh           PASS (after `scripts/build-web.sh`, 
 scripts/test-service-worker.sh               PASS (mocked lifecycle/fetch contract)
 scripts/check-browser-diagnostics.sh        PASS (via `scripts/check-web.sh`)
 scripts/check-browser-accessibility.sh      PASS (via `scripts/check-web.sh`)
-scripts/check-version.sh                    PASS (`0.2.0` projections and transition)
+scripts/check-version.sh                    PASS (`0.2.1` projections and transition)
 cargo check --locked -p drl-web --target wasm32-unknown-unknown  PASS
 cargo test -p drl-render                      PASS (pixel-grid, lighting, tone, and timeline contracts)
 cargo test -p drl-core --test batch_simulation PASS (fixed-seed cohort sample,
