@@ -17,8 +17,8 @@ and validated browser texture-source loading, renderer-owned GPU texture
 uploads using linear normalized atlas storage, a native-tested partial
 nearest-filtered base/mask/emissive textured pass with a neutral colorization
 tint boundary, the verified emissive lighting floor, and legacy alpha cutoff,
-plus pure
-effect progress, a low-health scene tone, and event-ordered timing. Full
+plus pure effect progress, caller-supplied animation frame selection, a
+low-health scene tone, and event-ordered timing. Full
 audiovisual equivalence, broader content, PWA persistence, and other browsers
 remain staged roadmap work. Do not read the placeholder M7 atlas rectangles as
 a fidelity claim.
@@ -92,7 +92,8 @@ legacy graphics metadata; it is not a dependency of the core.
   legacy revision identity.
 - `crates/drl-render`: pure scene construction, deterministic pixel viewport
   layout, atlas/layer draw-plan geometry with source metadata, roles, grouped
-  composites, and lighting, and normalized effect progress.
+  composites, lighting, normalized effect progress, and caller-supplied
+  animation frame selection.
 - `crates/drl-audio`: semantic cues and WASM Web Audio mixer.
 - `crates/drl-web`: browser session, validated same-origin texture-source
   loading, renderer-owned WebGPU texture uploads, the partial base/mask/

@@ -107,6 +107,9 @@ documented in this file.
 - Added pure `active_effect_frames` progress mapping for fair effect spans;
   frontend ticks receive stable normalized progress without advancing gameplay
   or claiming legacy animation-frame parity.
+- Added pure `drl-render::animation_frame_index` groundwork that maps bounded
+  normalized progress to a caller-supplied frame count; asset frame metadata,
+  legacy timing, and capture-backed animation parity remain open.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch

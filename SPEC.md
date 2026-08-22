@@ -15,7 +15,7 @@ progress. This file expands exactly one active implementation slice.
   redistribution-gated; its controlled reference-capture gate is `NOT_RUN` on
   arm64 macOS and remains an M8 acceptance dependency.
 
-## Present — M8 colorization-mask role pass
+## Present — M8 animation frame selector
 
 Status: The M7 browser slice passed functional acceptance locally and in
 remote web CI. The delivered M8 pixel-grid, visibility-band, low-health tone,
@@ -30,11 +30,12 @@ image decode path that validates each imported layer's measured dimensions.
 The GPU-upload follow-up builds a stable unique-source manifest and uploads
 those decoded images into renderer-owned WebGPU texture/view resources. The
 base/emissive follow-ups add nearest-filtered WGSL sampling, the verified
-emissive lighting floor, the legacy alpha cutoff, and a native shader contract.
-This slice adds optional colorization-mask sampling and a neutral per-vertex
-tint boundary; current fair scenes supply a zero tint, so no unverified visual
-color change is introduced. Per-sprite tint sourcing, outline/glow equations,
-and capture-backed audiovisual equivalence remain open.
+emissive lighting floor, the legacy alpha cutoff, a native shader contract, and
+optional colorization-mask sampling with a neutral per-vertex tint boundary.
+This slice adds pure frame-index selection from caller-supplied normalized
+effect progress. Asset-specific frame counts, legacy animation timing,
+per-sprite tint sourcing, outline/glow equations, and capture-backed
+audiovisual equivalence remain open.
 
 ### Observable behavior
 
@@ -150,6 +151,9 @@ and capture-backed audiovisual equivalence remain open.
 - `drl-render::active_effect_frames` returns normalized `[0, 1)` progress for
   active effect spans at a presentation tick, preserving input order and
   omitting zero-duration or overflowed spans.
+- `drl-render::animation_frame_index` maps finite normalized progress and a
+  caller-supplied nonzero frame count to a deterministic zero-based frame
+  index; invalid progress or frame counts return `None`.
 - Layer draw planning consumes only `RenderScene`; it cannot inspect hidden
   simulation state or advance gameplay.
 
@@ -194,7 +198,7 @@ GitHub Actions run 32548718408               PASS (repository + Ubuntu WASM
 ```
 
 The local and hosted functional gates pass for the preceding textured-pass
-slices; this colorization-mask slice must add its own hosted run to the
+slices; this pure frame-selector slice must add its own hosted run to the
 handoff artifact.
 
 local browser execution remains `NOT_RUN` when the runner is unavailable. The
@@ -212,9 +216,9 @@ capture is available.
 - Legacy audio/music/fonts are not shipped until rights are documented.
 - Full audiovisual equivalence is M8: capture-backed tolerances, visual
   regressions, cue timing, and structured human comparison.
-- Per-sprite tint sourcing, outline/glow, animation frame selection, and
-  capture-backed legacy shader equivalence remain future M8 slices; this pass
-  is an intentionally partial compositor.
+- Per-sprite tint sourcing, outline/glow, legacy animation timing/frame
+  metadata, and capture-backed legacy shader equivalence remain future M8
+  slices; this pass is renderer-neutral groundwork only.
 
 ## Next
 
@@ -222,8 +226,9 @@ The pixel-scale viewport, atlas metadata, UV geometry, draw-plan source
 metadata, fair lighting factors, effect progress, layer input roles, grouped
 sprite composites, validated browser source loading, renderer-owned GPU
 texture upload, base-color sampling, the emissive lighting floor, the legacy
-alpha cutoff, and optional neutral-tint mask sampling are covered by local
-checks and hosted WASM browser jobs. Continue M8 with per-sprite tint sourcing,
-outline/glow, animation, or capture-backed measurement of lighting, effects,
-typography, and audio. Do not claim audiovisual parity from renderer-neutral
-grouping or the `NOT_RUN` legacy captures.
+alpha cutoff, optional neutral-tint mask sampling, and caller-supplied frame
+selection are covered by local checks and hosted WASM browser jobs. Continue
+M8 with per-sprite tint sourcing, outline/glow, legacy animation timing,
+or capture-backed measurement of lighting, effects, typography, and audio. Do
+not claim audiovisual parity from renderer-neutral grouping or the `NOT_RUN`
+legacy captures.
