@@ -15,7 +15,7 @@ progress. This file expands exactly one active implementation slice.
   redistribution-gated; its controlled reference-capture gate is `NOT_RUN` on
   arm64 macOS and remains an M8 acceptance dependency.
 
-## Present — M8 elapsed-time animation selection
+## Present — M8 elapsed-time layer planning
 
 Status: The M7 browser slice passed functional acceptance locally and in
 remote web CI. The delivered M8 pixel-grid, visibility-band, low-health tone,
@@ -45,6 +45,9 @@ frame-zero API; no wall-clock scheduling is introduced. It also exposes pure
 elapsed-milliseconds selection with explicit loop/clamp policy over the pinned
 metadata. Visible outline/glow equations, broader animation timing/content, and
 capture-backed audiovisual equivalence remain open.
+This slice also exposes elapsed-time layer-plan UV selection with explicit
+loop/clamp policy while preserving the existing frame-zero and normalized-
+progress APIs; browser scheduling remains outside the renderer boundary.
 
 ### Observable behavior
 
@@ -176,6 +179,9 @@ capture-backed audiovisual equivalence remain open.
 - `drl-render::animation_frame_index_at_elapsed` converts caller-supplied
   elapsed milliseconds through explicit `Loop` or `Clamp` policy. It rejects
   zero metadata and owns no wall clock or effect/sprite scheduling.
+- `drl-render::layer_draw_plan_at_elapsed` applies that caller-supplied elapsed
+  time to evidenced animated descriptors, keeps static descriptors on frame
+  zero, and preserves one selected UV across each sprite composite group.
 - The WGSL source is shared with a native shader-contract test that checks the
   base/emissive/mask samples, fair-lighting `max`, tint forwarding, neutral
   fallback input, alpha cutout, and output path; native tests therefore guard
@@ -253,7 +259,8 @@ capture is available.
 - Visible outline/glow equations, browser timing/effect ownership, broader
   content-specific animation timing, additional per-sprite tint sources, and
   capture-backed legacy shader equivalence remain future M8 slices; this pass
-  is intentionally limited to caller-supplied renderer-neutral timing math.
+  is intentionally limited to caller-supplied renderer-neutral timing and
+  layer-plan math.
 
 ## Next
 
@@ -263,9 +270,10 @@ sprite composites, validated browser source loading, renderer-owned GPU
 texture upload, base-color sampling, the emissive lighting floor, the legacy
 alpha cutoff, optional mask sampling, the Green Armor and Phase Device tint
 boundaries, outline-mask GPU transport, caller-supplied frame selection, and
-the evidenced player/actor/Phase Device animation metadata and progress-driven
-frame plans are covered by local checks and hosted WASM browser jobs. Continue
-M8 with visible outline/glow compositing, browser animation scheduling,
+the evidenced player/actor/Phase Device animation metadata, progress-driven
+frame plans, and elapsed-time layer plans are covered by local checks and
+hosted WASM browser jobs. Continue M8 with visible outline/glow compositing,
+browser animation scheduling,
 broader content, additional tint sources, or capture-backed measurement of
 lighting, effects, typography, and audio. Do not claim audiovisual parity from
 renderer-neutral grouping or the `NOT_RUN` legacy captures.

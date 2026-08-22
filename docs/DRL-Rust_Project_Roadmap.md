@@ -161,7 +161,8 @@ contract, fair lighting, the emissive red-channel floor, the legacy alpha
 cutoff, optional mask sampling with bounded Green Armor and Phase Device tint
 mappings, outline-mask GPU transport, pure caller-supplied animation frame
 selection, evidenced player/actor/Phase Device animation metadata, and
-progress-selected frame UV plans plus elapsed-time loop/clamp selection math.
+progress-selected frame UV plans plus elapsed-time loop/clamp selection and
+caller-supplied elapsed-time layer-plan math.
 Remaining work is visible outline/glow role-specific shader blending/layer
 compositing, additional per-sprite tint sourcing, browser animation scheduling
 and broader content metadata;
