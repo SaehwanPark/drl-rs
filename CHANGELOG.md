@@ -231,6 +231,10 @@ documented in this file.
 - Routed game death drops through the existing `Item::from_spawn_kind` factory
   and added nine-variant coverage; item payloads, IDs, events, and replay
   behavior remain unchanged.
+- Added an immutable Rust-owned definition table for the nine current item
+  spawn families and routed convenience factories through it. Ammo payloads,
+  current properties, replay V1, and protocol schemas remain unchanged; this
+  does not claim legacy numeric parity.
 - Added a versioned fixed-session snapshot codec with strict size/corruption
   handling, deterministic replay restore, and best-effort WASM localStorage
   save/load controls. The static bundle now includes a manually versioned

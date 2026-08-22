@@ -144,6 +144,11 @@ numeric parity.
 The current M9 follow-up routes all game death-drop construction through the
 existing `Item::from_spawn_kind` factory, preserving item IDs, payloads,
 positions, events, and replay behavior without adding item variants.
+The current item-definition follow-up centralizes all nine existing
+`ItemSpawnKind` families in an immutable Rust-owned table and routes the
+convenience factories through it. Supplied ammunition counts, current item
+properties, replay V1, and protocol schemas remain unchanged; legacy numeric
+parity and broader item/level migration remain open.
 The current M10 follow-ups add a versioned fixed-M4 command-history snapshot
 token with a bounded codec, transactional deterministic replay, a best-effort
 WASM `localStorage` boundary, and a versioned same-origin service-worker cache
