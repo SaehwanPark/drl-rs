@@ -128,8 +128,8 @@ does not relicense them. Legacy code is GPL; audio, music, and fonts are not
 bundled until their separate redistribution rights are recorded. See
 `docs/legacy-behavior/asset-provenance.md` and
 `docs/reference-captures/manifest.md`, which records checkout dirty-state and
-evidence classification while keeping capture promotion gated on a clean
-controlled checkout with directly observed evidence.
+evidence classification, rights, and media hashes while keeping capture
+promotion gated on a clean controlled checkout with directly observed evidence.
 
 ## Contributing
 

@@ -27,7 +27,8 @@ automated regressions, and human review.
   are `NOT_RUN` on the current arm64 macOS host because the available binary is
   Linux x86-64; the read-only manifest preflight validates this boundary and
   records checkout dirty-state and evidence classification, requiring a clean
-  checkout and directly observed evidence for promotion; see
+  checkout and directly observed evidence for promotion. The attestation gate
+  also requires explicit rights and media-hash metadata; see
   `docs/reference-captures/manifest.md`.
 - M7 browser session/WebGPU/WASM functional acceptance passed locally and in
   remote web-CI run `32538527707` for the merged M7 head; reference-scene
@@ -72,7 +73,8 @@ automated regressions, and human review.
   forwards that caller-owned selection through a bounded browser animation loop
   and rebases its presentation clock on visibility changes while broader
   content animation and capture parity remain open. A read-only capture
-  manifest preflight now validates pinned metadata and preserves `NOT_RUN`.
+  manifest preflight now validates pinned metadata, rights, media hashes, and
+  evidence status while preserving `NOT_RUN`.
 - `SPEC.md` contains the single active M8 slice; it is not a second roadmap.
 
 ## Milestones

@@ -21,6 +21,12 @@ Each record carries `evidence_classification` using the proposal vocabulary:
 `drl-rust-decision`. Promotable statuses require `observed`; a non-observed
 classification cannot become capture evidence by inference.
 
+The manifest also records `rights_status` as `not-assessed`, `cleared`,
+`unclear`, or `rejected`, plus comma-separated media hashes in the form
+`sha256:<64-hex>`. `PASS` requires `rights_status=cleared` and valid hashes;
+`READY_FOR_CONTROLLED_CAPTURE` may retain `not-assessed`, while unresolved
+records remain `INCONCLUSIVE` or `NOT_RUN`.
+
 Required scenes:
 
 | Scene | Media | Rights/acceptance |
@@ -33,5 +39,6 @@ Required scenes:
 | level transition | still + video + music cue | music rights recorded before bundling |
 
 Every record must include legacy revision, dirty state, evidence
-classification, executable SHA-256, build/config flags, front-end, viewport,
-actions, capture tool versions, hashes, and provenance.
+classification, rights status, executable SHA-256, build/config flags,
+front-end, viewport, actions, capture tool versions, media hashes, and
+provenance.

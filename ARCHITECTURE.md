@@ -173,11 +173,12 @@ types shared by core, MCP, bots, and frontends.
   determinism.
 - `scripts/check-assets.sh` verifies the imported atlas manifest.
 - `scripts/record-legacy-reference.sh` records the pinned checkout's
-  `legacy_dirty_state` and `evidence_classification`, and
+  `legacy_dirty_state`, `evidence_classification`, and `rights_status`, and
   `scripts/check-reference-capture.sh` validates those fields alongside the
-  ignored legacy-capture manifest. `NOT_RUN` is preserved for unavailable,
-  dirty, or non-observed environments; controlled Linux x86-64 evidence must
-  come from a clean checkout and be directly observed.
+  ignored legacy-capture manifest, including strict media-hash syntax.
+  `NOT_RUN` is preserved for unavailable, dirty, non-observed, or uncleared
+  environments; controlled Linux x86-64 evidence must come from a clean
+  checkout, be directly observed, and have cleared rights before `PASS`.
   `scripts/test-reference-capture.sh` covers the failure cases.
 - `crates/drl-web` native tests verify command mapping, transactional errors,
   and observation-scene construction; the WASM target check compiles WebGPU,
