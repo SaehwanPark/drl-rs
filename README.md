@@ -133,7 +133,8 @@ legacy graphics metadata; it is not a dependency of the core.
   - Animation playback, bounded scheduling, fixed-session snapshots,
     best-effort localStorage, generated-bundle service-worker cache, and the
     project-version/source-revision cache policy and manifest digest sidecar
-    recorded by release manifests.
+    recorded by release manifests, with a mocked service-worker lifecycle
+    contract.
   - Local accessible browser-support/startup diagnostics with recovery guidance;
     no telemetry or untested-browser support claim.
   - Static shell accessibility audit for names, labels, focus, and live regions;
