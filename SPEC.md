@@ -114,18 +114,17 @@ Chrome 151 WebGPU smoke playthrough          PASS (Apple Metal-3, 1280x720, DPR 
                                              start with explicit gesture-gated
                                              audio state, move, mute, restart;
                                              pixel-grid scene visible after move)
-GitHub Actions run 32542997484               PASS (prior repository + Ubuntu
-                                             WASM jobs for the fair effect
-                                             handoff; this atlas slice is not
-                                             included in that revision)
+GitHub Actions run 32545325186               PASS (repository + Ubuntu WASM
+                                             jobs for the measured atlas
+                                             descriptor slice)
 ```
 
-The existing local and remote functional gates pass for the previously merged
-browser slice. This atlas slice passes local repository, asset, WASM compile,
-and native web contract checks; a new hosted run is `NOT_RUN`. The existing
-browser run records browser/version, OS, adapter/backend, viewport, DPR, build
-revision, and audio unlock/mute state, but the fidelity-matrix comparison
-remains `NOT_RUN` until a controlled legacy capture is available.
+The local and remote functional gates pass for this slice. The remote run
+records repository and Ubuntu WASM checks; the local browser runner is
+`NOT_RUN`. The existing Chrome run records browser/version, OS,
+adapter/backend, viewport, DPR, build revision, and audio unlock/mute state,
+but the fidelity-matrix comparison remains `NOT_RUN` until a controlled legacy
+capture is available.
 
 ### Explicit non-goals
 
