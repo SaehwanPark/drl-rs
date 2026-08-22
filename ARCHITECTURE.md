@@ -38,8 +38,9 @@ types shared by core, MCP, bots, and frontends.
   wrapping seed order, replay seed identity, and aggregate-summary coherence;
   `CohortTolerances` and `CohortComparison` add pure compatible-report
   regression math. `CohortOutcomeDistribution` derives distinct outcome
-  counts and sample-normalized rates only after report validation. None of
-  these types change game execution.
+  counts and sample-normalized rates only after report validation.
+  `CohortOutcomeComparison` reports absolute per-category rate deltas for
+  compatible validated reports. None of these types change game execution.
   `drl-core::level_definition` owns the immutable standard procedural-level
   policy; callers can still supply custom `LevelGeneratorConfig` values.
 - `drl-protocol`: stable semantic boundary. Player observations now include

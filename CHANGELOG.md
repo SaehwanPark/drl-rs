@@ -22,6 +22,9 @@ documented in this file.
 - Added pure M11 cohort outcome distributions with distinct victory, death,
   turn-limit, stalled, and in-progress counts plus sample-normalized rates;
   invalid reports are rejected before projection and no balance claim is made.
+- Added pure compatible M11 outcome comparisons with absolute per-category
+  rate deltas. Policy/sample mismatches and invalid reports are rejected, and
+  the comparison does not add tolerance or significance claims.
 - Added pure M11 cohort-report integrity validation for record count, wrapping
   seed order, replay seed identity, and aggregate-summary coherence.
 - Added M11 fixed-seed cohort reports around the existing headless batch
@@ -29,7 +32,7 @@ documented in this file.
   `CohortReport` retains policy identity, aggregate metrics, and per-seed
   replay evidence for reproducible evaluation without claiming balance
   conclusions.
-- Adopted retrospective project versioning at `0.1.1` from the untagged
+- Continued retrospective project versioning at `0.1.2` from the untagged
   `0.1.0` baseline. `VERSION`, Cargo/MCP metadata, and release manifests are
   checked by the agent harness; code changes require one valid component
   increment while document- and setting-only changes do not.

@@ -1,6 +1,7 @@
 # Project versioning
 
-DRL-Rust uses the three non-negative integer components in `VERSION` as its
+DRL-Rust currently reports version `0.1.2` and uses the three non-negative
+integer components in `VERSION` as its
 canonical project version. The workspace package metadata, MCP server metadata,
 and generated release manifest must agree with that value.
 

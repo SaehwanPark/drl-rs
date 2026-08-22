@@ -137,6 +137,21 @@ impl CohortOutcomeDistribution {
   }
 }
 
+/// Absolute per-outcome rate deltas for two compatible cohort reports.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct CohortOutcomeComparison {
+  /// Absolute victory-rate delta.
+  pub victory_rate_delta: f64,
+  /// Absolute death-rate delta.
+  pub death_rate_delta: f64,
+  /// Absolute turn-limit-rate delta.
+  pub turn_limit_rate_delta: f64,
+  /// Absolute stalled-episode-rate delta.
+  pub stalled_rate_delta: f64,
+  /// Absolute in-progress-rate delta.
+  pub in_progress_rate_delta: f64,
+}
+
 /// Evidence-integrity failure for a fixed-seed cohort report.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum CohortReportError {
@@ -281,6 +296,27 @@ impl CohortReport {
   pub fn outcome_distribution(&self) -> Result<CohortOutcomeDistribution, CohortReportError> {
     self.validate()?;
     Ok(CohortOutcomeDistribution::from_records(&self.records))
+  }
+
+  /// Compares outcome rates for compatible, integrity-checked reports.
+  ///
+  /// Compatibility requires the same policy identity and complete sample
+  /// definition. Invalid evidence returns `None`; no episodes are rerun and
+  /// the deltas do not imply a balance result or statistical significance.
+  #[must_use]
+  pub fn compare_outcomes(&self, baseline: &Self) -> Option<CohortOutcomeComparison> {
+    if self.policy_name != baseline.policy_name || self.config != baseline.config {
+      return None;
+    }
+    let candidate = self.outcome_distribution().ok()?;
+    let baseline = baseline.outcome_distribution().ok()?;
+    Some(CohortOutcomeComparison {
+      victory_rate_delta: (candidate.victory_rate() - baseline.victory_rate()).abs(),
+      death_rate_delta: (candidate.death_rate() - baseline.death_rate()).abs(),
+      turn_limit_rate_delta: (candidate.turn_limit_rate() - baseline.turn_limit_rate()).abs(),
+      stalled_rate_delta: (candidate.stalled_rate() - baseline.stalled_rate()).abs(),
+      in_progress_rate_delta: (candidate.in_progress_rate() - baseline.in_progress_rate()).abs(),
+    })
   }
 
   /// Compares this report against a baseline with caller-declared tolerances.

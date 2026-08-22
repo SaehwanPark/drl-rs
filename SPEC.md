@@ -252,14 +252,23 @@ canvas keyboard focus, diagnostics semantics, inventory labeling, and a
 summary for the support disclosure. It does not claim full WCAG conformance,
 screen-reader acceptance, or dynamic keyboard-journey coverage.
 
-## Present — M11 cohort outcome distribution
+## Delivered — M11 cohort outcome distribution
 
-Status: the active slice adds a pure `CohortReport::outcome_distribution`
+Status: this delivered slice adds a pure `CohortReport::outcome_distribution`
 projection over retained episode records. It preserves distinct counts for
 victory, death, turn-limit, stalled, and still-in-progress outcomes, plus
 sample-size-normalized rates. The projection requires a valid cohort report,
 does not rerun episodes or mutate evidence, and does not claim balance,
 difficulty, or statistical significance.
+
+## Present — M11 compatible outcome comparison
+
+Status: the active slice adds a pure `CohortReport::compare_outcomes`
+projection for reports with the same policy identity and complete sample
+definition. It returns absolute rate deltas for every retained outcome
+category and rejects incompatible or invalid reports through the existing
+integrity gate. It does not add tolerance policy, rerun episodes, or claim
+statistical significance or balance conclusions.
 
 ### Observable behavior
 
@@ -288,6 +297,9 @@ difficulty, or statistical significance.
 - `CohortReport::outcome_distribution` derives deterministic outcome counts and
   rates only after integrity validation; it keeps stalled and in-progress
   records distinct from turn-limit episodes without changing `BatchSummary`.
+- `CohortReport::compare_outcomes` compares compatible validated reports with
+  absolute victory, death, turn-limit, stalled, and in-progress rate deltas;
+  policy/sample mismatches and invalid evidence return no comparison.
 - `drl-audio` maps events to semantic cues. The WASM mixer uses generated tones,
   mute/volume settings, and user-gesture unlock; blocked audio never blocks
   gameplay.
@@ -563,14 +575,14 @@ scripts/test-reference-capture.sh           PASS (fixture coverage)
 scripts/check-release-manifest.sh           PASS (after `scripts/build-web.sh`)
 scripts/check-browser-diagnostics.sh        PASS (via `scripts/check-web.sh`)
 scripts/check-browser-accessibility.sh      PASS (via `scripts/check-web.sh`)
-scripts/check-version.sh                    PASS (`0.1.1` projections and transition)
+scripts/check-version.sh                    PASS (`0.1.2` projections and transition)
 cargo check --locked -p drl-web --target wasm32-unknown-unknown  PASS
 cargo test -p drl-render                      PASS (pixel-grid, lighting, tone, and timeline contracts)
 cargo test -p drl-core --test batch_simulation PASS (fixed-seed cohort sample,
                                              identity, wrapping, replay
                                              determinism, tolerance-gate,
                                              integrity, and outcome-distribution
-                                             contracts)
+                                             and outcome-comparison contracts)
 cargo test -p drl-assets                      PASS (slot mappings, atlas bounds,
                                              layer sets, roles, descriptor order,
                                              UVs)
@@ -615,14 +627,16 @@ capture is available.
   animation timing, additional per-sprite tint sources, and capture-backed
   legacy shader equivalence remain future M8 slices. The M11 cohort and
   tolerance/integrity boundaries intentionally record and validate evidence,
-  declared deltas, and outcome distributions without claiming a balance result,
-  difficulty target, or statistical significance. Static browser accessibility
-  is a shell contract, not full WCAG or screen-reader acceptance.
+  declared deltas, outcome distributions, and compatible outcome comparisons
+  without claiming a balance result, difficulty target, or statistical
+  significance. Static browser accessibility is a shell contract, not full
+  WCAG or screen-reader acceptance.
 
 ## Next
 
-The fixed-seed cohort report, integrity gate, and outcome-distribution view are
-covered by focused headless tests; broader M11 balance/evaluation work remains.
+The fixed-seed cohort report, integrity gate, outcome-distribution view, and
+compatible outcome comparison are covered by focused headless tests; broader
+M11 balance/evaluation work remains.
 The pixel-scale
 viewport,
 atlas metadata, UV geometry, draw-plan source
