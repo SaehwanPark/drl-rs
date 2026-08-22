@@ -358,17 +358,35 @@ pub fn particle_burst_range_sample(range: [f32; 2], unit_sample: f32) -> f32 {
   range[0] + unit_sample * (range[1] - range[0])
 }
 
-/// Maps a caller-rounded particle world position to the legacy decal cell.
+/// The cell and pixel coordinates used by a legacy particle decal callback.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct ParticleDecalPlacement {
+  pub cell: [i32; 2],
+  pub pixel: [i32; 2],
+}
+
+/// Maps a caller-rounded particle world position to legacy decal placement.
 ///
 /// The source callback adds 16 pixels to each rounded position and uses
 /// truncating integer division by 32, producing one-based cell coordinates.
 /// Checked addition rejects positions whose offset cannot be represented;
 /// map bounds, liquid/block flags, and decal storage remain caller-owned.
 #[must_use]
+pub fn particle_decal_placement_at_rounded_world(
+  rounded_world_position: [i32; 2],
+) -> Option<ParticleDecalPlacement> {
+  let pixel_x = rounded_world_position[0].checked_add(16)?;
+  let pixel_y = rounded_world_position[1].checked_add(16)?;
+  Some(ParticleDecalPlacement {
+    cell: [pixel_x / 32, pixel_y / 32],
+    pixel: [pixel_x, pixel_y],
+  })
+}
+
+/// Returns only the one-based cell from the legacy decal placement.
+#[must_use]
 pub fn particle_decal_cell_at_rounded_world(rounded_world_position: [i32; 2]) -> Option<[i32; 2]> {
-  let x = rounded_world_position[0].checked_add(16)?.checked_div(32)?;
-  let y = rounded_world_position[1].checked_add(16)?.checked_div(32)?;
-  Some([x, y])
+  particle_decal_placement_at_rounded_world(rounded_world_position).map(|placement| placement.cell)
 }
 
 /// Visibility-derived presentation bands for deterministic scene shading.
@@ -2456,6 +2474,24 @@ mod tests {
   #[test]
   fn particle_decal_cell_rejects_offset_overflow() {
     assert_eq!(particle_decal_cell_at_rounded_world([i32::MAX, 0]), None);
+  }
+
+  #[test]
+  fn particle_decal_placement_preserves_cell_and_pixel_targets() {
+    assert_eq!(
+      particle_decal_placement_at_rounded_world([48, 80]),
+      Some(ParticleDecalPlacement {
+        cell: [2, 3],
+        pixel: [64, 96],
+      })
+    );
+    assert_eq!(
+      particle_decal_placement_at_rounded_world([-16, -16]),
+      Some(ParticleDecalPlacement {
+        cell: [0, 0],
+        pixel: [0, 0],
+      })
+    );
   }
 
   #[test]

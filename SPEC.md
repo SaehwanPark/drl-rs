@@ -362,12 +362,18 @@ for caller-owned unit samples. It preserves reversed bounds and does not clamp
 or own the random generator; particle burst orchestration, decals, engine
 integration, and rendering remain outside the helper.
 
-## Present — M8 particle-decal cell mapping contract
+## Delivered — M8 particle-decal cell mapping contract
 
-Status: the active slice exposes the source-derived mapping from a caller-
+Status: the delivered slice exposes the source-derived mapping from a caller-
 rounded particle world position to a one-based decal cell. It preserves the
 16-pixel offset and truncating 32-pixel division while leaving map bounds,
 liquid/block flags, and decal storage to the caller.
+
+## Present — M8 particle-decal placement contract
+
+Status: the active slice retains both callback outputs—the one-based cell and
+the pixel-space insertion position—from a caller-rounded particle position.
+Eligibility, decal selection/storage, and rendering remain outside the helper.
 
 ### Observable behavior
 
@@ -417,6 +423,9 @@ liquid/block flags, and decal storage to the caller.
   caller-rounded world coordinate and applies truncating division by 32 to
   produce one-based decal-cell coordinates. It rejects offset overflow and
   owns no map, flag, or decal storage state.
+- `drl_render::particle_decal_placement_at_rounded_world` returns the same
+  one-based cell together with the offset pixel position used for decal
+  insertion; checked offset arithmetic rejects unrepresentable inputs.
 - Generated service-worker bundles use a cache name containing `v1`, the
   canonical project version, and the first 12 source-revision characters; the
   release manifest rejects mismatches without broadening offline claims.
@@ -721,7 +730,7 @@ scripts/check-release-manifest.sh           PASS (after `scripts/build-web.sh`, 
 scripts/test-service-worker.sh               PASS (mocked lifecycle/fetch contract)
 scripts/check-browser-diagnostics.sh        PASS (via `scripts/check-web.sh`)
 scripts/check-browser-accessibility.sh      PASS (via `scripts/check-web.sh`)
-scripts/check-version.sh                    PASS (`0.2.6` projections and transition)
+scripts/check-version.sh                    PASS (`0.2.7` projections and transition)
 cargo check --locked -p drl-web --target wasm32-unknown-unknown  PASS
 cargo test -p drl-render                      PASS (pixel-grid, lighting, tone,
                                              timeline, and particle contracts)
@@ -795,8 +804,8 @@ hardening work remains. The telemetry comparison and tolerance gate are
 covered by focused batch tests. The particle-burst direction and range
 contracts are covered by renderer tests; random generator ownership,
 particle-engine integration, and capture-backed visual parity remain open.
-The decal-cell mapping is covered by renderer tests; map bounds, liquid/block
-eligibility, decal selection, storage, and rendering remain open.
+The decal-cell mapping and placement are covered by renderer tests; map bounds,
+liquid/block eligibility, decal selection, storage, and rendering remain open.
 The pixel-scale
 viewport,
 atlas metadata, UV geometry, draw-plan source
