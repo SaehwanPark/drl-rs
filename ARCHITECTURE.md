@@ -168,14 +168,16 @@ types shared by core, MCP, bots, and frontends.
   texture compositing, post-processing, or capture parity.
 - `POST_PROCESS_BLUR_DECLARED_WEIGHTS`, `POST_PROCESS_BLUR_WEIGHTS`,
   `post_process_blur_taps`, `post_process_blur_rgba`, `post_process_glow_color`,
-  and
-  `post_process_lut_coordinate` preserve only the pinned shader's fixed blur
-  constants and pure RGB/coordinate equations. The declared entries 3–4 are
+  `post_process_lut_coordinate`, and `post_process_pass_plan` preserve only
+  the pinned shader's fixed blur constants, pure RGB/coordinate equations, and
+  logical direct/capture pass order. The declared entries 3–4 are
   retained as observed artifacts because the source indexes by `abs(i)`; the
   effective exported weights cover center/one-pixel/two-pixel offsets. These
   helpers do not own framebuffers, blur sampling, LUT textures, outline
-  blending, or capture parity. The reducer intentionally does not renormalize
-  RGB or clamp values and takes alpha only from the center sample.
+  blending, or capture parity. The pass plan distinguishes direct scene draw
+  from captured scene input and carries only caller-supplied glow/LUT gates. The
+  reducer intentionally does not renormalize RGB or clamp values and takes
+  alpha only from the center sample.
 - `PresentationStep::effects` is computed at the command boundary from the
   returned event list and visible actor sets. Ordinary effects require both
   endpoints; terminal hit/death effects use pre-step visibility. Rejected
