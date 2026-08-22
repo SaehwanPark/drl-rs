@@ -152,6 +152,38 @@ pub struct CohortOutcomeComparison {
   pub in_progress_rate_delta: f64,
 }
 
+/// Caller-declared absolute tolerance shared by every outcome-rate delta.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct CohortOutcomeTolerances {
+  /// Maximum permitted absolute delta for any outcome rate.
+  pub max_rate_delta: f64,
+}
+
+impl CohortOutcomeTolerances {
+  /// Creates an outcome-rate regression tolerance.
+  #[must_use]
+  pub const fn new(max_rate_delta: f64) -> Self {
+    Self { max_rate_delta }
+  }
+
+  fn is_valid(self) -> bool {
+    self.max_rate_delta.is_finite() && self.max_rate_delta >= 0.0
+  }
+}
+
+impl CohortOutcomeComparison {
+  /// Returns whether every outcome-rate delta is within the caller's bound.
+  #[must_use]
+  pub fn within_tolerance(self, tolerances: CohortOutcomeTolerances) -> bool {
+    tolerances.is_valid()
+      && self.victory_rate_delta <= tolerances.max_rate_delta
+      && self.death_rate_delta <= tolerances.max_rate_delta
+      && self.turn_limit_rate_delta <= tolerances.max_rate_delta
+      && self.stalled_rate_delta <= tolerances.max_rate_delta
+      && self.in_progress_rate_delta <= tolerances.max_rate_delta
+  }
+}
+
 /// Evidence-integrity failure for a fixed-seed cohort report.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum CohortReportError {

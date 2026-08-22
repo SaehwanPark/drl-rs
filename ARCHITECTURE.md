@@ -40,7 +40,8 @@ types shared by core, MCP, bots, and frontends.
   regression math. `CohortOutcomeDistribution` derives distinct outcome
   counts and sample-normalized rates only after report validation.
   `CohortOutcomeComparison` reports absolute per-category rate deltas for
-  compatible validated reports. None of these types change game execution.
+  compatible validated reports, and `CohortOutcomeTolerances` applies one
+  caller-owned finite non-negative bound without changing game execution.
   `drl-core::level_definition` owns the immutable standard procedural-level
   policy; callers can still supply custom `LevelGeneratorConfig` values.
 - `drl-protocol`: stable semantic boundary. Player observations now include

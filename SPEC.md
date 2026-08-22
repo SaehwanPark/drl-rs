@@ -261,14 +261,22 @@ sample-size-normalized rates. The projection requires a valid cohort report,
 does not rerun episodes or mutate evidence, and does not claim balance,
 difficulty, or statistical significance.
 
-## Present — M11 compatible outcome comparison
+## Delivered — M11 compatible outcome comparison
 
-Status: the active slice adds a pure `CohortReport::compare_outcomes`
+Status: this delivered slice adds a pure `CohortReport::compare_outcomes`
 projection for reports with the same policy identity and complete sample
 definition. It returns absolute rate deltas for every retained outcome
 category and rejects incompatible or invalid reports through the existing
 integrity gate. It does not add tolerance policy, rerun episodes, or claim
 statistical significance or balance conclusions.
+
+## Present — M11 outcome-rate tolerance gate
+
+Status: the active slice adds `CohortOutcomeTolerances` and a pure
+`CohortOutcomeComparison::within_tolerance` gate. Callers provide one finite,
+non-negative maximum absolute rate delta shared by all outcome categories.
+Invalid thresholds return `false`; the gate does not mutate reports, rerun
+episodes, or claim statistical significance or balance conclusions.
 
 ### Observable behavior
 
@@ -300,6 +308,9 @@ statistical significance or balance conclusions.
 - `CohortReport::compare_outcomes` compares compatible validated reports with
   absolute victory, death, turn-limit, stalled, and in-progress rate deltas;
   policy/sample mismatches and invalid evidence return no comparison.
+- `CohortOutcomeComparison::within_tolerance` applies a caller-owned finite,
+  non-negative maximum absolute rate delta to every outcome category and
+  rejects invalid thresholds without changing the comparison.
 - `drl-audio` maps events to semantic cues. The WASM mixer uses generated tones,
   mute/volume settings, and user-gesture unlock; blocked audio never blocks
   gameplay.
@@ -575,14 +586,15 @@ scripts/test-reference-capture.sh           PASS (fixture coverage)
 scripts/check-release-manifest.sh           PASS (after `scripts/build-web.sh`)
 scripts/check-browser-diagnostics.sh        PASS (via `scripts/check-web.sh`)
 scripts/check-browser-accessibility.sh      PASS (via `scripts/check-web.sh`)
-scripts/check-version.sh                    PASS (`0.1.2` projections and transition)
+scripts/check-version.sh                    PASS (`0.1.3` projections and transition)
 cargo check --locked -p drl-web --target wasm32-unknown-unknown  PASS
 cargo test -p drl-render                      PASS (pixel-grid, lighting, tone, and timeline contracts)
 cargo test -p drl-core --test batch_simulation PASS (fixed-seed cohort sample,
                                              identity, wrapping, replay
                                              determinism, tolerance-gate,
                                              integrity, and outcome-distribution
-                                             and outcome-comparison contracts)
+                                             outcome-comparison, and
+                                             outcome-tolerance contracts)
 cargo test -p drl-assets                      PASS (slot mappings, atlas bounds,
                                              layer sets, roles, descriptor order,
                                              UVs)
@@ -634,9 +646,9 @@ capture is available.
 
 ## Next
 
-The fixed-seed cohort report, integrity gate, outcome-distribution view, and
-compatible outcome comparison are covered by focused headless tests; broader
-M11 balance/evaluation work remains.
+The fixed-seed cohort report, integrity gate, outcome-distribution view,
+compatible outcome comparison, and outcome-rate tolerance gate are covered by
+focused headless tests; broader M11 balance/evaluation work remains.
 The pixel-scale
 viewport,
 atlas metadata, UV geometry, draw-plan source
