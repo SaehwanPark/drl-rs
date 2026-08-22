@@ -420,6 +420,17 @@ fn event_is_observable(
     return true;
   }
   let ids = event_entity_ids(event);
+  if matches!(
+    event,
+    GameEvent::DamageApplied { .. } | GameEvent::ActorDied { .. }
+  ) {
+    return ids.into_iter().flatten().any(|entity_id| {
+      before
+        .visible_actors
+        .iter()
+        .any(|actor| actor.id == entity_id)
+    });
+  }
   ids.into_iter().flatten().any(|entity_id| {
     let visible_before = before
       .visible_actors
@@ -433,7 +444,8 @@ fn event_is_observable(
   })
 }
 
-/// Builds effect spans using only actor identities visible at both step endpoints.
+/// Builds effect spans using endpoint-visible actors and pre-step visible
+/// targets for terminal hit/death events.
 ///
 /// Direct player transitions remain observable even when no actor identity is
 /// present in the event. Hidden actor events are excluded before timing spans
@@ -653,6 +665,102 @@ mod tests {
     visible_after.visible_actors.push(transient_actor);
     assert!(
       effect_timeline_for_observations(&hidden_before, &visible_after, &[hidden_event]).is_empty()
+    );
+  }
+
+  #[test]
+  fn observed_effect_timeline_preserves_visible_terminal_events() {
+    let game = Game::new_arena(42, 12, 10).expect("arena");
+    let observation = game.observe_player();
+    let player_id = observation
+      .visible_actors
+      .iter()
+      .find(|actor| actor.is_player)
+      .expect("player actor")
+      .id;
+    let mut visible_before = observation.clone();
+    let mut defeated_actor = visible_before
+      .visible_actors
+      .iter()
+      .find(|actor| actor.is_player)
+      .expect("player actor")
+      .clone();
+    defeated_actor.id = EntityId::new(999);
+    defeated_actor.is_player = false;
+    defeated_actor.name = "defeated actor".to_string();
+    defeated_actor.monster_kind = Some(drl_protocol::MonsterKind::Imp);
+    visible_before.visible_actors.push(defeated_actor);
+    let hidden_after = observation.clone();
+    let defeated_events = [
+      GameEvent::DamageApplied {
+        target_id: EntityId::new(999),
+        amount: 4,
+        remaining_hp: 0,
+        source: drl_protocol::DamageSource::Actor(EntityId::new(1)),
+      },
+      GameEvent::ActorDied {
+        entity_id: EntityId::new(999),
+        cause: drl_protocol::DeathCause::MeleeAttack {
+          attacker_id: EntityId::new(1),
+        },
+      },
+    ];
+    assert_eq!(
+      effect_timeline_for_observations(&visible_before, &hidden_after, &defeated_events),
+      vec![
+        EffectSpan {
+          effect: PresentationEffect::Hit,
+          start_tick: 0,
+          duration_ticks: 1,
+        },
+        EffectSpan {
+          effect: PresentationEffect::Death,
+          start_tick: 1,
+          duration_ticks: 4,
+        },
+      ]
+    );
+
+    let player_death_events = [
+      GameEvent::DamageApplied {
+        target_id: player_id,
+        amount: 50,
+        remaining_hp: 0,
+        source: drl_protocol::DamageSource::Actor(EntityId::new(1)),
+      },
+      GameEvent::ActorDied {
+        entity_id: player_id,
+        cause: drl_protocol::DeathCause::MeleeAttack {
+          attacker_id: EntityId::new(1),
+        },
+      },
+    ];
+    let player_hidden_after = drl_protocol::PlayerObservation {
+      visible_actors: Vec::new(),
+      ..observation
+    };
+    assert_eq!(
+      effect_timeline_for_observations(
+        &player_hidden_after,
+        &player_hidden_after,
+        &player_death_events
+      ),
+      Vec::<EffectSpan>::new()
+    );
+    assert_eq!(
+      effect_timeline_for_observations(&hidden_after, &player_hidden_after, &player_death_events),
+      vec![
+        EffectSpan {
+          effect: PresentationEffect::Hit,
+          start_tick: 0,
+          duration_ticks: 1,
+        },
+        EffectSpan {
+          effect: PresentationEffect::Death,
+          start_tick: 1,
+          duration_ticks: 4,
+        },
+      ]
     );
   }
 }

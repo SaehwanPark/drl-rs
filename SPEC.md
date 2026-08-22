@@ -71,10 +71,11 @@ handoff never advances simulation and is not a capture-backed parity claim.
   `PresentationEffect` a fixed logical duration. Spans are sequential and
   deterministic for identical event lists.
 - Successful `BrowserSession::submit` results carry the corresponding ordered
-  `EffectSpan` list in `PresentationStep::effects`, filtered against actor
-  identities visible before or after the step; direct player transitions stay
-  observable. Rejected commands carry no presentation step and do not mutate
-  the session.
+  `EffectSpan` list in `PresentationStep::effects`; ordinary actor effects
+  require endpoint visibility, while terminal hit/death targets use pre-step
+  visibility so visible outcomes survive removal. Direct player transitions
+  stay observable. Rejected commands carry no presentation step and do not
+  mutate the session.
 - Presentation ticks are frontend timing units only; tab visibility, resize,
   audio, and animation work cannot submit a simulation command.
 
