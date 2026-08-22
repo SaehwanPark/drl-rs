@@ -76,8 +76,8 @@ automated regressions, and human review.
   content animation and capture parity remain open. A read-only capture
   manifest preflight now validates pinned metadata, rights, media hashes, and
   evidence status while preserving `NOT_RUN`.
-- `SPEC.md` contains the single active M11 telemetry-comparison-and-tolerance
-  slice; it is not a second roadmap.
+- `SPEC.md` contains the single active M8 particle-burst-direction slice; it is
+  not a second roadmap.
 - The first bounded M11 cohort slice adds explicit fixed-seed sample
   definitions and reports around the existing headless batch runner. Reports
   retain policy identity, aggregate metrics, and per-seed replay evidence;
@@ -88,6 +88,10 @@ automated regressions, and human review.
   rate deltas after integrity validation; the outcome-tolerance follow-up
   applies one finite non-negative bound to every category; balance conclusions,
   difficulty targets, and statistical interpretation remain open.
+- Delivered M11 telemetry projections and compatible comparisons expose
+  validated shot-accuracy, damage, kill, pickup, and item-use totals with
+  caller-owned descriptive deltas and tolerances; they do not infer balance or
+  statistical significance.
 - Delivered M11 integrity validation checks cohort record count, wrapping seed
   order, replay seed identity, and aggregate-summary coherence before evidence
   is used for regression comparisons; it does not infer balance or significance.
@@ -202,7 +206,7 @@ stdio runner, and replay-verified virtual-agent tests.
   capture-backed reference-scene comparison; legacy capture execution remains
   `NOT_RUN` on this host.
 
-### M8 — Audiovisual parity (pixel-scale and outline-compositing slices delivered; parity planned)
+### M8 — Audiovisual parity (pixel-scale, outline-compositing, and particle-direction slices delivered; parity planned)
 
 The first bounded pixel-scale layout slice is delivered: measure-free,
 observation-independent viewport math chooses centered integer square cells for
@@ -264,6 +268,9 @@ pinned active quadratic envelope and zero-at-expiry guard. Random frequencies,
 offsets, strength/direction scaling, scheduling, and rendering remain open.
 The current follow-up also adds caller-owned particle-burst origin math for the
 pinned one-based 32-pixel cell-center conversion. Direction, random burst
+sampling, decals, particle-engine integration, and rendering remain open. The
+delivered particle-direction follow-up adds caller-owned XY normalization,
+zero-vector handling, and positive distance-scale arc-to-Z adjustment; random
 sampling, decals, particle-engine integration, and rendering remain open.
 The current M9 content slice adds a Rust-owned `MonsterKind::definition()` table
 for the four implemented archetypes and routes actor factories/generated spawns

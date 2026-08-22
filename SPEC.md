@@ -340,12 +340,20 @@ accuracy, damage, kills, pickups, and item use. It is descriptive evaluation
 evidence only; it does not infer balance, difficulty, or statistical
 significance.
 
-## Present — M11 telemetry comparison and tolerance gate
+## Delivered — M11 telemetry comparison and tolerance gate
 
-Status: the active slice compares compatible, integrity-checked telemetry
+Status: the delivered slice compares compatible, integrity-checked telemetry
 projections and applies caller-owned finite tolerances to shot accuracy and
 per-episode averages. It reports descriptive deltas only and does not infer
 balance, difficulty, or statistical significance.
+
+## Present — M8 particle-burst direction contract
+
+Status: the active slice exposes the source-derived direction calculation for
+one particle-burst sample. It normalizes requested XY direction, clears XY for
+zero-length requests, and applies the positive distance-scale arc adjustment to
+Z. Random range selection, decals, particle-engine integration, and rendering
+remain outside the helper.
 
 ### Observable behavior
 
@@ -380,6 +388,14 @@ balance, difficulty, or statistical significance.
 - `CohortOutcomeComparison::within_tolerance` applies a caller-owned finite,
   non-negative maximum absolute rate delta to every outcome category and
   rejects invalid thresholds without changing the comparison.
+- `CohortReport::compare_telemetry` compares compatible validated reports with
+  absolute shot-accuracy and per-episode average deltas; its separate
+  caller-owned tolerances reject invalid bounds and do not infer balance or
+  statistical significance.
+- `drl_render::particle_burst_direction` normalizes requested XY direction,
+  clears only XY for a zero request, and applies `emitter_z * arc / scale` for
+  positive distance scales. It owns no random sampling, decals, engine, or
+  rendering state.
 - Generated service-worker bundles use a cache name containing `v1`, the
   canonical project version, and the first 12 source-revision characters; the
   release manifest rejects mismatches without broadening offline claims.
@@ -684,9 +700,10 @@ scripts/check-release-manifest.sh           PASS (after `scripts/build-web.sh`, 
 scripts/test-service-worker.sh               PASS (mocked lifecycle/fetch contract)
 scripts/check-browser-diagnostics.sh        PASS (via `scripts/check-web.sh`)
 scripts/check-browser-accessibility.sh      PASS (via `scripts/check-web.sh`)
-scripts/check-version.sh                    PASS (`0.2.3` projections and transition)
+scripts/check-version.sh                    PASS (`0.2.4` projections and transition)
 cargo check --locked -p drl-web --target wasm32-unknown-unknown  PASS
-cargo test -p drl-render                      PASS (pixel-grid, lighting, tone, and timeline contracts)
+cargo test -p drl-render                      PASS (pixel-grid, lighting, tone,
+                                             timeline, and particle contracts)
 cargo test -p drl-core --test batch_simulation PASS (fixed-seed cohort sample,
                                              identity, wrapping, replay
                                              determinism, tolerance-gate,
@@ -753,7 +770,10 @@ focused headless tests. The project-versioned cache policy is covered by
 static/build checks; the manifest-sidecar slice is covered by the
 release-manifest checker; the service-worker lifecycle and source-identity
 slices are covered by deterministic checks; broader offline and release-
-hardening work remains.
+The telemetry comparison and tolerance gate are covered by focused batch
+tests. The particle-burst direction contract is covered by renderer tests;
+random sampling, decals, particle-engine integration, and capture-backed
+visual parity remain open.
 The pixel-scale
 viewport,
 atlas metadata, UV geometry, draw-plan source

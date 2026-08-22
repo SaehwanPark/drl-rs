@@ -71,6 +71,7 @@ types shared by core, MCP, bots, and frontends.
   `missile_ray_sample_distance_at_index` arithmetic,
   `screen_shake_fade_at_elapsed` arithmetic,
   `particle_burst_origin_at_legacy_cell` arithmetic,
+  `particle_burst_direction` normalization and arc-to-Z arithmetic,
   post-process glow/LUT coordinate math and pure blur-tap plans,
   event-ordered `EffectSpan` timing, and renderer-neutral `LayerDraw` plans
   carrying atlas layers, imported source metadata, explicit layer roles, fair
@@ -168,6 +169,10 @@ types shared by core, MCP, bots, and frontends.
   `((cell - 1) * 32 + 16)` centered origin and zero Z coordinate with checked
   signed arithmetic. It does not convert current zero-based positions or spawn,
   randomize, configure, or render particles.
+- `particle_burst_direction` preserves the legacy requested-XY normalization,
+  zero-vector handling, and positive distance-scale `emitter_z * arc / scale`
+  adjustment. It does not select random ranges, decals, engine state, or
+  rendering output.
 - `MonsterKind::definition()` is the single current Rust-owned definition for
   the four implemented archetypes. Actor factories and generated spawns read
   it, while legacy Lua values remain reference evidence rather than imported

@@ -30,7 +30,7 @@ replays, and regression testing.
     shot accuracy, damage, kill, pickup, and item-use totals/rates without
     inferring balance conclusions.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.3`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.4`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:
@@ -43,8 +43,9 @@ replays, and regression testing.
     floor, optional outline-mask compositing, and animation frame
     metadata/selection.
   - Pure contracts cover effect timing, low-health tone/pulse, explosion marks,
-    movement and missile progress, screen-shake fade, particle origins, and
-    post-process glow/LUT math without claiming full backend fidelity.
+    movement and missile progress, screen-shake fade, particle origins and
+    burst directions, and post-process glow/LUT math without claiming full
+    backend fidelity.
 - Staged work:
   - Full audiovisual equivalence, broader content migration, PWA persistence,
     and support for other browsers remain roadmap work.
