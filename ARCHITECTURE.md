@@ -43,8 +43,8 @@ types shared by core, MCP, bots, and frontends.
   carrying atlas layers, imported source metadata, explicit layer roles, fair
   lighting, evidence-backed Green Armor/Phase Device colorization tint,
   optional outline-mask transport, evidenced sprite animation metadata,
-  caller-supplied progress-selected UVs, elapsed-time playback math, pixel
-  destinations, and normalized
+  caller-supplied progress-selected UVs, elapsed-time playback math and layer
+  plans, pixel destinations, and normalized
   UVs;
   `sprite_composite_plan`
   groups complete role sets for a future backend. It consumes player
@@ -91,6 +91,9 @@ types shared by core, MCP, bots, and frontends.
 - `animation_frame_index_at_elapsed` maps caller-supplied elapsed milliseconds
   through explicit loop or clamp policy over validated asset metadata. It owns
   no wall clock, browser scheduling, or sprite/effect association.
+- `layer_draw_plan_at_elapsed` applies that selection to animated descriptors
+  while keeping static descriptors on frame zero and preserving one UV across
+  each grouped sprite. It remains caller-driven and renderer-neutral.
 - Atlas descriptors convert the pinned legacy one-based, sixteen-column
   sprite-sheet slots to bounded 32-pixel cells. Dimensions are metadata from
   the imported PNGs; no image decoding or texture upload occurs in this crate.
@@ -130,8 +133,8 @@ types shared by core, MCP, bots, and frontends.
   additional per-sprite tint sources and visible outline/glow compositing remain
   later boundaries. Player/current actor/Phase Device descriptor metadata is
   carried through layer plans and grouped composites; callers may provide
-  normalized progress or elapsed-time playback for pure UV selection, while
-  wall-clock scheduling remains a frontend responsibility. The WGSL pass
+  normalized progress or elapsed-time playback for pure UV selection and layer
+  planning, while wall-clock scheduling remains a frontend responsibility. The WGSL pass
   discards base fragments below the verified `0.1`
   alpha cutoff before source-alpha blending. The WGSL source is defined at the
   crate boundary so a native contract test can guard its binding and

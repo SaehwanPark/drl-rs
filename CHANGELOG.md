@@ -135,6 +135,9 @@ documented in this file.
 - Added pure elapsed-millisecond animation frame selection with explicit loop
   and clamp policies over validated sprite metadata; callers retain ownership
   of clocks, browser scheduling, and sprite/effect association.
+- Added caller-supplied elapsed-time layer planning: animated descriptors select
+  frame UVs under explicit playback policy, static descriptors remain on frame
+  zero, and grouped composites retain one selected UV per sprite.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch

@@ -404,6 +404,22 @@ impl RenderScene {
   }
 }
 
+#[derive(Debug, Clone, Copy)]
+enum FrameSelection {
+  Static,
+  Progress(f32),
+  Elapsed {
+    elapsed_ms: u64,
+    playback: AnimationPlayback,
+  },
+}
+
+impl FrameSelection {
+  const fn is_dynamic(self) -> bool {
+    !matches!(self, Self::Static)
+  }
+}
+
 fn append_layer_draws(
   plan: &mut Vec<LayerDraw>,
   sprite_index: u32,
@@ -411,13 +427,17 @@ fn append_layer_draws(
   lighting: LightingBand,
   colorization_tint: [u8; 4],
   destination: Option<PixelRect>,
-  progress: Option<f32>,
+  selection: FrameSelection,
 ) -> Option<()> {
   let Some(destination) = destination else {
     return Some(());
   };
-  let Some(uv) = descriptor_frame_uv(descriptor, progress) else {
-    return if progress.is_some() { None } else { Some(()) };
+  let Some(uv) = descriptor_frame_uv(descriptor, selection) else {
+    return if selection.is_dynamic() {
+      None
+    } else {
+      Some(())
+    };
   };
   plan.extend(descriptor.layers.iter().copied().map(|layer| LayerDraw {
     sprite_index,
@@ -434,9 +454,21 @@ fn append_layer_draws(
   Some(())
 }
 
-fn descriptor_frame_uv(descriptor: SpriteDescriptor, progress: Option<f32>) -> Option<SpriteUv> {
-  let frame_index = match (descriptor.animation, progress) {
-    (Some(animation), Some(progress)) => animation_frame_index(progress, animation.frame_count)?,
+fn descriptor_frame_uv(
+  descriptor: SpriteDescriptor,
+  selection: FrameSelection,
+) -> Option<SpriteUv> {
+  let frame_index = match (descriptor.animation, selection) {
+    (Some(animation), FrameSelection::Progress(progress)) => {
+      animation_frame_index(progress, animation.frame_count)?
+    }
+    (
+      Some(animation),
+      FrameSelection::Elapsed {
+        elapsed_ms,
+        playback,
+      },
+    ) => animation_frame_index_at_elapsed(animation, elapsed_ms, playback)?,
     _ => 0,
   };
   let frame = descriptor.frame_rect(frame_index)?;
@@ -447,7 +479,7 @@ fn descriptor_frame_uv(descriptor: SpriteDescriptor, progress: Option<f32>) -> O
 fn build_layer_draw_plan(
   scene: &RenderScene,
   viewport: PixelViewport,
-  progress: Option<f32>,
+  selection: FrameSelection,
 ) -> Option<Vec<LayerDraw>> {
   let mut plan = Vec::new();
   let mut sprite_index = 0_u32;
@@ -462,7 +494,7 @@ fn build_layer_draw_plan(
       tile.lighting_band(),
       NEUTRAL_COLORIZATION_TINT,
       viewport.tile_rect(tile.position),
-      progress,
+      selection,
     )?;
     sprite_index = sprite_index.saturating_add(1);
   }
@@ -474,7 +506,7 @@ fn build_layer_draw_plan(
       LightingBand::Visible,
       item.colorization_tint,
       viewport.tile_rect(item.position),
-      progress,
+      selection,
     )?;
     sprite_index = sprite_index.saturating_add(1);
   }
@@ -486,7 +518,7 @@ fn build_layer_draw_plan(
       LightingBand::Visible,
       actor.colorization_tint,
       viewport.tile_rect(actor.position),
-      progress,
+      selection,
     )?;
     sprite_index = sprite_index.saturating_add(1);
   }
@@ -502,7 +534,7 @@ fn build_layer_draw_plan(
 /// omitted defensively rather than producing a malformed backend command.
 #[must_use]
 pub fn layer_draw_plan(scene: &RenderScene, viewport: PixelViewport) -> Vec<LayerDraw> {
-  build_layer_draw_plan(scene, viewport, None).unwrap_or_default()
+  build_layer_draw_plan(scene, viewport, FrameSelection::Static).unwrap_or_default()
 }
 
 /// Builds a deterministic layer plan for caller-supplied normalized animation
@@ -516,7 +548,26 @@ pub fn layer_draw_plan_at_progress(
   if !progress.is_finite() || progress < 0.0 || progress >= 1.0 {
     return None;
   }
-  build_layer_draw_plan(scene, viewport, Some(progress))
+  build_layer_draw_plan(scene, viewport, FrameSelection::Progress(progress))
+}
+
+/// Builds a deterministic layer plan for caller-supplied elapsed animation
+/// time and explicit playback policy. This owns no clock or effect mapping.
+#[must_use]
+pub fn layer_draw_plan_at_elapsed(
+  scene: &RenderScene,
+  viewport: PixelViewport,
+  elapsed_ms: u64,
+  playback: AnimationPlayback,
+) -> Option<Vec<LayerDraw>> {
+  build_layer_draw_plan(
+    scene,
+    viewport,
+    FrameSelection::Elapsed {
+      elapsed_ms,
+      playback,
+    },
+  )
 }
 
 fn composite_group(draws: &[LayerDraw]) -> Option<SpriteComposite> {
@@ -1144,6 +1195,78 @@ mod tests {
     malformed_player.rect = drl_assets::SpriteRect::new(0, 32, 32, 32);
     malformed_scene.actors[0].sprite = malformed_player;
     assert!(layer_draw_plan_at_progress(&malformed_scene, viewport, 0.5).is_none());
+  }
+
+  #[test]
+  fn elapsed_layer_plan_selects_rows_without_changing_static_draws() {
+    let game = Game::new_arena(42, 12, 10).expect("arena");
+    let scene = RenderScene::from_observation(&game.observe_player());
+    let viewport = PixelViewport::fit(scene.map_width, scene.map_height, 960, 640);
+    let frame_zero = layer_draw_plan(&scene, viewport);
+    let frame_at_499 = layer_draw_plan_at_elapsed(&scene, viewport, 499, AnimationPlayback::Loop)
+      .expect("frame zero plan");
+    assert_eq!(frame_at_499, frame_zero);
+
+    let frame_at_500 = layer_draw_plan_at_elapsed(&scene, viewport, 500, AnimationPlayback::Loop)
+      .expect("frame one plan");
+    let player = scene.actors.first().expect("player actor");
+    let player_draw = frame_zero
+      .iter()
+      .find(|draw| draw.atlas == player.sprite.atlas && draw.animation == player.sprite.animation)
+      .expect("player draw");
+    let expected_uv = player
+      .sprite
+      .frame_rect(1)
+      .expect("player frame one")
+      .uv_rect(
+        player.sprite.atlas.dimensions().0,
+        player.sprite.atlas.dimensions().1,
+      )
+      .expect("player frame one UV");
+    let selected_player: Vec<_> = frame_at_500
+      .iter()
+      .filter(|draw| draw.sprite_index == player_draw.sprite_index)
+      .collect();
+    assert!(!selected_player.is_empty());
+    assert!(selected_player.iter().all(|draw| draw.uv == expected_uv));
+
+    let frame_at_cycle =
+      layer_draw_plan_at_elapsed(&scene, viewport, 1_000, AnimationPlayback::Loop)
+        .expect("wrapped frame zero plan");
+    assert_eq!(frame_at_cycle, frame_zero);
+    let clamped = layer_draw_plan_at_elapsed(&scene, viewport, u64::MAX, AnimationPlayback::Clamp)
+      .expect("clamped final-frame plan");
+    let max_loop = layer_draw_plan_at_elapsed(&scene, viewport, u64::MAX, AnimationPlayback::Loop);
+    assert_eq!(max_loop, Some(frame_at_500.clone()));
+    assert_eq!(
+      max_loop,
+      layer_draw_plan_at_elapsed(&scene, viewport, u64::MAX, AnimationPlayback::Loop)
+    );
+
+    let static_draw = frame_zero
+      .iter()
+      .find(|draw| draw.animation.is_none())
+      .expect("static tile draw");
+    let static_selected = clamped
+      .iter()
+      .find(|draw| draw.sprite_index == static_draw.sprite_index)
+      .expect("static draw at elapsed time");
+    assert_eq!(static_selected.uv, static_draw.uv);
+
+    let player_composite = sprite_composite_plan(&clamped)
+      .into_iter()
+      .find(|composite| composite.sprite_index == player_draw.sprite_index)
+      .expect("player composite");
+    assert_eq!(player_composite.uv, selected_player[0].uv);
+
+    let mut malformed_scene = scene;
+    let mut malformed_player = malformed_scene.actors[0].sprite;
+    malformed_player.rect = drl_assets::SpriteRect::new(0, 32, 32, 32);
+    malformed_scene.actors[0].sprite = malformed_player;
+    assert!(
+      layer_draw_plan_at_elapsed(&malformed_scene, viewport, 500, AnimationPlayback::Loop,)
+        .is_none()
+    );
   }
 
   #[test]

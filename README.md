@@ -19,8 +19,8 @@ nearest-filtered base/mask/emissive textured pass with evidence-backed Green
 Armor and Phase Device ground colorization tint boundaries, the verified
 emissive lighting floor, optional outline-mask GPU transport, and evidenced
 player/actor/Phase Device animation metadata and progress-selected frame UVs,
-plus pure effect progress, caller-supplied animation frame selection and
-elapsed-time playback math, a
+plus pure effect progress, caller-supplied animation frame selection,
+elapsed-time playback math and layer plans, a
 low-health scene tone, and event-ordered timing. Full
 audiovisual equivalence, broader content, PWA persistence, and other browsers
 remain staged roadmap work. Do not read the placeholder M7 atlas rectangles as
@@ -96,16 +96,16 @@ legacy graphics metadata; it is not a dependency of the core.
 - `crates/drl-render`: pure scene construction, deterministic pixel viewport
   layout, atlas/layer draw-plan geometry with source metadata, roles, grouped
   composites, lighting, normalized effect progress, caller-supplied animation
-  frame selection, elapsed-time playback math, and the observed Green Armor/
-  Phase Device tint mappings, outline-mask transport, renderer-neutral
-  animation metadata, and progress-selected frame UVs.
+  frame selection, elapsed-time playback math and layer plans, and the
+  observed Green Armor/Phase Device tint mappings, outline-mask transport,
+  renderer-neutral animation metadata, and progress-selected frame UVs.
 - `crates/drl-audio`: semantic cues and WASM Web Audio mixer.
 - `crates/drl-web`: browser session, validated same-origin texture-source
   loading, renderer-owned WebGPU texture uploads, the partial base/mask/
   emissive textured pass with Green Armor/Phase Device colorization tint,
   optional outline-mask transport, renderer-neutral animation metadata,
-  progress-selected frame UVs, elapsed-time playback math, and legacy alpha
-  cutoff, Winit/WebGPU scene
+  progress-selected frame UVs, elapsed-time playback math and layer plans, and
+  legacy alpha cutoff, Winit/WebGPU scene
   surface, DOM shell, and WASM exports.
 - `crates/drl-mcp`: JSON-RPC/MCP server and fairness boundary.
 - `crates/drl-app`: native headless demo and MCP stdio runner.
