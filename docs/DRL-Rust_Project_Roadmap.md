@@ -148,8 +148,8 @@ progress, explicit base/mask/outline/emissive input roles, grouped sprite
 composite inputs, and validated browser source loading are available, and
 `drl-render::layer_draw_plan` converts fair scenes into ordered pixel/UV
 operations; the renderer now retains a 24-source GPU texture cache and samples
-base-color sprites with fair lighting, the emissive red-channel floor, and the
-legacy alpha cutoff.
+base-color sprites with linear normalized atlas storage, fair lighting, the
+emissive red-channel floor, and the legacy alpha cutoff.
 Remaining work is mask/colorization and outline/glow role-specific shader
 sampling/layer compositing; implement
 capture-backed lighting/LUT parity,

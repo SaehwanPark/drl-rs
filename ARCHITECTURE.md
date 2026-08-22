@@ -107,7 +107,8 @@ types shared by core, MCP, bots, and frontends.
   no GPU object is created by this preflight boundary.
 - `drl-web::texture_source_manifest` keeps the 24 unique registered layer
   sources in deterministic order. WASM boot uploads each validated source once
-  with `Queue::copy_external_image_to_texture` and retains its texture/view;
+  with `Queue::copy_external_image_to_texture` into linear `Rgba8Unorm` storage
+  and retains its texture/view;
   the base-color pass samples those views with nearest filtering, and the
   paired emissive view raises the fair lighting floor from its red channel.
   Missing emissive roles use a retained transparent 1x1 fallback; mask,
