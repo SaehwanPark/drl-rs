@@ -80,8 +80,9 @@ automated regressions, and human review.
 - The first bounded M11 cohort slice adds explicit fixed-seed sample
   definitions and reports around the existing headless batch runner. Reports
   retain policy identity, aggregate metrics, and per-seed replay evidence;
-  balance conclusions, difficulty targets, and declared tolerances remain
-  open.
+  the follow-up adds compatible-report win-rate and average-turn tolerance
+  comparisons; balance conclusions, difficulty targets, and statistical
+  interpretation remain open.
 
 ## Milestones
 
@@ -276,10 +277,11 @@ replay-compatible save tests. No accounts or gameplay backend.
 ### M11 — Balance and evaluation (first cohort slice delivered; evaluation open)
 
 Run fixed-seed bot cohorts, metrics, difficulty/economy studies, and
-regressions with declared samples/tolerances. The first cohort slice now makes
-seed ranges, sample size, policy identity, turn budgets, and replay evidence
-explicit; balance studies, tolerances, and ordinary-player/developer
-observation separation remain open.
+regressions with declared samples/tolerances. The delivered cohort slices now
+make seed ranges, sample size, policy identity, turn budgets, replay evidence,
+and compatible-report tolerance deltas explicit; balance studies, statistical
+interpretation, and ordinary-player/developer observation separation remain
+open.
 
 ### M12 — Static web productization and release hardening (planned)
 

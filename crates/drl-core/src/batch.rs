@@ -58,6 +58,74 @@ pub struct CohortReport {
   pub records: Vec<EpisodeRecord>,
 }
 
+/// Caller-declared absolute tolerances for a cohort regression comparison.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct CohortTolerances {
+  /// Maximum permitted absolute win-rate delta.
+  pub max_win_rate_delta: f64,
+  /// Maximum permitted absolute average-turn delta.
+  pub max_average_turns_delta: f64,
+}
+
+impl CohortTolerances {
+  /// Creates a tolerance pair for a regression gate.
+  #[must_use]
+  pub const fn new(max_win_rate_delta: f64, max_average_turns_delta: f64) -> Self {
+    Self {
+      max_win_rate_delta,
+      max_average_turns_delta,
+    }
+  }
+
+  fn is_valid(self) -> bool {
+    self.max_win_rate_delta.is_finite()
+      && self.max_win_rate_delta >= 0.0
+      && self.max_average_turns_delta.is_finite()
+      && self.max_average_turns_delta >= 0.0
+  }
+}
+
+/// Deterministic metric deltas from one compatible cohort comparison.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct CohortComparison {
+  /// Absolute difference in aggregate win rate.
+  pub win_rate_delta: f64,
+  /// Absolute difference in aggregate average turns.
+  pub average_turns_delta: f64,
+  /// Whether both deltas are within the declared tolerances.
+  pub within_tolerance: bool,
+}
+
+impl CohortReport {
+  /// Compares this report against a baseline with caller-declared tolerances.
+  ///
+  /// Reports are compatible only when their policy identity and complete
+  /// sample definitions match. Invalid tolerances and incompatible reports
+  /// return `None`; neither input is mutated.
+  #[must_use]
+  pub fn compare_with(
+    &self,
+    baseline: &Self,
+    tolerances: CohortTolerances,
+  ) -> Option<CohortComparison> {
+    if self.policy_name != baseline.policy_name
+      || self.config != baseline.config
+      || !tolerances.is_valid()
+    {
+      return None;
+    }
+
+    let win_rate_delta = (self.summary.win_rate - baseline.summary.win_rate).abs();
+    let average_turns_delta = (self.summary.average_turns - baseline.summary.average_turns).abs();
+    Some(CohortComparison {
+      win_rate_delta,
+      average_turns_delta,
+      within_tolerance: win_rate_delta <= tolerances.max_win_rate_delta
+        && average_turns_delta <= tolerances.max_average_turns_delta,
+    })
+  }
+}
+
 /// Batch simulation runner executing hundreds or thousands of episodes headlessly.
 pub struct BatchRunner;
 

@@ -199,6 +199,12 @@ the same scenario/configuration/policy factory must produce an equal report.
 This makes sample size, seed range, and timeout budget explicit before any
 future balance or difficulty interpretation.
 
+This follow-up adds `CohortTolerances` and a pure compatible-report
+comparison. A comparison is available only when policy identity and the full
+sample definition match; it reports absolute win-rate and average-turn deltas
+and a boolean tolerance result. Non-finite or negative tolerances are rejected
+without changing either report.
+
 ### Observable behavior
 
 - `BrowserSession` creates the fixed deterministic M4 arena and exposes only a
@@ -217,6 +223,9 @@ future balance or difficulty interpretation.
   sequence, and the scenario/procedural cohort entrypoints preserve that
   definition and per-seed replay records in `CohortReport` without changing
   game execution.
+- `CohortReport::compare_with` compares compatible reports using caller-owned
+  non-negative finite win-rate and average-turn tolerances. It rejects policy
+  or sample-definition mismatches and never mutates either report.
 - `drl-audio` maps events to semantic cues. The WASM mixer uses generated tones,
   mute/volume settings, and user-gesture unlock; blocked audio never blocks
   gameplay.
@@ -451,6 +460,9 @@ future balance or difficulty interpretation.
 - `drl_core::{CohortConfig, CohortReport}` and the two `BatchRunner` cohort
   entrypoints are headless evaluation helpers; they do not expose hidden state
   to agents or frontends.
+- `CohortTolerances` and `CohortComparison` are regression-gate math only;
+  they do not claim statistical significance, balance correctness, or a
+  difficulty target.
 
 ### Verification
 
@@ -464,8 +476,9 @@ scripts/test-reference-capture.sh           PASS (fixture coverage)
 cargo check --locked -p drl-web --target wasm32-unknown-unknown  PASS
 cargo test -p drl-render                      PASS (pixel-grid, lighting, tone, and timeline contracts)
 cargo test -p drl-core --test batch_simulation PASS (fixed-seed cohort sample,
-                                             identity, wrapping, and replay
-                                             determinism contracts)
+                                             identity, wrapping, replay
+                                             determinism, and tolerance-gate
+                                             contracts)
 cargo test -p drl-assets                      PASS (slot mappings, atlas bounds,
                                              layer sets, roles, descriptor order,
                                              UVs)
@@ -508,9 +521,10 @@ capture is available.
   regressions, cue timing, and structured human comparison.
 - Visible outline/glow equations, effect ownership, broader content-specific
   animation timing, additional per-sprite tint sources, and capture-backed
-  legacy shader equivalence remain future M8 slices. The M11 cohort boundary
-  intentionally records evidence and sample definitions without claiming a
-  balance result, difficulty target, or statistical tolerance.
+  legacy shader equivalence remain future M8 slices. The M11 cohort and
+  tolerance boundaries intentionally record evidence and declared deltas
+  without claiming a balance result, difficulty target, or statistical
+  significance.
 
 ## Next
 

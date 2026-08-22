@@ -5,6 +5,9 @@ documented in this file.
 
 ## Unreleased
 
+- Added pure M11 cohort regression comparisons with caller-declared finite
+  non-negative win-rate and average-turn tolerances. Policy/sample mismatches
+  are rejected, and no statistical or balance claim is inferred.
 - Added M11 fixed-seed cohort reports around the existing headless batch
   runner. `CohortConfig` records seed range, sample size, and turn budget;
   `CohortReport` retains policy identity, aggregate metrics, and per-seed
