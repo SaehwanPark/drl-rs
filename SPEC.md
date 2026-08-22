@@ -15,7 +15,7 @@ progress. This file expands exactly one active implementation slice.
   redistribution-gated; its controlled reference-capture gate is `NOT_RUN` on
   arm64 macOS and remains an M8 acceptance dependency.
 
-## Present — M8 progress-driven frame planning
+## Present — M8 elapsed-time animation selection
 
 Status: The M7 browser slice passed functional acceptance locally and in
 remote web CI. The delivered M8 pixel-grid, visibility-band, low-health tone,
@@ -41,9 +41,10 @@ unchanged. It also carries pinned two-frame/500 ms metadata for the current
 player, actors, and Phase Device into renderer-neutral descriptors and grouped
 draws. This slice adds a caller-supplied normalized-progress layer-plan helper
 that selects those frame UVs deterministically while preserving the existing
-frame-zero API; no wall-clock scheduling is introduced. Visible outline/glow
-equations, broader animation timing/content, and capture-backed audiovisual
-equivalence remain open.
+frame-zero API; no wall-clock scheduling is introduced. It also exposes pure
+elapsed-milliseconds selection with explicit loop/clamp policy over the pinned
+metadata. Visible outline/glow equations, broader animation timing/content, and
+capture-backed audiovisual equivalence remain open.
 
 ### Observable behavior
 
@@ -172,6 +173,9 @@ equivalence remain open.
   selects frame-specific UVs for evidenced animated descriptors, and keeps
   static descriptors on frame zero. Invalid progress returns `None`; the
   existing `layer_draw_plan` remains unchanged.
+- `drl-render::animation_frame_index_at_elapsed` converts caller-supplied
+  elapsed milliseconds through explicit `Loop` or `Clamp` policy. It rejects
+  zero metadata and owns no wall clock or effect/sprite scheduling.
 - The WGSL source is shared with a native shader-contract test that checks the
   base/emissive/mask samples, fair-lighting `max`, tint forwarding, neutral
   fallback input, alpha cutout, and output path; native tests therefore guard
@@ -249,7 +253,7 @@ capture is available.
 - Visible outline/glow equations, browser timing/effect ownership, broader
   content-specific animation timing, additional per-sprite tint sources, and
   capture-backed legacy shader equivalence remain future M8 slices; this pass
-  is intentionally limited to caller-supplied renderer-neutral frame plans.
+  is intentionally limited to caller-supplied renderer-neutral timing math.
 
 ## Next
 
