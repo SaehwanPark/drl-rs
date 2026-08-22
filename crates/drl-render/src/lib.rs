@@ -640,8 +640,12 @@ mod tests {
     visible_before.visible_actors.push(transient_actor.clone());
     let hidden_after = observation.clone();
     assert!(
-      effect_timeline_for_observations(&visible_before, &hidden_after, &[hidden_event.clone()])
-        .is_empty()
+      effect_timeline_for_observations(
+        &visible_before,
+        &hidden_after,
+        std::slice::from_ref(&hidden_event),
+      )
+      .is_empty()
     );
 
     let hidden_before = observation;
