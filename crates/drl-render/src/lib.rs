@@ -9,9 +9,30 @@ use drl_assets::{
   item_sprite, tile_sprite,
 };
 use drl_protocol::{
-  Command, EntityId, GameEvent, HitPoints, ItemView, PlayerObservation, Position, TileKind,
+  Command, EntityId, GameEvent, HitPoints, ItemArchetype, ItemView, PlayerObservation, Position,
+  TileKind,
 };
 use std::collections::BTreeSet;
+
+const NEUTRAL_COLORIZATION_TINT: [u8; 4] = [0, 0, 0, 0];
+
+/// Returns the evidence-backed tint for the currently implemented armor item.
+/// Other archetypes remain neutral until their content mappings are migrated.
+#[must_use]
+pub const fn item_colorization_tint(archetype: ItemArchetype) -> [u8; 4] {
+  match archetype {
+    ItemArchetype::GreenArmor => [0, 255, 0, 255],
+    _ => NEUTRAL_COLORIZATION_TINT,
+  }
+}
+
+/// Returns the observed armor tint for the player sprite.
+#[must_use]
+pub fn equipped_colorization_tint(armor: Option<&ItemView>) -> [u8; 4] {
+  armor
+    .map(|item| item_colorization_tint(item.archetype))
+    .unwrap_or(NEUTRAL_COLORIZATION_TINT)
+}
 
 /// A complete before/command/events/after boundary for one presentation step.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -147,6 +168,7 @@ pub struct LayerDraw {
   pub role: LayerRole,
   pub source: AtlasTextureSource,
   pub lighting: LightingBand,
+  pub colorization_tint: [u8; 4],
   pub destination: PixelRect,
   pub uv: SpriteUv,
 }
@@ -163,6 +185,7 @@ pub struct SpriteComposite {
   pub destination: PixelRect,
   pub uv: SpriteUv,
   pub lighting: LightingBand,
+  pub colorization_tint: [u8; 4],
   pub base: AtlasTextureSource,
   pub mask: Option<AtlasTextureSource>,
   pub shadow: Option<AtlasTextureSource>,
@@ -261,6 +284,7 @@ pub struct SceneActor {
   pub is_player: bool,
   pub hp: Option<drl_protocol::HitPoints>,
   pub sprite: SpriteDescriptor,
+  pub colorization_tint: [u8; 4],
 }
 
 /// An item ready for a renderer to draw.
@@ -269,6 +293,7 @@ pub struct SceneItem {
   pub position: Position,
   pub item: ItemView,
   pub sprite: SpriteDescriptor,
+  pub colorization_tint: [u8; 4],
 }
 
 /// HUD values that can be represented in semantic DOM or pixel UI.
@@ -319,6 +344,11 @@ impl RenderScene {
         is_player: actor.is_player,
         hp: actor.hp,
         sprite: actor_sprite(actor.monster_kind),
+        colorization_tint: if actor.is_player {
+          equipped_colorization_tint(observation.equipped_armor.as_ref())
+        } else {
+          NEUTRAL_COLORIZATION_TINT
+        },
       })
       .collect();
     let target_positions = observation
@@ -342,6 +372,7 @@ impl RenderScene {
       })
       .map(|ground| SceneItem {
         position: ground.position,
+        colorization_tint: item_colorization_tint(ground.item.archetype),
         item: ground.item.clone(),
         sprite: item_sprite(ground.item.archetype),
       })
@@ -371,6 +402,7 @@ fn append_layer_draws(
   sprite_index: u32,
   descriptor: SpriteDescriptor,
   lighting: LightingBand,
+  colorization_tint: [u8; 4],
   destination: Option<PixelRect>,
 ) {
   let Some(destination) = destination else {
@@ -387,6 +419,7 @@ fn append_layer_draws(
     role: layer.role(),
     source: descriptor.atlas.texture_source(layer),
     lighting,
+    colorization_tint,
     destination,
     uv,
   }));
@@ -412,6 +445,7 @@ pub fn layer_draw_plan(scene: &RenderScene, viewport: PixelViewport) -> Vec<Laye
       sprite_index,
       tile.sprite,
       tile.lighting_band(),
+      NEUTRAL_COLORIZATION_TINT,
       viewport.tile_rect(tile.position),
     );
     sprite_index = sprite_index.saturating_add(1);
@@ -422,6 +456,7 @@ pub fn layer_draw_plan(scene: &RenderScene, viewport: PixelViewport) -> Vec<Laye
       sprite_index,
       item.sprite,
       LightingBand::Visible,
+      item.colorization_tint,
       viewport.tile_rect(item.position),
     );
     sprite_index = sprite_index.saturating_add(1);
@@ -432,6 +467,7 @@ pub fn layer_draw_plan(scene: &RenderScene, viewport: PixelViewport) -> Vec<Laye
       sprite_index,
       actor.sprite,
       LightingBand::Visible,
+      actor.colorization_tint,
       viewport.tile_rect(actor.position),
     );
     sprite_index = sprite_index.saturating_add(1);
@@ -449,6 +485,7 @@ fn composite_group(draws: &[LayerDraw]) -> Option<SpriteComposite> {
         || draw.destination != first.destination
         || draw.uv != first.uv
         || draw.lighting != first.lighting
+        || draw.colorization_tint != first.colorization_tint
     })
   {
     return None;
@@ -477,6 +514,7 @@ fn composite_group(draws: &[LayerDraw]) -> Option<SpriteComposite> {
     destination: first.destination,
     uv: first.uv,
     lighting: first.lighting,
+    colorization_tint: first.colorization_tint,
     base: base?,
     mask,
     shadow,
@@ -705,7 +743,8 @@ pub fn renderer_name() -> &'static str {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use drl_core::Game;
+  use drl_core::{Game, scenario::Scenario};
+  use drl_protocol::{ItemSpawnKind, PlayerSpawnConfig};
 
   #[test]
   fn pixel_viewport_centers_square_integer_cells() {
@@ -787,6 +826,61 @@ mod tests {
     assert_eq!(
       scene_clear_color(Some(HitPoints::new(50, 50))),
       [0.025, 0.035, 0.055, 1.0]
+    );
+  }
+
+  #[test]
+  fn item_colorization_tint_maps_only_verified_green_armor() {
+    assert_eq!(
+      item_colorization_tint(ItemArchetype::GreenArmor),
+      [0, 255, 0, 255]
+    );
+    assert_eq!(item_colorization_tint(ItemArchetype::Pistol), [0, 0, 0, 0]);
+  }
+
+  #[test]
+  fn equipped_colorization_tint_uses_observed_armor_only() {
+    let armor = ItemView {
+      id: drl_protocol::ItemId(7),
+      archetype: ItemArchetype::GreenArmor,
+      name: "Green Armor".to_owned(),
+      category: drl_protocol::ItemCategory::Armor,
+      count: 1,
+      description: "Armor".to_owned(),
+      clip: None,
+      damage: None,
+      armor_value: Some(100),
+      heal_amount: None,
+      knockback: None,
+    };
+    assert_eq!(equipped_colorization_tint(None), [0, 0, 0, 0]);
+    assert_eq!(equipped_colorization_tint(Some(&armor)), [0, 255, 0, 255]);
+  }
+
+  #[test]
+  fn scene_and_composites_forward_observed_green_armor_tint() {
+    let mut scenario =
+      Scenario::from_ascii("green armor", "", "#####\n#@..#\n#####").expect("scenario");
+    scenario.player_config = Some(PlayerSpawnConfig {
+      equipped_armor: Some(ItemSpawnKind::GreenArmor),
+      ..PlayerSpawnConfig::default()
+    });
+    let observation = scenario.instantiate().expect("game").observe_player();
+    let scene = RenderScene::from_observation(&observation);
+    assert_eq!(
+      scene
+        .actors
+        .iter()
+        .find(|actor| actor.is_player)
+        .map(|actor| actor.colorization_tint),
+      Some([0, 255, 0, 255])
+    );
+    let viewport = PixelViewport::fit(scene.map_width, scene.map_height, 96, 32);
+    let composites = sprite_composite_plan(&layer_draw_plan(&scene, viewport));
+    assert!(
+      composites
+        .iter()
+        .any(|composite| composite.colorization_tint == [0, 255, 0, 255])
     );
   }
 

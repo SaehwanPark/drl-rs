@@ -411,7 +411,15 @@ struct TextureBatch {
   count: u32,
 }
 
-fn push_texture_vertex(vertices: &mut Vec<u8>, x: f32, y: f32, u: f32, v: f32, lighting: f32) {
+fn push_texture_vertex(
+  vertices: &mut Vec<u8>,
+  x: f32,
+  y: f32,
+  u: f32,
+  v: f32,
+  lighting: f32,
+  colorization_tint: [u8; 4],
+) {
   vertices.extend_from_slice(&x.to_ne_bytes());
   vertices.extend_from_slice(&y.to_ne_bytes());
   vertices.extend_from_slice(&u.to_ne_bytes());
@@ -419,9 +427,7 @@ fn push_texture_vertex(vertices: &mut Vec<u8>, x: f32, y: f32, u: f32, v: f32, l
   for component in [lighting, lighting, lighting, 1.0] {
     vertices.extend_from_slice(&component.to_ne_bytes());
   }
-  // Fair scenes do not yet expose a per-sprite tint. Keep the mask role
-  // neutral until that contract is evidence-backed.
-  for component in [0.0_f32, 0.0, 0.0, 0.0] {
+  for component in colorization_tint.map(|component| f32::from(component) / 255.0) {
     vertices.extend_from_slice(&component.to_ne_bytes());
   }
 }
@@ -432,16 +438,17 @@ fn push_texture_quad(
   viewport: &PixelViewport,
   uv: drl_assets::SpriteUv,
   lighting: f32,
+  colorization_tint: [u8; 4],
 ) {
   let [left, bottom, right, top] =
     crate::base_texture_ndc_rect(rect, viewport.canvas_width, viewport.canvas_height);
   let [[u0, v0], [u1, v1], [u2, v2], [u3, v3], [u4, v4], [u5, v5]] = crate::base_texture_uvs(uv);
-  push_texture_vertex(vertices, left, bottom, u0, v0, lighting);
-  push_texture_vertex(vertices, right, bottom, u1, v1, lighting);
-  push_texture_vertex(vertices, right, top, u2, v2, lighting);
-  push_texture_vertex(vertices, left, bottom, u3, v3, lighting);
-  push_texture_vertex(vertices, right, top, u4, v4, lighting);
-  push_texture_vertex(vertices, left, top, u5, v5, lighting);
+  push_texture_vertex(vertices, left, bottom, u0, v0, lighting, colorization_tint);
+  push_texture_vertex(vertices, right, bottom, u1, v1, lighting, colorization_tint);
+  push_texture_vertex(vertices, right, top, u2, v2, lighting, colorization_tint);
+  push_texture_vertex(vertices, left, bottom, u3, v3, lighting, colorization_tint);
+  push_texture_vertex(vertices, right, top, u4, v4, lighting, colorization_tint);
+  push_texture_vertex(vertices, left, top, u5, v5, lighting, colorization_tint);
 }
 
 fn base_texture_vertices(
@@ -467,6 +474,7 @@ fn base_texture_vertices(
       &viewport,
       composite.uv,
       crate::base_texture_lighting_factor(composite.lighting),
+      composite.colorization_tint,
     );
     batches.push(TextureBatch {
       source: composite.base,
