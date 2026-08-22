@@ -69,6 +69,13 @@ requires `rights_status=cleared` plus valid hashes before a manifest can claim
 `PASS`. Missing, dirty, non-observed, uncleared, or malformed manifests remain
 `NOT_RUN`/`INCONCLUSIVE`; only a controlled Linux x86-64 capture from a clean
 checkout can promote the fidelity gate.
+The active follow-up also exposes the pinned low-health blood-pulse target as
+`drl_render::low_health_pulse_target_alpha`: a pure function of fair player
+health and caller-supplied elapsed milliseconds. It preserves the observed
+`current < max / 3` threshold, five-radian-per-second sine term, positive
+target guard, and `[0, 1]` bound without owning a clock or mutable smoothing
+state. The legacy `aMSec / 500` smoothing, low-life texture, blur/LUT
+compositor, and capture-backed audiovisual parity remain explicitly open.
 
 ### Observable behavior
 
@@ -110,6 +117,11 @@ checkout can promote the fidelity gate.
 - `drl-render::scene_clear_color` maps fair HUD health to the existing normal or
   low-health clear tone. It is deterministic, preserves the current quarter
   health threshold, and never advances simulation.
+- `drl-render::low_health_pulse_target_alpha` maps optional fair player health
+  and explicit elapsed milliseconds to the source-derived instantaneous blood
+  pulse target. Healthy or unavailable health returns zero; low health follows
+  the observed integer-divided one-third threshold and sine phase, with a
+  bounded non-negative alpha. The helper owns no wall clock or smoothing state.
 - WebGPU uses that shared clear-color rule; health-tone presentation remains an
   effect and cannot reveal hidden world state.
 - `drl-render::effect_timeline` preserves event order and assigns each bounded

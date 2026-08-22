@@ -158,6 +158,34 @@ pub const fn scene_clear_color(player_hp: Option<HitPoints>) -> [f32; 4] {
   }
 }
 
+/// Returns the source-derived instantaneous low-health pulse target.
+///
+/// The legacy presentation updates this target only below one third health,
+/// using an integer-divided half-health denominator and a five-radian-per-
+/// second sine phase. This helper intentionally exposes only that pure target:
+/// callers provide elapsed time, while smoothing, texture compositing, and
+/// post-processing remain outside the renderer-neutral boundary.
+#[must_use]
+pub fn low_health_pulse_target_alpha(player_hp: Option<HitPoints>, elapsed_ms: u64) -> f32 {
+  let Some(hp) = player_hp else {
+    return 0.0;
+  };
+
+  if hp.current >= hp.max / 3 {
+    return 0.0;
+  }
+
+  let half_max = hp.max / 2;
+  if half_max == 0 {
+    return 0.0;
+  }
+
+  let health_ratio = hp.current as f32 / half_max as f32;
+  let phase = (elapsed_ms as f64 / 1_000.0) * 5.0;
+  let target = 0.8 - health_ratio + phase.sin() as f32 * 0.2;
+  target.clamp(0.0, 1.0)
+}
+
 /// Integer pixel bounds for one logical map cell.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct PixelRect {
@@ -933,6 +961,44 @@ mod tests {
       scene_clear_color(Some(HitPoints::new(50, 50))),
       [0.025, 0.035, 0.055, 1.0]
     );
+  }
+
+  #[test]
+  fn low_health_pulse_target_preserves_observed_threshold_and_phase() {
+    assert_eq!(low_health_pulse_target_alpha(None, 0), 0.0);
+    assert_eq!(
+      low_health_pulse_target_alpha(Some(HitPoints::new(16, 50)), 0),
+      0.0
+    );
+
+    let at_zero = low_health_pulse_target_alpha(Some(HitPoints::new(15, 50)), 0);
+    assert!((at_zero - 0.2).abs() < 0.001);
+
+    let odd_half_denominator = low_health_pulse_target_alpha(Some(HitPoints::new(1, 51)), 0);
+    assert!((odd_half_denominator - 0.76).abs() < 0.001);
+
+    let near_sine_peak = low_health_pulse_target_alpha(Some(HitPoints::new(15, 50)), 314);
+    assert!((near_sine_peak - 0.4).abs() < 0.002);
+  }
+
+  #[test]
+  fn low_health_pulse_target_is_bounded_for_edge_inputs() {
+    assert_eq!(
+      low_health_pulse_target_alpha(Some(HitPoints::new(0, 0)), u64::MAX),
+      0.0
+    );
+    assert_eq!(
+      low_health_pulse_target_alpha(Some(HitPoints::new(0, 2)), 0),
+      0.0
+    );
+
+    let trough = low_health_pulse_target_alpha(Some(HitPoints::new(15, 50)), 942);
+    assert!(trough < 0.001);
+
+    for elapsed_ms in [0, 314, 628, 942, 1_256, 60_000, u64::MAX] {
+      let target = low_health_pulse_target_alpha(Some(HitPoints::new(0, 50)), elapsed_ms);
+      assert!((0.0..=1.0).contains(&target));
+    }
   }
 
   #[test]

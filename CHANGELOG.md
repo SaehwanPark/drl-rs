@@ -161,6 +161,11 @@ documented in this file.
   `sha256:<64-hex>` media hashes; a `PASS` capture now requires cleared rights
   and valid hashes while unresolved environments remain `NOT_RUN` or
   `INCONCLUSIVE`.
+- Added pure `drl-render::low_health_pulse_target_alpha` planning from the
+  pinned legacy one-third-health threshold and five-radian-per-second phase.
+  The helper consumes caller-supplied elapsed time and exposes only the
+  instantaneous bounded target; legacy smoothing, low-life compositing, and
+  capture-backed LUT/glow parity remain open.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch

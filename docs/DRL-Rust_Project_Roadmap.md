@@ -175,9 +175,11 @@ progress-selected frame UV plans plus elapsed-time loop/clamp selection,
 caller-supplied elapsed-time layer-plan math, WebGPU forwarding, and bounded
 browser scheduling, and the capture-manifest preflight with clean-checkout
 provenance and evidence classification.
+The current follow-up also exposes a pure source-derived low-health pulse
+target from fair HP and caller-supplied elapsed milliseconds; smoothing and
+post-processing remain backend/capture work.
 Remaining work is visible outline/glow role-specific shader blending/layer
 compositing, additional per-sprite tint sourcing, broader content metadata;
-implement
 capture-backed lighting/LUT parity,
 particles, animation/effect timing, HUD typography, cleared legacy or
 replacement audio, music transitions, and automated visual/audio regressions

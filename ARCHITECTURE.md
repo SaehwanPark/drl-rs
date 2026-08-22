@@ -39,6 +39,7 @@ types shared by core, MCP, bots, and frontends.
   candidates, bounded event-to-effect builders, observation-independent
   `PixelViewport`/`PixelRect` layout math, visibility-derived
   `LightingBand`/`shade_color` rules, health-derived `SceneTone`/clear color,
+  and the pure source-derived `low_health_pulse_target_alpha` target,
   event-ordered `EffectSpan` timing, and renderer-neutral `LayerDraw` plans
   carrying atlas layers, imported source metadata, explicit layer roles, fair
   lighting, evidence-backed Green Armor/Phase Device/StairsDown colorization
@@ -154,6 +155,11 @@ types shared by core, MCP, bots, and frontends.
 - `LayerDraw::lighting` carries the fair visibility band for the source sprite;
   explored tile memory is shaded by the shared fog factor and visible scene
   sprites use full light. A compositor must not derive this from hidden state.
+- `low_health_pulse_target_alpha` consumes only optional fair player health and
+  caller-supplied elapsed milliseconds. It preserves the observed integer
+  threshold and pulse equation while owning no clock, mutable smoothing state,
+  texture, LUT, or post-processing; full low-life overlay parity remains
+  capture-gated.
 - `PresentationStep::effects` is computed at the command boundary from the
   returned event list and visible actor sets. Ordinary effects require both
   endpoints; terminal hit/death effects use pre-step visibility. Rejected
