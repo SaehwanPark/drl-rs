@@ -186,6 +186,53 @@ pub fn low_health_pulse_target_alpha(player_hp: Option<HitPoints>, elapsed_ms: u
   target.clamp(0.0, 1.0)
 }
 
+/// The pinned shader's declared blur-weight array, in source order.
+///
+/// Its `weights[abs(i)]` loop samples only entries 0–2; entries 3–4 are
+/// retained as observed implementation artifacts.
+pub const POST_PROCESS_BLUR_DECLARED_WEIGHTS: [f32; 5] =
+  [0.227_027, 0.316_216, 0.070_270, 0.050_987, 0.016_216];
+
+/// Effective symmetric weights for center, one-pixel, and two-pixel offsets.
+pub const POST_PROCESS_BLUR_WEIGHTS: [f32; 3] = [0.227_027, 0.316_216, 0.070_270];
+
+/// Applies the observed post-process glow add to an RGB color.
+///
+/// Callers provide finite presentation values; non-finite input policy is not
+/// part of this source-derived contract.
+#[must_use]
+pub fn post_process_glow_color(
+  base_rgb: [f32; 3],
+  blur_rgba: [f32; 4],
+  glow_enabled: bool,
+) -> [f32; 3] {
+  if !glow_enabled {
+    return base_rgb;
+  }
+
+  let glow = 1.6 * blur_rgba[3];
+  [
+    base_rgb[0] + blur_rgba[0] * glow,
+    base_rgb[1] + blur_rgba[1] * glow,
+    base_rgb[2] + blur_rgba[2] * glow,
+  ]
+}
+
+/// Returns the clamped, channel-swizzled coordinate used for the legacy LUT.
+///
+/// Callers provide finite presentation values; non-finite input policy is not
+/// part of this source-derived contract.
+#[must_use]
+pub fn post_process_lut_coordinate(color_rgb: [f32; 3]) -> [f32; 3] {
+  let scale = 30.0 / 32.0;
+  let offset = 1.0 / 32.0;
+  [
+    (color_rgb[0] * scale + offset).clamp(0.0, 1.0),
+    (color_rgb[2] * scale + offset).clamp(0.0, 1.0),
+    (color_rgb[1] * scale + offset).clamp(0.0, 1.0),
+  ]
+}
+
 /// Integer pixel bounds for one logical map cell.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct PixelRect {
@@ -999,6 +1046,40 @@ mod tests {
       let target = low_health_pulse_target_alpha(Some(HitPoints::new(0, 50)), elapsed_ms);
       assert!((0.0..=1.0).contains(&target));
     }
+  }
+
+  #[test]
+  fn post_process_glow_preserves_observed_weights_and_toggle() {
+    assert_eq!(
+      POST_PROCESS_BLUR_DECLARED_WEIGHTS,
+      [0.227_027, 0.316_216, 0.070_270, 0.050_987, 0.016_216]
+    );
+    assert_eq!(POST_PROCESS_BLUR_WEIGHTS, [0.227_027, 0.316_216, 0.070_270]);
+
+    let base = [0.1, 0.2, 0.3];
+    let blur = [0.5, 0.25, 0.75, 0.5];
+    assert_eq!(post_process_glow_color(base, blur, false), base);
+
+    let blended = post_process_glow_color(base, blur, true);
+    for (actual, expected) in blended.into_iter().zip([0.5, 0.4, 0.9]) {
+      assert!((actual - expected).abs() < 0.000_001);
+    }
+    assert_eq!(
+      post_process_glow_color(base, [1.0, 1.0, 1.0, 0.0], true),
+      base
+    );
+  }
+
+  #[test]
+  fn post_process_lut_coordinate_preserves_swizzle_and_clamp() {
+    assert_eq!(
+      post_process_lut_coordinate([0.0, 0.5, 1.0]),
+      [1.0 / 32.0, 31.0 / 32.0, 0.5]
+    );
+    assert_eq!(
+      post_process_lut_coordinate([-1.0, 2.0, 0.0]),
+      [0.0, 1.0 / 32.0, 1.0]
+    );
   }
 
   #[test]

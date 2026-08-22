@@ -178,6 +178,10 @@ provenance and evidence classification.
 The current follow-up also exposes a pure source-derived low-health pulse
 target from fair HP and caller-supplied elapsed milliseconds; smoothing and
 post-processing remain backend/capture work.
+The next bounded follow-up records the pinned declared/effective post-process
+blur weights, glow add, and LUT-coordinate normalization as pure renderer
+contracts without claiming an offscreen GPU pipeline or capture-backed color
+parity.
 Remaining work is visible outline/glow role-specific shader blending/layer
 compositing, additional per-sprite tint sourcing, broader content metadata;
 capture-backed lighting/LUT parity,

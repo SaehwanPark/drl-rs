@@ -40,6 +40,7 @@ types shared by core, MCP, bots, and frontends.
   `PixelViewport`/`PixelRect` layout math, visibility-derived
   `LightingBand`/`shade_color` rules, health-derived `SceneTone`/clear color,
   and the pure source-derived `low_health_pulse_target_alpha` target,
+  post-process glow/LUT coordinate math,
   event-ordered `EffectSpan` timing, and renderer-neutral `LayerDraw` plans
   carrying atlas layers, imported source metadata, explicit layer roles, fair
   lighting, evidence-backed Green Armor/Phase Device/StairsDown colorization
@@ -160,6 +161,14 @@ types shared by core, MCP, bots, and frontends.
   threshold and pulse equation while owning no clock, mutable smoothing state,
   texture, LUT, or post-processing; full low-life overlay parity remains
   capture-gated.
+- `POST_PROCESS_BLUR_DECLARED_WEIGHTS`, `POST_PROCESS_BLUR_WEIGHTS`,
+  `post_process_glow_color`, and
+  `post_process_lut_coordinate` preserve only the pinned shader's fixed blur
+  constants and pure RGB/coordinate equations. The declared entries 3–4 are
+  retained as observed artifacts because the source indexes by `abs(i)`; the
+  effective exported weights cover center/one-pixel/two-pixel offsets. These
+  helpers do not own framebuffers, blur sampling, LUT textures, outline
+  blending, or capture parity.
 - `PresentationStep::effects` is computed at the command boundary from the
   returned event list and visible actor sets. Ordinary effects require both
   endpoints; terminal hit/death effects use pre-step visibility. Rejected

@@ -59,23 +59,28 @@ After boot, the WASM shell schedules caller-owned elapsed rendering from
 resets its presentation baseline on restart, and installs one idempotent
 `visibilitychange` listener that rebases the clock even when hidden RAF
 callbacks are throttled; simulation commands remain event-driven. The exact
-legacy outline/glow equation and broader tint sources remain capture/evidence
-gated. The preceding slices added a read-only
+legacy outline equation and broader tint sources remain capture/evidence
+gated. The delivered capture-attestation slice added a read-only
 `scripts/check-reference-capture.sh` preflight for the ignored legacy-capture
 manifest, including `legacy_dirty_state` and clean-checkout gating, and the
-proposal's evidence-classification vocabulary. This slice adds
+proposal's evidence-classification vocabulary. That slice added
 `rights_status`, validates comma-separated `sha256:<64-hex>` media hashes, and
 requires `rights_status=cleared` plus valid hashes before a manifest can claim
 `PASS`. Missing, dirty, non-observed, uncleared, or malformed manifests remain
 `NOT_RUN`/`INCONCLUSIVE`; only a controlled Linux x86-64 capture from a clean
 checkout can promote the fidelity gate.
-The active follow-up also exposes the pinned low-health blood-pulse target as
+The delivered low-health follow-up also exposes the pinned blood-pulse target as
 `drl_render::low_health_pulse_target_alpha`: a pure function of fair player
 health and caller-supplied elapsed milliseconds. It preserves the observed
 `current < max / 3` threshold, five-radian-per-second sine term, positive
 target guard, and `[0, 1]` bound without owning a clock or mutable smoothing
 state. The legacy `aMSec / 500` smoothing, low-life texture, blur/LUT
 compositor, and capture-backed audiovisual parity remain explicitly open.
+The active follow-up now exposes the observed post-process glow add, the
+declared/effective blur weights, and
+channel-swizzled LUT-coordinate normalization as pure renderer helpers. It
+does not create blur framebuffers, sample a LUT, blend outline masks, or claim
+capture-backed color parity.
 
 ### Observable behavior
 
@@ -122,6 +127,12 @@ compositor, and capture-backed audiovisual parity remain explicitly open.
   pulse target. Healthy or unavailable health returns zero; low health follows
   the observed integer-divided one-third threshold and sine phase, with a
   bounded non-negative alpha. The helper owns no wall clock or smoothing state.
+- `drl-render::post_process_glow_color` and
+  `drl-render::post_process_lut_coordinate` preserve the observed post-process
+  RGB add, `xzy` channel order, scale, offset, and coordinate clamp from the
+  pinned shader. They consume caller-supplied values only; blur generation,
+  LUT sampling, outline blending, and capture parity remain outside the
+  current boundary.
 - WebGPU uses that shared clear-color rule; health-tone presentation remains an
   effect and cannot reveal hidden world state.
 - `drl-render::effect_timeline` preserves event order and assigns each bounded
