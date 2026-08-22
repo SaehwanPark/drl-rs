@@ -6,9 +6,11 @@
 
 mod animation;
 mod outline;
+mod particle_decal;
 
 pub use animation::{AnimationPlayback, animation_frame_index_at_elapsed};
 pub use outline::outline_mask_composite;
+pub use particle_decal::{ParticleDecalStorageError, ParticleDecalStore};
 
 use drl_assets::{
   AtlasId, AtlasTextureSource, LayerRole, SpriteAnimation, SpriteDescriptor, SpriteLayer, SpriteUv,

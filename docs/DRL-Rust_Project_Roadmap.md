@@ -25,7 +25,7 @@ UX are post-1.0 portability work.
 - `NOT_RUN` — the environment did not provide the required evidence; it is not
   a pass or an inferred failure.
 
-## Current truth (`VERSION` 0.2.9)
+## Current truth (`VERSION` 0.2.10)
 
 - [x] M0–M2 and M4–M6 are delivered and covered by repository tests.
 - [x] M0 macOS CI evidence is recorded for baseline commit `c07c44e` in
@@ -47,9 +47,10 @@ UX are post-1.0 portability work.
   browser scheduling, and capture-manifest attestation helpers.
 - [x] M8 particle contracts cover burst origin, direction, range sampling,
   decal cell mapping, pixel placement, in-bounds/non-liquid/non-blocking
-  eligibility, and caller-owned sprite insertion requests.
+  eligibility, caller-owned sprite insertion requests, and deterministic
+  caller-bounded decal storage.
 - [ ] M8 exact legacy outline/glow parity, broader tint/content animation,
-  particle decal storage/rendering, HUD typography, audio/music, and
+  particle decal rendering, HUD typography, audio/music, and
   capture-backed audiovisual comparison remain open.
 - [x] M11 fixed-seed cohorts, integrity validation, outcome distributions,
   compatible comparisons, tolerance gates, telemetry projections, and
@@ -151,13 +152,13 @@ UX are post-1.0 portability work.
   contracts. These do not own GPU resources or claim capture parity.
 - [x] Particle burst origin, direction, range, decal cell mapping, decal pixel
   placement, caller-resolved decal eligibility, and caller-owned sprite
-  insertion-request contracts.
+  insertion-request contracts with deterministic bounded storage.
 - [x] Read-only capture-manifest preflight with clean-checkout, rights, hash,
   and evidence classification gates; missing captures remain `NOT_RUN`.
 
 #### Present slice (expanded in `SPEC.md`)
 
-- [ ] Retain accepted `ParticleDecalInsertion` requests in deterministic order
+- [x] Retain accepted `ParticleDecalInsertion` requests in deterministic order
   under an explicit caller capacity policy; sprite selection and rendering
   remain outside this slice.
 

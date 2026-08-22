@@ -75,7 +75,8 @@ item cannot be mistaken for an implemented capability.
   GPU resources or claim capture parity.
 - [x] Particle burst origin, direction, range sampling, decal cell mapping,
   decal pixel placement, caller-resolved in-bounds/non-liquid/non-blocking
-  eligibility, and the caller-owned sprite insertion request are implemented.
+  eligibility, caller-owned sprite insertion requests, and deterministic
+  caller-bounded decal storage are implemented.
 - [x] Read-only capture-manifest preflight validates pinned revision/scenes,
   clean checkout, rights status, media hashes, and evidence classification;
   unavailable captures remain `NOT_RUN`/`INCONCLUSIVE`.
@@ -161,22 +162,48 @@ The legacy `DecalCallback` in `src/drlparticles.pas` performs these steps:
 - [x] Keep the helper pure, deterministic, and independent of `drl-core`, map
   storage, RNG, particle-engine state, WebGPU resources, and browser timing.
 
-## Present — M8 particle-decal storage boundary
+## Delivered — M8 particle-decal storage boundary
 
-Status: the next bounded slice will define how accepted insertion requests are
-retained in deterministic order without coupling `drl-core` to renderer state.
-It must preserve every request exactly and leave sprite selection, map ownership,
-particle spawning, and GPU rendering to callers.
+Status: version 0.2.10 retains accepted insertion requests in deterministic
+order under an explicit caller capacity without coupling `drl-core` to
+renderer state. It preserves every request exactly and leaves sprite selection,
+map ownership, particle spawning, and GPU rendering to callers.
 
 ### Acceptance criteria
 
-- [ ] Preserve insertion order and duplicate sprite/position requests.
-- [ ] Keep storage deterministic, bounded by caller policy, and independent of
+- [x] Preserve insertion order and duplicate sprite/position requests.
+- [x] Keep storage deterministic, bounded by caller policy, and independent of
   map flags, RNG, particle-engine state, WebGPU resources, and browser timing.
-- [ ] Reject or report capacity policy explicitly rather than silently dropping
+- [x] Reject or report capacity policy explicitly rather than silently dropping
   accepted requests.
-- [ ] Add focused tests for empty, append, duplicate, and capacity-boundary
+- [x] Add focused tests for empty, append, duplicate, and capacity-boundary
   behavior.
+
+### Delivered pure contract
+
+- `ParticleDecalStore::new(capacity)` creates empty caller-owned storage with an
+  explicit maximum request count.
+- `try_insert` appends one `ParticleDecalInsertion` or returns a capacity error;
+  it never replaces, deduplicates, or silently drops an existing request.
+- `entries` exposes the retained requests in insertion order without exposing
+  mutable internal storage.
+- The store owns no map lookup, sprite selection, RNG, particle lifecycle,
+  WebGPU resource, browser timing, or rendering behavior.
+
+## Present — M8 particle-decal renderer integration
+
+Status: the next bounded slice may consume retained requests in order and map
+caller-provided sprite identifiers to renderer inputs. It must not add map
+ownership, particle spawning, simulation commands, or browser timing to the
+store or simulation core.
+
+### Acceptance criteria
+
+- [ ] Consume `ParticleDecalStore::entries()` without changing request order or
+  duplicate behavior.
+- [ ] Keep sprite lookup and render-resource ownership at the renderer boundary.
+- [ ] Add focused native contract tests; browser and capture parity remain
+  separate evidence gates.
 
 ## Shared observable behavior
 
@@ -230,13 +257,13 @@ particle spawning, and GPU rendering to callers.
   outcome/telemetry projections, compatible comparisons, and tolerance gates.
 - [x] Pure M8 particle APIs: burst origin/direction/range, decal cell mapping,
   `ParticleDecalPlacement`, `particle_decal_cell_is_eligible`,
-  `ParticleDecalInsertion`, and its constructor.
+  `ParticleDecalInsertion`, `ParticleDecalStore`, and explicit capacity errors.
 - [x] `drl-core` and `drl-protocol` have no presentation, browser, audio,
   filesystem, network, or MCP dependency.
 
 ## Verification
 
-### Baseline already verified on 0.2.9
+### Baseline already verified on 0.2.10
 
 - [x] `sh scripts/check-repository.sh` — repository tests and harness checks.
 - [x] `sh scripts/check-assets.sh` — 32 imported PNGs, license, and hashes.
@@ -251,11 +278,11 @@ particle spawning, and GPU rendering to callers.
   `32600541249` and WASM browser job `97098028542`.
 - [ ] Reference-capture execution and audiovisual comparison remain `NOT_RUN`.
 
-### Present storage-slice verification
+### Delivered storage-slice verification
 
-- [ ] Focused `drl-render` tests cover all storage acceptance criteria.
-- [ ] Full repository, asset, web, build, manifest, formatting, and version
-  checks pass after implementation.
+- [x] Focused `drl-render` tests cover all storage acceptance criteria.
+- [x] Full repository, asset, web, release-build, manifest, formatting, and
+  version checks pass after implementation.
 - [ ] Hosted repository and WASM jobs pass for the storage PR.
 
 ## Future
