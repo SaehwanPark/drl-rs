@@ -72,6 +72,9 @@ types shared by core, MCP, bots, and frontends.
   session checkpoint and reports an error.
 - Rendering, animation, audio, tab visibility, resize/DPR, and GPU loss never
   advance the simulation.
+- The bounded browser animation loop consumes `requestAnimationFrame` timestamps
+  only for caller-supplied elapsed rendering; hidden documents skip presentation
+  work, and a failed frame never submits a simulation command.
 - `PixelViewport` chooses an integer square cell size from physical canvas
   dimensions and centers the map; presentation backends may letterbox but may
   not stretch logical cells independently by axis.

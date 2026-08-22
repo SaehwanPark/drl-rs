@@ -141,6 +141,9 @@ documented in this file.
 - Added a caller-driven `WebGpuRenderer::render_at_elapsed` entrypoint that
   forwards elapsed layer plans into textured vertex generation while preserving
   the existing frame-zero render and geometry fallback paths.
+- Added a bounded browser `requestAnimationFrame` loop that converts callback
+  timestamps to elapsed milliseconds, skips hidden-document presentation, and
+  never advances simulation or owns effect timing.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch

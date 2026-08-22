@@ -112,6 +112,45 @@ const fn base_texture_ndc_rect(rect: PixelRect, canvas_width: u32, canvas_height
   ]
 }
 
+/// Converts a browser animation timestamp into bounded elapsed milliseconds.
+///
+/// The timestamp source and scheduling policy remain outside this pure helper.
+#[must_use]
+#[cfg_attr(not(target_arch = "wasm32"), allow(dead_code))]
+fn animation_elapsed_ms(start_ms: f64, timestamp_ms: f64) -> Option<u64> {
+  if !start_ms.is_finite() || !timestamp_ms.is_finite() || timestamp_ms < start_ms {
+    return None;
+  }
+  let elapsed_ms = (timestamp_ms - start_ms).floor();
+  if elapsed_ms >= u64::MAX as f64 {
+    Some(u64::MAX)
+  } else {
+    Some(elapsed_ms.max(0.0) as u64)
+  }
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[cfg_attr(not(target_arch = "wasm32"), allow(dead_code))]
+struct AnimationClock {
+  start_ms: Option<f64>,
+}
+
+#[cfg_attr(not(target_arch = "wasm32"), allow(dead_code))]
+impl AnimationClock {
+  fn reset(&mut self) {
+    self.start_ms = None;
+  }
+
+  fn elapsed_ms(&mut self, hidden: bool, timestamp_ms: f64) -> Option<u64> {
+    if hidden {
+      self.reset();
+      return None;
+    }
+    let start_ms = *self.start_ms.get_or_insert(timestamp_ms);
+    animation_elapsed_ms(start_ms, timestamp_ms)
+  }
+}
+
 /// Fixed deterministic content slice used by the first browser playthrough.
 pub const M4_SEED: u64 = 0x4452_4c5f_4d34;
 pub const M4_WIDTH: u32 = 24;
@@ -446,6 +485,8 @@ pub(crate) mod wasm {
     static RENDERER: RefCell<Option<WebGpuRenderer>> = const { RefCell::new(None) };
     static AUDIO: RefCell<Option<drl_audio::WebAudioMixer>> = const { RefCell::new(None) };
     static TARGET: RefCell<Option<Position>> = const { RefCell::new(None) };
+    static ANIMATION_CLOCK: RefCell<AnimationClock> = const { RefCell::new(AnimationClock { start_ms: None }) };
+    static ANIMATION_LOOP: RefCell<Option<Closure<dyn FnMut(f64)>>> = const { RefCell::new(None) };
   }
 
   /// Loads and decodes one same-origin imported atlas layer.
@@ -1114,6 +1155,65 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
     }
   }
 
+  fn render_animation_frame(timestamp_ms: f64) {
+    let Some(window) = web_sys::window() else {
+      return;
+    };
+    let Some(document) = window.document() else {
+      return;
+    };
+    let Some(elapsed_ms) = ANIMATION_CLOCK.with(|clock| {
+      clock
+        .borrow_mut()
+        .elapsed_ms(document.hidden(), timestamp_ms)
+    }) else {
+      return;
+    };
+    let Some(scene) =
+      SESSION.with(|session_slot| session_slot.borrow().as_ref().map(BrowserSession::scene))
+    else {
+      return;
+    };
+    let result = RENDERER.with(|renderer_slot| {
+      renderer_slot.borrow().as_ref().map_or(Ok(()), |renderer| {
+        renderer.render_at_elapsed(&scene, elapsed_ms, AnimationPlayback::Loop)
+      })
+    });
+    if let Err(error) = result {
+      set_status(
+        &document,
+        &format!("WebGPU animation frame unavailable; gameplay is unchanged: {error:?}"),
+      );
+    }
+  }
+
+  fn request_next_animation_frame() -> Result<(), JsValue> {
+    let window = web_sys::window().ok_or_else(|| JsValue::from_str("window unavailable"))?;
+    let callback = Closure::wrap(Box::new(|timestamp_ms: f64| {
+      render_animation_frame(timestamp_ms);
+      if let Err(error) = request_next_animation_frame()
+        && let Some(document) = web_sys::window().and_then(|window| window.document())
+      {
+        set_status(
+          &document,
+          &format!("Browser animation scheduling unavailable: {error:?}"),
+        );
+        ANIMATION_LOOP.with(|slot| *slot.borrow_mut() = None);
+      }
+    }) as Box<dyn FnMut(f64)>);
+    window.request_animation_frame(callback.as_ref().unchecked_ref())?;
+    ANIMATION_LOOP.with(|slot| *slot.borrow_mut() = Some(callback));
+    Ok(())
+  }
+
+  fn start_animation_loop() -> Result<(), JsValue> {
+    if ANIMATION_LOOP.with(|slot| slot.borrow().is_some()) {
+      return Ok(());
+    }
+    ANIMATION_CLOCK.with(|clock| clock.borrow_mut().reset());
+    request_next_animation_frame()
+  }
+
   /// Starts the browser shell after the HTML start button has granted audio.
   #[wasm_bindgen]
   pub async fn boot() -> Result<JsValue, JsValue> {
@@ -1166,6 +1266,12 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
       None => format!("{audio_message} Textures uploaded: {texture_count}."),
     };
     status.set_text_content(Some(&message));
+    if let Err(error) = start_animation_loop() {
+      set_status(
+        &document,
+        &format!("Browser animation scheduling unavailable; gameplay continues: {error:?}"),
+      );
+    }
     SESSION.with(|slot| {
       if let Some(session) = slot.borrow().as_ref() {
         update_dom(&document, &session.observation());
@@ -1323,6 +1429,7 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
       };
       match session.restart() {
         Ok(()) => {
+          ANIMATION_CLOCK.with(|clock| clock.borrow_mut().reset());
           let observation = session.observation();
           if let Some(document) = web_sys::window().and_then(|window| window.document()) {
             update_dom(&document, &observation);
@@ -1539,6 +1646,17 @@ mod tests {
   }
 
   #[test]
+  fn animation_elapsed_ms_is_monotonic_bounded_and_clock_free() {
+    assert_eq!(animation_elapsed_ms(100.0, 100.0), Some(0));
+    assert_eq!(animation_elapsed_ms(100.0, 100.9), Some(0));
+    assert_eq!(animation_elapsed_ms(100.0, 101.1), Some(1));
+    assert_eq!(animation_elapsed_ms(100.0, 99.0), None);
+    assert_eq!(animation_elapsed_ms(f64::NAN, 100.0), None);
+    assert_eq!(animation_elapsed_ms(100.0, f64::INFINITY), None);
+    assert_eq!(animation_elapsed_ms(0.0, u64::MAX as f64), Some(u64::MAX));
+  }
+
+  #[test]
   fn rejected_commands_do_not_advance_the_session() {
     let mut session = BrowserSession::new().expect("fixed session");
     let before = session.observation();
@@ -1562,6 +1680,18 @@ mod tests {
       BrowserSession::command_for_key("r", &observation),
       Some(Command::Reload)
     );
+  }
+
+  #[test]
+  fn animation_clock_rebases_after_hidden_frames() {
+    let mut clock = AnimationClock::default();
+    assert_eq!(clock.elapsed_ms(false, 100.0), Some(0));
+    assert_eq!(clock.elapsed_ms(false, 101.0), Some(1));
+    assert_eq!(clock.elapsed_ms(true, 500.0), None);
+    assert_eq!(clock.elapsed_ms(false, 501.0), Some(0));
+    assert_eq!(clock.elapsed_ms(false, 502.0), Some(1));
+    clock.reset();
+    assert_eq!(clock.elapsed_ms(false, 900.0), Some(0));
   }
 
   #[test]

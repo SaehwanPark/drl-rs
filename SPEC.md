@@ -15,7 +15,7 @@ progress. This file expands exactly one active implementation slice.
   redistribution-gated; its controlled reference-capture gate is `NOT_RUN` on
   arm64 macOS and remains an M8 acceptance dependency.
 
-## Present — M8 elapsed WebGPU rendering
+## Present — M8 browser animation scheduling
 
 Status: The M7 browser slice passed functional acceptance locally and in
 remote web CI. The delivered M8 pixel-grid, visibility-band, low-health tone,
@@ -51,6 +51,10 @@ progress APIs; browser scheduling remains outside the renderer boundary.
 The WASM shell now exposes `WebGpuRenderer::render_at_elapsed` to forward that
 selection into textured vertex generation without changing the frame-zero
 entrypoint or owning a browser clock.
+After boot, the WASM shell schedules caller-owned elapsed rendering from
+`requestAnimationFrame` timestamps, skips frames while the document is hidden,
+and resets its presentation baseline on restart; simulation commands remain
+event-driven.
 
 ### Observable behavior
 
@@ -188,6 +192,10 @@ entrypoint or owning a browser clock.
 - `WebGpuRenderer::render_at_elapsed` forwards caller-supplied elapsed time and
   playback policy to the textured pass; malformed elapsed plans take the
   existing geometry fallback, while `render` remains frame zero.
+- The browser shell's bounded `requestAnimationFrame` loop converts finite,
+  monotonic callback timestamps to elapsed milliseconds, skips hidden-document
+  frames, and never submits simulation commands. A scheduling failure leaves
+  gameplay available.
 - The WGSL source is shared with a native shader-contract test that checks the
   base/emissive/mask samples, fair-lighting `max`, tint forwarding, neutral
   fallback input, alpha cutout, and output path; native tests therefore guard
@@ -262,11 +270,13 @@ capture is available.
 - Legacy audio/music/fonts are not shipped until rights are documented.
 - Full audiovisual equivalence is M8: capture-backed tolerances, visual
   regressions, cue timing, and structured human comparison.
-- Visible outline/glow equations, browser timing/effect ownership, broader
-  content-specific animation timing, additional per-sprite tint sources, and
-  capture-backed legacy shader equivalence remain future M8 slices; this pass
+- Visible outline/glow equations, effect ownership, broader content-specific
+  animation timing, additional per-sprite tint sources, visibility-lifecycle
+  hardening, and capture-backed legacy shader equivalence remain future M8
+  slices; this pass
   is intentionally limited to caller-supplied renderer-neutral timing and
-  layer-plan math and caller-driven WASM forwarding.
+  layer-plan math, caller-driven WASM forwarding, and bounded browser
+  scheduling.
 
 ## Next
 
@@ -277,9 +287,10 @@ texture upload, base-color sampling, the emissive lighting floor, the legacy
 alpha cutoff, optional mask sampling, the Green Armor and Phase Device tint
 boundaries, outline-mask GPU transport, caller-supplied frame selection, and
 the evidenced player/actor/Phase Device animation metadata, progress-driven
-frame plans, elapsed-time layer plans, and caller-driven elapsed WebGPU
-forwarding are covered by local checks and hosted WASM browser jobs. Continue
-M8 with visible outline/glow compositing, browser animation scheduling,
+frame plans, elapsed-time layer plans, caller-driven elapsed WebGPU forwarding,
+and bounded browser scheduling are covered by local checks and hosted WASM
+browser jobs. Continue M8 with visible outline/glow compositing,
+visibility-lifecycle hardening,
 broader content, additional tint sources, or capture-backed measurement of
 lighting, effects, typography, and audio. Do not claim audiovisual parity from
 renderer-neutral grouping or the `NOT_RUN` legacy captures.
