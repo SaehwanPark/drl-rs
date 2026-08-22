@@ -80,6 +80,9 @@ documented in this file.
 - Added a subpath-safe `drl-web::browser_asset_url` and WASM
   `load_texture_source` preflight that decodes same-origin imported PNGs and
   validates their manifest dimensions before any future GPU upload.
+- Added a deterministic 24-source manifest and renderer-owned WASM WebGPU
+  texture/view cache. Each validated decoded PNG is uploaded once with the
+  external-image copy API; shader sampling and role compositing remain open.
 - Added pure `active_effect_frames` progress mapping for fair effect spans;
   frontend ticks receive stable normalized progress without advancing gameplay
   or claiming legacy animation-frame parity.

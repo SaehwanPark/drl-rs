@@ -15,7 +15,7 @@ progress. This file expands exactly one active implementation slice.
   redistribution-gated; its controlled reference-capture gate is `NOT_RUN` on
   arm64 macOS and remains an M8 acceptance dependency.
 
-## Present — M8 texture source loader
+## Present — M8 GPU texture upload
 
 Status: The M7 browser slice passed functional acceptance locally and in
 remote web CI. The delivered M8 pixel-grid, visibility-band, low-health tone,
@@ -24,11 +24,13 @@ slices replaced placeholder atlas cells with measured 32-pixel slots, carried
 registered source-layer sets through semantic descriptors, exposed normalized
 UV geometry, built ordered layer draw plans with screen rectangles and UVs
 from fair render scenes, attached imported texture-source paths and dimensions,
-and carried fair visible/explored lighting into each layer draw entry. This
-bounded follow-up adds a subpath-safe browser URL boundary and a WASM image
-decode path that validates each imported layer's measured dimensions before
-handing the image to a future GPU uploader. It does not yet upload, sample, or
-blend textures, and does not claim capture-backed audiovisual equivalence.
+and carried fair visible/explored lighting into each layer draw entry. The
+preceding bounded loader added a subpath-safe browser URL boundary and a WASM
+image decode path that validates each imported layer's measured dimensions.
+This follow-up builds a stable unique-source manifest and uploads those
+decoded images into renderer-owned WebGPU texture/view resources. The existing
+geometry pipeline still does not sample or blend them, and no capture-backed
+audiovisual equivalence is claimed.
 
 ### Observable behavior
 
@@ -115,6 +117,11 @@ blend textures, and does not claim capture-backed audiovisual equivalence.
 - The browser asset URL helper accepts only relative imported PNG basenames and
   keeps deployments under a subpath; the WASM loader decodes a same-origin
   image and rejects dimensions that differ from the pinned manifest.
+- `drl-web::texture_source_manifest` emits the 24 unique registered layer
+  sources in stable atlas order, and the WASM renderer uploads each validated
+  source once into a persistent `Rgba8UnormSrgb` texture/view cache using the
+  WebGPU external-image copy API. The cache is renderer-owned and does not
+  advance gameplay.
 - Every layer draw carries its fair `LightingBand`: explored tile memory uses
   the fixed explored factor, while visible tiles/items/actors use full light.
 - `drl-render::active_effect_frames` returns normalized `[0, 1)` progress for
@@ -181,15 +188,16 @@ capture is available.
 - Legacy audio/music/fonts are not shipped until rights are documented.
 - Full audiovisual equivalence is M8: capture-backed tolerances, visual
   regressions, cue timing, and structured human comparison.
-- Texture upload, shader sampling, animation frame selection, and layer
-  compositing remain future M8 slices.
+- Shader sampling, role-specific blend equations, animation frame selection,
+  and layer compositing remain future M8 slices; this cache only proves the
+  decoded-image-to-GPU resource boundary.
 
 ## Next
 
 The pixel-scale viewport, atlas metadata, UV geometry, draw-plan source
 metadata, fair lighting factors, effect progress, layer input roles, grouped
-sprite composites, and validated browser source loading are covered by local
-checks and prior hosted WASM browser jobs. Continue M8 only with actual
-texture upload/shader compositing or capture-backed measurement of
+sprite composites, validated browser source loading, and renderer-owned GPU
+texture upload are covered by local checks and prior hosted WASM browser jobs.
+Continue M8 only with actual shader sampling/compositing or capture-backed measurement of
 lighting, effects, typography, and audio. Do not claim audiovisual parity from
 renderer-neutral grouping or the `NOT_RUN` legacy captures.

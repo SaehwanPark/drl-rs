@@ -4,7 +4,7 @@
 //! tests. The WASM exports are a thin boot/input shell; gameplay state stays in
 //! Rust and is never mirrored into a parallel JavaScript model.
 
-use drl_assets::AtlasTextureSource;
+use drl_assets::{AtlasId, AtlasTextureSource};
 use drl_core::item::Item;
 use drl_core::{Game, Tile};
 use drl_protocol::{
@@ -21,6 +21,32 @@ pub const M4_START: Position = Position::new(4, 8);
 
 /// Static bundle root used by the browser texture loader.
 pub const GRAPHICS_ASSET_ROOT: &str = "assets/legacy/drl/graphics/";
+
+const REGISTERED_ATLASES: [AtlasId; 7] = [
+  AtlasId::Dguy,
+  AtlasId::Enemies,
+  AtlasId::EnemiesBig,
+  AtlasId::GunsAndPickups,
+  AtlasId::Levels,
+  AtlasId::DoorsAndDecorations,
+  AtlasId::Fx,
+];
+
+/// Returns every unique imported layer source in stable atlas registration
+/// order. A browser uploader can use this manifest without inspecting scenes.
+#[must_use]
+pub fn texture_source_manifest() -> Vec<AtlasTextureSource> {
+  let mut sources = Vec::new();
+  for atlas in REGISTERED_ATLASES {
+    for &layer in atlas.layers() {
+      let source = atlas.texture_source(layer);
+      if !sources.contains(&source) {
+        sources.push(source);
+      }
+    }
+  }
+  sources
+}
 
 /// A rejected browser asset path.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -297,7 +323,11 @@ pub enum GpuStatus {
 }
 
 #[cfg(target_arch = "wasm32")]
-mod wasm {
+mod texture;
+
+#[cfg(target_arch = "wasm32")]
+pub(crate) mod wasm {
+  use super::texture::GpuTextureCache;
   use super::*;
   use drl_render::{PixelViewport, scene_clear_color, shade_color};
   use std::cell::RefCell;
@@ -333,6 +363,10 @@ mod wasm {
     JsFuture::from(image.decode()).await?;
     validate_texture_source_dimensions(source, image.natural_width(), image.natural_height())
       .map_err(|error| JsValue::from_str(&error.to_string()))?;
+    // WebGPU's external-image source reports the element's pixel dimensions;
+    // pin them to the validated manifest before issuing the copy.
+    image.set_width(source.width);
+    image.set_height(source.height);
     Ok(image)
   }
 
@@ -345,6 +379,8 @@ mod wasm {
     config: wgpu::SurfaceConfiguration,
     pipeline: wgpu::RenderPipeline,
     canvas: HtmlCanvasElement,
+    textures: Option<GpuTextureCache>,
+    texture_upload_error: Option<String>,
   }
 
   const SCENE_SHADER: &str = r#"
@@ -455,6 +491,18 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
         multiview_mask: None,
         cache: None,
       });
+      let (textures, texture_upload_error) =
+        match GpuTextureCache::load(&device, &queue, texture_source_manifest()).await {
+          Ok(cache) => (Some(cache), None),
+          Err(error) => (
+            None,
+            Some(
+              error
+                .as_string()
+                .unwrap_or_else(|| "texture upload failed".to_string()),
+            ),
+          ),
+        };
       Ok(Self {
         _instance: instance,
         surface,
@@ -463,7 +511,27 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
         config,
         pipeline,
         canvas,
+        textures,
+        texture_upload_error,
       })
+    }
+
+    /// Returns the number of unique imported sources uploaded at startup.
+    pub fn texture_source_count(&self) -> usize {
+      self.textures.as_ref().map_or(0, GpuTextureCache::len)
+    }
+
+    /// Reports whether a decoded source has a retained GPU view.
+    pub fn has_texture_source(&self, source: AtlasTextureSource) -> bool {
+      self
+        .textures
+        .as_ref()
+        .is_some_and(|textures| textures.view(source).is_some())
+    }
+
+    /// Returns the non-fatal upload error, if geometry fallback is active.
+    pub fn texture_upload_error(&self) -> Option<&str> {
+      self.texture_upload_error.as_deref()
     }
 
     /// Resizes only the presentation surface; it never touches simulation.
@@ -872,6 +940,8 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
     let turn = session.observation().turn.count;
     let renderer = WebGpuRenderer::new(canvas.clone()).await?;
     renderer.render(&session.scene())?;
+    let texture_count = renderer.texture_source_count();
+    let texture_upload_error = renderer.texture_upload_error().map(str::to_owned);
     // Audio is an optional presentation effect. Browser policy, an unavailable
     // AudioContext, or a suspended context must never prevent the simulation
     // session from starting or accepting commands.
@@ -892,12 +962,18 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
     let status = document
       .get_element_by_id("game-status")
       .ok_or_else(|| JsValue::from_str("#game-status is missing"))?;
-    let message = match (audio_available, audio_unlocked) {
+    let audio_message = match (audio_available, audio_unlocked) {
       (true, true) => "Ready — use arrows/WASD or numpad. Audio is gesture-gated.",
       (true, false) => "Ready — use arrows/WASD or numpad. Audio is suspended; gameplay continues.",
       (false, _) => "Ready — use arrows/WASD or numpad. Audio is unavailable; gameplay continues.",
     };
-    status.set_text_content(Some(message));
+    let message = match texture_upload_error {
+      Some(error) => {
+        format!("{audio_message} Texture upload unavailable; geometry fallback active ({error}).")
+      }
+      None => format!("{audio_message} Textures uploaded: {texture_count}."),
+    };
+    status.set_text_content(Some(&message));
     SESSION.with(|slot| {
       if let Some(session) = slot.borrow().as_ref() {
         update_dom(&document, &session.observation());
@@ -1155,6 +1231,22 @@ mod tests {
     assert_eq!(error.expected, (512, 192));
     assert_eq!(error.actual, (256, 192));
     assert!(error.to_string().contains("expected 512x192"));
+  }
+
+  #[test]
+  fn texture_source_manifest_is_stable_and_deduplicated() {
+    let sources = texture_source_manifest();
+    assert_eq!(sources.len(), 24);
+    assert_eq!(sources.first().expect("base source").path, "dguy.png");
+    assert_eq!(sources.last().expect("last source").path, "fx_emissive.png");
+    assert!(sources.windows(2).all(|window| window[0] != window[1]));
+    assert_eq!(
+      sources
+        .iter()
+        .filter(|source| source.path == "levels.png")
+        .count(),
+      1
+    );
   }
 
   #[test]

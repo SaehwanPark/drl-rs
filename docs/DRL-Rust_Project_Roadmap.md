@@ -51,7 +51,8 @@ automated regressions, and human review.
   explicit legacy shader input roles are carried into draw entries, and
   complete role sets are grouped into deterministic compositor inputs, while
   a subpath-safe WASM source loader now validates decoded image dimensions;
-  texture upload/compositing and capture-backed parity remain open. Pure
+  renderer-owned GPU texture upload is now available; shader compositing and
+  capture-backed parity remain open. Pure
   frontend effect progress is now available; legacy animation timing remains
   capture-gated.
 - `SPEC.md` contains the single active M8 slice; it is not a second roadmap.
@@ -143,7 +144,8 @@ geometry, texture-source metadata, fair lighting factors, normalized effect
 progress, explicit base/mask/outline/emissive input roles, grouped sprite
 composite inputs, and validated browser source loading are available, and
 `drl-render::layer_draw_plan` converts fair scenes into ordered pixel/UV
-operations. Remaining work is texture/layer compositing; implement
+operations; the renderer now retains a 24-source GPU texture cache. Remaining
+work is shader sampling/layer compositing; implement
 capture-backed lighting/LUT parity,
 particles, animation/effect timing, HUD typography, cleared legacy or
 replacement audio, music transitions, and automated visual/audio regressions
