@@ -178,10 +178,14 @@ provenance and evidence classification.
 The current follow-up also exposes a pure source-derived low-health pulse
 target from fair HP and caller-supplied elapsed milliseconds; smoothing and
 post-processing remain backend/capture work.
-The next bounded follow-up records the pinned declared/effective post-process
-blur weights, glow add, and LUT-coordinate normalization as pure renderer
-contracts without claiming an offscreen GPU pipeline or capture-backed color
-parity.
+The preceding bounded follow-up recorded the pinned declared/effective
+post-process blur weights, glow add, and LUT-coordinate normalization as pure
+renderer contracts without claiming an offscreen GPU pipeline or
+capture-backed color parity.
+The current follow-up adds pure horizontal/vertical blur-tap plans with
+caller-supplied screen dimensions; execution and capture-backed parity remain
+open. Its pure five-sample reduction preserves weighted RGB and center-only
+alpha without renormalization or clamping; backend sampling remains open.
 Remaining work is visible outline/glow role-specific shader blending/layer
 compositing, additional per-sprite tint sourcing, broader content metadata;
 capture-backed lighting/LUT parity,

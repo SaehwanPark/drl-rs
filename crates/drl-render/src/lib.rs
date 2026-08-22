@@ -196,6 +196,86 @@ pub const POST_PROCESS_BLUR_DECLARED_WEIGHTS: [f32; 5] =
 /// Effective symmetric weights for center, one-pixel, and two-pixel offsets.
 pub const POST_PROCESS_BLUR_WEIGHTS: [f32; 3] = [0.227_027, 0.316_216, 0.070_270];
 
+/// Axis used by the two tracked post-process blur passes.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum PostProcessBlurAxis {
+  Horizontal,
+  Vertical,
+}
+
+/// One normalized tap in a post-process blur plan.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct PostProcessBlurTap {
+  pub offset: [f32; 2],
+  pub weight: f32,
+}
+
+/// Index of the tap whose source alpha is preserved by the legacy blur pass.
+pub const POST_PROCESS_BLUR_CENTER_INDEX: usize = 2;
+
+/// Builds the tracked five-tap blur plan for a caller-supplied screen size.
+#[must_use]
+pub fn post_process_blur_taps(
+  axis: PostProcessBlurAxis,
+  screen_width: u32,
+  screen_height: u32,
+) -> Option<[PostProcessBlurTap; 5]> {
+  if screen_width == 0 || screen_height == 0 {
+    return None;
+  }
+
+  let scale = match axis {
+    PostProcessBlurAxis::Horizontal => 1.0 / screen_width as f32,
+    PostProcessBlurAxis::Vertical => 1.0 / screen_height as f32,
+  };
+  let offsets = [-2.0_f32, -1.0, 0.0, 1.0, 2.0];
+  let weights = [
+    POST_PROCESS_BLUR_WEIGHTS[2],
+    POST_PROCESS_BLUR_WEIGHTS[1],
+    POST_PROCESS_BLUR_WEIGHTS[0],
+    POST_PROCESS_BLUR_WEIGHTS[1],
+    POST_PROCESS_BLUR_WEIGHTS[2],
+  ];
+  Some(std::array::from_fn(|index| {
+    let distance = offsets[index] * scale;
+    let offset = match axis {
+      PostProcessBlurAxis::Horizontal => [distance, 0.0],
+      PostProcessBlurAxis::Vertical => [0.0, distance],
+    };
+    PostProcessBlurTap {
+      offset,
+      weight: weights[index],
+    }
+  }))
+}
+
+/// Applies the tracked blur reduction to five caller-supplied RGBA samples.
+///
+/// RGB uses the effective weights without renormalization; alpha is copied
+/// from the center sample, matching the legacy shader's `texel.w` rule.
+#[must_use]
+pub fn post_process_blur_rgba(samples: [[f32; 4]; 5]) -> [f32; 4] {
+  let weights = [
+    POST_PROCESS_BLUR_WEIGHTS[2],
+    POST_PROCESS_BLUR_WEIGHTS[1],
+    POST_PROCESS_BLUR_WEIGHTS[0],
+    POST_PROCESS_BLUR_WEIGHTS[1],
+    POST_PROCESS_BLUR_WEIGHTS[2],
+  ];
+  let mut rgb = [0.0; 3];
+  for (sample, weight) in samples.into_iter().zip(weights) {
+    for (channel, value) in rgb.iter_mut().zip(sample[..3].iter()) {
+      *channel += value * weight;
+    }
+  }
+  [
+    rgb[0],
+    rgb[1],
+    rgb[2],
+    samples[POST_PROCESS_BLUR_CENTER_INDEX][3],
+  ]
+}
+
 /// Applies the observed post-process glow add to an RGB color.
 ///
 /// Callers provide finite presentation values; non-finite input policy is not
@@ -1080,6 +1160,64 @@ mod tests {
       post_process_lut_coordinate([-1.0, 2.0, 0.0]),
       [0.0, 1.0 / 32.0, 1.0]
     );
+  }
+
+  #[test]
+  fn post_process_blur_taps_plan_both_axes_and_center_alpha() {
+    assert_eq!(POST_PROCESS_BLUR_CENTER_INDEX, 2);
+
+    let horizontal = post_process_blur_taps(PostProcessBlurAxis::Horizontal, 320, 200)
+      .expect("nonzero dimensions produce taps");
+    let vertical = post_process_blur_taps(PostProcessBlurAxis::Vertical, 320, 200)
+      .expect("nonzero dimensions produce taps");
+
+    assert!((horizontal[0].offset[0] + 2.0 / 320.0).abs() < 0.000_001);
+    assert_eq!(horizontal[0].offset[1], 0.0);
+    assert_eq!(horizontal[2].offset, [0.0, 0.0]);
+    assert!((vertical[4].offset[1] - 2.0 / 200.0).abs() < 0.000_001);
+    assert_eq!(vertical[4].offset[0], 0.0);
+
+    let weights = horizontal.map(|tap| tap.weight);
+    assert_eq!(
+      weights,
+      [0.070_270, 0.316_216, 0.227_027, 0.316_216, 0.070_270]
+    );
+    assert_eq!(
+      horizontal,
+      post_process_blur_taps(PostProcessBlurAxis::Horizontal, 320, 200).unwrap()
+    );
+  }
+
+  #[test]
+  fn post_process_blur_taps_reject_zero_dimensions() {
+    assert_eq!(
+      post_process_blur_taps(PostProcessBlurAxis::Horizontal, 0, 200),
+      None
+    );
+    assert_eq!(
+      post_process_blur_taps(PostProcessBlurAxis::Vertical, 320, 0),
+      None
+    );
+  }
+
+  #[test]
+  fn post_process_blur_rgba_weights_rgb_and_preserves_center_alpha() {
+    let samples = [
+      [1.0, 2.0, 3.0, 0.1],
+      [4.0, 5.0, 6.0, 0.2],
+      [7.0, 8.0, 9.0, 0.3],
+      [10.0, 11.0, 12.0, 0.4],
+      [13.0, 14.0, 15.0, 0.5],
+    ];
+    let blurred = post_process_blur_rgba(samples);
+    assert!((blurred[0] - 7.0).abs() < 0.000_01);
+    assert!((blurred[1] - 8.0).abs() < 0.000_01);
+    assert!((blurred[2] - 9.0).abs() < 0.000_01);
+    assert_eq!(blurred[3], 0.3);
+
+    let constant = post_process_blur_rgba([[1.0, 1.0, 1.0, 0.0]; 5]);
+    assert!(constant[..3].iter().all(|channel| *channel < 1.0));
+    assert!(constant[..3].iter().all(|channel| *channel > 0.999));
   }
 
   #[test]
