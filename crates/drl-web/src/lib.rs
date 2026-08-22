@@ -10,7 +10,7 @@ use drl_protocol::{
   Command, Direction, ItemId, ItemSpawnKind, ItemSpawnSpec, MonsterKind, MonsterSpawnSpec,
   PlayerObservation, Position, ReplayLog,
 };
-use drl_render::{PresentationStep, RenderScene};
+use drl_render::{PresentationStep, RenderScene, effect_timeline};
 
 /// Fixed deterministic content slice used by the first browser playthrough.
 pub const M4_SEED: u64 = 0x4452_4c5f_4d34;
@@ -97,10 +97,12 @@ impl BrowserSession {
         self.last_error = None;
         self.commands.push(command);
         let after = self.observation();
+        let effects = effect_timeline(&events);
         Ok(PresentationStep {
           before,
           command,
           events,
+          effects,
           after,
         })
       }
@@ -1076,6 +1078,7 @@ mod tests {
       let expected_events = direct.step(command).expect("direct command");
       let step = browser.submit(command).expect("browser command");
       assert_eq!(step.events, expected_events);
+      assert_eq!(step.effects, drl_render::effect_timeline(&expected_events));
       assert_eq!(step.after, direct.observe_player());
     }
     let replay = browser.replay_log();

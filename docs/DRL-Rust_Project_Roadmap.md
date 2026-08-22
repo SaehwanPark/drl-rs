@@ -40,6 +40,8 @@ automated regressions, and human review.
   `drl-render::SceneTone`; capture-backed low-life LUT/glow parity remains open.
 - The active M8 follow-up adds event-ordered `drl-render::EffectSpan` timing;
   capture-backed animation/effect durations remain open.
+- The browser effect handoff now carries ordered spans in successful
+  `PresentationStep` results; visual frame mapping remains capture-gated.
 - `SPEC.md` contains the single active M8 slice; it is not a second roadmap.
 
 ## Milestones

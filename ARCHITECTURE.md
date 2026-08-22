@@ -37,7 +37,8 @@ types shared by core, MCP, bots, and frontends.
   `PixelViewport`/`PixelRect` layout math, and visibility-derived
   `LightingBand`/`shade_color` rules, health-derived `SceneTone`/clear color,
   and event-ordered `EffectSpan` timing. It consumes player observations/events
-  only; GPU ownership is in the WASM shell.
+  only; GPU ownership is in the WASM shell. `drl-web` carries the computed
+  spans through each successful `PresentationStep`.
 - `drl-audio`: deterministic event-to-`AudioCue` mapping and a WASM Web Audio
   mixer with explicit user-gesture unlock, mute, and volume state.
 - `drl-web`: `cdylib + rlib` browser session, Winit/DOM command mapping,
@@ -66,6 +67,8 @@ types shared by core, MCP, bots, and frontends.
   simulation or hidden-state channel.
 - `EffectSpan` uses fixed logical durations and event order only. Frontends may
   map ticks to frames, but presentation timing cannot advance the simulation.
+- `PresentationStep::effects` is computed at the command boundary from the
+  returned event list; rejected commands produce no step and no effects.
 - Player scenes use only visible/explored observations. Omniscient views remain
   debug-only and are not available to ordinary browser input.
 - Imported legacy graphics are tracked under `assets/legacy/drl/graphics/`

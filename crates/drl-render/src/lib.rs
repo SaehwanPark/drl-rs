@@ -15,6 +15,7 @@ pub struct PresentationStep {
   pub before: PlayerObservation,
   pub command: Command,
   pub events: Vec<GameEvent>,
+  pub effects: Vec<EffectSpan>,
   pub after: PlayerObservation,
 }
 
