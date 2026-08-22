@@ -33,14 +33,15 @@ types shared by core, MCP, bots, and frontends.
   semantic tile/actor/item lookup, and legacy revision identity. It has no
   decoder or platform dependency and core does not depend on it.
 - `drl-render`: deterministic `PresentationStep`, `RenderScene`, target
-  candidates, and bounded event-to-effect builders. It consumes player
+  candidates, bounded event-to-effect builders, and observation-independent
+  `PixelViewport`/`PixelRect` layout math. It consumes player
   observations/events only; GPU ownership is in the WASM shell.
 - `drl-audio`: deterministic event-to-`AudioCue` mapping and a WASM Web Audio
   mixer with explicit user-gesture unlock, mute, and volume state.
 - `drl-web`: `cdylib + rlib` browser session, Winit/DOM command mapping,
-  static shell exports, WebGPU scene-geometry surface, DPR resize, and
-  recoverable GPU/audio status. It never mirrors authoritative gameplay state
-  into JavaScript.
+  static shell exports, WebGPU scene-geometry surface, DPR resize, deterministic
+  square-cell pixel layout, and recoverable GPU/audio status. It never mirrors
+  authoritative gameplay state into JavaScript.
 - `drl-mcp`: zero-dependency JSON-RPC/MCP semantic server and fairness boundary.
 - `drl-app`: native headless demo and MCP stdio runner, retained for tooling.
 - `drl-script`: conversion/content boundary placeholder; no runtime Lua.
@@ -52,6 +53,9 @@ types shared by core, MCP, bots, and frontends.
   session checkpoint and reports an error.
 - Rendering, animation, audio, tab visibility, resize/DPR, and GPU loss never
   advance the simulation.
+- `PixelViewport` chooses an integer square cell size from physical canvas
+  dimensions and centers the map; presentation backends may letterbox but may
+  not stretch logical cells independently by axis.
 - Player scenes use only visible/explored observations. Omniscient views remain
   debug-only and are not available to ordinary browser input.
 - Imported legacy graphics are tracked under `assets/legacy/drl/graphics/`

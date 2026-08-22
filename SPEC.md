@@ -15,10 +15,12 @@ progress. This file expands exactly one active implementation slice.
   redistribution-gated; its controlled reference-capture gate is `NOT_RUN` on
   arm64 macOS and remains an M8 acceptance dependency.
 
-## Present — M7 Browser-playable M4 slice
+## Present — M8 deterministic pixel-scale viewport
 
-Status: Functional acceptance passed locally and in remote web CI; the
-capture-backed fidelity comparison remains open.
+Status: The M7 browser slice passed functional acceptance locally and in
+remote web CI. This bounded M8 implementation slice keeps map cells square by
+fitting an integer pixel grid into the physical WebGPU surface. The
+capture-backed audiovisual comparison remains open.
 
 ### Observable behavior
 
@@ -47,6 +49,11 @@ capture-backed fidelity comparison remains open.
   retry, so the visible status cannot report a stale unlock result.
 - Mute and volume controls serialize audio-unlock/settings operations, so rapid
   presentation events cannot apply a stale setting or advance simulation.
+- `drl-render::PixelViewport` chooses the largest integer tile size that fits
+  the physical canvas, centers the map, and exposes deterministic tile pixel
+  rectangles for presentation backends.
+- The WebGPU scene uses those rectangles, preserving square cells and
+  letterboxing unused canvas space without changing simulation state.
 
 ### Public contracts
 
@@ -66,13 +73,16 @@ Local checks:
 sh scripts/check-repository.sh              PASS (baseline plus new crates)
 sh scripts/check-assets.sh                  PASS (32 PNGs, license, hashes)
 cargo check --locked -p drl-web --target wasm32-unknown-unknown  PASS
+cargo test -p drl-render                      PASS (pixel-grid layout and scene contracts)
 scripts/check-web.sh                        PASS for native/WASM builds;
                                              browser runner NOT_RUN if Chrome absent
 scripts/build-web.sh                         PASS (release bundle in ignored dist/)
 Chrome 151 WebGPU smoke playthrough          PASS (Apple Metal-3, 1280x720, DPR 1;
                                              start with explicit gesture-gated
-                                             audio state, move, mute, restart)
-GitHub Actions run 32538238323               PASS (repository + Ubuntu WASM jobs)
+                                             audio state, move, mute, restart;
+                                             pixel-grid scene visible after move)
+GitHub Actions run 32539486760               PASS (repository + Ubuntu WASM jobs;
+                                             M8 pixel-scale branch)
 ```
 
 The local and remote functional gates pass. The run records browser/version,
@@ -92,7 +102,8 @@ legacy capture is available.
 
 ## Next
 
-After the controlled capture and reference-scene comparison pass, move this
-slice to Past and activate the first bounded M8 audiovisual-parity slice. Do
-not claim M8 fidelity from the current placeholder atlas rectangles or the
+The pixel-scale viewport is covered by local in-app Chrome smoke and the
+hosted WASM browser job. Continue M8 only with capture-backed measurement of
+atlas rectangles, lighting, effects, typography, and audio. Do not claim
+audiovisual parity from the current placeholder atlas rectangles or the
 `NOT_RUN` legacy captures.

@@ -8,9 +8,10 @@ replays, and regression testing.
 
 The current repository contains a playable browser-slice implementation and a
 complete deterministic M4 simulation. M7 functional checks pass locally and in
-remote web CI; full audiovisual equivalence, broader content, PWA persistence,
-and other browsers remain staged roadmap work. Do not read the placeholder M7
-atlas rectangles as a fidelity claim.
+remote web CI; the first M8 presentation slice keeps browser map cells square
+with deterministic pixel-grid letterboxing. Full audiovisual equivalence,
+broader content, PWA persistence, and other browsers remain staged roadmap
+work. Do not read the placeholder M7 atlas rectangles as a fidelity claim.
 
 ## Quick start
 
@@ -77,7 +78,8 @@ legacy graphics metadata; it is not a dependency of the core.
   compatibility-sensitive MCP/replay contracts.
 - `crates/drl-assets`: atlas IDs, layers, rectangles, semantic asset mapping,
   and legacy revision identity.
-- `crates/drl-render`: pure `PresentationStep`/`RenderScene` construction.
+- `crates/drl-render`: pure scene construction and deterministic pixel viewport
+  layout.
 - `crates/drl-audio`: semantic cues and WASM Web Audio mixer.
 - `crates/drl-web`: browser session, Winit/WebGPU scene surface, DOM shell, and
   WASM exports.

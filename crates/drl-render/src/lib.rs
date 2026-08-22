@@ -34,6 +34,77 @@ pub enum PresentationEffect {
   Knockback,
 }
 
+/// Integer pixel bounds for one logical map cell.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PixelRect {
+  pub x: u32,
+  pub y: u32,
+  pub width: u32,
+  pub height: u32,
+}
+
+/// Deterministic pixel-grid layout for a scene and its physical canvas.
+///
+/// The viewport uses one square integer-sized cell for every map tile. Any
+/// unused pixels are centered as letterbox margins instead of stretching the
+/// map differently on each axis.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PixelViewport {
+  pub map_width: u32,
+  pub map_height: u32,
+  pub canvas_width: u32,
+  pub canvas_height: u32,
+  pub tile_size: u32,
+  pub offset_x: u32,
+  pub offset_y: u32,
+}
+
+impl PixelViewport {
+  /// Fits a map into a physical canvas using the largest square tile size.
+  #[must_use]
+  pub fn fit(map_width: u32, map_height: u32, canvas_width: u32, canvas_height: u32) -> Self {
+    let map_width = map_width.max(1);
+    let map_height = map_height.max(1);
+    let canvas_width = canvas_width.max(1);
+    let canvas_height = canvas_height.max(1);
+    let tile_size = (canvas_width / map_width).min(canvas_height / map_height);
+    let board_width = tile_size.saturating_mul(map_width);
+    let board_height = tile_size.saturating_mul(map_height);
+    Self {
+      map_width,
+      map_height,
+      canvas_width,
+      canvas_height,
+      tile_size,
+      offset_x: canvas_width.saturating_sub(board_width) / 2,
+      offset_y: canvas_height.saturating_sub(board_height) / 2,
+    }
+  }
+
+  /// Returns the integer pixel rectangle for a map position.
+  #[must_use]
+  pub fn tile_rect(self, position: Position) -> Option<PixelRect> {
+    if self.tile_size == 0 {
+      return None;
+    }
+    let x = u32::try_from(position.x).ok()?;
+    let y = u32::try_from(position.y).ok()?;
+    if x >= self.map_width || y >= self.map_height {
+      return None;
+    }
+    Some(PixelRect {
+      x: self
+        .offset_x
+        .saturating_add(x.saturating_mul(self.tile_size)),
+      y: self
+        .offset_y
+        .saturating_add(y.saturating_mul(self.tile_size)),
+      width: self.tile_size,
+      height: self.tile_size,
+    })
+  }
+}
+
 /// A tile ready for a renderer to draw.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SceneTile {
@@ -205,6 +276,45 @@ pub fn renderer_name() -> &'static str {
 mod tests {
   use super::*;
   use drl_core::Game;
+
+  #[test]
+  fn pixel_viewport_centers_square_integer_cells() {
+    let viewport = PixelViewport::fit(24, 16, 960, 504);
+    assert_eq!(viewport.tile_size, 31);
+    assert_eq!(viewport.offset_x, 108);
+    assert_eq!(viewport.offset_y, 4);
+    assert_eq!(
+      viewport.tile_rect(Position::new(0, 0)),
+      Some(PixelRect {
+        x: 108,
+        y: 4,
+        width: 31,
+        height: 31,
+      })
+    );
+    assert_eq!(
+      viewport.tile_rect(Position::new(23, 15)),
+      Some(PixelRect {
+        x: 821,
+        y: 469,
+        width: 31,
+        height: 31,
+      })
+    );
+  }
+
+  #[test]
+  fn pixel_viewport_clamps_empty_dimensions_and_rejects_out_of_bounds_tiles() {
+    let viewport = PixelViewport::fit(0, 0, 0, 0);
+    assert_eq!(viewport.tile_size, 1);
+    assert!(viewport.tile_rect(Position::new(0, 0)).is_some());
+    assert_eq!(viewport.tile_rect(Position::new(-1, 0)), None);
+    assert_eq!(viewport.tile_rect(Position::new(1, 0)), None);
+
+    let undersized = PixelViewport::fit(24, 16, 1, 1);
+    assert_eq!(undersized.tile_size, 0);
+    assert_eq!(undersized.tile_rect(Position::new(0, 0)), None);
+  }
 
   #[test]
   fn scene_contains_only_observed_content() {
