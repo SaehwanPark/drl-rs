@@ -16,6 +16,7 @@ capabilities, not an architecture to copy into `drl-core`.
 | Fog, explored memory, and visibility tint | `drlgfxio.pas`; `drlspritemap.pas` | `RenderScene` visibility flags and M8 lighting | observed/inferred |
 | Target overlays and hit/knockback effects | `drlspritemap.pas`; `drlparticles.pas` | event-driven bounded effects | observed |
 | Particle burst range sampling | `fpcvalkyrie/src/vrltools.pas`; `drlparticles.pas` | caller-owned renderer range math | observed |
+| Particle decal cell mapping | `drlparticles.pas` | caller-owned renderer cell math | observed |
 | Animation sequencing | `drlanimation.pas` | deterministic presentation timeline | observed |
 | HUD, inventory, low-life treatment | `drlgfxio.pas`; `low_life_glow.png` | semantic DOM HUD plus pixel effects | observed/inferred |
 | LUT color grading | `lut_*.png` | optional M8 post-process | observed |

@@ -5,6 +5,9 @@ documented in this file.
 
 ## Unreleased
 
+- Added the bounded M8 particle-decal cell contract: caller-rounded world
+  positions use the legacy 16-pixel offset and truncating 32-pixel mapping,
+  while map/flag eligibility and decal storage remain caller-owned.
 - Added the bounded M8 particle-burst range contract: caller-owned unit
   samples use the legacy affine min/max calculation, including reversed bounds
   and without hidden clamping or RNG ownership.
@@ -66,7 +69,7 @@ documented in this file.
   `CohortReport` retains policy identity, aggregate metrics, and per-seed
   replay evidence for reproducible evaluation without claiming balance
   conclusions.
-- Continued retrospective project versioning at `0.2.5` from the untagged
+- Continued retrospective project versioning at `0.2.6` from the untagged
   `0.1.0` baseline. `VERSION`, Cargo/MCP metadata, and release manifests are
   checked by the agent harness; code changes require one valid component
   increment while document- and setting-only changes do not.
