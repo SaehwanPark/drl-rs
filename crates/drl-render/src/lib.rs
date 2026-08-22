@@ -4,7 +4,9 @@
 //! browser or native renderer may turn the resulting scene into pixels, but
 //! presentation timing can never advance the simulation.
 
-use drl_assets::{SpriteDescriptor, actor_sprite, item_sprite, tile_sprite};
+use drl_assets::{
+  AtlasId, SpriteDescriptor, SpriteLayer, SpriteUv, actor_sprite, item_sprite, tile_sprite,
+};
 use drl_protocol::{
   Command, EntityId, GameEvent, HitPoints, ItemView, PlayerObservation, Position, TileKind,
 };
@@ -126,6 +128,20 @@ pub struct PixelRect {
   pub y: u32,
   pub width: u32,
   pub height: u32,
+}
+
+/// One renderer-neutral atlas layer draw operation.
+///
+/// The destination is already resolved to the physical pixel grid while the
+/// UVs remain normalized image-space coordinates. A backend may batch or
+/// upload these operations, but this plan itself never loads or samples an
+/// image and never advances simulation.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct LayerDraw {
+  pub atlas: AtlasId,
+  pub layer: SpriteLayer,
+  pub destination: PixelRect,
+  pub uv: SpriteUv,
 }
 
 /// Deterministic pixel-grid layout for a scene and its physical canvas.
@@ -323,6 +339,51 @@ impl RenderScene {
       },
     }
   }
+}
+
+fn append_layer_draws(
+  plan: &mut Vec<LayerDraw>,
+  descriptor: SpriteDescriptor,
+  destination: Option<PixelRect>,
+) {
+  let Some(destination) = destination else {
+    return;
+  };
+  let (atlas_width, atlas_height) = descriptor.atlas.dimensions();
+  let Some(uv) = descriptor.rect.uv_rect(atlas_width, atlas_height) else {
+    return;
+  };
+  plan.extend(descriptor.layers.iter().copied().map(|layer| LayerDraw {
+    atlas: descriptor.atlas,
+    layer,
+    destination,
+    uv,
+  }));
+}
+
+/// Builds a stable atlas/layer draw plan from fair scene data.
+///
+/// Entries are emitted back-to-front in scene order: tiles, visible items,
+/// then visible actors. Explored-but-hidden tiles remain eligible for the
+/// fogged scene because they are part of the fair observation memory; a tile
+/// that is neither visible nor explored is omitted. Invalid atlas geometry is
+/// omitted defensively rather than producing a malformed backend command.
+#[must_use]
+pub fn layer_draw_plan(scene: &RenderScene, viewport: PixelViewport) -> Vec<LayerDraw> {
+  let mut plan = Vec::new();
+  for tile in &scene.tiles {
+    if !tile.visible && !tile.explored {
+      continue;
+    }
+    append_layer_draws(&mut plan, tile.sprite, viewport.tile_rect(tile.position));
+  }
+  for item in &scene.items {
+    append_layer_draws(&mut plan, item.sprite, viewport.tile_rect(item.position));
+  }
+  for actor in &scene.actors {
+    append_layer_draws(&mut plan, actor.sprite, viewport.tile_rect(actor.position));
+  }
+  plan
 }
 
 /// Returns a stable event list for audio/effect mapping.
@@ -571,6 +632,82 @@ mod tests {
         .iter()
         .any(|view| view.id == actor.id)
     }));
+  }
+
+  #[test]
+  fn layer_draw_plan_is_ordered_and_uses_descriptor_geometry() {
+    let game = Game::new_arena(42, 12, 10).expect("arena");
+    let scene = RenderScene::from_observation(&game.observe_player());
+    let viewport = PixelViewport::fit(scene.map_width, scene.map_height, 960, 640);
+    let plan = layer_draw_plan(&scene, viewport);
+    let first_tile = scene.tiles.first().expect("visible tile");
+    let first_destination = viewport
+      .tile_rect(first_tile.position)
+      .expect("tile in viewport");
+    let first_uv = first_tile
+      .sprite
+      .rect
+      .uv_rect(
+        first_tile.sprite.atlas.dimensions().0,
+        first_tile.sprite.atlas.dimensions().1,
+      )
+      .expect("measured tile UVs");
+
+    assert!(plan.len() >= first_tile.sprite.layers.len());
+    for (draw, layer) in plan
+      .iter()
+      .zip(first_tile.sprite.layers.iter().copied())
+      .take(first_tile.sprite.layers.len())
+    {
+      assert_eq!(draw.atlas, first_tile.sprite.atlas);
+      assert_eq!(draw.layer, layer);
+      assert_eq!(draw.destination, first_destination);
+      assert_eq!(draw.uv, first_uv);
+    }
+    let tile_draws = scene
+      .tiles
+      .iter()
+      .filter(|tile| tile.visible || tile.explored)
+      .map(|tile| tile.sprite.layers.len())
+      .sum::<usize>();
+    let item_draws = scene
+      .items
+      .iter()
+      .map(|item| item.sprite.layers.len())
+      .sum::<usize>();
+    let actor_draws = scene
+      .actors
+      .iter()
+      .map(|actor| actor.sprite.layers.len())
+      .sum::<usize>();
+    assert_eq!(plan.len(), tile_draws + item_draws + actor_draws);
+    let first_actor = scene.actors.first().expect("player actor");
+    assert_eq!(
+      plan[tile_draws + item_draws].atlas,
+      first_actor.sprite.atlas
+    );
+    assert_eq!(plan, layer_draw_plan(&scene, viewport));
+  }
+
+  #[test]
+  fn layer_draw_plan_omits_unknown_tiles_and_zero_sized_viewports() {
+    let game = Game::new_arena(42, 12, 10).expect("arena");
+    let observation = game.observe_player();
+    let mut scene = RenderScene::from_observation(&observation);
+    scene.tiles.push(SceneTile {
+      position: Position::new(0, 0),
+      kind: TileKind::Floor,
+      visible: false,
+      explored: false,
+      sprite: tile_sprite(TileKind::Floor),
+    });
+    let viewport = PixelViewport::fit(scene.map_width, scene.map_height, 960, 640);
+    let plan = layer_draw_plan(&scene, viewport);
+    let expected = RenderScene::from_observation(&observation);
+    assert_eq!(plan, layer_draw_plan(&expected, viewport));
+
+    let undersized = PixelViewport::fit(scene.map_width, scene.map_height, 1, 1);
+    assert!(layer_draw_plan(&scene, undersized).is_empty());
   }
 
   #[test]

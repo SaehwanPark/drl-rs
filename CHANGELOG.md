@@ -60,6 +60,10 @@ documented in this file.
 - Added renderer-neutral normalized UV conversion for bounded sprite cells,
   with explicit top-left image origin and invalid-dimension rejection. Texture
   sampling remains a future compositor concern.
+- Added `drl-render::layer_draw_plan`, a deterministic renderer-neutral plan of
+  atlas layers, pixel destinations, and normalized UVs for fair scene sprites.
+  It preserves explored tile memory and keeps texture upload/blending and
+  capture-backed parity as future work.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch
