@@ -93,9 +93,8 @@ Chrome 151 WebGPU smoke playthrough          PASS (Apple Metal-3, 1280x720, DPR 
                                              start with explicit gesture-gated
                                              audio state, move, mute, restart;
                                              pixel-grid scene visible after move)
-GitHub Actions run 32540410065               PASS (repository + Ubuntu WASM jobs;
-                                             M8 lighting-band implementation;
-                                             final docs-only head follows)
+GitHub Actions run 32541066735               PASS (repository + Ubuntu WASM jobs;
+                                             M8 low-health tone implementation)
 ```
 
 The local and remote functional gates pass. The run records browser/version,
