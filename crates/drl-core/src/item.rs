@@ -4,6 +4,8 @@ use drl_protocol::{
   ActionCost, AmmoType, EquipmentSlot, ItemArchetype, ItemCategory, ItemId, ItemSpawnKind, ItemView,
 };
 
+use crate::item_definition::{ItemDefinitionKind, definition_for_spawn_kind};
+
 /// Physical properties for a weapon instance.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct WeaponProperties {
@@ -324,170 +326,112 @@ impl Item {
   /// Factory: standard 9mm Pistol.
   #[must_use]
   pub fn pistol(id: ItemId) -> Self {
-    Self::new(
-      id,
-      "Pistol",
-      "Standard 9mm military sidearm. Reliable and accurate.",
-      ItemKind::Weapon(WeaponProperties {
-        is_ranged: true,
-        ammo_type: Some(AmmoType::Ammo9mm),
-        clip_capacity: 10,
-        current_clip: 10,
-        damage: (4, 8),
-        range: 8,
-        accuracy: 75,
-        knockback: 0,
-        fire_cost: ActionCost::RANGED_ATTACK,
-        reload_cost: ActionCost::STANDARD,
-      }),
-    )
-    .with_archetype(ItemArchetype::Pistol)
+    Self::from_spawn_kind(id, ItemSpawnKind::Pistol)
   }
 
   /// Factory: standard pump-action Shotgun.
   #[must_use]
   pub fn shotgun(id: ItemId) -> Self {
-    Self::new(
-      id,
-      "Shotgun",
-      "Pump-action 12-gauge shotgun. Devastating at close range.",
-      ItemKind::Weapon(WeaponProperties {
-        is_ranged: true,
-        ammo_type: Some(AmmoType::Shells),
-        clip_capacity: 8,
-        current_clip: 8,
-        damage: (8, 16),
-        range: 5,
-        accuracy: 65,
-        knockback: 1,
-        fire_cost: ActionCost::RANGED_ATTACK,
-        reload_cost: ActionCost::new(1200),
-      }),
-    )
-    .with_archetype(ItemArchetype::Shotgun)
+    Self::from_spawn_kind(id, ItemSpawnKind::Shotgun)
   }
 
   /// Factory: Combat Knife melee weapon.
   #[must_use]
   pub fn combat_knife(id: ItemId) -> Self {
-    Self::new(
-      id,
-      "Combat Knife",
-      "Serrated combat blade for close-quarters fighting.",
-      ItemKind::Weapon(WeaponProperties {
-        is_ranged: false,
-        ammo_type: None,
-        clip_capacity: 0,
-        current_clip: 0,
-        damage: (5, 9),
-        range: 1,
-        accuracy: 85,
-        knockback: 0,
-        fire_cost: ActionCost::MELEE_ATTACK,
-        reload_cost: ActionCost::new(0),
-      }),
-    )
-    .with_archetype(ItemArchetype::CombatKnife)
+    Self::from_spawn_kind(id, ItemSpawnKind::CombatKnife)
   }
 
   /// Factory: 9mm ammunition box.
   #[must_use]
   pub fn ammo_9mm(id: ItemId, count: u32) -> Self {
-    Self::new(
-      id,
-      "9mm Ammo",
-      "Standard magazine rounds for 9mm pistols and submachine guns.",
-      ItemKind::Ammo {
-        ammo_type: AmmoType::Ammo9mm,
-        count,
-        max_stack: 100,
-      },
-    )
-    .with_archetype(ItemArchetype::Ammo9mm)
+    Self::from_spawn_kind(id, ItemSpawnKind::Ammo9mm(count))
   }
 
   /// Factory: shotgun shells box.
   #[must_use]
   pub fn ammo_shells(id: ItemId, count: u32) -> Self {
-    Self::new(
-      id,
-      "Shotgun Shells",
-      "Heavy buckshot shells for shotguns.",
-      ItemKind::Ammo {
-        ammo_type: AmmoType::Shells,
-        count,
-        max_stack: 50,
-      },
-    )
-    .with_archetype(ItemArchetype::AmmoShells)
+    Self::from_spawn_kind(id, ItemSpawnKind::AmmoShells(count))
   }
 
   /// Factory: Small MedPack (+10 HP).
   #[must_use]
   pub fn small_medpack(id: ItemId) -> Self {
-    Self::new(
-      id,
-      "Small MedPack",
-      "Compact medical kit providing rapid first aid (+10 HP).",
-      ItemKind::MedPack(ConsumableProperties { heal_amount: 10 }),
-    )
-    .with_archetype(ItemArchetype::SmallMedPack)
+    Self::from_spawn_kind(id, ItemSpawnKind::SmallMedPack)
   }
 
   /// Factory: Large MedPack (+25 HP).
   #[must_use]
   pub fn large_medpack(id: ItemId) -> Self {
-    Self::new(
-      id,
-      "Large MedPack",
-      "Comprehensive field surgery kit (+25 HP).",
-      ItemKind::MedPack(ConsumableProperties { heal_amount: 25 }),
-    )
-    .with_archetype(ItemArchetype::LargeMedPack)
+    Self::from_spawn_kind(id, ItemSpawnKind::LargeMedPack)
   }
 
   /// Factory: Green Armor (+5 armor protection, 100 durability).
   #[must_use]
   pub fn green_armor(id: ItemId) -> Self {
-    Self::new(
-      id,
-      "Green Armor",
-      "Standard security armor suit absorbing incoming damage.",
-      ItemKind::Armor(ArmorProperties {
-        protection: 5,
-        durability: 100,
-        max_durability: 100,
-      }),
-    )
-    .with_archetype(ItemArchetype::GreenArmor)
+    Self::from_spawn_kind(id, ItemSpawnKind::GreenArmor)
   }
 
   /// Factory: Phase Device (emergency teleportation consumable).
   #[must_use]
   pub fn phase_device(id: ItemId) -> Self {
-    Self::new(
-      id,
-      "Phase Device",
-      "Emergency phase-shift device. Instantly teleports the user across space.",
-      ItemKind::PhaseDevice,
-    )
-    .with_archetype(ItemArchetype::PhaseDevice)
+    Self::from_spawn_kind(id, ItemSpawnKind::PhaseDevice)
   }
 
   /// Instantiates an `Item` from an `ItemSpawnKind`.
   #[must_use]
   pub fn from_spawn_kind(id: ItemId, kind: ItemSpawnKind) -> Self {
-    match kind {
-      ItemSpawnKind::Pistol => Self::pistol(id),
-      ItemSpawnKind::Shotgun => Self::shotgun(id),
-      ItemSpawnKind::CombatKnife => Self::combat_knife(id),
-      ItemSpawnKind::Ammo9mm(count) => Self::ammo_9mm(id, count),
-      ItemSpawnKind::AmmoShells(count) => Self::ammo_shells(id, count),
-      ItemSpawnKind::SmallMedPack => Self::small_medpack(id),
-      ItemSpawnKind::LargeMedPack => Self::large_medpack(id),
-      ItemSpawnKind::GreenArmor => Self::green_armor(id),
-      ItemSpawnKind::PhaseDevice => Self::phase_device(id),
-    }
+    let count = match kind {
+      ItemSpawnKind::Ammo9mm(count) | ItemSpawnKind::AmmoShells(count) => count,
+      _ => 1,
+    };
+    let definition = definition_for_spawn_kind(kind);
+    let item_kind = match definition.kind {
+      ItemDefinitionKind::Weapon {
+        is_ranged,
+        ammo_type,
+        clip_capacity,
+        damage,
+        range,
+        accuracy,
+        knockback,
+        fire_cost,
+        reload_cost,
+      } => ItemKind::Weapon(WeaponProperties {
+        is_ranged,
+        ammo_type,
+        clip_capacity,
+        current_clip: clip_capacity,
+        damage,
+        range,
+        accuracy,
+        knockback,
+        fire_cost,
+        reload_cost,
+      }),
+      ItemDefinitionKind::Ammo {
+        ammo_type,
+        max_stack,
+      } => ItemKind::Ammo {
+        ammo_type,
+        count,
+        max_stack,
+      },
+      ItemDefinitionKind::MedPack { heal_amount } => {
+        ItemKind::MedPack(ConsumableProperties { heal_amount })
+      }
+      ItemDefinitionKind::Armor {
+        protection,
+        durability,
+        max_durability,
+      } => ItemKind::Armor(ArmorProperties {
+        protection,
+        durability,
+        max_durability,
+      }),
+      ItemDefinitionKind::PhaseDevice => ItemKind::PhaseDevice,
+    };
+    Self::new(id, definition.name, definition.description, item_kind)
+      .with_archetype(definition.archetype)
   }
 }
 
@@ -547,5 +491,86 @@ mod tests {
     assert!(device.is_phase_device());
     assert_eq!(device.category(), ItemCategory::PhaseDevice);
     assert_eq!(device.to_view().name, "Phase Device");
+  }
+
+  #[test]
+  fn convenience_factories_match_definition_backed_factory() {
+    let cases = [
+      (ItemSpawnKind::Pistol, Item::pistol(ItemId::new(1))),
+      (ItemSpawnKind::Shotgun, Item::shotgun(ItemId::new(2))),
+      (
+        ItemSpawnKind::CombatKnife,
+        Item::combat_knife(ItemId::new(3)),
+      ),
+      (ItemSpawnKind::Ammo9mm(0), Item::ammo_9mm(ItemId::new(4), 0)),
+      (
+        ItemSpawnKind::Ammo9mm(107),
+        Item::ammo_9mm(ItemId::new(5), 107),
+      ),
+      (
+        ItemSpawnKind::AmmoShells(7),
+        Item::ammo_shells(ItemId::new(6), 7),
+      ),
+      (
+        ItemSpawnKind::SmallMedPack,
+        Item::small_medpack(ItemId::new(7)),
+      ),
+      (
+        ItemSpawnKind::LargeMedPack,
+        Item::large_medpack(ItemId::new(8)),
+      ),
+      (ItemSpawnKind::GreenArmor, Item::green_armor(ItemId::new(9))),
+      (
+        ItemSpawnKind::PhaseDevice,
+        Item::phase_device(ItemId::new(10)),
+      ),
+    ];
+    for (kind, factory_item) in cases {
+      let canonical = Item::from_spawn_kind(factory_item.id(), kind);
+      assert_eq!(factory_item.to_view(), canonical.to_view());
+      assert_eq!(factory_item.kind(), canonical.kind());
+    }
+  }
+
+  #[test]
+  fn definition_backed_items_preserve_ammo_counts_and_determinism() {
+    let ammo_cases = [
+      (ItemSpawnKind::Ammo9mm(0), 0, 100),
+      (ItemSpawnKind::Ammo9mm(7), 7, 100),
+      (ItemSpawnKind::Ammo9mm(101), 101, 100),
+      (ItemSpawnKind::AmmoShells(0), 0, 50),
+      (ItemSpawnKind::AmmoShells(7), 7, 50),
+      (ItemSpawnKind::AmmoShells(51), 51, 50),
+    ];
+    for (kind, expected_count, expected_max_stack) in ammo_cases {
+      let item = Item::from_spawn_kind(ItemId::new(20), kind);
+      match item.kind() {
+        ItemKind::Ammo {
+          count, max_stack, ..
+        } => {
+          assert_eq!(*count, expected_count);
+          assert_eq!(*max_stack, expected_max_stack);
+        }
+        other => panic!("expected ammunition item, got {other:?}"),
+      }
+    }
+
+    let kinds = [
+      ItemSpawnKind::Pistol,
+      ItemSpawnKind::Shotgun,
+      ItemSpawnKind::CombatKnife,
+      ItemSpawnKind::Ammo9mm(7),
+      ItemSpawnKind::AmmoShells(7),
+      ItemSpawnKind::SmallMedPack,
+      ItemSpawnKind::LargeMedPack,
+      ItemSpawnKind::GreenArmor,
+      ItemSpawnKind::PhaseDevice,
+    ];
+    for kind in kinds {
+      let first = Item::from_spawn_kind(ItemId::new(21), kind);
+      let second = Item::from_spawn_kind(ItemId::new(21), kind);
+      assert_eq!(first.to_view(), second.to_view());
+      assert_eq!(first.kind(), second.kind());
+    }
   }
 }

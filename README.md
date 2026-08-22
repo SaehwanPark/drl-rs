@@ -27,8 +27,8 @@ three-phase explosion-mark selector, signed effect-segment arithmetic, and
 caller-owned kill-animation segment selection and FX frame selection, plus
 caller-owned movement progress selection, missile step selection, missile
 ray-spacing selection, screen-shake fade timing, particle-burst origin math,
-a Rust-owned typed monster definition table, and canonical item spawn-factory
-routing for death drops, plus pure post-process
+a Rust-owned typed monster and item definition table, canonical item
+spawn-factory routing for death drops, plus pure post-process
 glow/LUT math contracts. Full audiovisual equivalence, broader content, PWA
 persistence, and other browsers remain staged roadmap work. Do not read the
 placeholder M7 atlas rectangles as a fidelity claim.
