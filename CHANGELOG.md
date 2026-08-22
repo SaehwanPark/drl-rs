@@ -36,6 +36,8 @@ documented in this file.
 - Added a dependency-free M12 service-worker lifecycle/fetch contract harness
   for precache, stale-cache cleanup, navigation fallback, and same-origin GET
   gating without claiming full browser-offline acceptance.
+- Added an M12 release-manifest source-identity audit that accepts only the
+  explicit `unknown` fallback or a lowercase 40-character Git object identity.
 - Added pure M11 cohort-report integrity validation for record count, wrapping
   seed order, replay seed identity, and aggregate-summary coherence.
 - Added M11 fixed-seed cohort reports around the existing headless batch
@@ -43,7 +45,7 @@ documented in this file.
   `CohortReport` retains policy identity, aggregate metrics, and per-seed
   replay evidence for reproducible evaluation without claiming balance
   conclusions.
-- Continued retrospective project versioning at `0.1.6` from the untagged
+- Continued retrospective project versioning at `0.1.7` from the untagged
   `0.1.0` baseline. `VERSION`, Cargo/MCP metadata, and release manifests are
   checked by the agent harness; code changes require one valid component
   increment while document- and setting-only changes do not.
