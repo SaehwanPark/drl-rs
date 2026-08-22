@@ -191,6 +191,10 @@ documented in this file.
   overflow-safe arithmetic, and the observed post-duration second-phase
   fallback. Delay scheduling, palette mapping, sprite rendering, and capture
   parity remain outside the helper.
+- Added pure `drl-render::effect_segment_index_at_elapsed` arithmetic for the
+  pinned cell/item signed quotient and sign correction, with explicit
+  zero-duration and out-of-range rejection. Sprite, level, item, lifecycle,
+  and capture behavior remain outside the helper.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch

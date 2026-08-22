@@ -22,8 +22,9 @@ player/actor/Phase Device animation metadata and progress-selected frame UVs,
 plus pure effect progress, caller-supplied animation frame selection,
 elapsed-time playback math and layer plans, a
 low-health scene tone, a pure source-derived low-health pulse target, and
-event-ordered timing, pure low-health pulse smoothing, and the source-derived
-three-phase explosion-mark selector, plus pure post-process
+event-ordered timing, pure low-health pulse smoothing, the source-derived
+three-phase explosion-mark selector, and signed effect-segment arithmetic, plus
+pure post-process
 glow/LUT math contracts. Full audiovisual equivalence, broader content, PWA
 persistence, and other browsers remain staged roadmap work. Do not read the
 placeholder M7 atlas rectangles as a fidelity claim.
@@ -110,7 +111,8 @@ legacy graphics metadata; it is not a dependency of the core.
   creating a browser post-process pipeline, and the blur-tap planner exposes
   normalized caller-sized offsets without executing sampling; its pure
   five-sample reducer preserves weighted RGB and center-only alpha. The
-  explosion-mark phase helper remains palette/sprite/lifecycle agnostic.
+  explosion-mark phase helper and signed effect-segment selector remain
+  palette/sprite/lifecycle agnostic.
 - `crates/drl-audio`: semantic cues and WASM Web Audio mixer.
 - `crates/drl-web`: browser session, validated same-origin texture-source
   loading, renderer-owned WebGPU texture uploads, the partial base/mask/
