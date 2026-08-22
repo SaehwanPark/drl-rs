@@ -76,7 +76,7 @@ automated regressions, and human review.
   content animation and capture parity remain open. A read-only capture
   manifest preflight now validates pinned metadata, rights, media hashes, and
   evidence status while preserving `NOT_RUN`.
-- `SPEC.md` contains the single active M12 manifest-checkout-identity-binding
+- `SPEC.md` contains the single active M11 cohort-telemetry-distribution
   slice; it is not a second roadmap.
 - The first bounded M11 cohort slice adds explicit fixed-seed sample
   definitions and reports around the existing headless batch runner. Reports
@@ -108,9 +108,12 @@ automated regressions, and human review.
 - The delivered M12 release-audit follow-up rejects malformed source revision
   identities before manifest/cache policy is accepted; signed history
   authenticity remains open.
-- The active M12 checkout-identity follow-up requires a generated source
+- The delivered M12 checkout-identity follow-up requires a generated source
   revision to match Git `HEAD` (or `DRL_BUILD_REVISION`) when available, while
   preserving `unknown` for unverifiable source archives.
+- The active M11 telemetry follow-up projects validated shot accuracy, damage,
+  kill, pickup, and item-use totals/rates from fixed-seed reports without
+  inferring balance or statistical significance.
 - The M12 diagnostics slice adds a local accessible browser-support and
   startup-error panel with recovery guidance; it sends no telemetry and does
   not extend the tested WebGPU browser claim.
@@ -314,7 +317,7 @@ Add versioned save/restart policy, browser storage boundaries, migration and
 corruption handling, service-worker offline-after-first-load behavior, and
 replay-compatible save tests. No accounts or gameplay backend.
 
-### M11 — Balance and evaluation (cohort, integrity, and outcome slices delivered; evaluation open)
+### M11 — Balance and evaluation (cohort, integrity, outcome, and telemetry slices delivered; evaluation open)
 
 Run fixed-seed bot cohorts, metrics, difficulty/economy studies, and
 regressions with declared samples/tolerances. The delivered cohort slices now
@@ -326,9 +329,11 @@ distribution keeps terminal categories distinct and exposes normalized rates
 without claiming a balance result. The delivered compatible comparison reports
 absolute per-category rate deltas without adding a tolerance or significance
 claim. The delivered tolerance gate applies a caller-owned finite non-negative
-bound without adding statistical interpretation.
+bound without adding statistical interpretation. The delivered telemetry
+distribution adds validated combat/economy totals and descriptive rates for
+shot accuracy, damage, kills, pickups, and item use without a balance claim.
 
-### M12 — Static web productization and release hardening (manifest, cache, diagnostics, accessibility, sidecar, worker-contract, and source-audit slices delivered; checkout binding active)
+### M12 — Static web productization and release hardening (manifest, cache, diagnostics, accessibility, sidecar, worker-contract, source-audit, and checkout-binding slices delivered; hardening open)
 
 Produce reproducible static HTTPS/PWA bundles, asset license notices,
 cache/version policy, accessibility audit, browser support/error screens,
@@ -342,9 +347,9 @@ slice adds a local accessible browser-support/startup-diagnostics panel with rec
  deterministic SHA-256 sidecar for the manifest and precaches it. The delivered
  follow-up runs dependency-free mocked service-worker lifecycle/fetch checks;
  full browser-offline acceptance remains open. The delivered release-audit
- follow-up validates source revision identity syntax. The active checkout-binding
- follow-up requires that identity to match the built checkout when available.
- Signing, release audits, broader
+ follow-up validates source revision identity syntax, and the delivered
+ checkout-binding follow-up requires that identity to match the built checkout
+ when available. Signing, release audits, broader
 invalidation policy, dynamic accessibility acceptance, and untested-browser
 support remain open. WebGPU remains the 1.0 baseline; do not imply support for
 untested browsers.
