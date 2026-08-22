@@ -11,8 +11,9 @@ complete deterministic M4 simulation. M7 functional checks pass locally and in
 remote web CI; M8 presentation work now keeps browser map cells square with
 deterministic pixel-grid letterboxing, shared visible/explored lighting bands,
 measured legacy atlas slots, registered layer metadata, normalized sprite UVs,
-renderer-neutral layer draw plans with imported source metadata, plus a pure
-low-health scene tone and event-ordered effect timing. Full
+renderer-neutral layer draw plans with imported source metadata and fair
+lighting factors, plus a pure low-health scene tone and event-ordered effect
+timing. Full
 audiovisual equivalence, broader content, PWA persistence, and other browsers
 remain staged roadmap work. Do not read the placeholder M7 atlas rectangles as
 a fidelity claim.
@@ -84,7 +85,7 @@ legacy graphics metadata; it is not a dependency of the core.
   layers, normalized UVs, texture-source bindings, semantic asset mapping, and
   legacy revision identity.
 - `crates/drl-render`: pure scene construction, deterministic pixel viewport
-  layout, and atlas/layer draw-plan geometry with source metadata.
+  layout, and atlas/layer draw-plan geometry with source metadata and lighting.
 - `crates/drl-audio`: semantic cues and WASM Web Audio mixer.
 - `crates/drl-web`: browser session, Winit/WebGPU scene surface, DOM shell, and
   WASM exports.

@@ -47,8 +47,9 @@ automated regressions, and human review.
   pinned-legacy 32-pixel sprite slots and verified imported-sheet dimensions;
   the follow-up layer metadata now preserves registered source-layer order;
   normalized UV geometry, a renderer-neutral layer draw plan, and deterministic
-  imported texture-source bindings are now available; texture compositing and
-  capture-backed parity remain open.
+  imported texture-source bindings are now available; fair lighting factors
+  are carried into draw entries, while texture compositing and capture-backed
+  parity remain open.
 - `SPEC.md` contains the single active M8 slice; it is not a second roadmap.
 
 ## Milestones
@@ -134,7 +135,7 @@ centralized in `drl-render`; capture-backed lighting/LUT parity remains open.
 Measured atlas rectangles for all currently implemented semantics now come from
 the pinned 16-column legacy grid, with pure bounds checks. Registered layer
 metadata now carries exact atlas source sets in deterministic order, pure UV
-geometry and texture-source metadata are available, and
+geometry, texture-source metadata, and fair lighting factors are available, and
 `drl-render::layer_draw_plan` converts fair scenes into ordered pixel/UV
 operations. Remaining work is texture/layer compositing; implement
 capture-backed lighting/LUT parity,
