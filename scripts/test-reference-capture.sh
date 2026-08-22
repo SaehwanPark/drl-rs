@@ -49,6 +49,10 @@ missing_classification="$fixture_dir/missing-classification.txt"
 sed '/^evidence_classification=/d' "$base" > "$missing_classification"
 expect_fail "$missing_classification"
 
+invalid_classification="$fixture_dir/invalid-classification.txt"
+sed 's/^evidence_classification=.*/evidence_classification=unknown/' "$base" > "$invalid_classification"
+expect_fail "$invalid_classification"
+
 bad_revision="$fixture_dir/bad-revision.txt"
 sed 's/^legacy_revision=.*/legacy_revision=bad/' "$base" > "$bad_revision"
 expect_fail "$bad_revision"
