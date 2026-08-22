@@ -36,6 +36,8 @@ automated regressions, and human review.
 - The active follow-up M8 slice centralizes visible-versus-explored lighting
   bands in `drl-render`; this remains a presentation rule, not a legacy parity
   claim.
+- A further M8 slice centralizes the existing quarter-health scene tone in
+  `drl-render::SceneTone`; capture-backed low-life LUT/glow parity remains open.
 - `SPEC.md` contains the single active M8 slice; it is not a second roadmap.
 
 ## Milestones

@@ -5,7 +5,9 @@
 //! presentation timing can never advance the simulation.
 
 use drl_assets::{SpriteDescriptor, actor_sprite, item_sprite, tile_sprite};
-use drl_protocol::{Command, GameEvent, ItemView, PlayerObservation, Position, TileKind};
+use drl_protocol::{
+  Command, GameEvent, HitPoints, ItemView, PlayerObservation, Position, TileKind,
+};
 
 /// A complete before/command/events/after boundary for one presentation step.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -64,6 +66,31 @@ pub fn shade_color(color: [f32; 4], band: LightingBand) -> [f32; 4] {
     color[2] * factor,
     color[3],
   ]
+}
+
+/// Coarse scene tone selected from the fair player health observation.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum SceneTone {
+  Normal,
+  LowHealth,
+}
+
+/// Selects the current scene tone without consulting hidden simulation state.
+#[must_use]
+pub const fn scene_tone(player_hp: Option<HitPoints>) -> SceneTone {
+  match player_hp {
+    Some(hp) if hp.current < hp.max / 4 => SceneTone::LowHealth,
+    _ => SceneTone::Normal,
+  }
+}
+
+/// Returns the deterministic clear color for a player health tone.
+#[must_use]
+pub const fn scene_clear_color(player_hp: Option<HitPoints>) -> [f32; 4] {
+  match scene_tone(player_hp) {
+    SceneTone::Normal => [0.025, 0.035, 0.055, 1.0],
+    SceneTone::LowHealth => [0.12, 0.015, 0.015, 1.0],
+  }
 }
 
 /// Integer pixel bounds for one logical map cell.
@@ -384,6 +411,24 @@ mod tests {
     assert!((shaded[1] - 0.18).abs() < 1e-6);
     assert!((shaded[2] - 0.36).abs() < 1e-6);
     assert_eq!(shaded[3], 1.0);
+  }
+
+  #[test]
+  fn scene_clear_tone_preserves_quarter_health_threshold() {
+    assert_eq!(scene_tone(None), SceneTone::Normal);
+    assert_eq!(scene_tone(Some(HitPoints::new(12, 50))), SceneTone::Normal);
+    assert_eq!(
+      scene_tone(Some(HitPoints::new(11, 50))),
+      SceneTone::LowHealth
+    );
+    assert_eq!(
+      scene_clear_color(Some(HitPoints::new(11, 50))),
+      [0.12, 0.015, 0.015, 1.0]
+    );
+    assert_eq!(
+      scene_clear_color(Some(HitPoints::new(50, 50))),
+      [0.025, 0.035, 0.055, 1.0]
+    );
   }
 
   #[test]

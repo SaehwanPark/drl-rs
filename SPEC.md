@@ -15,13 +15,14 @@ progress. This file expands exactly one active implementation slice.
   redistribution-gated; its controlled reference-capture gate is `NOT_RUN` on
   arm64 macOS and remains an M8 acceptance dependency.
 
-## Present — M8 deterministic presentation lighting bands
+## Present — M8 deterministic low-health presentation tone
 
 Status: The M7 browser slice passed functional acceptance locally and in
-remote web CI. The delivered M8 pixel-grid slice keeps map cells square; this
-bounded follow-up names the existing visible-versus-explored fog treatment as a
-deterministic lighting band shared by pure presentation planning and WebGPU.
-The capture-backed audiovisual comparison remains open.
+remote web CI. The delivered M8 pixel-grid and visibility-band slices keep map
+cells square and share explored-tile shading; this bounded follow-up moves the
+existing low-health clear tone into pure presentation planning so WebGPU and
+future capture/LUT work share one threshold. The capture-backed audiovisual
+comparison remains open.
 
 ### Observable behavior
 
@@ -60,6 +61,11 @@ The capture-backed audiovisual comparison remains open.
   deterministic and does not inspect hidden world state.
 - WebGPU tile colors consume that shared lighting rule, so browser presentation
   does not maintain a second fog multiplier with different semantics.
+- `drl-render::scene_clear_color` maps fair HUD health to the existing normal or
+  low-health clear tone. It is deterministic, preserves the current quarter
+  health threshold, and never advances simulation.
+- WebGPU uses that shared clear-color rule; health-tone presentation remains an
+  effect and cannot reveal hidden world state.
 
 ### Public contracts
 
@@ -79,7 +85,7 @@ Local checks:
 sh scripts/check-repository.sh              PASS (baseline plus new crates)
 sh scripts/check-assets.sh                  PASS (32 PNGs, license, hashes)
 cargo check --locked -p drl-web --target wasm32-unknown-unknown  PASS
-cargo test -p drl-render                      PASS (pixel-grid and lighting contracts)
+cargo test -p drl-render                      PASS (pixel-grid, lighting, and tone contracts)
 scripts/check-web.sh                        PASS for native/WASM builds;
                                              browser runner NOT_RUN if Chrome absent
 scripts/build-web.sh                         PASS (release bundle in ignored dist/)
