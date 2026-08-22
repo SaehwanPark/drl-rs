@@ -5,6 +5,9 @@ documented in this file.
 
 ## Unreleased
 
+- Added compatible M11 telemetry comparisons with separate caller-owned shot
+  accuracy and per-episode average tolerances; deltas remain descriptive and
+  do not claim balance or statistical significance.
 - Added an M11 cohort telemetry distribution for validated shot accuracy,
   damage, enemy-kill, pickup, and item-use totals plus descriptive rates;
   it makes no balance or statistical-significance claim.
@@ -56,7 +59,7 @@ documented in this file.
   `CohortReport` retains policy identity, aggregate metrics, and per-seed
   replay evidence for reproducible evaluation without claiming balance
   conclusions.
-- Continued retrospective project versioning at `0.2.2` from the untagged
+- Continued retrospective project versioning at `0.2.3` from the untagged
   `0.1.0` baseline. `VERSION`, Cargo/MCP metadata, and release manifests are
   checked by the agent harness; code changes require one valid component
   increment while document- and setting-only changes do not.

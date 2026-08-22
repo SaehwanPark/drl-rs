@@ -26,10 +26,11 @@ replays, and regression testing.
     after integrity validation without adding tolerance or significance claims.
   - Outcome comparisons accept one finite, non-negative per-category rate
     tolerance and expose a deterministic pass/fail gate.
-  - Cohort telemetry projections expose validated shot accuracy, damage, kill,
-    pickup, and item-use totals/rates without inferring balance conclusions.
+  - Cohort telemetry projections and compatible comparisons expose validated
+    shot accuracy, damage, kill, pickup, and item-use totals/rates without
+    inferring balance conclusions.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.2`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.3`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:

@@ -232,6 +232,64 @@ impl CohortTelemetryDistribution {
   }
 }
 
+/// Absolute telemetry deltas for two compatible cohort reports.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct CohortTelemetryComparison {
+  /// Absolute shot-accuracy-rate delta.
+  pub shot_accuracy_rate_delta: f64,
+  /// Absolute average-damage-dealt delta.
+  pub average_damage_dealt_delta: f64,
+  /// Absolute average-damage-taken delta.
+  pub average_damage_taken_delta: f64,
+  /// Absolute average-enemies-killed delta.
+  pub average_enemies_killed_delta: f64,
+  /// Absolute average-items-picked-up delta.
+  pub average_items_picked_up_delta: f64,
+  /// Absolute average-items-used delta.
+  pub average_items_used_delta: f64,
+}
+
+/// Caller-declared tolerances for compatible telemetry comparisons.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct CohortTelemetryTolerances {
+  /// Maximum permitted shot-accuracy-rate delta.
+  pub max_shot_accuracy_rate_delta: f64,
+  /// Maximum permitted delta for every per-episode average metric.
+  pub max_average_delta: f64,
+}
+
+impl CohortTelemetryTolerances {
+  /// Creates a telemetry regression tolerance.
+  #[must_use]
+  pub const fn new(max_shot_accuracy_rate_delta: f64, max_average_delta: f64) -> Self {
+    Self {
+      max_shot_accuracy_rate_delta,
+      max_average_delta,
+    }
+  }
+
+  fn is_valid(self) -> bool {
+    self.max_shot_accuracy_rate_delta.is_finite()
+      && self.max_shot_accuracy_rate_delta >= 0.0
+      && self.max_average_delta.is_finite()
+      && self.max_average_delta >= 0.0
+  }
+}
+
+impl CohortTelemetryComparison {
+  /// Returns whether all telemetry deltas are within caller-owned bounds.
+  #[must_use]
+  pub fn within_tolerance(self, tolerances: CohortTelemetryTolerances) -> bool {
+    tolerances.is_valid()
+      && self.shot_accuracy_rate_delta <= tolerances.max_shot_accuracy_rate_delta
+      && self.average_damage_dealt_delta <= tolerances.max_average_delta
+      && self.average_damage_taken_delta <= tolerances.max_average_delta
+      && self.average_enemies_killed_delta <= tolerances.max_average_delta
+      && self.average_items_picked_up_delta <= tolerances.max_average_delta
+      && self.average_items_used_delta <= tolerances.max_average_delta
+  }
+}
+
 /// Absolute per-outcome rate deltas for two compatible cohort reports.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct CohortOutcomeComparison {
@@ -433,6 +491,37 @@ impl CohortReport {
   pub fn telemetry_distribution(&self) -> Result<CohortTelemetryDistribution, CohortReportError> {
     self.validate()?;
     Ok(CohortTelemetryDistribution::from_records(&self.records))
+  }
+
+  /// Compares descriptive telemetry for compatible, integrity-checked reports.
+  ///
+  /// Invalid evidence or policy/sample mismatches return `None`; no episodes
+  /// are rerun and the deltas do not imply balance or statistical significance.
+  #[must_use]
+  pub fn compare_telemetry(&self, baseline: &Self) -> Option<CohortTelemetryComparison> {
+    if self.policy_name != baseline.policy_name || self.config != baseline.config {
+      return None;
+    }
+    let candidate = self.telemetry_distribution().ok()?;
+    let baseline = baseline.telemetry_distribution().ok()?;
+    Some(CohortTelemetryComparison {
+      shot_accuracy_rate_delta: (candidate.shot_accuracy_rate() - baseline.shot_accuracy_rate())
+        .abs(),
+      average_damage_dealt_delta: (candidate.average_damage_dealt()
+        - baseline.average_damage_dealt())
+      .abs(),
+      average_damage_taken_delta: (candidate.average_damage_taken()
+        - baseline.average_damage_taken())
+      .abs(),
+      average_enemies_killed_delta: (candidate.average_enemies_killed()
+        - baseline.average_enemies_killed())
+      .abs(),
+      average_items_picked_up_delta: (candidate.average_items_picked_up()
+        - baseline.average_items_picked_up())
+      .abs(),
+      average_items_used_delta: (candidate.average_items_used() - baseline.average_items_used())
+        .abs(),
+    })
   }
 
   /// Compares outcome rates for compatible, integrity-checked reports.

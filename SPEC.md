@@ -332,13 +332,20 @@ available. This prevents a valid-looking but unrelated object identity from
 being accepted for a bundle built from another checkout; source archives retain
 the explicit `unknown` fallback when no identity can be observed.
 
-## Present — M11 cohort telemetry distribution
+## Delivered — M11 cohort telemetry distribution
 
 Status: the active slice projects validated fixed-seed cohort telemetry into
 deterministic totals and sample-normalized rates for ranged shots, shot
 accuracy, damage, kills, pickups, and item use. It is descriptive evaluation
 evidence only; it does not infer balance, difficulty, or statistical
 significance.
+
+## Present — M11 telemetry comparison and tolerance gate
+
+Status: the active slice compares compatible, integrity-checked telemetry
+projections and applies caller-owned finite tolerances to shot accuracy and
+per-episode averages. It reports descriptive deltas only and does not infer
+balance, difficulty, or statistical significance.
 
 ### Observable behavior
 
@@ -393,6 +400,10 @@ significance.
 - `CohortReport::telemetry_distribution` validates retained evidence before
   exposing deterministic combat/economy totals and normalized descriptive
   rates; malformed reports are rejected and no balance claim is inferred.
+- `CohortReport::compare_telemetry` rejects policy/sample mismatches or invalid
+  evidence, reports absolute telemetry deltas, and
+  `CohortTelemetryComparison::within_tolerance` applies separate caller-owned
+  accuracy/average bounds without a statistical claim.
 - `drl-audio` maps events to semantic cues. The WASM mixer uses generated tones,
   mute/volume settings, and user-gesture unlock; blocked audio never blocks
   gameplay.
@@ -673,7 +684,7 @@ scripts/check-release-manifest.sh           PASS (after `scripts/build-web.sh`, 
 scripts/test-service-worker.sh               PASS (mocked lifecycle/fetch contract)
 scripts/check-browser-diagnostics.sh        PASS (via `scripts/check-web.sh`)
 scripts/check-browser-accessibility.sh      PASS (via `scripts/check-web.sh`)
-scripts/check-version.sh                    PASS (`0.2.2` projections and transition)
+scripts/check-version.sh                    PASS (`0.2.3` projections and transition)
 cargo check --locked -p drl-web --target wasm32-unknown-unknown  PASS
 cargo test -p drl-render                      PASS (pixel-grid, lighting, tone, and timeline contracts)
 cargo test -p drl-core --test batch_simulation PASS (fixed-seed cohort sample,
