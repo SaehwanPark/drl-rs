@@ -295,7 +295,7 @@ bytes, while the generated service worker precaches the sidecar. This is local
 packaging integrity evidence, not a cryptographic signature, offline proof, or
 cross-browser acceptance claim.
 
-## Present — M12 service-worker lifecycle contract
+## Delivered — M12 service-worker lifecycle contract
 
 Status: the active slice adds a dependency-free contract harness for the
 generated worker's install, activate, and same-origin GET fetch branches. It
@@ -303,6 +303,14 @@ checks precache population, stale-cache deletion, cache-first assets, network
 navigation fallback to the shell, and rejection of cross-origin or non-GET
 requests. These deterministic mocks are behavioral evidence, not full browser
 offline acceptance or cross-browser support.
+
+## Present — M12 release source-identity audit
+
+Status: the active slice requires `source_revision` to be either the explicit
+`unknown` fallback or a lowercase 40-character Git object identity before it
+participates in release-manifest and cache-version checks. This rejects
+malformed provenance without requiring signed releases or claiming repository
+history authenticity.
 
 ### Observable behavior
 
@@ -345,6 +353,8 @@ offline acceptance or cross-browser support.
 - The service-worker contract harness verifies install precache, activation
   cleanup, cache-first assets, navigation fallback, and same-origin GET gating
   without making a browser-offline claim.
+- Release-manifest checks reject source revisions that are neither `unknown` nor
+  a lowercase 40-character Git object identity.
 - `drl-audio` maps events to semantic cues. The WASM mixer uses generated tones,
   mute/volume settings, and user-gesture unlock; blocked audio never blocks
   gameplay.
@@ -626,7 +636,7 @@ scripts/check-release-manifest.sh           PASS (after `scripts/build-web.sh`, 
 scripts/test-service-worker.sh               PASS (mocked lifecycle/fetch contract)
 scripts/check-browser-diagnostics.sh        PASS (via `scripts/check-web.sh`)
 scripts/check-browser-accessibility.sh      PASS (via `scripts/check-web.sh`)
-scripts/check-version.sh                    PASS (`0.1.6` projections and transition)
+scripts/check-version.sh                    PASS (`0.1.7` projections and transition)
 cargo check --locked -p drl-web --target wasm32-unknown-unknown  PASS
 cargo test -p drl-render                      PASS (pixel-grid, lighting, tone, and timeline contracts)
 cargo test -p drl-core --test batch_simulation PASS (fixed-seed cohort sample,

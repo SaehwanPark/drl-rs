@@ -75,7 +75,7 @@ automated regressions, and human review.
   content animation and capture parity remain open. A read-only capture
   manifest preflight now validates pinned metadata, rights, media hashes, and
   evidence status while preserving `NOT_RUN`.
-- `SPEC.md` contains the single active M12 service-worker-lifecycle-contract
+- `SPEC.md` contains the single active M12 release-source-identity-audit
   slice; it is not a second roadmap.
 - The first bounded M11 cohort slice adds explicit fixed-seed sample
   definitions and reports around the existing headless batch runner. Reports
@@ -101,9 +101,12 @@ automated regressions, and human review.
 - The delivered M12 manifest-integrity follow-up emits a lowercase SHA-256 sidecar
   for the generated manifest, verifies exact bytes, and precaches the sidecar;
   this is packaging integrity evidence, not signing or offline acceptance.
-- The active M12 service-worker follow-up runs dependency-free mocked lifecycle
+- The delivered M12 service-worker follow-up runs dependency-free mocked lifecycle
   and fetch contracts for precache, stale-cache cleanup, navigation fallback,
   and same-origin GET gating; full browser-offline acceptance remains open.
+- The active M12 release-audit follow-up rejects malformed source revision
+  identities before manifest/cache policy is accepted; signed history
+  authenticity remains open.
 - The M12 diagnostics slice adds a local accessible browser-support and
   startup-error panel with recovery guidance; it sends no telemetry and does
   not extend the tested WebGPU browser claim.
@@ -318,7 +321,7 @@ absolute per-category rate deltas without adding a tolerance or significance
 claim. The delivered tolerance gate applies a caller-owned finite non-negative
 bound without adding statistical interpretation.
 
-### M12 — Static web productization and release hardening (manifest, cache, diagnostics, accessibility, and sidecar slices delivered; hardening open)
+### M12 — Static web productization and release hardening (manifest, cache, diagnostics, accessibility, sidecar, and worker-contract slices delivered; hardening open)
 
 Produce reproducible static HTTPS/PWA bundles, asset license notices,
 cache/version policy, accessibility audit, browser support/error screens,
@@ -331,7 +334,8 @@ slice adds a local accessible browser-support/startup-diagnostics panel with rec
  landmarks and control semantics. The active release-hardening follow-up adds a
  deterministic SHA-256 sidecar for the manifest and precaches it. The active
  follow-up runs dependency-free mocked service-worker lifecycle/fetch checks;
- full browser-offline acceptance remains open. Signing, release audits, broader
+ full browser-offline acceptance remains open. The active release-audit
+ follow-up validates source revision identity syntax. Signing, release audits, broader
 invalidation policy, dynamic accessibility acceptance, and untested-browser
 support remain open. WebGPU remains the 1.0 baseline; do not imply support for
 untested browsers.

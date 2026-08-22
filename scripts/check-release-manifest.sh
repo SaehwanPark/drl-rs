@@ -23,8 +23,14 @@ if data.get("schema_version") != 1:
 project_version = pathlib.Path("VERSION").read_text().strip()
 if data.get("project_version") != project_version:
     raise SystemExit("release manifest project version does not match VERSION")
-if not isinstance(data.get("source_revision"), str) or not data["source_revision"]:
+source_revision = data.get("source_revision")
+if not isinstance(source_revision, str) or not source_revision:
     raise SystemExit("release manifest source revision is missing")
+if source_revision != "unknown" and (
+    len(source_revision) != 40
+    or any(character not in "0123456789abcdef" for character in source_revision)
+):
+    raise SystemExit("release manifest source revision is not a lowercase Git object identity")
 if data.get("generated") != [
     "release-manifest.json",
     "release-manifest.sha256",
