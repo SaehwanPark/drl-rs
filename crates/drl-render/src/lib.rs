@@ -36,6 +36,31 @@ pub enum PresentationEffect {
   Knockback,
 }
 
+impl PresentationEffect {
+  /// Returns the frontend-neutral logical duration for this effect.
+  #[must_use]
+  pub const fn duration_ticks(self) -> u16 {
+    match self {
+      Self::Move => 1,
+      Self::MeleeAttack | Self::RangedAttack => 2,
+      Self::Hit => 1,
+      Self::Death => 4,
+      Self::Pickup | Self::Drop | Self::Equip | Self::Use => 2,
+      Self::Reload => 3,
+      Self::Teleport | Self::LevelTransition => 4,
+      Self::Knockback => 2,
+    }
+  }
+}
+
+/// One sequential presentation effect span in logical frontend ticks.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct EffectSpan {
+  pub effect: PresentationEffect,
+  pub start_tick: u32,
+  pub duration_ticks: u16,
+}
+
 /// Visibility-derived presentation bands for deterministic scene shading.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum LightingBand {
@@ -337,6 +362,25 @@ pub fn effects_for_events(events: &[GameEvent]) -> Vec<PresentationEffect> {
     .collect()
 }
 
+/// Builds deterministic sequential timing spans from simulation events.
+#[must_use]
+pub fn effect_timeline(events: &[GameEvent]) -> Vec<EffectSpan> {
+  let mut start_tick = 0_u32;
+  effects_for_events(events)
+    .into_iter()
+    .map(|effect| {
+      let duration_ticks = effect.duration_ticks();
+      let span = EffectSpan {
+        effect,
+        start_tick,
+        duration_ticks,
+      };
+      start_tick = start_tick.saturating_add(u32::from(duration_ticks));
+      span
+    })
+    .collect()
+}
+
 /// Returns the renderer component name.
 #[must_use]
 pub fn renderer_name() -> &'static str {
@@ -463,6 +507,21 @@ mod tests {
     assert_eq!(
       effects_for_events(&events),
       vec![PresentationEffect::Move, PresentationEffect::Knockback]
+    );
+    assert_eq!(
+      effect_timeline(&events),
+      vec![
+        EffectSpan {
+          effect: PresentationEffect::Move,
+          start_tick: 0,
+          duration_ticks: 1,
+        },
+        EffectSpan {
+          effect: PresentationEffect::Knockback,
+          start_tick: 1,
+          duration_ticks: 2,
+        },
+      ]
     );
   }
 }

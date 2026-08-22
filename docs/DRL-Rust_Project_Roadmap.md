@@ -38,6 +38,8 @@ automated regressions, and human review.
   claim.
 - A further M8 slice centralizes the existing quarter-health scene tone in
   `drl-render::SceneTone`; capture-backed low-life LUT/glow parity remains open.
+- The active M8 follow-up adds event-ordered `drl-render::EffectSpan` timing;
+  capture-backed animation/effect durations remain open.
 - `SPEC.md` contains the single active M8 slice; it is not a second roadmap.
 
 ## Milestones

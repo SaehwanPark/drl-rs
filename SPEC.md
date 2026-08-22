@@ -15,14 +15,14 @@ progress. This file expands exactly one active implementation slice.
   redistribution-gated; its controlled reference-capture gate is `NOT_RUN` on
   arm64 macOS and remains an M8 acceptance dependency.
 
-## Present — M8 deterministic low-health presentation tone
+## Present — M8 deterministic presentation-effect timeline
 
 Status: The M7 browser slice passed functional acceptance locally and in
-remote web CI. The delivered M8 pixel-grid and visibility-band slices keep map
-cells square and share explored-tile shading; this bounded follow-up moves the
-existing low-health clear tone into pure presentation planning so WebGPU and
-future capture/LUT work share one threshold. The capture-backed audiovisual
-comparison remains open.
+remote web CI. The delivered M8 pixel-grid, visibility-band, and low-health
+tone slices share pure presentation rules; this bounded follow-up gives event-
+derived visual effects explicit logical durations and sequential start ticks.
+Frontends may map presentation ticks to animation frames, but the timeline
+never advances simulation and is not a capture-backed parity claim.
 
 ### Observable behavior
 
@@ -66,6 +66,11 @@ comparison remains open.
   health threshold, and never advances simulation.
 - WebGPU uses that shared clear-color rule; health-tone presentation remains an
   effect and cannot reveal hidden world state.
+- `drl-render::effect_timeline` preserves event order and assigns each bounded
+  `PresentationEffect` a fixed logical duration. Spans are sequential and
+  deterministic for identical event lists.
+- Presentation ticks are frontend timing units only; tab visibility, resize,
+  audio, and animation work cannot submit a simulation command.
 
 ### Public contracts
 
@@ -85,7 +90,7 @@ Local checks:
 sh scripts/check-repository.sh              PASS (baseline plus new crates)
 sh scripts/check-assets.sh                  PASS (32 PNGs, license, hashes)
 cargo check --locked -p drl-web --target wasm32-unknown-unknown  PASS
-cargo test -p drl-render                      PASS (pixel-grid, lighting, and tone contracts)
+cargo test -p drl-render                      PASS (pixel-grid, lighting, tone, and timeline contracts)
 scripts/check-web.sh                        PASS for native/WASM builds;
                                              browser runner NOT_RUN if Chrome absent
 scripts/build-web.sh                         PASS (release bundle in ignored dist/)
@@ -93,8 +98,8 @@ Chrome 151 WebGPU smoke playthrough          PASS (Apple Metal-3, 1280x720, DPR 
                                              start with explicit gesture-gated
                                              audio state, move, mute, restart;
                                              pixel-grid scene visible after move)
-GitHub Actions run 32541066735               PASS (repository + Ubuntu WASM jobs;
-                                             M8 low-health tone implementation)
+GitHub Actions run 32541733654               PASS (repository + Ubuntu WASM jobs;
+                                             M8 effect-timeline implementation)
 ```
 
 The local and remote functional gates pass. The run records browser/version,
