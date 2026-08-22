@@ -278,13 +278,22 @@ non-negative maximum absolute rate delta shared by all outcome categories.
 Invalid thresholds return `false`; the gate does not mutate reports, rerun
 episodes, or claim statistical significance or balance conclusions.
 
-## Present — M12 project-versioned cache policy
+## Delivered — M12 project-versioned cache policy
 
-Status: the active slice derives generated service-worker cache names from the
+Status: this delivered slice derives generated service-worker cache names from the
 canonical project version and source-revision prefix. The release-manifest
 checker verifies the generated literal matches both inputs. This is a
 deterministic invalidation policy for static bundles, not proof of offline
 behavior, a signed release, or cross-browser acceptance.
+
+## Present — M12 manifest integrity sidecar
+
+Status: the active slice adds a deterministic `dist/release-manifest.sha256`
+sidecar for the generated manifest. The release-manifest checker validates the
+sidecar's canonical filename, lowercase SHA-256 digest, and exact manifest
+bytes, while the generated service worker precaches the sidecar. This is local
+packaging integrity evidence, not a cryptographic signature, offline proof, or
+cross-browser acceptance claim.
 
 ### Observable behavior
 
@@ -322,6 +331,8 @@ behavior, a signed release, or cross-browser acceptance.
 - Generated service-worker bundles use a cache name containing `v1`, the
   canonical project version, and the first 12 source-revision characters; the
   release manifest rejects mismatches without broadening offline claims.
+- Generated bundles declare and precache `release-manifest.sha256`; the release
+  checker rejects malformed, non-lowercase, or mismatched sidecar digests.
 - `drl-audio` maps events to semantic cues. The WASM mixer uses generated tones,
   mute/volume settings, and user-gesture unlock; blocked audio never blocks
   gameplay.
@@ -336,8 +347,9 @@ behavior, a signed release, or cross-browser acceptance.
   web contract tests run.
 - A release bundle contains a deterministic `release-manifest.json` with source
   revision, sorted artifact hashes, generated-file declarations, and graphics
-  rights metadata; the release-manifest check rejects missing, unsafe, or
-  mismatched entries and missing service-worker coverage.
+  rights metadata plus a matching `release-manifest.sha256` sidecar; the
+  release-manifest check rejects missing, unsafe, or mismatched entries,
+  sidecar digests, and service-worker coverage.
 - The generated service worker uses the manifest project version and source
   revision prefix in its cache version, so two different known build revisions
   or project versions do not share the same cache name; the checked-in
@@ -598,10 +610,10 @@ sh scripts/check-repository.sh              PASS (baseline plus new crates)
 sh scripts/check-assets.sh                  PASS (32 PNGs, license, hashes)
 scripts/check-reference-capture.sh          PASS (`NOT_RUN` on arm64 macOS)
 scripts/test-reference-capture.sh           PASS (fixture coverage)
-scripts/check-release-manifest.sh           PASS (after `scripts/build-web.sh`)
+scripts/check-release-manifest.sh           PASS (after `scripts/build-web.sh`, including sidecar)
 scripts/check-browser-diagnostics.sh        PASS (via `scripts/check-web.sh`)
 scripts/check-browser-accessibility.sh      PASS (via `scripts/check-web.sh`)
-scripts/check-version.sh                    PASS (`0.1.4` projections and transition)
+scripts/check-version.sh                    PASS (`0.1.5` projections and transition)
 cargo check --locked -p drl-web --target wasm32-unknown-unknown  PASS
 cargo test -p drl-render                      PASS (pixel-grid, lighting, tone, and timeline contracts)
 cargo test -p drl-core --test batch_simulation PASS (fixed-seed cohort sample,
@@ -659,14 +671,15 @@ capture is available.
   significance. Static browser accessibility is a shell contract, not full
   WCAG or screen-reader acceptance.
 - Offline-after-first-load, signed release verification, and cross-browser
-  acceptance remain outside the static cache-version policy.
+  acceptance remain outside the static cache and manifest-sidecar policies.
 
 ## Next
 
 The fixed-seed cohort report, integrity gate, outcome-distribution view,
 compatible outcome comparison, and outcome-rate tolerance gate are covered by
 focused headless tests. The project-versioned cache policy is covered by
-static/build checks; broader offline and release-hardening work remains.
+static/build checks; the active manifest-sidecar slice is covered by the
+release-manifest checker; broader offline and release-hardening work remains.
 The pixel-scale
 viewport,
 atlas metadata, UV geometry, draw-plan source

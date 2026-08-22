@@ -25,7 +25,11 @@ if data.get("project_version") != project_version:
     raise SystemExit("release manifest project version does not match VERSION")
 if not isinstance(data.get("source_revision"), str) or not data["source_revision"]:
     raise SystemExit("release manifest source revision is missing")
-if data.get("generated") != ["release-manifest.json", "service-worker.js"]:
+if data.get("generated") != [
+    "release-manifest.json",
+    "release-manifest.sha256",
+    "service-worker.js",
+]:
     raise SystemExit("release manifest generated-file declaration is invalid")
 if data.get("rights") != ["assets/legacy/drl/graphics/LICENSE"]:
     raise SystemExit("release manifest rights declaration is invalid")
@@ -60,6 +64,19 @@ for entry in artifacts:
 rights = dist / pathlib.PurePosixPath(data["rights"][0])
 if not rights.is_file():
     raise SystemExit("release manifest rights file is missing")
+digest_path = dist / "release-manifest.sha256"
+if not digest_path.is_file():
+    raise SystemExit("release manifest digest sidecar is missing")
+digest_parts = digest_path.read_text().split()
+if len(digest_parts) != 2 or digest_parts[1] != "release-manifest.json":
+    raise SystemExit("release manifest digest sidecar is malformed")
+manifest_digest = digest_parts[0]
+if len(manifest_digest) != 64 or any(
+    character not in "0123456789abcdef" for character in manifest_digest
+):
+    raise SystemExit("release manifest digest sidecar has an invalid hash")
+if hashlib.sha256(manifest_path.read_bytes()).hexdigest() != manifest_digest:
+    raise SystemExit("release manifest digest sidecar does not match manifest")
 worker = (dist / "service-worker.js").read_text()
 cache_version = f'v1-{data["project_version"]}-{data["source_revision"][:12]}'
 cache_literal = json.dumps(cache_version)

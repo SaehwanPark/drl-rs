@@ -96,7 +96,8 @@ types shared by core, MCP, bots, and frontends.
   rendering with visibility-lifecycle rebasing, a versioned fixed-session
   command snapshot with bounded corruption handling and best-effort
   localStorage persistence, a versioned static service-worker cache boundary,
-  deterministic release-manifest generation/checks for static bundles, source-
+  deterministic release-manifest generation/checks plus a manifest digest
+  sidecar for static bundles, source-
   project-versioned/source-derived service-worker cache versioning, a local
   accessible browser-support diagnostics surface, a static accessibility
   contract for the HTML shell, and
