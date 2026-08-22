@@ -41,8 +41,8 @@ types shared by core, MCP, bots, and frontends.
   `LightingBand`/`shade_color` rules, health-derived `SceneTone`/clear color,
   event-ordered `EffectSpan` timing, and renderer-neutral `LayerDraw` plans
   carrying atlas layers, imported source metadata, explicit layer roles, fair
-  lighting, Green Armor colorization tint, pixel destinations, and normalized
-  UVs; `sprite_composite_plan`
+  lighting, evidence-backed Green Armor/Phase Device colorization tint, pixel
+  destinations, and normalized UVs; `sprite_composite_plan`
   groups complete role sets for a future backend. It consumes player
   observations/events
   only; `active_effect_frames` maps those fair spans to frontend progress;
@@ -117,9 +117,10 @@ types shared by core, MCP, bots, and frontends.
   emissive view raises the fair lighting floor from its red channel, and the
   optional colorization-mask view is sampled with a neutral zero per-vertex
   tint except for the evidence-backed Green Armor value on visible ground
-  items and the player with observed equipped Green Armor. Missing optional
-  roles use a retained transparent 1x1 fallback; additional per-sprite tint
-  sources and outline/glow compositing remain later boundaries. The WGSL pass
+  items/player equipped armor and the byte-quantized Phase Device value on
+  visible ground items. Missing optional roles use a retained transparent 1x1
+  fallback; additional per-sprite tint sources and outline/glow compositing
+  remain later boundaries. The WGSL pass
   discards base fragments below the verified `0.1`
   alpha cutoff before source-alpha blending. The WGSL source is defined at the
   crate boundary so a native contract test can guard its binding and

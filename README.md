@@ -15,9 +15,9 @@ renderer-neutral layer draw plans with imported source metadata, fair lighting
 factors, explicit legacy shader input roles, grouped sprite composite plans,
 and validated browser texture-source loading, renderer-owned GPU texture
 uploads using linear normalized atlas storage, a native-tested partial
-nearest-filtered base/mask/emissive textured pass with an evidence-backed
-Green Armor colorization tint boundary, the verified emissive lighting floor,
-and legacy alpha cutoff,
+nearest-filtered base/mask/emissive textured pass with evidence-backed Green
+Armor and Phase Device ground colorization tint boundaries, the verified
+emissive lighting floor, and legacy alpha cutoff,
 plus pure effect progress, caller-supplied animation frame selection, a
 low-health scene tone, and event-ordered timing. Full
 audiovisual equivalence, broader content, PWA persistence, and other browsers
@@ -94,12 +94,13 @@ legacy graphics metadata; it is not a dependency of the core.
 - `crates/drl-render`: pure scene construction, deterministic pixel viewport
   layout, atlas/layer draw-plan geometry with source metadata, roles, grouped
   composites, lighting, normalized effect progress, and caller-supplied
-  animation frame selection and the observed Green Armor tint mapping.
+  animation frame selection and the observed Green Armor/Phase Device tint
+  mappings.
 - `crates/drl-audio`: semantic cues and WASM Web Audio mixer.
 - `crates/drl-web`: browser session, validated same-origin texture-source
   loading, renderer-owned WebGPU texture uploads, the partial base/mask/
-  emissive textured pass with Green Armor colorization tint and legacy alpha
-  cutoff, Winit/WebGPU scene
+  emissive textured pass with Green Armor/Phase Device colorization tint and
+  legacy alpha cutoff, Winit/WebGPU scene
   surface, DOM shell, and WASM exports.
 - `crates/drl-mcp`: JSON-RPC/MCP server and fairness boundary.
 - `crates/drl-app`: native headless demo and MCP stdio runner.

@@ -22,6 +22,7 @@ const NEUTRAL_COLORIZATION_TINT: [u8; 4] = [0, 0, 0, 0];
 pub const fn item_colorization_tint(archetype: ItemArchetype) -> [u8; 4] {
   match archetype {
     ItemArchetype::GreenArmor => [0, 255, 0, 255],
+    ItemArchetype::PhaseDevice => [0, 0, 179, 255],
     _ => NEUTRAL_COLORIZATION_TINT,
   }
 }
@@ -835,6 +836,10 @@ mod tests {
       item_colorization_tint(ItemArchetype::GreenArmor),
       [0, 255, 0, 255]
     );
+    assert_eq!(
+      item_colorization_tint(ItemArchetype::PhaseDevice),
+      [0, 0, 179, 255]
+    );
     assert_eq!(item_colorization_tint(ItemArchetype::Pistol), [0, 0, 0, 0]);
   }
 
@@ -881,6 +886,35 @@ mod tests {
       composites
         .iter()
         .any(|composite| composite.colorization_tint == [0, 255, 0, 255])
+    );
+  }
+
+  #[test]
+  fn visible_phase_device_forwards_quantized_ground_tint_only() {
+    let scenario =
+      Scenario::from_ascii("phase device", "", "#####\n#@P.#\n#####").expect("scenario");
+    let observation = scenario.instantiate().expect("game").observe_player();
+    let scene = RenderScene::from_observation(&observation);
+    assert_eq!(
+      scene
+        .items
+        .iter()
+        .find(|item| item.item.archetype == ItemArchetype::PhaseDevice)
+        .map(|item| item.colorization_tint),
+      Some([0, 0, 179, 255])
+    );
+    assert!(
+      scene
+        .actors
+        .iter()
+        .all(|actor| { !actor.is_player || actor.colorization_tint == [0, 0, 0, 0] })
+    );
+    let viewport = PixelViewport::fit(scene.map_width, scene.map_height, 160, 96);
+    let composites = sprite_composite_plan(&layer_draw_plan(&scene, viewport));
+    assert!(
+      composites
+        .iter()
+        .any(|composite| composite.colorization_tint == [0, 0, 179, 255])
     );
   }
 

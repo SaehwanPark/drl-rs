@@ -115,6 +115,10 @@ documented in this file.
   pinned legacy green value through the existing mask vertex input, while
   other current archetypes and non-player actors remain neutral. Additional
   tint sources and capture-backed color/display parity remain open.
+- Extended the colorization boundary to visible Phase Device ground items
+  using the pinned legacy blue `coscolor`, explicitly quantized at the existing
+  byte vertex boundary; player equipment and other roles remain unchanged, and
+  capture-backed display-color parity remains open.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch
