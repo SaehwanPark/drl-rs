@@ -91,6 +91,9 @@ automated regressions, and human review.
 - The M12 cache-version follow-up derives the generated service-worker cache
   name from the manifest source-revision prefix; this is deterministic naming,
   not a signed release invalidation policy.
+- The active M12 diagnostics slice adds a local accessible browser-support and
+  startup-error panel with recovery guidance; it sends no telemetry and does
+  not extend the tested WebGPU browser claim.
 
 ## Milestones
 
@@ -298,9 +301,11 @@ cache/version policy, accessibility audit, browser support/error screens,
 telemetry-free diagnostics, and signed release manifests. The first manifest
 slice records source revision, artifact hashes, rights metadata, and
 service-worker coverage; its cache-version follow-up derives the generated
-worker name from that source-revision prefix. Signing, release audits, and a
-broader invalidation policy remain open. WebGPU remains the 1.0 baseline; do
-not imply support for untested browsers.
+worker name from that source-revision prefix. The active follow-up adds a
+local accessible browser-support/startup-diagnostics panel with recovery
+guidance and no telemetry. Signing, release audits, broader invalidation
+policy, and untested-browser support remain open. WebGPU remains the 1.0
+baseline; do not imply support for untested browsers.
 
 ### M13 — Browser-first 1.0 release (planned)
 

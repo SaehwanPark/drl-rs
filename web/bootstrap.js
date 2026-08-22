@@ -2,6 +2,10 @@ import init, { boot, clear_save, dispatch_inventory, load, resize, restart as re
 
 const status = document.querySelector("#game-status");
 const log = document.querySelector("#game-log");
+const diagnostics = document.querySelector("#game-diagnostics");
+const diagnosticTitle = document.querySelector("#diagnostics-title");
+const diagnosticDetail = document.querySelector("#diagnostics-detail");
+const diagnosticAction = document.querySelector("#diagnostics-action");
 const canvas = document.querySelector("#game-canvas");
 const start = document.querySelector("#start-button");
 const restart = document.querySelector("#restart-button");
@@ -19,6 +23,21 @@ function writeStatus(message) {
   log.textContent = message;
 }
 
+function writeDiagnostic(title, detail, action) {
+  diagnosticTitle.textContent = title;
+  diagnosticDetail.textContent = detail;
+  diagnosticAction.textContent = action;
+  diagnostics.hidden = false;
+  diagnostics.focus({ preventScroll: true });
+}
+
+function clearDiagnostic() {
+  diagnostics.hidden = true;
+  diagnosticTitle.textContent = "Browser support diagnostic";
+  diagnosticDetail.textContent = "";
+  diagnosticAction.textContent = "";
+}
+
 function queueAudioSetting(setting) {
   // Web Audio unlock temporarily takes the mixer out of WASM storage. Queue
   // all control changes so rapid UI events cannot observe a missing mixer or
@@ -29,11 +48,23 @@ function queueAudioSetting(setting) {
       await unlock_audio();
       writeStatus(setting());
     })
-    .catch(() => writeStatus("Audio unavailable; gameplay continues."));
+    .catch(() => {
+      writeDiagnostic(
+        "Audio unavailable",
+        "The browser did not unlock Web Audio for this presentation session.",
+        "Gameplay continues without audio; check browser site permissions and retry."
+      );
+      writeStatus("Audio unavailable; gameplay continues.");
+    });
 }
 
 async function registerOfflineCache() {
   if (!("serviceWorker" in navigator)) {
+    writeDiagnostic(
+      "Offline cache unavailable",
+      "This browser does not expose service workers for this deployment.",
+      "Gameplay can continue online; no data is sent by this diagnostic."
+    );
     return " Offline cache unavailable in this browser.";
   }
   try {
@@ -42,24 +73,44 @@ async function registerOfflineCache() {
       ? " Offline cache ready for the next reload."
       : " Offline cache installation started for the next reload.";
   } catch (error) {
+    writeDiagnostic(
+      "Offline cache unavailable",
+      `The service worker could not be registered locally (${error}).`,
+      "Gameplay can continue online; retry after checking the HTTPS deployment."
+    );
     return ` Offline cache unavailable (${error}).`;
   }
 }
 
 start.addEventListener("click", async () => {
   if (started) return;
+  if (!navigator.gpu) {
+    writeDiagnostic(
+      "WebGPU unavailable",
+      "This build requires the WebGPU browser API for graphics initialization.",
+      "Use a desktop Chromium browser with WebGPU enabled; other backends are not claimed."
+    );
+    writeStatus("Browser graphics unavailable: WebGPU is not exposed.");
+    return;
+  }
   try {
     await init();
     const result = await boot();
     started = true;
     start.disabled = true;
     canvas.focus();
+    clearDiagnostic();
     // `boot()` writes the accurate ready/suspended/unavailable audio state.
     // Keep that message and mirror it to the log instead of assuming success.
     const readyMessage = status.textContent || `Ready (${result}).`;
     log.textContent = readyMessage;
     writeStatus(`${readyMessage}${await registerOfflineCache()}`);
   } catch (error) {
+    writeDiagnostic(
+      "Browser graphics unavailable",
+      `WebGPU startup failed locally (${error}).`,
+      "Use a supported desktop Chromium WebGPU environment; gameplay state was not started."
+    );
     writeStatus(`Browser graphics unavailable: ${error}`);
   }
 });
