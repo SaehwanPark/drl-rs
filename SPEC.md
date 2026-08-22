@@ -220,6 +220,12 @@ The manifest is evidence for reproducible static packaging only. It is not a
 signature, a cache invalidation policy, or proof of offline or cross-browser
 acceptance.
 
+The active follow-up derives the generated service-worker cache version from
+the manifest source revision (`v1-` plus its first 12 characters), with
+`v1-unknown` when the build revision cannot be resolved. The checked-in worker
+template remains a marker-bearing source; only the generated bundle receives
+the concrete version.
+
 ### Observable behavior
 
 - `BrowserSession` creates the fixed deterministic M4 arena and exposes only a
@@ -254,6 +260,9 @@ acceptance.
   revision, sorted artifact hashes, generated-file declarations, and graphics
   rights metadata; the release-manifest check rejects missing, unsafe, or
   mismatched entries and missing service-worker coverage.
+- The generated service worker uses the manifest source revision prefix in its
+  cache version, so two different known build revisions do not share the same
+  cache name; the checked-in template remains unversioned marker input.
 - The browser shell applies mute status after the asynchronous audio-unlock
   retry, so the visible status cannot report a stale unlock result.
 - Mute and volume controls serialize audio-unlock/settings operations, so rapid
@@ -483,7 +492,9 @@ acceptance.
   they do not claim statistical significance, balance correctness, or a
   difficulty target.
 - The release manifest is unsigned metadata; signing, cache invalidation,
-  offline acceptance, and cross-browser claims remain later M12/M13 work.
+  offline acceptance, and cross-browser claims remain later M12/M13 work; the
+  source-derived cache version is only deterministic naming, not a release
+  invalidation policy.
 
 ### Verification
 

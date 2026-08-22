@@ -59,6 +59,11 @@ manifest = {
     "rights": ["assets/legacy/drl/graphics/LICENSE"],
 }
 manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")
+cache_version = f"v1-{manifest['source_revision'][:12]}"
+cache_marker = '/* __CACHE_VERSION__ */ "v1"'
+if cache_marker not in template:
+    raise SystemExit("service-worker cache version marker is missing")
+template = template.replace(cache_marker, json.dumps(cache_version), 1)
 files = ["./", "./service-worker.js"]
 files.extend(
     f"./{path.relative_to(dist).as_posix()}"
