@@ -369,11 +369,18 @@ rounded particle world position to a one-based decal cell. It preserves the
 16-pixel offset and truncating 32-pixel division while leaving map bounds,
 liquid/block flags, and decal storage to the caller.
 
-## Present — M8 particle-decal placement contract
+## Delivered — M8 particle-decal placement contract
 
-Status: the active slice retains both callback outputs—the one-based cell and
-the pixel-space insertion position—from a caller-rounded particle position.
-Eligibility, decal selection/storage, and rendering remain outside the helper.
+Status: the delivered slice retains both callback outputs—the one-based cell
+and the pixel-space insertion position—from a caller-rounded particle position.
+Map and flag lookup, decal selection/storage, and rendering remain outside the
+helper.
+
+## Present — M8 particle-decal eligibility contract
+
+Status: the active slice exposes the legacy in-bounds, non-liquid,
+non-blocking gate for a caller-resolved decal cell. Decal selection/storage and
+rendering remain outside the helper.
 
 ### Observable behavior
 
@@ -426,6 +433,9 @@ Eligibility, decal selection/storage, and rendering remain outside the helper.
 - `drl_render::particle_decal_placement_at_rounded_world` returns the same
   one-based cell together with the offset pixel position used for decal
   insertion; checked offset arithmetic rejects unrepresentable inputs.
+- `drl_render::particle_decal_cell_is_eligible` accepts a caller-resolved cell
+  only when it is in bounds and neither liquid nor movement-blocking; map/flag
+  lookup, decal selection/storage, and rendering remain caller-owned.
 - Generated service-worker bundles use a cache name containing `v1`, the
   canonical project version, and the first 12 source-revision characters; the
   release manifest rejects mismatches without broadening offline claims.
@@ -730,7 +740,7 @@ scripts/check-release-manifest.sh           PASS (after `scripts/build-web.sh`, 
 scripts/test-service-worker.sh               PASS (mocked lifecycle/fetch contract)
 scripts/check-browser-diagnostics.sh        PASS (via `scripts/check-web.sh`)
 scripts/check-browser-accessibility.sh      PASS (via `scripts/check-web.sh`)
-scripts/check-version.sh                    PASS (`0.2.7` projections and transition)
+scripts/check-version.sh                    PASS (`0.2.8` projections and transition)
 cargo check --locked -p drl-web --target wasm32-unknown-unknown  PASS
 cargo test -p drl-render                      PASS (pixel-grid, lighting, tone,
                                              timeline, and particle contracts)

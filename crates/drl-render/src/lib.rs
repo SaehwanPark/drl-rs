@@ -389,6 +389,21 @@ pub fn particle_decal_cell_at_rounded_world(rounded_world_position: [i32; 2]) ->
   particle_decal_placement_at_rounded_world(rounded_world_position).map(|placement| placement.cell)
 }
 
+/// Reports whether a caller-resolved cell can receive a particle decal.
+///
+/// The legacy callback accepts only an in-bounds cell that is neither liquid
+/// nor movement-blocking. Cell lookup, flag resolution, decal selection, and
+/// storage remain caller-owned so this gate stays independent of simulation
+/// state and renderer storage.
+#[must_use]
+pub const fn particle_decal_cell_is_eligible(
+  cell_is_in_bounds: bool,
+  cell_is_liquid: bool,
+  cell_blocks_movement: bool,
+) -> bool {
+  cell_is_in_bounds && !cell_is_liquid && !cell_blocks_movement
+}
+
 /// Visibility-derived presentation bands for deterministic scene shading.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum LightingBand {
@@ -2492,6 +2507,15 @@ mod tests {
         pixel: [0, 0],
       })
     );
+  }
+
+  #[test]
+  fn particle_decal_cell_eligibility_matches_legacy_guards() {
+    assert!(particle_decal_cell_is_eligible(true, false, false));
+    assert!(!particle_decal_cell_is_eligible(false, false, false));
+    assert!(!particle_decal_cell_is_eligible(true, true, false));
+    assert!(!particle_decal_cell_is_eligible(true, false, true));
+    assert!(!particle_decal_cell_is_eligible(true, true, true));
   }
 
   #[test]
