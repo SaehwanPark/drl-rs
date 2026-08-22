@@ -15,6 +15,7 @@ grep -F 'cacheSuccessfulResponse' "$worker" >/dev/null
 grep -F 'assets/legacy' scripts/build-web.sh >/dev/null
 grep -F 'service-worker.js' scripts/build-web.sh >/dev/null
 grep -F 'release-manifest.json' scripts/build-web.sh scripts/check-release-manifest.sh >/dev/null
+grep -F 'release-manifest.sha256' scripts/build-web.sh scripts/check-release-manifest.sh >/dev/null
 grep -F 'service-worker.js' scripts/build-web.sh web/bootstrap.js >/dev/null
 grep -F '__CACHE_VERSION__' scripts/build-web.sh >/dev/null
 grep -F 'manifest.webmanifest' web/index.html scripts/build-web.sh >/dev/null

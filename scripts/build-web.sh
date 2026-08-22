@@ -34,7 +34,8 @@ dist = pathlib.Path(sys.argv[1])
 template = pathlib.Path(sys.argv[2]).read_text()
 project_version = pathlib.Path(sys.argv[3]).read_text().strip()
 manifest_path = dist / "release-manifest.json"
-generated_files = ["release-manifest.json", "service-worker.js"]
+manifest_digest_path = dist / "release-manifest.sha256"
+generated_files = ["release-manifest.json", "release-manifest.sha256", "service-worker.js"]
 artifact_paths = [
     path
     for path in sorted(dist.rglob("*"))
@@ -61,6 +62,8 @@ manifest = {
     "rights": ["assets/legacy/drl/graphics/LICENSE"],
 }
 manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")
+manifest_digest = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
+manifest_digest_path.write_text(f"{manifest_digest}  release-manifest.json\n")
 cache_version = f"v1-{manifest['project_version']}-{manifest['source_revision'][:12]}"
 cache_marker = '/* __CACHE_VERSION__ */ "v1"'
 if cache_marker not in template:
