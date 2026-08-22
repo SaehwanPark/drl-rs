@@ -97,6 +97,9 @@ automated regressions, and human review.
 - The M12 diagnostics slice adds a local accessible browser-support and
   startup-error panel with recovery guidance; it sends no telemetry and does
   not extend the tested WebGPU browser claim.
+- The active M12 accessibility slice statically audits shell landmarks, named
+  controls, form labels, focus semantics, live regions, and support disclosure;
+  dynamic WCAG and screen-reader acceptance remain open.
 
 ## Milestones
 
@@ -304,11 +307,13 @@ cache/version policy, accessibility audit, browser support/error screens,
 telemetry-free diagnostics, and signed release manifests. The first manifest
 slice records source revision, artifact hashes, rights metadata, and
 service-worker coverage; its cache-version follow-up derives the generated
-worker name from that source-revision prefix. The active follow-up adds a
+worker name from that source-revision prefix. The diagnostics slice adds a
 local accessible browser-support/startup-diagnostics panel with recovery
-guidance and no telemetry. Signing, release audits, broader invalidation
-policy, and untested-browser support remain open. WebGPU remains the 1.0
-baseline; do not imply support for untested browsers.
+guidance and no telemetry; the active follow-up statically audits shell
+landmarks and control semantics. Signing, release audits, broader
+invalidation policy, dynamic accessibility acceptance, and untested-browser
+support remain open. WebGPU remains the 1.0 baseline; do not imply support for
+untested browsers.
 
 ### M13 — Browser-first 1.0 release (planned)
 

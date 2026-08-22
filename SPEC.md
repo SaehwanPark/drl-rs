@@ -205,9 +205,9 @@ sample definition match; it reports absolute win-rate and average-turn deltas
 and a boolean tolerance result. Non-finite or negative tolerances are rejected
 without changing either report.
 
-## Present — M11 cohort report integrity
+## Delivered — M11 cohort report integrity
 
-Status: the active slice adds `CohortReport::validate`, a pure evidence gate
+Status: this delivered slice adds `CohortReport::validate`, a pure evidence gate
 that requires the configured record count, contiguous wrapping seed sequence,
 per-record replay seed identity, and exact `BatchSummary` recomputation to
 agree. It reports the first integrity failure without rerunning episodes or
@@ -242,6 +242,15 @@ offline-cache registration warnings with actionable desktop-WebGPU guidance.
 Diagnostics are local DOM text only: they do not inspect authoritative game
 state, send telemetry, or broaden the WebGPU support claim.
 
+## Present — M12 static-shell accessibility audit
+
+Status: the active slice adds `scripts/check-browser-accessibility.sh`, a
+deterministic static audit for the shipped HTML shell. It verifies document
+language, landmark/live-region semantics, named controls and form association,
+canvas keyboard focus, diagnostics semantics, inventory labeling, and a
+summary for the support disclosure. It does not claim full WCAG conformance,
+screen-reader acceptance, or dynamic keyboard-journey coverage.
+
 ### Observable behavior
 
 - `BrowserSession` creates the fixed deterministic M4 arena and exposes only a
@@ -275,6 +284,9 @@ state, send telemetry, or broaden the WebGPU support claim.
   presentation timing does not submit commands.
 - The static HTTPS shell provides accessible start/status/HUD/log/inventory
   regions and prevents page scrolling only while the canvas owns focus.
+- `scripts/check-browser-accessibility.sh` rejects missing names, labels,
+  focusability, live-region attributes, or required shell landmarks before the
+  web contract tests run.
 - A release bundle contains a deterministic `release-manifest.json` with source
   revision, sorted artifact hashes, generated-file declarations, and graphics
   rights metadata; the release-manifest check rejects missing, unsafe, or
@@ -522,7 +534,9 @@ state, send telemetry, or broaden the WebGPU support claim.
   invalidation policy. The diagnostics panel is a local recovery surface, not
   a browser compatibility guarantee or telemetry channel. Cohort report
   integrity validation is an evidence-consistency gate, not a balance,
-  difficulty, or statistical-significance claim.
+  difficulty, or statistical-significance claim. The static accessibility
+  audit is a shell contract, not a full WCAG or screen-reader acceptance
+  result.
 
 ### Verification
 
@@ -535,6 +549,7 @@ scripts/check-reference-capture.sh          PASS (`NOT_RUN` on arm64 macOS)
 scripts/test-reference-capture.sh           PASS (fixture coverage)
 scripts/check-release-manifest.sh           PASS (after `scripts/build-web.sh`)
 scripts/check-browser-diagnostics.sh        PASS (via `scripts/check-web.sh`)
+scripts/check-browser-accessibility.sh      PASS (via `scripts/check-web.sh`)
 cargo check --locked -p drl-web --target wasm32-unknown-unknown  PASS
 cargo test -p drl-render                      PASS (pixel-grid, lighting, tone, and timeline contracts)
 cargo test -p drl-core --test batch_simulation PASS (fixed-seed cohort sample,
