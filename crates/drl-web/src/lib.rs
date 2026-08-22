@@ -682,7 +682,10 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
         WindowEvent::ScaleFactorChanged { scale_factor, .. } => {
           if let Some(window) = self.window.as_ref() {
             let size = window.inner_size();
-            resize(size.width, size.height, scale_factor);
+            // `inner_size` is already physical pixels here. Applying the
+            // scale factor again would double-count Retina/zoom changes.
+            let _ = scale_factor;
+            resize(size.width, size.height, 1.0);
           }
         }
         _ => {}

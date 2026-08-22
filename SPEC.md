@@ -81,7 +81,8 @@ Chrome 151 WebGPU smoke playthrough          PASS (Apple Metal-3, 1280x720, DPR 
                                              start with explicit gesture-gated
                                              audio state, move, mute, restart;
                                              pixel-grid scene visible after move)
-GitHub Actions run 32538527707               PASS (repository + Ubuntu WASM jobs)
+GitHub Actions run 32539172278               PASS (repository + Ubuntu WASM jobs;
+                                             M8 pixel-scale branch)
 ```
 
 The local and remote functional gates pass. The run records browser/version,
@@ -101,7 +102,8 @@ legacy capture is available.
 
 ## Next
 
-Verify the pixel-scale viewport in the next browser acceptance run, then
-continue M8 only with capture-backed measurement of atlas rectangles, lighting,
-effects, typography, and audio. Do not claim audiovisual parity from the
-current placeholder atlas rectangles or the `NOT_RUN` legacy captures.
+The pixel-scale viewport is covered by local in-app Chrome smoke and the
+hosted WASM browser job. Continue M8 only with capture-backed measurement of
+atlas rectangles, lighting, effects, typography, and audio. Do not claim
+audiovisual parity from the current placeholder atlas rectangles or the
+`NOT_RUN` legacy captures.

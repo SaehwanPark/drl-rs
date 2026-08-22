@@ -67,9 +67,7 @@ impl PixelViewport {
     let map_height = map_height.max(1);
     let canvas_width = canvas_width.max(1);
     let canvas_height = canvas_height.max(1);
-    let tile_size = (canvas_width / map_width)
-      .min(canvas_height / map_height)
-      .max(1);
+    let tile_size = (canvas_width / map_width).min(canvas_height / map_height);
     let board_width = tile_size.saturating_mul(map_width);
     let board_height = tile_size.saturating_mul(map_height);
     Self {
@@ -86,6 +84,9 @@ impl PixelViewport {
   /// Returns the integer pixel rectangle for a map position.
   #[must_use]
   pub fn tile_rect(self, position: Position) -> Option<PixelRect> {
+    if self.tile_size == 0 {
+      return None;
+    }
     let x = u32::try_from(position.x).ok()?;
     let y = u32::try_from(position.y).ok()?;
     if x >= self.map_width || y >= self.map_height {
@@ -309,6 +310,10 @@ mod tests {
     assert!(viewport.tile_rect(Position::new(0, 0)).is_some());
     assert_eq!(viewport.tile_rect(Position::new(-1, 0)), None);
     assert_eq!(viewport.tile_rect(Position::new(1, 0)), None);
+
+    let undersized = PixelViewport::fit(24, 16, 1, 1);
+    assert_eq!(undersized.tile_size, 0);
+    assert_eq!(undersized.tile_rect(Position::new(0, 0)), None);
   }
 
   #[test]

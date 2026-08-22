@@ -27,8 +27,9 @@ documented in this file.
 - Added the first bounded M8 presentation slice: pure `PixelViewport` layout
   math chooses centered integer square cells, and the WebGPU scene uses those
   rectangles for deterministic letterboxing. Focused render tests, local WASM
-  compilation, native web contracts, asset checks, and the local browser smoke
-  pass; capture-backed audiovisual parity remains `NOT_RUN`.
+  compilation, native web contracts, asset checks, local browser smoke, and
+  hosted run `32539172278` pass; capture-backed audiovisual parity remains
+  `NOT_RUN`.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch
