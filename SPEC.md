@@ -15,7 +15,7 @@ progress. This file expands exactly one active implementation slice.
   redistribution-gated; its controlled reference-capture gate is `NOT_RUN` on
   arm64 macOS and remains an M8 acceptance dependency.
 
-## Present — M8 layer input roles
+## Present — M8 grouped sprite composite plan
 
 Status: The M7 browser slice passed functional acceptance locally and in
 remote web CI. The delivered M8 pixel-grid, visibility-band, low-health tone,
@@ -25,10 +25,10 @@ registered source-layer sets through semantic descriptors, exposed normalized
 UV geometry, built ordered layer draw plans with screen rectangles and UVs
 from fair render scenes, attached imported texture-source paths and dimensions,
 and carried fair visible/explored lighting into each layer draw entry. This
-bounded follow-up carries the legacy shader's independent base,
-colorization-mask, outline-mask, and emissive-mask roles through each ordered
-layer draw. It remains platform-neutral and does not claim a GPU compositor,
-legacy blend-equation parity, or capture-backed audiovisual equivalence.
+bounded follow-up groups each complete sprite's base, colorization-mask,
+outline-mask, and emissive-mask sources into one compositor-ready record. It
+remains platform-neutral and does not claim a GPU compositor, legacy
+blend-equation parity, or capture-backed audiovisual equivalence.
 
 ### Observable behavior
 
@@ -108,6 +108,10 @@ legacy blend-equation parity, or capture-backed audiovisual equivalence.
 - `drl-render::layer_draw_plan` emits ordered atlas/layer entries with a
   `PixelRect` destination, normalized UVs, and the resolved texture source for
   each visible scene sprite, including its layer role.
+- `drl-render::sprite_composite_plan` groups contiguous, complete layer sets by
+  stable sprite index, preserving scene order, UVs, destinations, fair
+  lighting, and optional role-specific sources. Incomplete or reordered sets
+  are omitted defensively.
 - Every layer draw carries its fair `LightingBand`: explored tile memory uses
   the fixed explored factor, while visible tiles/items/actors use full light.
 - `drl-render::active_effect_frames` returns normalized `[0, 1)` progress for
@@ -139,8 +143,9 @@ cargo test -p drl-assets                      PASS (slot mappings, atlas bounds,
                                              layer sets, roles, descriptor order,
                                              UVs)
 cargo test -p drl-render                      PASS (layer draw ordering,
-                                             screen/UV geometry, sources, and
-                                             lighting factors, effect progress)
+                                             screen/UV geometry, grouped
+                                             sources, lighting factors, and
+                                             effect progress)
 cargo test -p drl-web                         PASS (effect handoff preserves event/timeline parity)
 scripts/check-web.sh                        PASS for native/WASM builds;
                                              browser runner NOT_RUN if Chrome absent
@@ -154,8 +159,9 @@ GitHub Actions run 32548718408               PASS (repository + Ubuntu WASM
                                              effect-progress slice)
 ```
 
-The local and hosted functional gates pass for the implementation commit of
-this layer-role slice; the hosted run is recorded in the handoff artifact.
+The local functional gates pass for this grouped-composite slice; hosted
+verification for this branch is recorded in its handoff artifact after PR CI
+completes.
 local browser execution remains `NOT_RUN` when the runner is unavailable. The
 existing Chrome run records browser/version, OS,
 adapter/backend, viewport, DPR, build revision, and audio unlock/mute state,
@@ -177,8 +183,9 @@ capture is available.
 ## Next
 
 The pixel-scale viewport, atlas metadata, UV geometry, draw-plan source
-metadata, fair lighting factors, effect progress, and layer input roles are
+metadata, fair lighting factors, effect progress, layer input roles, and
+grouped sprite composites are
 covered by local checks and prior hosted WASM browser jobs. Continue M8 only
 with actual texture upload/compositing or capture-backed measurement of
 lighting, effects, typography, and audio. Do not claim audiovisual parity from
-renderer-neutral roles or the `NOT_RUN` legacy captures.
+renderer-neutral grouping or the `NOT_RUN` legacy captures.

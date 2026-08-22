@@ -41,7 +41,8 @@ types shared by core, MCP, bots, and frontends.
   `LightingBand`/`shade_color` rules, health-derived `SceneTone`/clear color,
   event-ordered `EffectSpan` timing, and renderer-neutral `LayerDraw` plans
   carrying atlas layers, imported source metadata, explicit layer roles, fair
-  lighting, pixel destinations, and normalized UVs. It consumes player
+  lighting, pixel destinations, and normalized UVs; `sprite_composite_plan`
+  groups complete role sets for a future backend. It consumes player
   observations/events
   only; `active_effect_frames` maps those fair spans to frontend progress;
   GPU ownership is in the WASM shell.
@@ -93,6 +94,9 @@ types shared by core, MCP, bots, and frontends.
   retaining explored tile memory for fog presentation while omitting unknown
   tiles and invalid/off-viewport geometry. It is metadata and geometry only:
   no decoder, texture upload, blending, or sampling occurs here.
+- `sprite_composite_plan` groups one complete registered layer set per stable
+  sprite index. It rejects incomplete, reordered, duplicate, or mismatched
+  groups and still performs no image or GPU work.
 - `AtlasTextureSource` records the relative imported path and measured
   dimensions for a registered atlas layer. Frontends own file loading and
   image/GPU resource lifetime.

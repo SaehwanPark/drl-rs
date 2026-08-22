@@ -11,6 +11,7 @@ use drl_assets::{
 use drl_protocol::{
   Command, EntityId, GameEvent, HitPoints, ItemView, PlayerObservation, Position, TileKind,
 };
+use std::collections::BTreeSet;
 
 /// A complete before/command/events/after boundary for one presentation step.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -139,6 +140,8 @@ pub struct PixelRect {
 /// image and never advances simulation.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct LayerDraw {
+  /// Stable per-sprite group assigned by `layer_draw_plan`.
+  pub sprite_index: u32,
   pub atlas: AtlasId,
   pub layer: SpriteLayer,
   pub role: LayerRole,
@@ -146,6 +149,24 @@ pub struct LayerDraw {
   pub lighting: LightingBand,
   pub destination: PixelRect,
   pub uv: SpriteUv,
+}
+
+/// One sprite's grouped texture inputs for a future compositor.
+///
+/// A backend must sample the optional masks as their named roles rather than
+/// alpha-overlaying each source as an independent color quad. This record is
+/// still metadata only: it does not load, decode, or blend image data.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct SpriteComposite {
+  pub sprite_index: u32,
+  pub atlas: AtlasId,
+  pub destination: PixelRect,
+  pub uv: SpriteUv,
+  pub lighting: LightingBand,
+  pub base: AtlasTextureSource,
+  pub mask: Option<AtlasTextureSource>,
+  pub shadow: Option<AtlasTextureSource>,
+  pub emissive: Option<AtlasTextureSource>,
 }
 
 /// Deterministic pixel-grid layout for a scene and its physical canvas.
@@ -347,6 +368,7 @@ impl RenderScene {
 
 fn append_layer_draws(
   plan: &mut Vec<LayerDraw>,
+  sprite_index: u32,
   descriptor: SpriteDescriptor,
   lighting: LightingBand,
   destination: Option<PixelRect>,
@@ -359,6 +381,7 @@ fn append_layer_draws(
     return;
   };
   plan.extend(descriptor.layers.iter().copied().map(|layer| LayerDraw {
+    sprite_index,
     atlas: descriptor.atlas,
     layer,
     role: layer.role(),
@@ -379,34 +402,112 @@ fn append_layer_draws(
 #[must_use]
 pub fn layer_draw_plan(scene: &RenderScene, viewport: PixelViewport) -> Vec<LayerDraw> {
   let mut plan = Vec::new();
+  let mut sprite_index = 0_u32;
   for tile in &scene.tiles {
     if !tile.visible && !tile.explored {
       continue;
     }
     append_layer_draws(
       &mut plan,
+      sprite_index,
       tile.sprite,
       tile.lighting_band(),
       viewport.tile_rect(tile.position),
     );
+    sprite_index = sprite_index.saturating_add(1);
   }
   for item in &scene.items {
     append_layer_draws(
       &mut plan,
+      sprite_index,
       item.sprite,
       LightingBand::Visible,
       viewport.tile_rect(item.position),
     );
+    sprite_index = sprite_index.saturating_add(1);
   }
   for actor in &scene.actors {
     append_layer_draws(
       &mut plan,
+      sprite_index,
       actor.sprite,
       LightingBand::Visible,
       viewport.tile_rect(actor.position),
     );
+    sprite_index = sprite_index.saturating_add(1);
   }
   plan
+}
+
+fn composite_group(draws: &[LayerDraw]) -> Option<SpriteComposite> {
+  let first = draws.first()?;
+  let expected_layers = first.atlas.layers();
+  if draws.len() != expected_layers.len()
+    || draws.iter().any(|draw| {
+      draw.sprite_index != first.sprite_index
+        || draw.atlas != first.atlas
+        || draw.destination != first.destination
+        || draw.uv != first.uv
+        || draw.lighting != first.lighting
+    })
+  {
+    return None;
+  }
+  for (draw, expected_layer) in draws.iter().zip(expected_layers.iter().copied()) {
+    if draw.layer != expected_layer || draw.role != expected_layer.role() {
+      return None;
+    }
+  }
+  let mut base = None;
+  let mut mask = None;
+  let mut shadow = None;
+  let mut emissive = None;
+  for draw in draws {
+    match draw.role {
+      LayerRole::BaseColor if base.is_none() => base = Some(draw.source),
+      LayerRole::ColorizationMask if mask.is_none() => mask = Some(draw.source),
+      LayerRole::OutlineMask if shadow.is_none() => shadow = Some(draw.source),
+      LayerRole::EmissiveMask if emissive.is_none() => emissive = Some(draw.source),
+      _ => return None,
+    }
+  }
+  Some(SpriteComposite {
+    sprite_index: first.sprite_index,
+    atlas: first.atlas,
+    destination: first.destination,
+    uv: first.uv,
+    lighting: first.lighting,
+    base: base?,
+    mask,
+    shadow,
+    emissive,
+  })
+}
+
+/// Groups a layer draw plan into one record per complete sprite.
+///
+/// Groups must be contiguous, use the atlas-registered layer order, and carry
+/// one stable sprite index. Malformed or repeated groups are omitted rather
+/// than allowing a backend to sample the wrong source role.
+#[must_use]
+pub fn sprite_composite_plan(plan: &[LayerDraw]) -> Vec<SpriteComposite> {
+  let mut composites = Vec::new();
+  let mut seen_groups = BTreeSet::new();
+  let mut start = 0;
+  while start < plan.len() {
+    let sprite_index = plan[start].sprite_index;
+    let mut end = start + 1;
+    while end < plan.len() && plan[end].sprite_index == sprite_index {
+      end += 1;
+    }
+    if seen_groups.insert(sprite_index)
+      && let Some(composite) = composite_group(&plan[start..end])
+    {
+      composites.push(composite);
+    }
+    start = end;
+  }
+  composites
 }
 
 /// Returns a stable event list for audio/effect mapping.
@@ -762,6 +863,28 @@ mod tests {
         .take(first_tile.sprite.layers.len())
         .all(|draw| draw.lighting == LightingBand::Explored)
     );
+
+    let composites = sprite_composite_plan(&plan);
+    assert_eq!(
+      composites.len(),
+      scene
+        .tiles
+        .iter()
+        .filter(|tile| tile.visible || tile.explored)
+        .count()
+        + scene.items.len()
+        + scene.actors.len()
+    );
+    assert_eq!(composites[0].sprite_index, plan[0].sprite_index);
+    assert_eq!(composites[0].atlas, first_tile.sprite.atlas);
+    assert_eq!(
+      composites[0].base,
+      first_tile.sprite.atlas.texture_source(SpriteLayer::Base)
+    );
+    assert_eq!(
+      composites[0].mask,
+      Some(first_tile.sprite.atlas.texture_source(SpriteLayer::Mask))
+    );
   }
 
   #[test]
@@ -783,6 +906,36 @@ mod tests {
 
     let undersized = PixelViewport::fit(scene.map_width, scene.map_height, 1, 1);
     assert!(layer_draw_plan(&scene, undersized).is_empty());
+  }
+
+  #[test]
+  fn sprite_composite_plan_rejects_incomplete_or_malformed_groups() {
+    let game = Game::new_arena(42, 12, 10).expect("arena");
+    let scene = RenderScene::from_observation(&game.observe_player());
+    let viewport = PixelViewport::fit(scene.map_width, scene.map_height, 960, 640);
+    let plan = layer_draw_plan(&scene, viewport);
+    let group_len = scene.tiles[0].sprite.layers.len();
+    let complete: Vec<_> = plan.iter().take(group_len).copied().collect();
+    assert_eq!(sprite_composite_plan(&complete).len(), 1);
+
+    let partial = &complete[..group_len - 1];
+    assert!(sprite_composite_plan(partial).is_empty());
+
+    let mut reordered = complete.clone();
+    reordered.swap(0, 1);
+    assert!(sprite_composite_plan(&reordered).is_empty());
+
+    let mut duplicate = complete.clone();
+    duplicate[1] = duplicate[0];
+    assert!(sprite_composite_plan(&duplicate).is_empty());
+
+    let mut mismatched = complete.clone();
+    mismatched[0].sprite_index = mismatched[0].sprite_index.saturating_add(1);
+    assert!(sprite_composite_plan(&mismatched).is_empty());
+
+    let mut repeated = complete.clone();
+    repeated.extend(complete);
+    assert!(sprite_composite_plan(&repeated).is_empty());
   }
 
   #[test]
