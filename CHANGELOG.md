@@ -37,6 +37,9 @@ documented in this file.
 - Moved the existing quarter-health WebGPU clear-color threshold into pure
   `drl-render::SceneTone`/`scene_clear_color` planning with focused tests; the
   browser renderer now consumes the shared tone rule.
+- Added pure event-ordered `drl-render::EffectSpan` timing with fixed logical
+  durations for presentation effects; frontend ticks cannot advance gameplay,
+  and capture-backed animation timing remains `NOT_RUN`.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch

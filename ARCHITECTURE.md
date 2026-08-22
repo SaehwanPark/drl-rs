@@ -35,9 +35,9 @@ types shared by core, MCP, bots, and frontends.
 - `drl-render`: deterministic `PresentationStep`, `RenderScene`, target
   candidates, bounded event-to-effect builders, observation-independent
   `PixelViewport`/`PixelRect` layout math, and visibility-derived
-  `LightingBand`/`shade_color` rules, and the health-derived `SceneTone`/clear
-  color rule. It consumes player observations/events only; GPU ownership is in
-  the WASM shell.
+  `LightingBand`/`shade_color` rules, health-derived `SceneTone`/clear color,
+  and event-ordered `EffectSpan` timing. It consumes player observations/events
+  only; GPU ownership is in the WASM shell.
 - `drl-audio`: deterministic event-to-`AudioCue` mapping and a WASM Web Audio
   mixer with explicit user-gesture unlock, mute, and volume state.
 - `drl-web`: `cdylib + rlib` browser session, Winit/DOM command mapping,
@@ -64,6 +64,8 @@ types shared by core, MCP, bots, and frontends.
 - `SceneTone` derives only from fair player HP and preserves the existing
   quarter-health threshold; its clear color is a presentation effect, never a
   simulation or hidden-state channel.
+- `EffectSpan` uses fixed logical durations and event order only. Frontends may
+  map ticks to frames, but presentation timing cannot advance the simulation.
 - Player scenes use only visible/explored observations. Omniscient views remain
   debug-only and are not available to ordinary browser input.
 - Imported legacy graphics are tracked under `assets/legacy/drl/graphics/`
