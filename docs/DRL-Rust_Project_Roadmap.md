@@ -30,7 +30,7 @@ automated regressions, and human review.
   remote web-CI run `32538527707` for the merged M7 head; reference-scene
   comparison remains open because legacy captures are `NOT_RUN`.
 - The first bounded M8 presentation slice adds deterministic pixel-grid
-  letterboxing through `drl-render::PixelViewport`; hosted run `32539172278`
+  letterboxing through `drl-render::PixelViewport`; hosted run `32539486760`
   passes the repository and WASM browser jobs. Full audiovisual parity is still
   planned and capture-gated.
 - `SPEC.md` contains the single active M8 slice; it is not a second roadmap.

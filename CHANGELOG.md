@@ -28,7 +28,7 @@ documented in this file.
   math chooses centered integer square cells, and the WebGPU scene uses those
   rectangles for deterministic letterboxing. Focused render tests, local WASM
   compilation, native web contracts, asset checks, local browser smoke, and
-  hosted run `32539172278` pass; capture-backed audiovisual parity remains
+  hosted run `32539486760` pass; capture-backed audiovisual parity remains
   `NOT_RUN`.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
