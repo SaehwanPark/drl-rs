@@ -42,6 +42,7 @@ types shared by core, MCP, bots, and frontends.
   and the pure source-derived `low_health_pulse_target_alpha` target plus
   caller-owned `LowHealthPulseState` smoothing,
   `explosion_mark_phase` selection,
+  `effect_segment_index_at_elapsed` arithmetic,
   post-process glow/LUT coordinate math and pure blur-tap plans,
   event-ordered `EffectSpan` timing, and renderer-neutral `LayerDraw` plans
   carrying atlas layers, imported source metadata, explicit layer roles, fair
@@ -96,6 +97,10 @@ types shared by core, MCP, bots, and frontends.
 - `explosion_mark_phase` preserves the pinned three-bucket integer selector and
   its post-duration second-phase fallback. Delay scheduling, lifecycle,
   palette mapping, sprites, and capture parity remain caller/backend work.
+- `effect_segment_index_at_elapsed` preserves the signed integer quotient and
+  sign correction used by cell/item animation draws. It rejects zero durations
+  and out-of-range results without importing sprite, level, item, or lifecycle
+  state.
 - `active_effect_frames` reports normalized progress only for the supplied
   spans at the supplied frontend tick. It omits zero-duration/overflowed spans
   and cannot create new events or inspect simulation state.

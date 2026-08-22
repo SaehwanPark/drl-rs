@@ -126,6 +126,41 @@ pub fn explosion_mark_phase(elapsed_ms: u64, duration_ms: u64) -> ExplosionMarkP
   }
 }
 
+/// Returns the tracked cell/item effect segment for caller-owned timing.
+///
+/// The legacy selector computes `(elapsed * target) div duration` and nudges
+/// any non-terminal quotient one step toward the signed target. Zero duration
+/// and results outside the Rust segment range are rejected; no sprite, level,
+/// item, delay, or lifecycle state is consulted.
+#[must_use]
+pub fn effect_segment_index_at_elapsed(
+  elapsed_units: u64,
+  duration_units: u64,
+  target_segment: i32,
+) -> Option<i32> {
+  if duration_units == 0 {
+    return None;
+  }
+
+  let elapsed = elapsed_units as i128;
+  let duration = duration_units as i128;
+  let target = target_segment as i128;
+  let quotient = elapsed * target / duration;
+  let corrected = if quotient != target {
+    quotient
+      + if target > 0 {
+        1
+      } else if target < 0 {
+        -1
+      } else {
+        0
+      }
+  } else {
+    quotient
+  };
+  i32::try_from(corrected).ok()
+}
+
 /// Visibility-derived presentation bands for deterministic scene shading.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum LightingBand {
@@ -1942,6 +1977,34 @@ mod tests {
       explosion_mark_phase(u64::MAX, u64::MAX),
       ExplosionMarkPhase::Second
     );
+  }
+
+  #[test]
+  fn effect_segment_index_at_elapsed_preserves_signed_quotient_and_correction() {
+    assert_eq!(effect_segment_index_at_elapsed(0, 10, 4), Some(1));
+    assert_eq!(effect_segment_index_at_elapsed(3, 10, 4), Some(2));
+    assert_eq!(effect_segment_index_at_elapsed(7, 10, 4), Some(3));
+    assert_eq!(effect_segment_index_at_elapsed(10, 10, 4), Some(4));
+    assert_eq!(effect_segment_index_at_elapsed(11, 10, 4), Some(4));
+    assert_eq!(effect_segment_index_at_elapsed(20, 10, 4), Some(9));
+
+    assert_eq!(effect_segment_index_at_elapsed(0, 10, -4), Some(-1));
+    assert_eq!(effect_segment_index_at_elapsed(3, 10, -4), Some(-2));
+    assert_eq!(effect_segment_index_at_elapsed(7, 10, -4), Some(-3));
+    assert_eq!(effect_segment_index_at_elapsed(10, 10, -4), Some(-4));
+    assert_eq!(effect_segment_index_at_elapsed(20, 10, -4), Some(-9));
+  }
+
+  #[test]
+  fn effect_segment_index_at_elapsed_rejects_zero_duration_and_stays_overflow_safe() {
+    assert_eq!(effect_segment_index_at_elapsed(0, 0, 4), None);
+    assert_eq!(effect_segment_index_at_elapsed(u64::MAX, 1, 0), Some(0));
+    assert_eq!(
+      effect_segment_index_at_elapsed(u64::MAX, u64::MAX, i32::MAX),
+      Some(i32::MAX)
+    );
+    assert_eq!(effect_segment_index_at_elapsed(u64::MAX, 1, i32::MAX), None);
+    assert_eq!(effect_segment_index_at_elapsed(2, 1, i32::MIN), None);
   }
 
   #[test]
