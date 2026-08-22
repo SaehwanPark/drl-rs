@@ -26,11 +26,13 @@ automated regressions, and human review.
 - M3 graphics import/checks are delivered. Controlled legacy runtime captures
   are `NOT_RUN` on the current arm64 macOS host because the available binary is
   Linux x86-64; see `docs/reference-captures/manifest.md`.
-- M7 browser session/WebGPU/WASM implementation is present locally. A Chrome
-  151 WebGPU smoke playthrough (including explicit audio-gated recovery state)
-  and remote web-CI run `32538238323` now pass for `bb449e2`;
-  reference-scene comparison remains open because legacy captures are `NOT_RUN`.
-- `SPEC.md` contains the single active M7 slice; it is not a second roadmap.
+- M7 browser session/WebGPU/WASM functional acceptance passed locally and in
+  remote web-CI run `32538527707` for the merged M7 head; reference-scene
+  comparison remains open because legacy captures are `NOT_RUN`.
+- The first bounded M8 presentation slice adds deterministic pixel-grid
+  letterboxing through `drl-render::PixelViewport`; full audiovisual parity is
+  still planned and capture-gated.
+- `SPEC.md` contains the single active M8 slice; it is not a second roadmap.
 
 ## Milestones
 
@@ -106,9 +108,12 @@ stdio runner, and replay-verified virtual-agent tests.
   capture-backed reference-scene comparison; legacy capture execution remains
   `NOT_RUN` on this host.
 
-### M8 — Audiovisual parity (planned)
+### M8 — Audiovisual parity (pixel-scale slice delivered; parity planned)
 
-Measure atlas rectangles and layer compositing; implement pixel scaling,
+The first bounded pixel-scale layout slice is delivered: measure-free,
+observation-independent viewport math chooses centered integer square cells for
+the WebGPU surface. Remaining work is to measure atlas rectangles and layer
+compositing; implement
 lighting/LUTs, particles, animation/effect timing, HUD typography, cleared
 legacy or replacement audio, music transitions, and automated visual/audio
 regressions against the M3 capture matrix. Use human review with tolerances;

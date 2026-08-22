@@ -20,10 +20,15 @@ documented in this file.
   build/check/serve scripts. Native headless and MCP contracts remain intact.
 - Verified the M7 functional gate with a Chrome 151 WebGPU smoke playthrough
   (Apple Metal-3, 1280x720, DPR 1; explicit gesture-gated audio state) and
-  remote CI run `32538238323`; fixed startup and mute-control status races so
+  remote CI run `32538527707`; fixed startup and mute-control status races so
   the visible status reflects the actual or applied audio state, and serialized
   rapid audio-control events to prevent stale settings. Legacy reference-capture
   comparison remains open and explicitly `NOT_RUN`.
+- Added the first bounded M8 presentation slice: pure `PixelViewport` layout
+  math chooses centered integer square cells, and the WebGPU scene uses those
+  rectangles for deterministic letterboxing. Focused render tests, local WASM
+  compilation, native web contracts, asset checks, and the local browser smoke
+  pass; capture-backed audiovisual parity remains `NOT_RUN`.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch
