@@ -15,7 +15,7 @@ progress. This file expands exactly one active implementation slice.
   redistribution-gated; its controlled reference-capture gate is `NOT_RUN` on
   arm64 macOS and remains an M8 acceptance dependency.
 
-## Present — M8 reference-capture manifest preflight
+## Present — M8 reference-capture dirty-state provenance
 
 Status: The M7 browser slice passed functional acceptance locally and in
 remote web CI. The delivered M8 pixel-grid, visibility-band, low-health tone,
@@ -60,9 +60,12 @@ resets its presentation baseline on restart, and installs one idempotent
 `visibilitychange` listener that rebases the clock even when hidden RAF
 callbacks are throttled; simulation commands remain event-driven. The exact
 legacy outline/glow equation and broader tint sources remain capture/evidence
-gated. This slice adds a read-only `scripts/check-reference-capture.sh`
-preflight for the ignored legacy-capture manifest. Missing manifests remain
-`NOT_RUN`; only a controlled Linux x86-64 capture can promote the fidelity gate.
+gated. The preceding slice added a read-only `scripts/check-reference-capture.sh`
+preflight for the ignored legacy-capture manifest. This slice adds the
+recorder's `legacy_dirty_state` field and requires `clean` before a manifest
+can claim `READY_FOR_CONTROLLED_CAPTURE`, `INCONCLUSIVE`, or `PASS`. Missing or
+dirty manifests remain `NOT_RUN`; only a controlled Linux x86-64 capture from a
+clean checkout can promote the fidelity gate.
 
 ### Observable behavior
 
@@ -221,9 +224,9 @@ preflight for the ignored legacy-capture manifest. Missing manifests remain
 - Layer draw planning consumes only `RenderScene`; it cannot inspect hidden
   simulation state or advance gameplay.
 - `scripts/check-reference-capture.sh` validates required capture metadata,
-  pinned revision/scenes, executable/hash consistency, status vocabulary, and
-  placeholder policy without executing the legacy binary or changing
-  `NOT_RUN`.
+  pinned revision/scenes, executable/hash consistency, status vocabulary,
+  placeholder policy, and recorded legacy dirty state without executing the
+  legacy binary or changing `NOT_RUN`.
 
 ### Public contracts
 

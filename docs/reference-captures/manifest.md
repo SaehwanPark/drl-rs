@@ -11,6 +11,11 @@ running the dirty checkout or inventing screenshots would invalidate the
 comparison. `scripts/record-legacy-reference.sh` records the required metadata
 and writes media only below ignored `_workspace/`.
 
+The machine-readable manifest also records `legacy_dirty_state=clean` or
+`dirty` (and uses `unavailable` when the checkout cannot be inspected). A
+`READY_FOR_CONTROLLED_CAPTURE`, `INCONCLUSIVE`, or `PASS` record must say
+`clean`; the current dirty checkout remains `NOT_RUN`.
+
 Required scenes:
 
 | Scene | Media | Rights/acceptance |
@@ -22,6 +27,6 @@ Required scenes:
 | inventory and HUD | still | font rights recorded before bundling |
 | level transition | still + video + music cue | music rights recorded before bundling |
 
-Every record must include legacy revision, executable SHA-256, build/config
-flags, front-end, viewport, actions, capture tool versions, hashes, and an
-observed/inferred/provenance classification.
+Every record must include legacy revision, dirty state, executable SHA-256,
+build/config flags, front-end, viewport, actions, capture tool versions,
+hashes, and an observed/inferred/provenance classification.

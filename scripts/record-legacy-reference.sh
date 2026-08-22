@@ -23,6 +23,16 @@ platform=$(uname -s)-$(uname -m)
 status=NOT_RUN
 reason='legacy executable is unavailable or not executable'
 binary_hash=unavailable
+legacy_dirty_state=unavailable
+if [ -d "$legacy_repo/.git" ]; then
+  if legacy_status=$(git -C "$legacy_repo" status --porcelain=v1 --untracked-files=all 2>/dev/null); then
+    if [ -n "$legacy_status" ]; then
+      legacy_dirty_state=dirty
+    else
+      legacy_dirty_state=clean
+    fi
+  fi
+fi
 if test -x "$legacy_binary"; then
   if command -v sha256sum >/dev/null 2>&1; then
     binary_hash=$(sha256sum "$legacy_binary" | awk '{print $1}')
@@ -42,6 +52,7 @@ fi
   printf '%s\n' "executable=$legacy_binary"
   printf '%s\n' "executable_sha256=$binary_hash"
   printf '%s\n' "capture_host=$platform"
+  printf '%s\n' "legacy_dirty_state=$legacy_dirty_state"
   printf '%s\n' "reason=$reason"
   printf '%s\n' "frontend=$frontend"
   printf '%s\n' "configuration=$configuration"

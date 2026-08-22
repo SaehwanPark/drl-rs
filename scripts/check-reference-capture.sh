@@ -5,7 +5,7 @@ set -eu
 repo_root=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)
 expected_revision=17d9be1204751899b2d69d8d3a2dde247bd0cc5c
 manifest=${DRL_CAPTURE_MANIFEST:-"$repo_root/_workspace/reference-captures/manifest.txt"}
-required_keys='status legacy_repository legacy_revision executable executable_sha256 capture_host reason frontend configuration viewport dpr scenario actions capture_tool capture_tool_version media_hashes scenes media_root'
+required_keys='status legacy_repository legacy_revision executable executable_sha256 capture_host legacy_dirty_state reason frontend configuration viewport dpr scenario actions capture_tool capture_tool_version media_hashes scenes media_root'
 required_scenes='lighting fog targeting ranged knockback low-health inventory hud transition'
 placeholder_fields='viewport dpr scenario actions capture_tool capture_tool_version media_hashes'
 
@@ -39,6 +39,7 @@ legacy_revision=$(field legacy_revision)
 executable=$(field executable)
 executable_sha256=$(field executable_sha256)
 capture_host=$(field capture_host)
+legacy_dirty_state=$(field legacy_dirty_state)
 reason=$(field reason)
 scenes=$(field scenes)
 
@@ -49,6 +50,11 @@ fi
 case "$status" in
   NOT_RUN|READY_FOR_CONTROLLED_CAPTURE|PASS|INCONCLUSIVE|FAIL) ;;
   *) error "unsupported status: $status" ;;
+esac
+
+case "$legacy_dirty_state" in
+  clean|dirty|unavailable) ;;
+  *) error "unsupported legacy_dirty_state: $legacy_dirty_state" ;;
 esac
 
 if [ -z "$reason" ]; then
@@ -78,11 +84,19 @@ case "$status" in
     if [ "$capture_host" != 'Linux-x86_64' ]; then
       error "$status manifests require capture_host=Linux-x86_64"
     fi
+    if [ "$legacy_dirty_state" != 'clean' ]; then
+      error "$status manifests require legacy_dirty_state=clean"
+    fi
     if [ ! -x "$executable" ]; then
       error "executable is not available/executable: $executable"
     fi
     ;;
-  NOT_RUN|INCONCLUSIVE)
+  INCONCLUSIVE)
+    if [ "$legacy_dirty_state" != 'clean' ]; then
+      error 'INCONCLUSIVE manifests require legacy_dirty_state=clean'
+    fi
+    ;;
+  NOT_RUN)
     ;;
   FAIL)
     error 'manifest status is FAIL'
