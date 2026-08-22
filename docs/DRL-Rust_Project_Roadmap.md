@@ -33,6 +33,9 @@ automated regressions, and human review.
   letterboxing through `drl-render::PixelViewport`; hosted run `32539486760`
   passes the repository and WASM browser jobs. Full audiovisual parity is still
   planned and capture-gated.
+- The active follow-up M8 slice centralizes visible-versus-explored lighting
+  bands in `drl-render`; this remains a presentation rule, not a legacy parity
+  claim.
 - `SPEC.md` contains the single active M8 slice; it is not a second roadmap.
 
 ## Milestones

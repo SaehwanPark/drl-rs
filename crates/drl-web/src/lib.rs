@@ -222,7 +222,7 @@ pub enum GpuStatus {
 #[cfg(target_arch = "wasm32")]
 mod wasm {
   use super::*;
-  use drl_render::PixelViewport;
+  use drl_render::{PixelViewport, shade_color};
   use std::cell::RefCell;
   use wasm_bindgen::prelude::*;
   use web_sys::{HtmlCanvasElement, Window};
@@ -525,11 +525,7 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
         drl_protocol::TileKind::StairsDown => [0.28, 0.24, 0.08, 1.0],
         drl_protocol::TileKind::Floor => [0.16, 0.18, 0.22, 1.0],
       };
-      let color = if tile.visible {
-        color
-      } else {
-        [color[0] * 0.45, color[1] * 0.45, color[2] * 0.45, 1.0]
-      };
+      let color = shade_color(color, tile.lighting_band());
       if let Some((left, bottom, right, top)) =
         scene_position(&viewport, tile.position.x, tile.position.y)
       {

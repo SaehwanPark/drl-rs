@@ -15,12 +15,13 @@ progress. This file expands exactly one active implementation slice.
   redistribution-gated; its controlled reference-capture gate is `NOT_RUN` on
   arm64 macOS and remains an M8 acceptance dependency.
 
-## Present — M8 deterministic pixel-scale viewport
+## Present — M8 deterministic presentation lighting bands
 
 Status: The M7 browser slice passed functional acceptance locally and in
-remote web CI. This bounded M8 implementation slice keeps map cells square by
-fitting an integer pixel grid into the physical WebGPU surface. The
-capture-backed audiovisual comparison remains open.
+remote web CI. The delivered M8 pixel-grid slice keeps map cells square; this
+bounded follow-up names the existing visible-versus-explored fog treatment as a
+deterministic lighting band shared by pure presentation planning and WebGPU.
+The capture-backed audiovisual comparison remains open.
 
 ### Observable behavior
 
@@ -54,6 +55,11 @@ capture-backed audiovisual comparison remains open.
   rectangles for presentation backends.
 - The WebGPU scene uses those rectangles, preserving square cells and
   letterboxing unused canvas space without changing simulation state.
+- `drl-render::LightingBand` maps a visible tile to full light and an explored
+  but currently hidden tile to a fixed fog factor; the shared shade function is
+  deterministic and does not inspect hidden world state.
+- WebGPU tile colors consume that shared lighting rule, so browser presentation
+  does not maintain a second fog multiplier with different semantics.
 
 ### Public contracts
 
@@ -73,7 +79,7 @@ Local checks:
 sh scripts/check-repository.sh              PASS (baseline plus new crates)
 sh scripts/check-assets.sh                  PASS (32 PNGs, license, hashes)
 cargo check --locked -p drl-web --target wasm32-unknown-unknown  PASS
-cargo test -p drl-render                      PASS (pixel-grid layout and scene contracts)
+cargo test -p drl-render                      PASS (pixel-grid and lighting contracts)
 scripts/check-web.sh                        PASS for native/WASM builds;
                                              browser runner NOT_RUN if Chrome absent
 scripts/build-web.sh                         PASS (release bundle in ignored dist/)

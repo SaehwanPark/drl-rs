@@ -30,6 +30,10 @@ documented in this file.
   compilation, native web contracts, asset checks, local browser smoke, and
   hosted run `32539486760` pass; capture-backed audiovisual parity remains
   `NOT_RUN`.
+- Added the follow-up M8 lighting slice: pure `LightingBand`/`shade_color`
+  rules derive full light versus fixed explored-tile fog from fair scene data,
+  and WebGPU consumes the shared rule. Capture-backed lighting equivalence is
+  still `NOT_RUN`.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch

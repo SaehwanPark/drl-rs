@@ -34,6 +34,38 @@ pub enum PresentationEffect {
   Knockback,
 }
 
+/// Visibility-derived presentation bands for deterministic scene shading.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum LightingBand {
+  /// The player currently sees this tile.
+  Visible,
+  /// The player remembers this tile, but it is outside current sight.
+  Explored,
+}
+
+impl LightingBand {
+  /// Returns the fixed-point shade factor used by the presentation layer.
+  #[must_use]
+  pub const fn factor(self) -> u16 {
+    match self {
+      Self::Visible => 256,
+      Self::Explored => 115,
+    }
+  }
+}
+
+/// Applies the shared visibility shade to an RGBA color.
+#[must_use]
+pub fn shade_color(color: [f32; 4], band: LightingBand) -> [f32; 4] {
+  let factor = band.factor() as f32 / 256.0;
+  [
+    color[0] * factor,
+    color[1] * factor,
+    color[2] * factor,
+    color[3],
+  ]
+}
+
 /// Integer pixel bounds for one logical map cell.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct PixelRect {
@@ -113,6 +145,18 @@ pub struct SceneTile {
   pub visible: bool,
   pub explored: bool,
   pub sprite: SpriteDescriptor,
+}
+
+impl SceneTile {
+  /// Maps fair tile visibility to the shared presentation lighting band.
+  #[must_use]
+  pub const fn lighting_band(&self) -> LightingBand {
+    if self.visible {
+      LightingBand::Visible
+    } else {
+      LightingBand::Explored
+    }
+  }
 }
 
 /// An actor ready for a renderer to draw.
@@ -314,6 +358,32 @@ mod tests {
     let undersized = PixelViewport::fit(24, 16, 1, 1);
     assert_eq!(undersized.tile_size, 0);
     assert_eq!(undersized.tile_rect(Position::new(0, 0)), None);
+  }
+
+  #[test]
+  fn lighting_band_shading_is_visibility_derived_and_stable() {
+    let visible = SceneTile {
+      position: Position::new(0, 0),
+      kind: TileKind::Floor,
+      visible: true,
+      explored: true,
+      sprite: tile_sprite(TileKind::Floor),
+    };
+    let explored = SceneTile {
+      visible: false,
+      ..visible.clone()
+    };
+    assert_eq!(visible.lighting_band(), LightingBand::Visible);
+    assert_eq!(explored.lighting_band(), LightingBand::Explored);
+    assert_eq!(
+      shade_color([0.2, 0.4, 0.8, 1.0], LightingBand::Visible),
+      [0.2, 0.4, 0.8, 1.0]
+    );
+    let shaded = shade_color([0.2, 0.4, 0.8, 1.0], LightingBand::Explored);
+    assert!((shaded[0] - 0.089_843_75).abs() < 1e-6);
+    assert!((shaded[1] - 0.179_687_5).abs() < 1e-6);
+    assert!((shaded[2] - 0.359_375).abs() < 1e-6);
+    assert_eq!(shaded[3], 1.0);
   }
 
   #[test]

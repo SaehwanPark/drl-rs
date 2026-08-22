@@ -33,9 +33,10 @@ types shared by core, MCP, bots, and frontends.
   semantic tile/actor/item lookup, and legacy revision identity. It has no
   decoder or platform dependency and core does not depend on it.
 - `drl-render`: deterministic `PresentationStep`, `RenderScene`, target
-  candidates, bounded event-to-effect builders, and observation-independent
-  `PixelViewport`/`PixelRect` layout math. It consumes player
-  observations/events only; GPU ownership is in the WASM shell.
+  candidates, bounded event-to-effect builders, observation-independent
+  `PixelViewport`/`PixelRect` layout math, and visibility-derived
+  `LightingBand`/`shade_color` rules. It consumes player observations/events
+  only; GPU ownership is in the WASM shell.
 - `drl-audio`: deterministic event-to-`AudioCue` mapping and a WASM Web Audio
   mixer with explicit user-gesture unlock, mute, and volume state.
 - `drl-web`: `cdylib + rlib` browser session, Winit/DOM command mapping,
@@ -56,6 +57,9 @@ types shared by core, MCP, bots, and frontends.
 - `PixelViewport` chooses an integer square cell size from physical canvas
   dimensions and centers the map; presentation backends may letterbox but may
   not stretch logical cells independently by axis.
+- `LightingBand` derives only from the fair tile visibility bit: visible tiles
+  use full light and explored memory uses the fixed fog factor. It cannot
+  reveal or consult hidden simulation state.
 - Player scenes use only visible/explored observations. Omniscient views remain
   debug-only and are not available to ordinary browser input.
 - Imported legacy graphics are tracked under `assets/legacy/drl/graphics/`
