@@ -125,6 +125,11 @@ and possible endpoint overshoot with checked arithmetic. Zero endpoint length
 and unrepresentable intermediate/output values return `None`; endpoint metrics,
 interpolation, path, visibility, particles, and rendering remain outside the
 helper.
+It also exposes `drl_render::screen_shake_fade_at_elapsed`, preserving the
+screen-shake update's `1 - (elapsed / duration)^2` active envelope and its
+zero-at-expiry behavior. Random frequencies, trigonometric offsets, strength,
+direction, scheduling, sprite-map state, rendering, and lifecycle remain
+outside the helper.
 Sampler edge/wrap addressing remains a backend and capture concern; the helper
 does not select it.
 
@@ -228,6 +233,10 @@ does not select it.
   checked-arithmetic failure and preserves the source's possible overshoot
   without selecting a distance metric, interpolation coordinate, visibility,
   particle, lifecycle, or backend behavior.
+- `drl-render::screen_shake_fade_at_elapsed` maps caller-owned elapsed and
+  duration units to the source-derived quadratic fade, returning zero for zero
+  or expired duration. It owns no random stream, offset, direction, strength,
+  scheduling, sprite-map, rendering, lifecycle, or backend state.
 - WebGPU uses that shared clear-color rule; health-tone presentation remains an
   effect and cannot reveal hidden world state.
 - `drl-render::effect_timeline` preserves event order and assigns each bounded
