@@ -5,6 +5,8 @@ documented in this file.
 
 ## Unreleased
 
+- Added the bounded M8 particle-decal placement contract: the pure callback
+  math now returns both one-based cell and pixel insertion coordinates.
 - Added the bounded M8 particle-decal cell contract: caller-rounded world
   positions use the legacy 16-pixel offset and truncating 32-pixel mapping,
   while map/flag eligibility and decal storage remain caller-owned.
@@ -69,7 +71,7 @@ documented in this file.
   `CohortReport` retains policy identity, aggregate metrics, and per-seed
   replay evidence for reproducible evaluation without claiming balance
   conclusions.
-- Continued retrospective project versioning at `0.2.6` from the untagged
+- Continued retrospective project versioning at `0.2.7` from the untagged
   `0.1.0` baseline. `VERSION`, Cargo/MCP metadata, and release manifests are
   checked by the agent harness; code changes require one valid component
   increment while document- and setting-only changes do not.
