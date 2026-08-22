@@ -133,8 +133,10 @@ legacy graphics metadata; it is not a dependency of the core.
   optional outline-mask transport, renderer-neutral animation metadata,
   progress-selected frame UVs, elapsed-time playback math and layer plans,
   caller-driven elapsed WebGPU rendering, bounded requestAnimationFrame
-  scheduling with visibility-lifecycle rebasing, and legacy alpha cutoff,
-  Winit/WebGPU scene surface, DOM shell, and WASM exports.
+  scheduling with visibility-lifecycle rebasing, versioned fixed-session
+  snapshots with bounded corruption handling, best-effort localStorage save/load,
+  and legacy alpha cutoff, Winit/WebGPU scene surface, DOM shell, and WASM
+  exports.
 - `crates/drl-mcp`: JSON-RPC/MCP server and fairness boundary.
 - `crates/drl-app`: native headless demo and MCP stdio runner.
 - `docs/DRL-Rust_Project_Roadmap.md`: canonical milestones and gates.

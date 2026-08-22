@@ -231,6 +231,10 @@ documented in this file.
 - Routed game death drops through the existing `Item::from_spawn_kind` factory
   and added nine-variant coverage; item payloads, IDs, events, and replay
   behavior remain unchanged.
+- Added a versioned fixed-session snapshot codec with strict size/corruption
+  handling, deterministic replay restore, and best-effort WASM localStorage
+  save/load controls. Replay V1 and authoritative simulation schemas remain
+  unchanged.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch
