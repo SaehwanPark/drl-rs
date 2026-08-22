@@ -15,7 +15,7 @@ progress. This file expands exactly one active implementation slice.
   redistribution-gated; its controlled reference-capture gate is `NOT_RUN` on
   arm64 macOS and remains an M8 acceptance dependency.
 
-## Present — M8 Phase Device ground colorization tint
+## Present — M8 outline-mask GPU transport
 
 Status: The M7 browser slice passed functional acceptance locally and in
 remote web CI. The delivered M8 pixel-grid, visibility-band, low-health tone,
@@ -32,12 +32,13 @@ those decoded images into renderer-owned WebGPU texture/view resources. The
 base/emissive follow-ups add nearest-filtered WGSL sampling, the verified
 emissive lighting floor, the legacy alpha cutoff, a native shader contract, and
 optional colorization-mask sampling with a neutral per-vertex tint boundary.
-The preceding slice carries the legacy Green Armor cosplay color into fair
-item scene metadata and the existing vertex tint path. This slice adds the
-legacy Phase Device ground-item `coscolor` to that same path, quantized to the
-existing normalized byte vertex boundary. Player equipment and all other
-archetypes remain neutral; general tint provenance, asset-specific animation
-timing, outline/glow equations, and capture-backed audiovisual equivalence
+The preceding slices carry the legacy Green Armor and Phase Device colors into
+fair item scene metadata and the existing vertex tint path. This slice carries
+the renderer-neutral `SpriteComposite::shadow` source into an optional
+outline-mask WebGPU binding, using the retained transparent fallback when an
+atlas has no shadow source. The shader receives the resource but leaves output
+unchanged; visible outline/glow equations, general tint provenance,
+asset-specific animation timing, and capture-backed audiovisual equivalence
 remain open.
 
 ### Observable behavior
@@ -154,6 +155,11 @@ remain open.
   archetype remains neutral. Visible ground-item layer draws carry the mapped
   tint; tiles and non-player actors remain neutral, while the player draw uses
   only the observed Green Armor equipment mapping.
+- `TextureBinding` and `TextureBatch` carry the optional `SpriteLayer::Shadow`
+  source as an outline-mask binding. Atlases without a registered shadow layer
+  bind the transparent 1x1 fallback; the WGSL contract declares and samples
+  the resource but does not blend it into the output in this transport-only
+  slice.
 - The WGSL source is shared with a native shader-contract test that checks the
   base/emissive/mask samples, fair-lighting `max`, tint forwarding, neutral
   fallback input, alpha cutout, and output path; native tests therefore guard
@@ -228,10 +234,10 @@ capture is available.
 - Legacy audio/music/fonts are not shipped until rights are documented.
 - Full audiovisual equivalence is M8: capture-backed tolerances, visual
   regressions, cue timing, and structured human comparison.
-- Additional per-sprite tint sources, outline/glow, legacy animation
-  timing/frame metadata, and capture-backed legacy shader equivalence remain
-  future M8 slices; this pass is intentionally limited to Phase Device ground
-  items.
+- Visible outline/glow equations, additional per-sprite tint sources, legacy
+  animation timing/frame metadata, and capture-backed legacy shader equivalence
+  remain future M8 slices; this pass is intentionally limited to outline-mask
+  transport.
 
 ## Next
 
@@ -240,8 +246,9 @@ metadata, fair lighting factors, effect progress, layer input roles, grouped
 sprite composites, validated browser source loading, renderer-owned GPU
 texture upload, base-color sampling, the emissive lighting floor, the legacy
 alpha cutoff, optional mask sampling, the Green Armor and Phase Device tint
-boundaries, and caller-supplied frame selection are covered by local checks
-and hosted WASM browser jobs. Continue M8 with additional tint sources,
-outline/glow, legacy animation timing, or capture-backed measurement of
-lighting, effects, typography, and audio. Do not claim audiovisual parity
-from renderer-neutral grouping or the `NOT_RUN` legacy captures.
+boundaries, outline-mask GPU transport, and caller-supplied frame selection
+are covered by local checks and hosted WASM browser jobs. Continue M8 with
+visible outline/glow compositing, additional tint sources, legacy animation
+timing, or capture-backed measurement of lighting, effects, typography, and
+audio. Do not claim audiovisual parity from renderer-neutral grouping or the
+`NOT_RUN` legacy captures.
