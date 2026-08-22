@@ -87,6 +87,10 @@ documented in this file.
   sprite UVs, source-specific bind groups, alpha blending, and shared lighting;
   geometry remains the fallback and mask/outline/emissive compositing remains
   future work.
+- Added the bounded emissive-role follow-up: each registered sprite pairs its
+  base source with an optional emissive source, samples the emissive red channel
+  as a lighting floor, and uses a transparent 1x1 fallback when absent. Mask,
+  colorization, outline/glow, and capture-backed shader parity remain open.
 - Added pure `active_effect_frames` progress mapping for fair effect spans;
   frontend ticks receive stable normalized progress without advancing gameplay
   or claiming legacy animation-frame parity.

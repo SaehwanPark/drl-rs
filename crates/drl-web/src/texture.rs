@@ -4,7 +4,7 @@
 //! renderer-neutral `AtlasTextureSource` manifest and does not know about
 //! simulation state or sprite blend equations.
 
-use drl_assets::AtlasTextureSource;
+use drl_assets::{AtlasTextureSource, SpriteLayer};
 use drl_render::{PixelRect, PixelViewport, RenderScene, layer_draw_plan, sprite_composite_plan};
 use wasm_bindgen::JsValue;
 use wgpu::util::DeviceExt;
@@ -25,6 +25,7 @@ pub(crate) struct GpuTextureCache {
 /// One source-specific bind group used by the base-color pass.
 pub(crate) struct TextureBinding {
   pub(crate) source: AtlasTextureSource,
+  pub(crate) emissive: Option<AtlasTextureSource>,
   pub(crate) bind_group: wgpu::BindGroup,
 }
 
@@ -105,28 +106,44 @@ impl GpuTextureCache {
     device: &wgpu::Device,
     layout: &wgpu::BindGroupLayout,
     sampler: &wgpu::Sampler,
+    fallback_view: &wgpu::TextureView,
   ) -> Vec<TextureBinding> {
-    self
-      .entries
-      .iter()
-      .map(|entry| TextureBinding {
-        source: entry.source,
-        bind_group: device.create_bind_group(&wgpu::BindGroupDescriptor {
-          label: Some(entry.source.path),
-          layout,
-          entries: &[
-            wgpu::BindGroupEntry {
-              binding: 0,
-              resource: wgpu::BindingResource::TextureView(&entry.view),
-            },
-            wgpu::BindGroupEntry {
-              binding: 1,
-              resource: wgpu::BindingResource::Sampler(sampler),
-            },
-          ],
-        }),
-      })
-      .collect()
+    let mut bindings = Vec::new();
+    for atlas in crate::REGISTERED_ATLASES {
+      let base = atlas.texture_source(SpriteLayer::Base);
+      let Some(base_view) = self.view(base) else {
+        continue;
+      };
+      let emissive = atlas.texture_source(SpriteLayer::Emissive);
+      for emissive_source in [None, Some(emissive)] {
+        let emissive_view = emissive_source
+          .and_then(|source| self.view(source))
+          .unwrap_or(fallback_view);
+        bindings.push(TextureBinding {
+          source: base,
+          emissive: emissive_source,
+          bind_group: device.create_bind_group(&wgpu::BindGroupDescriptor {
+            label: Some(base.path),
+            layout,
+            entries: &[
+              wgpu::BindGroupEntry {
+                binding: 0,
+                resource: wgpu::BindingResource::TextureView(base_view),
+              },
+              wgpu::BindGroupEntry {
+                binding: 1,
+                resource: wgpu::BindingResource::TextureView(emissive_view),
+              },
+              wgpu::BindGroupEntry {
+                binding: 2,
+                resource: wgpu::BindingResource::Sampler(sampler),
+              },
+            ],
+          }),
+        });
+      }
+    }
+    bindings
   }
 }
 
@@ -144,7 +161,8 @@ struct VertexOutput {
 };
 
 @group(0) @binding(0) var base_texture: texture_2d<f32>;
-@group(0) @binding(1) var base_sampler: sampler;
+@group(0) @binding(1) var emissive_texture: texture_2d<f32>;
+@group(0) @binding(2) var base_sampler: sampler;
 
 @vertex
 fn vs_main(input: VertexInput) -> VertexOutput {
@@ -158,20 +176,25 @@ fn vs_main(input: VertexInput) -> VertexOutput {
 @fragment
 fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
   let sampled = textureSample(base_texture, base_sampler, input.uv);
-  return vec4<f32>(sampled.rgb * input.lighting.rgb, sampled.a);
+  let emissive = textureSample(emissive_texture, base_sampler, input.uv).r;
+  let lighting = max(input.lighting.rgb, vec3<f32>(emissive));
+  return vec4<f32>(sampled.rgb * lighting, sampled.a);
 }
 "#;
 
-/// Pipeline and source-specific bind groups for the partial base-color pass.
+/// Pipeline and source-specific bind groups for the partial base-color/emissive pass.
 pub(crate) struct BaseTexturePipeline {
   pipeline: wgpu::RenderPipeline,
   bindings: Vec<TextureBinding>,
+  _fallback_texture: wgpu::Texture,
+  _fallback_view: wgpu::TextureView,
 }
 
 impl BaseTexturePipeline {
-  /// Builds a nearest-filtered base-color pipeline and its source bindings.
+  /// Builds a nearest-filtered base-color/emissive pipeline and its source bindings.
   pub(crate) fn new(
     device: &wgpu::Device,
+    queue: &wgpu::Queue,
     format: wgpu::TextureFormat,
     cache: Option<&GpuTextureCache>,
   ) -> Self {
@@ -191,6 +214,16 @@ impl BaseTexturePipeline {
         wgpu::BindGroupLayoutEntry {
           binding: 1,
           visibility: wgpu::ShaderStages::FRAGMENT,
+          ty: wgpu::BindingType::Texture {
+            sample_type: wgpu::TextureSampleType::Float { filterable: true },
+            view_dimension: wgpu::TextureViewDimension::D2,
+            multisampled: false,
+          },
+          count: None,
+        },
+        wgpu::BindGroupLayoutEntry {
+          binding: 2,
+          visibility: wgpu::ShaderStages::FRAGMENT,
           ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
           count: None,
         },
@@ -203,6 +236,40 @@ impl BaseTexturePipeline {
       mipmap_filter: wgpu::MipmapFilterMode::Nearest,
       ..Default::default()
     });
+    let fallback_texture = device.create_texture(&wgpu::TextureDescriptor {
+      label: Some("drl-web-transparent-role-fallback"),
+      size: wgpu::Extent3d {
+        width: 1,
+        height: 1,
+        depth_or_array_layers: 1,
+      },
+      mip_level_count: 1,
+      sample_count: 1,
+      dimension: wgpu::TextureDimension::D2,
+      format: wgpu::TextureFormat::Rgba8UnormSrgb,
+      usage: wgpu::TextureUsages::COPY_DST | wgpu::TextureUsages::TEXTURE_BINDING,
+      view_formats: &[],
+    });
+    queue.write_texture(
+      wgpu::TexelCopyTextureInfo {
+        texture: &fallback_texture,
+        mip_level: 0,
+        origin: wgpu::Origin3d::ZERO,
+        aspect: wgpu::TextureAspect::All,
+      },
+      &[0, 0, 0, 0],
+      wgpu::TexelCopyBufferLayout {
+        offset: 0,
+        bytes_per_row: Some(4),
+        rows_per_image: Some(1),
+      },
+      wgpu::Extent3d {
+        width: 1,
+        height: 1,
+        depth_or_array_layers: 1,
+      },
+    );
+    let fallback_view = fallback_texture.create_view(&wgpu::TextureViewDescriptor::default());
     let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
       label: Some("drl-web-base-texture-shader"),
       source: wgpu::ShaderSource::Wgsl(BASE_TEXTURE_SHADER.into()),
@@ -258,9 +325,14 @@ impl BaseTexturePipeline {
       cache: None,
     });
     let bindings = cache.map_or_else(Vec::new, |cache| {
-      cache.bind_groups(device, &layout, &sampler)
+      cache.bind_groups(device, &layout, &sampler, &fallback_view)
     });
-    Self { pipeline, bindings }
+    Self {
+      pipeline,
+      bindings,
+      _fallback_texture: fallback_texture,
+      _fallback_view: fallback_view,
+    }
   }
 
   /// Returns true only when every fair composite can be drawn from the cache.
@@ -277,7 +349,7 @@ impl BaseTexturePipeline {
         self
           .bindings
           .iter()
-          .any(|binding| binding.source == batch.source)
+          .any(|binding| binding.source == batch.source && binding.emissive == batch.emissive)
       })
   }
 
@@ -322,7 +394,7 @@ impl BaseTexturePipeline {
       if let Some(binding) = self
         .bindings
         .iter()
-        .find(|binding| binding.source == batch.source)
+        .find(|binding| binding.source == batch.source && binding.emissive == batch.emissive)
       {
         pass.set_bind_group(0, &binding.bind_group, &[]);
         pass.draw(batch.start..batch.start + batch.count, 0..1);
@@ -333,6 +405,7 @@ impl BaseTexturePipeline {
 
 struct TextureBatch {
   source: AtlasTextureSource,
+  emissive: Option<AtlasTextureSource>,
   start: u32,
   count: u32,
 }
@@ -391,6 +464,7 @@ fn base_texture_vertices(
     );
     batches.push(TextureBatch {
       source: composite.base,
+      emissive: composite.emissive,
       start,
       count: 6,
     });
