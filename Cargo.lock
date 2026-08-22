@@ -353,6 +353,7 @@ dependencies = [
 name = "drl-web"
 version = "0.1.0"
 dependencies = [
+ "drl-assets",
  "drl-audio",
  "drl-core",
  "drl-protocol",

@@ -15,7 +15,7 @@ progress. This file expands exactly one active implementation slice.
   redistribution-gated; its controlled reference-capture gate is `NOT_RUN` on
   arm64 macOS and remains an M8 acceptance dependency.
 
-## Present — M8 grouped sprite composite plan
+## Present — M8 texture source loader
 
 Status: The M7 browser slice passed functional acceptance locally and in
 remote web CI. The delivered M8 pixel-grid, visibility-band, low-health tone,
@@ -25,10 +25,10 @@ registered source-layer sets through semantic descriptors, exposed normalized
 UV geometry, built ordered layer draw plans with screen rectangles and UVs
 from fair render scenes, attached imported texture-source paths and dimensions,
 and carried fair visible/explored lighting into each layer draw entry. This
-bounded follow-up groups each complete sprite's base, colorization-mask,
-outline-mask, and emissive-mask sources into one compositor-ready record. It
-remains platform-neutral and does not claim a GPU compositor, legacy
-blend-equation parity, or capture-backed audiovisual equivalence.
+bounded follow-up adds a subpath-safe browser URL boundary and a WASM image
+decode path that validates each imported layer's measured dimensions before
+handing the image to a future GPU uploader. It does not yet upload, sample, or
+blend textures, and does not claim capture-backed audiovisual equivalence.
 
 ### Observable behavior
 
@@ -112,6 +112,9 @@ blend-equation parity, or capture-backed audiovisual equivalence.
   stable sprite index, preserving scene order, UVs, destinations, fair
   lighting, and optional role-specific sources. Incomplete or reordered sets
   are omitted defensively.
+- The browser asset URL helper accepts only relative imported PNG basenames and
+  keeps deployments under a subpath; the WASM loader decodes a same-origin
+  image and rejects dimensions that differ from the pinned manifest.
 - Every layer draw carries its fair `LightingBand`: explored tile memory uses
   the fixed explored factor, while visible tiles/items/actors use full light.
 - `drl-render::active_effect_frames` returns normalized `[0, 1)` progress for
@@ -146,7 +149,8 @@ cargo test -p drl-render                      PASS (layer draw ordering,
                                              screen/UV geometry, grouped
                                              sources, lighting factors, and
                                              effect progress)
-cargo test -p drl-web                         PASS (effect handoff preserves event/timeline parity)
+cargo test -p drl-web                         PASS (asset URL/path, dimension,
+                                             and effect-handoff contracts)
 scripts/check-web.sh                        PASS for native/WASM builds;
                                              browser runner NOT_RUN if Chrome absent
 scripts/build-web.sh                         PASS (release bundle in ignored dist/)
@@ -159,8 +163,9 @@ GitHub Actions run 32548718408               PASS (repository + Ubuntu WASM
                                              effect-progress slice)
 ```
 
-The local and hosted functional gates pass for this grouped-composite slice;
-the hosted run is recorded in the handoff artifact.
+The local and hosted functional gates pass for this texture-loader slice; the
+hosted run is recorded in the handoff artifact.
+
 local browser execution remains `NOT_RUN` when the runner is unavailable. The
 existing Chrome run records browser/version, OS,
 adapter/backend, viewport, DPR, build revision, and audio unlock/mute state,
@@ -182,9 +187,9 @@ capture is available.
 ## Next
 
 The pixel-scale viewport, atlas metadata, UV geometry, draw-plan source
-metadata, fair lighting factors, effect progress, layer input roles, and
-grouped sprite composites are
-covered by local checks and prior hosted WASM browser jobs. Continue M8 only
-with actual texture upload/compositing or capture-backed measurement of
+metadata, fair lighting factors, effect progress, layer input roles, grouped
+sprite composites, and validated browser source loading are covered by local
+checks and prior hosted WASM browser jobs. Continue M8 only with actual
+texture upload/shader compositing or capture-backed measurement of
 lighting, effects, typography, and audio. Do not claim audiovisual parity from
 renderer-neutral grouping or the `NOT_RUN` legacy captures.

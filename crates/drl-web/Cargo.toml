@@ -11,6 +11,7 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 drl-audio = { workspace = true }
+drl-assets = { workspace = true }
 drl-core = { workspace = true }
 drl-protocol = { workspace = true }
 drl-render = { workspace = true }
@@ -26,6 +27,7 @@ web-sys = { version = "=0.3.104", features = [
   "EventTarget",
   "HtmlCanvasElement",
   "HtmlElement",
+  "HtmlImageElement",
   "KeyboardEvent",
   "Node",
   "Window",
