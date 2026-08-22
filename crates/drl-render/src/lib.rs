@@ -404,6 +404,37 @@ pub const fn particle_decal_cell_is_eligible(
   cell_is_in_bounds && !cell_is_liquid && !cell_blocks_movement
 }
 
+/// The renderer-neutral request produced for one accepted particle decal.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct ParticleDecalInsertion {
+  pub placement: ParticleDecalPlacement,
+  pub sprite_id: u32,
+}
+
+/// Builds a caller-owned insertion request for one eligible particle decal.
+///
+/// The legacy callback stores the caller-provided sprite at the placement
+/// derived from the rounded world position after its map/flag guards pass.
+/// This helper preserves that request without selecting sprites, storing
+/// decals, spawning particles, or rendering them.
+#[must_use]
+pub fn particle_decal_insertion_at_rounded_world(
+  rounded_world_position: [i32; 2],
+  cell_is_in_bounds: bool,
+  cell_is_liquid: bool,
+  cell_blocks_movement: bool,
+  sprite_id: u32,
+) -> Option<ParticleDecalInsertion> {
+  let placement = particle_decal_placement_at_rounded_world(rounded_world_position)?;
+  if !particle_decal_cell_is_eligible(cell_is_in_bounds, cell_is_liquid, cell_blocks_movement) {
+    return None;
+  }
+  Some(ParticleDecalInsertion {
+    placement,
+    sprite_id,
+  })
+}
+
 /// Visibility-derived presentation bands for deterministic scene shading.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum LightingBand {
@@ -2516,6 +2547,48 @@ mod tests {
     assert!(!particle_decal_cell_is_eligible(true, true, false));
     assert!(!particle_decal_cell_is_eligible(true, false, true));
     assert!(!particle_decal_cell_is_eligible(true, true, true));
+  }
+
+  #[test]
+  fn particle_decal_insertion_preserves_placement_and_sprite() {
+    assert_eq!(
+      particle_decal_insertion_at_rounded_world([48, 80], true, false, false, 0),
+      Some(ParticleDecalInsertion {
+        placement: ParticleDecalPlacement {
+          cell: [2, 3],
+          pixel: [64, 96],
+        },
+        sprite_id: 0,
+      })
+    );
+    assert_eq!(
+      particle_decal_insertion_at_rounded_world([48, 80], true, false, false, 42)
+        .map(|insertion| insertion.sprite_id),
+      Some(42)
+    );
+  }
+
+  #[test]
+  fn particle_decal_insertion_rejects_ineligible_cells() {
+    for flags in [
+      (false, false, false),
+      (true, true, false),
+      (true, false, true),
+      (true, true, true),
+    ] {
+      assert_eq!(
+        particle_decal_insertion_at_rounded_world([48, 80], flags.0, flags.1, flags.2, 42),
+        None
+      );
+    }
+  }
+
+  #[test]
+  fn particle_decal_insertion_rejects_offset_overflow() {
+    assert_eq!(
+      particle_decal_insertion_at_rounded_world([i32::MAX, 0], true, false, false, 42),
+      None
+    );
   }
 
   #[test]

@@ -25,7 +25,7 @@ UX are post-1.0 portability work.
 - `NOT_RUN` — the environment did not provide the required evidence; it is not
   a pass or an inferred failure.
 
-## Current truth (`VERSION` 0.2.8)
+## Current truth (`VERSION` 0.2.9)
 
 - [x] M0–M2 and M4–M6 are delivered and covered by repository tests.
 - [x] M0 macOS CI evidence is recorded for baseline commit `c07c44e` in
@@ -46,10 +46,10 @@ UX are post-1.0 portability work.
   backed tints, outline transport/compositing, elapsed animation selection,
   browser scheduling, and capture-manifest attestation helpers.
 - [x] M8 particle contracts cover burst origin, direction, range sampling,
-  decal cell mapping, pixel placement, and in-bounds/non-liquid/non-blocking
-  eligibility.
+  decal cell mapping, pixel placement, in-bounds/non-liquid/non-blocking
+  eligibility, and caller-owned sprite insertion requests.
 - [ ] M8 exact legacy outline/glow parity, broader tint/content animation,
-  particle insertion/storage/rendering, HUD typography, audio/music, and
+  particle decal storage/rendering, HUD typography, audio/music, and
   capture-backed audiovisual comparison remain open.
 - [x] M11 fixed-seed cohorts, integrity validation, outcome distributions,
   compatible comparisons, tolerance gates, telemetry projections, and
@@ -150,15 +150,16 @@ UX are post-1.0 portability work.
   explosion, effect-segment, kill, FX, movement, missile, and screen-shake
   contracts. These do not own GPU resources or claim capture parity.
 - [x] Particle burst origin, direction, range, decal cell mapping, decal pixel
-  placement, and caller-resolved decal eligibility contracts.
+  placement, caller-resolved decal eligibility, and caller-owned sprite
+  insertion-request contracts.
 - [x] Read-only capture-manifest preflight with clean-checkout, rights, hash,
   and evidence classification gates; missing captures remain `NOT_RUN`.
 
 #### Present slice (expanded in `SPEC.md`)
 
-- [ ] Package the accepted placement plus caller-provided decal sprite into a
-  renderer-neutral insertion request; selection, storage, and rendering remain
-  outside this slice.
+- [ ] Retain accepted `ParticleDecalInsertion` requests in deterministic order
+  under an explicit caller capacity policy; sprite selection and rendering
+  remain outside this slice.
 
 #### Open after the present slice
 
@@ -166,7 +167,7 @@ UX are post-1.0 portability work.
   captures.
 - [ ] Broader tint sources, content animation/effect timing, HUD typography,
   particles, cleared replacement audio/music, and visual/audio regressions.
-- [ ] Particle decal storage and renderer integration.
+- [ ] Particle decal renderer integration after the storage boundary.
 
 ### M9 — Typed content migration and gameplay breadth
 
