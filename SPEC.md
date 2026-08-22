@@ -15,7 +15,7 @@ progress. This file expands exactly one active implementation slice.
   redistribution-gated; its controlled reference-capture gate is `NOT_RUN` on
   arm64 macOS and remains an M8 acceptance dependency.
 
-## Present — M8 renderer-neutral animation metadata
+## Present — M8 progress-driven frame planning
 
 Status: The M7 browser slice passed functional acceptance locally and in
 remote web CI. The delivered M8 pixel-grid, visibility-band, low-health tone,
@@ -39,9 +39,11 @@ outline-mask WebGPU binding, using the retained transparent fallback when an
 atlas has no shadow source. The shader receives the resource but leaves output
 unchanged. It also carries pinned two-frame/500 ms metadata for the current
 player, actors, and Phase Device into renderer-neutral descriptors and grouped
-draws; frame selection remains caller-supplied and no wall-clock scheduling is
-introduced. Visible outline/glow equations, broader animation timing/content,
-and capture-backed audiovisual equivalence remain open.
+draws. This slice adds a caller-supplied normalized-progress layer-plan helper
+that selects those frame UVs deterministically while preserving the existing
+frame-zero API; no wall-clock scheduling is introduced. Visible outline/glow
+equations, broader animation timing/content, and capture-backed audiovisual
+equivalence remain open.
 
 ### Observable behavior
 
@@ -166,6 +168,10 @@ and capture-backed audiovisual equivalence remain open.
   current actors, and Phase Device. Layer draws and grouped composites preserve
   that metadata; `frame_rect` advances one atlas row with bounds checks, while
   presentation still chooses progress and timing.
+- `drl-render::layer_draw_plan_at_progress` accepts finite normalized progress,
+  selects frame-specific UVs for evidenced animated descriptors, and keeps
+  static descriptors on frame zero. Invalid progress returns `None`; the
+  existing `layer_draw_plan` remains unchanged.
 - The WGSL source is shared with a native shader-contract test that checks the
   base/emissive/mask samples, fair-lighting `max`, tint forwarding, neutral
   fallback input, alpha cutout, and output path; native tests therefore guard
@@ -240,10 +246,10 @@ capture is available.
 - Legacy audio/music/fonts are not shipped until rights are documented.
 - Full audiovisual equivalence is M8: capture-backed tolerances, visual
   regressions, cue timing, and structured human comparison.
-- Visible outline/glow equations, broader content-specific animation timing,
-  additional per-sprite tint sources, and capture-backed legacy shader
-  equivalence remain future M8 slices; this pass is intentionally limited to
-  renderer-neutral metadata.
+- Visible outline/glow equations, browser timing/effect ownership, broader
+  content-specific animation timing, additional per-sprite tint sources, and
+  capture-backed legacy shader equivalence remain future M8 slices; this pass
+  is intentionally limited to caller-supplied renderer-neutral frame plans.
 
 ## Next
 
@@ -253,9 +259,9 @@ sprite composites, validated browser source loading, renderer-owned GPU
 texture upload, base-color sampling, the emissive lighting floor, the legacy
 alpha cutoff, optional mask sampling, the Green Armor and Phase Device tint
 boundaries, outline-mask GPU transport, caller-supplied frame selection, and
-the evidenced player/actor/Phase Device animation metadata are covered by
-local checks and hosted WASM browser jobs. Continue M8 with visible
-outline/glow compositing, broader animation scheduling/content, additional
-tint sources, or capture-backed measurement of lighting, effects, typography,
-and audio. Do not claim audiovisual parity from renderer-neutral grouping or
-the `NOT_RUN` legacy captures.
+the evidenced player/actor/Phase Device animation metadata and progress-driven
+frame plans are covered by local checks and hosted WASM browser jobs. Continue
+M8 with visible outline/glow compositing, browser animation scheduling,
+broader content, additional tint sources, or capture-backed measurement of
+lighting, effects, typography, and audio. Do not claim audiovisual parity from
+renderer-neutral grouping or the `NOT_RUN` legacy captures.

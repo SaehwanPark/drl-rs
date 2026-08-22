@@ -407,13 +407,13 @@ fn append_layer_draws(
   lighting: LightingBand,
   colorization_tint: [u8; 4],
   destination: Option<PixelRect>,
-) {
+  progress: Option<f32>,
+) -> Option<()> {
   let Some(destination) = destination else {
-    return;
+    return Some(());
   };
-  let (atlas_width, atlas_height) = descriptor.atlas.dimensions();
-  let Some(uv) = descriptor.rect.uv_rect(atlas_width, atlas_height) else {
-    return;
+  let Some(uv) = descriptor_frame_uv(descriptor, progress) else {
+    return if progress.is_some() { None } else { Some(()) };
   };
   plan.extend(descriptor.layers.iter().copied().map(|layer| LayerDraw {
     sprite_index,
@@ -427,17 +427,24 @@ fn append_layer_draws(
     destination,
     uv,
   }));
+  Some(())
 }
 
-/// Builds a stable atlas/layer draw plan from fair scene data.
-///
-/// Entries are emitted back-to-front in scene order: tiles, visible items,
-/// then visible actors. Explored-but-hidden tiles remain eligible for the
-/// fogged scene because they are part of the fair observation memory; a tile
-/// that is neither visible nor explored is omitted. Invalid atlas geometry is
-/// omitted defensively rather than producing a malformed backend command.
-#[must_use]
-pub fn layer_draw_plan(scene: &RenderScene, viewport: PixelViewport) -> Vec<LayerDraw> {
+fn descriptor_frame_uv(descriptor: SpriteDescriptor, progress: Option<f32>) -> Option<SpriteUv> {
+  let frame_index = match (descriptor.animation, progress) {
+    (Some(animation), Some(progress)) => animation_frame_index(progress, animation.frame_count)?,
+    _ => 0,
+  };
+  let frame = descriptor.frame_rect(frame_index)?;
+  let (atlas_width, atlas_height) = descriptor.atlas.dimensions();
+  frame.uv_rect(atlas_width, atlas_height)
+}
+
+fn build_layer_draw_plan(
+  scene: &RenderScene,
+  viewport: PixelViewport,
+  progress: Option<f32>,
+) -> Option<Vec<LayerDraw>> {
   let mut plan = Vec::new();
   let mut sprite_index = 0_u32;
   for tile in &scene.tiles {
@@ -451,7 +458,8 @@ pub fn layer_draw_plan(scene: &RenderScene, viewport: PixelViewport) -> Vec<Laye
       tile.lighting_band(),
       NEUTRAL_COLORIZATION_TINT,
       viewport.tile_rect(tile.position),
-    );
+      progress,
+    )?;
     sprite_index = sprite_index.saturating_add(1);
   }
   for item in &scene.items {
@@ -462,7 +470,8 @@ pub fn layer_draw_plan(scene: &RenderScene, viewport: PixelViewport) -> Vec<Laye
       LightingBand::Visible,
       item.colorization_tint,
       viewport.tile_rect(item.position),
-    );
+      progress,
+    )?;
     sprite_index = sprite_index.saturating_add(1);
   }
   for actor in &scene.actors {
@@ -473,10 +482,37 @@ pub fn layer_draw_plan(scene: &RenderScene, viewport: PixelViewport) -> Vec<Laye
       LightingBand::Visible,
       actor.colorization_tint,
       viewport.tile_rect(actor.position),
-    );
+      progress,
+    )?;
     sprite_index = sprite_index.saturating_add(1);
   }
-  plan
+  Some(plan)
+}
+
+/// Builds a stable atlas/layer draw plan from fair scene data.
+///
+/// Entries are emitted back-to-front in scene order: tiles, visible items,
+/// then visible actors. Explored-but-hidden tiles remain eligible for the
+/// fogged scene because they are part of the fair observation memory; a tile
+/// that is neither visible nor explored is omitted. Invalid atlas geometry is
+/// omitted defensively rather than producing a malformed backend command.
+#[must_use]
+pub fn layer_draw_plan(scene: &RenderScene, viewport: PixelViewport) -> Vec<LayerDraw> {
+  build_layer_draw_plan(scene, viewport, None).unwrap_or_default()
+}
+
+/// Builds a deterministic layer plan for caller-supplied normalized animation
+/// progress. This does not own a clock or connect effects to sprites.
+#[must_use]
+pub fn layer_draw_plan_at_progress(
+  scene: &RenderScene,
+  viewport: PixelViewport,
+  progress: f32,
+) -> Option<Vec<LayerDraw>> {
+  if !progress.is_finite() || progress < 0.0 || progress >= 1.0 {
+    return None;
+  }
+  build_layer_draw_plan(scene, viewport, Some(progress))
 }
 
 fn composite_group(draws: &[LayerDraw]) -> Option<SpriteComposite> {
@@ -1043,6 +1079,67 @@ mod tests {
       first_actor_composite.animation,
       first_actor.sprite.animation
     );
+  }
+
+  #[test]
+  fn progress_layer_plan_selects_only_evidenced_animation_rows() {
+    let game = Game::new_arena(42, 12, 10).expect("arena");
+    let scene = RenderScene::from_observation(&game.observe_player());
+    let viewport = PixelViewport::fit(scene.map_width, scene.map_height, 960, 640);
+    let frame_zero = layer_draw_plan(&scene, viewport);
+    assert_eq!(
+      layer_draw_plan_at_progress(&scene, viewport, 0.0),
+      Some(frame_zero.clone())
+    );
+    assert_eq!(
+      layer_draw_plan_at_progress(&scene, viewport, 0.4999),
+      Some(frame_zero.clone())
+    );
+    for invalid in [-0.01, 1.0, f32::NAN, f32::INFINITY] {
+      assert!(layer_draw_plan_at_progress(&scene, viewport, invalid).is_none());
+    }
+
+    let player = scene.actors.first().expect("player");
+    let player_draw = frame_zero
+      .iter()
+      .find(|draw| draw.atlas == player.sprite.atlas && draw.animation == player.sprite.animation)
+      .expect("player draw");
+    let frame_one = layer_draw_plan_at_progress(&scene, viewport, 0.5).expect("frame one plan");
+    let expected_uv = player
+      .sprite
+      .frame_rect(1)
+      .expect("player frame one")
+      .uv_rect(
+        player.sprite.atlas.dimensions().0,
+        player.sprite.atlas.dimensions().1,
+      )
+      .expect("player frame one UV");
+    let selected_player: Vec<_> = frame_one
+      .iter()
+      .filter(|draw| draw.sprite_index == player_draw.sprite_index)
+      .collect();
+    assert!(!selected_player.is_empty());
+    assert!(selected_player.iter().all(|draw| draw.uv == expected_uv));
+
+    let static_draw = frame_zero
+      .iter()
+      .find(|draw| draw.animation.is_none())
+      .expect("static tile draw");
+    let static_selected = frame_one
+      .iter()
+      .find(|draw| draw.sprite_index == static_draw.sprite_index)
+      .expect("static tile at frame one progress");
+    assert_eq!(static_selected.uv, static_draw.uv);
+    assert_eq!(
+      layer_draw_plan_at_progress(&scene, viewport, 0.5),
+      layer_draw_plan_at_progress(&scene, viewport, 0.5)
+    );
+
+    let mut malformed_scene = scene;
+    let mut malformed_player = malformed_scene.actors[0].sprite;
+    malformed_player.rect = drl_assets::SpriteRect::new(0, 32, 32, 32);
+    malformed_scene.actors[0].sprite = malformed_player;
+    assert!(layer_draw_plan_at_progress(&malformed_scene, viewport, 0.5).is_none());
   }
 
   #[test]
