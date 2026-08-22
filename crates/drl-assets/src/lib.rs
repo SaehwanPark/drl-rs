@@ -33,6 +33,20 @@ impl AtlasId {
     }
   }
 
+  /// Pixel dimensions of the imported PNG backing this atlas.
+  #[must_use]
+  pub const fn dimensions(self) -> (u32, u32) {
+    match self {
+      Self::Dguy => (512, 64),
+      Self::Enemies => (512, 192),
+      Self::EnemiesBig => (512, 384),
+      Self::GunsAndPickups => (512, 160),
+      Self::Levels => (512, 1152),
+      Self::DoorsAndDecorations => (512, 288),
+      Self::Fx => (512, 64),
+    }
+  }
+
   /// Returns the path for a compositing layer of this atlas.
   #[must_use]
   pub const fn layer_path(self, layer: SpriteLayer) -> &'static str {
@@ -98,6 +112,13 @@ impl SpriteRect {
       height,
     }
   }
+
+  /// Returns whether this rectangle fits inside an atlas of the given size.
+  #[must_use]
+  pub const fn is_within(self, atlas_width: u32, atlas_height: u32) -> bool {
+    self.x.saturating_add(self.width) <= atlas_width
+      && self.y.saturating_add(self.height) <= atlas_height
+  }
 }
 
 /// Stable semantic lookup entry used by scene construction.
@@ -115,21 +136,52 @@ const LIT: &[SpriteLayer] = &[
   SpriteLayer::Shadow,
 ];
 
+const SPRITE_CELL_SIZE: u32 = 32;
+const SPRITE_COLUMNS: u32 = 16;
+
+/// Converts a legacy one-based sprite id within a sheet to its pixel cell.
+///
+/// The legacy registration code numbers each 32-pixel cell from one and
+/// advances rows in groups of sixteen (`DRL_COLS`). Keeping that conversion
+/// here makes the semantic tables explicit without importing the legacy
+/// runtime or its identifiers.
+const fn legacy_slot(slot: u32) -> SpriteRect {
+  let index = slot.saturating_sub(1);
+  SpriteRect::new(
+    (index % SPRITE_COLUMNS) * SPRITE_CELL_SIZE,
+    (index / SPRITE_COLUMNS) * SPRITE_CELL_SIZE,
+    SPRITE_CELL_SIZE,
+    SPRITE_CELL_SIZE,
+  )
+}
+
 /// Returns the descriptor for a currently implemented terrain tile.
 #[must_use]
 pub const fn tile_sprite(tile: TileKind) -> SpriteDescriptor {
-  let rect = SpriteRect::new(0, 0, 32, 32);
   match tile {
-    TileKind::Floor | TileKind::Wall | TileKind::DoorClosed | TileKind::DoorOpen => {
-      SpriteDescriptor {
-        atlas: AtlasId::Levels,
-        rect,
-        layers: BASE,
-      }
-    }
-    TileKind::StairsDown => SpriteDescriptor {
+    TileKind::Floor => SpriteDescriptor {
       atlas: AtlasId::Levels,
-      rect,
+      rect: legacy_slot(1),
+      layers: BASE,
+    },
+    TileKind::Wall => SpriteDescriptor {
+      atlas: AtlasId::Levels,
+      rect: legacy_slot(15 * SPRITE_COLUMNS + 1),
+      layers: BASE,
+    },
+    TileKind::DoorClosed => SpriteDescriptor {
+      atlas: AtlasId::DoorsAndDecorations,
+      rect: legacy_slot(1),
+      layers: BASE,
+    },
+    TileKind::DoorOpen => SpriteDescriptor {
+      atlas: AtlasId::DoorsAndDecorations,
+      rect: legacy_slot(3 * SPRITE_COLUMNS + 1),
+      layers: BASE,
+    },
+    TileKind::StairsDown => SpriteDescriptor {
+      atlas: AtlasId::DoorsAndDecorations,
+      rect: legacy_slot(7 * SPRITE_COLUMNS + 1),
       layers: LIT,
     },
   }
@@ -138,21 +190,30 @@ pub const fn tile_sprite(tile: TileKind) -> SpriteDescriptor {
 /// Returns the descriptor for a currently implemented actor archetype.
 #[must_use]
 pub const fn actor_sprite(kind: Option<MonsterKind>) -> SpriteDescriptor {
-  let rect = SpriteRect::new(0, 0, 32, 32);
   match kind {
     None => SpriteDescriptor {
       atlas: AtlasId::Dguy,
-      rect,
+      rect: legacy_slot(1),
+      layers: LIT,
+    },
+    Some(MonsterKind::FormerHuman) => SpriteDescriptor {
+      atlas: AtlasId::Enemies,
+      rect: legacy_slot(1),
+      layers: LIT,
+    },
+    Some(MonsterKind::FormerSergeant) => SpriteDescriptor {
+      atlas: AtlasId::Enemies,
+      rect: legacy_slot(2),
+      layers: LIT,
+    },
+    Some(MonsterKind::Imp) => SpriteDescriptor {
+      atlas: AtlasId::Enemies,
+      rect: legacy_slot(5),
       layers: LIT,
     },
     Some(MonsterKind::Demon) => SpriteDescriptor {
-      atlas: AtlasId::EnemiesBig,
-      rect,
-      layers: LIT,
-    },
-    Some(_) => SpriteDescriptor {
       atlas: AtlasId::Enemies,
-      rect,
+      rect: legacy_slot(6),
       layers: LIT,
     },
   }
@@ -161,16 +222,55 @@ pub const fn actor_sprite(kind: Option<MonsterKind>) -> SpriteDescriptor {
 /// Returns the descriptor for a currently implemented item archetype.
 #[must_use]
 pub const fn item_sprite(archetype: ItemArchetype) -> SpriteDescriptor {
-  let rect = SpriteRect::new(0, 0, 32, 32);
   match archetype {
     ItemArchetype::Unknown => SpriteDescriptor {
       atlas: AtlasId::Fx,
-      rect,
+      rect: legacy_slot(1),
       layers: BASE,
     },
-    _ => SpriteDescriptor {
+    ItemArchetype::CombatKnife => SpriteDescriptor {
       atlas: AtlasId::GunsAndPickups,
-      rect,
+      rect: legacy_slot(2),
+      layers: LIT,
+    },
+    ItemArchetype::Pistol => SpriteDescriptor {
+      atlas: AtlasId::GunsAndPickups,
+      rect: legacy_slot(4),
+      layers: LIT,
+    },
+    ItemArchetype::Shotgun => SpriteDescriptor {
+      atlas: AtlasId::GunsAndPickups,
+      rect: legacy_slot(5),
+      layers: LIT,
+    },
+    ItemArchetype::GreenArmor => SpriteDescriptor {
+      atlas: AtlasId::GunsAndPickups,
+      rect: legacy_slot(SPRITE_COLUMNS + 1),
+      layers: LIT,
+    },
+    ItemArchetype::Ammo9mm => SpriteDescriptor {
+      atlas: AtlasId::GunsAndPickups,
+      rect: legacy_slot(SPRITE_COLUMNS + 7),
+      layers: LIT,
+    },
+    ItemArchetype::AmmoShells => SpriteDescriptor {
+      atlas: AtlasId::GunsAndPickups,
+      rect: legacy_slot(SPRITE_COLUMNS + 9),
+      layers: LIT,
+    },
+    ItemArchetype::SmallMedPack => SpriteDescriptor {
+      atlas: AtlasId::GunsAndPickups,
+      rect: legacy_slot(3 * SPRITE_COLUMNS + 9),
+      layers: LIT,
+    },
+    ItemArchetype::LargeMedPack => SpriteDescriptor {
+      atlas: AtlasId::GunsAndPickups,
+      rect: legacy_slot(3 * SPRITE_COLUMNS + 10),
+      layers: LIT,
+    },
+    ItemArchetype::PhaseDevice => SpriteDescriptor {
+      atlas: AtlasId::GunsAndPickups,
+      rect: legacy_slot(SPRITE_COLUMNS + 15),
       layers: LIT,
     },
   }
@@ -198,7 +298,12 @@ mod tests {
       TileKind::DoorOpen,
       TileKind::StairsDown,
     ] {
-      assert!(tile_sprite(tile).rect.width > 0);
+      let descriptor = tile_sprite(tile);
+      assert!(descriptor.rect.width > 0);
+      assert!(descriptor.rect.is_within(
+        descriptor.atlas.dimensions().0,
+        descriptor.atlas.dimensions().1
+      ));
     }
     for kind in [
       None,
@@ -207,7 +312,12 @@ mod tests {
       Some(MonsterKind::Imp),
       Some(MonsterKind::Demon),
     ] {
-      assert!(actor_sprite(kind).rect.width > 0);
+      let descriptor = actor_sprite(kind);
+      assert!(descriptor.rect.width > 0);
+      assert!(descriptor.rect.is_within(
+        descriptor.atlas.dimensions().0,
+        descriptor.atlas.dimensions().1
+      ));
     }
     assert_eq!(
       item_sprite(ItemArchetype::Pistol).atlas,
@@ -217,5 +327,77 @@ mod tests {
       AtlasId::Dguy.layer_path(SpriteLayer::Emissive),
       "dguy_emissive.png"
     );
+  }
+
+  #[test]
+  fn current_item_slots_match_legacy_grid() {
+    let expected = [
+      (ItemArchetype::Unknown, AtlasId::Fx, (0, 0)),
+      (ItemArchetype::CombatKnife, AtlasId::GunsAndPickups, (32, 0)),
+      (ItemArchetype::Pistol, AtlasId::GunsAndPickups, (96, 0)),
+      (ItemArchetype::Shotgun, AtlasId::GunsAndPickups, (128, 0)),
+      (ItemArchetype::GreenArmor, AtlasId::GunsAndPickups, (0, 32)),
+      (ItemArchetype::Ammo9mm, AtlasId::GunsAndPickups, (192, 32)),
+      (
+        ItemArchetype::AmmoShells,
+        AtlasId::GunsAndPickups,
+        (256, 32),
+      ),
+      (
+        ItemArchetype::SmallMedPack,
+        AtlasId::GunsAndPickups,
+        (256, 96),
+      ),
+      (
+        ItemArchetype::LargeMedPack,
+        AtlasId::GunsAndPickups,
+        (288, 96),
+      ),
+      (
+        ItemArchetype::PhaseDevice,
+        AtlasId::GunsAndPickups,
+        (448, 32),
+      ),
+    ];
+    for (archetype, atlas, (x, y)) in expected {
+      let descriptor = item_sprite(archetype);
+      assert_eq!(descriptor.atlas, atlas);
+      assert_eq!((descriptor.rect.x, descriptor.rect.y), (x, y));
+      assert!(descriptor.rect.is_within(
+        descriptor.atlas.dimensions().0,
+        descriptor.atlas.dimensions().1
+      ));
+    }
+  }
+
+  #[test]
+  fn current_actor_and_tile_slots_match_legacy_grid() {
+    assert_eq!(tile_sprite(TileKind::Floor).rect, legacy_slot(1));
+    assert_eq!(tile_sprite(TileKind::Wall).rect, legacy_slot(241));
+    assert_eq!(tile_sprite(TileKind::DoorClosed).rect, legacy_slot(1));
+    assert_eq!(tile_sprite(TileKind::DoorOpen).rect, legacy_slot(49));
+    assert_eq!(tile_sprite(TileKind::StairsDown).rect, legacy_slot(113));
+    assert_eq!(actor_sprite(None).rect, legacy_slot(1));
+    assert_eq!(
+      actor_sprite(Some(MonsterKind::FormerHuman)).rect,
+      legacy_slot(1)
+    );
+    assert_eq!(
+      actor_sprite(Some(MonsterKind::FormerSergeant)).rect,
+      legacy_slot(2)
+    );
+    assert_eq!(actor_sprite(Some(MonsterKind::Imp)).rect, legacy_slot(5));
+    assert_eq!(actor_sprite(Some(MonsterKind::Demon)).rect, legacy_slot(6));
+  }
+
+  #[test]
+  fn atlas_dimensions_match_imported_sheets() {
+    assert_eq!(AtlasId::Dguy.dimensions(), (512, 64));
+    assert_eq!(AtlasId::Enemies.dimensions(), (512, 192));
+    assert_eq!(AtlasId::EnemiesBig.dimensions(), (512, 384));
+    assert_eq!(AtlasId::GunsAndPickups.dimensions(), (512, 160));
+    assert_eq!(AtlasId::Levels.dimensions(), (512, 1152));
+    assert_eq!(AtlasId::DoorsAndDecorations.dimensions(), (512, 288));
+    assert_eq!(AtlasId::Fx.dimensions(), (512, 64));
   }
 }

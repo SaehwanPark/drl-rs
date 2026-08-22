@@ -46,6 +46,10 @@ documented in this file.
 - Filtered browser effect spans against before/after visible actors while
   retaining direct player transitions, preventing hidden monster events from
   becoming presentation timing.
+- Replaced placeholder atlas cells with measured 32-pixel legacy sprite slots
+  for all current tile, actor, and item semantics. `drl-assets` now exposes
+  imported PNG dimensions and pure rectangle bounds checks; texture compositing
+  and capture-backed audiovisual parity remain open.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch

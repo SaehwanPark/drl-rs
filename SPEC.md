@@ -15,15 +15,15 @@ progress. This file expands exactly one active implementation slice.
   redistribution-gated; its controlled reference-capture gate is `NOT_RUN` on
   arm64 macOS and remains an M8 acceptance dependency.
 
-## Present — M8 deterministic browser effect handoff
+## Present — M8 measured atlas descriptors
 
 Status: The M7 browser slice passed functional acceptance locally and in
-remote web CI. The delivered M8 pixel-grid, visibility-band, and low-health
-tone slices share pure presentation rules; the previous bounded slice gave
-event-derived visual effects explicit logical durations and sequential start
-ticks. This follow-up carries those spans in each `PresentationStep`, so a
-frontend can map ticks to frames without rebuilding raw event semantics. The
-handoff never advances simulation and is not a capture-backed parity claim.
+remote web CI. The delivered M8 pixel-grid, visibility-band, low-health tone,
+and fair effect-span slices share pure presentation rules. This bounded
+follow-up replaces placeholder atlas cells with measured 32-pixel slots from
+the pinned legacy sprite-sheet grid and exposes atlas dimensions for bounds
+validation. It remains platform-neutral and is not a capture-backed parity
+claim.
 
 ### Observable behavior
 
@@ -78,6 +78,13 @@ handoff never advances simulation and is not a capture-backed parity claim.
   mutate the session.
 - Presentation ticks are frontend timing units only; tab visibility, resize,
   audio, and animation work cannot submit a simulation command.
+- `drl-assets::AtlasId::dimensions` records the imported PNG dimensions needed
+  to validate sprite rectangles without loading image data in Rust.
+- Current tile, actor, and item descriptors use the legacy 16-column, 32-pixel
+  sprite-sheet slots for their corresponding semantic entries; the fallback
+  entry remains a bounded FX cell.
+- Descriptor bounds tests reject any current rectangle that exceeds its
+  imported atlas dimensions.
 
 ### Public contracts
 
@@ -98,6 +105,7 @@ sh scripts/check-repository.sh              PASS (baseline plus new crates)
 sh scripts/check-assets.sh                  PASS (32 PNGs, license, hashes)
 cargo check --locked -p drl-web --target wasm32-unknown-unknown  PASS
 cargo test -p drl-render                      PASS (pixel-grid, lighting, tone, and timeline contracts)
+cargo test -p drl-assets                      PASS (measured slot mappings and atlas bounds)
 cargo test -p drl-web                         PASS (effect handoff preserves event/timeline parity)
 scripts/check-web.sh                        PASS for native/WASM builds;
                                              browser runner NOT_RUN if Chrome absent
@@ -106,14 +114,18 @@ Chrome 151 WebGPU smoke playthrough          PASS (Apple Metal-3, 1280x720, DPR 
                                              start with explicit gesture-gated
                                              audio state, move, mute, restart;
                                              pixel-grid scene visible after move)
-GitHub Actions run 32542997484               PASS (repository + Ubuntu WASM jobs;
-                                             M8 fair effect-handoff implementation)
+GitHub Actions run 32542997484               PASS (prior repository + Ubuntu
+                                             WASM jobs for the fair effect
+                                             handoff; this atlas slice is not
+                                             included in that revision)
 ```
 
-The local and remote functional gates pass. The run records browser/version,
-OS, adapter/backend, viewport, DPR, build revision, and audio unlock/mute
-state, but the fidelity-matrix comparison remains `NOT_RUN` until a controlled
-legacy capture is available.
+The existing local and remote functional gates pass for the previously merged
+browser slice. This atlas slice passes local repository, asset, WASM compile,
+and native web contract checks; a new hosted run is `NOT_RUN`. The existing
+browser run records browser/version, OS, adapter/backend, viewport, DPR, build
+revision, and audio unlock/mute state, but the fidelity-matrix comparison
+remains `NOT_RUN` until a controlled legacy capture is available.
 
 ### Explicit non-goals
 
@@ -124,6 +136,8 @@ legacy capture is available.
 - Legacy audio/music/fonts are not shipped until rights are documented.
 - Full audiovisual equivalence is M8: capture-backed tolerances, visual
   regressions, cue timing, and structured human comparison.
+- Texture upload, shader sampling, animation frame selection, and layer
+  compositing remain future M8 slices.
 
 ## Next
 
