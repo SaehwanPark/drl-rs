@@ -94,6 +94,7 @@ pub struct MonsterSpawn {
   pub ranged_damage: Option<(u32, u32)>,
   pub ranged_range: u32,
   pub accuracy: i32,
+  pub knockback: u32,
   pub death_drop: Option<ItemSpawnKind>,
 }
 
@@ -101,30 +102,20 @@ impl MonsterSpawn {
   /// Creates a monster spawn from a predefined archetype.
   #[must_use]
   pub fn from_kind(position: Position, kind: MonsterKind) -> Self {
-    let ranged_stats = kind.default_ranged_stats();
-    let (ranged_damage, ranged_range, accuracy) = match ranged_stats {
-      Some((dmg, range, acc)) => (Some(dmg), range, acc),
-      None => (None, 0, 75),
-    };
-
-    let death_drop = match kind {
-      MonsterKind::FormerHuman => Some(ItemSpawnKind::Ammo9mm(10)),
-      MonsterKind::FormerSergeant => Some(ItemSpawnKind::AmmoShells(4)),
-      MonsterKind::Imp => Some(ItemSpawnKind::SmallMedPack),
-      MonsterKind::Demon => None,
-    };
+    let definition = kind.definition();
 
     Self {
       position,
       kind: Some(kind),
-      name: kind.name().to_string(),
-      hp: kind.default_hp(),
-      speed: kind.default_speed(),
-      melee_damage: kind.default_melee_damage(),
-      ranged_damage,
-      ranged_range,
-      accuracy,
-      death_drop,
+      name: definition.name.to_string(),
+      hp: definition.hp,
+      speed: definition.speed,
+      melee_damage: definition.melee_damage,
+      ranged_damage: definition.ranged_damage,
+      ranged_range: definition.ranged_range,
+      accuracy: definition.accuracy,
+      knockback: definition.knockback,
+      death_drop: definition.death_drop,
     }
   }
 }
@@ -362,6 +353,7 @@ impl LevelGenerator {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use crate::actor::Actor;
 
   #[test]
   fn test_room_center_and_intersection() {
@@ -373,6 +365,66 @@ mod tests {
 
     let r3 = Room::new(15, 15, 4, 4);
     assert!(!r1.intersects(&r3));
+  }
+
+  #[test]
+  fn monster_definition_drives_actor_and_spawn_metadata() {
+    for (index, kind) in [
+      MonsterKind::FormerHuman,
+      MonsterKind::FormerSergeant,
+      MonsterKind::Imp,
+      MonsterKind::Demon,
+    ]
+    .into_iter()
+    .enumerate()
+    {
+      let definition = kind.definition();
+      let actor = Actor::from_monster_kind(
+        drl_protocol::EntityId::new(index as u64 + 1),
+        Position::new(2, 2),
+        kind,
+      );
+      let named_actor = match kind {
+        MonsterKind::FormerHuman => Actor::former_human(
+          drl_protocol::EntityId::new(index as u64 + 1),
+          Position::new(2, 2),
+        ),
+        MonsterKind::FormerSergeant => Actor::former_sergeant(
+          drl_protocol::EntityId::new(index as u64 + 1),
+          Position::new(2, 2),
+        ),
+        MonsterKind::Imp => Actor::imp(
+          drl_protocol::EntityId::new(index as u64 + 1),
+          Position::new(2, 2),
+        ),
+        MonsterKind::Demon => Actor::demon(
+          drl_protocol::EntityId::new(index as u64 + 1),
+          Position::new(2, 2),
+        ),
+      };
+      let spawn = MonsterSpawn::from_kind(Position::new(3, 3), kind);
+
+      assert_eq!(named_actor, actor);
+      assert_eq!(actor.name(), definition.name);
+      assert_eq!(actor.hp().max, definition.hp);
+      assert_eq!(actor.speed().as_u32(), definition.speed);
+      assert_eq!(actor.melee_damage(), definition.melee_damage);
+      assert_eq!(actor.ranged_damage(), definition.ranged_damage);
+      assert_eq!(actor.ranged_range(), definition.ranged_range);
+      assert_eq!(actor.accuracy(), definition.accuracy);
+      assert_eq!(actor.knockback(), definition.knockback);
+      assert_eq!(actor.death_drop(), definition.death_drop);
+
+      assert_eq!(spawn.name, definition.name);
+      assert_eq!(spawn.hp, definition.hp);
+      assert_eq!(spawn.speed, definition.speed);
+      assert_eq!(spawn.melee_damage, definition.melee_damage);
+      assert_eq!(spawn.ranged_damage, definition.ranged_damage);
+      assert_eq!(spawn.ranged_range, definition.ranged_range);
+      assert_eq!(spawn.accuracy, definition.accuracy);
+      assert_eq!(spawn.knockback, definition.knockback);
+      assert_eq!(spawn.death_drop, definition.death_drop);
+    }
   }
 
   #[test]

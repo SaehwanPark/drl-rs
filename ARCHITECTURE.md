@@ -28,7 +28,9 @@ types shared by core, MCP, bots, and frontends.
   scenarios, bots, batches, and replay execution.
 - `drl-protocol`: stable semantic boundary. Player observations now include
   map dimensions and player HP; actor/item views include stable presentation
-  identifiers. MCP wire serialization and replay schema remain compatible.
+  identifiers. `MonsterKind::definition()` is the Rust-owned typed content
+  table for current monster metadata; compatibility accessors remain stable.
+  MCP wire serialization and replay schema remain compatible.
 - `drl-assets`: platform-neutral atlas IDs, imported PNG dimensions, measured
   32-pixel rectangles, deterministic registered layer sets and shader input
   roles, semantic
@@ -136,6 +138,10 @@ types shared by core, MCP, bots, and frontends.
   `((cell - 1) * 32 + 16)` centered origin and zero Z coordinate with checked
   signed arithmetic. It does not convert current zero-based positions or spawn,
   randomize, configure, or render particles.
+- `MonsterKind::definition()` is the single current Rust-owned definition for
+  the four implemented archetypes. Actor factories and generated spawns read
+  it, while legacy Lua values remain reference evidence rather than imported
+  balance data.
 - `active_effect_frames` reports normalized progress only for the supplied
   spans at the supplied frontend tick. It omits zero-duration/overflowed spans
   and cannot create new events or inspect simulation state.

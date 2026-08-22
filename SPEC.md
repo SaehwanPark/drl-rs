@@ -135,6 +135,12 @@ the pinned one-based `((cell - 1) * 32 + 16)` origin conversion and zero Z
 coordinate with checked signed arithmetic. It does not convert current
 zero-based positions or own direction, randomness, decals, particle-engine,
 rendering, or lifecycle behavior.
+The current M9 content slice adds `drl_protocol::MonsterKind::definition()` as
+the Rust-owned typed table for the four implemented archetypes. Actor factories
+and generated monster spawns consume this record, including knockback and death
+drop metadata, while compatibility accessors and replay schemas remain stable.
+The table preserves current DRL-Rust values and does not claim legacy Lua
+numeric parity.
 Sampler edge/wrap addressing remains a backend and capture concern; the helper
 does not select it.
 
@@ -247,6 +253,10 @@ does not select it.
   for signed overflow. It performs no current-position conversion, direction
   normalization, random sampling, decal selection, particle spawn, rendering,
   lifecycle, or backend work.
+- `MonsterKind::definition()` returns the current Rust-owned name, HP, speed,
+  combat, knockback, and death-drop record for each implemented archetype.
+  Actor construction and generated spawns consume the same record; no Lua
+  runtime, legacy balance migration, or replay-schema change is introduced.
 - WebGPU uses that shared clear-color rule; health-tone presentation remains an
   effect and cannot reveal hidden world state.
 - `drl-render::effect_timeline` preserves event order and assigns each bounded

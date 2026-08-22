@@ -1,5 +1,6 @@
 //! Core domain types: coordinates, directions, IDs, and turns.
 
+use crate::replay::ItemSpawnKind;
 use std::ops::Add;
 
 /// 2D integer grid position in level coordinates.
@@ -426,6 +427,23 @@ pub enum Target {
   Direction(Direction),
 }
 
+/// Rust-owned typed content for one representative monster archetype.
+///
+/// These values are the current DRL-Rust gameplay baseline. They are not a
+/// claim that the divergent legacy Lua balance values have been migrated.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct MonsterDefinition {
+  pub name: &'static str,
+  pub hp: u32,
+  pub speed: u32,
+  pub melee_damage: (u32, u32),
+  pub ranged_damage: Option<(u32, u32)>,
+  pub ranged_range: u32,
+  pub accuracy: i32,
+  pub knockback: u32,
+  pub death_drop: Option<ItemSpawnKind>,
+}
+
 /// Standard representative monster archetypes in DRL.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum MonsterKind {
@@ -440,6 +458,57 @@ pub enum MonsterKind {
 }
 
 impl MonsterKind {
+  /// Returns the single Rust-owned content definition for this archetype.
+  #[must_use]
+  pub const fn definition(self) -> MonsterDefinition {
+    match self {
+      Self::FormerHuman => MonsterDefinition {
+        name: "Former Human",
+        hp: 15,
+        speed: 100,
+        melee_damage: (2, 4),
+        ranged_damage: Some((4, 8)),
+        ranged_range: 7,
+        accuracy: 65,
+        knockback: 0,
+        death_drop: Some(ItemSpawnKind::Ammo9mm(10)),
+      },
+      Self::FormerSergeant => MonsterDefinition {
+        name: "Former Sergeant",
+        hp: 25,
+        speed: 90,
+        melee_damage: (3, 6),
+        ranged_damage: Some((8, 14)),
+        ranged_range: 5,
+        accuracy: 60,
+        knockback: 1,
+        death_drop: Some(ItemSpawnKind::AmmoShells(4)),
+      },
+      Self::Imp => MonsterDefinition {
+        name: "Imp",
+        hp: 30,
+        speed: 100,
+        melee_damage: (4, 8),
+        ranged_damage: Some((5, 10)),
+        ranged_range: 8,
+        accuracy: 70,
+        knockback: 0,
+        death_drop: Some(ItemSpawnKind::SmallMedPack),
+      },
+      Self::Demon => MonsterDefinition {
+        name: "Demon",
+        hp: 45,
+        speed: 130,
+        melee_damage: (8, 16),
+        ranged_damage: None,
+        ranged_range: 0,
+        accuracy: 75,
+        knockback: 0,
+        death_drop: None,
+      },
+    }
+  }
+
   /// Resolves an archetype from its canonical display name.
   #[must_use]
   pub fn from_name(name: &str) -> Option<Self> {
@@ -455,55 +524,34 @@ impl MonsterKind {
   /// Display name of the monster archetype.
   #[must_use]
   pub const fn name(self) -> &'static str {
-    match self {
-      Self::FormerHuman => "Former Human",
-      Self::FormerSergeant => "Former Sergeant",
-      Self::Imp => "Imp",
-      Self::Demon => "Demon",
-    }
+    self.definition().name
   }
 
   /// Default max hit points for this archetype.
   #[must_use]
   pub const fn default_hp(self) -> u32 {
-    match self {
-      Self::FormerHuman => 15,
-      Self::FormerSergeant => 25,
-      Self::Imp => 30,
-      Self::Demon => 45,
-    }
+    self.definition().hp
   }
 
   /// Default speed rating percentage for this archetype.
   #[must_use]
   pub const fn default_speed(self) -> u32 {
-    match self {
-      Self::FormerHuman => 100,
-      Self::FormerSergeant => 90,
-      Self::Imp => 100,
-      Self::Demon => 130,
-    }
+    self.definition().speed
   }
 
   /// Default melee damage range `(min, max)`.
   #[must_use]
   pub const fn default_melee_damage(self) -> (u32, u32) {
-    match self {
-      Self::FormerHuman => (2, 4),
-      Self::FormerSergeant => (3, 6),
-      Self::Imp => (4, 8),
-      Self::Demon => (8, 16),
-    }
+    self.definition().melee_damage
   }
 
   /// Default ranged damage range `(min, max)`, range, and accuracy, if any.
   #[must_use]
   pub const fn default_ranged_stats(self) -> Option<((u32, u32), u32, i32)> {
-    match self {
-      Self::FormerHuman => Some(((4, 8), 7, 65)),
-      Self::FormerSergeant => Some(((8, 14), 5, 60)),
-      Self::Imp => Some(((5, 10), 8, 70)),
-      Self::Demon => None,
+    let definition = self.definition();
+    match definition.ranged_damage {
+      Some(damage) => Some((damage, definition.ranged_range, definition.accuracy)),
+      None => None,
     }
   }
 }
