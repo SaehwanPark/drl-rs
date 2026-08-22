@@ -148,6 +148,9 @@ documented in this file.
   `visibilitychange` listener that rebases the presentation clock even when
   hidden RAF callbacks are throttled; listener failure remains non-fatal to
   event-driven gameplay.
+- Added the pinned yellow `StairsDown` tile `coscolor` through the existing
+  colorization-mask path. Other current tile kinds, actors, and item
+  archetypes remain neutral unless already evidence-backed.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch

@@ -31,6 +31,15 @@ pub const fn item_colorization_tint(archetype: ItemArchetype) -> [u8; 4] {
   }
 }
 
+/// Returns the pinned legacy tint for the currently implemented stairs tile.
+#[must_use]
+pub const fn tile_colorization_tint(tile: TileKind) -> [u8; 4] {
+  match tile {
+    TileKind::StairsDown => [255, 255, 0, 255],
+    _ => NEUTRAL_COLORIZATION_TINT,
+  }
+}
+
 /// Returns the observed armor tint for the player sprite.
 #[must_use]
 pub fn equipped_colorization_tint(armor: Option<&ItemView>) -> [u8; 4] {
@@ -492,7 +501,7 @@ fn build_layer_draw_plan(
       sprite_index,
       tile.sprite,
       tile.lighting_band(),
-      NEUTRAL_COLORIZATION_TINT,
+      tile_colorization_tint(tile.kind),
       viewport.tile_rect(tile.position),
       selection,
     )?;
@@ -940,6 +949,22 @@ mod tests {
   }
 
   #[test]
+  fn tile_colorization_tint_maps_only_pinned_stairs() {
+    assert_eq!(
+      tile_colorization_tint(TileKind::StairsDown),
+      [255, 255, 0, 255]
+    );
+    for tile in [
+      TileKind::Floor,
+      TileKind::Wall,
+      TileKind::DoorClosed,
+      TileKind::DoorOpen,
+    ] {
+      assert_eq!(tile_colorization_tint(tile), [0, 0, 0, 0]);
+    }
+  }
+
+  #[test]
   fn equipped_colorization_tint_uses_observed_armor_only() {
     let armor = ItemView {
       id: drl_protocol::ItemId(7),
@@ -1012,6 +1037,56 @@ mod tests {
         .iter()
         .any(|composite| composite.colorization_tint == [0, 0, 179, 255])
     );
+  }
+
+  #[test]
+  fn stairs_tile_tint_reaches_mask_layer_and_composite() {
+    let stairs = TileKind::StairsDown;
+    let scene = RenderScene {
+      map_width: 1,
+      map_height: 1,
+      player_position: Position::new(0, 0),
+      target_positions: Vec::new(),
+      tiles: vec![SceneTile {
+        position: Position::new(0, 0),
+        kind: stairs,
+        visible: true,
+        explored: true,
+        sprite: tile_sprite(stairs),
+      }],
+      actors: Vec::new(),
+      items: Vec::new(),
+      hud: HudState {
+        turn: 0,
+        player_hp: None,
+        weapon: None,
+        armor: None,
+        inventory_size: 0,
+      },
+    };
+    let viewport = PixelViewport::fit(1, 1, 32, 32);
+    let plan = layer_draw_plan(&scene, viewport);
+    let expected_tint = [255, 255, 0, 255];
+    assert!(
+      plan
+        .iter()
+        .all(|draw| draw.colorization_tint == expected_tint)
+    );
+    let mask = plan
+      .iter()
+      .find(|draw| draw.role == LayerRole::ColorizationMask)
+      .expect("stairs mask layer");
+    assert_eq!(mask.source, mask.atlas.texture_source(mask.layer));
+    assert_eq!(
+      mask.destination,
+      viewport
+        .tile_rect(Position::new(0, 0))
+        .expect("stairs destination")
+    );
+    let composites = sprite_composite_plan(&plan);
+    assert_eq!(composites.len(), 1);
+    assert_eq!(composites[0].colorization_tint, expected_tint);
+    assert_eq!(composites[0].mask, Some(mask.source));
   }
 
   #[test]
