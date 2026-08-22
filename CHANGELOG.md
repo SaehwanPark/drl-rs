@@ -171,6 +171,13 @@ documented in this file.
   `post_process_glow_color`'s `1.6 * blur alpha` add, and the channel-swizzled
   clamped LUT coordinate. Offscreen blur/LUT integration, outline blending,
   and capture-backed color parity remain open.
+- Added `post_process_blur_taps` with explicit horizontal/vertical normalized
+  offsets, effective weights, center-alpha index, and zero-dimension rejection;
+  it remains a renderer-neutral plan with no texture sampling or render-pass
+  ownership.
+- Added pure `post_process_blur_rgba` reduction for weighted RGB and
+  center-only alpha, preserving the tracked shader's no-renormalization and
+  no-clamp behavior.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch

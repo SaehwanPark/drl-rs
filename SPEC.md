@@ -76,11 +76,18 @@ health and caller-supplied elapsed milliseconds. It preserves the observed
 target guard, and `[0, 1]` bound without owning a clock or mutable smoothing
 state. The legacy `aMSec / 500` smoothing, low-life texture, blur/LUT
 compositor, and capture-backed audiovisual parity remain explicitly open.
-The active follow-up now exposes the observed post-process glow add, the
-declared/effective blur weights, and
-channel-swizzled LUT-coordinate normalization as pure renderer helpers. It
+The delivered post-process follow-up exposes the observed glow add, the
+declared/effective blur weights, and channel-swizzled LUT-coordinate
+normalization as pure renderer helpers. It
 does not create blur framebuffers, sample a LUT, blend outline masks, or claim
 capture-backed color parity.
+The active follow-up now exposes pure horizontal/vertical blur tap plans with
+caller-supplied screen dimensions, normalized offsets, effective weights, and
+the observed center-alpha source index, plus a five-sample RGB/center-alpha
+reduction. It rejects zero dimensions and does not execute sampling or own a
+render pass.
+Sampler edge/wrap addressing remains a backend and capture concern; the helper
+does not select it.
 
 ### Observable behavior
 
@@ -133,6 +140,13 @@ capture-backed color parity.
   pinned shader. They consume caller-supplied values only; blur generation,
   LUT sampling, outline blending, and capture parity remain outside the
   current boundary.
+- `drl-render::post_process_blur_taps` emits five normalized horizontal or
+  vertical taps for valid caller-supplied screen dimensions. It preserves the
+  pinned `weights[abs(i)]` effective weights and center-alpha index while
+  rejecting zero dimensions; it performs no texture sampling or scheduling.
+- `drl-render::post_process_blur_rgba` applies those effective weights to five
+  caller-supplied RGB samples without renormalization or clamping and copies
+  only the center sample's alpha.
 - WebGPU uses that shared clear-color rule; health-tone presentation remains an
   effect and cannot reveal hidden world state.
 - `drl-render::effect_timeline` preserves event order and assigns each bounded
