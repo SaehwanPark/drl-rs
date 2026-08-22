@@ -197,8 +197,10 @@ quotient and terminal clamp. Animation lifecycle, palette/sprite rendering,
 backend sampling, and capture-backed parity remain open. The current follow-up
 also adds caller-owned normalized movement progress with the pinned ratio and
 clamp; coordinate interpolation, lighting, and entity lifecycle remain open.
-The blur reduction preserves weighted RGB and center-only alpha without
-renormalization or clamping.
+The current follow-up also adds caller-owned missile step selection with the
+pinned minimum-normalized delay and elapsed quotient; path traversal,
+visibility, and particles remain open. The blur reduction preserves weighted
+RGB and center-only alpha without renormalization or clamping.
 Remaining work is visible outline/glow role-specific shader blending/layer
 compositing, additional per-sprite tint sourcing, broader content metadata;
 capture-backed lighting/LUT parity,

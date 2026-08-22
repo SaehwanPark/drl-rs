@@ -207,6 +207,10 @@ documented in this file.
   the pinned normalized elapsed movement ratio and `[0, 1]` clamp, with
   explicit zero-duration rejection. Coordinates, lighting, entity state,
   lifecycle, interpolation, and capture behavior remain outside the helper.
+- Added pure `drl-render::missile_step_index_at_elapsed` arithmetic for the
+  pinned minimum-normalized step delay and elapsed quotient, with explicit
+  rejection of unrepresentable `u16` step indexes. Path traversal, visibility,
+  particles, lifecycle, and capture behavior remain outside the helper.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch
