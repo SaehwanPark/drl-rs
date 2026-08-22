@@ -35,11 +35,13 @@ types shared by core, MCP, bots, and frontends.
   It has no decoder or platform dependency and core does not depend on it.
 - `drl-render`: deterministic `PresentationStep`, `RenderScene`, target
   candidates, bounded event-to-effect builders, observation-independent
-  `PixelViewport`/`PixelRect` layout math, and visibility-derived
+  `PixelViewport`/`PixelRect` layout math, visibility-derived
   `LightingBand`/`shade_color` rules, health-derived `SceneTone`/clear color,
-  and event-ordered `EffectSpan` timing. It consumes player observations/events
-  only; GPU ownership is in the WASM shell. `drl-web` carries fair,
-  visibility-filtered spans through each successful `PresentationStep`.
+  event-ordered `EffectSpan` timing, and renderer-neutral `LayerDraw` plans
+  carrying atlas layers, pixel destinations, and normalized UVs. It consumes
+  player observations/events only; GPU ownership is in the WASM shell.
+  `drl-web` carries fair, visibility-filtered spans through each successful
+  `PresentationStep`.
 - `drl-audio`: deterministic event-to-`AudioCue` mapping and a WASM Web Audio
   mixer with explicit user-gesture unlock, mute, and volume state.
 - `drl-web`: `cdylib + rlib` browser session, Winit/DOM command mapping,
@@ -76,6 +78,10 @@ types shared by core, MCP, bots, and frontends.
   performed at this boundary.
 - `SpriteRect::uv_rect` converts bounded image-space cells to normalized
   top-left-origin UVs. A backend owns any texture-origin inversion.
+- `layer_draw_plan` emits atlas layers in scene order (tiles, items, actors),
+  retaining explored tile memory for fog presentation while omitting unknown
+  tiles and invalid/off-viewport geometry. It is metadata and geometry only:
+  no decoder, texture upload, blending, or sampling occurs here.
 - `PresentationStep::effects` is computed at the command boundary from the
   returned event list and visible actor sets. Ordinary effects require both
   endpoints; terminal hit/death effects use pre-step visibility. Rejected

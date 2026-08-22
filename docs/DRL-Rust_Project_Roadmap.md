@@ -46,8 +46,8 @@ automated regressions, and human review.
 - The current M8 atlas-descriptor slice replaces placeholder cells with
   pinned-legacy 32-pixel sprite slots and verified imported-sheet dimensions;
   the follow-up layer metadata now preserves registered source-layer order;
-  normalized UV geometry is now available; texture compositing and
-  capture-backed parity remain open.
+  normalized UV geometry and a renderer-neutral layer draw plan are now
+  available; texture compositing and capture-backed parity remain open.
 - `SPEC.md` contains the single active M8 slice; it is not a second roadmap.
 
 ## Milestones
@@ -131,10 +131,11 @@ observation-independent viewport math chooses centered integer square cells for
 the WebGPU surface. The baseline visible-versus-explored fog band is also
 centralized in `drl-render`; capture-backed lighting/LUT parity remains open.
 Measured atlas rectangles for all currently implemented semantics now come from
-the pinned 16-column legacy grid, with pure bounds checks. Remaining work is
-registered layer metadata now carries exact atlas source sets in deterministic
-order, and pure UV geometry is available for future texture consumers.
-Remaining work is texture/layer compositing; implement
+the pinned 16-column legacy grid, with pure bounds checks. Registered layer
+metadata now carries exact atlas source sets in deterministic order, pure UV
+geometry is available, and `drl-render::layer_draw_plan` converts fair scenes
+into ordered pixel/UV operations. Remaining work is texture/layer compositing;
+implement
 capture-backed lighting/LUT parity,
 particles, animation/effect timing, HUD typography, cleared legacy or
 replacement audio, music transitions, and automated visual/audio regressions
