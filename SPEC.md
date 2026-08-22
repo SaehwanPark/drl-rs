@@ -84,11 +84,16 @@ declared/effective blur weights, and channel-swizzled LUT-coordinate
 normalization as pure renderer helpers. It
 does not create blur framebuffers, sample a LUT, blend outline masks, or claim
 capture-backed color parity.
-The active follow-up now exposes pure horizontal/vertical blur tap plans with
+The preceding follow-up exposed pure horizontal/vertical blur tap plans with
 caller-supplied screen dimensions, normalized offsets, effective weights, and
 the observed center-alpha source index, plus a five-sample RGB/center-alpha
 reduction. It rejects zero dimensions and does not execute sampling or own a
 render pass.
+The active follow-up now exposes `drl_render::post_process_pass_plan`, which
+distinguishes direct scene drawing from captured-scene processing and preserves
+the observed optional horizontal/vertical blur then composite order across
+glow/LUT gates. It owns no framebuffer, texture, sampler, scheduling, or
+capture-parity behavior.
 Sampler edge/wrap addressing remains a backend and capture concern; the helper
 does not select it.
 
@@ -154,6 +159,11 @@ does not select it.
 - `drl-render::post_process_blur_rgba` applies those effective weights to five
   caller-supplied RGB samples without renormalization or clamping and copies
   only the center sample's alpha.
+- `drl-render::post_process_pass_plan` returns the bounded logical stage order:
+  direct scene when both gates are off, captured scene plus composite for
+  LUT-only, and captured scene plus horizontal blur, vertical blur, and
+  composite when glow is enabled. The returned feature flags do not validate
+  resources or execute a backend pass.
 - WebGPU uses that shared clear-color rule; health-tone presentation remains an
   effect and cannot reveal hidden world state.
 - `drl-render::effect_timeline` preserves event order and assigns each bounded

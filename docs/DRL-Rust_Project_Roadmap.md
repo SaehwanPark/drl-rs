@@ -184,10 +184,12 @@ The preceding bounded follow-up recorded the pinned declared/effective
 post-process blur weights, glow add, and LUT-coordinate normalization as pure
 renderer contracts without claiming an offscreen GPU pipeline or
 capture-backed color parity.
-The current follow-up adds pure horizontal/vertical blur-tap plans with
-caller-supplied screen dimensions; execution and capture-backed parity remain
-open. Its pure five-sample reduction preserves weighted RGB and center-only
-alpha without renormalization or clamping; backend sampling remains open.
+The preceding follow-up added pure horizontal/vertical blur-tap plans with
+caller-supplied screen dimensions and a five-sample RGB/center-alpha reduction.
+The current follow-up adds the pure direct-versus-captured post-process pass
+order across glow/LUT gates; execution, backend sampling, and capture-backed
+parity remain open. The reduction preserves weighted RGB and center-only alpha
+without renormalization or clamping.
 Remaining work is visible outline/glow role-specific shader blending/layer
 compositing, additional per-sprite tint sourcing, broader content metadata;
 capture-backed lighting/LUT parity,

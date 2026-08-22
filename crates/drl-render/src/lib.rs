@@ -357,6 +357,71 @@ pub fn post_process_lut_coordinate(color_rgb: [f32; 3]) -> [f32; 3] {
   ]
 }
 
+/// One stage in the pinned post-process draw sequence.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum PostProcessPass {
+  DirectScene,
+  CaptureScene,
+  HorizontalBlur,
+  VerticalBlur,
+  Composite,
+}
+
+/// Renderer-neutral order for the optional post-process stages.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct PostProcessPassPlan {
+  passes: [PostProcessPass; 4],
+  pass_count: u8,
+  /// Whether the blur stages and glow contribution are enabled.
+  pub glow_enabled: bool,
+  /// Whether the composite stage should sample a caller-provided LUT.
+  pub lut_enabled: bool,
+}
+
+impl PostProcessPassPlan {
+  /// Returns the active stages in their observed execution order.
+  #[must_use]
+  pub fn ordered_passes(&self) -> &[PostProcessPass] {
+    &self.passes[..usize::from(self.pass_count.min(self.passes.len() as u8))]
+  }
+}
+
+/// Plans the pinned scene, optional blur, and composite sequence.
+///
+/// With neither feature enabled, the legacy path draws the scene directly.
+/// When glow or LUT processing is enabled, the scene is captured first,
+/// optional horizontal/vertical blur stages run in that order, and the final
+/// composite stage consumes the captured inputs. This function owns no GPU
+/// resources, sampling, scheduling, or capture-parity claim.
+#[must_use]
+pub fn post_process_pass_plan(glow_enabled: bool, lut_enabled: bool) -> PostProcessPassPlan {
+  let mut passes = [PostProcessPass::DirectScene; 4];
+  let mut pass_count = 1_u8;
+
+  if glow_enabled || lut_enabled {
+    passes[0] = PostProcessPass::CaptureScene;
+  }
+
+  if glow_enabled {
+    passes[usize::from(pass_count)] = PostProcessPass::HorizontalBlur;
+    pass_count += 1;
+    passes[usize::from(pass_count)] = PostProcessPass::VerticalBlur;
+    pass_count += 1;
+  }
+
+  if glow_enabled || lut_enabled {
+    passes[usize::from(pass_count)] = PostProcessPass::Composite;
+    pass_count += 1;
+  }
+
+  PostProcessPassPlan {
+    passes,
+    pass_count,
+    glow_enabled,
+    lut_enabled,
+  }
+}
+
 /// Integer pixel bounds for one logical map cell.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct PixelRect {
@@ -1234,6 +1299,42 @@ mod tests {
       post_process_lut_coordinate([-1.0, 2.0, 0.0]),
       [0.0, 1.0 / 32.0, 1.0]
     );
+  }
+
+  #[test]
+  fn post_process_pass_plan_preserves_all_gate_combinations() {
+    let direct = post_process_pass_plan(false, false);
+    assert_eq!(direct.ordered_passes(), &[PostProcessPass::DirectScene]);
+    assert!(!direct.glow_enabled);
+    assert!(!direct.lut_enabled);
+
+    let lut_only = post_process_pass_plan(false, true);
+    assert_eq!(
+      lut_only.ordered_passes(),
+      &[PostProcessPass::CaptureScene, PostProcessPass::Composite]
+    );
+    assert!(!lut_only.glow_enabled);
+    assert!(lut_only.lut_enabled);
+
+    let glow_only = post_process_pass_plan(true, false);
+    assert_eq!(
+      glow_only.ordered_passes(),
+      &[
+        PostProcessPass::CaptureScene,
+        PostProcessPass::HorizontalBlur,
+        PostProcessPass::VerticalBlur,
+        PostProcessPass::Composite,
+      ]
+    );
+    assert!(glow_only.glow_enabled);
+    assert!(!glow_only.lut_enabled);
+
+    let glow_and_lut = post_process_pass_plan(true, true);
+    assert_eq!(glow_and_lut.ordered_passes(), glow_only.ordered_passes());
+    assert_eq!(glow_and_lut.ordered_passes().len(), 4);
+    assert_eq!(glow_and_lut, post_process_pass_plan(true, true));
+    assert!(glow_and_lut.glow_enabled);
+    assert!(glow_and_lut.lut_enabled);
   }
 
   #[test]

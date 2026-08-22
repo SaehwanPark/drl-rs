@@ -182,6 +182,10 @@ documented in this file.
 - Added pure `post_process_blur_rgba` reduction for weighted RGB and
   center-only alpha, preserving the tracked shader's no-renormalization and
   no-clamp behavior.
+- Added pure `post_process_pass_plan` sequencing for direct scene draws and the
+  observed captured-scene, optional horizontal/vertical blur, and composite
+  stages across glow/LUT gate combinations. It owns no GPU resources, sampling,
+  or capture-parity claim.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch

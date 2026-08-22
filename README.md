@@ -105,10 +105,10 @@ legacy graphics metadata; it is not a dependency of the core.
   It also exposes the pure source-derived low-health pulse target and a
   caller-owned smoothing/decay step from fair health and elapsed time; texture
   compositing remains presentation-backend work. The post-process helpers preserve the pinned
-  glow add and LUT coordinate math without creating a browser post-process
-  pipeline, and the blur-tap planner exposes normalized caller-sized offsets
-  without executing sampling; its pure five-sample reducer preserves weighted
-  RGB and center-only alpha.
+  glow add, LUT coordinate math, and direct/captured pass ordering without
+  creating a browser post-process pipeline, and the blur-tap planner exposes
+  normalized caller-sized offsets without executing sampling; its pure
+  five-sample reducer preserves weighted RGB and center-only alpha.
 - `crates/drl-audio`: semantic cues and WASM Web Audio mixer.
 - `crates/drl-web`: browser session, validated same-origin texture-source
   loading, renderer-owned WebGPU texture uploads, the partial base/mask/
