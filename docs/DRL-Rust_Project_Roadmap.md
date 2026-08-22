@@ -194,9 +194,11 @@ The current follow-up adds caller-owned kill-animation segment selection with
 the pinned lead-delay, reverse-branch, quotient, and terminal-clamp rules;
 the follow-up also adds caller-owned FX frame selection with the pinned
 quotient and terminal clamp. Animation lifecycle, palette/sprite rendering,
-backend sampling, and capture-backed parity remain open. The blur reduction
-preserves weighted RGB and center-only alpha without renormalization or
-clamping.
+backend sampling, and capture-backed parity remain open. The current follow-up
+also adds caller-owned normalized movement progress with the pinned ratio and
+clamp; coordinate interpolation, lighting, and entity lifecycle remain open.
+The blur reduction preserves weighted RGB and center-only alpha without
+renormalization or clamping.
 Remaining work is visible outline/glow role-specific shader blending/layer
 compositing, additional per-sprite tint sourcing, broader content metadata;
 capture-backed lighting/LUT parity,

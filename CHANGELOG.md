@@ -203,6 +203,10 @@ documented in this file.
   the pinned FX frame quotient and terminal clamp, with explicit zero-duration
   and zero-frame rejection. Sprite IDs, atlas columns, lifecycle, and capture
   behavior remain outside the helper.
+- Added pure `drl-render::move_animation_progress_at_elapsed` arithmetic for
+  the pinned normalized elapsed movement ratio and `[0, 1]` clamp, with
+  explicit zero-duration rejection. Coordinates, lighting, entity state,
+  lifecycle, interpolation, and capture behavior remain outside the helper.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch

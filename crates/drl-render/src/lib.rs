@@ -222,6 +222,21 @@ pub fn fx_animation_frame_index_at_elapsed(
   u16::try_from(frame_index).ok()
 }
 
+/// Returns the caller-owned movement progress at elapsed time.
+///
+/// The legacy movement draw computes `Clampf(elapsed / duration, 0, 1)` before
+/// interpolating position and light. Zero duration is rejected; this helper
+/// owns no coordinates, entity state, lighting, interpolation, or lifecycle.
+#[must_use]
+pub fn move_animation_progress_at_elapsed(elapsed_units: u64, duration_units: u64) -> Option<f32> {
+  if duration_units == 0 {
+    return None;
+  }
+
+  let progress = elapsed_units as f64 / duration_units as f64;
+  Some(progress.min(1.0) as f32)
+}
+
 /// Visibility-derived presentation bands for deterministic scene shading.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum LightingBand {
@@ -2151,6 +2166,22 @@ mod tests {
       fx_animation_frame_index_at_elapsed(u64::MAX, u64::MAX, u16::MAX),
       Some(u16::MAX - 1)
     );
+  }
+
+  #[test]
+  fn move_animation_progress_clamps_normalized_elapsed_time() {
+    assert_eq!(move_animation_progress_at_elapsed(0, 100), Some(0.0));
+    assert_eq!(move_animation_progress_at_elapsed(25, 100), Some(0.25));
+    assert_eq!(move_animation_progress_at_elapsed(1, 3), Some(1.0 / 3.0));
+    assert_eq!(move_animation_progress_at_elapsed(100, 100), Some(1.0));
+    assert_eq!(move_animation_progress_at_elapsed(101, 100), Some(1.0));
+    assert_eq!(move_animation_progress_at_elapsed(u64::MAX, 1), Some(1.0));
+  }
+
+  #[test]
+  fn move_animation_progress_rejects_zero_duration() {
+    assert_eq!(move_animation_progress_at_elapsed(0, 0), None);
+    assert_eq!(move_animation_progress_at_elapsed(u64::MAX, 0), None);
   }
 
   #[test]
