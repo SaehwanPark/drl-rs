@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.10`
+Current project version: `0.2.11`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -239,6 +239,12 @@ Presentation Boundary
 - **Bounded Decal Store**: `ParticleDecalStore` retains requests in strict
   insertion order with caller-configured capacity, reporting overflow without
   dropping prior entries.
+- **Decal Draw Planning**: `particle_decal_draw_plan` resolves opaque,
+  caller-provided sprite handles to complete atlas layer groups, uses stored
+  pixel placement for sub-cell offsets, carries caller-resolved lighting,
+  omits unknown/out-of-viewport entries, and leaves the store unchanged.
+  Combined scene plans place decals between terrain and ordinary objects;
+  WebGPU owns batching and resource binding.
 
 ### 4.6 Browser & WebGPU Integration
 - **Texture Cache**: Imported atlas PNGs are loaded same-origin, dimension-

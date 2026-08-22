@@ -6,8 +6,10 @@
 
 use drl_assets::{AtlasTextureSource, SpriteLayer};
 use drl_render::{
-  AnimationPlayback, PixelRect, PixelViewport, RenderScene, layer_draw_plan,
-  layer_draw_plan_at_elapsed, sprite_composite_plan,
+  AnimationPlayback, ParticleDecalSprite, ParticleDecalStore, PixelRect, PixelViewport,
+  RenderScene, layer_draw_plan, layer_draw_plan_at_elapsed,
+  layer_draw_plan_at_elapsed_with_particle_decals, layer_draw_plan_with_particle_decals,
+  sprite_composite_plan,
 };
 use wasm_bindgen::JsValue;
 use wgpu::util::DeviceExt;
@@ -370,7 +372,25 @@ impl BaseTexturePipeline {
     canvas_width: u32,
     canvas_height: u32,
   ) -> bool {
-    self.covers_scene_with_selection(scene, canvas_width, canvas_height, None)
+    self.covers_scene_with_selection(scene, canvas_width, canvas_height, None, None)
+  }
+
+  /// Returns true when the scene and retained decal requests are drawable.
+  pub(crate) fn covers_scene_with_particle_decals(
+    &self,
+    scene: &RenderScene,
+    canvas_width: u32,
+    canvas_height: u32,
+    store: &ParticleDecalStore,
+    sprites: &[ParticleDecalSprite],
+  ) -> bool {
+    self.covers_scene_with_selection(
+      scene,
+      canvas_width,
+      canvas_height,
+      None,
+      Some((store, sprites)),
+    )
   }
 
   /// Returns true when an elapsed-time layer plan can be drawn from the cache.
@@ -387,17 +407,20 @@ impl BaseTexturePipeline {
       canvas_width,
       canvas_height,
       Some((elapsed_ms, playback)),
+      None,
     )
   }
 
-  fn covers_scene_with_selection(
+  pub(crate) fn covers_scene_with_selection(
     &self,
     scene: &RenderScene,
     canvas_width: u32,
     canvas_height: u32,
     elapsed: Option<(u64, AnimationPlayback)>,
+    particle_decals: Option<(&ParticleDecalStore, &[ParticleDecalSprite])>,
   ) -> bool {
-    let (vertices, batches) = base_texture_vertices(scene, canvas_width, canvas_height, elapsed);
+    let (vertices, batches) =
+      base_texture_vertices(scene, canvas_width, canvas_height, elapsed, particle_decals);
     !vertices.is_empty()
       && !self.bindings.is_empty()
       && batches.iter().all(|batch| {
@@ -428,6 +451,31 @@ impl BaseTexturePipeline {
       canvas_width,
       canvas_height,
       None,
+      None,
+    );
+  }
+
+  /// Draws the scene and retained decal requests in deterministic order.
+  pub(crate) fn draw_with_particle_decals(
+    &self,
+    device: &wgpu::Device,
+    encoder: &mut wgpu::CommandEncoder,
+    view: &wgpu::TextureView,
+    scene: &RenderScene,
+    canvas_width: u32,
+    canvas_height: u32,
+    store: &ParticleDecalStore,
+    sprites: &[ParticleDecalSprite],
+  ) {
+    self.draw_with_selection(
+      device,
+      encoder,
+      view,
+      scene,
+      canvas_width,
+      canvas_height,
+      None,
+      Some((store, sprites)),
     );
   }
 
@@ -451,6 +499,33 @@ impl BaseTexturePipeline {
       canvas_width,
       canvas_height,
       Some((elapsed_ms, playback)),
+      None,
+    );
+  }
+
+  /// Draws elapsed-time scene sprites and retained decal requests.
+  pub(crate) fn draw_at_elapsed_with_particle_decals(
+    &self,
+    device: &wgpu::Device,
+    encoder: &mut wgpu::CommandEncoder,
+    view: &wgpu::TextureView,
+    scene: &RenderScene,
+    canvas_width: u32,
+    canvas_height: u32,
+    elapsed_ms: u64,
+    playback: AnimationPlayback,
+    store: &ParticleDecalStore,
+    sprites: &[ParticleDecalSprite],
+  ) {
+    self.draw_with_selection(
+      device,
+      encoder,
+      view,
+      scene,
+      canvas_width,
+      canvas_height,
+      Some((elapsed_ms, playback)),
+      Some((store, sprites)),
     );
   }
 
@@ -463,8 +538,10 @@ impl BaseTexturePipeline {
     canvas_width: u32,
     canvas_height: u32,
     elapsed: Option<(u64, AnimationPlayback)>,
+    particle_decals: Option<(&ParticleDecalStore, &[ParticleDecalSprite])>,
   ) {
-    let (vertices, batches) = base_texture_vertices(scene, canvas_width, canvas_height, elapsed);
+    let (vertices, batches) =
+      base_texture_vertices(scene, canvas_width, canvas_height, elapsed, particle_decals);
     if vertices.is_empty() || self.bindings.is_empty() {
       return;
     }
@@ -559,6 +636,7 @@ fn base_texture_vertices(
   canvas_width: u32,
   canvas_height: u32,
   elapsed: Option<(u64, AnimationPlayback)>,
+  particle_decals: Option<(&ParticleDecalStore, &[ParticleDecalSprite])>,
 ) -> (Vec<u8>, Vec<TextureBatch>) {
   let viewport = PixelViewport::fit(
     scene.map_width,
@@ -566,12 +644,21 @@ fn base_texture_vertices(
     canvas_width,
     canvas_height,
   );
-  let plan = elapsed.map_or_else(
-    || layer_draw_plan(scene, viewport),
-    |(elapsed_ms, playback)| {
+  let plan = match (elapsed, particle_decals) {
+    (None, None) => layer_draw_plan(scene, viewport),
+    (Some((elapsed_ms, playback)), None) => {
       layer_draw_plan_at_elapsed(scene, viewport, elapsed_ms, playback).unwrap_or_default()
-    },
-  );
+    }
+    (None, Some((store, sprites))) => {
+      layer_draw_plan_with_particle_decals(scene, viewport, store, sprites)
+    }
+    (Some((elapsed_ms, playback)), Some((store, sprites))) => {
+      layer_draw_plan_at_elapsed_with_particle_decals(
+        scene, viewport, elapsed_ms, playback, store, sprites,
+      )
+      .unwrap_or_default()
+    }
+  };
   let composites = sprite_composite_plan(&plan);
   let mut vertices = Vec::new();
   let mut batches = Vec::new();

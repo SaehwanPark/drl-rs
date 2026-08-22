@@ -7,10 +7,12 @@
 mod animation;
 mod outline;
 mod particle_decal;
+mod particle_decal_plan;
 
 pub use animation::{AnimationPlayback, animation_frame_index_at_elapsed};
 pub use outline::outline_mask_composite;
 pub use particle_decal::{ParticleDecalStorageError, ParticleDecalStore};
+pub use particle_decal_plan::{ParticleDecalSprite, particle_decal_draw_plan};
 
 use drl_assets::{
   AtlasId, AtlasTextureSource, LayerRole, SpriteAnimation, SpriteDescriptor, SpriteLayer, SpriteUv,
@@ -1179,6 +1181,77 @@ pub fn layer_draw_plan_at_elapsed(
   )
 }
 
+fn insert_particle_decal_draws(
+  plan: &mut Vec<LayerDraw>,
+  scene: &RenderScene,
+  viewport: PixelViewport,
+  store: &ParticleDecalStore,
+  sprites: &[ParticleDecalSprite],
+) {
+  let mut decals = particle_decal_draw_plan(store, viewport, sprites);
+  let Some(decal_span) = decals
+    .iter()
+    .map(|draw| draw.sprite_index)
+    .max()
+    .and_then(|index| index.checked_add(1))
+  else {
+    return;
+  };
+
+  // `build_layer_draw_plan` reserves one sprite index for each tile that is
+  // eligible for the fair scene (visible or explored), even when its viewport
+  // rectangle produces no layers. The first item/actor index therefore
+  // remains this emitted-terrain boundary.
+  let tile_group_count = u32::try_from(
+    scene
+      .tiles
+      .iter()
+      .filter(|tile| tile.visible || tile.explored)
+      .count(),
+  )
+  .unwrap_or(u32::MAX);
+  let insertion_index = plan
+    .iter()
+    .position(|draw| draw.sprite_index >= tile_group_count)
+    .unwrap_or(plan.len());
+  for draw in plan.iter_mut().skip(insertion_index) {
+    draw.sprite_index = draw.sprite_index.saturating_add(decal_span);
+  }
+  for draw in &mut decals {
+    draw.sprite_index = draw.sprite_index.saturating_add(tile_group_count);
+  }
+  plan.splice(insertion_index..insertion_index, decals);
+}
+
+/// Builds a scene layer plan with retained particle decals between terrain and
+/// ordinary items/actors, preserving both scene ordering and decal order.
+#[must_use]
+pub fn layer_draw_plan_with_particle_decals(
+  scene: &RenderScene,
+  viewport: PixelViewport,
+  store: &ParticleDecalStore,
+  sprites: &[ParticleDecalSprite],
+) -> Vec<LayerDraw> {
+  let mut plan = layer_draw_plan(scene, viewport);
+  insert_particle_decal_draws(&mut plan, scene, viewport, store, sprites);
+  plan
+}
+
+/// Builds an elapsed-time scene layer plan with retained particle decals.
+#[must_use]
+pub fn layer_draw_plan_at_elapsed_with_particle_decals(
+  scene: &RenderScene,
+  viewport: PixelViewport,
+  elapsed_ms: u64,
+  playback: AnimationPlayback,
+  store: &ParticleDecalStore,
+  sprites: &[ParticleDecalSprite],
+) -> Option<Vec<LayerDraw>> {
+  let mut plan = layer_draw_plan_at_elapsed(scene, viewport, elapsed_ms, playback)?;
+  insert_particle_decal_draws(&mut plan, scene, viewport, store, sprites);
+  Some(plan)
+}
+
 fn composite_group(draws: &[LayerDraw]) -> Option<SpriteComposite> {
   let first = draws.first()?;
   let expected_layers = first.atlas.layers();
@@ -1449,6 +1522,7 @@ pub fn renderer_name() -> &'static str {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use drl_assets::SpriteRect;
   use drl_core::{Game, scenario::Scenario};
   use drl_protocol::{ItemSpawnKind, PlayerSpawnConfig};
 
@@ -2005,6 +2079,68 @@ mod tests {
       first_actor_composite.animation,
       first_actor.sprite.animation
     );
+  }
+
+  #[test]
+  fn particle_decals_are_inserted_between_tiles_and_actors() {
+    let game = Game::new_arena(42, 12, 10).expect("arena");
+    let scene = RenderScene::from_observation(&game.observe_player());
+    let viewport = PixelViewport::fit(scene.map_width, scene.map_height, 960, 640);
+    let mut store = ParticleDecalStore::new(2);
+    store
+      .try_insert(ParticleDecalInsertion {
+        placement: ParticleDecalPlacement {
+          cell: [1, 1],
+          pixel: [32, 32],
+        },
+        sprite_id: 7,
+      })
+      .expect("retain decal");
+    let sprites = [ParticleDecalSprite {
+      sprite_id: 7,
+      descriptor: SpriteDescriptor {
+        atlas: AtlasId::Fx,
+        rect: SpriteRect::new(0, 0, 32, 32),
+        layers: &[SpriteLayer::Base, SpriteLayer::Mask, SpriteLayer::Emissive],
+        animation: None,
+      },
+      lighting: LightingBand::Visible,
+    }];
+
+    let plan = layer_draw_plan_with_particle_decals(&scene, viewport, &store, &sprites);
+    let decal = plan
+      .iter()
+      .position(|draw| draw.atlas == AtlasId::Fx)
+      .expect("decal draw");
+    let first_actor = plan
+      .iter()
+      .position(|draw| draw.atlas == scene.actors[0].sprite.atlas)
+      .expect("actor draw");
+    assert!(decal > 0);
+    assert!(decal < first_actor);
+    assert_eq!(
+      plan[decal].destination,
+      viewport.tile_rect(Position::new(0, 0)).unwrap()
+    );
+    assert_eq!(
+      sprite_composite_plan(&plan).len(),
+      sprite_composite_plan(&layer_draw_plan(&scene, viewport)).len() + 1
+    );
+
+    let mut omitted_scene = scene.clone();
+    omitted_scene.tiles[0].visible = false;
+    omitted_scene.tiles[0].explored = false;
+    let omitted_plan =
+      layer_draw_plan_with_particle_decals(&omitted_scene, viewport, &store, &sprites);
+    let omitted_decal = omitted_plan
+      .iter()
+      .position(|draw| draw.atlas == AtlasId::Fx)
+      .expect("decal after omitted tile");
+    let omitted_actor = omitted_plan
+      .iter()
+      .position(|draw| draw.atlas == omitted_scene.actors[0].sprite.atlas)
+      .expect("actor after omitted tile");
+    assert!(omitted_decal < omitted_actor);
   }
 
   #[test]

@@ -31,7 +31,7 @@ replays, and regression testing.
     shot accuracy, damage, kill, pickup, and item-use totals/rates without
     inferring balance conclusions.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.10`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.11`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:
@@ -46,8 +46,10 @@ replays, and regression testing.
   - Pure contracts cover effect timing, low-health tone/pulse, explosion marks,
     movement and missile progress, screen-shake fade, particle origins,
     burst directions/range sampling, decal cell/placement/eligibility,
-    caller-owned insertion requests, deterministic bounded decal storage, and
-    post-process glow/LUT math without claiming full backend fidelity.
+    caller-owned insertion requests, deterministic bounded decal storage,
+    stored-pixel decal draw planning with opaque sprite-handle resolution, and
+    BrowserSession-to-WebGPU decal consumption without claiming full backend
+    fidelity.
 - Staged work:
   - Full audiovisual equivalence, broader content migration, PWA persistence,
     and support for other browsers remain roadmap work.

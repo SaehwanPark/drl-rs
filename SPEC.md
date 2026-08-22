@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.10`
+Current project version: `0.2.11`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -57,23 +57,34 @@ core.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [ ] **Deterministic Consumption**: Read requests from
+- [x] **Deterministic Consumption**: Read requests from
   `ParticleDecalStore::entries()` in strict insertion order without altering
-  duplicate entries.
-- [ ] **Renderer Decoupling**: Keep sprite texture lookup, layer resolution, and
+  duplicate entries; requests outside the visible viewport or without a
+  caller-provided sprite descriptor are omitted without changing the store.
+  Sprite IDs remain opaque caller-resolved handles (the legacy convention is
+  a packed layer/cell handle), and stored pixel placement is retained for
+  sub-cell draw geometry. The caller also supplies each decal's lighting band;
+  the renderer does not infer hidden visibility.
+- [x] **Renderer Decoupling**: Keep sprite texture lookup, layer resolution, and
   WebGPU resource binding strictly within `drl-render` and `drl-web`.
-- [ ] **Simulation Independence**: Ensure decal rendering does not access
+- [x] **Simulation Independence**: Ensure decal rendering does not access
   `World`, modify simulation state, spawn commands, or alter PRNG streams.
-- [ ] **Native Contract Tests**: Add focused unit tests verifying decal draw
-  generation from store entries.
+- [x] **Native Contract Tests**: Add focused unit tests verifying decal draw
+  generation from store entries, insertion order, duplicate retention,
+  viewport filtering, unknown-sprite omission, and store immutability.
+- [x] **Browser Consumption**: Include the renderer-neutral decal plan in the
+  existing textured WebGPU pass using the same source-specific bindings as
+  scene sprites.
 - [ ] **Capture Gate**: Keep full visual and display parity gated on approved
   reference captures (`NOT_RUN` on macOS arm64).
 
 ### 2.4 Pure Contract
 
 - **Input**: `&ParticleDecalStore` entries, visible viewport bounds, and atlas
-  sprite descriptors.
-- **Output**: Render-ready decal draw plan or vertex buffer inputs.
+  sprite descriptors. The descriptor table resolves opaque caller-provided
+  sprite IDs; the store does not infer an atlas or hard-code blood slots.
+- **Output**: Render-ready decal draw plan or vertex buffer inputs, preserving
+  request order and duplicates for accepted visible entries.
 - **Ownership Boundary**:
   - `drl-render` owns draw planning and UV coordinate generation.
   - `drl-web` owns WebGPU pipeline bindings and texture sampling.
@@ -82,6 +93,15 @@ core.
 ---
 
 ## 3. Recent Delivered Slices
+
+### M8 — Particle-Decal Renderer Integration (`VERSION` 0.2.11)
+
+- [x] Resolved opaque caller-provided sprite handles through presentation-only
+  descriptor tables without guessing a legacy blood atlas or slot.
+- [x] Preserved stored-pixel sub-cell placement and inserted decals between
+  terrain and ordinary objects in renderer-neutral plans.
+- [x] Added browser WebGPU entry points and native ordering/immutability tests;
+  capture-backed visual parity remains `NOT_RUN`.
 
 ### M8 — Particle-Decal Storage Boundary (`VERSION` 0.2.10)
 
@@ -194,7 +214,7 @@ core.
 
 ## 6. Verification Gates
 
-### Verified Baseline (`VERSION` 0.2.10)
+### Verified Baseline (`VERSION` 0.2.11)
 
 - [x] `sh scripts/check-repository.sh` — Full repository test suite, formatting,
   clippy, and harness checks.

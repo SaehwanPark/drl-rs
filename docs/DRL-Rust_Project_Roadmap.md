@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.10`
+Current project version: `0.2.11`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.10)
+## 3. Current Progress Summary (`VERSION` 0.2.11)
 
 ### Delivered Foundations
 
@@ -81,8 +81,8 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active Milestone Slice (M8)**: Particle-decal renderer integration
-  consuming retained decal store requests into WebGPU draw passes.
+- **Active Milestone Slice (M8)**: None; the bounded particle-decal renderer
+  integration is delivered and verified locally.
 - **Open Audiovisual Parity (M8)**: Exact legacy outline/glow and lighting/LUT
   equations from reference captures, HUD typography, and replacement audio.
 - **Controlled Reference Captures (M3, M7, M8)**: Runtime captures are `NOT_RUN`
@@ -283,18 +283,22 @@ rigorous contracts.
 - [x] Pure particle-decal insertion request (`ParticleDecalInsertion`).
 - [x] Deterministic, caller-bounded `ParticleDecalStore` with explicit capacity
   enforcement.
+- [x] Renderer-neutral particle-decal draw planning with opaque caller-resolved
+  handles, stored-pixel placement, stable ordering, viewport filtering, and
+  floor-level insertion into scene plans.
 
 #### Present Slice (Expanded in `SPEC.md`)
 
-- [ ] Consume retained requests from `ParticleDecalStore::entries()` into
-  renderer draw passes without mutating store or simulation state.
+- [x] Consume retained requests from `ParticleDecalStore::entries()` into
+  renderer draw passes without mutating store or simulation state. Full
+  capture-backed visual parity remains `NOT_RUN`.
 
 #### Open Work
 
 - [ ] Exact legacy outline/glow and lighting/LUT equations from approved
   reference captures.
 - [ ] Broader tint sources and content animation/effect timing.
-- [ ] Particle decal renderer integration and visual regressions.
+- [ ] Capture-backed particle decal visual regressions.
 - [ ] HUD typography, layout, and minimap parity.
 - [ ] Rights-cleared replacement audio and music tracks.
 - [ ] Automated pixel-level and audio regression test harness.

@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.11]
+
+- Added renderer-neutral particle-decal draw planning with opaque,
+  caller-resolved sprite handles, stored-pixel sub-cell placement, stable
+  insertion/duplicate ordering, caller-resolved lighting, viewport filtering,
+  and floor-level scene ordering.
+- Added browser WebGPU entry points that consume retained decal plans without
+  touching simulation state; capture-backed visual parity remains `NOT_RUN`.
+
 ## [0.2.10]
 
 - Added deterministic, caller-bounded `ParticleDecalStore` retention for
