@@ -215,6 +215,9 @@ The current M9 content slice adds a Rust-owned `MonsterKind::definition()` table
 for the four implemented archetypes and routes actor factories/generated spawns
 through it without changing current values or replay schemas. Legacy numeric
 parity and broader Lua/content migration remain open.
+The current follow-up also routes game death drops through the existing typed
+`Item::from_spawn_kind` factory with all nine current spawn variants covered;
+item balance, legacy parity, and broader content migration remain open.
 Remaining work is visible outline/glow role-specific shader blending/layer
 compositing, additional per-sprite tint sourcing, broader content metadata;
 capture-backed lighting/LUT parity,

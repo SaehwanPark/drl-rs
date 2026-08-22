@@ -228,6 +228,9 @@ documented in this file.
   archetypes and routed actor factories/generated spawns through it, including
   knockback and death-drop metadata. Existing values and replay schemas remain
   unchanged; divergent legacy numeric values are not claimed as migrated.
+- Routed game death drops through the existing `Item::from_spawn_kind` factory
+  and added nine-variant coverage; item payloads, IDs, events, and replay
+  behavior remain unchanged.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch
