@@ -111,7 +111,9 @@ types shared by core, MCP, bots, and frontends.
   the base-color pass samples those views with nearest filtering, and the
   paired emissive view raises the fair lighting floor from its red channel.
   Missing emissive roles use a retained transparent 1x1 fallback; mask,
-  colorization, and outline/glow compositing remain later boundaries.
+  colorization, and outline/glow compositing remain later boundaries. The WGSL
+  pass discards base fragments below the verified `0.1` alpha cutoff before
+  source-alpha blending.
 - `LayerDraw::lighting` carries the fair visibility band for the source sprite;
   explored tile memory is shaded by the shared fog factor and visible scene
   sprites use full light. A compositor must not derive this from hidden state.

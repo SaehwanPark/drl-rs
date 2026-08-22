@@ -42,6 +42,12 @@ fn emissive_lighting_floor(lighting: f32, emissive: f32) -> f32 {
   lighting.max(emissive)
 }
 
+/// Matches the legacy shader's minimum surviving fragment alpha.
+#[allow(dead_code)]
+fn retains_textured_fragment(alpha: f32) -> bool {
+  alpha >= 0.1
+}
+
 /// Converts a physical destination rectangle into clip-space bounds.
 #[cfg_attr(not(target_arch = "wasm32"), allow(dead_code))]
 const fn base_texture_ndc_rect(rect: PixelRect, canvas_width: u32, canvas_height: u32) -> [f32; 4] {
@@ -1378,6 +1384,14 @@ mod tests {
     assert_eq!(base.path, "enemies.png");
     assert_eq!(emissive.path, "enemies_emissive.png");
     assert_eq!((base.width, base.height), (emissive.width, emissive.height));
+  }
+
+  #[test]
+  fn textured_alpha_cutoff_matches_legacy_boundary() {
+    assert!(!retains_textured_fragment(0.0));
+    assert!(!retains_textured_fragment(0.099));
+    assert!(retains_textured_fragment(0.1));
+    assert!(retains_textured_fragment(1.0));
   }
 
   #[test]

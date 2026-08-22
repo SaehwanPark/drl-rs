@@ -91,6 +91,9 @@ documented in this file.
   base source with an optional emissive source, samples the emissive red channel
   as a lighting floor, and uses a transparent 1x1 fallback when absent. Mask,
   colorization, outline/glow, and capture-backed shader parity remain open.
+- Added the verified legacy `0.1` fragment-alpha cutoff to the textured WGSL
+  pass; transparent edge fragments are discarded before source-alpha blending,
+  while the fair/emissive lighting floor remains unchanged.
 - Added pure `active_effect_frames` progress mapping for fair effect spans;
   frontend ticks receive stable normalized progress without advancing gameplay
   or claiming legacy animation-frame parity.
