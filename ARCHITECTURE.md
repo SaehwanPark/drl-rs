@@ -41,6 +41,7 @@ types shared by core, MCP, bots, and frontends.
   `LightingBand`/`shade_color` rules, health-derived `SceneTone`/clear color,
   and the pure source-derived `low_health_pulse_target_alpha` target plus
   caller-owned `LowHealthPulseState` smoothing,
+  `explosion_mark_phase` selection,
   post-process glow/LUT coordinate math and pure blur-tap plans,
   event-ordered `EffectSpan` timing, and renderer-neutral `LayerDraw` plans
   carrying atlas layers, imported source metadata, explicit layer roles, fair
@@ -92,6 +93,9 @@ types shared by core, MCP, bots, and frontends.
   simulation or hidden-state channel.
 - `EffectSpan` uses fixed logical durations and event order only. Frontends may
   map ticks to frames, but presentation timing cannot advance the simulation.
+- `explosion_mark_phase` preserves the pinned three-bucket integer selector and
+  its post-duration second-phase fallback. Delay scheduling, lifecycle,
+  palette mapping, sprites, and capture parity remain caller/backend work.
 - `active_effect_frames` reports normalized progress only for the supplied
   spans at the supplied frontend tick. It omits zero-duration/overflowed spans
   and cannot create new events or inspect simulation state.
