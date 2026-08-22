@@ -12,7 +12,8 @@ use drl_protocol::{
   PlayerObservation, Position, ReplayLog,
 };
 use drl_render::{
-  LightingBand, PixelRect, PresentationStep, RenderScene, effect_timeline_for_observations,
+  LightingBand, ParticleDecalSprite, ParticleDecalStorageError, ParticleDecalStore, PixelRect,
+  PresentationStep, RenderScene, effect_timeline_for_observations,
 };
 
 mod persistence;
@@ -272,6 +273,8 @@ pub struct BrowserSession {
   game: Game,
   last_error: Option<String>,
   commands: Vec<Command>,
+  particle_decals: ParticleDecalStore,
+  particle_decal_sprites: Vec<ParticleDecalSprite>,
 }
 
 impl BrowserSession {
@@ -281,6 +284,8 @@ impl BrowserSession {
       game: Self::fixed_game()?,
       last_error: None,
       commands: Vec::new(),
+      particle_decals: ParticleDecalStore::new(256),
+      particle_decal_sprites: Vec::new(),
     })
   }
 
@@ -322,6 +327,31 @@ impl BrowserSession {
   #[must_use]
   pub fn scene(&self) -> RenderScene {
     RenderScene::from_observation(&self.observation())
+  }
+
+  /// Returns retained presentation-only decal requests for the browser pass.
+  #[must_use]
+  pub fn particle_decal_store(&self) -> &ParticleDecalStore {
+    &self.particle_decals
+  }
+
+  /// Returns the caller-owned opaque sprite-handle descriptor table.
+  #[must_use]
+  pub fn particle_decal_sprites(&self) -> &[ParticleDecalSprite] {
+    &self.particle_decal_sprites
+  }
+
+  /// Retains one presentation-only decal request without touching gameplay.
+  pub fn try_insert_particle_decal(
+    &mut self,
+    insertion: drl_render::ParticleDecalInsertion,
+  ) -> Result<(), ParticleDecalStorageError> {
+    self.particle_decals.try_insert(insertion)
+  }
+
+  /// Replaces the caller-owned descriptor table used by decal rendering.
+  pub fn set_particle_decal_sprites(&mut self, sprites: Vec<ParticleDecalSprite>) {
+    self.particle_decal_sprites = sprites;
   }
 
   /// Returns the most recent rejected-command message, if any.
@@ -764,7 +794,17 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
 
     /// Clears the canvas and presents one deterministic frame.
     pub fn render(&self, scene: &RenderScene) -> Result<(), JsValue> {
-      self.render_with_elapsed(scene, None)
+      self.render_with_elapsed(scene, None, None)
+    }
+
+    /// Presents a frame with caller-owned retained particle decals.
+    pub fn render_with_particle_decals(
+      &self,
+      scene: &RenderScene,
+      store: &ParticleDecalStore,
+      sprites: &[ParticleDecalSprite],
+    ) -> Result<(), JsValue> {
+      self.render_with_elapsed(scene, None, Some((store, sprites)))
     }
 
     /// Presents one frame using caller-supplied elapsed animation time.
@@ -777,13 +817,26 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
       elapsed_ms: u64,
       playback: AnimationPlayback,
     ) -> Result<(), JsValue> {
-      self.render_with_elapsed(scene, Some((elapsed_ms, playback)))
+      self.render_with_elapsed(scene, Some((elapsed_ms, playback)), None)
+    }
+
+    /// Presents an elapsed-time frame with caller-owned retained decals.
+    pub fn render_at_elapsed_with_particle_decals(
+      &self,
+      scene: &RenderScene,
+      elapsed_ms: u64,
+      playback: AnimationPlayback,
+      store: &ParticleDecalStore,
+      sprites: &[ParticleDecalSprite],
+    ) -> Result<(), JsValue> {
+      self.render_with_elapsed(scene, Some((elapsed_ms, playback)), Some((store, sprites)))
     }
 
     fn render_with_elapsed(
       &self,
       scene: &RenderScene,
       elapsed: Option<(u64, AnimationPlayback)>,
+      particle_decals: Option<(&ParticleDecalStore, &[ParticleDecalSprite])>,
     ) -> Result<(), JsValue> {
       let frame = match self.surface.get_current_texture() {
         wgpu::CurrentSurfaceTexture::Success(frame)
@@ -828,25 +881,47 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
           multiview_mask: None,
         });
       }
-      let textured_scene = elapsed.map_or_else(
-        || {
+      let textured_scene = match (elapsed, particle_decals) {
+        (None, None) => {
           self
             .base_texture
             .covers_scene(scene, self.config.width, self.config.height)
-        },
-        |(elapsed_ms, playback)| {
-          self.base_texture.covers_scene_at_elapsed(
+        }
+        (Some((elapsed_ms, playback)), None) => self.base_texture.covers_scene_at_elapsed(
+          scene,
+          self.config.width,
+          self.config.height,
+          elapsed_ms,
+          playback,
+        ),
+        (None, Some((store, sprites))) => self.base_texture.covers_scene_with_particle_decals(
+          scene,
+          self.config.width,
+          self.config.height,
+          store,
+          sprites,
+        ),
+        (Some((elapsed_ms, playback)), Some((store, sprites))) => {
+          self.base_texture.covers_scene_with_selection(
             scene,
             self.config.width,
             self.config.height,
-            elapsed_ms,
-            playback,
+            Some((elapsed_ms, playback)),
+            Some((store, sprites)),
           )
-        },
-      );
+        }
+      };
       if textured_scene {
-        if let Some((elapsed_ms, playback)) = elapsed {
-          self.base_texture.draw_at_elapsed(
+        match (elapsed, particle_decals) {
+          (None, None) => self.base_texture.draw(
+            &self.device,
+            &mut encoder,
+            &view,
+            scene,
+            self.config.width,
+            self.config.height,
+          ),
+          (Some((elapsed_ms, playback)), None) => self.base_texture.draw_at_elapsed(
             &self.device,
             &mut encoder,
             &view,
@@ -855,16 +930,31 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
             self.config.height,
             elapsed_ms,
             playback,
-          );
-        } else {
-          self.base_texture.draw(
+          ),
+          (None, Some((store, sprites))) => self.base_texture.draw_with_particle_decals(
             &self.device,
             &mut encoder,
             &view,
             scene,
             self.config.width,
             self.config.height,
-          );
+            store,
+            sprites,
+          ),
+          (Some((elapsed_ms, playback)), Some((store, sprites))) => {
+            self.base_texture.draw_at_elapsed_with_particle_decals(
+              &self.device,
+              &mut encoder,
+              &view,
+              scene,
+              self.config.width,
+              self.config.height,
+              elapsed_ms,
+              playback,
+              store,
+              sprites,
+            )
+          }
         }
       }
       let vertices = if textured_scene {
@@ -1227,12 +1317,15 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
     }
   }
 
-  fn render_scene(scene: &RenderScene) {
+  fn render_scene(
+    scene: &RenderScene,
+    store: &ParticleDecalStore,
+    sprites: &[ParticleDecalSprite],
+  ) {
     let result = RENDERER.with(|renderer_slot| {
-      renderer_slot
-        .borrow()
-        .as_ref()
-        .map_or(Ok(()), |renderer| renderer.render(scene))
+      renderer_slot.borrow().as_ref().map_or(Ok(()), |renderer| {
+        renderer.render_with_particle_decals(scene, store, sprites)
+      })
     });
     if let Err(error) = result
       && let Some(document) = web_sys::window().and_then(|window| window.document())
@@ -1264,14 +1357,22 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
     }) else {
       return;
     };
-    let Some(scene) =
-      SESSION.with(|session_slot| session_slot.borrow().as_ref().map(BrowserSession::scene))
-    else {
-      return;
-    };
-    let result = RENDERER.with(|renderer_slot| {
-      renderer_slot.borrow().as_ref().map_or(Ok(()), |renderer| {
-        renderer.render_at_elapsed(&scene, elapsed_ms, AnimationPlayback::Loop)
+    let result = SESSION.with(|session_slot| {
+      let session_ref = session_slot.borrow();
+      let Some(session) = session_ref.as_ref() else {
+        return Ok(());
+      };
+      let scene = session.scene();
+      RENDERER.with(|renderer_slot| {
+        renderer_slot.borrow().as_ref().map_or(Ok(()), |renderer| {
+          renderer.render_at_elapsed_with_particle_decals(
+            &scene,
+            elapsed_ms,
+            AnimationPlayback::Loop,
+            session.particle_decal_store(),
+            session.particle_decal_sprites(),
+          )
+        })
       })
     });
     if let Err(error) = result {
@@ -1505,7 +1606,11 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
               }
             }
           });
-          render_scene(&RenderScene::from_observation(&step.after));
+          render_scene(
+            &RenderScene::from_observation(&step.after),
+            session.particle_decal_store(),
+            session.particle_decal_sprites(),
+          );
           let status = if session.is_game_over() {
             "Game over — press Restart to try again.".to_string()
           } else {
@@ -1553,7 +1658,11 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
               }
             }
           });
-          render_scene(&RenderScene::from_observation(&step.after));
+          render_scene(
+            &RenderScene::from_observation(&step.after),
+            session.particle_decal_store(),
+            session.particle_decal_sprites(),
+          );
           let status = if session.is_game_over() {
             "Game over — press Restart to try again.".to_string()
           } else {
@@ -1602,7 +1711,11 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
           if let Some(document) = web_sys::window().and_then(|window| window.document()) {
             update_dom(&document, &observation);
           }
-          render_scene(&RenderScene::from_observation(&observation));
+          render_scene(
+            &RenderScene::from_observation(&observation),
+            session.particle_decal_store(),
+            session.particle_decal_sprites(),
+          );
           let status = "Restarted deterministic M4 session.".to_string();
           if let Some(warning) = clear_warning.as_deref()
             && let Some(document) = web_sys::window().and_then(|window| window.document())
@@ -1655,7 +1768,11 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
           SESSION.with(|session_slot| {
             if let Some(session) = session_slot.borrow().as_ref() {
               update_dom(&document, &session.observation());
-              render_scene(&RenderScene::from_observation(&session.observation()));
+              render_scene(
+                &RenderScene::from_observation(&session.observation()),
+                session.particle_decal_store(),
+                session.particle_decal_sprites(),
+              );
             }
           });
         }
@@ -1987,6 +2104,25 @@ mod tests {
       BrowserSession::command_for_key("r", &observation),
       Some(Command::Reload)
     );
+  }
+
+  #[test]
+  fn browser_decal_requests_are_presentation_only() {
+    let mut session = BrowserSession::new().expect("fixed session");
+    let before = session.observation();
+    session
+      .try_insert_particle_decal(drl_render::ParticleDecalInsertion {
+        placement: drl_render::ParticleDecalPlacement {
+          cell: [1, 1],
+          pixel: [32, 32],
+        },
+        sprite_id: 100_001,
+      })
+      .expect("retain presentation request");
+
+    assert_eq!(session.observation(), before);
+    assert_eq!(session.particle_decal_store().len(), 1);
+    assert!(session.particle_decal_sprites().is_empty());
   }
 
   #[test]
