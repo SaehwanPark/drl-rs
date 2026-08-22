@@ -5,8 +5,8 @@
 //! presentation timing can never advance the simulation.
 
 use drl_assets::{
-  AtlasId, AtlasTextureSource, LayerRole, SpriteDescriptor, SpriteLayer, SpriteUv, actor_sprite,
-  item_sprite, tile_sprite,
+  AtlasId, AtlasTextureSource, LayerRole, SpriteAnimation, SpriteDescriptor, SpriteLayer, SpriteUv,
+  actor_sprite, item_sprite, tile_sprite,
 };
 use drl_protocol::{
   Command, EntityId, GameEvent, HitPoints, ItemArchetype, ItemView, PlayerObservation, Position,
@@ -170,6 +170,7 @@ pub struct LayerDraw {
   pub source: AtlasTextureSource,
   pub lighting: LightingBand,
   pub colorization_tint: [u8; 4],
+  pub animation: Option<SpriteAnimation>,
   pub destination: PixelRect,
   pub uv: SpriteUv,
 }
@@ -187,6 +188,7 @@ pub struct SpriteComposite {
   pub uv: SpriteUv,
   pub lighting: LightingBand,
   pub colorization_tint: [u8; 4],
+  pub animation: Option<SpriteAnimation>,
   pub base: AtlasTextureSource,
   pub mask: Option<AtlasTextureSource>,
   pub shadow: Option<AtlasTextureSource>,
@@ -421,6 +423,7 @@ fn append_layer_draws(
     source: descriptor.atlas.texture_source(layer),
     lighting,
     colorization_tint,
+    animation: descriptor.animation,
     destination,
     uv,
   }));
@@ -487,6 +490,7 @@ fn composite_group(draws: &[LayerDraw]) -> Option<SpriteComposite> {
         || draw.uv != first.uv
         || draw.lighting != first.lighting
         || draw.colorization_tint != first.colorization_tint
+        || draw.animation != first.animation
     })
   {
     return None;
@@ -516,6 +520,7 @@ fn composite_group(draws: &[LayerDraw]) -> Option<SpriteComposite> {
     uv: first.uv,
     lighting: first.lighting,
     colorization_tint: first.colorization_tint,
+    animation: first.animation,
     base: base?,
     mask,
     shadow,
@@ -992,6 +997,10 @@ mod tests {
       plan[tile_draws + item_draws].lighting,
       LightingBand::Visible
     );
+    assert_eq!(
+      plan[tile_draws + item_draws].animation,
+      first_actor.sprite.animation
+    );
     assert_eq!(plan, layer_draw_plan(&scene, viewport));
 
     let mut explored_scene = scene.clone();
@@ -1025,6 +1034,14 @@ mod tests {
     assert_eq!(
       composites[0].mask,
       Some(first_tile.sprite.atlas.texture_source(SpriteLayer::Mask))
+    );
+    let first_actor_composite = composites
+      .iter()
+      .find(|composite| composite.animation == first_actor.sprite.animation)
+      .expect("player composite");
+    assert_eq!(
+      first_actor_composite.animation,
+      first_actor.sprite.animation
     );
   }
 

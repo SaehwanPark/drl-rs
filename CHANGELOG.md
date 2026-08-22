@@ -124,6 +124,11 @@ documented in this file.
   transparent fallback for atlases without shadows. The WGSL contract receives
   the resource without blending it; visible outline/glow equations remain
   capture- and shader-evidence-gated.
+- Added renderer-neutral animation metadata for the current player, actors, and
+  Phase Device: pinned two-frame/500 ms descriptors, bounds-checked adjacent
+  frame rectangles, and metadata preservation through layer draws/composites.
+  Browser timing, broader content animation, and capture-backed parity remain
+  open.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch

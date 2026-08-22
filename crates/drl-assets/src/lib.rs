@@ -222,6 +222,45 @@ pub struct SpriteDescriptor {
   pub atlas: AtlasId,
   pub rect: SpriteRect,
   pub layers: &'static [SpriteLayer],
+  /// Optional source-backed frame metadata; presentation owns timing.
+  pub animation: Option<SpriteAnimation>,
+}
+
+/// Renderer-neutral frame metadata extracted from a legacy sprite descriptor.
+///
+/// The browser or another presentation backend chooses how to turn progress
+/// into a frame. This value records only the pinned content facts.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct SpriteAnimation {
+  pub frame_count: u16,
+  pub frame_time_ms: u32,
+}
+
+impl SpriteDescriptor {
+  /// Returns one vertically adjacent frame rectangle when it is in range.
+  #[must_use]
+  pub const fn frame_rect(self, frame_index: u16) -> Option<SpriteRect> {
+    let frame_count = match self.animation {
+      Some(animation) => animation.frame_count,
+      None => 1,
+    };
+    if frame_count == 0 || frame_index >= frame_count {
+      return None;
+    }
+    let offset = (frame_index as u32).saturating_mul(self.rect.height);
+    let rect = SpriteRect::new(
+      self.rect.x,
+      self.rect.y.saturating_add(offset),
+      self.rect.width,
+      self.rect.height,
+    );
+    let (atlas_width, atlas_height) = self.atlas.dimensions();
+    if rect.is_within(atlas_width, atlas_height) {
+      Some(rect)
+    } else {
+      None
+    }
+  }
 }
 
 const LEVEL_LAYERS: &[SpriteLayer] = &[SpriteLayer::Base, SpriteLayer::Mask, SpriteLayer::Emissive];
@@ -244,6 +283,11 @@ const PLAYER_LAYERS: &[SpriteLayer] = &[
   SpriteLayer::Emissive,
 ];
 const FX_LAYERS: &[SpriteLayer] = LEVEL_LAYERS;
+const STATIC_ANIMATION: Option<SpriteAnimation> = None;
+const TWO_FRAME_ANIMATION: Option<SpriteAnimation> = Some(SpriteAnimation {
+  frame_count: 2,
+  frame_time_ms: 500,
+});
 #[cfg(test)]
 const ALL_ATLASES: &[AtlasId] = &[
   AtlasId::Dguy,
@@ -282,26 +326,31 @@ pub const fn tile_sprite(tile: TileKind) -> SpriteDescriptor {
       atlas: AtlasId::Levels,
       rect: legacy_slot(1),
       layers: LEVEL_LAYERS,
+      animation: STATIC_ANIMATION,
     },
     TileKind::Wall => SpriteDescriptor {
       atlas: AtlasId::Levels,
       rect: legacy_slot(15 * SPRITE_COLUMNS + 1),
       layers: LEVEL_LAYERS,
+      animation: STATIC_ANIMATION,
     },
     TileKind::DoorClosed => SpriteDescriptor {
       atlas: AtlasId::DoorsAndDecorations,
       rect: legacy_slot(1),
       layers: DOOR_LAYERS,
+      animation: STATIC_ANIMATION,
     },
     TileKind::DoorOpen => SpriteDescriptor {
       atlas: AtlasId::DoorsAndDecorations,
       rect: legacy_slot(3 * SPRITE_COLUMNS + 1),
       layers: DOOR_LAYERS,
+      animation: STATIC_ANIMATION,
     },
     TileKind::StairsDown => SpriteDescriptor {
       atlas: AtlasId::DoorsAndDecorations,
       rect: legacy_slot(7 * SPRITE_COLUMNS + 1),
       layers: DOOR_LAYERS,
+      animation: STATIC_ANIMATION,
     },
   }
 }
@@ -314,26 +363,31 @@ pub const fn actor_sprite(kind: Option<MonsterKind>) -> SpriteDescriptor {
       atlas: AtlasId::Dguy,
       rect: legacy_slot(1),
       layers: PLAYER_LAYERS,
+      animation: TWO_FRAME_ANIMATION,
     },
     Some(MonsterKind::FormerHuman) => SpriteDescriptor {
       atlas: AtlasId::Enemies,
       rect: legacy_slot(1),
       layers: ACTOR_LAYERS,
+      animation: TWO_FRAME_ANIMATION,
     },
     Some(MonsterKind::FormerSergeant) => SpriteDescriptor {
       atlas: AtlasId::Enemies,
       rect: legacy_slot(2),
       layers: ACTOR_LAYERS,
+      animation: TWO_FRAME_ANIMATION,
     },
     Some(MonsterKind::Imp) => SpriteDescriptor {
       atlas: AtlasId::Enemies,
       rect: legacy_slot(5),
       layers: ACTOR_LAYERS,
+      animation: TWO_FRAME_ANIMATION,
     },
     Some(MonsterKind::Demon) => SpriteDescriptor {
       atlas: AtlasId::Enemies,
       rect: legacy_slot(6),
       layers: ACTOR_LAYERS,
+      animation: TWO_FRAME_ANIMATION,
     },
   }
 }
@@ -346,51 +400,61 @@ pub const fn item_sprite(archetype: ItemArchetype) -> SpriteDescriptor {
       atlas: AtlasId::Fx,
       rect: legacy_slot(1),
       layers: FX_LAYERS,
+      animation: STATIC_ANIMATION,
     },
     ItemArchetype::CombatKnife => SpriteDescriptor {
       atlas: AtlasId::GunsAndPickups,
       rect: legacy_slot(2),
       layers: ITEM_LAYERS,
+      animation: STATIC_ANIMATION,
     },
     ItemArchetype::Pistol => SpriteDescriptor {
       atlas: AtlasId::GunsAndPickups,
       rect: legacy_slot(4),
       layers: ITEM_LAYERS,
+      animation: STATIC_ANIMATION,
     },
     ItemArchetype::Shotgun => SpriteDescriptor {
       atlas: AtlasId::GunsAndPickups,
       rect: legacy_slot(5),
       layers: ITEM_LAYERS,
+      animation: STATIC_ANIMATION,
     },
     ItemArchetype::GreenArmor => SpriteDescriptor {
       atlas: AtlasId::GunsAndPickups,
       rect: legacy_slot(SPRITE_COLUMNS + 1),
       layers: ITEM_LAYERS,
+      animation: STATIC_ANIMATION,
     },
     ItemArchetype::Ammo9mm => SpriteDescriptor {
       atlas: AtlasId::GunsAndPickups,
       rect: legacy_slot(SPRITE_COLUMNS + 7),
       layers: ITEM_LAYERS,
+      animation: STATIC_ANIMATION,
     },
     ItemArchetype::AmmoShells => SpriteDescriptor {
       atlas: AtlasId::GunsAndPickups,
       rect: legacy_slot(SPRITE_COLUMNS + 9),
       layers: ITEM_LAYERS,
+      animation: STATIC_ANIMATION,
     },
     ItemArchetype::SmallMedPack => SpriteDescriptor {
       atlas: AtlasId::GunsAndPickups,
       rect: legacy_slot(3 * SPRITE_COLUMNS + 9),
       layers: ITEM_LAYERS,
+      animation: STATIC_ANIMATION,
     },
     ItemArchetype::LargeMedPack => SpriteDescriptor {
       atlas: AtlasId::GunsAndPickups,
       rect: legacy_slot(3 * SPRITE_COLUMNS + 10),
       layers: ITEM_LAYERS,
+      animation: STATIC_ANIMATION,
     },
     ItemArchetype::PhaseDevice => SpriteDescriptor {
       atlas: AtlasId::GunsAndPickups,
       rect: legacy_slot(SPRITE_COLUMNS + 15),
       layers: ITEM_LAYERS,
+      animation: TWO_FRAME_ANIMATION,
     },
   }
 }
@@ -565,6 +629,86 @@ mod tests {
     );
     assert_eq!(actor_sprite(Some(MonsterKind::Imp)).rect, legacy_slot(5));
     assert_eq!(actor_sprite(Some(MonsterKind::Demon)).rect, legacy_slot(6));
+  }
+
+  #[test]
+  fn evidenced_animation_metadata_is_explicit_and_bounded() {
+    for kind in [
+      None,
+      Some(MonsterKind::FormerHuman),
+      Some(MonsterKind::FormerSergeant),
+      Some(MonsterKind::Imp),
+      Some(MonsterKind::Demon),
+    ] {
+      let descriptor = actor_sprite(kind);
+      assert_eq!(
+        descriptor.animation,
+        Some(SpriteAnimation {
+          frame_count: 2,
+          frame_time_ms: 500,
+        })
+      );
+      assert_eq!(descriptor.frame_rect(0), Some(descriptor.rect));
+      let second = descriptor.frame_rect(1).expect("second frame row");
+      assert_eq!(second.x, descriptor.rect.x);
+      assert_eq!(second.y, descriptor.rect.y + descriptor.rect.height);
+      assert_eq!(second.width, descriptor.rect.width);
+      assert_eq!(second.height, descriptor.rect.height);
+      assert!(descriptor.frame_rect(2).is_none());
+    }
+
+    let phase = item_sprite(ItemArchetype::PhaseDevice);
+    assert_eq!(
+      phase.animation.map(|animation| animation.frame_count),
+      Some(2)
+    );
+    assert_eq!(
+      phase.animation.map(|animation| animation.frame_time_ms),
+      Some(500)
+    );
+    assert_eq!(phase.frame_rect(0), Some(phase.rect));
+    assert!(phase.frame_rect(1).is_some());
+
+    for tile in [
+      TileKind::Floor,
+      TileKind::Wall,
+      TileKind::DoorClosed,
+      TileKind::DoorOpen,
+      TileKind::StairsDown,
+    ] {
+      let descriptor = tile_sprite(tile);
+      assert_eq!(descriptor.animation, None);
+      assert_eq!(descriptor.frame_rect(0), Some(descriptor.rect));
+      assert!(descriptor.frame_rect(1).is_none());
+    }
+    for item in [
+      ItemArchetype::Unknown,
+      ItemArchetype::CombatKnife,
+      ItemArchetype::Pistol,
+      ItemArchetype::Shotgun,
+      ItemArchetype::GreenArmor,
+      ItemArchetype::Ammo9mm,
+      ItemArchetype::AmmoShells,
+      ItemArchetype::SmallMedPack,
+      ItemArchetype::LargeMedPack,
+    ] {
+      let descriptor = item_sprite(item);
+      assert_eq!(descriptor.animation, None);
+      assert_eq!(descriptor.frame_rect(0), Some(descriptor.rect));
+      assert!(descriptor.frame_rect(1).is_none());
+    }
+  }
+
+  #[test]
+  fn frame_rect_rejects_atlas_overflow() {
+    let descriptor = SpriteDescriptor {
+      atlas: AtlasId::Dguy,
+      rect: SpriteRect::new(0, 32, 32, 32),
+      layers: PLAYER_LAYERS,
+      animation: TWO_FRAME_ANIMATION,
+    };
+    assert_eq!(descriptor.frame_rect(0), Some(descriptor.rect));
+    assert!(descriptor.frame_rect(1).is_none());
   }
 
   #[test]
