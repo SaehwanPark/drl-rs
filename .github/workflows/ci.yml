@@ -44,3 +44,5 @@ jobs:
         run: sh scripts/check-web.sh
       - name: Build release bundle
         run: sh scripts/build-web.sh
+      - name: Verify release manifest
+        run: sh scripts/check-release-manifest.sh

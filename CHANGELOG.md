@@ -5,6 +5,10 @@ documented in this file.
 
 ## Unreleased
 
+- Added M12 static-bundle release manifests generated during web builds, with
+  source revision, sorted artifact SHA-256 hashes, generated-file declarations,
+  graphics rights metadata, and a service-worker coverage check. The manifest
+  is unsigned packaging evidence, not offline or cross-browser acceptance.
 - Added pure M11 cohort regression comparisons with caller-declared finite
   non-negative win-rate and average-turn tolerances. Policy/sample mismatches
   are rejected, and no statistical or balance claim is inferred.
