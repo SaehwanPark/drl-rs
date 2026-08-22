@@ -201,6 +201,10 @@ The current follow-up also adds caller-owned missile step selection with the
 pinned minimum-normalized delay and elapsed quotient; path traversal,
 visibility, and particles remain open. The blur reduction preserves weighted
 RGB and center-only alpha without renormalization or clamping.
+The current follow-up also adds caller-owned missile ray-spacing selection with
+the pinned strict pre-increment half-grid test, fixed 20-unit spacing, and
+possible endpoint overshoot. Distance metrics, interpolation, path traversal,
+visibility, particles, and rendering remain open.
 Remaining work is visible outline/glow role-specific shader blending/layer
 compositing, additional per-sprite tint sourcing, broader content metadata;
 capture-backed lighting/LUT parity,

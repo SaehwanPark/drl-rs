@@ -211,6 +211,11 @@ documented in this file.
   pinned minimum-normalized step delay and elapsed quotient, with explicit
   rejection of unrepresentable `u16` step indexes. Path traversal, visibility,
   particles, lifecycle, and capture behavior remain outside the helper.
+- Added pure `drl-render::missile_ray_sample_distance_at_index` arithmetic for
+  the pinned strict pre-increment half-grid test and fixed 20-unit ray spacing,
+  preserving the source's possible endpoint overshoot with checked arithmetic.
+  Endpoint metrics, visibility, particles, rendering, lifecycle, and capture
+  behavior remain outside the helper.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch
