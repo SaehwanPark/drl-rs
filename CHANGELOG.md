@@ -50,6 +50,13 @@ documented in this file.
   for all current tile, actor, and item semantics. `drl-assets` now exposes
   imported PNG dimensions and pure rectangle bounds checks; texture compositing
   and capture-backed audiovisual parity remain open.
+- Added deterministic registered source-layer metadata for every imported
+  atlas and aligned semantic descriptors with their atlas-specific layer
+  order. This is compositor input only; it does not claim blending or capture
+  parity.
+- Corrected the pinned legacy graphics revision everywhere to the exact
+  40-character Git commit, keeping asset provenance and capture scripts
+  reproducible.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch

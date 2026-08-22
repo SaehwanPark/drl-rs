@@ -29,10 +29,10 @@ types shared by core, MCP, bots, and frontends.
 - `drl-protocol`: stable semantic boundary. Player observations now include
   map dimensions and player HP; actor/item views include stable presentation
   identifiers. MCP wire serialization and replay schema remain compatible.
-- `drl-assets`: platform-neutral atlas IDs, imported PNG dimensions, layer
-  descriptors, measured 32-pixel rectangles, semantic tile/actor/item lookup,
-  and legacy revision identity. It has no decoder or platform dependency and
-  core does not depend on it.
+- `drl-assets`: platform-neutral atlas IDs, imported PNG dimensions, measured
+  32-pixel rectangles, deterministic registered layer sets, semantic
+  tile/actor/item lookup, and legacy revision identity. It has no decoder or
+  platform dependency and core does not depend on it.
 - `drl-render`: deterministic `PresentationStep`, `RenderScene`, target
   candidates, bounded event-to-effect builders, observation-independent
   `PixelViewport`/`PixelRect` layout math, and visibility-derived
@@ -71,6 +71,9 @@ types shared by core, MCP, bots, and frontends.
 - Atlas descriptors convert the pinned legacy one-based, sixteen-column
   sprite-sheet slots to bounded 32-pixel cells. Dimensions are metadata from
   the imported PNGs; no image decoding or texture upload occurs in this crate.
+- Each descriptor carries the exact available source-layer set for its atlas in
+  registration order. The list is metadata only; no blending or sampling is
+  performed at this boundary.
 - `PresentationStep::effects` is computed at the command boundary from the
   returned event list and visible actor sets. Ordinary effects require both
   endpoints; terminal hit/death effects use pre-step visibility. Rejected
