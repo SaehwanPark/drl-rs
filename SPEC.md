@@ -248,7 +248,7 @@ particle spawning, and GPU rendering to callers.
 - [x] `scripts/check-version.sh main` — version projections and transition.
 - [x] `cargo fmt --all -- --check` and `git diff --check`.
 - [x] Hosted PR checks for the insertion slice, including repository run
-  `32599529226` and WASM browser job `97095620224`.
+  `32600541249` and WASM browser job `97098028542`.
 - [ ] Reference-capture execution and audiovisual comparison remain `NOT_RUN`.
 
 ### Present storage-slice verification
