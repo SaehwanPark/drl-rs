@@ -75,7 +75,7 @@ automated regressions, and human review.
   content animation and capture parity remain open. A read-only capture
   manifest preflight now validates pinned metadata, rights, media hashes, and
   evidence status while preserving `NOT_RUN`.
-- `SPEC.md` contains the single active M11 outcome-distribution slice; it is
+- `SPEC.md` contains the single active M11 outcome-comparison slice; it is
   not a second roadmap.
 - The first bounded M11 cohort slice adds explicit fixed-seed sample
   definitions and reports around the existing headless batch runner. Reports
@@ -83,8 +83,9 @@ automated regressions, and human review.
   the follow-up adds compatible-report win-rate and average-turn tolerance
   comparisons; the outcome-distribution follow-up keeps victory, death,
   turn-limit, stalled, and in-progress counts distinct with normalized rates;
-  balance conclusions, difficulty targets, and statistical interpretation
-  remain open.
+  the compatible outcome-comparison follow-up reports absolute per-category
+  rate deltas after integrity validation; balance conclusions, difficulty
+  targets, and statistical interpretation remain open.
 - Delivered M11 integrity validation checks cohort record count, wrapping seed
   order, replay seed identity, and aggregate-summary coherence before evidence
   is used for regression comparisons; it does not infer balance or significance.
@@ -306,7 +307,9 @@ compatible-report tolerance deltas, and evidence-integrity validation
 explicit; balance studies, statistical interpretation, and ordinary-player/
 developer observation separation remain open. The delivered outcome
 distribution keeps terminal categories distinct and exposes normalized rates
-without claiming a balance result.
+without claiming a balance result. The delivered compatible comparison reports
+absolute per-category rate deltas without adding a tolerance or significance
+claim.
 
 ### M12 — Static web productization and release hardening (manifest and diagnostics slices delivered; hardening open)
 

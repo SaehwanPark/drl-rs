@@ -362,3 +362,43 @@ fn cohort_outcome_distribution_requires_integrity_and_handles_empty_samples() {
   assert_eq!(distribution.victory_rate(), 0.0);
   assert_eq!(distribution.in_progress_rate(), 0.0);
 }
+
+#[test]
+fn compatible_cohort_outcome_comparison_reports_absolute_rate_deltas() {
+  let baseline = synthetic_outcome_report(&[
+    RunOutcome::Victory,
+    RunOutcome::Death {
+      cause: DeathCause::Environment,
+    },
+    RunOutcome::TurnLimitReached,
+    RunOutcome::Stalled,
+    RunOutcome::InProgress,
+  ]);
+  let candidate = synthetic_outcome_report(&[
+    RunOutcome::Victory,
+    RunOutcome::Victory,
+    RunOutcome::TurnLimitReached,
+    RunOutcome::Stalled,
+    RunOutcome::InProgress,
+  ]);
+
+  let comparison = candidate.compare_outcomes(&baseline).unwrap();
+  assert!((comparison.victory_rate_delta - 0.2).abs() < f64::EPSILON);
+  assert!((comparison.death_rate_delta - 0.2).abs() < f64::EPSILON);
+  assert_eq!(comparison.turn_limit_rate_delta, 0.0);
+  assert_eq!(comparison.stalled_rate_delta, 0.0);
+  assert_eq!(comparison.in_progress_rate_delta, 0.0);
+}
+
+#[test]
+fn cohort_outcome_comparison_rejects_incompatible_or_invalid_reports() {
+  let baseline = synthetic_outcome_report(&[RunOutcome::Victory]);
+
+  let mut different_policy = baseline.clone();
+  different_policy.policy_name = "other-policy".to_string();
+  assert!(different_policy.compare_outcomes(&baseline).is_none());
+
+  let mut invalid = baseline.clone();
+  invalid.records.pop();
+  assert!(invalid.compare_outcomes(&baseline).is_none());
+}

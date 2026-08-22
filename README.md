@@ -22,10 +22,12 @@ replays, and regression testing.
     before a regression comparison is used.
   - Cohort outcome distributions preserve distinct terminal counts and
     sample-normalized rates without interpreting balance or significance.
+  - Compatible cohort comparisons report absolute per-outcome rate deltas
+    after integrity validation without adding tolerance or significance claims.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value, projected into Cargo,
-    MCP, and release manifests; the agent harness rejects invalid code-change
-    transitions and ignores document/setting-only diffs.
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.1.2`),
+    projected into Cargo, MCP, and release manifests; the agent harness rejects
+    invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:
   - M7 functional checks pass locally and in remote web CI.
   - M8 provides square pixel-grid letterboxing, shared lighting bands, measured
