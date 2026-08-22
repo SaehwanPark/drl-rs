@@ -137,6 +137,9 @@ are not claimed.
 - The textured fragment shader discards sampled base alpha below the verified
   legacy `0.1` cutoff before source-alpha blending; exact-threshold fragments
   survive and all other lighting behavior is unchanged.
+- The WGSL source is shared with a native shader-contract test that checks the
+  base/emissive samples, fair-lighting `max`, alpha cutout, and output path;
+  native tests therefore guard the WASM-only runtime shader text.
 - Every layer draw carries its fair `LightingBand`: explored tile memory uses
   the fixed explored factor, while visible tiles/items/actors use full light.
 - `drl-render::active_effect_frames` returns normalized `[0, 1)` progress for

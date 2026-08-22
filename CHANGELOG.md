@@ -97,6 +97,9 @@ documented in this file.
 - Aligned renderer-owned atlas and transparent role-fallback storage with the
   observed legacy `GL_RGBA8` contract by using linear normalized
   `Rgba8Unorm`; browser display color-space parity remains capture-gated.
+- Added a native contract test over the shared textured WGSL source, guarding
+  base/emissive sampling, fair-lighting `max`, alpha cutout, and output terms
+  while the runtime shader remains WASM-only.
 - Added pure `active_effect_frames` progress mapping for fair effect spans;
   frontend ticks receive stable normalized progress without advancing gameplay
   or claiming legacy animation-frame parity.

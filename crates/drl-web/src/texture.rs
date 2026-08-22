@@ -150,45 +150,6 @@ impl GpuTextureCache {
   }
 }
 
-const BASE_TEXTURE_SHADER: &str = r#"
-struct VertexInput {
-  @location(0) position: vec2<f32>,
-  @location(1) uv: vec2<f32>,
-  @location(2) lighting: vec4<f32>,
-};
-
-struct VertexOutput {
-  @builtin(position) position: vec4<f32>,
-  @location(0) uv: vec2<f32>,
-  @location(1) lighting: vec4<f32>,
-};
-
-@group(0) @binding(0) var base_texture: texture_2d<f32>;
-@group(0) @binding(1) var emissive_texture: texture_2d<f32>;
-@group(0) @binding(2) var base_sampler: sampler;
-
-@vertex
-fn vs_main(input: VertexInput) -> VertexOutput {
-  var output: VertexOutput;
-  output.position = vec4<f32>(input.position, 0.0, 1.0);
-  output.uv = input.uv;
-  output.lighting = input.lighting;
-  return output;
-}
-
-@fragment
-fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
-  let sampled = textureSample(base_texture, base_sampler, input.uv);
-  let emissive = textureSample(emissive_texture, base_sampler, input.uv).r;
-  let lighting = max(input.lighting.rgb, vec3<f32>(emissive));
-  let output = vec4<f32>(sampled.rgb * lighting, sampled.a);
-  if (output.a < 0.1) {
-    discard;
-  }
-  return output;
-}
-"#;
-
 /// Pipeline and source-specific bind groups for the partial base-color/emissive pass.
 pub(crate) struct BaseTexturePipeline {
   pipeline: wgpu::RenderPipeline,
@@ -279,7 +240,7 @@ impl BaseTexturePipeline {
     let fallback_view = fallback_texture.create_view(&wgpu::TextureViewDescriptor::default());
     let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
       label: Some("drl-web-base-texture-shader"),
-      source: wgpu::ShaderSource::Wgsl(BASE_TEXTURE_SHADER.into()),
+      source: wgpu::ShaderSource::Wgsl(crate::BASE_TEXTURE_SHADER.into()),
     });
     let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
       label: Some("drl-web-base-texture-pipeline-layout"),
