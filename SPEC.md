@@ -129,8 +129,6 @@ cargo test -p drl-assets                      PASS (slot mappings, atlas bounds,
                                              layer sets, descriptor order, UVs)
 cargo test -p drl-render                      PASS (layer draw ordering,
                                              screen/UV geometry, and sources)
-cargo test -p drl-assets                      PASS (texture source paths and
-                                             dimensions)
 cargo test -p drl-web                         PASS (effect handoff preserves event/timeline parity)
 scripts/check-web.sh                        PASS for native/WASM builds;
                                              browser runner NOT_RUN if Chrome absent
@@ -139,14 +137,12 @@ Chrome 151 WebGPU smoke playthrough          PASS (Apple Metal-3, 1280x720, DPR 
                                              start with explicit gesture-gated
                                              audio state, move, mute, restart;
                                              pixel-grid scene visible after move)
-GitHub Actions run 32547069689               PASS (repository + Ubuntu WASM
-                                             browser jobs for the preceding
-                                             draw-plan slice; this source slice
-                                             is not included)
+GitHub Actions run 32547435497               PASS (repository + Ubuntu WASM
+                                             browser jobs for this source
+                                             binding slice)
 ```
 
-The local and hosted functional gates pass for the preceding draw-plan slice;
-this source-binding slice requires a new hosted run, currently `NOT_RUN`; local
+The local and hosted functional gates pass for this source-binding slice; local
 browser execution remains `NOT_RUN` when the runner is unavailable. The
 existing Chrome run records browser/version, OS,
 adapter/backend, viewport, DPR, build revision, and audio unlock/mute state,
