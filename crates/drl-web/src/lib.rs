@@ -428,7 +428,7 @@ mod texture;
 pub(crate) mod wasm {
   use super::texture::{BaseTexturePipeline, GpuTextureCache};
   use super::*;
-  use drl_render::{PixelViewport, scene_clear_color, shade_color};
+  use drl_render::{AnimationPlayback, PixelViewport, scene_clear_color, shade_color};
   use std::cell::RefCell;
   use wasm_bindgen::prelude::*;
   use wasm_bindgen_futures::JsFuture;
@@ -649,6 +649,27 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
 
     /// Clears the canvas and presents one deterministic frame.
     pub fn render(&self, scene: &RenderScene) -> Result<(), JsValue> {
+      self.render_with_elapsed(scene, None)
+    }
+
+    /// Presents one frame using caller-supplied elapsed animation time.
+    ///
+    /// The renderer reads no clock and does not schedule redraws; callers own
+    /// elapsed-time and playback policy decisions.
+    pub fn render_at_elapsed(
+      &self,
+      scene: &RenderScene,
+      elapsed_ms: u64,
+      playback: AnimationPlayback,
+    ) -> Result<(), JsValue> {
+      self.render_with_elapsed(scene, Some((elapsed_ms, playback)))
+    }
+
+    fn render_with_elapsed(
+      &self,
+      scene: &RenderScene,
+      elapsed: Option<(u64, AnimationPlayback)>,
+    ) -> Result<(), JsValue> {
       let frame = match self.surface.get_current_texture() {
         wgpu::CurrentSurfaceTexture::Success(frame)
         | wgpu::CurrentSurfaceTexture::Suboptimal(frame) => frame,
@@ -692,19 +713,44 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
           multiview_mask: None,
         });
       }
-      let textured_scene =
-        self
-          .base_texture
-          .covers_scene(scene, self.config.width, self.config.height);
+      let textured_scene = elapsed.map_or_else(
+        || {
+          self
+            .base_texture
+            .covers_scene(scene, self.config.width, self.config.height)
+        },
+        |(elapsed_ms, playback)| {
+          self.base_texture.covers_scene_at_elapsed(
+            scene,
+            self.config.width,
+            self.config.height,
+            elapsed_ms,
+            playback,
+          )
+        },
+      );
       if textured_scene {
-        self.base_texture.draw(
-          &self.device,
-          &mut encoder,
-          &view,
-          scene,
-          self.config.width,
-          self.config.height,
-        );
+        if let Some((elapsed_ms, playback)) = elapsed {
+          self.base_texture.draw_at_elapsed(
+            &self.device,
+            &mut encoder,
+            &view,
+            scene,
+            self.config.width,
+            self.config.height,
+            elapsed_ms,
+            playback,
+          );
+        } else {
+          self.base_texture.draw(
+            &self.device,
+            &mut encoder,
+            &view,
+            scene,
+            self.config.width,
+            self.config.height,
+          );
+        }
       }
       let vertices = if textured_scene {
         target_vertices(scene, self.config.width, self.config.height)

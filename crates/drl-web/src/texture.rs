@@ -5,7 +5,10 @@
 //! simulation state or sprite blend equations.
 
 use drl_assets::{AtlasTextureSource, SpriteLayer};
-use drl_render::{PixelRect, PixelViewport, RenderScene, layer_draw_plan, sprite_composite_plan};
+use drl_render::{
+  AnimationPlayback, PixelRect, PixelViewport, RenderScene, layer_draw_plan,
+  layer_draw_plan_at_elapsed, sprite_composite_plan,
+};
 use wasm_bindgen::JsValue;
 use wgpu::util::DeviceExt;
 
@@ -367,7 +370,34 @@ impl BaseTexturePipeline {
     canvas_width: u32,
     canvas_height: u32,
   ) -> bool {
-    let (vertices, batches) = base_texture_vertices(scene, canvas_width, canvas_height);
+    self.covers_scene_with_selection(scene, canvas_width, canvas_height, None)
+  }
+
+  /// Returns true when an elapsed-time layer plan can be drawn from the cache.
+  pub(crate) fn covers_scene_at_elapsed(
+    &self,
+    scene: &RenderScene,
+    canvas_width: u32,
+    canvas_height: u32,
+    elapsed_ms: u64,
+    playback: AnimationPlayback,
+  ) -> bool {
+    self.covers_scene_with_selection(
+      scene,
+      canvas_width,
+      canvas_height,
+      Some((elapsed_ms, playback)),
+    )
+  }
+
+  fn covers_scene_with_selection(
+    &self,
+    scene: &RenderScene,
+    canvas_width: u32,
+    canvas_height: u32,
+    elapsed: Option<(u64, AnimationPlayback)>,
+  ) -> bool {
+    let (vertices, batches) = base_texture_vertices(scene, canvas_width, canvas_height, elapsed);
     !vertices.is_empty()
       && !self.bindings.is_empty()
       && batches.iter().all(|batch| {
@@ -390,7 +420,51 @@ impl BaseTexturePipeline {
     canvas_width: u32,
     canvas_height: u32,
   ) {
-    let (vertices, batches) = base_texture_vertices(scene, canvas_width, canvas_height);
+    self.draw_with_selection(
+      device,
+      encoder,
+      view,
+      scene,
+      canvas_width,
+      canvas_height,
+      None,
+    );
+  }
+
+  /// Draws elapsed-time layer plans using an explicit caller-owned policy.
+  pub(crate) fn draw_at_elapsed(
+    &self,
+    device: &wgpu::Device,
+    encoder: &mut wgpu::CommandEncoder,
+    view: &wgpu::TextureView,
+    scene: &RenderScene,
+    canvas_width: u32,
+    canvas_height: u32,
+    elapsed_ms: u64,
+    playback: AnimationPlayback,
+  ) {
+    self.draw_with_selection(
+      device,
+      encoder,
+      view,
+      scene,
+      canvas_width,
+      canvas_height,
+      Some((elapsed_ms, playback)),
+    );
+  }
+
+  fn draw_with_selection(
+    &self,
+    device: &wgpu::Device,
+    encoder: &mut wgpu::CommandEncoder,
+    view: &wgpu::TextureView,
+    scene: &RenderScene,
+    canvas_width: u32,
+    canvas_height: u32,
+    elapsed: Option<(u64, AnimationPlayback)>,
+  ) {
+    let (vertices, batches) = base_texture_vertices(scene, canvas_width, canvas_height, elapsed);
     if vertices.is_empty() || self.bindings.is_empty() {
       return;
     }
@@ -484,6 +558,7 @@ fn base_texture_vertices(
   scene: &RenderScene,
   canvas_width: u32,
   canvas_height: u32,
+  elapsed: Option<(u64, AnimationPlayback)>,
 ) -> (Vec<u8>, Vec<TextureBatch>) {
   let viewport = PixelViewport::fit(
     scene.map_width,
@@ -491,7 +566,12 @@ fn base_texture_vertices(
     canvas_width,
     canvas_height,
   );
-  let plan = layer_draw_plan(scene, viewport);
+  let plan = elapsed.map_or_else(
+    || layer_draw_plan(scene, viewport),
+    |(elapsed_ms, playback)| {
+      layer_draw_plan_at_elapsed(scene, viewport, elapsed_ms, playback).unwrap_or_default()
+    },
+  );
   let composites = sprite_composite_plan(&plan);
   let mut vertices = Vec::new();
   let mut batches = Vec::new();

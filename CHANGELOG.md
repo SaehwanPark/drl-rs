@@ -138,6 +138,9 @@ documented in this file.
 - Added caller-supplied elapsed-time layer planning: animated descriptors select
   frame UVs under explicit playback policy, static descriptors remain on frame
   zero, and grouped composites retain one selected UV per sprite.
+- Added a caller-driven `WebGpuRenderer::render_at_elapsed` entrypoint that
+  forwards elapsed layer plans into textured vertex generation while preserving
+  the existing frame-zero render and geometry fallback paths.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch

@@ -58,7 +58,8 @@ types shared by core, MCP, bots, and frontends.
 - `drl-web`: `cdylib + rlib` browser session, Winit/DOM command mapping,
   static shell exports, WebGPU scene-geometry surface, DPR resize, deterministic
   square-cell pixel layout, validated same-origin texture-source decode, a
-  renderer-owned WebGPU texture/view cache, and recoverable GPU/audio status. It
+  renderer-owned WebGPU texture/view cache, caller-driven elapsed animation
+  rendering, and recoverable GPU/audio status. It
   never mirrors authoritative gameplay state into JavaScript.
 - `drl-mcp`: zero-dependency JSON-RPC/MCP semantic server and fairness boundary.
 - `drl-app`: native headless demo and MCP stdio runner, retained for tooling.
@@ -94,6 +95,10 @@ types shared by core, MCP, bots, and frontends.
 - `layer_draw_plan_at_elapsed` applies that selection to animated descriptors
   while keeping static descriptors on frame zero and preserving one UV across
   each grouped sprite. It remains caller-driven and renderer-neutral.
+- `WebGpuRenderer::render_at_elapsed` is a WASM-shell entrypoint that forwards
+  the same caller-owned elapsed selection to textured vertex generation. The
+  existing `render` path remains frame zero; no clock or redraw loop is owned
+  by the renderer.
 - Atlas descriptors convert the pinned legacy one-based, sixteen-column
   sprite-sheet slots to bounded 32-pixel cells. Dimensions are metadata from
   the imported PNGs; no image decoding or texture upload occurs in this crate.
