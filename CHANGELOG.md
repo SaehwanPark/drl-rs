@@ -151,6 +151,10 @@ documented in this file.
 - Added the pinned yellow `StairsDown` tile `coscolor` through the existing
   colorization-mask path. Other current tile kinds, actors, and item
   archetypes remain neutral unless already evidence-backed.
+- Added a read-only legacy-capture manifest preflight and fixture suite. It
+  checks the pinned revision, required fidelity scenes, executable/hash
+  metadata, status vocabulary, and placeholder policy while preserving
+  `NOT_RUN` on hosts without the controlled Linux x86-64 runtime.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch
