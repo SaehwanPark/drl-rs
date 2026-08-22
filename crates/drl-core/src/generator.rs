@@ -10,6 +10,7 @@ use std::collections::{HashSet, VecDeque};
 use crate::grid::{Map, Tile};
 use crate::item::Item;
 use crate::loot_definition::generated_loot_definition_for_roll;
+use crate::monster_roll_definition::generated_monster_definition_for_roll;
 use crate::rng::GameRng;
 
 /// Bounded rectangular room in grid coordinates.
@@ -239,16 +240,8 @@ impl LevelGenerator {
 
         if pos != stairs_position && map.is_walkable(pos) {
           let roll = rng.gen_range(0..100);
-          let kind = if roll < 40 {
-            MonsterKind::FormerHuman
-          } else if roll < 65 {
-            MonsterKind::Imp
-          } else if roll < 85 {
-            MonsterKind::FormerSergeant
-          } else {
-            MonsterKind::Demon
-          };
-          monster_spawns.push(MonsterSpawn::from_kind(pos, kind));
+          let definition = generated_monster_definition_for_roll(roll);
+          monster_spawns.push(MonsterSpawn::from_kind(pos, definition.kind));
         }
       }
 
