@@ -118,6 +118,34 @@ pub enum SpriteLayer {
   Shadow,
 }
 
+/// The renderer-neutral input role of one registered sprite layer.
+///
+/// The legacy sprite shader samples these inputs independently: the base
+/// image supplies normal color, the mask supplies optional colorization, the
+/// shadow image supplies the outline mask, and the emissive image supplies an
+/// emission mask. Naming the roles here keeps a future compositor from
+/// guessing based on file names while leaving blend equations to the backend.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum LayerRole {
+  BaseColor,
+  ColorizationMask,
+  OutlineMask,
+  EmissiveMask,
+}
+
+impl SpriteLayer {
+  /// Returns the shader input role represented by this source layer.
+  #[must_use]
+  pub const fn role(self) -> LayerRole {
+    match self {
+      Self::Base => LayerRole::BaseColor,
+      Self::Mask => LayerRole::ColorizationMask,
+      Self::Shadow => LayerRole::OutlineMask,
+      Self::Emissive => LayerRole::EmissiveMask,
+    }
+  }
+}
+
 /// Imported image metadata for one atlas compositing layer.
 ///
 /// Paths are relative to the license-cleared graphics bundle. A frontend owns
@@ -588,6 +616,26 @@ mod tests {
       ]
     );
     assert_eq!(AtlasId::Fx.layers(), AtlasId::Levels.layers());
+  }
+
+  #[test]
+  fn sprite_layers_have_explicit_shader_input_roles() {
+    assert_eq!(SpriteLayer::Base.role(), LayerRole::BaseColor);
+    assert_eq!(SpriteLayer::Mask.role(), LayerRole::ColorizationMask);
+    assert_eq!(SpriteLayer::Shadow.role(), LayerRole::OutlineMask);
+    assert_eq!(SpriteLayer::Emissive.role(), LayerRole::EmissiveMask);
+    assert_eq!(
+      AtlasId::Enemies
+        .layers()
+        .iter()
+        .map(|layer| layer.role())
+        .collect::<Vec<_>>(),
+      vec![
+        LayerRole::BaseColor,
+        LayerRole::OutlineMask,
+        LayerRole::EmissiveMask
+      ]
+    );
   }
 
   #[test]

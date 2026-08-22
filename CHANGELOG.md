@@ -71,6 +71,9 @@ documented in this file.
 - Carried the shared fair `LightingBand` into every `LayerDraw`, preserving the
   fixed explored-memory fog factor and full-light visible-sprite factor for a
   future compositor without exposing hidden state.
+- Added explicit renderer-neutral `LayerRole` metadata for the legacy shader's
+  base-color, colorization-mask, outline-mask, and emissive-mask inputs;
+  texture upload, blend equations, and capture parity remain future work.
 - Added pure `active_effect_frames` progress mapping for fair effect spans;
   frontend ticks receive stable normalized progress without advancing gameplay
   or claiming legacy animation-frame parity.

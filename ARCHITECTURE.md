@@ -30,7 +30,8 @@ types shared by core, MCP, bots, and frontends.
   map dimensions and player HP; actor/item views include stable presentation
   identifiers. MCP wire serialization and replay schema remain compatible.
 - `drl-assets`: platform-neutral atlas IDs, imported PNG dimensions, measured
-  32-pixel rectangles, deterministic registered layer sets, semantic
+  32-pixel rectangles, deterministic registered layer sets and shader input
+  roles, semantic
   tile/actor/item lookup, normalized UV geometry, deterministic texture-source
   bindings, and legacy revision identity.
   It has no decoder or platform dependency and core does not depend on it.
@@ -39,8 +40,9 @@ types shared by core, MCP, bots, and frontends.
   `PixelViewport`/`PixelRect` layout math, visibility-derived
   `LightingBand`/`shade_color` rules, health-derived `SceneTone`/clear color,
   event-ordered `EffectSpan` timing, and renderer-neutral `LayerDraw` plans
-  carrying atlas layers, imported source metadata, fair lighting, pixel
-  destinations, and normalized UVs. It consumes player observations/events
+  carrying atlas layers, imported source metadata, explicit layer roles, fair
+  lighting, pixel destinations, and normalized UVs. It consumes player
+  observations/events
   only; `active_effect_frames` maps those fair spans to frontend progress;
   GPU ownership is in the WASM shell.
   `drl-web` carries fair, visibility-filtered spans through each successful
@@ -82,6 +84,9 @@ types shared by core, MCP, bots, and frontends.
 - Each descriptor carries the exact available source-layer set for its atlas in
   registration order. The list is metadata only; no blending or sampling is
   performed at this boundary.
+- `SpriteLayer::role` names the independent legacy shader input represented by
+  each source: base color, colorization mask, outline mask, or emissive mask.
+  It does not prescribe backend blend equations.
 - `SpriteRect::uv_rect` converts bounded image-space cells to normalized
   top-left-origin UVs. A backend owns any texture-origin inversion.
 - `layer_draw_plan` emits atlas layers in scene order (tiles, items, actors),

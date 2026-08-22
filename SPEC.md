@@ -15,7 +15,7 @@ progress. This file expands exactly one active implementation slice.
   redistribution-gated; its controlled reference-capture gate is `NOT_RUN` on
   arm64 macOS and remains an M8 acceptance dependency.
 
-## Present — M8 deterministic effect progress
+## Present — M8 layer input roles
 
 Status: The M7 browser slice passed functional acceptance locally and in
 remote web CI. The delivered M8 pixel-grid, visibility-band, low-health tone,
@@ -25,9 +25,10 @@ registered source-layer sets through semantic descriptors, exposed normalized
 UV geometry, built ordered layer draw plans with screen rectangles and UVs
 from fair render scenes, attached imported texture-source paths and dimensions,
 and carried fair visible/explored lighting into each layer draw entry. This
-bounded follow-up maps already-filtered effect spans to normalized progress at
-a frontend timing tick. It remains platform-neutral and does not claim legacy
-animation parity or capture-backed audiovisual equivalence.
+bounded follow-up carries the legacy shader's independent base,
+colorization-mask, outline-mask, and emissive-mask roles through each ordered
+layer draw. It remains platform-neutral and does not claim a GPU compositor,
+legacy blend-equation parity, or capture-backed audiovisual equivalence.
 
 ### Observable behavior
 
@@ -101,9 +102,12 @@ animation parity or capture-backed audiovisual equivalence.
   imported atlas dimensions.
 - `drl-assets::AtlasId::texture_source` resolves each registered atlas layer
   to its imported relative path and measured pixel dimensions.
+- `drl-assets::SpriteLayer::role` maps each registered source to the explicit
+  legacy shader input role: base color, colorization mask, outline mask, or
+  emissive mask.
 - `drl-render::layer_draw_plan` emits ordered atlas/layer entries with a
   `PixelRect` destination, normalized UVs, and the resolved texture source for
-  each visible scene sprite.
+  each visible scene sprite, including its layer role.
 - Every layer draw carries its fair `LightingBand`: explored tile memory uses
   the fixed explored factor, while visible tiles/items/actors use full light.
 - `drl-render::active_effect_frames` returns normalized `[0, 1)` progress for
@@ -132,7 +136,8 @@ sh scripts/check-assets.sh                  PASS (32 PNGs, license, hashes)
 cargo check --locked -p drl-web --target wasm32-unknown-unknown  PASS
 cargo test -p drl-render                      PASS (pixel-grid, lighting, tone, and timeline contracts)
 cargo test -p drl-assets                      PASS (slot mappings, atlas bounds,
-                                             layer sets, descriptor order, UVs)
+                                             layer sets, roles, descriptor order,
+                                             UVs)
 cargo test -p drl-render                      PASS (layer draw ordering,
                                              screen/UV geometry, sources, and
                                              lighting factors, effect progress)
@@ -145,11 +150,12 @@ Chrome 151 WebGPU smoke playthrough          PASS (Apple Metal-3, 1280x720, DPR 
                                              audio state, move, mute, restart;
                                              pixel-grid scene visible after move)
 GitHub Actions run 32548718408               PASS (repository + Ubuntu WASM
-                                             browser jobs for this effect
-                                             progress slice)
+                                             browser jobs for the preceding
+                                             effect-progress slice)
 ```
 
-The local and hosted functional gates pass for this effect-progress slice;
+The local and hosted functional gates pass for the implementation commit of
+this layer-role slice; the hosted run is recorded in the handoff artifact.
 local browser execution remains `NOT_RUN` when the runner is unavailable. The
 existing Chrome run records browser/version, OS,
 adapter/backend, viewport, DPR, build revision, and audio unlock/mute state,
@@ -171,8 +177,8 @@ capture is available.
 ## Next
 
 The pixel-scale viewport, atlas metadata, UV geometry, draw-plan source
-metadata, lighting factors, and effect progress are covered by local checks
-and prior hosted WASM browser jobs. Continue M8 only with actual layer
-compositing or capture-backed measurement of lighting, effects, typography, and
-audio. Do not claim audiovisual parity from the current timing-only effect
-progress or the `NOT_RUN` legacy captures.
+metadata, fair lighting factors, effect progress, and layer input roles are
+covered by local checks and prior hosted WASM browser jobs. Continue M8 only
+with actual texture upload/compositing or capture-backed measurement of
+lighting, effects, typography, and audio. Do not claim audiovisual parity from
+renderer-neutral roles or the `NOT_RUN` legacy captures.
