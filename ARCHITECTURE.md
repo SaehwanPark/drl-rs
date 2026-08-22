@@ -27,7 +27,9 @@ types shared by core, MCP, bots, and frontends.
 - `drl-core`: pure deterministic maps, FOV/fog, combat, AI, items, levels,
   scenarios, bots, batches, and replay execution. Death drops delegate to the
   canonical `Item::from_spawn_kind` factory. `drl-core::item_definition` owns
-  the immutable Rust item-definition table used by that factory.
+  the immutable Rust item-definition table used by that factory, while
+  `drl-core::loot_definition` owns the pure six-outcome generated-loot lookup
+  applied to a caller-supplied roll.
 - `drl-protocol`: stable semantic boundary. Player observations now include
   map dimensions and player HP; actor/item views include stable presentation
   identifiers. `MonsterKind::definition()` is the Rust-owned typed content

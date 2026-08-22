@@ -149,6 +149,12 @@ The current item-definition follow-up centralizes all nine existing
 convenience factories through it. Supplied ammunition counts, current item
 properties, replay V1, and protocol schemas remain unchanged; legacy numeric
 parity and broader item/level migration remain open.
+The current generated-loot follow-up centralizes the procedural room-item
+selection in an immutable six-entry table (`0..35` 9mm ammo with 20 rounds,
+`35..55` small med-pack, `55..70` shells with 8 rounds, `70..85` shotgun,
+`85..95` green armor, and `95..100` Phase Device). It preserves the single
+roll, item-ID allocation, spawn ordering, and canonical item factory; it is
+not a balance or legacy-parity claim.
 The current M10 follow-ups add a versioned fixed-M4 command-history snapshot
 token with a bounded codec, transactional deterministic replay, a best-effort
 WASM `localStorage` boundary, and a versioned same-origin service-worker cache

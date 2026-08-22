@@ -235,6 +235,10 @@ documented in this file.
   spawn families and routed convenience factories through it. Ammo payloads,
   current properties, replay V1, and protocol schemas remain unchanged; this
   does not claim legacy numeric parity.
+- Centralized the six current procedural room-loot outcomes in an immutable
+  roll-bound table while preserving thresholds, fixed ammo payloads, RNG/ID
+  ordering, and canonical item construction. This is not a balance or legacy
+  parity claim.
 - Added a versioned fixed-session snapshot codec with strict size/corruption
   handling, deterministic replay restore, and best-effort WASM localStorage
   save/load controls. The static bundle now includes a manually versioned
