@@ -33,6 +33,9 @@ automated regressions, and human review.
   letterboxing through `drl-render::PixelViewport`; hosted run `32539486760`
   passes the repository and WASM browser jobs. Full audiovisual parity is still
   planned and capture-gated.
+- The active follow-up M8 slice centralizes visible-versus-explored lighting
+  bands in `drl-render`; this remains a presentation rule, not a legacy parity
+  claim.
 - `SPEC.md` contains the single active M8 slice; it is not a second roadmap.
 
 ## Milestones
@@ -113,9 +116,10 @@ stdio runner, and replay-verified virtual-agent tests.
 
 The first bounded pixel-scale layout slice is delivered: measure-free,
 observation-independent viewport math chooses centered integer square cells for
-the WebGPU surface. Remaining work is to measure atlas rectangles and layer
-compositing; implement
-lighting/LUTs, particles, animation/effect timing, HUD typography, cleared
+the WebGPU surface. The baseline visible-versus-explored fog band is also
+centralized in `drl-render`; capture-backed lighting/LUT parity remains open.
+Remaining work is to measure atlas rectangles and layer compositing; implement
+capture-backed lighting/LUT parity, particles, animation/effect timing, HUD typography, cleared
 legacy or replacement audio, music transitions, and automated visual/audio
 regressions against the M3 capture matrix. Use human review with tolerances;
 generated M7 tones are not an equivalence claim.
