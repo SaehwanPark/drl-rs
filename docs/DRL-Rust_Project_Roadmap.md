@@ -218,6 +218,11 @@ parity and broader Lua/content migration remain open.
 The current follow-up also routes game death drops through the existing typed
 `Item::from_spawn_kind` factory with all nine current spawn variants covered;
 item balance, legacy parity, and broader content migration remain open.
+The current M10 follow-up adds a versioned fixed-M4 command-history snapshot,
+bounded corruption/version handling, transactional replay restore, and a
+best-effort WASM localStorage boundary with save/load/clear controls. Broader
+save migration, service-worker offline behavior, and cross-browser acceptance
+remain open.
 Remaining work is visible outline/glow role-specific shader blending/layer
 compositing, additional per-sprite tint sourcing, broader content metadata;
 capture-backed lighting/LUT parity,

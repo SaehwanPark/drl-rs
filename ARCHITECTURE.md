@@ -75,8 +75,9 @@ types shared by core, MCP, bots, and frontends.
   static shell exports, WebGPU scene-geometry surface, DPR resize, deterministic
   square-cell pixel layout, validated same-origin texture-source decode, a
   renderer-owned WebGPU texture/view cache, caller-driven elapsed animation
-  rendering with visibility-lifecycle rebasing, and recoverable GPU/audio
-  status. It
+  rendering with visibility-lifecycle rebasing, a versioned fixed-session
+  command snapshot with bounded corruption handling and best-effort
+  localStorage persistence, and recoverable GPU/audio status. It
   never mirrors authoritative gameplay state into JavaScript.
 - `drl-mcp`: zero-dependency JSON-RPC/MCP semantic server and fairness boundary.
 - `drl-app`: native headless demo and MCP stdio runner, retained for tooling.

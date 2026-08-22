@@ -1,10 +1,13 @@
-import init, { boot, dispatch_inventory, resize, restart as restart_game, set_muted, set_volume, unlock_audio } from "./pkg/drl_web.js";
+import init, { boot, clear_save, dispatch_inventory, load, resize, restart as restart_game, save, set_muted, set_volume, unlock_audio } from "./pkg/drl_web.js";
 
 const status = document.querySelector("#game-status");
 const log = document.querySelector("#game-log");
 const canvas = document.querySelector("#game-canvas");
 const start = document.querySelector("#start-button");
 const restart = document.querySelector("#restart-button");
+const saveButton = document.querySelector("#save-button");
+const loadButton = document.querySelector("#load-button");
+const clearSaveButton = document.querySelector("#clear-save-button");
 const inventory = document.querySelector("#inventory");
 const mute = document.querySelector("#mute-button");
 const volume = document.querySelector("#volume-control");
@@ -53,6 +56,18 @@ inventory.addEventListener("click", (event) => {
 
 restart.addEventListener("click", () => {
   if (started) writeStatus(restart_game());
+});
+
+saveButton.addEventListener("click", () => {
+  if (started) writeStatus(save());
+});
+
+loadButton.addEventListener("click", () => {
+  if (started) writeStatus(load());
+});
+
+clearSaveButton.addEventListener("click", () => {
+  if (started) writeStatus(clear_save());
 });
 
 mute.addEventListener("click", () => {

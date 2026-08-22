@@ -15,6 +15,9 @@ use drl_render::{
   LightingBand, PixelRect, PresentationStep, RenderScene, effect_timeline_for_observations,
 };
 
+mod persistence;
+pub use persistence::SnapshotError;
+
 /// Returns the six UV coordinates for a top-left-origin textured quad.
 #[must_use]
 #[cfg_attr(not(target_arch = "wasm32"), allow(dead_code))]
@@ -364,6 +367,25 @@ impl BrowserSession {
     Ok(())
   }
 
+  /// Encodes successful fixed-session commands into a versioned save token.
+  pub fn snapshot_token(&self) -> Result<String, SnapshotError> {
+    persistence::encode_snapshot(&self.commands)
+  }
+
+  /// Rebuilds this session from a versioned token without exposing game state.
+  pub fn restore_snapshot(&mut self, token: &str) -> Result<(), SnapshotError> {
+    let commands = persistence::decode_snapshot(token)?;
+    let mut restored =
+      Self::new().map_err(|error| SnapshotError::Initialization(error.to_string()))?;
+    for command in commands {
+      restored
+        .submit(command)
+        .map_err(SnapshotError::CommandRejected)?;
+    }
+    *self = restored;
+    Ok(())
+  }
+
   /// Returns a replay-schema representation of the fixed browser session.
   ///
   /// The log uses the existing V1 schema; it does not create a browser-specific
@@ -475,7 +497,7 @@ pub(crate) mod wasm {
   use std::cell::RefCell;
   use wasm_bindgen::prelude::*;
   use wasm_bindgen_futures::JsFuture;
-  use web_sys::{HtmlCanvasElement, HtmlImageElement, Window};
+  use web_sys::{HtmlCanvasElement, HtmlImageElement, Storage, Window};
   use wgpu::util::DeviceExt;
   use winit::application::ApplicationHandler;
   use winit::event::{ElementState, WindowEvent};
@@ -492,6 +514,51 @@ pub(crate) mod wasm {
     static ANIMATION_CLOCK: RefCell<AnimationClock> = const { RefCell::new(AnimationClock { start_ms: None }) };
     static ANIMATION_LOOP: RefCell<Option<Closure<dyn FnMut(f64)>>> = const { RefCell::new(None) };
     static VISIBILITY_LISTENER: RefCell<Option<Closure<dyn FnMut()>>> = const { RefCell::new(None) };
+  }
+
+  const SAVE_STORAGE_KEY: &str = "drl-rust:m4-session:v1";
+
+  fn browser_storage() -> Result<Storage, SnapshotError> {
+    let window = web_sys::window()
+      .ok_or_else(|| SnapshotError::Initialization("window unavailable".to_string()))?;
+    window
+      .local_storage()
+      .map_err(|error| {
+        SnapshotError::Initialization(format!("localStorage unavailable: {error:?}"))
+      })?
+      .ok_or_else(|| SnapshotError::Initialization("localStorage unavailable".to_string()))
+  }
+
+  fn persist_session(session: &BrowserSession) -> Result<(), SnapshotError> {
+    let token = session.snapshot_token()?;
+    browser_storage()?
+      .set_item(SAVE_STORAGE_KEY, &token)
+      .map_err(|error| SnapshotError::Initialization(format!("save failed: {error:?}")))
+  }
+
+  fn remove_persisted_session() -> Result<(), SnapshotError> {
+    browser_storage()?
+      .remove_item(SAVE_STORAGE_KEY)
+      .map_err(|error| SnapshotError::Initialization(format!("clear failed: {error:?}")))
+  }
+
+  fn append_persistence_warning(status: String, warning: Option<String>) -> String {
+    match warning {
+      Some(warning) => format!("{status}{warning}"),
+      None => status,
+    }
+  }
+
+  fn save_after_command(session: &BrowserSession) -> Option<String> {
+    persist_session(session).err().map(|error| {
+      format!(" Save warning: current session was not persisted ({error}); use Save to retry.")
+    })
+  }
+
+  fn read_persisted_session() -> Result<Option<String>, SnapshotError> {
+    browser_storage()?
+      .get_item(SAVE_STORAGE_KEY)
+      .map_err(|error| SnapshotError::Initialization(format!("load failed: {error:?}")))
   }
 
   /// Loads and decodes one same-origin imported atlas layer.
@@ -1258,7 +1325,16 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
       .dyn_into::<HtmlCanvasElement>()?;
     canvas.set_width(768);
     canvas.set_height(512);
-    let session = BrowserSession::new().map_err(|error| JsValue::from_str(&error.to_string()))?;
+    let mut session =
+      BrowserSession::new().map_err(|error| JsValue::from_str(&error.to_string()))?;
+    let restore_message = match read_persisted_session() {
+      Ok(Some(token)) => match session.restore_snapshot(&token) {
+        Ok(()) => " Restored the saved session.".to_string(),
+        Err(error) => format!(" Saved session ignored ({error})."),
+      },
+      Ok(None) => String::new(),
+      Err(error) => format!(" Saved session unavailable ({error})."),
+    };
     let turn = session.observation().turn.count;
     let renderer = WebGpuRenderer::new(canvas.clone()).await?;
     renderer.render(&session.scene())?;
@@ -1291,9 +1367,11 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
     };
     let message = match texture_upload_error {
       Some(error) => {
-        format!("{audio_message} Texture upload unavailable; geometry fallback active ({error}).")
+        format!(
+          "{audio_message}{restore_message} Texture upload unavailable; geometry fallback active ({error})."
+        )
       }
-      None => format!("{audio_message} Textures uploaded: {texture_count}."),
+      None => format!("{audio_message}{restore_message} Textures uploaded: {texture_count}."),
     };
     status.set_text_content(Some(&message));
     if let Err(error) = start_animation_loop() {
@@ -1372,6 +1450,7 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
       }
       match session.submit(command) {
         Ok(step) => {
+          let persistence_warning = save_after_command(session);
           if let Some(document) = web_sys::window().and_then(|window| window.document()) {
             update_dom(&document, &step.after);
             if key == "Enter" {
@@ -1386,11 +1465,17 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
             }
           });
           render_scene(&RenderScene::from_observation(&step.after));
-          if session.is_game_over() {
+          let status = if session.is_game_over() {
             "Game over — press Restart to try again.".to_string()
           } else {
             format!("Turn {}: {:?}", step.after.turn.count, command)
+          };
+          if let Some(warning) = persistence_warning.as_deref()
+            && let Some(document) = web_sys::window().and_then(|window| window.document())
+          {
+            set_status(&document, warning);
           }
+          append_persistence_warning(status, persistence_warning)
         }
         Err(error) => format!("Command rejected: {error}"),
       }
@@ -1416,6 +1501,7 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
       let command = BrowserSession::inventory_command(action, ItemId::new(item_id));
       match session.submit(command) {
         Ok(step) => {
+          let persistence_warning = save_after_command(session);
           if let Some(document) = web_sys::window().and_then(|window| window.document()) {
             update_dom(&document, &step.after);
           }
@@ -1427,11 +1513,17 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
             }
           });
           render_scene(&RenderScene::from_observation(&step.after));
-          if session.is_game_over() {
+          let status = if session.is_game_over() {
             "Game over — press Restart to try again.".to_string()
           } else {
             format!("Turn {}: {:?}", step.after.turn.count, command)
+          };
+          if let Some(warning) = persistence_warning.as_deref()
+            && let Some(document) = web_sys::window().and_then(|window| window.document())
+          {
+            set_status(&document, warning);
           }
+          append_persistence_warning(status, persistence_warning)
         }
         Err(error) => format!("Inventory action rejected: {error}"),
       }
@@ -1459,17 +1551,86 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
       };
       match session.restart() {
         Ok(()) => {
+          let clear_warning = remove_persisted_session().err().map(|error| {
+            format!(
+              " Save clear warning: the previous save may remain ({error}); use Clear Save to retry."
+            )
+          });
           ANIMATION_CLOCK.with(|clock| clock.borrow_mut().reset());
           let observation = session.observation();
           if let Some(document) = web_sys::window().and_then(|window| window.document()) {
             update_dom(&document, &observation);
           }
           render_scene(&RenderScene::from_observation(&observation));
-          "Restarted deterministic M4 session.".to_string()
+          let status = "Restarted deterministic M4 session.".to_string();
+          if let Some(warning) = clear_warning.as_deref()
+            && let Some(document) = web_sys::window().and_then(|window| window.document())
+          {
+            set_status(&document, warning);
+          }
+          append_persistence_warning(status, clear_warning)
         }
         Err(error) => format!("Restart failed: {error}"),
       }
     })
+  }
+
+  /// Saves the successful fixed-session command history to versioned localStorage.
+  #[wasm_bindgen]
+  pub fn save() -> String {
+    let result = SESSION.with(|session_slot| {
+      let session_ref = session_slot.borrow();
+      let session = session_ref
+        .as_ref()
+        .ok_or_else(|| SnapshotError::Initialization("Press Start first.".to_string()))?;
+      persist_session(session)
+    });
+    match result {
+      Ok(()) => "Session saved on this device.".to_string(),
+      Err(error) => error.to_string(),
+    }
+  }
+
+  /// Loads and transactionally restores the versioned localStorage snapshot.
+  #[wasm_bindgen]
+  pub fn load() -> String {
+    let token = match read_persisted_session() {
+      Ok(Some(token)) => token,
+      Ok(None) => return "No saved session found.".to_string(),
+      Err(error) => return error.to_string(),
+    };
+    let result = SESSION.with(|session_slot| {
+      let mut session_ref = session_slot.borrow_mut();
+      let session = session_ref
+        .as_mut()
+        .ok_or_else(|| SnapshotError::Initialization("Press Start first.".to_string()))?;
+      session.restore_snapshot(&token)
+    });
+    match result {
+      Ok(()) => {
+        ANIMATION_CLOCK.with(|clock| clock.borrow_mut().reset());
+        TARGET.with(|target_slot| *target_slot.borrow_mut() = None);
+        if let Some(document) = web_sys::window().and_then(|window| window.document()) {
+          SESSION.with(|session_slot| {
+            if let Some(session) = session_slot.borrow().as_ref() {
+              update_dom(&document, &session.observation());
+              render_scene(&RenderScene::from_observation(&session.observation()));
+            }
+          });
+        }
+        "Session loaded from this device.".to_string()
+      }
+      Err(error) => format!("Load rejected: {error}"),
+    }
+  }
+
+  /// Removes the local save without changing the active simulation.
+  #[wasm_bindgen]
+  pub fn clear_save() -> String {
+    match remove_persisted_session() {
+      Ok(()) => "Saved session cleared.".to_string(),
+      Err(error) => error.to_string(),
+    }
   }
 
   /// Changes the user-visible mute state without affecting gameplay.
@@ -1525,8 +1686,8 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
 
 #[cfg(target_arch = "wasm32")]
 pub use wasm::{
-  WebGpuRenderer, boot, dispatch_inventory, dispatch_key, key_command, load_texture_source, resize,
-  restart, set_muted, set_volume, unlock_audio,
+  WebGpuRenderer, boot, clear_save, dispatch_inventory, dispatch_key, key_command, load,
+  load_texture_source, resize, restart, save, set_muted, set_volume, unlock_audio,
 };
 
 #[cfg(test)]
@@ -1693,6 +1854,79 @@ mod tests {
     let error = session.submit(Command::Descend).unwrap_err();
     assert!(!error.is_empty());
     assert_eq!(session.observation(), before);
+  }
+
+  #[test]
+  fn snapshot_round_trip_replays_fixed_session_deterministically() {
+    let mut session = BrowserSession::new().expect("fixed session");
+    for command in [
+      Command::Move(Direction::East),
+      Command::Move(Direction::East),
+      Command::Move(Direction::East),
+      Command::Pickup,
+    ] {
+      session.submit(command).expect("legal command");
+    }
+    let expected_observation = session.observation();
+    let expected_replay = session.replay_log();
+    let token = session.snapshot_token().expect("snapshot encoding");
+    assert!(token.starts_with("DRL-RUST-BROWSER-SAVE/1:fixed-m4-v1:"));
+
+    let mut restored = BrowserSession::new().expect("fixed session");
+    restored.restore_snapshot(&token).expect("snapshot restore");
+    assert_eq!(restored.observation(), expected_observation);
+    assert_eq!(restored.replay_log(), expected_replay);
+    assert_eq!(restored.snapshot_token().expect("re-encode"), token);
+  }
+
+  #[test]
+  fn snapshot_rejects_corruption_and_unknown_versions() {
+    let mut session = BrowserSession::new().expect("fixed session");
+    assert_eq!(
+      session.restore_snapshot("DRL-RUST-BROWSER-SAVE/2:fixed-m4-v1:w"),
+      Err(SnapshotError::UnsupportedVersion("2".to_string()))
+    );
+    assert_eq!(
+      session.restore_snapshot("DRL-RUST-BROWSER-SAVE/1:other:w"),
+      Err(SnapshotError::UnsupportedContent("other".to_string()))
+    );
+    assert_eq!(
+      session.restore_snapshot("not-a-snapshot"),
+      Err(SnapshotError::Malformed)
+    );
+    assert_eq!(
+      session.restore_snapshot("DRL-RUST-BROWSER-SAVE/1:fixed-m4-v1:w;;p"),
+      Err(SnapshotError::Malformed)
+    );
+    let oversized = format!("DRL-RUST-BROWSER-SAVE/1:fixed-m4-v1:{}", "w;".repeat(8193));
+    assert_eq!(
+      session.restore_snapshot(&oversized),
+      Err(SnapshotError::TooLarge)
+    );
+  }
+
+  #[test]
+  fn snapshot_codec_covers_every_command_variant() {
+    let commands = [
+      Command::Move(Direction::None),
+      Command::Move(Direction::NorthWest),
+      Command::AttackMelee(Direction::SouthEast),
+      Command::AttackRanged(Position::new(-3, 8)),
+      Command::Wait,
+      Command::Pickup,
+      Command::Drop(ItemId::new(4)),
+      Command::Equip(ItemId::new(5)),
+      Command::Unequip(drl_protocol::EquipmentSlot::Weapon),
+      Command::Unequip(drl_protocol::EquipmentSlot::Armor),
+      Command::Use(ItemId::new(6)),
+      Command::Reload,
+      Command::Descend,
+    ];
+    let token = persistence::encode_snapshot(&commands).expect("codec encoding");
+    assert_eq!(
+      persistence::decode_snapshot(&token).expect("codec decoding"),
+      commands
+    );
   }
 
   #[test]
