@@ -88,6 +88,9 @@ automated regressions, and human review.
   declarations, graphics rights metadata, and service-worker coverage. Signed
   releases, cache invalidation policy, and offline/cross-browser acceptance
   remain open.
+- The M12 cache-version follow-up derives the generated service-worker cache
+  name from the manifest source-revision prefix; this is deterministic naming,
+  not a signed release invalidation policy.
 
 ## Milestones
 
@@ -294,9 +297,10 @@ Produce reproducible static HTTPS/PWA bundles, asset license notices,
 cache/version policy, accessibility audit, browser support/error screens,
 telemetry-free diagnostics, and signed release manifests. The first manifest
 slice records source revision, artifact hashes, rights metadata, and
-service-worker coverage; cache/version policy, signing, and release audits
-remain open. WebGPU remains the 1.0 baseline; do not imply support for
-untested browsers.
+service-worker coverage; its cache-version follow-up derives the generated
+worker name from that source-revision prefix. Signing, release audits, and a
+broader invalidation policy remain open. WebGPU remains the 1.0 baseline; do
+not imply support for untested browsers.
 
 ### M13 — Browser-first 1.0 release (planned)
 

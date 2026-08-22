@@ -9,6 +9,8 @@ documented in this file.
   source revision, sorted artifact SHA-256 hashes, generated-file declarations,
   graphics rights metadata, and a service-worker coverage check. The manifest
   is unsigned packaging evidence, not offline or cross-browser acceptance.
+- Derived generated service-worker cache versions from the manifest source
+  revision prefix and verified the generated worker against that manifest.
 - Added pure M11 cohort regression comparisons with caller-declared finite
   non-negative win-rate and average-turn tolerances. Policy/sample mismatches
   are rejected, and no statistical or balance claim is inferred.

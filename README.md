@@ -116,7 +116,8 @@ legacy graphics metadata; it is not a dependency of the core.
   - Browser session, fair observation boundary, validated texture loading,
     renderer-owned WebGPU uploads, and the partial textured pass.
   - Animation playback, bounded scheduling, fixed-session snapshots,
-    best-effort localStorage, and the generated-bundle service-worker cache.
+    best-effort localStorage, generated-bundle service-worker cache, and the
+    source-revision-derived cache version recorded by release manifests.
 - `crates/drl-mcp`: JSON-RPC/MCP server and fairness boundary.
 - `crates/drl-app`: native headless demo and MCP stdio runner.
 - `docs/DRL-Rust_Project_Roadmap.md`: canonical milestones and gates.
