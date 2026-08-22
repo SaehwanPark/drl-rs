@@ -15,7 +15,7 @@ progress. This file expands exactly one active implementation slice.
   redistribution-gated; its controlled reference-capture gate is `NOT_RUN` on
   arm64 macOS and remains an M8 acceptance dependency.
 
-## Present — M8 GPU texture upload
+## Present — M8 base textured pass
 
 Status: The M7 browser slice passed functional acceptance locally and in
 remote web CI. The delivered M8 pixel-grid, visibility-band, low-health tone,
@@ -27,10 +27,12 @@ from fair render scenes, attached imported texture-source paths and dimensions,
 and carried fair visible/explored lighting into each layer draw entry. The
 preceding bounded loader added a subpath-safe browser URL boundary and a WASM
 image decode path that validates each imported layer's measured dimensions.
-This follow-up builds a stable unique-source manifest and uploads those
-decoded images into renderer-owned WebGPU texture/view resources. The existing
-geometry pipeline still does not sample or blend them, and no capture-backed
-audiovisual equivalence is claimed.
+The GPU-upload follow-up builds a stable unique-source manifest and uploads
+those decoded images into renderer-owned WebGPU texture/view resources. This
+slice adds a nearest-filtered base-color WGSL pass driven by fair grouped
+sprite composites; the existing geometry pass remains underneath as a
+recoverable fallback. Role-specific blend equations and capture-backed
+audiovisual equivalence are not claimed.
 
 ### Observable behavior
 
@@ -122,6 +124,10 @@ audiovisual equivalence is claimed.
   source once into a persistent `Rgba8UnormSrgb` texture/view cache using the
   WebGPU external-image copy API. The cache is renderer-owned and does not
   advance gameplay.
+- The WASM renderer samples each composite's base source with a nearest-filtered
+  bind group, top-left-origin UVs, alpha blending, and the fair visible or
+  explored lighting factor. Missing cache entries skip only the textured pass;
+  the deterministic geometry fallback still presents the scene.
 - Every layer draw carries its fair `LightingBand`: explored tile memory uses
   the fixed explored factor, while visible tiles/items/actors use full light.
 - `drl-render::active_effect_frames` returns normalized `[0, 1)` progress for
@@ -188,16 +194,16 @@ capture is available.
 - Legacy audio/music/fonts are not shipped until rights are documented.
 - Full audiovisual equivalence is M8: capture-backed tolerances, visual
   regressions, cue timing, and structured human comparison.
-- Shader sampling, role-specific blend equations, animation frame selection,
-  and layer compositing remain future M8 slices; this cache only proves the
-  decoded-image-to-GPU resource boundary.
+- Mask/colorization, outline/glow, emissive, animation frame selection, and
+  capture-backed legacy shader equivalence remain future M8 slices; this base
+  pass is an intentionally partial compositor.
 
 ## Next
 
 The pixel-scale viewport, atlas metadata, UV geometry, draw-plan source
 metadata, fair lighting factors, effect progress, layer input roles, grouped
-sprite composites, validated browser source loading, and renderer-owned GPU
-texture upload are covered by local checks and prior hosted WASM browser jobs.
-Continue M8 only with actual shader sampling/compositing or capture-backed measurement of
+sprite composites, validated browser source loading, renderer-owned GPU
+texture upload, and base-color sampling are covered by local checks and prior
+hosted WASM browser jobs. Continue M8 only with role-specific compositing or capture-backed measurement of
 lighting, effects, typography, and audio. Do not claim audiovisual parity from
 renderer-neutral grouping or the `NOT_RUN` legacy captures.
