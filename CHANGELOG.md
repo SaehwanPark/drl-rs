@@ -100,6 +100,10 @@ documented in this file.
 - Added a native contract test over the shared textured WGSL source, guarding
   base/emissive sampling, fair-lighting `max`, alpha cutout, and output terms
   while the runtime shader remains WASM-only.
+- Added the bounded colorization-mask role to the textured WGSL pass. Optional
+  mask views use the retained transparent fallback, and the current fair scene
+  path supplies a neutral zero tint until per-sprite tint provenance is
+  implemented; outline/glow and capture-backed shader parity remain open.
 - Added pure `active_effect_frames` progress mapping for fair effect spans;
   frontend ticks receive stable normalized progress without advancing gameplay
   or claiming legacy animation-frame parity.

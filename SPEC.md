@@ -15,7 +15,7 @@ progress. This file expands exactly one active implementation slice.
   redistribution-gated; its controlled reference-capture gate is `NOT_RUN` on
   arm64 macOS and remains an M8 acceptance dependency.
 
-## Present — M8 emissive role pass
+## Present — M8 colorization-mask role pass
 
 Status: The M7 browser slice passed functional acceptance locally and in
 remote web CI. The delivered M8 pixel-grid, visibility-band, low-health tone,
@@ -28,13 +28,13 @@ and carried fair visible/explored lighting into each layer draw entry. The
 preceding bounded loader added a subpath-safe browser URL boundary and a WASM
 image decode path that validates each imported layer's measured dimensions.
 The GPU-upload follow-up builds a stable unique-source manifest and uploads
-those decoded images into renderer-owned WebGPU texture/view resources. This
-slice adds a nearest-filtered base-color WGSL pass driven by fair grouped
-sprite composites; the existing geometry pass remains underneath as a
-recoverable fallback. This slice also pairs each base source with its optional
-emissive source and applies the verified emissive lighting floor; role-specific
-blend equations beyond that floor and capture-backed audiovisual equivalence
-are not claimed.
+those decoded images into renderer-owned WebGPU texture/view resources. The
+base/emissive follow-ups add nearest-filtered WGSL sampling, the verified
+emissive lighting floor, the legacy alpha cutoff, and a native shader contract.
+This slice adds optional colorization-mask sampling and a neutral per-vertex
+tint boundary; current fair scenes supply a zero tint, so no unverified visual
+color change is introduced. Per-sprite tint sourcing, outline/glow equations,
+and capture-backed audiovisual equivalence remain open.
 
 ### Observable behavior
 
@@ -137,9 +137,14 @@ are not claimed.
 - The textured fragment shader discards sampled base alpha below the verified
   legacy `0.1` cutoff before source-alpha blending; exact-threshold fragments
   survive and all other lighting behavior is unchanged.
+- The textured fragment shader samples an optional colorization-mask source and
+  adds its RGB contribution multiplied by the supplied per-vertex tint. The
+  current fair scene path supplies a neutral zero tint, and a transparent
+  fallback is used when a mask source is unavailable.
 - The WGSL source is shared with a native shader-contract test that checks the
-  base/emissive samples, fair-lighting `max`, alpha cutout, and output path;
-  native tests therefore guard the WASM-only runtime shader text.
+  base/emissive/mask samples, fair-lighting `max`, neutral tint input, alpha
+  cutout, and output path; native tests therefore guard the WASM-only runtime
+  shader text.
 - Every layer draw carries its fair `LightingBand`: explored tile memory uses
   the fixed explored factor, while visible tiles/items/actors use full light.
 - `drl-render::active_effect_frames` returns normalized `[0, 1)` progress for
@@ -188,8 +193,9 @@ GitHub Actions run 32548718408               PASS (repository + Ubuntu WASM
                                              effect-progress slice)
 ```
 
-The local and hosted functional gates pass for this emissive-role slice; the
-hosted run is recorded in the handoff artifact.
+The local and hosted functional gates pass for the preceding textured-pass
+slices; this colorization-mask slice must add its own hosted run to the
+handoff artifact.
 
 local browser execution remains `NOT_RUN` when the runner is unavailable. The
 existing Chrome run records browser/version, OS,
@@ -206,18 +212,18 @@ capture is available.
 - Legacy audio/music/fonts are not shipped until rights are documented.
 - Full audiovisual equivalence is M8: capture-backed tolerances, visual
   regressions, cue timing, and structured human comparison.
-- Mask/colorization, outline/glow, animation frame selection, and capture-backed
-  legacy shader equivalence remain future M8 slices; this pass is an
-  intentionally partial compositor.
+- Per-sprite tint sourcing, outline/glow, animation frame selection, and
+  capture-backed legacy shader equivalence remain future M8 slices; this pass
+  is an intentionally partial compositor.
 
 ## Next
 
 The pixel-scale viewport, atlas metadata, UV geometry, draw-plan source
 metadata, fair lighting factors, effect progress, layer input roles, grouped
 sprite composites, validated browser source loading, renderer-owned GPU
-texture upload, base-color sampling, the emissive lighting floor, and the
-legacy alpha cutoff are covered by local checks and prior hosted WASM browser
-jobs. Continue M8 only
-with mask/colorization, outline/glow, animation, or capture-backed measurement of
-lighting, effects, typography, and audio. Do not claim audiovisual parity from
-renderer-neutral grouping or the `NOT_RUN` legacy captures.
+texture upload, base-color sampling, the emissive lighting floor, the legacy
+alpha cutoff, and optional neutral-tint mask sampling are covered by local
+checks and hosted WASM browser jobs. Continue M8 with per-sprite tint sourcing,
+outline/glow, animation, or capture-backed measurement of lighting, effects,
+typography, and audio. Do not claim audiovisual parity from renderer-neutral
+grouping or the `NOT_RUN` legacy captures.

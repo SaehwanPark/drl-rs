@@ -25,9 +25,10 @@ pub(crate) struct GpuTextureCache {
   entries: Vec<UploadedTexture>,
 }
 
-/// One source-specific bind group used by the base-color pass.
+/// One source-specific bind group used by the base/mask/emissive pass.
 pub(crate) struct TextureBinding {
   pub(crate) source: AtlasTextureSource,
+  pub(crate) mask: Option<AtlasTextureSource>,
   pub(crate) emissive: Option<AtlasTextureSource>,
   pub(crate) bind_group: wgpu::BindGroup,
 }
@@ -117,40 +118,55 @@ impl GpuTextureCache {
       let Some(base_view) = self.view(base) else {
         continue;
       };
+      let mask = atlas
+        .layers()
+        .iter()
+        .find(|layer| **layer == SpriteLayer::Mask)
+        .map(|_| atlas.texture_source(SpriteLayer::Mask));
       let emissive = atlas.texture_source(SpriteLayer::Emissive);
-      for emissive_source in [None, Some(emissive)] {
-        let emissive_view = emissive_source
-          .and_then(|source| self.view(source))
-          .unwrap_or(fallback_view);
-        bindings.push(TextureBinding {
-          source: base,
-          emissive: emissive_source,
-          bind_group: device.create_bind_group(&wgpu::BindGroupDescriptor {
-            label: Some(base.path),
-            layout,
-            entries: &[
-              wgpu::BindGroupEntry {
-                binding: 0,
-                resource: wgpu::BindingResource::TextureView(base_view),
-              },
-              wgpu::BindGroupEntry {
-                binding: 1,
-                resource: wgpu::BindingResource::TextureView(emissive_view),
-              },
-              wgpu::BindGroupEntry {
-                binding: 2,
-                resource: wgpu::BindingResource::Sampler(sampler),
-              },
-            ],
-          }),
-        });
+      for mask_source in [None, mask] {
+        for emissive_source in [None, Some(emissive)] {
+          let mask_view = mask_source
+            .and_then(|source| self.view(source))
+            .unwrap_or(fallback_view);
+          let emissive_view = emissive_source
+            .and_then(|source| self.view(source))
+            .unwrap_or(fallback_view);
+          bindings.push(TextureBinding {
+            source: base,
+            mask: mask_source,
+            emissive: emissive_source,
+            bind_group: device.create_bind_group(&wgpu::BindGroupDescriptor {
+              label: Some(base.path),
+              layout,
+              entries: &[
+                wgpu::BindGroupEntry {
+                  binding: 0,
+                  resource: wgpu::BindingResource::TextureView(base_view),
+                },
+                wgpu::BindGroupEntry {
+                  binding: 1,
+                  resource: wgpu::BindingResource::TextureView(emissive_view),
+                },
+                wgpu::BindGroupEntry {
+                  binding: 2,
+                  resource: wgpu::BindingResource::TextureView(mask_view),
+                },
+                wgpu::BindGroupEntry {
+                  binding: 3,
+                  resource: wgpu::BindingResource::Sampler(sampler),
+                },
+              ],
+            }),
+          });
+        }
       }
     }
     bindings
   }
 }
 
-/// Pipeline and source-specific bind groups for the partial base-color/emissive pass.
+/// Pipeline and source-specific bind groups for the partial base/mask/emissive pass.
 pub(crate) struct BaseTexturePipeline {
   pipeline: wgpu::RenderPipeline,
   bindings: Vec<TextureBinding>,
@@ -159,7 +175,7 @@ pub(crate) struct BaseTexturePipeline {
 }
 
 impl BaseTexturePipeline {
-  /// Builds a nearest-filtered base-color/emissive pipeline and its source bindings.
+  /// Builds a nearest-filtered base/mask/emissive pipeline and its source bindings.
   pub(crate) fn new(
     device: &wgpu::Device,
     queue: &wgpu::Queue,
@@ -191,6 +207,16 @@ impl BaseTexturePipeline {
         },
         wgpu::BindGroupLayoutEntry {
           binding: 2,
+          visibility: wgpu::ShaderStages::FRAGMENT,
+          ty: wgpu::BindingType::Texture {
+            sample_type: wgpu::TextureSampleType::Float { filterable: true },
+            view_dimension: wgpu::TextureViewDimension::D2,
+            multisampled: false,
+          },
+          count: None,
+        },
+        wgpu::BindGroupLayoutEntry {
+          binding: 3,
           visibility: wgpu::ShaderStages::FRAGMENT,
           ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
           count: None,
@@ -255,7 +281,7 @@ impl BaseTexturePipeline {
         entry_point: Some("vs_main"),
         compilation_options: wgpu::PipelineCompilationOptions::default(),
         buffers: &[Some(wgpu::VertexBufferLayout {
-          array_stride: 32,
+          array_stride: 48,
           step_mode: wgpu::VertexStepMode::Vertex,
           attributes: &[
             wgpu::VertexAttribute {
@@ -272,6 +298,11 @@ impl BaseTexturePipeline {
               format: wgpu::VertexFormat::Float32x4,
               offset: 16,
               shader_location: 2,
+            },
+            wgpu::VertexAttribute {
+              format: wgpu::VertexFormat::Float32x4,
+              offset: 32,
+              shader_location: 3,
             },
           ],
         })],
@@ -314,10 +345,11 @@ impl BaseTexturePipeline {
     !vertices.is_empty()
       && !self.bindings.is_empty()
       && batches.iter().all(|batch| {
-        self
-          .bindings
-          .iter()
-          .any(|binding| binding.source == batch.source && binding.emissive == batch.emissive)
+        self.bindings.iter().any(|binding| {
+          binding.source == batch.source
+            && binding.mask == batch.mask
+            && binding.emissive == batch.emissive
+        })
       })
   }
 
@@ -359,11 +391,11 @@ impl BaseTexturePipeline {
     pass.set_pipeline(&self.pipeline);
     pass.set_vertex_buffer(0, vertex_buffer.slice(..));
     for batch in batches {
-      if let Some(binding) = self
-        .bindings
-        .iter()
-        .find(|binding| binding.source == batch.source && binding.emissive == batch.emissive)
-      {
+      if let Some(binding) = self.bindings.iter().find(|binding| {
+        binding.source == batch.source
+          && binding.mask == batch.mask
+          && binding.emissive == batch.emissive
+      }) {
         pass.set_bind_group(0, &binding.bind_group, &[]);
         pass.draw(batch.start..batch.start + batch.count, 0..1);
       }
@@ -373,6 +405,7 @@ impl BaseTexturePipeline {
 
 struct TextureBatch {
   source: AtlasTextureSource,
+  mask: Option<AtlasTextureSource>,
   emissive: Option<AtlasTextureSource>,
   start: u32,
   count: u32,
@@ -384,6 +417,11 @@ fn push_texture_vertex(vertices: &mut Vec<u8>, x: f32, y: f32, u: f32, v: f32, l
   vertices.extend_from_slice(&u.to_ne_bytes());
   vertices.extend_from_slice(&v.to_ne_bytes());
   for component in [lighting, lighting, lighting, 1.0] {
+    vertices.extend_from_slice(&component.to_ne_bytes());
+  }
+  // Fair scenes do not yet expose a per-sprite tint. Keep the mask role
+  // neutral until that contract is evidence-backed.
+  for component in [0.0_f32, 0.0, 0.0, 0.0] {
     vertices.extend_from_slice(&component.to_ne_bytes());
   }
 }
@@ -422,7 +460,7 @@ fn base_texture_vertices(
   let mut vertices = Vec::new();
   let mut batches = Vec::new();
   for composite in composites {
-    let start = (vertices.len() / 32) as u32;
+    let start = (vertices.len() / 48) as u32;
     push_texture_quad(
       &mut vertices,
       composite.destination,
@@ -432,6 +470,7 @@ fn base_texture_vertices(
     );
     batches.push(TextureBatch {
       source: composite.base,
+      mask: composite.mask,
       emissive: composite.emissive,
       start,
       count: 6,

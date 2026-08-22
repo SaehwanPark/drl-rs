@@ -109,13 +109,15 @@ types shared by core, MCP, bots, and frontends.
   sources in deterministic order. WASM boot uploads each validated source once
   with `Queue::copy_external_image_to_texture` into linear `Rgba8Unorm` storage
   and retains its texture/view;
-  the base-color pass samples those views with nearest filtering, and the
-  paired emissive view raises the fair lighting floor from its red channel.
-  Missing emissive roles use a retained transparent 1x1 fallback; mask,
-  colorization, and outline/glow compositing remain later boundaries. The WGSL
-  pass discards base fragments below the verified `0.1` alpha cutoff before
-  source-alpha blending. The WGSL source is defined at the crate boundary so a
-  native contract test can guard its binding and compositing terms.
+  the base-color pass samples those views with nearest filtering, the paired
+  emissive view raises the fair lighting floor from its red channel, and the
+  optional colorization-mask view is sampled with a neutral zero per-vertex
+  tint. Missing optional roles use a retained transparent 1x1 fallback;
+  per-sprite tint sourcing and outline/glow compositing remain later
+  boundaries. The WGSL pass discards base fragments below the verified `0.1`
+  alpha cutoff before source-alpha blending. The WGSL source is defined at the
+  crate boundary so a native contract test can guard its binding and
+  compositing terms.
 - `LayerDraw::lighting` carries the fair visibility band for the source sprite;
   explored tile memory is shaded by the shared fog factor and visible scene
   sprites use full light. A compositor must not derive this from hidden state.
