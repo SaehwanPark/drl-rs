@@ -1,340 +1,313 @@
 # Architecture
 
 Last reviewed: 2026-08-22
+Current project version: `0.2.10`
 
-Status: Verified for the current headless and browser-slice implementation;
-full audiovisual parity remains planned.
+Status: Verified for current deterministic headless core, MCP tooling, and
+browser-playable WebGPU slice; full audiovisual parity remains planned.
 
-## Boundaries
+---
+
+## 1. Core Architectural Principles
+
+DRL-Rust reimplements *Doom the Roguelike* with modern software engineering
+invariants:
+
+- **Functional Core, Imperative Shell**: Pure, deterministic game logic in
+  `drl-core`; all side effects (WebGPU, Web Audio, DOM, MCP, I/O) are confined
+  to the outer boundary crates (`drl-web`, `drl-audio`, `drl-app`).
+- **Strict Determinism & Replayability**: Seedable PRNG (`GameRng`), explicit
+  command-driven turn execution, zero ambient state, and bit-exact replay
+  verification.
+- **Fair Information Boundaries**: Frontends and AI agents consume only fair
+  `PlayerObservation` views (active FOV, explored fog memory, visible entities);
+  internal `World` state is never exposed to clients.
+- **Zero External Dependencies in Core**: `drl-core` and `drl-protocol` are pure
+  Rust crates with zero dependencies on WebGPU, Web Audio, DOM, filesystem,
+  network, or MCP libraries.
+- **No Runtime Scripting**: Lua is treated as build-time reference and
+  conversion evidence only; no Lua runtime exists in the WASM browser bundle.
+
+---
+
+## 2. System Boundaries & Data Flow
 
 ```text
-HTML/DOM input and accessibility shell
-  -> drl-web::BrowserSession / semantic Command
-  -> drl-core::Game (deterministic simulation)
-  -> PlayerObservation + GameEvent
-  -> drl-render::RenderScene -> WASM WebGPU canvas
-  -> drl-audio::AudioCue -> user-unlocked Web Audio
+HTML / DOM UI / Keyboard / MCP Tool Call
+  │
+  ▼
+drl-protocol::Command (semantic input)
+  │
+  ▼
+drl-core::Game::step (deterministic simulation authority)
+  │
+  ├─► drl-protocol::PlayerObservation (fair FOV/fog/entity state)
+  ├─► drl-protocol::GameEvent (ordered simulation events)
+  │
+  ▼
+Presentation Boundary
+  ├─► drl-render::RenderScene ──► drl-web WebGPU Canvas
+  └─► drl-audio::AudioCue   ──► drl-audio Web Audio Mixer
 ```
 
-`drl-core` is the authority for world state, legality, action costs, seeded
-randomness, replay, and events. It does not depend on rendering, audio,
-browser APIs, filesystem, network, or MCP. `drl-protocol` contains semantic
-commands, observations, events, item/actor identifiers, scenarios, and replay
-types shared by core, MCP, bots, and frontends.
+### Data Flow Invariants
 
-## Workspace crates
+1. **Client Input**: All clients (headless tests, MCP agents, browser DOM,
+   future native apps) interact with the game exclusively by submitting
+   `drl-protocol::Command` values.
+2. **Simulation Authority**: `drl-core` is the sole authority for world state,
+   action legality, action costs, energy scheduling, PRNG consumption, and
+   event emission.
+3. **One-Way Presentation**: Presentation layers (`drl-render`, `drl-audio`,
+   `drl-web`) consume observations and events only. Rendering, animation, audio,
+   tab visibility, viewport resize, or GPU device loss **never** advance the
+   simulation or alter PRNG streams.
+4. **Transactional Rollback**: Illegal or rejected commands roll back the
+   session checkpoint without advancing turn counters or modifying world state.
 
-- `drl-core`: pure deterministic maps, FOV/fog, combat, AI, items, levels,
-  scenarios, bots, batches, and replay execution. Death drops delegate to the
-  canonical `Item::from_spawn_kind` factory. `drl-core::item_definition` owns
-  the immutable Rust item-definition table used by that factory, while
-  `drl-core::loot_definition` owns the pure six-outcome generated-loot lookup
-  applied to a caller-supplied roll and `monster_roll_definition` owns the
-  pure four-outcome generated-monster lookup. Core `Tile` values delegate
-  physical semantics through the protocol-owned immutable `TileKind` table.
-  `CohortConfig` and `CohortReport` wrap the existing batch entrypoints with an
-  explicit fixed-seed sample definition, policy identity, aggregate metrics,
-  and per-seed replay records. `CohortReport::validate` checks record count,
-  wrapping seed order, replay seed identity, and aggregate-summary coherence;
-  `CohortTolerances` and `CohortComparison` add pure compatible-report
-  regression math. `CohortOutcomeDistribution` derives distinct outcome
-  counts and sample-normalized rates only after report validation.
-  `CohortOutcomeComparison` reports absolute per-category rate deltas for
-  compatible validated reports, and `CohortOutcomeTolerances` applies one
-  caller-owned finite non-negative bound without changing game execution.
-  `drl-core::level_definition` owns the immutable standard procedural-level
-  policy; callers can still supply custom `LevelGeneratorConfig` values.
-- `drl-protocol`: stable semantic boundary. Player observations now include
-  map dimensions and player HP; actor/item views include stable presentation
-  identifiers. `MonsterKind::definition()` is the Rust-owned typed content
-  table for current monster metadata; `TileKind::definition()` is the
-  Rust-owned five-tile semantic table; compatibility accessors remain stable.
-  MCP wire serialization and replay schema remain compatible.
-- `drl-assets`: platform-neutral atlas IDs, imported PNG dimensions, measured
-  32-pixel rectangles, deterministic registered layer sets and shader input
-  roles, semantic
-  tile/actor/item lookup, normalized UV geometry, deterministic texture-source
-  bindings, and legacy revision identity.
-  It has no decoder or platform dependency and core does not depend on it.
-- `drl-render`: deterministic `PresentationStep`, `RenderScene`, target
-  candidates, bounded event-to-effect builders, observation-independent
-  `PixelViewport`/`PixelRect` layout math, visibility-derived
-  `LightingBand`/`shade_color` rules, health-derived `SceneTone`/clear color,
-  and the pure source-derived `low_health_pulse_target_alpha` target plus
-  caller-owned `LowHealthPulseState` smoothing,
-  `explosion_mark_phase` selection,
-  `effect_segment_index_at_elapsed` arithmetic,
-  `kill_animation_segment_index_at_elapsed` arithmetic,
-  `fx_animation_frame_index_at_elapsed` arithmetic,
-  `move_animation_progress_at_elapsed` arithmetic,
-  `missile_step_index_at_elapsed` arithmetic,
-  `missile_ray_sample_distance_at_index` arithmetic,
-  `screen_shake_fade_at_elapsed` arithmetic,
-  `particle_burst_origin_at_legacy_cell` arithmetic,
-  `particle_burst_direction` normalization and arc-to-Z arithmetic,
-  `particle_burst_range_sample` affine range arithmetic,
-  `particle_decal_cell_at_rounded_world` cell mapping arithmetic,
-  `particle_decal_placement_at_rounded_world` cell/pixel placement arithmetic,
-  `particle_decal_cell_is_eligible` map/flag eligibility arithmetic,
-  `particle_decal_insertion_at_rounded_world` caller-owned sprite insertion
-  requests,
-  `ParticleDecalStore` bounded insertion-order retention and explicit capacity
-  errors,
-  post-process glow/LUT coordinate math and pure blur-tap plans,
-  event-ordered `EffectSpan` timing, and renderer-neutral `LayerDraw` plans
-  carrying atlas layers, imported source metadata, explicit layer roles, fair
-  lighting, evidence-backed Green Armor/Phase Device/StairsDown colorization
-  tint,
-  optional outline-mask transport and straight-alpha compositing, evidenced
-  sprite animation metadata,
-  caller-supplied progress-selected UVs, elapsed-time playback math and layer
-  plans, pixel destinations, and normalized
-  UVs;
-  `sprite_composite_plan`
-  groups complete role sets for a future backend. It consumes player
-  observations/events
-  only; `active_effect_frames` maps those fair spans to frontend progress;
-  GPU ownership is in the WASM shell.
-  `drl-web` carries fair, visibility-filtered spans through each successful
-  `PresentationStep`.
-- `drl-audio`: deterministic event-to-`AudioCue` mapping and a WASM Web Audio
-  mixer with explicit user-gesture unlock, mute, and volume state.
-- `drl-web`: `cdylib + rlib` browser session, Winit/DOM command mapping,
-  static shell exports, WebGPU scene-geometry surface, DPR resize, deterministic
-  square-cell pixel layout, validated same-origin texture-source decode, a
-  renderer-owned WebGPU texture/view cache, caller-driven elapsed animation
-  rendering with visibility-lifecycle rebasing, a versioned fixed-session
-  command snapshot with bounded corruption handling and best-effort
-  localStorage persistence, a versioned static service-worker cache boundary,
-  deterministic release-manifest generation/checks plus a manifest digest
-  sidecar for static bundles, source-
-  project-versioned/source-derived service-worker cache versioning, a local
-  mocked service-worker lifecycle/fetch contract,
-  release-manifest source-identity validation,
-  accessible browser-support diagnostics surface, a static accessibility
-  contract for the HTML shell, and
-  recoverable GPU/audio status. Project version projections are checked by the
-  repository harness and release-manifest verifier. It never mirrors
-  authoritative gameplay state into JavaScript.
-- `drl-mcp`: zero-dependency JSON-RPC/MCP semantic server and fairness boundary.
-- `drl-app`: native headless demo and MCP stdio runner, retained for tooling.
-- `drl-script`: conversion/content boundary placeholder; no runtime Lua.
+---
 
-## Data and effect rules
+## 3. Workspace Crates
 
-- Browser flow is `Command -> Game -> before observation/events/after
-  observation -> scene/cues -> effects`. A failed command restores the browser
-  session checkpoint and reports an error.
-- Rendering, animation, audio, tab visibility, resize/DPR, and GPU loss never
-  advance the simulation.
-- The bounded browser animation loop consumes `requestAnimationFrame` timestamps
-  only for caller-supplied elapsed rendering; hidden documents skip presentation
-  work, visibility transitions rebase the presentation clock even when RAF is
-  throttled, and a failed frame never submits a simulation command.
-- `PixelViewport` chooses an integer square cell size from physical canvas
-  dimensions and centers the map; presentation backends may letterbox but may
-  not stretch logical cells independently by axis.
-- `LightingBand` derives only from the fair tile visibility bit: visible tiles
-  use full light and explored memory uses the fixed fog factor. It cannot
-  reveal or consult hidden simulation state.
-- `SceneTone` derives only from fair player HP and preserves the existing
-  quarter-health threshold; its clear color is a presentation effect, never a
-  simulation or hidden-state channel.
-- `EffectSpan` uses fixed logical durations and event order only. Frontends may
-  map ticks to frames, but presentation timing cannot advance the simulation.
-- `explosion_mark_phase` preserves the pinned three-bucket integer selector and
-  its post-duration second-phase fallback. Delay scheduling, lifecycle,
-  palette mapping, sprites, and capture parity remain caller/backend work.
-- `effect_segment_index_at_elapsed` preserves the signed integer quotient and
-  sign correction used by cell/item animation draws. It rejects zero durations
-  and out-of-range results without importing sprite, level, item, or lifecycle
-  state.
-- `kill_animation_segment_index_at_elapsed` preserves the pinned lead-delay,
-  reverse-branch, quotient, and terminal-clamp arithmetic. It rejects empty or
-  zero-duration metadata without importing actor, sprite-table, light, or
-  lifecycle state.
-- `fx_animation_frame_index_at_elapsed` preserves the pinned FX quotient and
-  terminal clamp. It rejects empty or zero-duration metadata without importing
-  sprite IDs, atlas columns, lifecycle, or backend state.
-- `move_animation_progress_at_elapsed` preserves the pinned normalized elapsed
-  ratio and `[0, 1]` clamp. It rejects zero duration without importing
-  coordinates, lighting, entity state, interpolation, lifecycle, or backend
-  state.
-- `missile_step_index_at_elapsed` preserves the pinned minimum-normalized step
-  delay and elapsed quotient. Zero duration/path length normalize to the
-  source's one-unit delay; unrepresentable step indexes are rejected without
-  importing path, visibility, particle, lifecycle, or backend state.
-- `missile_ray_sample_distance_at_index` preserves the pinned strict
-  pre-increment half-grid test, fixed 20-unit spacing, and possible endpoint
-  overshoot with checked arithmetic. It accepts caller-owned endpoint length and
-  does not infer distance metrics, interpolation, visibility, particles,
-  rendering, lifecycle, or backend behavior.
-- `screen_shake_fade_at_elapsed` preserves the pinned active quadratic fade and
-  zero-at-expiry guard. It intentionally does not reproduce random frequencies,
-  trigonometric offsets, strength/direction scaling, scheduling, sprite-map
-  state, lifecycle, rendering, or backend behavior.
-- `particle_burst_origin_at_legacy_cell` preserves the pinned one-based
-  `((cell - 1) * 32 + 16)` centered origin and zero Z coordinate with checked
-  signed arithmetic. It does not convert current zero-based positions or spawn,
-  randomize, configure, or render particles.
-- `particle_burst_direction` preserves the legacy requested-XY normalization,
-  zero-vector handling, and positive distance-scale `emitter_z * arc / scale`
-  adjustment. It does not select random ranges, decals, engine state, or
-  rendering output.
-- `particle_burst_range_sample` preserves the legacy
-  `min + unit_sample * (max - min)` calculation, including reversed bounds.
-  The unit sample and random-state ownership remain with the caller; no clamp,
-  decal, engine, or rendering state is introduced.
-- `particle_decal_cell_at_rounded_world` preserves the legacy rounded-position
-  offset and truncating 32-pixel division into one-based cells with checked
-  offset arithmetic. It does not inspect map bounds or flags or store/render a
-  decal.
-- `particle_decal_placement_at_rounded_world` retains both the derived cell and
-  offset pixel position from the callback. It remains pure and does not select,
-  store, or render decals.
-- `particle_decal_cell_is_eligible` preserves the callback's in-bounds,
-  non-liquid, non-blocking gate. Cell lookup, flag resolution, decal
-  selection/storage, and rendering remain caller-owned.
-- `ParticleDecalInsertion` and `particle_decal_insertion_at_rounded_world`
-  preserve the accepted placement and caller-provided sprite identifier as a
-  pure request. They do not select sprites, store decals, spawn particles, or
-  render them.
-- `ParticleDecalStore` retains accepted requests in insertion order, including
-  duplicates, under an explicit caller capacity. `try_insert` reports
-  `CapacityExceeded` without mutating retained entries; sprite selection,
-  particle lifecycle, and rendering remain outside the store.
-- `MonsterKind::definition()` is the single current Rust-owned definition for
-  the four implemented archetypes. Actor factories and generated spawns read
-  it, while legacy Lua values remain reference evidence rather than imported
-  balance data.
-- `active_effect_frames` reports normalized progress only for the supplied
-  spans at the supplied frontend tick. It omits zero-duration/overflowed spans
-  and cannot create new events or inspect simulation state.
-- `animation_frame_index` maps that normalized progress to a caller-supplied
-  nonzero frame count. It is pure frontend math and does not infer asset
-  metadata or legacy timing.
-- `animation_frame_index_at_elapsed` maps caller-supplied elapsed milliseconds
-  through explicit loop or clamp policy over validated asset metadata. It owns
-  no wall clock, browser scheduling, or sprite/effect association.
-- `layer_draw_plan_at_elapsed` applies that selection to animated descriptors
-  while keeping static descriptors on frame zero and preserving one UV across
-  each grouped sprite. It remains caller-driven and renderer-neutral.
-- `WebGpuRenderer::render_at_elapsed` is a WASM-shell entrypoint that forwards
-  the same caller-owned elapsed selection to textured vertex generation. The
-  existing `render` path remains frame zero; no clock or redraw loop is owned
-  by the renderer.
-- Atlas descriptors convert the pinned legacy one-based, sixteen-column
-  sprite-sheet slots to bounded 32-pixel cells. Dimensions are metadata from
-  the imported PNGs; no image decoding or texture upload occurs in this crate.
-- Each descriptor carries the exact available source-layer set for its atlas in
-  registration order. The list is metadata only; no blending or sampling is
-  performed at this boundary.
-- `SpriteLayer::role` names the independent legacy shader input represented by
-  each source: base color, colorization mask, outline mask, or emissive mask.
-  It does not prescribe backend blend equations.
-- `SpriteRect::uv_rect` converts bounded image-space cells to normalized
-  top-left-origin UVs. A backend owns any texture-origin inversion.
-- `layer_draw_plan` emits atlas layers in scene order (tiles, items, actors),
-  retaining explored tile memory for fog presentation while omitting unknown
-  tiles and invalid/off-viewport geometry. It is metadata and geometry only:
-  no decoder, texture upload, blending, or sampling occurs here.
-- `sprite_composite_plan` groups one complete registered layer set per stable
-  sprite index. It rejects incomplete, reordered, duplicate, or mismatched
-  groups and still performs no image or GPU work.
-- `AtlasTextureSource` records the relative imported path and measured
-  dimensions for a registered atlas layer. Frontends own file loading and
-  image/GPU resource lifetime.
-- `drl-web::browser_asset_url` rejects absolute, traversal, query, fragment,
-  and unsupported-character paths before constructing a subpath-safe graphics
-  URL. The WASM loader decodes the image and validates its natural dimensions;
-  no GPU object is created by this preflight boundary.
-- `drl-web::texture_source_manifest` keeps the 24 unique registered layer
-  sources in deterministic order. WASM boot uploads each validated source once
-  with `Queue::copy_external_image_to_texture` into linear `Rgba8Unorm` storage
-  and retains its texture/view;
-  the base-color pass samples those views with nearest filtering, the paired
-  emissive view raises the fair lighting floor from its red channel, and the
-  optional colorization-mask view is sampled with a neutral zero per-vertex
-  tint except for the evidence-backed Green Armor value on visible ground
-  items/player equipped armor, the byte-quantized Phase Device value on visible
-  ground items, and the pinned yellow StairsDown value. Missing optional roles
-  use a retained transparent 1x1
-  fallback; outline-mask sources are transported, bound, and composited behind
-  base pixels with a renderer-neutral straight-alpha contract. Additional
-  per-sprite tint sources and exact legacy outline/glow parity remain later
-  boundaries. Player/current actor/Phase Device descriptor metadata is
-  carried through layer plans and grouped composites; callers may provide
-  normalized progress or elapsed-time playback for pure UV selection and layer
-  planning, while wall-clock scheduling remains a frontend responsibility. The WGSL pass
-  discards base fragments below the verified `0.1`
-  alpha cutoff before source-alpha blending. The WGSL source is defined at the
-  crate boundary so a native contract test can guard its binding and
-  compositing terms.
-- `LayerDraw::lighting` carries the fair visibility band for the source sprite;
-  explored tile memory is shaded by the shared fog factor and visible scene
-  sprites use full light. A compositor must not derive this from hidden state.
-- `low_health_pulse_target_alpha` consumes only optional fair player health and
-  caller-supplied elapsed milliseconds. It preserves the observed integer
-  threshold and pulse equation while owning no clock, mutable smoothing state,
-  texture, LUT, or post-processing; full low-life overlay parity remains
-  capture-gated.
-- `low_health_pulse_state_step` applies the pinned `aMSec / 500` move-toward
-  rule and independent positive pending-target decay to caller-owned values.
-  It intentionally does not clamp internal values or own pulse selection,
-  texture compositing, post-processing, or capture parity.
-- `POST_PROCESS_BLUR_DECLARED_WEIGHTS`, `POST_PROCESS_BLUR_WEIGHTS`,
-  `post_process_blur_taps`, `post_process_blur_rgba`, `post_process_glow_color`,
-  `post_process_lut_coordinate`, and `post_process_pass_plan` preserve only
-  the pinned shader's fixed blur constants, pure RGB/coordinate equations, and
-  logical direct/capture pass order. The declared entries 3–4 are
-  retained as observed artifacts because the source indexes by `abs(i)`; the
-  effective exported weights cover center/one-pixel/two-pixel offsets. These
-  helpers do not own framebuffers, blur sampling, LUT textures, or capture
-  parity. `outline_mask_composite` owns only caller-supplied straight-alpha
-  color resolution; the pass plan distinguishes direct scene draw
-  from captured scene input and carries only caller-supplied glow/LUT gates. The
-  reducer intentionally does not renormalize RGB or clamp values and takes
-  alpha only from the center sample.
-- `PresentationStep::effects` is computed at the command boundary from the
-  returned event list and visible actor sets. Ordinary effects require both
-  endpoints; terminal hit/death effects use pre-step visibility. Rejected
-  commands produce no step and no effects.
-- Player scenes use only visible/explored observations. Omniscient views remain
-  debug-only and are not available to ordinary browser input.
-- Imported legacy graphics are tracked under `assets/legacy/drl/graphics/`
-  with license, source revision, and checksums. Audio/music/fonts require
-  separate rights records.
-- WebGPU is the initial desktop Chromium backend. The shader/presentation
-  design stays within a WebGL2-compatible subset, but the fallback and other
-  browsers are post-1.0.
+### `drl-protocol` — Shared Semantic Contracts
+- **Role**: Stable semantic boundary shared across core, renderers, MCP, and
+  frontends.
+- **Key Modules & Types**:
+  - Domain primitives: `Position`, `Direction`, `Turn`, `EntityId`, `ItemId`,
+    `LevelId`.
+  - Commands & Errors: `Command`, `CommandError`.
+  - Observations: `PlayerObservation`, `TileView`, `ActorView`, `ItemView`.
+  - Events: `GameEvent` stream (combat, movement, items, levels).
+  - Typed Content: `MonsterKind::definition()`, `TileKind::definition()`.
+  - Replay contracts: `ReplayVersion::V1`, `ReplayLog`.
+- **Dependencies**: Pure `std` only; zero dependencies on any other workspace
+  crate.
 
-## Verification
+### `drl-core` — Deterministic Simulation Kernel
+- **Role**: Pure simulation authority and headless test/evaluation engine.
+- **Key Modules & Subsystems**:
+  - Simulation & Maps: `Map`, `Tile`, `World`, `Game::step`.
+  - PRNG: `GameRng` (deterministic SplitMix64 + Xoshiro256++).
+  - Combat & Scheduling: `Scheduler`, `CombatResolver`, kinetic knockback.
+  - Perception & AI: Field of View (`fov`), Line of Sight, `MonsterAi`.
+  - Items & Inventory: `Inventory`, `Equipment`, `Item::from_spawn_kind`.
+  - Level Generation: `generator` (BFS reachability, room connectivity).
+  - Content Definitions: `item_definition`, `loot_definition`,
+    `monster_roll_definition`, `level_definition`.
+  - Evaluation & Cohorts: `CohortConfig`, `CohortReport`, `BatchRunner`,
+    integrity validation, outcome distributions, telemetry projections.
+- **Dependencies**: Depends only on `drl-protocol`.
 
-- `crates/drl-core/tests/boundaries.rs` guards dependency direction and
-  determinism.
-- `scripts/check-assets.sh` verifies the imported atlas manifest.
-- `scripts/record-legacy-reference.sh` records the pinned checkout's
-  `legacy_dirty_state`, `evidence_classification`, and `rights_status`, and
-  `scripts/check-reference-capture.sh` validates those fields alongside the
-  ignored legacy-capture manifest, including strict media-hash syntax.
-  `NOT_RUN` is preserved for unavailable, dirty, non-observed, or uncleared
-  environments; controlled Linux x86-64 evidence must come from a clean
-  checkout, be directly observed, and have cleared rights before `PASS`.
-  `scripts/test-reference-capture.sh` covers the failure cases.
-- `crates/drl-web` native tests verify command mapping, transactional errors,
-  and observation-scene construction; the WASM target check compiles WebGPU,
-  winit, Web Audio, and bindings.
-- `scripts/check-web.sh` and the Ubuntu remote job own WASM/browser checks.
-- Reference-capture metadata lives in
-  `docs/reference-captures/manifest.md`; current legacy runtime capture is
-  `NOT_RUN` because the available binary is Linux x86-64 and the local host is
-  arm64 macOS.
+### `drl-assets` — Atlas Descriptors & Provenance
+- **Role**: Platform-neutral graphics atlas descriptors, geometry, and license
+  metadata.
+- **Key Responsibilities**:
+  - Measured 16-column / 32-pixel sprite sheet cell coordinates.
+  - Normalized UV math with top-left origin.
+  - Registered source-layer metadata and legacy shader roles (`base`,
+    `colorization`, `outline`, `emissive`).
+  - CC BY-SA 4.0 licensing records and SHA-256 asset checksums.
+- **Dependencies**: No image decoders or platform libraries; core does not
+  depend on it.
 
-## Invariants
+### `drl-render` — Pure Presentation Planning
+- **Role**: Deterministic renderer-neutral scene construction, layout, and
+  timing math.
+- **Key Responsibilities**:
+  - Scene Construction: `PresentationStep`, `RenderScene`, target selection.
+  - Viewport Layout: `PixelViewport`, `PixelRect` integer square-cell scaling.
+  - Shading & Tone: `LightingBand` (FOV vs fog), `SceneTone` (player health),
+    `low_health_pulse_target_alpha`, `LowHealthPulseState`.
+  - Draw Plans: `layer_draw_plan`, `sprite_composite_plan`, `AtlasTextureSource`.
+  - Animation & Effects: `active_effect_frames`, elapsed-time frame selection,
+    pure math for explosion marks, cell effects, kill segments, FX, movement,
+    missile steps/rays, and screen shake.
+  - Particles & Decals: Burst origins, directions, range sampling, decal cell
+    mapping, decal placement/eligibility, `ParticleDecalInsertion`, and
+    caller-bounded `ParticleDecalStore`.
+- **Dependencies**: Depends on `drl-protocol` and `drl-assets`. No GPU or window
+  dependencies.
 
-- No ambient RNG, wall-clock gameplay, platform I/O, or unstable iteration in
-  `drl-core`.
-- All clients (headless, MCP, browser, future native) submit ordinary
-  `drl-protocol::Command` values.
-- Any future presentation backend must consume semantic observations/events,
-  not `World`, and must preserve bit-exact replay behavior.
+### `drl-audio` — Semantic Audio Engine
+- **Role**: Deterministic event-to-audio mapping and Web Audio mixer.
+- **Key Responsibilities**:
+  - Pure mapping from `GameEvent` to semantic `AudioCue`.
+  - WASM Web Audio synthesizer with gesture unlock, volume, and mute controls.
+- **Dependencies**: Depends on `drl-protocol`.
+
+### `drl-web` — Browser Shell & WebGPU Presentation
+- **Role**: WASM `cdylib` / `rlib` browser host, WebGPU renderer, and PWA shell.
+- **Key Responsibilities**:
+  - Browser session management (`BrowserSession`) and DOM/keyboard mapping.
+  - WebGPU pipeline: texture cache, linear `Rgba8Unorm` storage, nearest base
+    sampling, emissive lighting floor, `0.1` alpha cutoff, colorization tints,
+    and outline-mask straight-alpha compositing.
+  - Browser animation loop: `requestAnimationFrame` driving elapsed rendering
+    with `visibilitychange` clock rebasing.
+  - State Persistence: `SessionSnapshot` codec with localStorage save/load.
+  - Release Packaging: Service worker caching, release manifest validation,
+    digest sidecars, and checkout-identity verification.
+  - Accessibility: Accessible DOM shell, keyboard/numpad navigation, and
+    diagnostics panel.
+- **Dependencies**: Depends on `drl-protocol`, `drl-render`, `drl-assets`,
+  `drl-audio`, and web-sys/wasm-bindgen.
+
+### `drl-mcp` — Model Context Protocol Server
+- **Role**: Zero-dependency JSON-RPC 2.0 MCP server for AI agents and test
+  automation.
+- **Key Responsibilities**:
+  - Full MCP method suite (`initialize`, `tools/*`, `resources/*`).
+  - Semantic tools for game control, observation, action enumeration, and
+    replays.
+  - Strict observation boundaries with explicit `dev_mode` flag for omniscient
+    inspection.
+- **Dependencies**: Pure `std` + `drl-protocol` + `drl-core`.
+
+### `drl-app` — Headless CLI & MCP Runner
+- **Role**: Native executable for running headless demos, batch sweeps, and stdio
+  MCP sessions.
+- **Dependencies**: Depends on `drl-core`, `drl-protocol`, `drl-mcp`.
+
+### `drl-script` — Content Conversion Placeholder
+- **Role**: Build-time conversion boundary for legacy content; placeholder for
+  future offline migration tools.
+
+---
+
+## 4. Subsystem Architecture & Rules
+
+### 4.1 Simulation & Turn Economy
+- **Energy-Based Scheduler**: Actors accumulate energy based on their `Speed`.
+  When an actor reaches the action threshold, it executes one action costing
+  standard energy units.
+- **Deterministic PRNG**: All randomness flows through `GameRng`. No ambient or
+  thread-local RNG is permitted.
+- **Combat Resolution**: `CombatResolver` evaluates melee bump attacks and
+  targeted ranged attacks with explicit distance accuracy scaling, uniform
+  damage rolls, armor protection mitigation, and health clamping.
+- **Kinetic Knockback**: Shotgun blasts push surviving targets along firing
+  vectors with collision checks against map borders, solid walls, and other
+  actors.
+
+### 4.2 Content Tables & Definitions
+- **Monster Definitions**: `MonsterKind::definition()` in `drl-protocol` owns
+  the authoritative immutable stats, speeds, attack ranges, accuracies, and
+  drop tables for all current archetypes.
+- **Item Definitions**: `drl-core::item_definition` owns item definitions;
+  `Item::from_spawn_kind` serves as canonical item factory.
+- **Loot & Monster Rolls**: Pure roll-bound tables map caller-supplied PRNG
+  rolls to procedural room loot and monster spawns.
+- **Tile Definitions**: `TileKind::definition()` in `drl-protocol` defines
+  physical walkability, transparency, and liquid properties for all tile kinds.
+- **Level Policy**: `drl-core::level_definition` provides standard procedural
+  generation parameters.
+
+### 4.3 Rendering Pipeline & Viewport
+- **Square-Cell Integer Viewport**: `PixelViewport` computes integer square
+  cell dimensions from canvas dimensions and applies deterministic centered
+  letterboxing. Non-uniform axis stretching is prohibited.
+- **Visibility-Derived Lighting**: `LightingBand` assigns full light (`1.0`) to
+  active FOV tiles and a fixed fog factor (`0.3`) to explored memory tiles.
+  Hidden tiles are omitted.
+- **Scene Tone & Low-Health Pulse**: `SceneTone` applies a low-health clear tone
+  below 25% HP; `low_health_pulse_target_alpha` and `LowHealthPulseState`
+  provide smooth, bounded alpha modulation.
+- **Layer & Composite Plans**: `layer_draw_plan` generates ordered scene draws
+  (tiles, items, actors); `sprite_composite_plan` groups all registered layer
+  roles per sprite for WebGPU shader bind groups.
+
+### 4.4 Animation & Visual Timing
+- **Decoupled Effect Timing**: `EffectSpan` assigns fixed logical durations to
+  events. Presentation timing never drives or advances gameplay turns.
+- **Elapsed-Time Frame Selection**: `animation_frame_index_at_elapsed` selects
+  animation frames based on elapsed milliseconds and explicit loop/clamp
+  policies.
+- **Pure Effect Arithmetic**: Explosion marks, cell animations, kill segments,
+  FX frames, movement interpolation, missile steps/rays, and screen shake fade
+  are pure mathematical functions without GPU or simulation dependencies.
+- **Visibility Lifecycle Clock**: Browser animation loop listens to
+  `visibilitychange` and rebases presentation clocks when background tabs resume.
+
+### 4.5 Particles & Decals
+- **Pure Arithmetic Contracts**: Burst origins, direction normalization, arc
+  adjustments, range interpolation, decal cell mapping, and placement are pure
+  functions.
+- **Eligibility Filter**: `particle_decal_cell_is_eligible` enforces map bounds,
+  non-liquid, and non-blocking rules.
+- **Insertion Request**: `ParticleDecalInsertion` packages placement with the
+  caller-provided sprite ID.
+- **Bounded Decal Store**: `ParticleDecalStore` retains requests in strict
+  insertion order with caller-configured capacity, reporting overflow without
+  dropping prior entries.
+
+### 4.6 Browser & WebGPU Integration
+- **Texture Cache**: Imported atlas PNGs are loaded same-origin, dimension-
+  checked, and uploaded once into linear `Rgba8Unorm` WebGPU 2D textures.
+- **Nearest Base Filtering**: Base sprite pixels are sampled with nearest
+  filtering.
+- **Emissive Floor**: Emissive mask red channel acts as a minimum lighting
+  floor.
+- **Alpha Cutoff**: WGSL textured shader discards fragments below the legacy
+  `0.1` alpha threshold.
+- **Colorization Tints**: Pinned vertex tints apply to Green Armor, Phase
+  Device, and StairsDown.
+- **Outline Straight-Alpha**: Optional outline-mask shadow layers composite
+  behind base pixels with tested straight-alpha weights.
+
+### 4.7 Replays, Cohorts & Evaluation
+- **Replay V1 Engine**: `ReplayEngine` records and executes versioned replay
+  logs with exact initial spawn metadata and command streams.
+- **Cohort Reports**: `CohortConfig` / `CohortReport` execute multi-seed sweeps,
+  validating seed order, record counts, and summary metrics.
+- **Descriptive Telemetry**: Cohort outcome distributions and telemetry
+  comparisons report exact win/loss rates, accuracy, damage, and kills with
+  caller-owned tolerances.
+
+### 4.8 Persistence & Release Packaging
+- **Session Snapshots**: `SessionSnapshot` encodes complete command histories
+  with version headers, checksums, and strict corruption handling.
+- **Service Worker Cache**: Versioned same-origin worker caches static bundles
+  keyed by project version and commit hash.
+- **Release Manifests**: Build tooling generates `release-manifest.json` with
+  sorted artifact SHA-256 hashes and a `.sha256` sidecar digest.
+
+---
+
+## 5. Architectural Invariants
+
+Every change to the codebase must preserve these non-negotiable invariants:
+
+1. **No Ambient State in Core**: No global variables, thread-local state,
+   ambient RNG, wall clocks, or non-deterministic hash iteration in `drl-core`.
+2. **Deterministic Replay**: Given identical seed and command stream, the
+   simulation must produce bit-exact identical observations, events, and final
+   world state across all platforms.
+3. **Observation Decoupling**: Renderers, bots, and MCP agents consume only
+   fair `PlayerObservation` views; they must never access `World` or inspect
+   unexplored tiles.
+4. **Presentation Decoupling**: Audio cues, rendering frames, WebGPU shaders,
+   canvas resizing, and tab visibility transitions must never mutate simulation
+   state or advance game turns.
+5. **No Runtime Scripting**: No Lua VM or JavaScript gameplay interpreters.
+6. **Explicit Error Handling**: Illegal commands and corrupt saves fail
+   transactionally without partial mutations.
+
+---
+
+## 6. Verification & Automated Boundary Enforcement
+
+The repository enforces architectural boundaries via automated test suites:
+
+- **Boundary Enforcement**: `crates/drl-core/tests/boundaries.rs` validates
+  dependency direction and ensures core remains free of presentation or platform
+  crates.
+- **Repository Health**: `sh scripts/check-repository.sh` runs formatting,
+  clippy, unit tests, integration tests, and harness checks.
+- **Asset Manifest**: `sh scripts/check-assets.sh` verifies graphics licensing
+  and SHA-256 checksums.
+- **Web Contracts**: `sh scripts/check-web.sh` checks WASM compilation and web
+  contracts.
+- **Release Validation**: `scripts/check-release-manifest.sh` validates release
+  artifacts and service worker coverage.
+- **Version Projections**: `scripts/check-version.sh` enforces valid `x.y.z`
+  transitions.
