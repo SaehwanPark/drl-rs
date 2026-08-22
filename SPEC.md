@@ -15,17 +15,18 @@ progress. This file expands exactly one active implementation slice.
   redistribution-gated; its controlled reference-capture gate is `NOT_RUN` on
   arm64 macOS and remains an M8 acceptance dependency.
 
-## Present — M8 deterministic layer draw plan
+## Present — M8 deterministic texture-source bindings
 
 Status: The M7 browser slice passed functional acceptance locally and in
 remote web CI. The delivered M8 pixel-grid, visibility-band, low-health tone,
 and fair effect-span slices share pure presentation rules. The preceding M8
 slices replaced placeholder atlas cells with measured 32-pixel slots, carried
-registered source-layer sets through semantic descriptors, and exposed
-normalized UV geometry. This bounded follow-up builds ordered layer draw plans
-with screen rectangles and UVs from fair render scenes. It remains
-platform-neutral and is not an actual compositor or capture-backed parity
-claim.
+registered source-layer sets through semantic descriptors, exposed normalized
+UV geometry, and built ordered layer draw plans with screen rectangles and UVs
+from fair render scenes. This bounded follow-up attaches deterministic
+imported texture-source paths and dimensions to each layer draw entry. It
+remains platform-neutral and is not an actual uploader, compositor, or
+capture-backed parity claim.
 
 ### Observable behavior
 
@@ -97,8 +98,11 @@ claim.
   rectangles and returns `None` for zero-sized atlases or out-of-bounds cells.
 - Every current semantic descriptor has in-range UV coordinates under its
   imported atlas dimensions.
+- `drl-assets::AtlasId::texture_source` resolves each registered atlas layer
+  to its imported relative path and measured pixel dimensions.
 - `drl-render::layer_draw_plan` emits ordered atlas/layer entries with a
-  `PixelRect` destination and normalized UVs for each visible scene sprite.
+  `PixelRect` destination, normalized UVs, and the resolved texture source for
+  each visible scene sprite.
 - Layer draw planning consumes only `RenderScene`; it cannot inspect hidden
   simulation state or advance gameplay.
 
@@ -123,8 +127,10 @@ cargo check --locked -p drl-web --target wasm32-unknown-unknown  PASS
 cargo test -p drl-render                      PASS (pixel-grid, lighting, tone, and timeline contracts)
 cargo test -p drl-assets                      PASS (slot mappings, atlas bounds,
                                              layer sets, descriptor order, UVs)
-cargo test -p drl-render                      PASS (layer draw ordering and
-                                             screen/UV geometry)
+cargo test -p drl-render                      PASS (layer draw ordering,
+                                             screen/UV geometry, and sources)
+cargo test -p drl-assets                      PASS (texture source paths and
+                                             dimensions)
 cargo test -p drl-web                         PASS (effect handoff preserves event/timeline parity)
 scripts/check-web.sh                        PASS for native/WASM builds;
                                              browser runner NOT_RUN if Chrome absent
@@ -133,12 +139,14 @@ Chrome 151 WebGPU smoke playthrough          PASS (Apple Metal-3, 1280x720, DPR 
                                              start with explicit gesture-gated
                                              audio state, move, mute, restart;
                                              pixel-grid scene visible after move)
-GitHub Actions run 32546867436               PASS (repository + Ubuntu WASM
-                                             browser jobs for this draw-plan
-                                             slice)
+GitHub Actions run 32547069689               PASS (repository + Ubuntu WASM
+                                             browser jobs for the preceding
+                                             draw-plan slice; this source slice
+                                             is not included)
 ```
 
-The local and hosted functional gates pass for this draw-plan slice; local
+The local and hosted functional gates pass for the preceding draw-plan slice;
+this source-binding slice requires a new hosted run, currently `NOT_RUN`; local
 browser execution remains `NOT_RUN` when the runner is unavailable. The
 existing Chrome run records browser/version, OS,
 adapter/backend, viewport, DPR, build revision, and audio unlock/mute state,
@@ -159,8 +167,9 @@ capture is available.
 
 ## Next
 
-The pixel-scale viewport, atlas metadata, and UV geometry are covered by local
-checks and prior hosted WASM browser jobs. Continue M8 only with actual layer
-compositing or capture-backed measurement of lighting, effects, typography,
-and audio. Do not claim audiovisual parity from the current metadata-only draw
-plan or the `NOT_RUN` legacy captures.
+The pixel-scale viewport, atlas metadata, UV geometry, and draw-plan source
+metadata are covered by local checks and prior hosted WASM browser jobs.
+Continue M8 only with actual layer compositing or capture-backed measurement
+of lighting, effects, typography, and audio. Do not claim audiovisual parity
+from the current metadata-only source bindings or the `NOT_RUN` legacy
+captures.

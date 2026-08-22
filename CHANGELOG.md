@@ -64,6 +64,10 @@ documented in this file.
   atlas layers, pixel destinations, and normalized UVs for fair scene sprites.
   It preserves explored tile memory and keeps texture upload/blending and
   capture-backed parity as future work.
+- Added pure `AtlasTextureSource` bindings for every registered atlas layer;
+  draw-plan entries now carry imported relative paths and measured dimensions
+  for a future frontend upload boundary. No image loading or compositing is
+  claimed.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch

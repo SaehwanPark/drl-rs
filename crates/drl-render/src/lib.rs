@@ -5,7 +5,8 @@
 //! presentation timing can never advance the simulation.
 
 use drl_assets::{
-  AtlasId, SpriteDescriptor, SpriteLayer, SpriteUv, actor_sprite, item_sprite, tile_sprite,
+  AtlasId, AtlasTextureSource, SpriteDescriptor, SpriteLayer, SpriteUv, actor_sprite, item_sprite,
+  tile_sprite,
 };
 use drl_protocol::{
   Command, EntityId, GameEvent, HitPoints, ItemView, PlayerObservation, Position, TileKind,
@@ -140,6 +141,7 @@ pub struct PixelRect {
 pub struct LayerDraw {
   pub atlas: AtlasId,
   pub layer: SpriteLayer,
+  pub source: AtlasTextureSource,
   pub destination: PixelRect,
   pub uv: SpriteUv,
 }
@@ -356,6 +358,7 @@ fn append_layer_draws(
   plan.extend(descriptor.layers.iter().copied().map(|layer| LayerDraw {
     atlas: descriptor.atlas,
     layer,
+    source: descriptor.atlas.texture_source(layer),
     destination,
     uv,
   }));
@@ -661,6 +664,7 @@ mod tests {
     {
       assert_eq!(draw.atlas, first_tile.sprite.atlas);
       assert_eq!(draw.layer, layer);
+      assert_eq!(draw.source, draw.atlas.texture_source(draw.layer));
       assert_eq!(draw.destination, first_destination);
       assert_eq!(draw.uv, first_uv);
     }

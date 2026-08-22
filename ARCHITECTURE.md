@@ -31,15 +31,17 @@ types shared by core, MCP, bots, and frontends.
   identifiers. MCP wire serialization and replay schema remain compatible.
 - `drl-assets`: platform-neutral atlas IDs, imported PNG dimensions, measured
   32-pixel rectangles, deterministic registered layer sets, semantic
-  tile/actor/item lookup, normalized UV geometry, and legacy revision identity.
+  tile/actor/item lookup, normalized UV geometry, deterministic texture-source
+  bindings, and legacy revision identity.
   It has no decoder or platform dependency and core does not depend on it.
 - `drl-render`: deterministic `PresentationStep`, `RenderScene`, target
   candidates, bounded event-to-effect builders, observation-independent
   `PixelViewport`/`PixelRect` layout math, visibility-derived
   `LightingBand`/`shade_color` rules, health-derived `SceneTone`/clear color,
   event-ordered `EffectSpan` timing, and renderer-neutral `LayerDraw` plans
-  carrying atlas layers, pixel destinations, and normalized UVs. It consumes
-  player observations/events only; GPU ownership is in the WASM shell.
+  carrying atlas layers, imported source metadata, pixel destinations, and
+  normalized UVs. It consumes player observations/events only; GPU ownership is
+  in the WASM shell.
   `drl-web` carries fair, visibility-filtered spans through each successful
   `PresentationStep`.
 - `drl-audio`: deterministic event-to-`AudioCue` mapping and a WASM Web Audio
@@ -82,6 +84,9 @@ types shared by core, MCP, bots, and frontends.
   retaining explored tile memory for fog presentation while omitting unknown
   tiles and invalid/off-viewport geometry. It is metadata and geometry only:
   no decoder, texture upload, blending, or sampling occurs here.
+- `AtlasTextureSource` records the relative imported path and measured
+  dimensions for a registered atlas layer. Frontends own file loading and
+  image/GPU resource lifetime.
 - `PresentationStep::effects` is computed at the command boundary from the
   returned event list and visible actor sets. Ordinary effects require both
   endpoints; terminal hit/death effects use pre-step visibility. Rejected

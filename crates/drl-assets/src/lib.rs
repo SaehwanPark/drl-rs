@@ -94,6 +94,19 @@ impl AtlasId {
       (Self::Fx, SpriteLayer::Shadow) => "fx.png",
     }
   }
+
+  /// Resolves a registered layer to the imported source metadata a future
+  /// texture uploader will need. This remains a pure lookup; it does not read
+  /// or decode the referenced file.
+  #[must_use]
+  pub const fn texture_source(self, layer: SpriteLayer) -> AtlasTextureSource {
+    let (width, height) = self.dimensions();
+    AtlasTextureSource {
+      path: self.layer_path(layer),
+      width,
+      height,
+    }
+  }
 }
 
 /// A compositing layer supplied by the legacy renderer.
@@ -103,6 +116,17 @@ pub enum SpriteLayer {
   Emissive,
   Mask,
   Shadow,
+}
+
+/// Imported image metadata for one atlas compositing layer.
+///
+/// Paths are relative to the license-cleared graphics bundle. A frontend owns
+/// loading, decoding, GPU upload, and texture-origin policy at its boundary.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct AtlasTextureSource {
+  pub path: &'static str,
+  pub width: u32,
+  pub height: u32,
 }
 
 /// Pixel rectangle in an atlas.
@@ -192,6 +216,16 @@ const PLAYER_LAYERS: &[SpriteLayer] = &[
   SpriteLayer::Emissive,
 ];
 const FX_LAYERS: &[SpriteLayer] = LEVEL_LAYERS;
+#[cfg(test)]
+const ALL_ATLASES: &[AtlasId] = &[
+  AtlasId::Dguy,
+  AtlasId::Enemies,
+  AtlasId::EnemiesBig,
+  AtlasId::GunsAndPickups,
+  AtlasId::Levels,
+  AtlasId::DoorsAndDecorations,
+  AtlasId::Fx,
+];
 
 const SPRITE_CELL_SIZE: u32 = 32;
 const SPRITE_COLUMNS: u32 = 16;
@@ -430,6 +464,18 @@ mod tests {
       AtlasId::Dguy.layer_path(SpriteLayer::Emissive),
       "dguy_emissive.png"
     );
+  }
+
+  #[test]
+  fn registered_layers_resolve_texture_sources() {
+    for atlas in ALL_ATLASES {
+      for layer in atlas.layers() {
+        let source = atlas.texture_source(*layer);
+        assert_eq!(source.path, atlas.layer_path(*layer));
+        assert_eq!((source.width, source.height), atlas.dimensions());
+        assert!(!source.path.is_empty());
+      }
+    }
   }
 
   #[test]
