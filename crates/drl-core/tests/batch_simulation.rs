@@ -2,7 +2,8 @@
 
 use drl_core::agent::{ExplorerBot, GreedyCombatBot};
 use drl_core::batch::{
-  BatchRunner, CohortConfig, CohortReport, CohortReportError, CohortTolerances, EpisodeRecord,
+  BatchRunner, CohortConfig, CohortOutcomeTolerances, CohortReport, CohortReportError,
+  CohortTolerances, EpisodeRecord,
 };
 use drl_core::generator::LevelGeneratorConfig;
 use drl_core::scenario::Scenario;
@@ -401,4 +402,18 @@ fn cohort_outcome_comparison_rejects_incompatible_or_invalid_reports() {
   let mut invalid = baseline.clone();
   invalid.records.pop();
   assert!(invalid.compare_outcomes(&baseline).is_none());
+}
+
+#[test]
+fn cohort_outcome_comparison_applies_finite_non_negative_tolerance() {
+  let baseline = synthetic_outcome_report(&[RunOutcome::Victory]);
+  let candidate = synthetic_outcome_report(&[RunOutcome::Death {
+    cause: DeathCause::Environment,
+  }]);
+  let comparison = candidate.compare_outcomes(&baseline).unwrap();
+
+  assert!(comparison.within_tolerance(CohortOutcomeTolerances::new(1.0)));
+  assert!(!comparison.within_tolerance(CohortOutcomeTolerances::new(0.99)));
+  assert!(!comparison.within_tolerance(CohortOutcomeTolerances::new(-0.1)));
+  assert!(!comparison.within_tolerance(CohortOutcomeTolerances::new(f64::NAN)));
 }

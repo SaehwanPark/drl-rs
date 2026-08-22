@@ -24,8 +24,10 @@ replays, and regression testing.
     sample-normalized rates without interpreting balance or significance.
   - Compatible cohort comparisons report absolute per-outcome rate deltas
     after integrity validation without adding tolerance or significance claims.
+  - Outcome comparisons accept one finite, non-negative per-category rate
+    tolerance and expose a deterministic pass/fail gate.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.1.2`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.1.3`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:
