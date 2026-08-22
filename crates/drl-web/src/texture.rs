@@ -178,7 +178,11 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
   let sampled = textureSample(base_texture, base_sampler, input.uv);
   let emissive = textureSample(emissive_texture, base_sampler, input.uv).r;
   let lighting = max(input.lighting.rgb, vec3<f32>(emissive));
-  return vec4<f32>(sampled.rgb * lighting, sampled.a);
+  let output = vec4<f32>(sampled.rgb * lighting, sampled.a);
+  if (output.a < 0.1) {
+    discard;
+  }
+  return output;
 }
 "#;
 

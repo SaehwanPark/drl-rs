@@ -133,6 +133,9 @@ are not claimed.
   source binds a transparent 1x1 fallback; missing base cache entries skip only
   the textured pass, and the deterministic geometry fallback still presents the
   scene.
+- The textured fragment shader discards sampled base alpha below the verified
+  legacy `0.1` cutoff before source-alpha blending; exact-threshold fragments
+  survive and all other lighting behavior is unchanged.
 - Every layer draw carries its fair `LightingBand`: explored tile memory uses
   the fixed explored factor, while visible tiles/items/actors use full light.
 - `drl-render::active_effect_frames` returns normalized `[0, 1)` progress for
@@ -208,8 +211,9 @@ capture is available.
 The pixel-scale viewport, atlas metadata, UV geometry, draw-plan source
 metadata, fair lighting factors, effect progress, layer input roles, grouped
 sprite composites, validated browser source loading, renderer-owned GPU
-texture upload, base-color sampling, and the emissive lighting floor are
-covered by local checks and prior hosted WASM browser jobs. Continue M8 only
+texture upload, base-color sampling, the emissive lighting floor, and the
+legacy alpha cutoff are covered by local checks and prior hosted WASM browser
+jobs. Continue M8 only
 with mask/colorization, outline/glow, animation, or capture-backed measurement of
 lighting, effects, typography, and audio. Do not claim audiovisual parity from
 renderer-neutral grouping or the `NOT_RUN` legacy captures.
