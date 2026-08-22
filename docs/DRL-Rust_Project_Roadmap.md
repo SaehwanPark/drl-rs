@@ -46,7 +46,8 @@ automated regressions, and human review.
 - The current M8 atlas-descriptor slice replaces placeholder cells with
   pinned-legacy 32-pixel sprite slots and verified imported-sheet dimensions;
   the follow-up layer metadata now preserves registered source-layer order;
-  texture compositing and capture-backed parity remain open.
+  normalized UV geometry is now available; texture compositing and
+  capture-backed parity remain open.
 - `SPEC.md` contains the single active M8 slice; it is not a second roadmap.
 
 ## Milestones
@@ -132,7 +133,8 @@ centralized in `drl-render`; capture-backed lighting/LUT parity remains open.
 Measured atlas rectangles for all currently implemented semantics now come from
 the pinned 16-column legacy grid, with pure bounds checks. Remaining work is
 registered layer metadata now carries exact atlas source sets in deterministic
-order. Remaining work is texture/layer compositing; implement
+order, and pure UV geometry is available for future texture consumers.
+Remaining work is texture/layer compositing; implement
 capture-backed lighting/LUT parity,
 particles, animation/effect timing, HUD typography, cleared legacy or
 replacement audio, music transitions, and automated visual/audio regressions
