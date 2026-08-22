@@ -76,7 +76,7 @@ automated regressions, and human review.
   content animation and capture parity remain open. A read-only capture
   manifest preflight now validates pinned metadata, rights, media hashes, and
   evidence status while preserving `NOT_RUN`.
-- `SPEC.md` contains the single active M8 particle-burst-direction slice; it is
+- `SPEC.md` contains the single active M8 particle-burst-range-sampling slice; it is
   not a second roadmap.
 - The first bounded M11 cohort slice adds explicit fixed-seed sample
   definitions and reports around the existing headless batch runner. Reports
@@ -206,7 +206,7 @@ stdio runner, and replay-verified virtual-agent tests.
   capture-backed reference-scene comparison; legacy capture execution remains
   `NOT_RUN` on this host.
 
-### M8 — Audiovisual parity (pixel-scale, outline-compositing, and particle-direction slices delivered; parity planned)
+### M8 — Audiovisual parity (pixel-scale, outline-compositing, and particle slices delivered; parity planned)
 
 The first bounded pixel-scale layout slice is delivered: measure-free,
 observation-independent viewport math chooses centered integer square cells for
@@ -272,6 +272,10 @@ sampling, decals, particle-engine integration, and rendering remain open. The
 delivered particle-direction follow-up adds caller-owned XY normalization,
 zero-vector handling, and positive distance-scale arc-to-Z adjustment; random
 sampling, decals, particle-engine integration, and rendering remain open.
+The active range-sampling follow-up preserves the source's affine min/max
+calculation for caller-owned unit samples, including reversed bounds without
+hidden clamping; random generator ownership, decals, engine integration, and
+rendering remain open.
 The current M9 content slice adds a Rust-owned `MonsterKind::definition()` table
 for the four implemented archetypes and routes actor factories/generated spawns
 through it without changing current values or replay schemas. Legacy numeric

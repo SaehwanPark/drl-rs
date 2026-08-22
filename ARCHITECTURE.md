@@ -72,6 +72,7 @@ types shared by core, MCP, bots, and frontends.
   `screen_shake_fade_at_elapsed` arithmetic,
   `particle_burst_origin_at_legacy_cell` arithmetic,
   `particle_burst_direction` normalization and arc-to-Z arithmetic,
+  `particle_burst_range_sample` affine range arithmetic,
   post-process glow/LUT coordinate math and pure blur-tap plans,
   event-ordered `EffectSpan` timing, and renderer-neutral `LayerDraw` plans
   carrying atlas layers, imported source metadata, explicit layer roles, fair
@@ -173,6 +174,10 @@ types shared by core, MCP, bots, and frontends.
   zero-vector handling, and positive distance-scale `emitter_z * arc / scale`
   adjustment. It does not select random ranges, decals, engine state, or
   rendering output.
+- `particle_burst_range_sample` preserves the legacy
+  `min + unit_sample * (max - min)` calculation, including reversed bounds.
+  The unit sample and random-state ownership remain with the caller; no clamp,
+  decal, engine, or rendering state is introduced.
 - `MonsterKind::definition()` is the single current Rust-owned definition for
   the four implemented archetypes. Actor factories and generated spawns read
   it, while legacy Lua values remain reference evidence rather than imported

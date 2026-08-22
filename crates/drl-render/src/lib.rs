@@ -348,6 +348,16 @@ pub fn particle_burst_direction(
   direction
 }
 
+/// Samples one caller-owned legacy particle range from a unit interval value.
+///
+/// The source range helper evaluates `min + unit_sample * (max - min)`.
+/// Callers provide the deterministic unit sample (normally `[0, 1)` from their
+/// own RNG); this helper does not clamp the sample or own random state.
+#[must_use]
+pub fn particle_burst_range_sample(range: [f32; 2], unit_sample: f32) -> f32 {
+  range[0] + unit_sample * (range[1] - range[0])
+}
+
 /// Visibility-derived presentation bands for deterministic scene shading.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum LightingBand {
@@ -2404,6 +2414,20 @@ mod tests {
       particle_burst_direction([0.0, 0.0, 0.0], [-2.0, 0.0], 5.0, 2.0),
       [-1.0, 0.0, 0.0]
     );
+  }
+
+  #[test]
+  fn particle_burst_range_sample_interpolates_source_bounds() {
+    assert_eq!(particle_burst_range_sample([2.0, 6.0], 0.0), 2.0);
+    assert_eq!(particle_burst_range_sample([2.0, 6.0], 0.25), 3.0);
+    assert_eq!(particle_burst_range_sample([2.0, 6.0], 0.75), 5.0);
+    assert_eq!(particle_burst_range_sample([3.0, 3.0], 0.5), 3.0);
+  }
+
+  #[test]
+  fn particle_burst_range_sample_preserves_reversed_and_unclamped_inputs() {
+    assert_eq!(particle_burst_range_sample([6.0, 2.0], 0.25), 5.0);
+    assert_eq!(particle_burst_range_sample([2.0, 6.0], 1.25), 7.0);
   }
 
   #[test]

@@ -347,13 +347,20 @@ projections and applies caller-owned finite tolerances to shot accuracy and
 per-episode averages. It reports descriptive deltas only and does not infer
 balance, difficulty, or statistical significance.
 
-## Present — M8 particle-burst direction contract
+## Delivered — M8 particle-burst direction contract
 
-Status: the active slice exposes the source-derived direction calculation for
+Status: the delivered slice exposes the source-derived direction calculation for
 one particle-burst sample. It normalizes requested XY direction, clears XY for
 zero-length requests, and applies the positive distance-scale arc adjustment to
 Z. Random range selection, decals, particle-engine integration, and rendering
 remain outside the helper.
+
+## Present — M8 particle-burst range sampling contract
+
+Status: the active slice exposes the source-derived affine range calculation
+for caller-owned unit samples. It preserves reversed bounds and does not clamp
+or own the random generator; particle burst orchestration, decals, engine
+integration, and rendering remain outside the helper.
 
 ### Observable behavior
 
@@ -396,6 +403,9 @@ remain outside the helper.
   clears only XY for a zero request, and applies `emitter_z * arc / scale` for
   positive distance scales. It owns no random sampling, decals, engine, or
   rendering state.
+- `drl_render::particle_burst_range_sample` evaluates
+  `min + unit_sample * (max - min)` for caller-owned unit samples. It preserves
+  reversed bounds and does not clamp samples or own random state.
 - Generated service-worker bundles use a cache name containing `v1`, the
   canonical project version, and the first 12 source-revision characters; the
   release manifest rejects mismatches without broadening offline claims.
@@ -700,7 +710,7 @@ scripts/check-release-manifest.sh           PASS (after `scripts/build-web.sh`, 
 scripts/test-service-worker.sh               PASS (mocked lifecycle/fetch contract)
 scripts/check-browser-diagnostics.sh        PASS (via `scripts/check-web.sh`)
 scripts/check-browser-accessibility.sh      PASS (via `scripts/check-web.sh`)
-scripts/check-version.sh                    PASS (`0.2.4` projections and transition)
+scripts/check-version.sh                    PASS (`0.2.5` projections and transition)
 cargo check --locked -p drl-web --target wasm32-unknown-unknown  PASS
 cargo test -p drl-render                      PASS (pixel-grid, lighting, tone,
                                              timeline, and particle contracts)
@@ -770,10 +780,10 @@ focused headless tests. The project-versioned cache policy is covered by
 static/build checks; the manifest-sidecar slice is covered by the
 release-manifest checker; the service-worker lifecycle and source-identity
 slices are covered by deterministic checks; broader offline and release-
-The telemetry comparison and tolerance gate are covered by focused batch
-tests. The particle-burst direction contract is covered by renderer tests;
-random sampling, decals, particle-engine integration, and capture-backed
-visual parity remain open.
+hardening work remains. The telemetry comparison and tolerance gate are
+covered by focused batch tests. The particle-burst direction and range
+contracts are covered by renderer tests; random generator ownership, decals,
+particle-engine integration, and capture-backed visual parity remain open.
 The pixel-scale
 viewport,
 atlas metadata, UV geometry, draw-plan source
