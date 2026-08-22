@@ -76,8 +76,8 @@ automated regressions, and human review.
   content animation and capture parity remain open. A read-only capture
   manifest preflight now validates pinned metadata, rights, media hashes, and
   evidence status while preserving `NOT_RUN`.
-- `SPEC.md` contains the single active M8 particle-decal-placement slice; it is
-  not a second roadmap.
+- `SPEC.md` contains the single active M8 particle-decal-eligibility slice; it
+  is not a second roadmap.
 - The first bounded M11 cohort slice adds explicit fixed-seed sample
   definitions and reports around the existing headless batch runner. Reports
   retain policy identity, aggregate metrics, and per-seed replay evidence;
@@ -276,12 +276,10 @@ The active range-sampling follow-up preserves the source's affine min/max
 calculation for caller-owned unit samples, including reversed bounds without
 hidden clamping; random generator ownership, decals, engine integration, and
 rendering remain open.
-The active decal follow-up preserves the source's rounded-position offset and
-truncating 32-pixel mapping into one-based cells, while map bounds, liquid/block
-eligibility, decal selection/storage, and rendering remain open.
-The active placement follow-up also retains the offset pixel insertion
-position alongside the derived cell; eligibility, decal storage, and rendering
-remain open.
+The delivered decal follow-ups preserve the source's rounded-position offset,
+truncating 32-pixel mapping into one-based cells, offset pixel insertion
+position, and the in-bounds/non-liquid/non-blocking eligibility gate. Decal
+selection/storage and rendering remain open.
 The current M9 content slice adds a Rust-owned `MonsterKind::definition()` table
 for the four implemented archetypes and routes actor factories/generated spawns
 through it without changing current values or replay schemas. Legacy numeric

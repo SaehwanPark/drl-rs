@@ -75,6 +75,7 @@ types shared by core, MCP, bots, and frontends.
   `particle_burst_range_sample` affine range arithmetic,
   `particle_decal_cell_at_rounded_world` cell mapping arithmetic,
   `particle_decal_placement_at_rounded_world` cell/pixel placement arithmetic,
+  `particle_decal_cell_is_eligible` map/flag eligibility arithmetic,
   post-process glow/LUT coordinate math and pure blur-tap plans,
   event-ordered `EffectSpan` timing, and renderer-neutral `LayerDraw` plans
   carrying atlas layers, imported source metadata, explicit layer roles, fair
@@ -187,6 +188,9 @@ types shared by core, MCP, bots, and frontends.
 - `particle_decal_placement_at_rounded_world` retains both the derived cell and
   offset pixel position from the callback. It remains pure and does not select,
   store, or render decals.
+- `particle_decal_cell_is_eligible` preserves the callback's in-bounds,
+  non-liquid, non-blocking gate. Cell lookup, flag resolution, decal
+  selection/storage, and rendering remain caller-owned.
 - `MonsterKind::definition()` is the single current Rust-owned definition for
   the four implemented archetypes. Actor factories and generated spawns read
   it, while legacy Lua values remain reference evidence rather than imported

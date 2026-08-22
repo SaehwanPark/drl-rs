@@ -3,6 +3,12 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.8]
+
+- Added the bounded M8 particle-decal eligibility contract: caller-resolved
+  cells are eligible only when in bounds and neither liquid nor movement-
+  blocking, while lookup, decal storage, and rendering remain caller-owned.
+
 ## [0.2.7]
 
 - Added the bounded M8 particle-decal placement contract: the pure callback
