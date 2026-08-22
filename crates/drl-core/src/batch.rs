@@ -362,6 +362,13 @@ pub enum CohortReportError {
   },
   /// Aggregate metrics do not equal the report's per-episode metrics.
   SummaryMismatch,
+  /// A retained metric violates a physically or configuration-valid bound.
+  TelemetryInvariant {
+    /// Zero-based record position.
+    index: usize,
+    /// Metric field whose invariant failed.
+    field: &'static str,
+  },
 }
 
 impl std::fmt::Display for CohortReportError {
@@ -390,6 +397,10 @@ impl std::fmt::Display for CohortReportError {
         "cohort replay seed mismatch at record {index}: expected {expected}, got {actual}"
       ),
       Self::SummaryMismatch => write!(formatter, "cohort summary does not match episode metrics"),
+      Self::TelemetryInvariant { index, field } => write!(
+        formatter,
+        "cohort telemetry invariant failed at record {index}: {field}"
+      ),
     }
   }
 }
@@ -462,6 +473,24 @@ impl CohortReport {
           index,
           expected: record.seed,
           actual: record.replay.seed,
+        });
+      }
+      if record.metrics.shots_hit > record.metrics.shots_fired {
+        return Err(CohortReportError::TelemetryInvariant {
+          index,
+          field: "shots_hit <= shots_fired",
+        });
+      }
+      if record.metrics.level_reached.0 == 0 {
+        return Err(CohortReportError::TelemetryInvariant {
+          index,
+          field: "level_reached >= 1",
+        });
+      }
+      if record.metrics.turns_survived > self.config.max_turns {
+        return Err(CohortReportError::TelemetryInvariant {
+          index,
+          field: "turns_survived <= max_turns",
         });
       }
       metrics.push(record.metrics.clone());
@@ -560,6 +589,9 @@ impl CohortReport {
       || self.config != baseline.config
       || !tolerances.is_valid()
     {
+      return None;
+    }
+    if self.validate().is_err() || baseline.validate().is_err() {
       return None;
     }
 

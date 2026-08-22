@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.12`
+Current project version: `0.2.13`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.12)
+## 3. Current Progress Summary (`VERSION` 0.2.13)
 
 ### Delivered Foundations
 
@@ -77,14 +77,14 @@ verification item uses explicit status semantics:
   with localStorage persistence, bounded rejected-save quarantine, and static
   service-worker cache.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
-  integrity validation and descriptive outcome/telemetry projections; release
-  manifests with SHA-256 sidecars, cache invalidation, and checkout binding.
+  seed, summary, and telemetry integrity validation plus descriptive
+  outcome/telemetry projections; release manifests with SHA-256 sidecars,
+  cache invalidation, and checkout binding.
 
 ### Active & Open Work
 
-- **Active Milestone Slice (M10)**: Browser-save corruption recovery is
-  delivered and verified; explicit replay-compatible format migration remains
-  open.
+- **Active Milestone Slice (M11)**: Cohort telemetry integrity bounds are
+  delivered and verified; large-scale balance studies remain open.
 - **Open Audiovisual Parity (M8)**: Exact legacy outline/glow and lighting/LUT
   equations from reference captures, HUD typography, and replacement audio.
 - **Controlled Reference Captures (M3, M7, M8)**: Runtime captures are `NOT_RUN`
@@ -358,9 +358,12 @@ balance.
   gates.
 - [x] Telemetry distributions (shot accuracy, damage, kills, pickups, items
   used) and delta comparisons.
+- [x] Telemetry invariant gate rejects impossible shot counts, level zero, and
+  records beyond the configured turn budget before projection.
 - [ ] Automated large-scale balance and economic evaluations.
 - [ ] Difficulty curve validation against canonical target metrics.
-- [ ] Strict isolation between player observations and evaluation telemetry.
+- [x] Strict isolation between player observations and evaluation telemetry is
+  enforced by the observation-free `EpisodeRecord` boundary.
 
 ---
 

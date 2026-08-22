@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.12`
+Current project version: `0.2.13`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -95,7 +95,8 @@ Presentation Boundary
   - Content Definitions: `item_definition`, `loot_definition`,
     `monster_roll_definition`, `level_definition`.
   - Evaluation & Cohorts: `CohortConfig`, `CohortReport`, `BatchRunner`,
-    integrity validation, outcome distributions, telemetry projections.
+    seed/summary/telemetry integrity validation, outcome distributions, and
+    observation-free telemetry projections.
 - **Dependencies**: Depends only on `drl-protocol`.
 
 ### `drl-assets` — Atlas Descriptors & Provenance

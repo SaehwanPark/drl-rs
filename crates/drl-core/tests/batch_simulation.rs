@@ -230,18 +230,18 @@ fn cohort_report_validation_rejects_inconsistent_evidence() {
 
 #[test]
 fn cohort_comparison_reports_deltas_and_respects_inclusive_tolerances() {
-  let ascii = r#"
-#####
-#@.>#
-#####
-"#;
-  let scenario = Scenario::from_ascii("RegressionArena", "Tolerance gate", ascii).unwrap();
-  let config = CohortConfig::new(8_000, 2, 12);
-  let baseline =
-    BatchRunner::run_scenario_cohort(&scenario, config, "ExplorerBot", ExplorerBot::new).unwrap();
+  let baseline = synthetic_outcome_report(&vec![RunOutcome::TurnLimitReached; 10]);
   let mut candidate = baseline.clone();
-  candidate.summary.win_rate += 0.1;
-  candidate.summary.average_turns += 2.0;
+  candidate.records[0].metrics.outcome = RunOutcome::Victory;
+  candidate.records[0].metrics.turns_survived = 10;
+  candidate.records[1].metrics.turns_survived = 10;
+  candidate.summary = BatchSummary::from_episodes(
+    &candidate
+      .records
+      .iter()
+      .map(|record| record.metrics.clone())
+      .collect::<Vec<_>>(),
+  );
 
   let comparison = candidate
     .compare_with(&baseline, CohortTolerances::new(0.11, 2.0))
@@ -362,6 +362,40 @@ fn cohort_outcome_distribution_requires_integrity_and_handles_empty_samples() {
   assert_eq!(distribution.in_progress, 0);
   assert_eq!(distribution.victory_rate(), 0.0);
   assert_eq!(distribution.in_progress_rate(), 0.0);
+}
+
+#[test]
+fn cohort_validation_rejects_impossible_telemetry_before_projection() {
+  let mut report = synthetic_outcome_report(&[RunOutcome::Victory]);
+  report.records[0].metrics.shots_fired = 1;
+  report.records[0].metrics.shots_hit = 2;
+  assert_eq!(
+    report.telemetry_distribution(),
+    Err(CohortReportError::TelemetryInvariant {
+      index: 0,
+      field: "shots_hit <= shots_fired",
+    })
+  );
+
+  let mut report = synthetic_outcome_report(&[RunOutcome::Victory]);
+  report.records[0].metrics.level_reached.0 = 0;
+  assert_eq!(
+    report.outcome_distribution(),
+    Err(CohortReportError::TelemetryInvariant {
+      index: 0,
+      field: "level_reached >= 1",
+    })
+  );
+
+  let mut report = synthetic_outcome_report(&[RunOutcome::Victory]);
+  report.records[0].metrics.turns_survived = report.config.max_turns + 1;
+  assert_eq!(
+    report.validate(),
+    Err(CohortReportError::TelemetryInvariant {
+      index: 0,
+      field: "turns_survived <= max_turns",
+    })
+  );
 }
 
 #[test]
@@ -486,6 +520,18 @@ fn telemetry_comparison_applies_rate_and_average_tolerances() {
   assert!(!comparison.within_tolerance(CohortTelemetryTolerances::new(0.125, 2.99)));
   assert!(!comparison.within_tolerance(CohortTelemetryTolerances::new(-0.1, 3.0)));
   assert!(!comparison.within_tolerance(CohortTelemetryTolerances::new(0.125, f64::NAN)));
+}
+
+#[test]
+fn generic_cohort_comparison_rejects_impossible_telemetry() {
+  let baseline = synthetic_outcome_report(&[RunOutcome::Victory]);
+  let mut invalid = baseline.clone();
+  invalid.records[0].metrics.turns_survived = invalid.config.max_turns + 1;
+  assert!(
+    invalid
+      .compare_with(&baseline, CohortTolerances::new(1.0, 1.0))
+      .is_none()
+  );
 }
 
 #[test]
