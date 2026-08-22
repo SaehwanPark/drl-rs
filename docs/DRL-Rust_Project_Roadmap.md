@@ -175,9 +175,11 @@ progress-selected frame UV plans plus elapsed-time loop/clamp selection,
 caller-supplied elapsed-time layer-plan math, WebGPU forwarding, and bounded
 browser scheduling, and the capture-manifest preflight with clean-checkout
 provenance and evidence classification.
-The current follow-up also exposes a pure source-derived low-health pulse
-target from fair HP and caller-supplied elapsed milliseconds; smoothing and
-post-processing remain backend/capture work.
+The preceding follow-up also exposed a pure source-derived low-health pulse
+target from fair HP and caller-supplied elapsed milliseconds. The current
+follow-up adds caller-owned pure smoothing and pending-target decay using the
+pinned `aMSec / 500` step; texture compositing and post-processing remain
+backend/capture work.
 The preceding bounded follow-up recorded the pinned declared/effective
 post-process blur weights, glow add, and LUT-coordinate normalization as pure
 renderer contracts without claiming an offscreen GPU pipeline or

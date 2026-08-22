@@ -74,8 +74,11 @@ The delivered low-health follow-up also exposes the pinned blood-pulse target as
 health and caller-supplied elapsed milliseconds. It preserves the observed
 `current < max / 3` threshold, five-radian-per-second sine term, positive
 target guard, and `[0, 1]` bound without owning a clock or mutable smoothing
-state. The legacy `aMSec / 500` smoothing, low-life texture, blur/LUT
-compositor, and capture-backed audiovisual parity remain explicitly open.
+state. The active follow-up adds `drl_render::low_health_pulse_state_step`, a
+caller-owned pure transition that preserves the legacy `aMSec / 500`
+move-toward rule and independent pending-target decay without inventing
+internal clamps. Low-life texture compositing, blur/LUT compositor execution,
+and capture-backed audiovisual parity remain explicitly open.
 The delivered post-process follow-up exposes the observed glow add, the
 declared/effective blur weights, and channel-swizzled LUT-coordinate
 normalization as pure renderer helpers. It
@@ -134,6 +137,10 @@ does not select it.
   pulse target. Healthy or unavailable health returns zero; low health follows
   the observed integer-divided one-third threshold and sine phase, with a
   bounded non-negative alpha. The helper owns no wall clock or smoothing state.
+- `drl-render::low_health_pulse_state_step` applies the observed
+  `elapsed_ms / 500` move-toward step to a caller-selected target and
+  independently decays positive pending target state. It returns both
+  caller-owned values without draw-time clamping.
 - `drl-render::post_process_glow_color` and
   `drl-render::post_process_lut_coordinate` preserve the observed post-process
   RGB add, `xzy` channel order, scale, offset, and coordinate clamp from the
