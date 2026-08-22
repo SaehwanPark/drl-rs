@@ -421,15 +421,19 @@ fn event_is_observable(
   }
   let ids = event_entity_ids(event);
   ids.into_iter().flatten().any(|entity_id| {
-    before
+    let visible_before = before
       .visible_actors
       .iter()
-      .chain(after.visible_actors.iter())
-      .any(|actor| actor.id == entity_id)
+      .any(|actor| actor.id == entity_id);
+    let visible_after = after
+      .visible_actors
+      .iter()
+      .any(|actor| actor.id == entity_id);
+    visible_before && visible_after
   })
 }
 
-/// Builds effect spans using only actor identities visible before or after a step.
+/// Builds effect spans using only actor identities visible at both step endpoints.
 ///
 /// Direct player transitions remain observable even when no actor identity is
 /// present in the event. Hidden actor events are excluded before timing spans
@@ -593,7 +597,7 @@ mod tests {
   }
 
   #[test]
-  fn observed_effect_timeline_excludes_hidden_actor_events() {
+  fn observed_effect_timeline_excludes_visibility_boundary_events() {
     let game = Game::new_arena(42, 12, 10).expect("arena");
     let observation = game.observe_player();
     let player_id = observation
@@ -602,18 +606,17 @@ mod tests {
       .find(|actor| actor.is_player)
       .expect("player actor")
       .id;
-    let events = [
-      GameEvent::EntityMoved {
-        entity_id: EntityId::new(999),
-        from: Position::new(8, 8),
-        to: Position::new(9, 8),
-      },
-      GameEvent::EntityMoved {
-        entity_id: player_id,
-        from: observation.player_position,
-        to: observation.player_position,
-      },
-    ];
+    let hidden_event = GameEvent::EntityMoved {
+      entity_id: EntityId::new(999),
+      from: Position::new(8, 8),
+      to: Position::new(9, 8),
+    };
+    let visible_event = GameEvent::EntityMoved {
+      entity_id: player_id,
+      from: observation.player_position,
+      to: observation.player_position,
+    };
+    let events = [hidden_event.clone(), visible_event];
     assert_eq!(
       effect_timeline_for_observations(&observation, &observation, &events),
       vec![EffectSpan {
@@ -621,6 +624,31 @@ mod tests {
         start_tick: 0,
         duration_ticks: 1,
       }]
+    );
+
+    let mut visible_before = observation.clone();
+    let mut transient_actor = visible_before
+      .visible_actors
+      .iter()
+      .find(|actor| actor.is_player)
+      .expect("player actor")
+      .clone();
+    transient_actor.id = EntityId::new(999);
+    transient_actor.is_player = false;
+    transient_actor.name = "transient actor".to_string();
+    transient_actor.monster_kind = Some(drl_protocol::MonsterKind::Imp);
+    visible_before.visible_actors.push(transient_actor.clone());
+    let hidden_after = observation.clone();
+    assert!(
+      effect_timeline_for_observations(&visible_before, &hidden_after, &[hidden_event.clone()])
+        .is_empty()
+    );
+
+    let hidden_before = observation;
+    let mut visible_after = hidden_before.clone();
+    visible_after.visible_actors.push(transient_actor);
+    assert!(
+      effect_timeline_for_observations(&hidden_before, &visible_after, &[hidden_event]).is_empty()
     );
   }
 }
