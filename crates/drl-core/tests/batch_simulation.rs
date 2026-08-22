@@ -1,7 +1,7 @@
 //! Integration tests for automated batch simulation and statistical metrics.
 
 use drl_core::agent::{ExplorerBot, GreedyCombatBot};
-use drl_core::batch::{BatchRunner, CohortConfig, CohortTolerances};
+use drl_core::batch::{BatchRunner, CohortConfig, CohortReportError, CohortTolerances};
 use drl_core::generator::LevelGeneratorConfig;
 use drl_core::scenario::Scenario;
 
@@ -113,6 +113,7 @@ fn fixed_seed_cohort_records_sample_definition_and_policy_identity() {
     vec![900, 901, 902]
   );
   assert_eq!(report.summary.total_episodes, config.episode_count);
+  assert!(report.validate().is_ok());
 }
 
 #[test]
@@ -178,6 +179,49 @@ fn procedural_fixed_seed_cohort_reuses_batch_replay_evidence() {
       .iter()
       .all(|record| !record.replay.commands.is_empty())
   );
+  assert!(report.validate().is_ok());
+}
+
+#[test]
+fn cohort_report_validation_rejects_inconsistent_evidence() {
+  let ascii = r#"
+#####
+#@.>#
+#####
+"#;
+  let scenario = Scenario::from_ascii("IntegrityArena", "Report integrity", ascii).unwrap();
+  let config = CohortConfig::new(7_500, 3, 12);
+  let report =
+    BatchRunner::run_scenario_cohort(&scenario, config, "ExplorerBot", ExplorerBot::new).unwrap();
+  assert!(report.validate().is_ok());
+
+  let mut missing_record = report.clone();
+  missing_record.records.pop();
+  assert!(matches!(
+    missing_record.validate(),
+    Err(CohortReportError::RecordCount { .. })
+  ));
+
+  let mut wrong_seed = report.clone();
+  wrong_seed.records[1].seed = 99;
+  assert!(matches!(
+    wrong_seed.validate(),
+    Err(CohortReportError::SeedMismatch { index: 1, .. })
+  ));
+
+  let mut wrong_replay_seed = report.clone();
+  wrong_replay_seed.records[0].replay.seed = 99;
+  assert!(matches!(
+    wrong_replay_seed.validate(),
+    Err(CohortReportError::ReplaySeedMismatch { index: 0, .. })
+  ));
+
+  let mut wrong_summary = report;
+  wrong_summary.summary.total_turns += 1;
+  assert!(matches!(
+    wrong_summary.validate(),
+    Err(CohortReportError::SummaryMismatch)
+  ));
 }
 
 #[test]

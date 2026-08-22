@@ -34,9 +34,10 @@ types shared by core, MCP, bots, and frontends.
   physical semantics through the protocol-owned immutable `TileKind` table.
   `CohortConfig` and `CohortReport` wrap the existing batch entrypoints with an
   explicit fixed-seed sample definition, policy identity, aggregate metrics,
-  and per-seed replay records. `CohortTolerances` and `CohortComparison` add
-  pure compatible-report regression math; none of these types change game
-  execution.
+  and per-seed replay records. `CohortReport::validate` checks record count,
+  wrapping seed order, replay seed identity, and aggregate-summary coherence;
+  `CohortTolerances` and `CohortComparison` add pure compatible-report
+  regression math. None of these types change game execution.
   `drl-core::level_definition` owns the immutable standard procedural-level
   policy; callers can still supply custom `LevelGeneratorConfig` values.
 - `drl-protocol`: stable semantic boundary. Player observations now include

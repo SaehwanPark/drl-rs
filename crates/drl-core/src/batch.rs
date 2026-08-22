@@ -58,6 +58,65 @@ pub struct CohortReport {
   pub records: Vec<EpisodeRecord>,
 }
 
+/// Evidence-integrity failure for a fixed-seed cohort report.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CohortReportError {
+  /// The report does not contain one record for every configured episode.
+  RecordCount { expected: usize, actual: usize },
+  /// A record is outside the configured contiguous seed sequence.
+  SeedMismatch {
+    /// Zero-based record position.
+    index: usize,
+    /// Seed required by the cohort definition.
+    expected: u64,
+    /// Seed recorded in the report.
+    actual: u64,
+  },
+  /// A replay record does not identify the episode seed it is evidence for.
+  ReplaySeedMismatch {
+    /// Zero-based record position.
+    index: usize,
+    /// Seed recorded on the episode record.
+    expected: u64,
+    /// Seed recorded in the replay log.
+    actual: u64,
+  },
+  /// Aggregate metrics do not equal the report's per-episode metrics.
+  SummaryMismatch,
+}
+
+impl std::fmt::Display for CohortReportError {
+  fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    match self {
+      Self::RecordCount { expected, actual } => {
+        write!(
+          formatter,
+          "cohort record count mismatch: expected {expected}, got {actual}"
+        )
+      }
+      Self::SeedMismatch {
+        index,
+        expected,
+        actual,
+      } => write!(
+        formatter,
+        "cohort seed mismatch at record {index}: expected {expected}, got {actual}"
+      ),
+      Self::ReplaySeedMismatch {
+        index,
+        expected,
+        actual,
+      } => write!(
+        formatter,
+        "cohort replay seed mismatch at record {index}: expected {expected}, got {actual}"
+      ),
+      Self::SummaryMismatch => write!(formatter, "cohort summary does not match episode metrics"),
+    }
+  }
+}
+
+impl std::error::Error for CohortReportError {}
+
 /// Caller-declared absolute tolerances for a cohort regression comparison.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct CohortTolerances {
@@ -97,6 +156,44 @@ pub struct CohortComparison {
 }
 
 impl CohortReport {
+  /// Verifies the report's sample definition and retained evidence agree.
+  ///
+  /// This is a pure integrity gate for caller-owned reports. It does not
+  /// rerun simulations or infer statistical significance, balance, or
+  /// difficulty conclusions.
+  pub fn validate(&self) -> Result<(), CohortReportError> {
+    if self.records.len() != self.config.episode_count {
+      return Err(CohortReportError::RecordCount {
+        expected: self.config.episode_count,
+        actual: self.records.len(),
+      });
+    }
+
+    let mut metrics = Vec::with_capacity(self.records.len());
+    for (index, (expected_seed, record)) in self.config.seeds().zip(&self.records).enumerate() {
+      if record.seed != expected_seed {
+        return Err(CohortReportError::SeedMismatch {
+          index,
+          expected: expected_seed,
+          actual: record.seed,
+        });
+      }
+      if record.replay.seed != record.seed {
+        return Err(CohortReportError::ReplaySeedMismatch {
+          index,
+          expected: record.seed,
+          actual: record.replay.seed,
+        });
+      }
+      metrics.push(record.metrics.clone());
+    }
+
+    if BatchSummary::from_episodes(&metrics) != self.summary {
+      return Err(CohortReportError::SummaryMismatch);
+    }
+    Ok(())
+  }
+
   /// Compares this report against a baseline with caller-declared tolerances.
   ///
   /// Reports are compatible only when their policy identity and complete

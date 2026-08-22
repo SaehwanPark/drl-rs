@@ -83,6 +83,9 @@ automated regressions, and human review.
   the follow-up adds compatible-report win-rate and average-turn tolerance
   comparisons; balance conclusions, difficulty targets, and statistical
   interpretation remain open.
+- The active M11 integrity slice validates cohort record count, wrapping seed
+  order, replay seed identity, and aggregate-summary coherence before evidence
+  is used for regression comparisons; it does not infer balance or significance.
 - The first bounded M12 packaging slice now emits and verifies a static-bundle
   release manifest with source revision, sorted artifact hashes, generated-file
   declarations, graphics rights metadata, and service-worker coverage. Signed
@@ -91,7 +94,7 @@ automated regressions, and human review.
 - The M12 cache-version follow-up derives the generated service-worker cache
   name from the manifest source-revision prefix; this is deterministic naming,
   not a signed release invalidation policy.
-- The active M12 diagnostics slice adds a local accessible browser-support and
+- The M12 diagnostics slice adds a local accessible browser-support and
   startup-error panel with recovery guidance; it sends no telemetry and does
   not extend the tested WebGPU browser claim.
 
@@ -285,16 +288,16 @@ Add versioned save/restart policy, browser storage boundaries, migration and
 corruption handling, service-worker offline-after-first-load behavior, and
 replay-compatible save tests. No accounts or gameplay backend.
 
-### M11 — Balance and evaluation (first cohort slice delivered; evaluation open)
+### M11 — Balance and evaluation (cohort and integrity slices delivered; evaluation open)
 
 Run fixed-seed bot cohorts, metrics, difficulty/economy studies, and
 regressions with declared samples/tolerances. The delivered cohort slices now
 make seed ranges, sample size, policy identity, turn budgets, replay evidence,
-and compatible-report tolerance deltas explicit; balance studies, statistical
-interpretation, and ordinary-player/developer observation separation remain
-open.
+compatible-report tolerance deltas, and evidence-integrity validation
+explicit; balance studies, statistical interpretation, and ordinary-player/
+developer observation separation remain open.
 
-### M12 — Static web productization and release hardening (first manifest slice delivered; hardening open)
+### M12 — Static web productization and release hardening (manifest and diagnostics slices delivered; hardening open)
 
 Produce reproducible static HTTPS/PWA bundles, asset license notices,
 cache/version policy, accessibility audit, browser support/error screens,

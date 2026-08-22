@@ -18,6 +18,8 @@ replays, and regression testing.
     aggregate metrics, and per-seed replay evidence for evaluation.
   - Cohort regression math applies explicit win-rate and average-turn
     tolerances without mutating simulation or claiming balance parity.
+  - Cohort report validation rejects inconsistent sample/evidence metadata
+    before a regression comparison is used.
 - Browser and presentation slice:
   - M7 functional checks pass locally and in remote web CI.
   - M8 provides square pixel-grid letterboxing, shared lighting bands, measured
