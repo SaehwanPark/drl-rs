@@ -161,6 +161,45 @@ pub fn effect_segment_index_at_elapsed(
   i32::try_from(corrected).ok()
 }
 
+/// Returns the caller-owned death-animation segment at elapsed time.
+///
+/// The legacy selector optionally holds the first segment through a lead
+/// delay, then computes `(elapsed * count) div duration` and clamps to the
+/// final segment. Reverse playback ignores the lead delay. Zero durations or
+/// empty segment sets are rejected; no actor, sprite, light, or lifecycle
+/// state is consulted.
+#[must_use]
+pub fn kill_animation_segment_index_at_elapsed(
+  elapsed_ms: u64,
+  total_duration_ms: u64,
+  segment_count: u32,
+  lead_delay_ms: u64,
+  reverse: bool,
+) -> Option<u32> {
+  if total_duration_ms == 0 || segment_count == 0 {
+    return None;
+  }
+  if !reverse && lead_delay_ms > total_duration_ms {
+    return None;
+  }
+
+  let count = u128::from(segment_count);
+  let terminal = count - 1;
+  let segment = if !reverse && lead_delay_ms > 0 {
+    if elapsed_ms <= lead_delay_ms {
+      0
+    } else {
+      let elapsed = u128::from(elapsed_ms - lead_delay_ms);
+      let duration = u128::from((total_duration_ms - lead_delay_ms).max(1));
+      (elapsed * count / duration).min(terminal)
+    }
+  } else {
+    (u128::from(elapsed_ms) * count / u128::from(total_duration_ms)).min(terminal)
+  };
+
+  u32::try_from(segment).ok()
+}
+
 /// Visibility-derived presentation bands for deterministic scene shading.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum LightingBand {
@@ -2005,6 +2044,58 @@ mod tests {
     );
     assert_eq!(effect_segment_index_at_elapsed(u64::MAX, 1, i32::MAX), None);
     assert_eq!(effect_segment_index_at_elapsed(2, 1, i32::MIN), None);
+  }
+
+  #[test]
+  fn kill_animation_segment_index_respects_lead_delay_and_clamp() {
+    assert_eq!(
+      kill_animation_segment_index_at_elapsed(0, 100, 3, 20, false),
+      Some(0)
+    );
+    assert_eq!(
+      kill_animation_segment_index_at_elapsed(20, 100, 3, 20, false),
+      Some(0)
+    );
+    assert_eq!(
+      kill_animation_segment_index_at_elapsed(47, 100, 3, 20, false),
+      Some(1)
+    );
+    assert_eq!(
+      kill_animation_segment_index_at_elapsed(80, 100, 3, 20, false),
+      Some(2)
+    );
+    assert_eq!(
+      kill_animation_segment_index_at_elapsed(100, 100, 3, 20, false),
+      Some(2)
+    );
+  }
+
+  #[test]
+  fn kill_animation_segment_index_ignores_lead_for_reverse_and_rejects_invalid_inputs() {
+    assert_eq!(
+      kill_animation_segment_index_at_elapsed(33, 100, 3, 20, true),
+      Some(0)
+    );
+    assert_eq!(
+      kill_animation_segment_index_at_elapsed(34, 100, 3, 20, true),
+      Some(1)
+    );
+    assert_eq!(
+      kill_animation_segment_index_at_elapsed(u64::MAX, u64::MAX, u32::MAX, 0, true),
+      Some(u32::MAX - 1)
+    );
+    assert_eq!(
+      kill_animation_segment_index_at_elapsed(0, 0, 3, 0, false),
+      None
+    );
+    assert_eq!(
+      kill_animation_segment_index_at_elapsed(0, 10, 0, 0, false),
+      None
+    );
+    assert_eq!(
+      kill_animation_segment_index_at_elapsed(0, 10, 3, 11, false),
+      None
+    );
   }
 
   #[test]

@@ -187,9 +187,11 @@ capture-backed color parity.
 The preceding follow-up added pure horizontal/vertical blur-tap plans with
 caller-supplied screen dimensions and a five-sample RGB/center-alpha reduction.
 The preceding follow-up added the pure direct-versus-captured post-process pass
-order across glow/LUT gates. The current follow-up adds the pure three-phase
+order across glow/LUT gates. The preceding follow-up added the pure three-phase
 explosion-mark selector with source duration normalization and fallback, plus
-signed cell/item effect segment arithmetic with explicit invalid-input handling;
+signed cell/item effect segment arithmetic with explicit invalid-input handling.
+The current follow-up adds caller-owned kill-animation segment selection with
+the pinned lead-delay, reverse-branch, quotient, and terminal-clamp rules;
 animation lifecycle, palette/sprite rendering, backend sampling, and
 capture-backed parity remain open. The blur reduction preserves weighted RGB and
 center-only alpha without renormalization or clamping.

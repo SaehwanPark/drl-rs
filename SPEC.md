@@ -102,6 +102,11 @@ It also exposes `drl_render::effect_segment_index_at_elapsed`, preserving the
 signed quotient and sign correction used by cell/item animation draws while
 rejecting zero durations and out-of-range results. Sprite, level, item, and
 lifecycle ownership remain outside the helper.
+The active follow-up also exposes
+`drl_render::kill_animation_segment_index_at_elapsed`, preserving the
+source's lead-delay branch, reverse-branch selection, integer segment quotient,
+and terminal clamp with explicit invalid-input rejection. Actor, sprite-table,
+light, and lifecycle ownership remain outside the helper.
 Sampler edge/wrap addressing remains a backend and capture concern; the helper
 does not select it.
 
@@ -181,6 +186,11 @@ does not select it.
   duration units plus a signed target segment through the observed quotient and
   sign correction. It returns `None` for zero duration or an unrepresentable
   result and performs no sprite/level/item mutation.
+- `drl-render::kill_animation_segment_index_at_elapsed` maps caller-owned
+  elapsed time, stored total duration, segment count, lead delay, and reverse
+  flag through the pinned kill-animation branch. It returns `None` for zero
+  duration/count or an invalid forward lead delay and clamps to the terminal
+  segment without consulting actor, sprite, light, or lifecycle state.
 - WebGPU uses that shared clear-color rule; health-tone presentation remains an
   effect and cannot reveal hidden world state.
 - `drl-render::effect_timeline` preserves event order and assigns each bounded
