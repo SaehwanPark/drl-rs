@@ -34,6 +34,9 @@ documented in this file.
   rules derive full light versus fixed explored-tile fog from fair scene data,
   and WebGPU consumes the shared rule. Capture-backed lighting equivalence is
   still `NOT_RUN`.
+- Moved the existing quarter-health WebGPU clear-color threshold into pure
+  `drl-render::SceneTone`/`scene_clear_color` planning with focused tests; the
+  browser renderer now consumes the shared tone rule.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch

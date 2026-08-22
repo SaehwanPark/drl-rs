@@ -222,7 +222,7 @@ pub enum GpuStatus {
 #[cfg(target_arch = "wasm32")]
 mod wasm {
   use super::*;
-  use drl_render::{PixelViewport, shade_color};
+  use drl_render::{PixelViewport, scene_clear_color, shade_color};
   use std::cell::RefCell;
   use wasm_bindgen::prelude::*;
   use web_sys::{HtmlCanvasElement, Window};
@@ -395,24 +395,12 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
       let view = frame
         .texture
         .create_view(&wgpu::TextureViewDescriptor::default());
-      let clear = if scene
-        .hud
-        .player_hp
-        .is_some_and(|hp| hp.current < hp.max / 4)
-      {
-        wgpu::Color {
-          r: 0.12,
-          g: 0.015,
-          b: 0.015,
-          a: 1.0,
-        }
-      } else {
-        wgpu::Color {
-          r: 0.025,
-          g: 0.035,
-          b: 0.055,
-          a: 1.0,
-        }
+      let [r, g, b, a] = scene_clear_color(scene.hud.player_hp);
+      let clear = wgpu::Color {
+        r: f64::from(r),
+        g: f64::from(g),
+        b: f64::from(b),
+        a: f64::from(a),
       };
       let mut encoder = self
         .device
