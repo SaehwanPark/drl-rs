@@ -111,6 +111,10 @@ It also exposes `drl_render::fx_animation_frame_index_at_elapsed`, preserving
 the pinned FX quotient and terminal frame clamp while rejecting zero duration
 or frame count. Sprite IDs, atlas columns, and effect lifecycle remain outside
 the helper.
+It also exposes `drl_render::move_animation_progress_at_elapsed`, preserving
+the pinned normalized elapsed ratio and `[0, 1]` clamp with explicit
+zero-duration rejection. Coordinate interpolation, lighting, entity state,
+and lifecycle remain outside the helper.
 Sampler edge/wrap addressing remains a backend and capture concern; the helper
 does not select it.
 
@@ -199,6 +203,10 @@ does not select it.
   and duration units plus a frame count through the pinned FX integer quotient
   and terminal clamp. It returns `None` for zero duration/count and performs no
   sprite-ID, atlas-column, lifecycle, or backend work.
+- `drl-render::move_animation_progress_at_elapsed` maps caller-owned elapsed
+  and duration units through the pinned normalized movement ratio and clamp. It
+  returns `None` for zero duration and performs no coordinate, light, entity,
+  interpolation, lifecycle, or backend work.
 - WebGPU uses that shared clear-color rule; health-tone presentation remains an
   effect and cannot reveal hidden world state.
 - `drl-render::effect_timeline` preserves event order and assigns each bounded
