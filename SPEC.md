@@ -15,7 +15,7 @@ progress. This file expands exactly one active implementation slice.
   redistribution-gated; its controlled reference-capture gate is `NOT_RUN` on
   arm64 macOS and remains an M8 acceptance dependency.
 
-## Present — M8 elapsed-time layer planning
+## Present — M8 elapsed WebGPU rendering
 
 Status: The M7 browser slice passed functional acceptance locally and in
 remote web CI. The delivered M8 pixel-grid, visibility-band, low-health tone,
@@ -48,6 +48,9 @@ capture-backed audiovisual equivalence remain open.
 This slice also exposes elapsed-time layer-plan UV selection with explicit
 loop/clamp policy while preserving the existing frame-zero and normalized-
 progress APIs; browser scheduling remains outside the renderer boundary.
+The WASM shell now exposes `WebGpuRenderer::render_at_elapsed` to forward that
+selection into textured vertex generation without changing the frame-zero
+entrypoint or owning a browser clock.
 
 ### Observable behavior
 
@@ -182,6 +185,9 @@ progress APIs; browser scheduling remains outside the renderer boundary.
 - `drl-render::layer_draw_plan_at_elapsed` applies that caller-supplied elapsed
   time to evidenced animated descriptors, keeps static descriptors on frame
   zero, and preserves one selected UV across each sprite composite group.
+- `WebGpuRenderer::render_at_elapsed` forwards caller-supplied elapsed time and
+  playback policy to the textured pass; malformed elapsed plans take the
+  existing geometry fallback, while `render` remains frame zero.
 - The WGSL source is shared with a native shader-contract test that checks the
   base/emissive/mask samples, fair-lighting `max`, tint forwarding, neutral
   fallback input, alpha cutout, and output path; native tests therefore guard
@@ -260,7 +266,7 @@ capture is available.
   content-specific animation timing, additional per-sprite tint sources, and
   capture-backed legacy shader equivalence remain future M8 slices; this pass
   is intentionally limited to caller-supplied renderer-neutral timing and
-  layer-plan math.
+  layer-plan math and caller-driven WASM forwarding.
 
 ## Next
 
@@ -271,9 +277,9 @@ texture upload, base-color sampling, the emissive lighting floor, the legacy
 alpha cutoff, optional mask sampling, the Green Armor and Phase Device tint
 boundaries, outline-mask GPU transport, caller-supplied frame selection, and
 the evidenced player/actor/Phase Device animation metadata, progress-driven
-frame plans, and elapsed-time layer plans are covered by local checks and
-hosted WASM browser jobs. Continue M8 with visible outline/glow compositing,
-browser animation scheduling,
+frame plans, elapsed-time layer plans, and caller-driven elapsed WebGPU
+forwarding are covered by local checks and hosted WASM browser jobs. Continue
+M8 with visible outline/glow compositing, browser animation scheduling,
 broader content, additional tint sources, or capture-backed measurement of
 lighting, effects, typography, and audio. Do not claim audiovisual parity from
 renderer-neutral grouping or the `NOT_RUN` legacy captures.

@@ -104,8 +104,8 @@ legacy graphics metadata; it is not a dependency of the core.
   loading, renderer-owned WebGPU texture uploads, the partial base/mask/
   emissive textured pass with Green Armor/Phase Device colorization tint,
   optional outline-mask transport, renderer-neutral animation metadata,
-  progress-selected frame UVs, elapsed-time playback math and layer plans, and
-  legacy alpha cutoff, Winit/WebGPU scene
+  progress-selected frame UVs, elapsed-time playback math and layer plans,
+  caller-driven elapsed WebGPU rendering, and legacy alpha cutoff, Winit/WebGPU scene
   surface, DOM shell, and WASM exports.
 - `crates/drl-mcp`: JSON-RPC/MCP server and fairness boundary.
 - `crates/drl-app`: native headless demo and MCP stdio runner.
