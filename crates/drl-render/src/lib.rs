@@ -358,6 +358,19 @@ pub fn particle_burst_range_sample(range: [f32; 2], unit_sample: f32) -> f32 {
   range[0] + unit_sample * (range[1] - range[0])
 }
 
+/// Maps a caller-rounded particle world position to the legacy decal cell.
+///
+/// The source callback adds 16 pixels to each rounded position and uses
+/// truncating integer division by 32, producing one-based cell coordinates.
+/// Checked addition rejects positions whose offset cannot be represented;
+/// map bounds, liquid/block flags, and decal storage remain caller-owned.
+#[must_use]
+pub fn particle_decal_cell_at_rounded_world(rounded_world_position: [i32; 2]) -> Option<[i32; 2]> {
+  let x = rounded_world_position[0].checked_add(16)?.checked_div(32)?;
+  let y = rounded_world_position[1].checked_add(16)?.checked_div(32)?;
+  Some([x, y])
+}
+
 /// Visibility-derived presentation bands for deterministic scene shading.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum LightingBand {
@@ -2428,6 +2441,21 @@ mod tests {
   fn particle_burst_range_sample_preserves_reversed_and_unclamped_inputs() {
     assert_eq!(particle_burst_range_sample([6.0, 2.0], 0.25), 5.0);
     assert_eq!(particle_burst_range_sample([2.0, 6.0], 1.25), 7.0);
+  }
+
+  #[test]
+  fn particle_decal_cell_maps_rounded_world_to_one_based_cells() {
+    assert_eq!(particle_decal_cell_at_rounded_world([16, 16]), Some([1, 1]));
+    assert_eq!(particle_decal_cell_at_rounded_world([48, 80]), Some([2, 3]));
+    assert_eq!(
+      particle_decal_cell_at_rounded_world([-16, -16]),
+      Some([0, 0])
+    );
+  }
+
+  #[test]
+  fn particle_decal_cell_rejects_offset_overflow() {
+    assert_eq!(particle_decal_cell_at_rounded_world([i32::MAX, 0]), None);
   }
 
   #[test]
