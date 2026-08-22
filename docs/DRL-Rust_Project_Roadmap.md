@@ -1,6 +1,6 @@
 # DRL-Rust Project Roadmap
 
-Last reviewed: 2026-08-21
+Last reviewed: 2026-08-22
 
 ## Product direction
 
@@ -54,11 +54,13 @@ automated regressions, and human review.
   renderer-owned GPU texture upload and a partial base-color textured pass are
   now available; the emissive red-channel lighting floor is also wired through
   the browser pass, plus the legacy textured-fragment alpha cutoff, while
-  optional colorization-mask sampling with a neutral tint boundary is now
-  wired through the browser pass; per-sprite tint sourcing, outline/glow role
-  compositing and capture-backed parity remain open. Pure frontend effect
-  progress and caller-supplied animation frame selection are now available;
-  legacy animation timing and frame metadata remain capture-gated.
+  optional colorization-mask sampling now carries the evidence-backed Green
+  Armor tint for visible ground items and the player with observed equipped
+  armor; other current archetypes remain neutral. Additional per-sprite tint
+  sourcing, outline/glow role compositing and capture-backed parity remain
+  open. Pure frontend effect progress and caller-supplied animation frame
+  selection are now available; legacy animation timing and frame metadata
+  remain capture-gated.
 - `SPEC.md` contains the single active M8 slice; it is not a second roadmap.
 
 ## Milestones
@@ -151,10 +153,11 @@ composite inputs, and validated browser source loading are available, and
 operations; the renderer now retains a 24-source GPU texture cache and samples
 base-color sprites with linear normalized atlas storage, a native-tested WGSL
 contract, fair lighting, the emissive red-channel floor, the legacy alpha
-cutoff, optional mask sampling with a neutral tint boundary, and pure
-caller-supplied animation frame selection.
-Remaining work is per-sprite tint sourcing, outline/glow role-specific shader
-sampling/layer compositing, legacy animation timing, and frame metadata;
+cutoff, optional mask sampling with the bounded Green Armor tint mapping, and
+pure caller-supplied animation frame selection.
+Remaining work is additional per-sprite tint sourcing, outline/glow
+role-specific shader sampling/layer compositing, legacy animation timing, and
+frame metadata;
 implement
 capture-backed lighting/LUT parity,
 particles, animation/effect timing, HUD typography, cleared legacy or

@@ -15,7 +15,7 @@ progress. This file expands exactly one active implementation slice.
   redistribution-gated; its controlled reference-capture gate is `NOT_RUN` on
   arm64 macOS and remains an M8 acceptance dependency.
 
-## Present — M8 animation frame selector
+## Present — M8 Green Armor colorization tint
 
 Status: The M7 browser slice passed functional acceptance locally and in
 remote web CI. The delivered M8 pixel-grid, visibility-band, low-health tone,
@@ -32,10 +32,10 @@ those decoded images into renderer-owned WebGPU texture/view resources. The
 base/emissive follow-ups add nearest-filtered WGSL sampling, the verified
 emissive lighting floor, the legacy alpha cutoff, a native shader contract, and
 optional colorization-mask sampling with a neutral per-vertex tint boundary.
-This slice adds pure frame-index selection from caller-supplied normalized
-effect progress. Asset-specific frame counts, legacy animation timing,
-per-sprite tint sourcing, outline/glow equations, and capture-backed
-audiovisual equivalence remain open.
+This slice carries the legacy Green Armor cosplay color into fair item scene
+metadata and the existing vertex tint path. Other archetypes remain neutral;
+general tint provenance, asset-specific animation timing, outline/glow
+equations, and capture-backed audiovisual equivalence remain open.
 
 ### Observable behavior
 
@@ -142,6 +142,11 @@ audiovisual equivalence remain open.
   adds its RGB contribution multiplied by the supplied per-vertex tint. The
   current fair scene path supplies a neutral zero tint, and a transparent
   fallback is used when a mask source is unavailable.
+- `drl-render::item_colorization_tint` maps the currently implemented
+  `GreenArmor` item to the evidence-backed `[0, 255, 0, 255]` tint and keeps
+  every other archetype neutral. Visible ground-item layer draws carry that
+  tint; tiles and non-player actors remain neutral, while the player draw uses
+  the observed equipped armor when it is `GreenArmor`.
 - The WGSL source is shared with a native shader-contract test that checks the
   base/emissive/mask samples, fair-lighting `max`, neutral tint input, alpha
   cutout, and output path; native tests therefore guard the WASM-only runtime
@@ -216,9 +221,9 @@ capture is available.
 - Legacy audio/music/fonts are not shipped until rights are documented.
 - Full audiovisual equivalence is M8: capture-backed tolerances, visual
   regressions, cue timing, and structured human comparison.
-- Per-sprite tint sourcing, outline/glow, legacy animation timing/frame
-  metadata, and capture-backed legacy shader equivalence remain future M8
-  slices; this pass is renderer-neutral groundwork only.
+- Additional per-sprite tint sources, outline/glow, legacy animation
+  timing/frame metadata, and capture-backed legacy shader equivalence remain
+  future M8 slices; this pass is intentionally limited to Green Armor.
 
 ## Next
 
@@ -226,9 +231,9 @@ The pixel-scale viewport, atlas metadata, UV geometry, draw-plan source
 metadata, fair lighting factors, effect progress, layer input roles, grouped
 sprite composites, validated browser source loading, renderer-owned GPU
 texture upload, base-color sampling, the emissive lighting floor, the legacy
-alpha cutoff, optional neutral-tint mask sampling, and caller-supplied frame
-selection are covered by local checks and hosted WASM browser jobs. Continue
-M8 with per-sprite tint sourcing, outline/glow, legacy animation timing,
-or capture-backed measurement of lighting, effects, typography, and audio. Do
-not claim audiovisual parity from renderer-neutral grouping or the `NOT_RUN`
-legacy captures.
+alpha cutoff, optional mask sampling, the Green Armor tint boundary, and
+caller-supplied frame selection are covered by local checks and hosted WASM
+browser jobs. Continue M8 with additional tint sources, outline/glow, legacy
+animation timing, or capture-backed measurement of lighting, effects,
+typography, and audio. Do not claim audiovisual parity from renderer-neutral
+grouping or the `NOT_RUN` legacy captures.

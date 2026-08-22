@@ -110,6 +110,11 @@ documented in this file.
 - Added pure `drl-render::animation_frame_index` groundwork that maps bounded
   normalized progress to a caller-supplied frame count; asset frame metadata,
   legacy timing, and capture-backed animation parity remain open.
+- Added the bounded evidence-backed Green Armor colorization tint: visible
+  ground items and the player with observed equipped Green Armor carry the
+  pinned legacy green value through the existing mask vertex input, while
+  other current archetypes and non-player actors remain neutral. Additional
+  tint sources and capture-backed color/display parity remain open.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch
