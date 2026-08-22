@@ -17,7 +17,8 @@ pub use event::GameEvent;
 pub use item::{AmmoType, EquipmentSlot, GroundItemView, ItemArchetype, ItemCategory, ItemView};
 pub use metrics::{BatchSummary, EpisodeMetrics, RunOutcome};
 pub use observation::{
-  ActorView, Observation, OmniscientObservation, PlayerObservation, TileKind, TileView,
+  ActorView, Observation, OmniscientObservation, PlayerObservation, TileDefinition, TileKind,
+  TileView,
 };
 pub use replay::{
   ItemSpawnKind, ItemSpawnSpec, MonsterSpawnSpec, PlayerSpawnConfig, ReplayExecutionError,

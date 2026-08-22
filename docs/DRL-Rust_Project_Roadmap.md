@@ -230,6 +230,10 @@ The current generated-monster follow-up centralizes the four existing
 procedural monster outcomes and exact roll bounds while preserving one-roll
 RNG consumption, spawn metadata/order, and shared monster definitions; broader
 actor/level migration, balance, and legacy parity remain open.
+The current tile-definition follow-up centralizes the five existing tile
+semantics in an immutable protocol-owned table while preserving core map/FOV
+behavior, observations, replay/protocol schemas, and separate core storage;
+broader level/asset migration and legacy parity remain open.
 The current M10 follow-ups add a versioned fixed-M4 command-history snapshot,
 bounded corruption/version handling, transactional replay restore, a
 best-effort WASM localStorage boundary with save/load/clear controls, and a

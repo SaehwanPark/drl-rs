@@ -14,23 +14,71 @@ pub enum TileKind {
   StairsDown,
 }
 
+/// Immutable semantic metadata for one current tile kind.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct TileDefinition {
+  pub kind: TileKind,
+  pub name: &'static str,
+  pub is_walkable: bool,
+  pub is_transparent: bool,
+}
+
+const TILE_DEFINITIONS: [TileDefinition; 5] = [
+  TileDefinition {
+    kind: TileKind::Floor,
+    name: "Floor",
+    is_walkable: true,
+    is_transparent: true,
+  },
+  TileDefinition {
+    kind: TileKind::Wall,
+    name: "Wall",
+    is_walkable: false,
+    is_transparent: false,
+  },
+  TileDefinition {
+    kind: TileKind::DoorClosed,
+    name: "Door Closed",
+    is_walkable: false,
+    is_transparent: false,
+  },
+  TileDefinition {
+    kind: TileKind::DoorOpen,
+    name: "Door Open",
+    is_walkable: true,
+    is_transparent: true,
+  },
+  TileDefinition {
+    kind: TileKind::StairsDown,
+    name: "Stairs Down",
+    is_walkable: true,
+    is_transparent: true,
+  },
+];
+
 impl TileKind {
+  /// Returns the immutable semantic definition for this tile kind.
+  #[must_use]
+  pub const fn definition(self) -> TileDefinition {
+    match self {
+      Self::Floor => TILE_DEFINITIONS[0],
+      Self::Wall => TILE_DEFINITIONS[1],
+      Self::DoorClosed => TILE_DEFINITIONS[2],
+      Self::DoorOpen => TILE_DEFINITIONS[3],
+      Self::StairsDown => TILE_DEFINITIONS[4],
+    }
+  }
+
   /// Returns true if this tile can be stepped onto.
   #[must_use]
   pub const fn is_walkable(self) -> bool {
-    match self {
-      Self::Floor | Self::DoorOpen | Self::StairsDown => true,
-      Self::Wall | Self::DoorClosed => false,
-    }
+    self.definition().is_walkable
   }
 
   /// Returns true if this tile transmits sight / light.
   #[must_use]
   pub const fn is_transparent(self) -> bool {
-    match self {
-      Self::Floor | Self::DoorOpen | Self::StairsDown => true,
-      Self::Wall | Self::DoorClosed => false,
-    }
+    self.definition().is_transparent
   }
 }
 
@@ -92,4 +140,30 @@ pub struct OmniscientObservation {
 pub enum Observation {
   Player(Box<PlayerObservation>),
   Omniscient(OmniscientObservation),
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn tile_definitions_preserve_current_semantics() {
+    let expected = [
+      (TileKind::Floor, "Floor", true, true),
+      (TileKind::Wall, "Wall", false, false),
+      (TileKind::DoorClosed, "Door Closed", false, false),
+      (TileKind::DoorOpen, "Door Open", true, true),
+      (TileKind::StairsDown, "Stairs Down", true, true),
+    ];
+
+    for (kind, name, is_walkable, is_transparent) in expected {
+      let definition = kind.definition();
+      assert_eq!(definition.kind, kind);
+      assert_eq!(definition.name, name);
+      assert_eq!(definition.is_walkable, is_walkable);
+      assert_eq!(definition.is_transparent, is_transparent);
+      assert_eq!(kind.is_walkable(), is_walkable);
+      assert_eq!(kind.is_transparent(), is_transparent);
+    }
+  }
 }

@@ -1,8 +1,8 @@
 //! 2D tile grid maps and tile representations.
 
-use drl_protocol::{Position, TileKind, TileView};
+use drl_protocol::{Position, TileDefinition, TileKind, TileView};
 
-/// Internal map tile definition.
+/// Internal map tile kind.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub enum Tile {
   #[default]
@@ -14,6 +14,12 @@ pub enum Tile {
 }
 
 impl Tile {
+  /// Returns the immutable semantic definition for this tile.
+  #[must_use]
+  pub const fn definition(self) -> TileDefinition {
+    self.to_kind().definition()
+  }
+
   /// Converts internal tile representation into protocol `TileKind`.
   #[must_use]
   pub const fn to_kind(self) -> TileKind {
@@ -29,13 +35,13 @@ impl Tile {
   /// Returns true if an entity can walk onto this tile.
   #[must_use]
   pub const fn is_walkable(self) -> bool {
-    self.to_kind().is_walkable()
+    self.definition().is_walkable
   }
 
   /// Returns true if light/vision passes through this tile.
   #[must_use]
   pub const fn is_transparent(self) -> bool {
-    self.to_kind().is_transparent()
+    self.definition().is_transparent
   }
 }
 
@@ -170,6 +176,27 @@ impl Map {
 #[cfg(test)]
 mod tests {
   use super::*;
+
+  #[test]
+  fn tile_definitions_preserve_all_current_semantics() {
+    let expected = [
+      (Tile::Floor, TileKind::Floor, true, true),
+      (Tile::Wall, TileKind::Wall, false, false),
+      (Tile::DoorClosed, TileKind::DoorClosed, false, false),
+      (Tile::DoorOpen, TileKind::DoorOpen, true, true),
+      (Tile::StairsDown, TileKind::StairsDown, true, true),
+    ];
+
+    for (tile, kind, is_walkable, is_transparent) in expected {
+      let definition = tile.definition();
+      assert_eq!(definition.kind, kind);
+      assert_eq!(definition.is_walkable, is_walkable);
+      assert_eq!(definition.is_transparent, is_transparent);
+      assert_eq!(tile.to_kind(), kind);
+      assert_eq!(tile.is_walkable(), is_walkable);
+      assert_eq!(tile.is_transparent(), is_transparent);
+    }
+  }
 
   #[test]
   fn test_map_bounds_and_arena() {
