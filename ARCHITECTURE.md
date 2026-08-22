@@ -31,8 +31,8 @@ types shared by core, MCP, bots, and frontends.
   identifiers. MCP wire serialization and replay schema remain compatible.
 - `drl-assets`: platform-neutral atlas IDs, imported PNG dimensions, measured
   32-pixel rectangles, deterministic registered layer sets, semantic
-  tile/actor/item lookup, and legacy revision identity. It has no decoder or
-  platform dependency and core does not depend on it.
+  tile/actor/item lookup, normalized UV geometry, and legacy revision identity.
+  It has no decoder or platform dependency and core does not depend on it.
 - `drl-render`: deterministic `PresentationStep`, `RenderScene`, target
   candidates, bounded event-to-effect builders, observation-independent
   `PixelViewport`/`PixelRect` layout math, and visibility-derived
@@ -74,6 +74,8 @@ types shared by core, MCP, bots, and frontends.
 - Each descriptor carries the exact available source-layer set for its atlas in
   registration order. The list is metadata only; no blending or sampling is
   performed at this boundary.
+- `SpriteRect::uv_rect` converts bounded image-space cells to normalized
+  top-left-origin UVs. A backend owns any texture-origin inversion.
 - `PresentationStep::effects` is computed at the command boundary from the
   returned event list and visible actor sets. Ordinary effects require both
   endpoints; terminal hit/death effects use pre-step visibility. Rejected

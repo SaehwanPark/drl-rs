@@ -57,6 +57,9 @@ documented in this file.
 - Corrected the pinned legacy graphics revision everywhere to the exact
   40-character Git commit, keeping asset provenance and capture scripts
   reproducible.
+- Added renderer-neutral normalized UV conversion for bounded sprite cells,
+  with explicit top-left image origin and invalid-dimension rejection. Texture
+  sampling remains a future compositor concern.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch

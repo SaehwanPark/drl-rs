@@ -129,9 +129,39 @@ impl SpriteRect {
   /// Returns whether this rectangle fits inside an atlas of the given size.
   #[must_use]
   pub const fn is_within(self, atlas_width: u32, atlas_height: u32) -> bool {
-    self.x.saturating_add(self.width) <= atlas_width
-      && self.y.saturating_add(self.height) <= atlas_height
+    self.x <= atlas_width
+      && self.y <= atlas_height
+      && self.width <= atlas_width - self.x
+      && self.height <= atlas_height - self.y
   }
+
+  /// Converts this image-space rectangle to normalized top-left-origin UVs.
+  ///
+  /// The conversion is intentionally renderer-neutral. A backend using a
+  /// bottom-left texture origin can invert the V coordinates at its boundary.
+  #[must_use]
+  pub fn uv_rect(self, atlas_width: u32, atlas_height: u32) -> Option<SpriteUv> {
+    if atlas_width == 0 || atlas_height == 0 || !self.is_within(atlas_width, atlas_height) {
+      return None;
+    }
+    let atlas_width = atlas_width as f32;
+    let atlas_height = atlas_height as f32;
+    Some(SpriteUv {
+      u_min: self.x as f32 / atlas_width,
+      v_min: self.y as f32 / atlas_height,
+      u_max: self.x.saturating_add(self.width) as f32 / atlas_width,
+      v_max: self.y.saturating_add(self.height) as f32 / atlas_height,
+    })
+  }
+}
+
+/// Normalized top-left-origin UV rectangle for a sprite cell.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct SpriteUv {
+  pub u_min: f32,
+  pub v_min: f32,
+  pub u_max: f32,
+  pub v_max: f32,
 }
 
 /// Stable semantic lookup entry used by scene construction.
@@ -332,6 +362,15 @@ mod tests {
         descriptor.atlas.dimensions().1
       ));
       assert_eq!(descriptor.layers, descriptor.atlas.layers());
+      assert!(
+        descriptor
+          .rect
+          .uv_rect(
+            descriptor.atlas.dimensions().0,
+            descriptor.atlas.dimensions().1
+          )
+          .is_some()
+      );
     }
     for kind in [
       None,
@@ -347,6 +386,15 @@ mod tests {
         descriptor.atlas.dimensions().1
       ));
       assert_eq!(descriptor.layers, descriptor.atlas.layers());
+      assert!(
+        descriptor
+          .rect
+          .uv_rect(
+            descriptor.atlas.dimensions().0,
+            descriptor.atlas.dimensions().1
+          )
+          .is_some()
+      );
     }
     for archetype in [
       ItemArchetype::Unknown,
@@ -366,6 +414,17 @@ mod tests {
         descriptor.atlas.dimensions().1
       ));
       assert_eq!(descriptor.layers, descriptor.atlas.layers());
+      let uv = descriptor
+        .rect
+        .uv_rect(
+          descriptor.atlas.dimensions().0,
+          descriptor.atlas.dimensions().1,
+        )
+        .expect("in-bounds current descriptor has UVs");
+      assert!((0.0..=1.0).contains(&uv.u_min));
+      assert!((0.0..=1.0).contains(&uv.v_min));
+      assert!((0.0..=1.0).contains(&uv.u_max));
+      assert!((0.0..=1.0).contains(&uv.v_max));
     }
     assert_eq!(
       AtlasId::Dguy.layer_path(SpriteLayer::Emissive),
@@ -483,5 +542,35 @@ mod tests {
       ]
     );
     assert_eq!(AtlasId::Fx.layers(), AtlasId::Levels.layers());
+  }
+
+  #[test]
+  fn sprite_rect_uv_conversion_is_normalized_and_top_left_origin() {
+    let uv = SpriteRect::new(32, 64, 32, 32)
+      .uv_rect(512, 256)
+      .expect("valid atlas rectangle");
+    assert!((uv.u_min - 0.0625).abs() < f32::EPSILON);
+    assert!((uv.v_min - 0.25).abs() < f32::EPSILON);
+    assert!((uv.u_max - 0.125).abs() < f32::EPSILON);
+    assert!((uv.v_max - 0.375).abs() < f32::EPSILON);
+  }
+
+  #[test]
+  fn sprite_rect_uv_conversion_rejects_invalid_atlases_and_rectangles() {
+    let rect = SpriteRect::new(0, 0, 32, 32);
+    assert!(rect.uv_rect(0, 256).is_none());
+    assert!(rect.uv_rect(512, 0).is_none());
+    assert!(SpriteRect::new(500, 0, 32, 32).uv_rect(512, 256).is_none());
+    assert!(SpriteRect::new(0, 250, 32, 32).uv_rect(512, 256).is_none());
+    assert!(
+      SpriteRect::new(u32::MAX, 0, 1, 1)
+        .uv_rect(u32::MAX, 1)
+        .is_none()
+    );
+    assert!(
+      SpriteRect::new(0, u32::MAX, 1, 1)
+        .uv_rect(1, u32::MAX)
+        .is_none()
+    );
   }
 }

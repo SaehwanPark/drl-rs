@@ -10,8 +10,8 @@ The current repository contains a playable browser-slice implementation and a
 complete deterministic M4 simulation. M7 functional checks pass locally and in
 remote web CI; M8 presentation work now keeps browser map cells square with
 deterministic pixel-grid letterboxing, shared visible/explored lighting bands,
-measured legacy atlas slots and registered layer metadata, a pure low-health
-scene tone, and event-ordered effect timing. Full
+measured legacy atlas slots, registered layer metadata, and normalized sprite
+UVs, plus a pure low-health scene tone and event-ordered effect timing. Full
 audiovisual equivalence, broader content, PWA persistence, and other browsers
 remain staged roadmap work. Do not read the placeholder M7 atlas rectangles as
 a fidelity claim.
@@ -80,7 +80,7 @@ legacy graphics metadata; it is not a dependency of the core.
 - `crates/drl-protocol`: commands, observations, events, identifiers, and
   compatibility-sensitive MCP/replay contracts.
 - `crates/drl-assets`: atlas IDs, dimensions, measured rectangles, registered
-  layers, semantic asset mapping, and legacy revision identity.
+  layers, normalized UVs, semantic asset mapping, and legacy revision identity.
 - `crates/drl-render`: pure scene construction and deterministic pixel viewport
   layout.
 - `crates/drl-audio`: semantic cues and WASM Web Audio mixer.
