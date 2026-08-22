@@ -98,3 +98,17 @@ truth.
 - **Prevention:** End every slice with a handoff containing source/merge
   revisions, local and hosted results, explicit NOT_RUN surfaces, and a clean
   branch check before measuring usage or selecting more work.
+
+## Make bounded presentation storage fail explicitly
+
+- **Context:** Legacy particle callbacks append accepted decal requests, while
+  the renderer-neutral Rust boundary must remain deterministic and caller-owned.
+- **Symptom:** A fixed request budget can silently discard later effects or
+  accidentally deduplicate repeated sprite/position requests.
+- **Cause:** Unbounded vectors hide the caller's policy, while replacement or
+  set-like storage changes observable insertion order.
+- **Resolution:** Require a caller capacity at construction, retain requests in
+  insertion order including duplicates, and return a capacity error without
+  mutating existing entries when full.
+- **Prevention:** Test empty, append, duplicate, zero-capacity, and full-boundary
+  behavior before exposing storage to a renderer or browser lifecycle.

@@ -3,6 +3,12 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.10]
+
+- Added deterministic, caller-bounded `ParticleDecalStore` retention for
+  accepted decal requests. Insertion order and duplicates are preserved, and
+  capacity overflow is reported explicitly without dropping prior entries.
+
 ## [0.2.9]
 
 - Added the bounded M8 particle-decal insertion request: accepted placement
