@@ -15,7 +15,7 @@ progress. This file expands exactly one active implementation slice.
   redistribution-gated; its controlled reference-capture gate is `NOT_RUN` on
   arm64 macOS and remains an M8 acceptance dependency.
 
-## Present — M8 browser animation scheduling
+## Present — M8 visibility lifecycle hardening
 
 Status: The M7 browser slice passed functional acceptance locally and in
 remote web CI. The delivered M8 pixel-grid, visibility-band, low-health tone,
@@ -53,8 +53,9 @@ selection into textured vertex generation without changing the frame-zero
 entrypoint or owning a browser clock.
 After boot, the WASM shell schedules caller-owned elapsed rendering from
 `requestAnimationFrame` timestamps, skips frames while the document is hidden,
-and resets its presentation baseline on restart; simulation commands remain
-event-driven.
+resets its presentation baseline on restart, and installs one idempotent
+`visibilitychange` listener that rebases the clock even when hidden RAF
+callbacks are throttled; simulation commands remain event-driven.
 
 ### Observable behavior
 
@@ -108,7 +109,9 @@ event-driven.
   stay observable. Rejected commands carry no presentation step and do not
   mutate the session.
 - Presentation ticks are frontend timing units only; tab visibility, resize,
-  audio, and animation work cannot submit a simulation command.
+  audio, and animation work cannot submit a simulation command. Visibility
+  transitions reset the presentation baseline without changing simulation or
+  effect state.
 - `drl-assets::AtlasId::dimensions` records the imported PNG dimensions needed
   to validate sprite rectangles without loading image data in Rust.
 - Current tile, actor, and item descriptors use the legacy 16-column, 32-pixel
@@ -271,12 +274,11 @@ capture is available.
 - Full audiovisual equivalence is M8: capture-backed tolerances, visual
   regressions, cue timing, and structured human comparison.
 - Visible outline/glow equations, effect ownership, broader content-specific
-  animation timing, additional per-sprite tint sources, visibility-lifecycle
-  hardening, and capture-backed legacy shader equivalence remain future M8
-  slices; this pass
-  is intentionally limited to caller-supplied renderer-neutral timing and
-  layer-plan math, caller-driven WASM forwarding, and bounded browser
-  scheduling.
+  animation timing, additional per-sprite tint sources, and capture-backed
+  legacy shader equivalence remain future M8 slices; this pass is intentionally
+  limited to caller-supplied renderer-neutral timing and layer-plan math,
+  caller-driven WASM forwarding, bounded browser scheduling, and explicit
+  visibility-lifecycle rebasing.
 
 ## Next
 
@@ -288,9 +290,9 @@ alpha cutoff, optional mask sampling, the Green Armor and Phase Device tint
 boundaries, outline-mask GPU transport, caller-supplied frame selection, and
 the evidenced player/actor/Phase Device animation metadata, progress-driven
 frame plans, elapsed-time layer plans, caller-driven elapsed WebGPU forwarding,
-and bounded browser scheduling are covered by local checks and hosted WASM
-browser jobs. Continue M8 with visible outline/glow compositing,
-visibility-lifecycle hardening,
-broader content, additional tint sources, or capture-backed measurement of
+and bounded browser scheduling with visibility-lifecycle rebasing are covered
+by local checks and hosted WASM browser jobs. Continue M8 with visible
+outline/glow compositing, broader content, additional tint sources, or
+capture-backed measurement of
 lighting, effects, typography, and audio. Do not claim audiovisual parity from
 renderer-neutral grouping or the `NOT_RUN` legacy captures.

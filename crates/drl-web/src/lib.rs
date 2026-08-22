@@ -141,6 +141,10 @@ impl AnimationClock {
     self.start_ms = None;
   }
 
+  fn visibility_changed(&mut self) {
+    self.reset();
+  }
+
   fn elapsed_ms(&mut self, hidden: bool, timestamp_ms: f64) -> Option<u64> {
     if hidden {
       self.reset();
@@ -487,6 +491,7 @@ pub(crate) mod wasm {
     static TARGET: RefCell<Option<Position>> = const { RefCell::new(None) };
     static ANIMATION_CLOCK: RefCell<AnimationClock> = const { RefCell::new(AnimationClock { start_ms: None }) };
     static ANIMATION_LOOP: RefCell<Option<Closure<dyn FnMut(f64)>>> = const { RefCell::new(None) };
+    static VISIBILITY_LISTENER: RefCell<Option<Closure<dyn FnMut()>>> = const { RefCell::new(None) };
   }
 
   /// Loads and decodes one same-origin imported atlas layer.
@@ -1206,9 +1211,34 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
     Ok(())
   }
 
+  fn install_visibility_listener() -> Result<(), JsValue> {
+    if VISIBILITY_LISTENER.with(|slot| slot.borrow().is_some()) {
+      return Ok(());
+    }
+    let document = web_sys::window()
+      .ok_or_else(|| JsValue::from_str("window unavailable"))?
+      .document()
+      .ok_or_else(|| JsValue::from_str("document unavailable"))?;
+    let callback = Closure::wrap(Box::new(|| {
+      ANIMATION_CLOCK.with(|clock| clock.borrow_mut().visibility_changed());
+    }) as Box<dyn FnMut()>);
+    document
+      .add_event_listener_with_callback("visibilitychange", callback.as_ref().unchecked_ref())?;
+    VISIBILITY_LISTENER.with(|slot| *slot.borrow_mut() = Some(callback));
+    Ok(())
+  }
+
   fn start_animation_loop() -> Result<(), JsValue> {
     if ANIMATION_LOOP.with(|slot| slot.borrow().is_some()) {
       return Ok(());
+    }
+    if let Err(error) = install_visibility_listener()
+      && let Some(document) = web_sys::window().and_then(|window| window.document())
+    {
+      set_status(
+        &document,
+        &format!("Browser visibility lifecycle unavailable; animation continues: {error:?}"),
+      );
     }
     ANIMATION_CLOCK.with(|clock| clock.borrow_mut().reset());
     request_next_animation_frame()
@@ -1691,6 +1721,17 @@ mod tests {
     assert_eq!(clock.elapsed_ms(false, 501.0), Some(0));
     assert_eq!(clock.elapsed_ms(false, 502.0), Some(1));
     clock.reset();
+    assert_eq!(clock.elapsed_ms(false, 900.0), Some(0));
+  }
+
+  #[test]
+  fn animation_clock_rebases_on_visibility_lifecycle_change() {
+    let mut clock = AnimationClock::default();
+    assert_eq!(clock.elapsed_ms(false, 100.0), Some(0));
+    assert_eq!(clock.elapsed_ms(false, 101.0), Some(1));
+    clock.visibility_changed();
+    assert_eq!(clock.elapsed_ms(false, 500.0), Some(0));
+    clock.visibility_changed();
     assert_eq!(clock.elapsed_ms(false, 900.0), Some(0));
   }
 

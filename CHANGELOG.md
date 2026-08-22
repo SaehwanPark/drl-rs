@@ -144,6 +144,10 @@ documented in this file.
 - Added a bounded browser `requestAnimationFrame` loop that converts callback
   timestamps to elapsed milliseconds, skips hidden-document presentation, and
   never advances simulation or owns effect timing.
+- Hardened the browser animation lifecycle with one idempotent
+  `visibilitychange` listener that rebases the presentation clock even when
+  hidden RAF callbacks are throttled; listener failure remains non-fatal to
+  event-driven gameplay.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch

@@ -59,7 +59,8 @@ types shared by core, MCP, bots, and frontends.
   static shell exports, WebGPU scene-geometry surface, DPR resize, deterministic
   square-cell pixel layout, validated same-origin texture-source decode, a
   renderer-owned WebGPU texture/view cache, caller-driven elapsed animation
-  rendering, and recoverable GPU/audio status. It
+  rendering with visibility-lifecycle rebasing, and recoverable GPU/audio
+  status. It
   never mirrors authoritative gameplay state into JavaScript.
 - `drl-mcp`: zero-dependency JSON-RPC/MCP semantic server and fairness boundary.
 - `drl-app`: native headless demo and MCP stdio runner, retained for tooling.
@@ -74,7 +75,8 @@ types shared by core, MCP, bots, and frontends.
   advance the simulation.
 - The bounded browser animation loop consumes `requestAnimationFrame` timestamps
   only for caller-supplied elapsed rendering; hidden documents skip presentation
-  work, and a failed frame never submits a simulation command.
+  work, visibility transitions rebase the presentation clock even when RAF is
+  throttled, and a failed frame never submits a simulation command.
 - `PixelViewport` chooses an integer square cell size from physical canvas
   dimensions and centers the map; presentation backends may letterbox but may
   not stretch logical cells independently by axis.
