@@ -94,9 +94,11 @@ replacement cues arrive with M8 evidence.
 ### Distribution and operations
 
 Build with `wasm-pack 0.15.0` into ignored `dist/`; serve from any static HTTPS
-host. An Ubuntu remote job installs the WASM target and pinned wasm-pack, builds
-the release bundle, and runs headless Chrome tests. M12 adds PWA cache/version
-policy and offline-after-first-load; no gameplay backend is required.
+host. The M10 bundle now has a manually versioned same-origin service-worker
+cache for offline-after-first-load, while M12 adds broader PWA cache/version
+policy and release hardening. An Ubuntu remote job installs the WASM target and
+pinned wasm-pack, builds the release bundle, and runs headless Chrome tests; no
+gameplay backend is required.
 
 ## Evidence and fidelity
 
