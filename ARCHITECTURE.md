@@ -91,8 +91,9 @@ types shared by core, MCP, bots, and frontends.
   rendering with visibility-lifecycle rebasing, a versioned fixed-session
   command snapshot with bounded corruption handling and best-effort
   localStorage persistence, a versioned static service-worker cache boundary,
-  and recoverable GPU/audio status. It never mirrors authoritative gameplay
-  state into JavaScript.
+  deterministic release-manifest generation/checks for static bundles, and
+  recoverable GPU/audio status. It never mirrors authoritative gameplay state
+  into JavaScript.
 - `drl-mcp`: zero-dependency JSON-RPC/MCP semantic server and fairness boundary.
 - `drl-app`: native headless demo and MCP stdio runner, retained for tooling.
 - `drl-script`: conversion/content boundary placeholder; no runtime Lua.

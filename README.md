@@ -32,6 +32,8 @@ replays, and regression testing.
 - Staged work:
   - Full audiovisual equivalence, broader content migration, PWA persistence,
     and support for other browsers remain roadmap work.
+  - Release builds emit a hashed static-bundle manifest with graphics rights
+    metadata; signing and offline/cross-browser acceptance remain open.
   - Placeholder M7 atlas rectangles are not a fidelity claim.
 
 ## Quick start
@@ -73,6 +75,7 @@ sh scripts/check-repository.sh
 sh scripts/check-assets.sh
 scripts/check-web.sh
 scripts/check-reference-capture.sh
+scripts/check-release-manifest.sh  # after scripts/build-web.sh
 ```
 
 `check-web.sh` compiles the WASM target and runs native contract tests. It runs

@@ -83,6 +83,11 @@ automated regressions, and human review.
   the follow-up adds compatible-report win-rate and average-turn tolerance
   comparisons; balance conclusions, difficulty targets, and statistical
   interpretation remain open.
+- The first bounded M12 packaging slice now emits and verifies a static-bundle
+  release manifest with source revision, sorted artifact hashes, generated-file
+  declarations, graphics rights metadata, and service-worker coverage. Signed
+  releases, cache invalidation policy, and offline/cross-browser acceptance
+  remain open.
 
 ## Milestones
 
@@ -283,12 +288,15 @@ and compatible-report tolerance deltas explicit; balance studies, statistical
 interpretation, and ordinary-player/developer observation separation remain
 open.
 
-### M12 — Static web productization and release hardening (planned)
+### M12 — Static web productization and release hardening (first manifest slice delivered; hardening open)
 
 Produce reproducible static HTTPS/PWA bundles, asset license notices,
 cache/version policy, accessibility audit, browser support/error screens,
-telemetry-free diagnostics, and signed release manifests. WebGPU remains the
-1.0 baseline; do not imply support for untested browsers.
+telemetry-free diagnostics, and signed release manifests. The first manifest
+slice records source revision, artifact hashes, rights metadata, and
+service-worker coverage; cache/version policy, signing, and release audits
+remain open. WebGPU remains the 1.0 baseline; do not imply support for
+untested browsers.
 
 ### M13 — Browser-first 1.0 release (planned)
 

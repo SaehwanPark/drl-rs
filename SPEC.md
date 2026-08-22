@@ -183,7 +183,7 @@ remain `NOT_RUN`, while broader PWA/cache policy remains M12 work.
 Sampler edge/wrap addressing remains a backend and capture concern; the helper
 does not select it.
 
-## Present — M11 fixed-seed cohort reports
+## Delivered — M11 fixed-seed cohort and regression slices
 
 Status: this bounded slice adds an explicit evaluation sample boundary around
 the existing deterministic batch runner. `CohortConfig` records the starting
@@ -204,6 +204,21 @@ comparison. A comparison is available only when policy identity and the full
 sample definition match; it reports absolute win-rate and average-turn deltas
 and a boolean tolerance result. Non-finite or negative tolerances are rejected
 without changing either report.
+
+## Present — M12 static release manifest
+
+Status: the active slice extends `scripts/build-web.sh` with a deterministic
+`dist/release-manifest.json`. The manifest records schema version, the source
+Git revision (or an explicit `unknown` fallback), sorted non-generated bundle
+artifacts with SHA-256 hashes, generated-file names, and the imported graphics
+rights notice path (`assets/legacy/drl/graphics/LICENSE`).
+`scripts/check-release-manifest.sh` verifies the schema,
+path safety, hashes, rights entry, and service-worker precache coverage after a
+bundle build.
+
+The manifest is evidence for reproducible static packaging only. It is not a
+signature, a cache invalidation policy, or proof of offline or cross-browser
+acceptance.
 
 ### Observable behavior
 
@@ -235,6 +250,10 @@ without changing either report.
   presentation timing does not submit commands.
 - The static HTTPS shell provides accessible start/status/HUD/log/inventory
   regions and prevents page scrolling only while the canvas owns focus.
+- A release bundle contains a deterministic `release-manifest.json` with source
+  revision, sorted artifact hashes, generated-file declarations, and graphics
+  rights metadata; the release-manifest check rejects missing, unsafe, or
+  mismatched entries and missing service-worker coverage.
 - The browser shell applies mute status after the asynchronous audio-unlock
   retry, so the visible status cannot report a stale unlock result.
 - Mute and volume controls serialize audio-unlock/settings operations, so rapid
@@ -463,6 +482,8 @@ without changing either report.
 - `CohortTolerances` and `CohortComparison` are regression-gate math only;
   they do not claim statistical significance, balance correctness, or a
   difficulty target.
+- The release manifest is unsigned metadata; signing, cache invalidation,
+  offline acceptance, and cross-browser claims remain later M12/M13 work.
 
 ### Verification
 
@@ -473,6 +494,7 @@ sh scripts/check-repository.sh              PASS (baseline plus new crates)
 sh scripts/check-assets.sh                  PASS (32 PNGs, license, hashes)
 scripts/check-reference-capture.sh          PASS (`NOT_RUN` on arm64 macOS)
 scripts/test-reference-capture.sh           PASS (fixture coverage)
+scripts/check-release-manifest.sh           PASS (after `scripts/build-web.sh`)
 cargo check --locked -p drl-web --target wasm32-unknown-unknown  PASS
 cargo test -p drl-render                      PASS (pixel-grid, lighting, tone, and timeline contracts)
 cargo test -p drl-core --test batch_simulation PASS (fixed-seed cohort sample,

@@ -23,12 +23,42 @@ cp web/index.html web/bootstrap.js web/manifest.webmanifest "$dist/"
 mkdir -p "$dist/assets/legacy"
 cp -R assets/legacy/drl "$dist/assets/legacy/"
 python3 - "$dist" web/service-worker.js <<'PY'
+import hashlib
 import json
+import os
 import pathlib
+import subprocess
 import sys
 
 dist = pathlib.Path(sys.argv[1])
 template = pathlib.Path(sys.argv[2]).read_text()
+manifest_path = dist / "release-manifest.json"
+generated_files = ["release-manifest.json", "service-worker.js"]
+artifact_paths = [
+    path
+    for path in sorted(dist.rglob("*"))
+    if path.is_file() and path.name not in generated_files
+]
+try:
+    source_revision = os.environ.get("DRL_BUILD_REVISION") or subprocess.check_output(
+        ["git", "rev-parse", "HEAD"], cwd=dist.parent, text=True
+    ).strip()
+except (OSError, subprocess.CalledProcessError):
+    source_revision = "unknown"
+manifest = {
+    "schema_version": 1,
+    "source_revision": source_revision or "unknown",
+    "artifacts": [
+        {
+            "path": path.relative_to(dist).as_posix(),
+            "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+        }
+        for path in artifact_paths
+    ],
+    "generated": generated_files,
+    "rights": ["assets/legacy/drl/graphics/LICENSE"],
+}
+manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")
 files = ["./", "./service-worker.js"]
 files.extend(
     f"./{path.relative_to(dist).as_posix()}"
