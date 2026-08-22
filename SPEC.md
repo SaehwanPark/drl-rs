@@ -205,9 +205,9 @@ sample definition match; it reports absolute win-rate and average-turn deltas
 and a boolean tolerance result. Non-finite or negative tolerances are rejected
 without changing either report.
 
-## Present — M12 static release manifest
+## Delivered — M12 static release manifest and source-derived cache version
 
-Status: the active slice extends `scripts/build-web.sh` with a deterministic
+Status: this delivered slice extends `scripts/build-web.sh` with a deterministic
 `dist/release-manifest.json`. The manifest records schema version, the source
 Git revision (or an explicit `unknown` fallback), sorted non-generated bundle
 artifacts with SHA-256 hashes, generated-file names, and the imported graphics
@@ -220,11 +220,19 @@ The manifest is evidence for reproducible static packaging only. It is not a
 signature, a cache invalidation policy, or proof of offline or cross-browser
 acceptance.
 
-The active follow-up derives the generated service-worker cache version from
-the manifest source revision (`v1-` plus its first 12 characters), with
+The generated service-worker cache version derives from the manifest source
+revision (`v1-` plus its first 12 characters), with
 `v1-unknown` when the build revision cannot be resolved. The checked-in worker
 template remains a marker-bearing source; only the generated bundle receives
 the concrete version.
+
+## Present — M12 browser support and error diagnostics
+
+Status: the active slice adds a static, accessible diagnostics panel to the
+browser shell. It reports missing WebGPU, startup/rendering failures, and
+offline-cache registration warnings with actionable desktop-WebGPU guidance.
+Diagnostics are local DOM text only: they do not inspect authoritative game
+state, send telemetry, or broaden the WebGPU support claim.
 
 ### Observable behavior
 
@@ -263,6 +271,12 @@ the concrete version.
 - The generated service worker uses the manifest source revision prefix in its
   cache version, so two different known build revisions do not share the same
   cache name; the checked-in template remains unversioned marker input.
+- Startup and presentation failures expose an accessible `#game-diagnostics`
+  alert with a title, detail, and recovery guidance; it remains hidden after a
+  successful start unless the offline-cache boundary reports a warning.
+- Browser support text identifies desktop Chromium WebGPU as the tested target;
+  missing `navigator.gpu`, unavailable WebGPU initialization, and service-
+  worker failures are presented locally without network telemetry.
 - The browser shell applies mute status after the asynchronous audio-unlock
   retry, so the visible status cannot report a stale unlock result.
 - Mute and volume controls serialize audio-unlock/settings operations, so rapid
@@ -494,7 +508,8 @@ the concrete version.
 - The release manifest is unsigned metadata; signing, cache invalidation,
   offline acceptance, and cross-browser claims remain later M12/M13 work; the
   source-derived cache version is only deterministic naming, not a release
-  invalidation policy.
+  invalidation policy. The diagnostics panel is a local recovery surface, not
+  a browser compatibility guarantee or telemetry channel.
 
 ### Verification
 
@@ -506,6 +521,7 @@ sh scripts/check-assets.sh                  PASS (32 PNGs, license, hashes)
 scripts/check-reference-capture.sh          PASS (`NOT_RUN` on arm64 macOS)
 scripts/test-reference-capture.sh           PASS (fixture coverage)
 scripts/check-release-manifest.sh           PASS (after `scripts/build-web.sh`)
+scripts/check-browser-diagnostics.sh        PASS (via `scripts/check-web.sh`)
 cargo check --locked -p drl-web --target wasm32-unknown-unknown  PASS
 cargo test -p drl-render                      PASS (pixel-grid, lighting, tone, and timeline contracts)
 cargo test -p drl-core --test batch_simulation PASS (fixed-seed cohort sample,

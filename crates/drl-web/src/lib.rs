@@ -1210,6 +1210,21 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
     }
   }
 
+  fn set_diagnostic(document: &web_sys::Document, title: &str, detail: &str, action: &str) {
+    if let Some(panel) = document.get_element_by_id("game-diagnostics") {
+      let _ = panel.remove_attribute("hidden");
+    }
+    if let Some(title_node) = document.get_element_by_id("diagnostics-title") {
+      title_node.set_text_content(Some(title));
+    }
+    if let Some(detail_node) = document.get_element_by_id("diagnostics-detail") {
+      detail_node.set_text_content(Some(detail));
+    }
+    if let Some(action_node) = document.get_element_by_id("diagnostics-action") {
+      action_node.set_text_content(Some(action));
+    }
+  }
+
   fn render_scene(scene: &RenderScene) {
     let result = RENDERER.with(|renderer_slot| {
       renderer_slot
@@ -1223,6 +1238,12 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
       set_status(
         &document,
         &format!("WebGPU presentation unavailable; gameplay is unchanged: {error:?}"),
+      );
+      set_diagnostic(
+        &document,
+        "WebGPU presentation unavailable",
+        &format!("The renderer reported a local presentation error ({error:?})."),
+        "Gameplay is unchanged; retry after checking the desktop Chromium WebGPU environment.",
       );
     }
   }
@@ -1256,6 +1277,12 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
         &document,
         &format!("WebGPU animation frame unavailable; gameplay is unchanged: {error:?}"),
       );
+      set_diagnostic(
+        &document,
+        "WebGPU animation unavailable",
+        &format!("A local animation frame could not be presented ({error:?})."),
+        "Gameplay is unchanged; continue without animation or reload the page.",
+      );
     }
   }
 
@@ -1269,6 +1296,12 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
         set_status(
           &document,
           &format!("Browser animation scheduling unavailable: {error:?}"),
+        );
+        set_diagnostic(
+          &document,
+          "Browser animation scheduling unavailable",
+          &format!("The browser rejected a local animation-frame request ({error:?})."),
+          "Gameplay state is not advanced by the failed request; reload to retry presentation.",
         );
         ANIMATION_LOOP.with(|slot| *slot.borrow_mut() = None);
       }
@@ -1305,6 +1338,12 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
       set_status(
         &document,
         &format!("Browser visibility lifecycle unavailable; animation continues: {error:?}"),
+      );
+      set_diagnostic(
+        &document,
+        "Browser visibility lifecycle unavailable",
+        &format!("The page could not install its local visibility listener ({error:?})."),
+        "Gameplay can continue; reload to retry presentation lifecycle handling.",
       );
     }
     ANIMATION_CLOCK.with(|clock| clock.borrow_mut().reset());
