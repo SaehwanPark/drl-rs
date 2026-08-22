@@ -5,6 +5,9 @@ documented in this file.
 
 ## Unreleased
 
+- Added the bounded M8 particle-burst range contract: caller-owned unit
+  samples use the legacy affine min/max calculation, including reversed bounds
+  and without hidden clamping or RNG ownership.
 - Added the bounded M8 particle-burst direction contract: requested XY
   directions are normalized, zero vectors clear only XY, and positive distance
   scales apply the legacy arc-to-Z adjustment without owning random sampling,
@@ -63,7 +66,7 @@ documented in this file.
   `CohortReport` retains policy identity, aggregate metrics, and per-seed
   replay evidence for reproducible evaluation without claiming balance
   conclusions.
-- Continued retrospective project versioning at `0.2.4` from the untagged
+- Continued retrospective project versioning at `0.2.5` from the untagged
   `0.1.0` baseline. `VERSION`, Cargo/MCP metadata, and release manifests are
   checked by the agent harness; code changes require one valid component
   increment while document- and setting-only changes do not.
