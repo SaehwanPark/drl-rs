@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.14]
+
+- Added optional detached OpenSSL signing and verification for release
+  manifests (`release-manifest.sig` and `release-manifest.pub`). Unsigned
+  builds remain valid when no signing key is configured.
+- Added an ephemeral-key shell test covering signing, verification, and
+  manifest-mutation rejection; private keys never enter the generated bundle.
+
 ## [0.2.13]
 
 - Added M11 cohort telemetry invariant validation for impossible shot counts,
