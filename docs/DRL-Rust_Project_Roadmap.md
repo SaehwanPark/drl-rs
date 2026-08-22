@@ -75,7 +75,13 @@ automated regressions, and human review.
   content animation and capture parity remain open. A read-only capture
   manifest preflight now validates pinned metadata, rights, media hashes, and
   evidence status while preserving `NOT_RUN`.
-- `SPEC.md` contains the single active M8 slice; it is not a second roadmap.
+- `SPEC.md` contains the single active M11 cohort slice; it is not a second
+  roadmap.
+- The first bounded M11 cohort slice adds explicit fixed-seed sample
+  definitions and reports around the existing headless batch runner. Reports
+  retain policy identity, aggregate metrics, and per-seed replay evidence;
+  balance conclusions, difficulty targets, and declared tolerances remain
+  open.
 
 ## Milestones
 
@@ -267,11 +273,13 @@ Add versioned save/restart policy, browser storage boundaries, migration and
 corruption handling, service-worker offline-after-first-load behavior, and
 replay-compatible save tests. No accounts or gameplay backend.
 
-### M11 — Balance and evaluation (planned)
+### M11 — Balance and evaluation (first cohort slice delivered; evaluation open)
 
 Run fixed-seed bot cohorts, metrics, difficulty/economy studies, and
-regressions with declared samples/tolerances. Keep ordinary-player and
-developer observations separate.
+regressions with declared samples/tolerances. The first cohort slice now makes
+seed ranges, sample size, policy identity, turn budgets, and replay evidence
+explicit; balance studies, tolerances, and ordinary-player/developer
+observation separation remain open.
 
 ### M12 — Static web productization and release hardening (planned)
 

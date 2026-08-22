@@ -32,6 +32,9 @@ types shared by core, MCP, bots, and frontends.
   applied to a caller-supplied roll and `monster_roll_definition` owns the
   pure four-outcome generated-monster lookup. Core `Tile` values delegate
   physical semantics through the protocol-owned immutable `TileKind` table.
+  `CohortConfig` and `CohortReport` wrap the existing batch entrypoints with an
+  explicit fixed-seed sample definition, policy identity, aggregate metrics,
+  and per-seed replay records; they do not change game execution.
   `drl-core::level_definition` owns the immutable standard procedural-level
   policy; callers can still supply custom `LevelGeneratorConfig` values.
 - `drl-protocol`: stable semantic boundary. Player observations now include

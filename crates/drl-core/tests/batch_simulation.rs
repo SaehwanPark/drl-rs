@@ -1,7 +1,7 @@
 //! Integration tests for automated batch simulation and statistical metrics.
 
 use drl_core::agent::{ExplorerBot, GreedyCombatBot};
-use drl_core::batch::BatchRunner;
+use drl_core::batch::{BatchRunner, CohortConfig};
 use drl_core::generator::LevelGeneratorConfig;
 use drl_core::scenario::Scenario;
 
@@ -80,4 +80,102 @@ fn test_scenario_batch_sweep_determinism() {
     assert_eq!(r1.metrics, r2.metrics);
     assert_eq!(r1.replay, r2.replay);
   }
+}
+
+#[test]
+fn fixed_seed_cohort_records_sample_definition_and_policy_identity() {
+  let ascii = r#"
+#######
+#@...>#
+#.....#
+#######
+"#;
+  let scenario = Scenario::from_ascii("CohortArena", "Fixed seed cohort", ascii).unwrap();
+  let config = CohortConfig::new(900, 3, 20);
+
+  let report = BatchRunner::run_scenario_cohort(
+    &scenario,
+    config,
+    "ExplorerBot",
+    drl_core::agent::ExplorerBot::new,
+  )
+  .unwrap();
+
+  assert_eq!(report.policy_name, "ExplorerBot");
+  assert_eq!(report.config, config);
+  assert_eq!(report.records.len(), 3);
+  assert_eq!(
+    report
+      .records
+      .iter()
+      .map(|record| record.seed)
+      .collect::<Vec<_>>(),
+    vec![900, 901, 902]
+  );
+  assert_eq!(report.summary.total_episodes, config.episode_count);
+}
+
+#[test]
+fn fixed_seed_cohort_seed_sequence_wraps_deterministically() {
+  let config = CohortConfig::new(u64::MAX - 1, 4, 1);
+  assert_eq!(
+    config.seeds().collect::<Vec<_>>(),
+    vec![u64::MAX - 1, u64::MAX, 0, 1]
+  );
+}
+
+#[test]
+fn fixed_seed_cohort_repeats_bit_exactly() {
+  let ascii = r#"
+#####
+#@.>#
+#####
+"#;
+  let scenario = Scenario::from_ascii("CohortRepeat", "Repeatable cohort", ascii).unwrap();
+  let config = CohortConfig::new(1200, 4, 12);
+
+  let first = BatchRunner::run_scenario_cohort(
+    &scenario,
+    config,
+    "ExplorerBot",
+    drl_core::agent::ExplorerBot::new,
+  )
+  .unwrap();
+  let second = BatchRunner::run_scenario_cohort(
+    &scenario,
+    config,
+    "ExplorerBot",
+    drl_core::agent::ExplorerBot::new,
+  )
+  .unwrap();
+
+  assert_eq!(first, second);
+}
+
+#[test]
+fn procedural_fixed_seed_cohort_reuses_batch_replay_evidence() {
+  let generator_config = LevelGeneratorConfig {
+    width: 20,
+    height: 15,
+    min_room_size: 4,
+    max_room_size: 6,
+    max_rooms: 3,
+    max_monsters_per_room: 1,
+    max_items_per_room: 1,
+  };
+  let config = CohortConfig::new(7_000, 2, 25);
+
+  let report =
+    BatchRunner::run_procedural_cohort(config, &generator_config, "ExplorerBot", ExplorerBot::new)
+      .unwrap();
+
+  assert_eq!(report.config, config);
+  assert_eq!(report.policy_name, "ExplorerBot");
+  assert_eq!(report.records.len(), config.episode_count);
+  assert!(
+    report
+      .records
+      .iter()
+      .all(|record| !record.replay.commands.is_empty())
+  );
 }

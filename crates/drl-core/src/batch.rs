@@ -6,6 +6,34 @@ use crate::generator::LevelGeneratorConfig;
 use crate::scenario::{Scenario, ScenarioRunner};
 use drl_protocol::{BatchSummary, CommandError, EpisodeMetrics, ReplayLog, RunOutcome};
 
+/// Fixed-seed sample definition for a reproducible evaluation cohort.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct CohortConfig {
+  /// First seed in the contiguous cohort range.
+  pub start_seed: u64,
+  /// Number of episodes to execute.
+  pub episode_count: usize,
+  /// Maximum commands attempted per episode.
+  pub max_turns: u64,
+}
+
+impl CohortConfig {
+  /// Creates a fixed-seed cohort definition.
+  #[must_use]
+  pub const fn new(start_seed: u64, episode_count: usize, max_turns: u64) -> Self {
+    Self {
+      start_seed,
+      episode_count,
+      max_turns,
+    }
+  }
+
+  /// Returns the deterministic, wrapping seed sequence for this cohort.
+  pub fn seeds(self) -> impl Iterator<Item = u64> {
+    (0..self.episode_count).map(move |index| self.start_seed.wrapping_add(index as u64))
+  }
+}
+
 /// Record of a single completed simulation episode within a batch sweep.
 #[derive(Debug, Clone, PartialEq)]
 pub struct EpisodeRecord {
@@ -17,10 +45,71 @@ pub struct EpisodeRecord {
   pub replay: ReplayLog,
 }
 
+/// Reproducible report for one named policy over a fixed seed cohort.
+#[derive(Debug, Clone, PartialEq)]
+pub struct CohortReport {
+  /// Human-readable policy identity supplied by the caller.
+  pub policy_name: String,
+  /// Sample definition used to produce this report.
+  pub config: CohortConfig,
+  /// Aggregate outcome and telemetry metrics.
+  pub summary: BatchSummary,
+  /// Per-seed metrics and replay evidence, in cohort order.
+  pub records: Vec<EpisodeRecord>,
+}
+
 /// Batch simulation runner executing hundreds or thousands of episodes headlessly.
 pub struct BatchRunner;
 
 impl BatchRunner {
+  /// Runs a procedural fixed-seed cohort and retains per-seed replay evidence.
+  pub fn run_procedural_cohort<F, P>(
+    config: CohortConfig,
+    generator_config: &LevelGeneratorConfig,
+    policy_name: impl Into<String>,
+    policy_factory: F,
+  ) -> Result<CohortReport, CommandError>
+  where
+    F: FnMut() -> P,
+    P: AgentPolicy,
+  {
+    let (summary, records) = Self::run_procedural_batch(
+      config.episode_count,
+      config.start_seed,
+      config.max_turns,
+      generator_config,
+      policy_factory,
+    )?;
+    Ok(CohortReport {
+      policy_name: policy_name.into(),
+      config,
+      summary,
+      records,
+    })
+  }
+
+  /// Runs a scenario fixed-seed cohort and retains per-seed replay evidence.
+  pub fn run_scenario_cohort<F, P>(
+    scenario: &Scenario,
+    config: CohortConfig,
+    policy_name: impl Into<String>,
+    policy_factory: F,
+  ) -> Result<CohortReport, CommandError>
+  where
+    F: FnMut() -> P,
+    P: AgentPolicy,
+  {
+    let seeds = config.seeds().collect::<Vec<_>>();
+    let (summary, records) =
+      Self::run_scenario_batch(scenario, &seeds, config.max_turns, policy_factory)?;
+    Ok(CohortReport {
+      policy_name: policy_name.into(),
+      config,
+      summary,
+      records,
+    })
+  }
+
   /// Runs a batch of procedurally generated dungeon episodes with a given agent policy.
   pub fn run_procedural_batch<F, P>(
     num_episodes: usize,
