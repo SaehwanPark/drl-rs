@@ -3,7 +3,7 @@
 use drl_core::agent::{ExplorerBot, GreedyCombatBot};
 use drl_core::batch::{
   BatchRunner, CohortConfig, CohortOutcomeTolerances, CohortReport, CohortReportError,
-  CohortTolerances, EpisodeRecord,
+  CohortTelemetryTolerances, CohortTolerances, EpisodeRecord,
 };
 use drl_core::generator::LevelGeneratorConfig;
 use drl_core::scenario::Scenario;
@@ -422,6 +422,70 @@ fn cohort_telemetry_distribution_requires_integrity_and_handles_empty_samples() 
   assert_eq!(telemetry.total_damage_dealt, 0);
   assert_eq!(telemetry.shot_accuracy_rate(), 0.0);
   assert_eq!(telemetry.average_damage_dealt(), 0.0);
+}
+
+fn telemetry_report(
+  damage_dealt: [u32; 2],
+  items_used: [u32; 2],
+  shots_hit: [u32; 2],
+) -> CohortReport {
+  let mut report = synthetic_outcome_report(&[RunOutcome::Victory, RunOutcome::TurnLimitReached]);
+  for (index, record) in report.records.iter_mut().enumerate() {
+    record.metrics.shots_fired = 4;
+    record.metrics.shots_hit = shots_hit[index];
+    record.metrics.damage_dealt = damage_dealt[index];
+    record.metrics.damage_taken = 2 + index as u32;
+    record.metrics.enemies_killed = 1 + index as u32;
+    record.metrics.items_picked_up = 1;
+    record.metrics.items_used = items_used[index];
+  }
+  report.summary = BatchSummary::from_episodes(
+    &report
+      .records
+      .iter()
+      .map(|record| record.metrics.clone())
+      .collect::<Vec<_>>(),
+  );
+  report
+}
+
+#[test]
+fn compatible_telemetry_comparison_reports_absolute_deltas() {
+  let baseline = telemetry_report([10, 6], [1, 0], [3, 2]);
+  let candidate = telemetry_report([14, 8], [2, 0], [3, 3]);
+  let comparison = candidate.compare_telemetry(&baseline).unwrap();
+
+  assert!((comparison.shot_accuracy_rate_delta - 0.125).abs() < f64::EPSILON);
+  assert_eq!(comparison.average_damage_dealt_delta, 3.0);
+  assert_eq!(comparison.average_damage_taken_delta, 0.0);
+  assert_eq!(comparison.average_enemies_killed_delta, 0.0);
+  assert_eq!(comparison.average_items_picked_up_delta, 0.0);
+  assert_eq!(comparison.average_items_used_delta, 0.5);
+}
+
+#[test]
+fn telemetry_comparison_rejects_incompatible_or_invalid_reports() {
+  let baseline = telemetry_report([10, 6], [1, 0], [3, 2]);
+  let mut different_policy = baseline.clone();
+  different_policy.policy_name = "other-policy".to_string();
+  assert!(different_policy.compare_telemetry(&baseline).is_none());
+
+  let mut invalid = baseline.clone();
+  invalid.records.pop();
+  assert!(invalid.compare_telemetry(&baseline).is_none());
+}
+
+#[test]
+fn telemetry_comparison_applies_rate_and_average_tolerances() {
+  let baseline = telemetry_report([10, 6], [1, 0], [3, 2]);
+  let candidate = telemetry_report([14, 8], [2, 0], [3, 3]);
+  let comparison = candidate.compare_telemetry(&baseline).unwrap();
+
+  assert!(comparison.within_tolerance(CohortTelemetryTolerances::new(0.125, 3.0)));
+  assert!(!comparison.within_tolerance(CohortTelemetryTolerances::new(0.124, 3.0)));
+  assert!(!comparison.within_tolerance(CohortTelemetryTolerances::new(0.125, 2.99)));
+  assert!(!comparison.within_tolerance(CohortTelemetryTolerances::new(-0.1, 3.0)));
+  assert!(!comparison.within_tolerance(CohortTelemetryTolerances::new(0.125, f64::NAN)));
 }
 
 #[test]

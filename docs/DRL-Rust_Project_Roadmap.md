@@ -76,7 +76,7 @@ automated regressions, and human review.
   content animation and capture parity remain open. A read-only capture
   manifest preflight now validates pinned metadata, rights, media hashes, and
   evidence status while preserving `NOT_RUN`.
-- `SPEC.md` contains the single active M11 cohort-telemetry-distribution
+- `SPEC.md` contains the single active M11 telemetry-comparison-and-tolerance
   slice; it is not a second roadmap.
 - The first bounded M11 cohort slice adds explicit fixed-seed sample
   definitions and reports around the existing headless batch runner. Reports
@@ -111,9 +111,12 @@ automated regressions, and human review.
 - The delivered M12 checkout-identity follow-up requires a generated source
   revision to match Git `HEAD` (or `DRL_BUILD_REVISION`) when available, while
   preserving `unknown` for unverifiable source archives.
-- The active M11 telemetry follow-up projects validated shot accuracy, damage,
+- The delivered M11 telemetry follow-up projects validated shot accuracy, damage,
   kill, pickup, and item-use totals/rates from fixed-seed reports without
   inferring balance or statistical significance.
+- The active M11 comparison follow-up reports compatible telemetry deltas and
+  applies separate caller-owned shot-accuracy and per-episode-average bounds;
+  it remains descriptive evaluation evidence.
 - The M12 diagnostics slice adds a local accessible browser-support and
   startup-error panel with recovery guidance; it sends no telemetry and does
   not extend the tested WebGPU browser claim.
@@ -317,7 +320,7 @@ Add versioned save/restart policy, browser storage boundaries, migration and
 corruption handling, service-worker offline-after-first-load behavior, and
 replay-compatible save tests. No accounts or gameplay backend.
 
-### M11 — Balance and evaluation (cohort, integrity, outcome, and telemetry slices delivered; evaluation open)
+### M11 — Balance and evaluation (cohort, integrity, outcome, telemetry, and comparison slices delivered; evaluation open)
 
 Run fixed-seed bot cohorts, metrics, difficulty/economy studies, and
 regressions with declared samples/tolerances. The delivered cohort slices now
@@ -332,6 +335,9 @@ claim. The delivered tolerance gate applies a caller-owned finite non-negative
 bound without adding statistical interpretation. The delivered telemetry
 distribution adds validated combat/economy totals and descriptive rates for
 shot accuracy, damage, kills, pickups, and item use without a balance claim.
+The delivered telemetry comparison reports compatible absolute deltas and
+applies separate caller-owned accuracy/average bounds without statistical
+interpretation.
 
 ### M12 — Static web productization and release hardening (manifest, cache, diagnostics, accessibility, sidecar, worker-contract, source-audit, and checkout-binding slices delivered; hardening open)
 
