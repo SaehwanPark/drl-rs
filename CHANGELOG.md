@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.13]
+
+- Added M11 cohort telemetry invariant validation for impossible shot counts,
+  invalid level zero, and records beyond the configured turn budget.
+- Kept projections observation-free and rejected malformed metrics before
+  descriptive outcome or telemetry distributions.
+
 ## [0.2.12]
 
 - Added fail-closed browser-save recovery: malformed, unsupported, oversized,

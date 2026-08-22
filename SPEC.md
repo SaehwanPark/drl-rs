@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.12`
+Current project version: `0.2.13`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,56 +23,63 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M10 Browser-Save Corruption Recovery
+## 2. Active Implementation Slice: M11 Cohort Telemetry Integrity
 
 ### 2.1 Scope & Objective
 
-Make rejected browser save data recoverable without silently discarding it.
-Invalid, unsupported, oversized, or replay-invalid command-history tokens are
-quarantined in a bounded browser-owned slot, removed from the active load path,
-and reported while the live session remains playable. Explicit version-aware
-migration remains a future slice.
+Reject impossible evaluation telemetry before any cohort projection is exposed.
+Fixed-seed reports must keep descriptive metrics within physical and configured
+bounds while preserving the existing observation/telemetry separation.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
-1. **Fixed-session snapshot (v0.2.11)**:
-   - `BrowserSession::snapshot_token` encodes accepted semantic commands from
-     the fixed M4 session.
-   - `restore_snapshot` decodes and replays into a fresh session before commit,
-     so failed restores cannot partially mutate active state.
-2. **Storage boundary (v0.2.11)**:
-   - WASM `localStorage` helpers save, load, and clear one namespaced token.
-   - Accepted commands autosave best-effort and report storage failures without
-     rejecting gameplay.
+1. **Cohort integrity (v0.2.3)**:
+   - `CohortReport::validate` checks record count, contiguous seeds, replay
+     seed identity, and aggregate summary coherence.
+2. **Telemetry projections (v0.2.3)**:
+   - Outcome and telemetry distributions validate reports before projection and
+     retain only seed, metrics, and replay evidence; no player observation is
+     stored in an evaluation record.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Fail-closed restore**: Invalid snapshot data leaves the active
-  `BrowserSession` unchanged.
-- [x] **Bounded quarantine**: Rejected values are recorded in a separate
-  bounded diagnostic slot, then removed from the active storage key when the
-  browser permits both operations.
-- [x] **Playable recovery**: Boot and explicit load report rejection and keep
-  renderer, input, and simulation available even when storage recovery fails.
-- [x] **Native contract tests**: Cover bounded quarantine records and active
-  session immutability after malformed restore.
-- [ ] **Migration gate**: Unknown versions/content remain rejected; an
-  explicit replay-compatible migration table is future work.
+- [x] **Shot-count bound**: Reject records where `shots_hit` exceeds
+  `shots_fired` before telemetry projection.
+- [x] **Level identity bound**: Reject records with an invalid level zero.
+- [x] **Turn-budget bound**: Reject records whose survived turns exceed the
+  configured cohort maximum.
+- [x] **Isolation boundary**: Keep observation state out of `EpisodeRecord`;
+  validation and projections consume only metrics and replay evidence.
+- [x] **Native contract tests**: Cover each invariant and preserve valid
+  deterministic projections.
+- [ ] **Balance gate**: Large-scale studies and canonical difficulty targets
+  remain descriptive future work.
 
 ### 2.4 Pure Contract
 
-- **Input**: A browser-owned snapshot token and the current fixed-session
-  `BrowserSession`.
-- **Output**: Either a transactionally restored session or a bounded rejected
-  record plus a recoverable status; no invalid token is replayed.
+- **Input**: A caller-owned `CohortReport` containing fixed-seed metrics and
+  replay evidence.
+- **Output**: A validated report or a typed invariant error; no invalid metrics
+  are projected.
 - **Ownership Boundary**:
-  - `drl-web` owns token storage, quarantine, and future migration policy.
-  - `drl-core` remains authoritative for replayed simulation semantics.
-  - JavaScript receives status text only, never authoritative game state.
+  - `drl-core` owns pure evaluation validation and projections.
+  - `drl-protocol::EpisodeMetrics` remains event-derived and observation-free.
+  - Callers own policy interpretation; no balance or significance claim is
+    inferred by the validator.
 
 ---
 
 ## 3. Recent Delivered Slices
+
+### M11 — Cohort Telemetry Integrity (`VERSION` 0.2.13)
+
+- [x] Added typed telemetry-invariant diagnostics for shot counts, level
+  identity, and configured turn budgets.
+- [x] Enforced the invariants before outcome or telemetry projection without
+  mutating reports or accessing player observations.
+- [x] Added focused integration coverage for each rejected metric shape.
+- [ ] Automated large-scale balance and canonical difficulty studies remain
+  open.
 
 ### M10 — Browser-Save Corruption Recovery (`VERSION` 0.2.12)
 
@@ -203,7 +210,7 @@ migration remains a future slice.
 
 ## 6. Verification Gates
 
-### Verified Baseline (`VERSION` 0.2.12)
+### Verified Baseline (`VERSION` 0.2.13)
 
 - [x] `sh scripts/check-repository.sh` — Full repository test suite, formatting,
   clippy, and harness checks.

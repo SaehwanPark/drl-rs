@@ -31,7 +31,7 @@ replays, and regression testing.
     shot accuracy, damage, kill, pickup, and item-use totals/rates without
     inferring balance conclusions.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.12`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.13`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:
@@ -53,6 +53,8 @@ replays, and regression testing.
 - Staged work:
   - Full audiovisual equivalence, broader content migration, offline PWA
     acceptance, and support for other browsers remain roadmap work.
+  - Cohort projections reject impossible telemetry and never carry player
+    observations; large-scale balance interpretation remains open.
   - Release builds emit a hashed static-bundle manifest with graphics rights
     metadata; signing and offline/cross-browser acceptance remain open.
   - Placeholder M7 atlas rectangles are not a fidelity claim.
