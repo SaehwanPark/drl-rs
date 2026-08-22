@@ -41,7 +41,8 @@ types shared by core, MCP, bots, and frontends.
   event-ordered `EffectSpan` timing, and renderer-neutral `LayerDraw` plans
   carrying atlas layers, imported source metadata, fair lighting, pixel
   destinations, and normalized UVs. It consumes player observations/events
-  only; GPU ownership is in the WASM shell.
+  only; `active_effect_frames` maps those fair spans to frontend progress;
+  GPU ownership is in the WASM shell.
   `drl-web` carries fair, visibility-filtered spans through each successful
   `PresentationStep`.
 - `drl-audio`: deterministic event-to-`AudioCue` mapping and a WASM Web Audio
@@ -72,6 +73,9 @@ types shared by core, MCP, bots, and frontends.
   simulation or hidden-state channel.
 - `EffectSpan` uses fixed logical durations and event order only. Frontends may
   map ticks to frames, but presentation timing cannot advance the simulation.
+- `active_effect_frames` reports normalized progress only for the supplied
+  spans at the supplied frontend tick. It omits zero-duration/overflowed spans
+  and cannot create new events or inspect simulation state.
 - Atlas descriptors convert the pinned legacy one-based, sixteen-column
   sprite-sheet slots to bounded 32-pixel cells. Dimensions are metadata from
   the imported PNGs; no image decoding or texture upload occurs in this crate.
