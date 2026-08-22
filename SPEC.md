@@ -141,6 +141,9 @@ and generated monster spawns consume this record, including knockback and death
 drop metadata, while compatibility accessors and replay schemas remain stable.
 The table preserves current DRL-Rust values and does not claim legacy Lua
 numeric parity.
+The current M9 follow-up routes all game death-drop construction through the
+existing `Item::from_spawn_kind` factory, preserving item IDs, payloads,
+positions, events, and replay behavior without adding item variants.
 Sampler edge/wrap addressing remains a backend and capture concern; the helper
 does not select it.
 

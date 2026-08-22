@@ -865,17 +865,7 @@ impl Game {
     events: &mut Vec<GameEvent>,
   ) -> Result<(), CommandError> {
     let item_id = self.state.world.allocate_item_id();
-    let item = match kind {
-      drl_protocol::ItemSpawnKind::Pistol => Item::pistol(item_id),
-      drl_protocol::ItemSpawnKind::Shotgun => Item::shotgun(item_id),
-      drl_protocol::ItemSpawnKind::CombatKnife => Item::combat_knife(item_id),
-      drl_protocol::ItemSpawnKind::Ammo9mm(count) => Item::ammo_9mm(item_id, count),
-      drl_protocol::ItemSpawnKind::AmmoShells(count) => Item::ammo_shells(item_id, count),
-      drl_protocol::ItemSpawnKind::SmallMedPack => Item::small_medpack(item_id),
-      drl_protocol::ItemSpawnKind::LargeMedPack => Item::large_medpack(item_id),
-      drl_protocol::ItemSpawnKind::GreenArmor => Item::green_armor(item_id),
-      drl_protocol::ItemSpawnKind::PhaseDevice => Item::phase_device(item_id),
-    };
+    let item = Item::from_spawn_kind(item_id, kind);
     let item_name = item.name().to_string();
     self.state.world.spawn_ground_item(pos, item)?;
     events.push(GameEvent::ItemDropped {
@@ -1147,6 +1137,7 @@ impl Game {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use drl_protocol::{EntityId, ItemId, ItemSpawnKind};
 
   #[test]
   fn test_game_step_movement_and_wait() {
@@ -1287,6 +1278,46 @@ mod tests {
         ..
       } if *item_id == shotgun_id
     )));
+  }
+
+  #[test]
+  fn test_death_drop_uses_canonical_item_factory() {
+    let mut game = Game::new(450, 12, 12, Position::new(2, 2)).unwrap();
+    let kinds = [
+      ItemSpawnKind::Pistol,
+      ItemSpawnKind::Shotgun,
+      ItemSpawnKind::CombatKnife,
+      ItemSpawnKind::Ammo9mm(7),
+      ItemSpawnKind::AmmoShells(3),
+      ItemSpawnKind::SmallMedPack,
+      ItemSpawnKind::LargeMedPack,
+      ItemSpawnKind::GreenArmor,
+      ItemSpawnKind::PhaseDevice,
+    ];
+
+    for (index, kind) in kinds.into_iter().enumerate() {
+      let item_id = ItemId::new(index as u64 + 4);
+      let position = Position::new(index as i32 + 2, 3);
+      let expected = Item::from_spawn_kind(item_id, kind);
+      let mut events = Vec::new();
+
+      game
+        .spawn_death_drop(EntityId::new(99), position, kind, &mut events)
+        .unwrap();
+
+      assert_eq!(
+        events,
+        vec![GameEvent::ItemDropped {
+          entity_id: EntityId::new(99),
+          item_id,
+          item_name: expected.name().to_string(),
+          position,
+        }]
+      );
+      let (actual_position, actual_item) = game.world().ground_items().get(&item_id).unwrap();
+      assert_eq!(*actual_position, position);
+      assert_eq!(actual_item.to_view(), expected.to_view());
+    }
   }
 
   #[test]
