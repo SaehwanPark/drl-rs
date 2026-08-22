@@ -48,6 +48,47 @@ fn retains_textured_fragment(alpha: f32) -> bool {
   alpha >= 0.1
 }
 
+/// Shared WGSL source for the bounded base/emissive textured pass.
+#[cfg_attr(not(target_arch = "wasm32"), allow(dead_code))]
+const BASE_TEXTURE_SHADER: &str = r#"
+struct VertexInput {
+  @location(0) position: vec2<f32>,
+  @location(1) uv: vec2<f32>,
+  @location(2) lighting: vec4<f32>,
+};
+
+struct VertexOutput {
+  @builtin(position) position: vec4<f32>,
+  @location(0) uv: vec2<f32>,
+  @location(1) lighting: vec4<f32>,
+};
+
+@group(0) @binding(0) var base_texture: texture_2d<f32>;
+@group(0) @binding(1) var emissive_texture: texture_2d<f32>;
+@group(0) @binding(2) var base_sampler: sampler;
+
+@vertex
+fn vs_main(input: VertexInput) -> VertexOutput {
+  var output: VertexOutput;
+  output.position = vec4<f32>(input.position, 0.0, 1.0);
+  output.uv = input.uv;
+  output.lighting = input.lighting;
+  return output;
+}
+
+@fragment
+fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
+  let sampled = textureSample(base_texture, base_sampler, input.uv);
+  let emissive = textureSample(emissive_texture, base_sampler, input.uv).r;
+  let lighting = max(input.lighting.rgb, vec3<f32>(emissive));
+  let output = vec4<f32>(sampled.rgb * lighting, sampled.a);
+  if (output.a < 0.1) {
+    discard;
+  }
+  return output;
+}
+"#;
+
 /// Converts a physical destination rectangle into clip-space bounds.
 #[cfg_attr(not(target_arch = "wasm32"), allow(dead_code))]
 const fn base_texture_ndc_rect(rect: PixelRect, canvas_width: u32, canvas_height: u32) -> [f32; 4] {
@@ -1392,6 +1433,15 @@ mod tests {
     assert!(!retains_textured_fragment(0.099));
     assert!(retains_textured_fragment(0.1));
     assert!(retains_textured_fragment(1.0));
+  }
+
+  #[test]
+  fn textured_shader_contract_keeps_verified_compositing_terms() {
+    assert!(BASE_TEXTURE_SHADER.contains("textureSample(base_texture"));
+    assert!(BASE_TEXTURE_SHADER.contains("textureSample(emissive_texture"));
+    assert!(BASE_TEXTURE_SHADER.contains("max(input.lighting.rgb"));
+    assert!(BASE_TEXTURE_SHADER.contains("if (output.a < 0.1)"));
+    assert!(BASE_TEXTURE_SHADER.contains("return output;"));
   }
 
   #[test]

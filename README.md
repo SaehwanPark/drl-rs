@@ -14,8 +14,8 @@ measured legacy atlas slots, registered layer metadata, normalized sprite UVs,
 renderer-neutral layer draw plans with imported source metadata, fair lighting
 factors, explicit legacy shader input roles, grouped sprite composite plans,
 and validated browser texture-source loading, renderer-owned GPU texture
-uploads using linear normalized atlas storage, a partial nearest-filtered
-base-color textured pass with the verified
+uploads using linear normalized atlas storage, a native-tested partial
+nearest-filtered base-color textured pass with the verified
 emissive lighting floor and legacy alpha cutoff, plus pure
 effect progress, a low-health scene tone, and event-ordered timing. Full
 audiovisual equivalence, broader content, PWA persistence, and other browsers
