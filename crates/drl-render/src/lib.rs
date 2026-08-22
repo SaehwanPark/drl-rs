@@ -44,12 +44,12 @@ pub enum LightingBand {
 }
 
 impl LightingBand {
-  /// Returns the fixed-point shade factor used by the presentation layer.
+  /// Returns the percentage shade factor used by the presentation layer.
   #[must_use]
-  pub const fn factor(self) -> u16 {
+  pub const fn factor(self) -> u8 {
     match self {
-      Self::Visible => 256,
-      Self::Explored => 115,
+      Self::Visible => 100,
+      Self::Explored => 45,
     }
   }
 }
@@ -57,7 +57,7 @@ impl LightingBand {
 /// Applies the shared visibility shade to an RGBA color.
 #[must_use]
 pub fn shade_color(color: [f32; 4], band: LightingBand) -> [f32; 4] {
-  let factor = band.factor() as f32 / 256.0;
+  let factor = band.factor() as f32 / 100.0;
   [
     color[0] * factor,
     color[1] * factor,
@@ -380,9 +380,9 @@ mod tests {
       [0.2, 0.4, 0.8, 1.0]
     );
     let shaded = shade_color([0.2, 0.4, 0.8, 1.0], LightingBand::Explored);
-    assert!((shaded[0] - 0.089_843_75).abs() < 1e-6);
-    assert!((shaded[1] - 0.179_687_5).abs() < 1e-6);
-    assert!((shaded[2] - 0.359_375).abs() < 1e-6);
+    assert!((shaded[0] - 0.09).abs() < 1e-6);
+    assert!((shaded[1] - 0.18).abs() < 1e-6);
+    assert!((shaded[2] - 0.36).abs() < 1e-6);
     assert_eq!(shaded[3], 1.0);
   }
 
