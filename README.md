@@ -12,9 +12,9 @@ remote web CI; M8 presentation work now keeps browser map cells square with
 deterministic pixel-grid letterboxing, shared visible/explored lighting bands,
 measured legacy atlas slots, registered layer metadata, normalized sprite UVs,
 renderer-neutral layer draw plans with imported source metadata, fair lighting
-factors, explicit legacy shader input roles, and grouped sprite composite
-plans, plus pure effect progress, a low-health scene tone, and event-ordered
-timing. Full
+factors, explicit legacy shader input roles, grouped sprite composite plans,
+and validated browser texture-source loading, plus pure effect progress, a
+low-health scene tone, and event-ordered timing. Full
 audiovisual equivalence, broader content, PWA persistence, and other browsers
 remain staged roadmap work. Do not read the placeholder M7 atlas rectangles as
 a fidelity claim.
@@ -90,8 +90,8 @@ legacy graphics metadata; it is not a dependency of the core.
   layout, atlas/layer draw-plan geometry with source metadata, roles, grouped
   composites, and lighting, and normalized effect progress.
 - `crates/drl-audio`: semantic cues and WASM Web Audio mixer.
-- `crates/drl-web`: browser session, Winit/WebGPU scene surface, DOM shell, and
-  WASM exports.
+- `crates/drl-web`: browser session, validated same-origin texture-source
+  loading, Winit/WebGPU scene surface, DOM shell, and WASM exports.
 - `crates/drl-mcp`: JSON-RPC/MCP server and fairness boundary.
 - `crates/drl-app`: native headless demo and MCP stdio runner.
 - `docs/DRL-Rust_Project_Roadmap.md`: canonical milestones and gates.

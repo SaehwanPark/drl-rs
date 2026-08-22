@@ -4,6 +4,7 @@
 //! tests. The WASM exports are a thin boot/input shell; gameplay state stays in
 //! Rust and is never mirrored into a parallel JavaScript model.
 
+use drl_assets::AtlasTextureSource;
 use drl_core::item::Item;
 use drl_core::{Game, Tile};
 use drl_protocol::{
@@ -17,6 +18,80 @@ pub const M4_SEED: u64 = 0x4452_4c5f_4d34;
 pub const M4_WIDTH: u32 = 24;
 pub const M4_HEIGHT: u32 = 16;
 pub const M4_START: Position = Position::new(4, 8);
+
+/// Static bundle root used by the browser texture loader.
+pub const GRAPHICS_ASSET_ROOT: &str = "assets/legacy/drl/graphics/";
+
+/// A rejected browser asset path.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TextureSourcePathError {
+  pub path: String,
+}
+
+impl std::fmt::Display for TextureSourcePathError {
+  fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    write!(formatter, "invalid texture source path: {}", self.path)
+  }
+}
+
+/// Validates a relative imported-asset basename for subpath-safe loading.
+pub fn browser_asset_url(path: &str) -> Result<String, TextureSourcePathError> {
+  let valid = !path.is_empty()
+    && !path.starts_with('/')
+    && !path.contains("..")
+    && !path.contains(['\\', '/', '?', '#'])
+    && !path.contains("://")
+    && path
+      .bytes()
+      .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'.' | b'_' | b'-'));
+  if !valid {
+    return Err(TextureSourcePathError {
+      path: path.to_string(),
+    });
+  }
+  Ok(format!("{GRAPHICS_ASSET_ROOT}{path}"))
+}
+
+/// Returns the same-origin URL for an imported atlas layer.
+pub fn texture_source_url(source: AtlasTextureSource) -> Result<String, TextureSourcePathError> {
+  browser_asset_url(source.path)
+}
+
+/// A decoded-source dimension mismatch at the browser asset boundary.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct TextureSourceDimensionsError {
+  pub path: &'static str,
+  pub expected: (u32, u32),
+  pub actual: (u32, u32),
+}
+
+impl std::fmt::Display for TextureSourceDimensionsError {
+  fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    write!(
+      formatter,
+      "texture {} has dimensions {}x{}, expected {}x{}",
+      self.path, self.actual.0, self.actual.1, self.expected.0, self.expected.1
+    )
+  }
+}
+
+/// Validates decoded image dimensions against the pinned asset metadata.
+pub fn validate_texture_source_dimensions(
+  source: AtlasTextureSource,
+  actual_width: u32,
+  actual_height: u32,
+) -> Result<(), TextureSourceDimensionsError> {
+  let expected = (source.width, source.height);
+  if expected == (actual_width, actual_height) {
+    Ok(())
+  } else {
+    Err(TextureSourceDimensionsError {
+      path: source.path,
+      expected,
+      actual: (actual_width, actual_height),
+    })
+  }
+}
 
 /// A browser-facing simulation session with transactional command handling.
 #[derive(Debug, Clone)]
@@ -227,7 +302,8 @@ mod wasm {
   use drl_render::{PixelViewport, scene_clear_color, shade_color};
   use std::cell::RefCell;
   use wasm_bindgen::prelude::*;
-  use web_sys::{HtmlCanvasElement, Window};
+  use wasm_bindgen_futures::JsFuture;
+  use web_sys::{HtmlCanvasElement, HtmlImageElement, Window};
   use wgpu::util::DeviceExt;
   use winit::application::ApplicationHandler;
   use winit::event::{ElementState, WindowEvent};
@@ -241,6 +317,23 @@ mod wasm {
     static RENDERER: RefCell<Option<WebGpuRenderer>> = const { RefCell::new(None) };
     static AUDIO: RefCell<Option<drl_audio::WebAudioMixer>> = const { RefCell::new(None) };
     static TARGET: RefCell<Option<Position>> = const { RefCell::new(None) };
+  }
+
+  /// Loads and decodes one same-origin imported atlas layer.
+  ///
+  /// The returned DOM image is ready for a future WebGPU upload. Dimensions
+  /// are checked against the pinned manifest before the image crosses the
+  /// renderer boundary.
+  pub async fn load_texture_source(
+    source: AtlasTextureSource,
+  ) -> Result<HtmlImageElement, JsValue> {
+    let image = HtmlImageElement::new()?;
+    let url = texture_source_url(source).map_err(|error| JsValue::from_str(&error.to_string()))?;
+    image.set_src(&url);
+    JsFuture::from(image.decode()).await?;
+    validate_texture_source_dimensions(source, image.natural_width(), image.natural_height())
+      .map_err(|error| JsValue::from_str(&error.to_string()))?;
+    Ok(image)
   }
 
   /// Minimal WebGPU renderer that owns no simulation state.
@@ -1027,13 +1120,42 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
 
 #[cfg(target_arch = "wasm32")]
 pub use wasm::{
-  WebGpuRenderer, boot, dispatch_inventory, dispatch_key, key_command, resize, restart, set_muted,
-  set_volume, unlock_audio,
+  WebGpuRenderer, boot, dispatch_inventory, dispatch_key, key_command, load_texture_source, resize,
+  restart, set_muted, set_volume, unlock_audio,
 };
 
 #[cfg(test)]
 mod tests {
   use super::*;
+
+  #[test]
+  fn texture_source_urls_are_same_origin_and_dimensions_are_checked() {
+    let source = drl_assets::AtlasId::Enemies.texture_source(drl_assets::SpriteLayer::Base);
+    assert_eq!(
+      texture_source_url(source).expect("manifest path"),
+      "assets/legacy/drl/graphics/enemies.png"
+    );
+    assert_eq!(
+      browser_asset_url("dguy.png").expect("safe path"),
+      "assets/legacy/drl/graphics/dguy.png"
+    );
+    for path in [
+      "/dguy.png",
+      "../dguy.png",
+      "foo/../bar.png",
+      "dguy.png?x=1",
+      "dguy.png#x",
+      r"..\dguy.png",
+    ] {
+      assert!(browser_asset_url(path).is_err(), "{path}");
+    }
+    assert!(validate_texture_source_dimensions(source, 512, 192).is_ok());
+    let error = validate_texture_source_dimensions(source, 256, 192).unwrap_err();
+    assert_eq!(error.path, "enemies.png");
+    assert_eq!(error.expected, (512, 192));
+    assert_eq!(error.actual, (256, 192));
+    assert!(error.to_string().contains("expected 512x192"));
+  }
 
   #[test]
   fn rejected_commands_do_not_advance_the_session() {

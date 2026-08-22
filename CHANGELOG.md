@@ -77,6 +77,9 @@ documented in this file.
 - Added `drl-render::sprite_composite_plan`, grouping complete role sets into
   one deterministic compositor input per fair scene sprite while rejecting
   malformed groups; GPU sampling and blend equations remain future work.
+- Added a subpath-safe `drl-web::browser_asset_url` and WASM
+  `load_texture_source` preflight that decodes same-origin imported PNGs and
+  validates their manifest dimensions before any future GPU upload.
 - Added pure `active_effect_frames` progress mapping for fair effect spans;
   frontend ticks receive stable normalized progress without advancing gameplay
   or claiming legacy animation-frame parity.

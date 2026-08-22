@@ -52,8 +52,9 @@ types shared by core, MCP, bots, and frontends.
   mixer with explicit user-gesture unlock, mute, and volume state.
 - `drl-web`: `cdylib + rlib` browser session, Winit/DOM command mapping,
   static shell exports, WebGPU scene-geometry surface, DPR resize, deterministic
-  square-cell pixel layout, and recoverable GPU/audio status. It never mirrors
-  authoritative gameplay state into JavaScript.
+  square-cell pixel layout, validated same-origin texture-source decode, and
+  recoverable GPU/audio status. It never mirrors authoritative gameplay state
+  into JavaScript.
 - `drl-mcp`: zero-dependency JSON-RPC/MCP semantic server and fairness boundary.
 - `drl-app`: native headless demo and MCP stdio runner, retained for tooling.
 - `drl-script`: conversion/content boundary placeholder; no runtime Lua.
@@ -100,6 +101,10 @@ types shared by core, MCP, bots, and frontends.
 - `AtlasTextureSource` records the relative imported path and measured
   dimensions for a registered atlas layer. Frontends own file loading and
   image/GPU resource lifetime.
+- `drl-web::browser_asset_url` rejects absolute, traversal, query, fragment,
+  and unsupported-character paths before constructing a subpath-safe graphics
+  URL. The WASM loader decodes the image and validates its natural dimensions;
+  no GPU object is created by this preflight boundary.
 - `LayerDraw::lighting` carries the fair visibility band for the source sprite;
   explored tile memory is shaded by the shared fog factor and visible scene
   sprites use full light. A compositor must not derive this from hidden state.
