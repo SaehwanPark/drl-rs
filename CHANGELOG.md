@@ -195,6 +195,10 @@ documented in this file.
   pinned cell/item signed quotient and sign correction, with explicit
   zero-duration and out-of-range rejection. Sprite, level, item, lifecycle,
   and capture behavior remain outside the helper.
+- Added pure `drl-render::kill_animation_segment_index_at_elapsed` arithmetic
+  for the pinned lead-delay/reverse branch, integer segment quotient, and
+  terminal clamp, with explicit invalid metadata rejection. Actor, sprite,
+  light, lifecycle, and capture behavior remain outside the helper.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch
