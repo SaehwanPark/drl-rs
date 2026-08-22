@@ -131,9 +131,11 @@ done
 
 for path in \
   AGENTS.md \
+  VERSION \
   SPEC.md \
   ARCHITECTURE.md \
   CHANGELOG.md \
+  docs/VERSIONING.md \
   docs/DRL-Rust_Project_Roadmap.md \
   docs/harness/drl-delivery/team-spec.md \
   docs/harness/drl-delivery/validation-scenarios.md \
@@ -150,6 +152,7 @@ for path in \
   docs/reference-captures/manifest.md \
   docs/reference-captures/fidelity-matrix.md \
   scripts/check-assets.sh \
+  scripts/check-version.sh \
   scripts/check-web.sh
 do
   require_file "$path"
@@ -200,6 +203,12 @@ require_text "docs/harness/drl-delivery/validation-scenarios.md" "Unlicensed ass
 require_text "docs/harness/drl-delivery/validation-scenarios.md" "Background-tab timing"
 require_text "docs/adr/0007-browser-first-product.md" "Rust/WASM"
 require_text "docs/adr/0008-build-time-legacy-content-migration.md" "no Lua VM"
+require_text "AGENTS.md" "DRL_VERSION_BASE"
+require_text "docs/VERSIONING.md" "x.y.z"
+require_text "docs/harness/drl-delivery/team-spec.md" "Automatic carry-over"
+require_text ".agents/skills/drl-milestone-delivery/SKILL.md" "scripts/check-version.sh"
+
+sh scripts/check-version.sh "${DRL_VERSION_BASE:-}"
 
 if [ "$failures" -ne 0 ]; then
   printf '%s\n' "Agent harness validation failed with $failures issue(s)." >&2

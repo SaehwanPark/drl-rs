@@ -88,6 +88,9 @@ git state-changing commands. The milestone owner remains the synthesis owner.
    - add meaningful changelog entries;
    - mark roadmap tasks complete only when their stated result exists;
    - leave remote-CI criteria incomplete until the remote run passes.
+   - run `scripts/check-version.sh`; code-path changes require one valid
+     `x.y.z` transition, while documentation-only and setting-only changes do
+     not bump `VERSION`.
 9. Review the final diff for contradictions, accidental scope growth, and
    claims that exceed test or inspection evidence.
 

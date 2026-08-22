@@ -10,6 +10,14 @@ The roadmap remains canonical. `SPEC.md` defines the one active slice. This
 team specification defines only role selection, ownership, handoffs, and
 failure behavior.
 
+Project versioning is a delivery invariant. `VERSION` is the canonical
+`x.y.z` value; a code-path change requires exactly one allowed component
+increment with lower digits reset, while documentation-only and setting-only
+changes keep the current version. The milestone owner runs
+`scripts/check-version.sh`, and CI provides `DRL_VERSION_BASE` so the harness
+can compare the candidate with its base commit. Automatic carry-over is never
+performed.
+
 ## Architecture
 
 The outer workflow is a pipeline:
@@ -134,6 +142,9 @@ are always serialized through the milestone owner.
 - Update architecture only for verified structure or invariants.
 - Update changelog and roadmap only for delivered results supported by
   evidence.
+- Run the version contract after implementation. A code change without the
+  required version transition is a failed delivery check; a documentation-only
+  or setting-only diff must not receive a version bump.
 - Keep remote-only criteria incomplete until the named remote check passes.
 
 ## Handoff Contract

@@ -217,9 +217,10 @@ interpreting the resulting metrics.
 
 Status: this delivered slice extends `scripts/build-web.sh` with a deterministic
 `dist/release-manifest.json`. The manifest records schema version, the source
-Git revision (or an explicit `unknown` fallback), sorted non-generated bundle
-artifacts with SHA-256 hashes, generated-file names, and the imported graphics
-rights notice path (`assets/legacy/drl/graphics/LICENSE`).
+Git revision (or an explicit `unknown` fallback), the canonical project
+version, sorted non-generated bundle artifacts with SHA-256 hashes,
+generated-file names, and the imported graphics rights notice path
+(`assets/legacy/drl/graphics/LICENSE`).
 `scripts/check-release-manifest.sh` verifies the schema,
 path safety, hashes, rights entry, and service-worker precache coverage after a
 bundle build.
@@ -242,14 +243,23 @@ offline-cache registration warnings with actionable desktop-WebGPU guidance.
 Diagnostics are local DOM text only: they do not inspect authoritative game
 state, send telemetry, or broaden the WebGPU support claim.
 
-## Present — M12 static-shell accessibility audit
+## Delivered — M12 static-shell accessibility audit
 
-Status: the active slice adds `scripts/check-browser-accessibility.sh`, a
+Status: this delivered slice adds `scripts/check-browser-accessibility.sh`, a
 deterministic static audit for the shipped HTML shell. It verifies document
 language, landmark/live-region semantics, named controls and form association,
 canvas keyboard focus, diagnostics semantics, inventory labeling, and a
 summary for the support disclosure. It does not claim full WCAG conformance,
 screen-reader acceptance, or dynamic keyboard-journey coverage.
+
+## Present — M11 cohort outcome distribution
+
+Status: the active slice adds a pure `CohortReport::outcome_distribution`
+projection over retained episode records. It preserves distinct counts for
+victory, death, turn-limit, stalled, and still-in-progress outcomes, plus
+sample-size-normalized rates. The projection requires a valid cohort report,
+does not rerun episodes or mutate evidence, and does not claim balance,
+difficulty, or statistical significance.
 
 ### Observable behavior
 
@@ -275,6 +285,9 @@ screen-reader acceptance, or dynamic keyboard-journey coverage.
 - `CohortReport::validate` rejects incomplete or tampered evidence when record
   count, wrapping seed order, replay seed identity, or aggregate summary no
   longer matches the cohort definition; it never reruns a simulation.
+- `CohortReport::outcome_distribution` derives deterministic outcome counts and
+  rates only after integrity validation; it keeps stalled and in-progress
+  records distinct from turn-limit episodes without changing `BatchSummary`.
 - `drl-audio` maps events to semantic cues. The WASM mixer uses generated tones,
   mute/volume settings, and user-gesture unlock; blocked audio never blocks
   gameplay.
@@ -550,12 +563,14 @@ scripts/test-reference-capture.sh           PASS (fixture coverage)
 scripts/check-release-manifest.sh           PASS (after `scripts/build-web.sh`)
 scripts/check-browser-diagnostics.sh        PASS (via `scripts/check-web.sh`)
 scripts/check-browser-accessibility.sh      PASS (via `scripts/check-web.sh`)
+scripts/check-version.sh                    PASS (`0.1.1` projections and transition)
 cargo check --locked -p drl-web --target wasm32-unknown-unknown  PASS
 cargo test -p drl-render                      PASS (pixel-grid, lighting, tone, and timeline contracts)
 cargo test -p drl-core --test batch_simulation PASS (fixed-seed cohort sample,
                                              identity, wrapping, replay
-                                             determinism, tolerance-gate, and
-                                             integrity contracts)
+                                             determinism, tolerance-gate,
+                                             integrity, and outcome-distribution
+                                             contracts)
 cargo test -p drl-assets                      PASS (slot mappings, atlas bounds,
                                              layer sets, roles, descriptor order,
                                              UVs)
@@ -599,14 +614,16 @@ capture is available.
 - Visible outline/glow equations, effect ownership, broader content-specific
   animation timing, additional per-sprite tint sources, and capture-backed
   legacy shader equivalence remain future M8 slices. The M11 cohort and
-  tolerance/integrity boundaries intentionally record and validate evidence
-  and declared deltas without claiming a balance result, difficulty target, or
-  statistical significance.
+  tolerance/integrity boundaries intentionally record and validate evidence,
+  declared deltas, and outcome distributions without claiming a balance result,
+  difficulty target, or statistical significance. Static browser accessibility
+  is a shell contract, not full WCAG or screen-reader acceptance.
 
 ## Next
 
-The fixed-seed cohort report and integrity gate are covered by focused
-headless tests; the next M11 slice is balance/evaluation work. The pixel-scale
+The fixed-seed cohort report, integrity gate, and outcome-distribution view are
+covered by focused headless tests; broader M11 balance/evaluation work remains.
+The pixel-scale
 viewport,
 atlas metadata, UV geometry, draw-plan source
 metadata, fair lighting factors, effect progress, layer input roles, grouped

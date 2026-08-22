@@ -20,6 +20,12 @@ replays, and regression testing.
     tolerances without mutating simulation or claiming balance parity.
   - Cohort report validation rejects inconsistent sample/evidence metadata
     before a regression comparison is used.
+  - Cohort outcome distributions preserve distinct terminal counts and
+    sample-normalized rates without interpreting balance or significance.
+- Versioned delivery:
+  - `VERSION` is the canonical `x.y.z` project value, projected into Cargo,
+    MCP, and release manifests; the agent harness rejects invalid code-change
+    transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:
   - M7 functional checks pass locally and in remote web CI.
   - M8 provides square pixel-grid letterboxing, shared lighting bands, measured
@@ -75,6 +81,7 @@ recoverable and never advances the game.
 ```sh
 sh scripts/check-repository.sh
 sh scripts/check-assets.sh
+scripts/check-version.sh
 scripts/check-web.sh
 scripts/check-browser-diagnostics.sh # also run by check-web.sh
 scripts/check-browser-accessibility.sh # also run by check-web.sh

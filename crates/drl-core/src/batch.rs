@@ -58,6 +58,85 @@ pub struct CohortReport {
   pub records: Vec<EpisodeRecord>,
 }
 
+/// Exact terminal-outcome counts retained by a fixed-seed cohort.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct CohortOutcomeDistribution {
+  /// Number of records represented by this distribution.
+  pub total_episodes: usize,
+  /// Number of episodes that ended in victory.
+  pub victories: usize,
+  /// Number of episodes that ended in player death.
+  pub deaths: usize,
+  /// Number of episodes that reached their turn limit.
+  pub turn_limit_reached: usize,
+  /// Number of episodes whose policy or simulation stalled.
+  pub stalled: usize,
+  /// Number of records that remain in progress.
+  pub in_progress: usize,
+}
+
+impl CohortOutcomeDistribution {
+  fn from_records(records: &[EpisodeRecord]) -> Self {
+    let mut distribution = Self {
+      total_episodes: records.len(),
+      victories: 0,
+      deaths: 0,
+      turn_limit_reached: 0,
+      stalled: 0,
+      in_progress: 0,
+    };
+
+    for record in records {
+      match &record.metrics.outcome {
+        RunOutcome::Victory => distribution.victories += 1,
+        RunOutcome::Death { .. } => distribution.deaths += 1,
+        RunOutcome::TurnLimitReached => distribution.turn_limit_reached += 1,
+        RunOutcome::Stalled => distribution.stalled += 1,
+        RunOutcome::InProgress => distribution.in_progress += 1,
+      }
+    }
+    distribution
+  }
+
+  fn rate(count: usize, total: usize) -> f64 {
+    if total == 0 {
+      0.0
+    } else {
+      count as f64 / total as f64
+    }
+  }
+
+  /// Returns the sample-size-normalized victory rate.
+  #[must_use]
+  pub fn victory_rate(self) -> f64 {
+    Self::rate(self.victories, self.total_episodes)
+  }
+
+  /// Returns the sample-size-normalized death rate.
+  #[must_use]
+  pub fn death_rate(self) -> f64 {
+    Self::rate(self.deaths, self.total_episodes)
+  }
+
+  /// Returns the sample-size-normalized turn-limit rate.
+  #[must_use]
+  pub fn turn_limit_rate(self) -> f64 {
+    Self::rate(self.turn_limit_reached, self.total_episodes)
+  }
+
+  /// Returns the sample-size-normalized stalled-episode rate.
+  #[must_use]
+  pub fn stalled_rate(self) -> f64 {
+    Self::rate(self.stalled, self.total_episodes)
+  }
+
+  /// Returns the sample-size-normalized in-progress rate.
+  #[must_use]
+  pub fn in_progress_rate(self) -> f64 {
+    Self::rate(self.in_progress, self.total_episodes)
+  }
+}
+
 /// Evidence-integrity failure for a fixed-seed cohort report.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum CohortReportError {
@@ -192,6 +271,16 @@ impl CohortReport {
       return Err(CohortReportError::SummaryMismatch);
     }
     Ok(())
+  }
+
+  /// Projects exact outcome counts and normalized rates from retained records.
+  ///
+  /// The report is validated before projection so incomplete or tampered
+  /// evidence cannot be summarized accidentally. This does not rerun episodes,
+  /// mutate the report, or infer balance, difficulty, or significance.
+  pub fn outcome_distribution(&self) -> Result<CohortOutcomeDistribution, CohortReportError> {
+    self.validate()?;
+    Ok(CohortOutcomeDistribution::from_records(&self.records))
   }
 
   /// Compares this report against a baseline with caller-declared tolerances.

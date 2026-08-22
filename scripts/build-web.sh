@@ -22,7 +22,7 @@ wasm-pack build crates/drl-web --target web --release --out-dir "$dist/pkg"
 cp web/index.html web/bootstrap.js web/manifest.webmanifest "$dist/"
 mkdir -p "$dist/assets/legacy"
 cp -R assets/legacy/drl "$dist/assets/legacy/"
-python3 - "$dist" web/service-worker.js <<'PY'
+python3 - "$dist" web/service-worker.js VERSION <<'PY'
 import hashlib
 import json
 import os
@@ -32,6 +32,7 @@ import sys
 
 dist = pathlib.Path(sys.argv[1])
 template = pathlib.Path(sys.argv[2]).read_text()
+project_version = pathlib.Path(sys.argv[3]).read_text().strip()
 manifest_path = dist / "release-manifest.json"
 generated_files = ["release-manifest.json", "service-worker.js"]
 artifact_paths = [
@@ -47,6 +48,7 @@ except (OSError, subprocess.CalledProcessError):
     source_revision = "unknown"
 manifest = {
     "schema_version": 1,
+    "project_version": project_version,
     "source_revision": source_revision or "unknown",
     "artifacts": [
         {

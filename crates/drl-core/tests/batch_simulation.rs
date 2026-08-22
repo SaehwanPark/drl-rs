@@ -1,9 +1,12 @@
 //! Integration tests for automated batch simulation and statistical metrics.
 
 use drl_core::agent::{ExplorerBot, GreedyCombatBot};
-use drl_core::batch::{BatchRunner, CohortConfig, CohortReportError, CohortTolerances};
+use drl_core::batch::{
+  BatchRunner, CohortConfig, CohortReport, CohortReportError, CohortTolerances, EpisodeRecord,
+};
 use drl_core::generator::LevelGeneratorConfig;
 use drl_core::scenario::Scenario;
+use drl_protocol::{BatchSummary, DeathCause, EpisodeMetrics, Position, ReplayLog, RunOutcome};
 
 #[test]
 fn test_procedural_batch_runner_greedy_combat_bot() {
@@ -283,4 +286,79 @@ fn cohort_comparison_rejects_mismatches_and_invalid_tolerances() {
       .compare_with(&baseline, CohortTolerances::new(f64::NAN, 1.0))
       .is_none()
   );
+}
+
+fn synthetic_outcome_report(outcomes: &[RunOutcome]) -> CohortReport {
+  let config = CohortConfig::new(9_000, outcomes.len(), 10);
+  let records = outcomes
+    .iter()
+    .enumerate()
+    .map(|(index, outcome)| {
+      let seed = config.start_seed + index as u64;
+      let mut metrics = EpisodeMetrics::new();
+      metrics.outcome = outcome.clone();
+      EpisodeRecord {
+        seed,
+        metrics,
+        replay: ReplayLog::new(seed, 3, 3, Position::new(1, 1)),
+      }
+    })
+    .collect::<Vec<_>>();
+  let metrics = records
+    .iter()
+    .map(|record| record.metrics.clone())
+    .collect::<Vec<_>>();
+  CohortReport {
+    policy_name: "synthetic".to_string(),
+    config,
+    summary: BatchSummary::from_episodes(&metrics),
+    records,
+  }
+}
+
+#[test]
+fn cohort_outcome_distribution_preserves_distinct_counts_and_rates() {
+  let report = synthetic_outcome_report(&[
+    RunOutcome::Victory,
+    RunOutcome::Death {
+      cause: DeathCause::Environment,
+    },
+    RunOutcome::TurnLimitReached,
+    RunOutcome::Stalled,
+    RunOutcome::InProgress,
+  ]);
+
+  let distribution = report.outcome_distribution().unwrap();
+  assert_eq!(distribution.total_episodes, 5);
+  assert_eq!(distribution.victories, 1);
+  assert_eq!(distribution.deaths, 1);
+  assert_eq!(distribution.turn_limit_reached, 1);
+  assert_eq!(distribution.stalled, 1);
+  assert_eq!(distribution.in_progress, 1);
+  assert!((distribution.victory_rate() - 0.2).abs() < f64::EPSILON);
+  assert!((distribution.death_rate() - 0.2).abs() < f64::EPSILON);
+  assert!((distribution.turn_limit_rate() - 0.2).abs() < f64::EPSILON);
+  assert!((distribution.stalled_rate() - 0.2).abs() < f64::EPSILON);
+  assert!((distribution.in_progress_rate() - 0.2).abs() < f64::EPSILON);
+}
+
+#[test]
+fn cohort_outcome_distribution_requires_integrity_and_handles_empty_samples() {
+  let mut invalid = synthetic_outcome_report(&[RunOutcome::Victory]);
+  invalid.records.pop();
+  assert!(matches!(
+    invalid.outcome_distribution(),
+    Err(CohortReportError::RecordCount { .. })
+  ));
+
+  let empty = synthetic_outcome_report(&[]);
+  let distribution = empty.outcome_distribution().unwrap();
+  assert_eq!(distribution.total_episodes, 0);
+  assert_eq!(distribution.victories, 0);
+  assert_eq!(distribution.deaths, 0);
+  assert_eq!(distribution.turn_limit_reached, 0);
+  assert_eq!(distribution.stalled, 0);
+  assert_eq!(distribution.in_progress, 0);
+  assert_eq!(distribution.victory_rate(), 0.0);
+  assert_eq!(distribution.in_progress_rate(), 0.0);
 }

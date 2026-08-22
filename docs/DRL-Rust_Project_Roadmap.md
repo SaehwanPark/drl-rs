@@ -75,31 +75,37 @@ automated regressions, and human review.
   content animation and capture parity remain open. A read-only capture
   manifest preflight now validates pinned metadata, rights, media hashes, and
   evidence status while preserving `NOT_RUN`.
-- `SPEC.md` contains the single active M11 cohort slice; it is not a second
-  roadmap.
+- `SPEC.md` contains the single active M11 outcome-distribution slice; it is
+  not a second roadmap.
 - The first bounded M11 cohort slice adds explicit fixed-seed sample
   definitions and reports around the existing headless batch runner. Reports
   retain policy identity, aggregate metrics, and per-seed replay evidence;
   the follow-up adds compatible-report win-rate and average-turn tolerance
-  comparisons; balance conclusions, difficulty targets, and statistical
-  interpretation remain open.
-- The active M11 integrity slice validates cohort record count, wrapping seed
+  comparisons; the outcome-distribution follow-up keeps victory, death,
+  turn-limit, stalled, and in-progress counts distinct with normalized rates;
+  balance conclusions, difficulty targets, and statistical interpretation
+  remain open.
+- Delivered M11 integrity validation checks cohort record count, wrapping seed
   order, replay seed identity, and aggregate-summary coherence before evidence
   is used for regression comparisons; it does not infer balance or significance.
 - The first bounded M12 packaging slice now emits and verifies a static-bundle
-  release manifest with source revision, sorted artifact hashes, generated-file
-  declarations, graphics rights metadata, and service-worker coverage. Signed
-  releases, cache invalidation policy, and offline/cross-browser acceptance
-  remain open.
+  release manifest with project version, source revision, sorted artifact
+  hashes, generated-file declarations, graphics rights metadata, and
+  service-worker coverage. Signed releases, cache invalidation policy, and
+  offline/cross-browser acceptance remain open.
 - The M12 cache-version follow-up derives the generated service-worker cache
   name from the manifest source-revision prefix; this is deterministic naming,
   not a signed release invalidation policy.
 - The M12 diagnostics slice adds a local accessible browser-support and
   startup-error panel with recovery guidance; it sends no telemetry and does
   not extend the tested WebGPU browser claim.
-- The active M12 accessibility slice statically audits shell landmarks, named
-  controls, form labels, focus semantics, live regions, and support disclosure;
-  dynamic WCAG and screen-reader acceptance remain open.
+- The delivered M12 accessibility slice statically audits shell landmarks,
+  named controls, form labels, focus semantics, live regions, and support
+  disclosure; dynamic WCAG and screen-reader acceptance remain open.
+- `VERSION` is the canonical `x.y.z` project value. The delivery harness
+  checks package and release-manifest projections and requires one valid
+  component transition for code changes; document-only and setting-only
+  changes do not bump it.
 
 ## Milestones
 
@@ -291,14 +297,16 @@ Add versioned save/restart policy, browser storage boundaries, migration and
 corruption handling, service-worker offline-after-first-load behavior, and
 replay-compatible save tests. No accounts or gameplay backend.
 
-### M11 — Balance and evaluation (cohort and integrity slices delivered; evaluation open)
+### M11 — Balance and evaluation (cohort, integrity, and outcome slices delivered; evaluation open)
 
 Run fixed-seed bot cohorts, metrics, difficulty/economy studies, and
 regressions with declared samples/tolerances. The delivered cohort slices now
 make seed ranges, sample size, policy identity, turn budgets, replay evidence,
 compatible-report tolerance deltas, and evidence-integrity validation
 explicit; balance studies, statistical interpretation, and ordinary-player/
-developer observation separation remain open.
+developer observation separation remain open. The delivered outcome
+distribution keeps terminal categories distinct and exposes normalized rates
+without claiming a balance result.
 
 ### M12 — Static web productization and release hardening (manifest and diagnostics slices delivered; hardening open)
 
@@ -309,8 +317,8 @@ slice records source revision, artifact hashes, rights metadata, and
 service-worker coverage; its cache-version follow-up derives the generated
 worker name from that source-revision prefix. The diagnostics slice adds a
 local accessible browser-support/startup-diagnostics panel with recovery
-guidance and no telemetry; the active follow-up statically audits shell
-landmarks and control semantics. Signing, release audits, broader
+ guidance and no telemetry; the delivered follow-up statically audits shell
+ landmarks and control semantics. Signing, release audits, broader
 invalidation policy, dynamic accessibility acceptance, and untested-browser
 support remain open. WebGPU remains the 1.0 baseline; do not imply support for
 untested browsers.
