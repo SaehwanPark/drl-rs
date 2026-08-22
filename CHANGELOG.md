@@ -40,6 +40,12 @@ documented in this file.
 - Added pure event-ordered `drl-render::EffectSpan` timing with fixed logical
   durations for presentation effects; frontend ticks cannot advance gameplay,
   and capture-backed animation timing remains `NOT_RUN`.
+- Carried those ordered effect spans through successful browser
+  `PresentationStep` results, so future frame mapping does not rebuild raw
+  event semantics or cross the simulation boundary.
+- Filtered browser effect spans against before/after visible actors while
+  retaining direct player transitions, preventing hidden monster events from
+  becoming presentation timing.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch

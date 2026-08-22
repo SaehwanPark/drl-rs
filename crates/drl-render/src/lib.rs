@@ -6,7 +6,7 @@
 
 use drl_assets::{SpriteDescriptor, actor_sprite, item_sprite, tile_sprite};
 use drl_protocol::{
-  Command, GameEvent, HitPoints, ItemView, PlayerObservation, Position, TileKind,
+  Command, EntityId, GameEvent, HitPoints, ItemView, PlayerObservation, Position, TileKind,
 };
 
 /// A complete before/command/events/after boundary for one presentation step.
@@ -15,6 +15,7 @@ pub struct PresentationStep {
   pub before: PlayerObservation,
   pub command: Command,
   pub events: Vec<GameEvent>,
+  pub effects: Vec<EffectSpan>,
   pub after: PlayerObservation,
 }
 
@@ -381,6 +382,88 @@ pub fn effect_timeline(events: &[GameEvent]) -> Vec<EffectSpan> {
     .collect()
 }
 
+fn event_entity_ids(event: &GameEvent) -> [Option<EntityId>; 2] {
+  match event {
+    GameEvent::EntityMoved { entity_id, .. }
+    | GameEvent::EntityWaited { entity_id, .. }
+    | GameEvent::ActorDied { entity_id, .. }
+    | GameEvent::ActionCostPaid { entity_id, .. }
+    | GameEvent::ItemPickedUp { entity_id, .. }
+    | GameEvent::ItemDropped { entity_id, .. }
+    | GameEvent::ItemEquipped { entity_id, .. }
+    | GameEvent::ItemUnequipped { entity_id, .. }
+    | GameEvent::ItemUsed { entity_id, .. }
+    | GameEvent::WeaponReloaded { entity_id, .. }
+    | GameEvent::ActorKnockedBack { entity_id, .. } => [Some(*entity_id), None],
+    GameEvent::AttackResolved {
+      attacker_id,
+      target_id,
+      ..
+    } => [Some(*attacker_id), Some(*target_id)],
+    GameEvent::DamageApplied { target_id, .. } => [Some(*target_id), None],
+    GameEvent::TurnStarted { .. }
+    | GameEvent::LevelTransitioned { .. }
+    | GameEvent::PlayerTeleported { .. }
+    | GameEvent::TurnEnded { .. } => [None, None],
+  }
+}
+
+fn event_is_observable(
+  before: &PlayerObservation,
+  after: &PlayerObservation,
+  event: &GameEvent,
+) -> bool {
+  if matches!(
+    event,
+    GameEvent::LevelTransitioned { .. } | GameEvent::PlayerTeleported { .. }
+  ) {
+    return true;
+  }
+  let ids = event_entity_ids(event);
+  if matches!(
+    event,
+    GameEvent::DamageApplied { .. } | GameEvent::ActorDied { .. }
+  ) {
+    return ids.into_iter().flatten().any(|entity_id| {
+      before
+        .visible_actors
+        .iter()
+        .any(|actor| actor.id == entity_id)
+    });
+  }
+  ids.into_iter().flatten().any(|entity_id| {
+    let visible_before = before
+      .visible_actors
+      .iter()
+      .any(|actor| actor.id == entity_id);
+    let visible_after = after
+      .visible_actors
+      .iter()
+      .any(|actor| actor.id == entity_id);
+    visible_before && visible_after
+  })
+}
+
+/// Builds effect spans using endpoint-visible actors and pre-step visible
+/// targets for terminal hit/death events.
+///
+/// Direct player transitions remain observable even when no actor identity is
+/// present in the event. Hidden actor events are excluded before timing spans
+/// are assigned, so future frame mapping cannot disclose hidden activity.
+#[must_use]
+pub fn effect_timeline_for_observations(
+  before: &PlayerObservation,
+  after: &PlayerObservation,
+  events: &[GameEvent],
+) -> Vec<EffectSpan> {
+  let observable_events = events
+    .iter()
+    .filter(|event| event_is_observable(before, after, event))
+    .cloned()
+    .collect::<Vec<_>>();
+  effect_timeline(&observable_events)
+}
+
 /// Returns the renderer component name.
 #[must_use]
 pub fn renderer_name() -> &'static str {
@@ -520,6 +603,162 @@ mod tests {
           effect: PresentationEffect::Knockback,
           start_tick: 1,
           duration_ticks: 2,
+        },
+      ]
+    );
+  }
+
+  #[test]
+  fn observed_effect_timeline_excludes_visibility_boundary_events() {
+    let game = Game::new_arena(42, 12, 10).expect("arena");
+    let observation = game.observe_player();
+    let player_id = observation
+      .visible_actors
+      .iter()
+      .find(|actor| actor.is_player)
+      .expect("player actor")
+      .id;
+    let hidden_event = GameEvent::EntityMoved {
+      entity_id: EntityId::new(999),
+      from: Position::new(8, 8),
+      to: Position::new(9, 8),
+    };
+    let visible_event = GameEvent::EntityMoved {
+      entity_id: player_id,
+      from: observation.player_position,
+      to: observation.player_position,
+    };
+    let events = [hidden_event.clone(), visible_event];
+    assert_eq!(
+      effect_timeline_for_observations(&observation, &observation, &events),
+      vec![EffectSpan {
+        effect: PresentationEffect::Move,
+        start_tick: 0,
+        duration_ticks: 1,
+      }]
+    );
+
+    let mut visible_before = observation.clone();
+    let mut transient_actor = visible_before
+      .visible_actors
+      .iter()
+      .find(|actor| actor.is_player)
+      .expect("player actor")
+      .clone();
+    transient_actor.id = EntityId::new(999);
+    transient_actor.is_player = false;
+    transient_actor.name = "transient actor".to_string();
+    transient_actor.monster_kind = Some(drl_protocol::MonsterKind::Imp);
+    visible_before.visible_actors.push(transient_actor.clone());
+    let hidden_after = observation.clone();
+    assert!(
+      effect_timeline_for_observations(
+        &visible_before,
+        &hidden_after,
+        std::slice::from_ref(&hidden_event),
+      )
+      .is_empty()
+    );
+
+    let hidden_before = observation;
+    let mut visible_after = hidden_before.clone();
+    visible_after.visible_actors.push(transient_actor);
+    assert!(
+      effect_timeline_for_observations(&hidden_before, &visible_after, &[hidden_event]).is_empty()
+    );
+  }
+
+  #[test]
+  fn observed_effect_timeline_preserves_visible_terminal_events() {
+    let game = Game::new_arena(42, 12, 10).expect("arena");
+    let observation = game.observe_player();
+    let player_id = observation
+      .visible_actors
+      .iter()
+      .find(|actor| actor.is_player)
+      .expect("player actor")
+      .id;
+    let mut visible_before = observation.clone();
+    let mut defeated_actor = visible_before
+      .visible_actors
+      .iter()
+      .find(|actor| actor.is_player)
+      .expect("player actor")
+      .clone();
+    defeated_actor.id = EntityId::new(999);
+    defeated_actor.is_player = false;
+    defeated_actor.name = "defeated actor".to_string();
+    defeated_actor.monster_kind = Some(drl_protocol::MonsterKind::Imp);
+    visible_before.visible_actors.push(defeated_actor);
+    let hidden_after = observation.clone();
+    let defeated_events = [
+      GameEvent::DamageApplied {
+        target_id: EntityId::new(999),
+        amount: 4,
+        remaining_hp: 0,
+        source: drl_protocol::DamageSource::Actor(EntityId::new(1)),
+      },
+      GameEvent::ActorDied {
+        entity_id: EntityId::new(999),
+        cause: drl_protocol::DeathCause::MeleeAttack {
+          attacker_id: EntityId::new(1),
+        },
+      },
+    ];
+    assert_eq!(
+      effect_timeline_for_observations(&visible_before, &hidden_after, &defeated_events),
+      vec![
+        EffectSpan {
+          effect: PresentationEffect::Hit,
+          start_tick: 0,
+          duration_ticks: 1,
+        },
+        EffectSpan {
+          effect: PresentationEffect::Death,
+          start_tick: 1,
+          duration_ticks: 4,
+        },
+      ]
+    );
+
+    let player_death_events = [
+      GameEvent::DamageApplied {
+        target_id: player_id,
+        amount: 50,
+        remaining_hp: 0,
+        source: drl_protocol::DamageSource::Actor(EntityId::new(1)),
+      },
+      GameEvent::ActorDied {
+        entity_id: player_id,
+        cause: drl_protocol::DeathCause::MeleeAttack {
+          attacker_id: EntityId::new(1),
+        },
+      },
+    ];
+    let player_hidden_after = drl_protocol::PlayerObservation {
+      visible_actors: Vec::new(),
+      ..observation
+    };
+    assert_eq!(
+      effect_timeline_for_observations(
+        &player_hidden_after,
+        &player_hidden_after,
+        &player_death_events
+      ),
+      Vec::<EffectSpan>::new()
+    );
+    assert_eq!(
+      effect_timeline_for_observations(&hidden_after, &player_hidden_after, &player_death_events),
+      vec![
+        EffectSpan {
+          effect: PresentationEffect::Hit,
+          start_tick: 0,
+          duration_ticks: 1,
+        },
+        EffectSpan {
+          effect: PresentationEffect::Death,
+          start_tick: 1,
+          duration_ticks: 4,
         },
       ]
     );

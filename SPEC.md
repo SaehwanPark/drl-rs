@@ -15,14 +15,15 @@ progress. This file expands exactly one active implementation slice.
   redistribution-gated; its controlled reference-capture gate is `NOT_RUN` on
   arm64 macOS and remains an M8 acceptance dependency.
 
-## Present — M8 deterministic presentation-effect timeline
+## Present — M8 deterministic browser effect handoff
 
 Status: The M7 browser slice passed functional acceptance locally and in
 remote web CI. The delivered M8 pixel-grid, visibility-band, and low-health
-tone slices share pure presentation rules; this bounded follow-up gives event-
-derived visual effects explicit logical durations and sequential start ticks.
-Frontends may map presentation ticks to animation frames, but the timeline
-never advances simulation and is not a capture-backed parity claim.
+tone slices share pure presentation rules; the previous bounded slice gave
+event-derived visual effects explicit logical durations and sequential start
+ticks. This follow-up carries those spans in each `PresentationStep`, so a
+frontend can map ticks to frames without rebuilding raw event semantics. The
+handoff never advances simulation and is not a capture-backed parity claim.
 
 ### Observable behavior
 
@@ -69,6 +70,12 @@ never advances simulation and is not a capture-backed parity claim.
 - `drl-render::effect_timeline` preserves event order and assigns each bounded
   `PresentationEffect` a fixed logical duration. Spans are sequential and
   deterministic for identical event lists.
+- Successful `BrowserSession::submit` results carry the corresponding ordered
+  `EffectSpan` list in `PresentationStep::effects`; ordinary actor effects
+  require endpoint visibility, while terminal hit/death targets use pre-step
+  visibility so visible outcomes survive removal. Direct player transitions
+  stay observable. Rejected commands carry no presentation step and do not
+  mutate the session.
 - Presentation ticks are frontend timing units only; tab visibility, resize,
   audio, and animation work cannot submit a simulation command.
 
@@ -77,7 +84,7 @@ never advances simulation and is not a capture-backed parity claim.
 - Additive `PlayerObservation::{map_width, map_height, player_hp}`.
 - Additive `ActorView::monster_kind`, `ItemArchetype`, and
   `ItemView::archetype`.
-- `PresentationStep { before, command, events, after }`, `RenderScene`,
+- `PresentationStep { before, command, events, effects, after }`, `RenderScene`,
   `AudioCue`, `BrowserSession`, and WASM-only `WebGpuRenderer`.
 - MCP JSON serialization and replay schemas remain unchanged. `drl-core` has
   no presentation, browser, audio, filesystem, network, or MCP dependency.
@@ -91,6 +98,7 @@ sh scripts/check-repository.sh              PASS (baseline plus new crates)
 sh scripts/check-assets.sh                  PASS (32 PNGs, license, hashes)
 cargo check --locked -p drl-web --target wasm32-unknown-unknown  PASS
 cargo test -p drl-render                      PASS (pixel-grid, lighting, tone, and timeline contracts)
+cargo test -p drl-web                         PASS (effect handoff preserves event/timeline parity)
 scripts/check-web.sh                        PASS for native/WASM builds;
                                              browser runner NOT_RUN if Chrome absent
 scripts/build-web.sh                         PASS (release bundle in ignored dist/)
@@ -98,8 +106,8 @@ Chrome 151 WebGPU smoke playthrough          PASS (Apple Metal-3, 1280x720, DPR 
                                              start with explicit gesture-gated
                                              audio state, move, mute, restart;
                                              pixel-grid scene visible after move)
-GitHub Actions run 32541733654               PASS (repository + Ubuntu WASM jobs;
-                                             M8 effect-timeline implementation)
+GitHub Actions run 32542997484               PASS (repository + Ubuntu WASM jobs;
+                                             M8 fair effect-handoff implementation)
 ```
 
 The local and remote functional gates pass. The run records browser/version,
