@@ -464,6 +464,40 @@ pub fn effect_timeline(events: &[GameEvent]) -> Vec<EffectSpan> {
     .collect()
 }
 
+/// One active effect at a frontend presentation tick.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct EffectFrame {
+  pub effect: PresentationEffect,
+  /// Normalized progress inside the span, bounded to `[0, 1)`.
+  pub progress: f32,
+}
+
+/// Returns active effect frames in the stable order of the supplied timeline.
+///
+/// Presentation ticks are frontend timing units only. A span whose end would
+/// overflow `u32`, or whose duration is zero, is omitted defensively.
+#[must_use]
+pub fn active_effect_frames(spans: &[EffectSpan], presentation_tick: u32) -> Vec<EffectFrame> {
+  spans
+    .iter()
+    .filter_map(|span| {
+      let duration = u32::from(span.duration_ticks);
+      if duration == 0 {
+        return None;
+      }
+      let end_tick = span.start_tick.checked_add(duration)?;
+      if presentation_tick < span.start_tick || presentation_tick >= end_tick {
+        return None;
+      }
+      let elapsed = presentation_tick - span.start_tick;
+      Some(EffectFrame {
+        effect: span.effect,
+        progress: elapsed as f32 / duration as f32,
+      })
+    })
+    .collect()
+}
+
 fn event_entity_ids(event: &GameEvent) -> [Option<EntityId>; 2] {
   match event {
     GameEvent::EntityMoved { entity_id, .. }
@@ -780,6 +814,56 @@ mod tests {
           duration_ticks: 2,
         },
       ]
+    );
+  }
+
+  #[test]
+  fn active_effect_frames_are_normalized_and_overflow_safe() {
+    let spans = [
+      EffectSpan {
+        effect: PresentationEffect::Move,
+        start_tick: 2,
+        duration_ticks: 2,
+      },
+      EffectSpan {
+        effect: PresentationEffect::Hit,
+        start_tick: 4,
+        duration_ticks: 1,
+      },
+      EffectSpan {
+        effect: PresentationEffect::Death,
+        start_tick: 5,
+        duration_ticks: 0,
+      },
+      EffectSpan {
+        effect: PresentationEffect::Teleport,
+        start_tick: u32::MAX,
+        duration_ticks: 2,
+      },
+    ];
+
+    assert_eq!(active_effect_frames(&spans, 1), Vec::new());
+    assert_eq!(
+      active_effect_frames(&spans, 2),
+      vec![EffectFrame {
+        effect: PresentationEffect::Move,
+        progress: 0.0,
+      }]
+    );
+    let halfway = active_effect_frames(&spans, 3);
+    assert_eq!(halfway[0].effect, PresentationEffect::Move);
+    assert!((halfway[0].progress - 0.5).abs() < f32::EPSILON);
+    assert_eq!(
+      active_effect_frames(&spans, 4),
+      vec![EffectFrame {
+        effect: PresentationEffect::Hit,
+        progress: 0.0,
+      }]
+    );
+    assert!(active_effect_frames(&spans, 5).is_empty());
+    assert_eq!(
+      active_effect_frames(&spans, 3),
+      active_effect_frames(&spans, 3)
     );
   }
 

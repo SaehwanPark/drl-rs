@@ -49,7 +49,8 @@ automated regressions, and human review.
   normalized UV geometry, a renderer-neutral layer draw plan, and deterministic
   imported texture-source bindings are now available; fair lighting factors
   are carried into draw entries, while texture compositing and capture-backed
-  parity remain open.
+  parity remain open. Pure frontend effect progress is now available; legacy
+  animation timing remains capture-gated.
 - `SPEC.md` contains the single active M8 slice; it is not a second roadmap.
 
 ## Milestones
@@ -135,7 +136,8 @@ centralized in `drl-render`; capture-backed lighting/LUT parity remains open.
 Measured atlas rectangles for all currently implemented semantics now come from
 the pinned 16-column legacy grid, with pure bounds checks. Registered layer
 metadata now carries exact atlas source sets in deterministic order, pure UV
-geometry, texture-source metadata, and fair lighting factors are available, and
+geometry, texture-source metadata, fair lighting factors, and normalized effect
+progress are available, and
 `drl-render::layer_draw_plan` converts fair scenes into ordered pixel/UV
 operations. Remaining work is texture/layer compositing; implement
 capture-backed lighting/LUT parity,
