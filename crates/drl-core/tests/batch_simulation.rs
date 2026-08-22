@@ -365,6 +365,66 @@ fn cohort_outcome_distribution_requires_integrity_and_handles_empty_samples() {
 }
 
 #[test]
+fn cohort_telemetry_distribution_preserves_totals_and_rates() {
+  let mut report = synthetic_outcome_report(&[RunOutcome::Victory, RunOutcome::TurnLimitReached]);
+  report.records[0].metrics.shots_fired = 4;
+  report.records[0].metrics.shots_hit = 3;
+  report.records[0].metrics.damage_dealt = 10;
+  report.records[0].metrics.damage_taken = 2;
+  report.records[0].metrics.enemies_killed = 1;
+  report.records[0].metrics.items_picked_up = 2;
+  report.records[0].metrics.items_used = 1;
+  report.records[1].metrics.shots_fired = 2;
+  report.records[1].metrics.shots_hit = 1;
+  report.records[1].metrics.damage_dealt = 6;
+  report.records[1].metrics.damage_taken = 4;
+  report.records[1].metrics.enemies_killed = 2;
+  report.records[1].metrics.items_picked_up = 1;
+  report.records[1].metrics.items_used = 0;
+  report.summary = BatchSummary::from_episodes(
+    &report
+      .records
+      .iter()
+      .map(|record| record.metrics.clone())
+      .collect::<Vec<_>>(),
+  );
+
+  let telemetry = report.telemetry_distribution().unwrap();
+  assert_eq!(telemetry.total_episodes, 2);
+  assert_eq!(telemetry.total_shots_fired, 6);
+  assert_eq!(telemetry.total_shots_hit, 4);
+  assert_eq!(telemetry.total_damage_dealt, 16);
+  assert_eq!(telemetry.total_damage_taken, 6);
+  assert_eq!(telemetry.total_enemies_killed, 3);
+  assert_eq!(telemetry.total_items_picked_up, 3);
+  assert_eq!(telemetry.total_items_used, 1);
+  assert!((telemetry.shot_accuracy_rate() - (2.0 / 3.0)).abs() < f64::EPSILON);
+  assert_eq!(telemetry.average_damage_dealt(), 8.0);
+  assert_eq!(telemetry.average_damage_taken(), 3.0);
+  assert_eq!(telemetry.average_enemies_killed(), 1.5);
+  assert_eq!(telemetry.average_items_picked_up(), 1.5);
+  assert_eq!(telemetry.average_items_used(), 0.5);
+}
+
+#[test]
+fn cohort_telemetry_distribution_requires_integrity_and_handles_empty_samples() {
+  let mut invalid = synthetic_outcome_report(&[RunOutcome::Victory]);
+  invalid.records.pop();
+  assert!(matches!(
+    invalid.telemetry_distribution(),
+    Err(CohortReportError::RecordCount { .. })
+  ));
+
+  let empty = synthetic_outcome_report(&[]);
+  let telemetry = empty.telemetry_distribution().unwrap();
+  assert_eq!(telemetry.total_episodes, 0);
+  assert_eq!(telemetry.total_shots_fired, 0);
+  assert_eq!(telemetry.total_damage_dealt, 0);
+  assert_eq!(telemetry.shot_accuracy_rate(), 0.0);
+  assert_eq!(telemetry.average_damage_dealt(), 0.0);
+}
+
+#[test]
 fn compatible_cohort_outcome_comparison_reports_absolute_rate_deltas() {
   let baseline = synthetic_outcome_report(&[
     RunOutcome::Victory,

@@ -137,6 +137,101 @@ impl CohortOutcomeDistribution {
   }
 }
 
+/// Deterministic combat and economy totals projected from a validated cohort.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct CohortTelemetryDistribution {
+  /// Number of records represented by this distribution.
+  pub total_episodes: usize,
+  /// Total ranged shots attempted by all episodes.
+  pub total_shots_fired: u64,
+  /// Total ranged shots that connected.
+  pub total_shots_hit: u64,
+  /// Total damage dealt by all episodes.
+  pub total_damage_dealt: u64,
+  /// Total damage sustained by all episodes.
+  pub total_damage_taken: u64,
+  /// Total hostile enemies slain by all episodes.
+  pub total_enemies_killed: u64,
+  /// Total ground items collected by all episodes.
+  pub total_items_picked_up: u64,
+  /// Total consumables used by all episodes.
+  pub total_items_used: u64,
+}
+
+impl CohortTelemetryDistribution {
+  fn from_records(records: &[EpisodeRecord]) -> Self {
+    let mut distribution = Self {
+      total_episodes: records.len(),
+      total_shots_fired: 0,
+      total_shots_hit: 0,
+      total_damage_dealt: 0,
+      total_damage_taken: 0,
+      total_enemies_killed: 0,
+      total_items_picked_up: 0,
+      total_items_used: 0,
+    };
+
+    for record in records {
+      distribution.total_shots_fired += u64::from(record.metrics.shots_fired);
+      distribution.total_shots_hit += u64::from(record.metrics.shots_hit);
+      distribution.total_damage_dealt += u64::from(record.metrics.damage_dealt);
+      distribution.total_damage_taken += u64::from(record.metrics.damage_taken);
+      distribution.total_enemies_killed += u64::from(record.metrics.enemies_killed);
+      distribution.total_items_picked_up += u64::from(record.metrics.items_picked_up);
+      distribution.total_items_used += u64::from(record.metrics.items_used);
+    }
+    distribution
+  }
+
+  fn rate(count: u64, total: u64) -> f64 {
+    if total == 0 {
+      0.0
+    } else {
+      count as f64 / total as f64
+    }
+  }
+
+  fn average(total: u64, episodes: usize) -> f64 {
+    Self::rate(total, episodes as u64)
+  }
+
+  /// Returns the hit rate over episodes that attempted ranged shots.
+  #[must_use]
+  pub fn shot_accuracy_rate(self) -> f64 {
+    Self::rate(self.total_shots_hit, self.total_shots_fired)
+  }
+
+  /// Returns average damage dealt per episode.
+  #[must_use]
+  pub fn average_damage_dealt(self) -> f64 {
+    Self::average(self.total_damage_dealt, self.total_episodes)
+  }
+
+  /// Returns average damage taken per episode.
+  #[must_use]
+  pub fn average_damage_taken(self) -> f64 {
+    Self::average(self.total_damage_taken, self.total_episodes)
+  }
+
+  /// Returns average enemies killed per episode.
+  #[must_use]
+  pub fn average_enemies_killed(self) -> f64 {
+    Self::average(self.total_enemies_killed, self.total_episodes)
+  }
+
+  /// Returns average items picked up per episode.
+  #[must_use]
+  pub fn average_items_picked_up(self) -> f64 {
+    Self::average(self.total_items_picked_up, self.total_episodes)
+  }
+
+  /// Returns average consumables used per episode.
+  #[must_use]
+  pub fn average_items_used(self) -> f64 {
+    Self::average(self.total_items_used, self.total_episodes)
+  }
+}
+
 /// Absolute per-outcome rate deltas for two compatible cohort reports.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct CohortOutcomeComparison {
@@ -328,6 +423,16 @@ impl CohortReport {
   pub fn outcome_distribution(&self) -> Result<CohortOutcomeDistribution, CohortReportError> {
     self.validate()?;
     Ok(CohortOutcomeDistribution::from_records(&self.records))
+  }
+
+  /// Projects combat and item telemetry from retained records.
+  ///
+  /// The report is validated before projection so incomplete or tampered
+  /// evidence cannot be summarized accidentally. The rates are descriptive
+  /// sample projections, not balance, difficulty, or statistical claims.
+  pub fn telemetry_distribution(&self) -> Result<CohortTelemetryDistribution, CohortReportError> {
+    self.validate()?;
+    Ok(CohortTelemetryDistribution::from_records(&self.records))
   }
 
   /// Compares outcome rates for compatible, integrity-checked reports.
