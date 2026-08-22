@@ -1,7 +1,7 @@
 //! Integration tests for automated batch simulation and statistical metrics.
 
 use drl_core::agent::{ExplorerBot, GreedyCombatBot};
-use drl_core::batch::{BatchRunner, CohortConfig};
+use drl_core::batch::{BatchRunner, CohortConfig, CohortTolerances};
 use drl_core::generator::LevelGeneratorConfig;
 use drl_core::scenario::Scenario;
 
@@ -177,5 +177,66 @@ fn procedural_fixed_seed_cohort_reuses_batch_replay_evidence() {
       .records
       .iter()
       .all(|record| !record.replay.commands.is_empty())
+  );
+}
+
+#[test]
+fn cohort_comparison_reports_deltas_and_respects_inclusive_tolerances() {
+  let ascii = r#"
+#####
+#@.>#
+#####
+"#;
+  let scenario = Scenario::from_ascii("RegressionArena", "Tolerance gate", ascii).unwrap();
+  let config = CohortConfig::new(8_000, 2, 12);
+  let baseline =
+    BatchRunner::run_scenario_cohort(&scenario, config, "ExplorerBot", ExplorerBot::new).unwrap();
+  let mut candidate = baseline.clone();
+  candidate.summary.win_rate += 0.1;
+  candidate.summary.average_turns += 2.0;
+
+  let comparison = candidate
+    .compare_with(&baseline, CohortTolerances::new(0.11, 2.0))
+    .unwrap();
+  assert!((comparison.win_rate_delta - 0.1).abs() < f64::EPSILON * 2.0);
+  assert!((comparison.average_turns_delta - 2.0).abs() < f64::EPSILON);
+  assert!(comparison.within_tolerance);
+  assert!(
+    !candidate
+      .compare_with(&baseline, CohortTolerances::new(0.099, 2.0))
+      .unwrap()
+      .within_tolerance
+  );
+}
+
+#[test]
+fn cohort_comparison_rejects_mismatches_and_invalid_tolerances() {
+  let ascii = r#"
+#####
+#@.>#
+#####
+"#;
+  let scenario = Scenario::from_ascii("RegressionArena", "Tolerance gate", ascii).unwrap();
+  let config = CohortConfig::new(8_100, 1, 8);
+  let baseline =
+    BatchRunner::run_scenario_cohort(&scenario, config, "ExplorerBot", ExplorerBot::new).unwrap();
+  let different_policy = BatchRunner::run_scenario_cohort(&scenario, config, "RandomBot", || {
+    drl_core::agent::RandomBot::new(11)
+  })
+  .unwrap();
+  assert!(
+    different_policy
+      .compare_with(&baseline, CohortTolerances::new(1.0, 1.0))
+      .is_none()
+  );
+  assert!(
+    baseline
+      .compare_with(&baseline, CohortTolerances::new(-0.1, 1.0))
+      .is_none()
+  );
+  assert!(
+    baseline
+      .compare_with(&baseline, CohortTolerances::new(f64::NAN, 1.0))
+      .is_none()
   );
 }

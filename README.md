@@ -16,6 +16,8 @@ replays, and regression testing.
     RNG boundaries.
   - Fixed-seed cohort reports preserve sample definitions, policy identity,
     aggregate metrics, and per-seed replay evidence for evaluation.
+  - Cohort regression math applies explicit win-rate and average-turn
+    tolerances without mutating simulation or claiming balance parity.
 - Browser and presentation slice:
   - M7 functional checks pass locally and in remote web CI.
   - M8 provides square pixel-grid letterboxing, shared lighting bands, measured
