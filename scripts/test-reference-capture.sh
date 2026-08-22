@@ -28,9 +28,18 @@ valid="$fixture_dir/valid.txt"
 cp "$base" "$valid"
 expect_pass "$valid"
 
+if ! grep -q '^legacy_dirty_state=' "$valid"; then
+  printf '%s\n' 'generated manifest is missing legacy_dirty_state' >&2
+  exit 1
+fi
+
 missing_key="$fixture_dir/missing-key.txt"
 sed '/^scenes=/d' "$base" > "$missing_key"
 expect_fail "$missing_key"
+
+missing_dirty_state="$fixture_dir/missing-dirty-state.txt"
+sed '/^legacy_dirty_state=/d' "$base" > "$missing_dirty_state"
+expect_fail "$missing_dirty_state"
 
 bad_revision="$fixture_dir/bad-revision.txt"
 sed 's/^legacy_revision=.*/legacy_revision=bad/' "$base" > "$bad_revision"
@@ -49,7 +58,7 @@ sed -e 's/^status=.*/status=READY_FOR_CONTROLLED_CAPTURE/' \
   -e 's/^capture_host=.*/capture_host=Linux-x86_64/' "$base" > "$ready_placeholders"
 expect_fail "$ready_placeholders"
 
-ready="$fixture_dir/ready.txt"
+ready_dirty="$fixture_dir/ready-dirty.txt"
 sed -e 's/^status=.*/status=READY_FOR_CONTROLLED_CAPTURE/' \
   -e 's/^capture_host=.*/capture_host=Linux-x86_64/' \
   -e 's/^viewport=.*/viewport=1280x720/' \
@@ -58,8 +67,25 @@ sed -e 's/^status=.*/status=READY_FOR_CONTROLLED_CAPTURE/' \
   -e 's/^actions=.*/actions=smoke/' \
   -e 's/^capture_tool=.*/capture_tool=tool/' \
   -e 's/^capture_tool_version=.*/capture_tool_version=1/' \
+  -e 's/^media_hashes=.*/media_hashes=recorded/' "$base" > "$ready_dirty"
+expect_fail "$ready_dirty"
+
+ready="$fixture_dir/ready.txt"
+sed -e 's/^status=.*/status=READY_FOR_CONTROLLED_CAPTURE/' \
+  -e 's/^capture_host=.*/capture_host=Linux-x86_64/' \
+  -e 's/^legacy_dirty_state=.*/legacy_dirty_state=clean/' \
+  -e 's/^viewport=.*/viewport=1280x720/' \
+  -e 's/^dpr=.*/dpr=1/' \
+  -e 's/^scenario=.*/scenario=fixed/' \
+  -e 's/^actions=.*/actions=smoke/' \
+  -e 's/^capture_tool=.*/capture_tool=tool/' \
+  -e 's/^capture_tool_version=.*/capture_tool_version=1/' \
   -e 's/^media_hashes=.*/media_hashes=recorded/' "$base" > "$ready"
 expect_pass "$ready"
+
+inconclusive_dirty="$fixture_dir/inconclusive-dirty.txt"
+sed 's/^status=.*/status=INCONCLUSIVE/' "$base" > "$inconclusive_dirty"
+expect_fail "$inconclusive_dirty"
 
 bad_hash="$fixture_dir/bad-hash.txt"
 sed 's/^executable_sha256=.*/executable_sha256=deadbeef/' "$base" > "$bad_hash"

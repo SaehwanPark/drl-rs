@@ -172,9 +172,12 @@ types shared by core, MCP, bots, and frontends.
 - `crates/drl-core/tests/boundaries.rs` guards dependency direction and
   determinism.
 - `scripts/check-assets.sh` verifies the imported atlas manifest.
-- `scripts/check-reference-capture.sh` validates the ignored legacy-capture
-  manifest and preserves `NOT_RUN` until controlled Linux x86-64 evidence
-  exists; `scripts/test-reference-capture.sh` covers its failure cases.
+- `scripts/record-legacy-reference.sh` records the pinned checkout's
+  `legacy_dirty_state`, and `scripts/check-reference-capture.sh` validates that
+  field alongside the ignored legacy-capture manifest. `NOT_RUN` is preserved
+  for unavailable or dirty environments; controlled Linux x86-64 evidence must
+  come from a clean checkout. `scripts/test-reference-capture.sh` covers the
+  failure cases.
 - `crates/drl-web` native tests verify command mapping, transactional errors,
   and observation-scene construction; the WASM target check compiles WebGPU,
   winit, Web Audio, and bindings.

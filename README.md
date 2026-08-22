@@ -127,7 +127,8 @@ upstream CC BY-SA 4.0 license and attribution. The repository's MIT license
 does not relicense them. Legacy code is GPL; audio, music, and fonts are not
 bundled until their separate redistribution rights are recorded. See
 `docs/legacy-behavior/asset-provenance.md` and
-`docs/reference-captures/manifest.md`.
+`docs/reference-captures/manifest.md`, which records checkout dirty-state and
+keeps capture promotion gated on a clean controlled checkout.
 
 ## Contributing
 
