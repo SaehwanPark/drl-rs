@@ -61,7 +61,7 @@ rights = dist / pathlib.PurePosixPath(data["rights"][0])
 if not rights.is_file():
     raise SystemExit("release manifest rights file is missing")
 worker = (dist / "service-worker.js").read_text()
-cache_version = f'v1-{data["source_revision"][:12]}'
+cache_version = f'v1-{data["project_version"]}-{data["source_revision"][:12]}'
 cache_literal = json.dumps(cache_version)
 if f"const CACHE_VERSION = {cache_literal};" not in worker:
     raise SystemExit("service-worker cache version does not match release manifest")

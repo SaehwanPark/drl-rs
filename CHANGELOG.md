@@ -27,6 +27,9 @@ documented in this file.
   the comparison does not add tolerance or significance claims.
 - Added a caller-owned M11 outcome-rate tolerance gate that accepts only finite
   non-negative bounds and reports whether every category delta is within it.
+- Strengthened M12 generated cache invalidation names to include both the
+  project version and source-revision prefix; release-manifest checks verify
+  the combined policy without claiming offline acceptance.
 - Added pure M11 cohort-report integrity validation for record count, wrapping
   seed order, replay seed identity, and aggregate-summary coherence.
 - Added M11 fixed-seed cohort reports around the existing headless batch
@@ -34,7 +37,7 @@ documented in this file.
   `CohortReport` retains policy identity, aggregate metrics, and per-seed
   replay evidence for reproducible evaluation without claiming balance
   conclusions.
-- Continued retrospective project versioning at `0.1.3` from the untagged
+- Continued retrospective project versioning at `0.1.4` from the untagged
   `0.1.0` baseline. `VERSION`, Cargo/MCP metadata, and release manifests are
   checked by the agent harness; code changes require one valid component
   increment while document- and setting-only changes do not.
