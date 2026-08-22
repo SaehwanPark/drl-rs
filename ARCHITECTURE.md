@@ -108,7 +108,8 @@ types shared by core, MCP, bots, and frontends.
 - `drl-web::texture_source_manifest` keeps the 24 unique registered layer
   sources in deterministic order. WASM boot uploads each validated source once
   with `Queue::copy_external_image_to_texture` and retains its texture/view;
-  shader sampling and role compositing remain a later boundary.
+  the base-color pass samples those views with nearest filtering while role
+  compositing remains a later boundary.
 - `LayerDraw::lighting` carries the fair visibility band for the source sprite;
   explored tile memory is shaded by the shared fog factor and visible scene
   sprites use full light. A compositor must not derive this from hidden state.

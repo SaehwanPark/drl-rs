@@ -83,6 +83,10 @@ documented in this file.
 - Added a deterministic 24-source manifest and renderer-owned WASM WebGPU
   texture/view cache. Each validated decoded PNG is uploaded once with the
   external-image copy API; shader sampling and role compositing remain open.
+- Added the first nearest-filtered base-color WGSL pass using grouped fair
+  sprite UVs, source-specific bind groups, alpha blending, and shared lighting;
+  geometry remains the fallback and mask/outline/emissive compositing remains
+  future work.
 - Added pure `active_effect_frames` progress mapping for fair effect spans;
   frontend ticks receive stable normalized progress without advancing gameplay
   or claiming legacy animation-frame parity.

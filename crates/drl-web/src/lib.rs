@@ -4,14 +4,50 @@
 //! tests. The WASM exports are a thin boot/input shell; gameplay state stays in
 //! Rust and is never mirrored into a parallel JavaScript model.
 
-use drl_assets::{AtlasId, AtlasTextureSource};
+use drl_assets::{AtlasId, AtlasTextureSource, SpriteUv};
 use drl_core::item::Item;
 use drl_core::{Game, Tile};
 use drl_protocol::{
   Command, Direction, ItemId, ItemSpawnKind, ItemSpawnSpec, MonsterKind, MonsterSpawnSpec,
   PlayerObservation, Position, ReplayLog,
 };
-use drl_render::{PresentationStep, RenderScene, effect_timeline_for_observations};
+use drl_render::{
+  LightingBand, PixelRect, PresentationStep, RenderScene, effect_timeline_for_observations,
+};
+
+/// Returns the six UV coordinates for a top-left-origin textured quad.
+#[must_use]
+#[cfg_attr(not(target_arch = "wasm32"), allow(dead_code))]
+const fn base_texture_uvs(uv: SpriteUv) -> [[f32; 2]; 6] {
+  [
+    [uv.u_min, uv.v_max],
+    [uv.u_max, uv.v_max],
+    [uv.u_max, uv.v_min],
+    [uv.u_min, uv.v_max],
+    [uv.u_max, uv.v_min],
+    [uv.u_min, uv.v_min],
+  ]
+}
+
+/// Returns the shared fair lighting factor used by the textured pass.
+#[must_use]
+#[cfg_attr(not(target_arch = "wasm32"), allow(dead_code))]
+fn base_texture_lighting_factor(band: LightingBand) -> f32 {
+  band.factor() as f32 / 100.0
+}
+
+/// Converts a physical destination rectangle into clip-space bounds.
+#[cfg_attr(not(target_arch = "wasm32"), allow(dead_code))]
+const fn base_texture_ndc_rect(rect: PixelRect, canvas_width: u32, canvas_height: u32) -> [f32; 4] {
+  let width = if canvas_width == 0 { 1 } else { canvas_width } as f32;
+  let height = if canvas_height == 0 { 1 } else { canvas_height } as f32;
+  [
+    -1.0 + 2.0 * rect.x as f32 / width,
+    1.0 - 2.0 * rect.y.saturating_add(rect.height) as f32 / height,
+    -1.0 + 2.0 * rect.x.saturating_add(rect.width) as f32 / width,
+    1.0 - 2.0 * rect.y as f32 / height,
+  ]
+}
 
 /// Fixed deterministic content slice used by the first browser playthrough.
 pub const M4_SEED: u64 = 0x4452_4c5f_4d34;
@@ -327,7 +363,7 @@ mod texture;
 
 #[cfg(target_arch = "wasm32")]
 pub(crate) mod wasm {
-  use super::texture::GpuTextureCache;
+  use super::texture::{BaseTexturePipeline, GpuTextureCache};
   use super::*;
   use drl_render::{PixelViewport, scene_clear_color, shade_color};
   use std::cell::RefCell;
@@ -378,6 +414,7 @@ pub(crate) mod wasm {
     queue: wgpu::Queue,
     config: wgpu::SurfaceConfiguration,
     pipeline: wgpu::RenderPipeline,
+    base_texture: BaseTexturePipeline,
     canvas: HtmlCanvasElement,
     textures: Option<GpuTextureCache>,
     texture_upload_error: Option<String>,
@@ -503,6 +540,7 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
             ),
           ),
         };
+      let base_texture = BaseTexturePipeline::new(&device, config.format, textures.as_ref());
       Ok(Self {
         _instance: instance,
         surface,
@@ -510,6 +548,7 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
         queue,
         config,
         pipeline,
+        base_texture,
         canvas,
         textures,
         texture_upload_error,
@@ -589,7 +628,25 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
           multiview_mask: None,
         });
       }
-      let vertices = scene_vertices(scene, self.config.width, self.config.height);
+      let textured_scene =
+        self
+          .base_texture
+          .covers_scene(scene, self.config.width, self.config.height);
+      if textured_scene {
+        self.base_texture.draw(
+          &self.device,
+          &mut encoder,
+          &view,
+          scene,
+          self.config.width,
+          self.config.height,
+        );
+      }
+      let vertices = if textured_scene {
+        target_vertices(scene, self.config.width, self.config.height)
+      } else {
+        scene_vertices(scene, self.config.width, self.config.height)
+      };
       if !vertices.is_empty() {
         let vertex_buffer = self
           .device
@@ -720,6 +777,31 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
         );
       }
     }
+    for target in &scene.target_positions {
+      if let Some((left, bottom, right, top)) = scene_position(&viewport, target.x, target.y) {
+        let inset_x = (right - left) * 0.08;
+        let inset_y = (top - bottom) * 0.08;
+        push_quad(
+          &mut vertices,
+          left + inset_x,
+          bottom + inset_y,
+          right - inset_x,
+          top - inset_y,
+          [1.0, 0.82, 0.18, 0.35],
+        );
+      }
+    }
+    vertices
+  }
+
+  fn target_vertices(scene: &RenderScene, canvas_width: u32, canvas_height: u32) -> Vec<u8> {
+    let viewport = PixelViewport::fit(
+      scene.map_width,
+      scene.map_height,
+      canvas_width,
+      canvas_height,
+    );
+    let mut vertices = Vec::new();
     for target in &scene.target_positions {
       if let Some((left, bottom, right, top)) = scene_position(&viewport, target.x, target.y) {
         let inset_x = (right - left) * 0.08;
@@ -1247,6 +1329,48 @@ mod tests {
         .count(),
       1
     );
+  }
+
+  #[test]
+  fn base_texture_uvs_preserve_top_left_orientation() {
+    let uv = SpriteUv {
+      u_min: 0.1,
+      v_min: 0.2,
+      u_max: 0.3,
+      v_max: 0.4,
+    };
+    assert_eq!(
+      base_texture_uvs(uv),
+      [
+        [0.1, 0.4],
+        [0.3, 0.4],
+        [0.3, 0.2],
+        [0.1, 0.4],
+        [0.3, 0.2],
+        [0.1, 0.2],
+      ]
+    );
+  }
+
+  #[test]
+  fn base_texture_lighting_factor_matches_fair_bands() {
+    assert_eq!(base_texture_lighting_factor(LightingBand::Visible), 1.0);
+    assert_eq!(base_texture_lighting_factor(LightingBand::Explored), 0.45);
+  }
+
+  #[test]
+  fn base_texture_ndc_rect_preserves_destination_orientation() {
+    let rect = PixelRect {
+      x: 10,
+      y: 20,
+      width: 30,
+      height: 40,
+    };
+    let [left, bottom, right, top] = base_texture_ndc_rect(rect, 100, 100);
+    assert!((left + 0.8).abs() < f32::EPSILON);
+    assert!((bottom + 0.2).abs() < f32::EPSILON);
+    assert!((right + 0.2).abs() < f32::EPSILON);
+    assert!((top - 0.6).abs() < f32::EPSILON);
   }
 
   #[test]
