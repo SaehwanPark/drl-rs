@@ -199,6 +199,10 @@ documented in this file.
   for the pinned lead-delay/reverse branch, integer segment quotient, and
   terminal clamp, with explicit invalid metadata rejection. Actor, sprite,
   light, lifecycle, and capture behavior remain outside the helper.
+- Added pure `drl-render::fx_animation_frame_index_at_elapsed` arithmetic for
+  the pinned FX frame quotient and terminal clamp, with explicit zero-duration
+  and zero-frame rejection. Sprite IDs, atlas columns, lifecycle, and capture
+  behavior remain outside the helper.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch
