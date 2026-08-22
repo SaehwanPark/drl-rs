@@ -94,8 +94,8 @@ types shared by core, MCP, bots, and frontends.
   localStorage persistence, a versioned static service-worker cache boundary,
   deterministic release-manifest generation/checks for static bundles, source-
   derived service-worker cache versioning, a local accessible browser-support
-  diagnostics surface, and recoverable GPU/audio status. It never mirrors
-  authoritative gameplay state
+  diagnostics surface, a static accessibility contract for the HTML shell, and
+  recoverable GPU/audio status. It never mirrors authoritative gameplay state
   into JavaScript.
 - `drl-mcp`: zero-dependency JSON-RPC/MCP semantic server and fairness boundary.
 - `drl-app`: native headless demo and MCP stdio runner, retained for tooling.

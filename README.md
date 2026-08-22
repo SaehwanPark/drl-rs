@@ -77,6 +77,7 @@ sh scripts/check-repository.sh
 sh scripts/check-assets.sh
 scripts/check-web.sh
 scripts/check-browser-diagnostics.sh # also run by check-web.sh
+scripts/check-browser-accessibility.sh # also run by check-web.sh
 scripts/check-reference-capture.sh
 scripts/check-release-manifest.sh  # after scripts/build-web.sh
 ```
@@ -123,6 +124,8 @@ legacy graphics metadata; it is not a dependency of the core.
     source-revision-derived cache version recorded by release manifests.
   - Local accessible browser-support/startup diagnostics with recovery guidance;
     no telemetry or untested-browser support claim.
+  - Static shell accessibility audit for names, labels, focus, and live regions;
+    dynamic WCAG/screen-reader acceptance remains open.
 - `crates/drl-mcp`: JSON-RPC/MCP server and fairness boundary.
 - `crates/drl-app`: native headless demo and MCP stdio runner.
 - `docs/DRL-Rust_Project_Roadmap.md`: canonical milestones and gates.

@@ -13,6 +13,9 @@ documented in this file.
   revision prefix and verified the generated worker against that manifest.
 - Added a local accessible browser-support and startup-diagnostics panel for
   WebGPU, rendering, audio, and offline-cache failures without telemetry.
+- Added a deterministic static accessibility audit for shell landmarks, named
+  controls, labels, focus semantics, and live regions; dynamic WCAG acceptance
+  remains open.
 - Added pure M11 cohort regression comparisons with caller-declared finite
   non-negative win-rate and average-turn tolerances. Policy/sample mismatches
   are rejected, and no statistical or balance claim is inferred.
