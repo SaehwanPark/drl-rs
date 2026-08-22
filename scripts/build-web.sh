@@ -82,4 +82,9 @@ if marker not in template:
     template.replace(marker, json.dumps(files, separators=(",", ":")))
 )
 PY
+if [ -n "${RELEASE_SIGNING_KEY:-}" ]; then
+  RELEASE_DIST="$dist" scripts/sign-release-manifest.sh
+else
+  scripts/sign-release-manifest.sh
+fi
 printf '%s\n' "Web bundle written to $dist (ignored by git)."

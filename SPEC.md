@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.13`
+Current project version: `0.2.14`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,53 +23,59 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M11 Cohort Telemetry Integrity
+## 2. Active Implementation Slice: M12 Detached Release Signing
 
 ### 2.1 Scope & Objective
 
-Reject impossible evaluation telemetry before any cohort projection is exposed.
-Fixed-seed reports must keep descriptive metrics within physical and configured
-bounds while preserving the existing observation/telemetry separation.
+Add an optional cryptographic signature boundary for the generated release
+manifest. Signed bundles include a detached signature and derived public key;
+verification fails closed when signature artifacts are present. Unsigned local
+and CI builds remain valid when no signing key is configured.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
-1. **Cohort integrity (v0.2.3)**:
-   - `CohortReport::validate` checks record count, contiguous seeds, replay
-     seed identity, and aggregate summary coherence.
-2. **Telemetry projections (v0.2.3)**:
-   - Outcome and telemetry distributions validate reports before projection and
-     retain only seed, metrics, and replay evidence; no player observation is
-     stored in an evaluation record.
+1. **Release manifest (v0.2.1–v0.2.13)**:
+   - `release-manifest.json` records version, source identity, artifact hashes,
+     generated files, and rights metadata.
+2. **Unsigned integrity (v0.2.1–v0.2.13)**:
+   - SHA-256 sidecars and service-worker checks validate every generated bundle
+     without requiring secrets or external services.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Shot-count bound**: Reject records where `shots_hit` exceeds
-  `shots_fired` before telemetry projection.
-- [x] **Level identity bound**: Reject records with an invalid level zero.
-- [x] **Turn-budget bound**: Reject records whose survived turns exceed the
-  configured cohort maximum.
-- [x] **Isolation boundary**: Keep observation state out of `EpisodeRecord`;
-  validation and projections consume only metrics and replay evidence.
-- [x] **Native contract tests**: Cover each invariant and preserve valid
-  deterministic projections.
-- [ ] **Balance gate**: Large-scale studies and canonical difficulty targets
-  remain descriptive future work.
+- [x] **Optional signing**: When `RELEASE_SIGNING_KEY` is configured, emit a
+  detached SHA-256 OpenSSL signature and derived public key for the manifest.
+- [x] **Fail-closed verification**: If either signature artifact exists, require
+  both and verify the manifest; unsigned builds remain accepted by default.
+- [x] **Private-key boundary**: Never copy the private key into `dist` or the
+  browser bundle.
+- [x] **Native shell tests**: Cover sign, verify, and mutation rejection with
+  an ephemeral key.
+- [ ] **Release governance gate**: Key custody, CI provisioning, rotation, and
+  production trust-root policy remain open.
 
 ### 2.4 Pure Contract
 
-- **Input**: A caller-owned `CohortReport` containing fixed-seed metrics and
-  replay evidence.
-- **Output**: A validated report or a typed invariant error; no invalid metrics
-  are projected.
+- **Input**: `dist/release-manifest.json` and an optional private/public key
+  configuration owned by the release environment.
+- **Output**: Detached signature artifacts or an explicit unsigned/not-run
+  result; verification never mutates the manifest.
 - **Ownership Boundary**:
-  - `drl-core` owns pure evaluation validation and projections.
-  - `drl-protocol::EpisodeMetrics` remains event-derived and observation-free.
-  - Callers own policy interpretation; no balance or significance claim is
-    inferred by the validator.
+  - Release scripts own key use and signature verification.
+  - `drl-web` and the browser bundle receive only public artifacts.
+  - Key custody and trust decisions remain outside the repository.
 
 ---
 
 ## 3. Recent Delivered Slices
+
+### M12 — Detached Release Signing (`VERSION` 0.2.14)
+
+- [x] Added optional detached manifest signing and public-key derivation.
+- [x] Added fail-closed verification when signature artifacts are present.
+- [x] Added ephemeral-key shell coverage for tamper rejection.
+- [ ] Key custody, CI enforcement, and production trust-root governance remain
+  open.
 
 ### M11 — Cohort Telemetry Integrity (`VERSION` 0.2.13)
 
@@ -210,7 +216,7 @@ bounds while preserving the existing observation/telemetry separation.
 
 ## 6. Verification Gates
 
-### Verified Baseline (`VERSION` 0.2.13)
+### Verified Baseline (`VERSION` 0.2.14)
 
 - [x] `sh scripts/check-repository.sh` — Full repository test suite, formatting,
   clippy, and harness checks.

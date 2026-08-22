@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.13`
+Current project version: `0.2.14`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.13)
+## 3. Current Progress Summary (`VERSION` 0.2.14)
 
 ### Delivered Foundations
 
@@ -79,12 +79,13 @@ verification item uses explicit status semantics:
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections; release manifests with SHA-256 sidecars,
-  cache invalidation, and checkout binding.
+  optional detached signatures, cache invalidation, and checkout binding.
 
 ### Active & Open Work
 
-- **Active Milestone Slice (M11)**: Cohort telemetry integrity bounds are
-  delivered and verified; large-scale balance studies remain open.
+- **Active Milestone Slice (M12)**: Optional detached release-manifest signing
+  and fail-closed verification are delivered and verified; key governance and
+  production trust-root policy remain open.
 - **Open Audiovisual Parity (M8)**: Exact legacy outline/glow and lighting/LUT
   equations from reference captures, HUD typography, and replacement audio.
 - **Controlled Reference Captures (M3, M7, M8)**: Runtime captures are `NOT_RUN`
@@ -382,7 +383,9 @@ diagnostics.
 - [x] Static HTML shell accessibility audit (landmarks, named controls,
   labels, focus, live regions).
 - [x] Local accessible browser-support and startup diagnostics panel.
-- [ ] Cryptographic release signing and integrity verification.
+- [x] Optional detached cryptographic release signing and fail-closed manifest
+  verification using an externally supplied OpenSSL key.
+- [ ] Key custody, CI provisioning, rotation, and production trust-root policy.
 - [ ] Dynamic WCAG 2.1 AA and screen-reader accessibility acceptance.
 - [ ] Real-world browser offline installation acceptance tests.
 - [ ] Graceful fallback and diagnostics for untested browser environments.

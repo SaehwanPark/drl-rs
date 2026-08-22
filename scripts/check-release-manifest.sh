@@ -93,6 +93,25 @@ if len(manifest_digest) != 64 or any(
     raise SystemExit("release manifest digest sidecar has an invalid hash")
 if hashlib.sha256(manifest_path.read_bytes()).hexdigest() != manifest_digest:
     raise SystemExit("release manifest digest sidecar does not match manifest")
+signature_path = dist / "release-manifest.sig"
+public_key_path = dist / "release-manifest.pub"
+verify_key = os.environ.get("RELEASE_VERIFY_KEY") or str(public_key_path)
+if signature_path.exists() or public_key_path.exists() or os.environ.get("RELEASE_VERIFY_KEY"):
+    if not signature_path.is_file() or not public_key_path.is_file():
+        raise SystemExit("release signature artifacts must include .sig and .pub files")
+    if not pathlib.Path(verify_key).is_file():
+        raise SystemExit(f"release signature verification key is missing: {verify_key}")
+    try:
+        subprocess.run(
+            ["openssl", "dgst", "-sha256", "-verify", verify_key,
+             "-signature", str(signature_path), str(manifest_path)],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+    except (OSError, subprocess.CalledProcessError) as error:
+        raise SystemExit("release manifest signature verification failed") from error
 worker = (dist / "service-worker.js").read_text()
 cache_version = f'v1-{data["project_version"]}-{data["source_revision"][:12]}'
 cache_literal = json.dumps(cache_version)
