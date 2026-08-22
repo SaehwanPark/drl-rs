@@ -140,16 +140,13 @@ Chrome 151 WebGPU smoke playthrough          PASS (Apple Metal-3, 1280x720, DPR 
                                              start with explicit gesture-gated
                                              audio state, move, mute, restart;
                                              pixel-grid scene visible after move)
-GitHub Actions run 32547622310               PASS (repository + Ubuntu WASM
-                                             browser jobs for the preceding
-                                             source-binding slice; this lighting
-                                             slice is not included)
+GitHub Actions run 32548005999               PASS (repository + Ubuntu WASM
+                                             browser jobs for this lighting
+                                             factor slice)
 ```
 
-The local and hosted functional gates pass for the preceding source-binding
-slice; this lighting-factor slice requires a new hosted run, currently
-`NOT_RUN`; local browser execution remains `NOT_RUN` when the runner is
-unavailable. The
+The local and hosted functional gates pass for this lighting-factor slice;
+local browser execution remains `NOT_RUN` when the runner is unavailable. The
 existing Chrome run records browser/version, OS,
 adapter/backend, viewport, DPR, build revision, and audio unlock/mute state,
 but the fidelity-matrix comparison remains `NOT_RUN` until a controlled legacy
