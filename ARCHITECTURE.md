@@ -48,6 +48,7 @@ types shared by core, MCP, bots, and frontends.
   `move_animation_progress_at_elapsed` arithmetic,
   `missile_step_index_at_elapsed` arithmetic,
   `missile_ray_sample_distance_at_index` arithmetic,
+  `screen_shake_fade_at_elapsed` arithmetic,
   post-process glow/LUT coordinate math and pure blur-tap plans,
   event-ordered `EffectSpan` timing, and renderer-neutral `LayerDraw` plans
   carrying atlas layers, imported source metadata, explicit layer roles, fair
@@ -126,6 +127,10 @@ types shared by core, MCP, bots, and frontends.
   overshoot with checked arithmetic. It accepts caller-owned endpoint length and
   does not infer distance metrics, interpolation, visibility, particles,
   rendering, lifecycle, or backend behavior.
+- `screen_shake_fade_at_elapsed` preserves the pinned active quadratic fade and
+  zero-at-expiry guard. It intentionally does not reproduce random frequencies,
+  trigonometric offsets, strength/direction scaling, scheduling, sprite-map
+  state, lifecycle, rendering, or backend behavior.
 - `active_effect_frames` reports normalized progress only for the supplied
   spans at the supplied frontend tick. It omits zero-duration/overflowed spans
   and cannot create new events or inspect simulation state.

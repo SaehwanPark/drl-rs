@@ -216,6 +216,10 @@ documented in this file.
   preserving the source's possible endpoint overshoot with checked arithmetic.
   Endpoint metrics, visibility, particles, rendering, lifecycle, and capture
   behavior remain outside the helper.
+- Added pure `drl-render::screen_shake_fade_at_elapsed` timing for the pinned
+  quadratic active envelope and zero-at-expiry guard. Random frequencies,
+  offsets, strength/direction scaling, scheduling, rendering, lifecycle, and
+  capture behavior remain outside the helper.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch

@@ -277,6 +277,22 @@ pub fn missile_ray_sample_distance_at_index(
   pre_increment_distance.checked_add(20)
 }
 
+/// Returns the caller-owned screen-shake fade envelope at elapsed time.
+///
+/// The legacy update uses `1 - (elapsed / duration)^2` while the animation is
+/// active and leaves the offset at zero once elapsed time reaches the duration.
+/// Zero duration therefore returns zero. Random frequencies, offsets, strength,
+/// direction, scheduling, and sprite-map state remain outside this helper.
+#[must_use]
+pub fn screen_shake_fade_at_elapsed(elapsed_units: u64, duration_units: u64) -> f32 {
+  if duration_units == 0 || elapsed_units >= duration_units {
+    return 0.0;
+  }
+
+  let progress = elapsed_units as f64 / duration_units as f64;
+  (1.0 - progress * progress) as f32
+}
+
 /// Visibility-derived presentation bands for deterministic scene shading.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum LightingBand {
@@ -2269,6 +2285,20 @@ mod tests {
       missile_ray_sample_distance_at_index((u64::MAX - 15) / 20, u64::MAX, 0,),
       None
     );
+  }
+
+  #[test]
+  fn screen_shake_fade_follows_quadratic_active_envelope() {
+    assert_eq!(screen_shake_fade_at_elapsed(0, 100), 1.0);
+    assert_eq!(screen_shake_fade_at_elapsed(50, 100), 0.75);
+    assert!((screen_shake_fade_at_elapsed(99, 100) - 0.0199).abs() < 0.0001);
+  }
+
+  #[test]
+  fn screen_shake_fade_zeroes_at_expiry_and_for_zero_duration() {
+    assert_eq!(screen_shake_fade_at_elapsed(100, 100), 0.0);
+    assert_eq!(screen_shake_fade_at_elapsed(101, 100), 0.0);
+    assert_eq!(screen_shake_fade_at_elapsed(u64::MAX, 0), 0.0);
   }
 
   #[test]
