@@ -200,6 +200,28 @@ pub fn kill_animation_segment_index_at_elapsed(
   u32::try_from(segment).ok()
 }
 
+/// Returns the caller-owned FX sprite frame at elapsed time.
+///
+/// The legacy selector computes `(elapsed * frame_count) div duration` and
+/// clamps the result to the final frame before applying a sprite-column
+/// offset. Zero durations and empty frame sets are rejected; sprite IDs,
+/// atlas columns, and effect lifecycle state remain caller/backend concerns.
+#[must_use]
+pub fn fx_animation_frame_index_at_elapsed(
+  elapsed_units: u64,
+  duration_units: u64,
+  frame_count: u16,
+) -> Option<u16> {
+  if duration_units == 0 || frame_count == 0 {
+    return None;
+  }
+
+  let frame_count = u128::from(frame_count);
+  let frame_index =
+    (u128::from(elapsed_units) * frame_count / u128::from(duration_units)).min(frame_count - 1);
+  u16::try_from(frame_index).ok()
+}
+
 /// Visibility-derived presentation bands for deterministic scene shading.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum LightingBand {
@@ -2095,6 +2117,39 @@ mod tests {
     assert_eq!(
       kill_animation_segment_index_at_elapsed(0, 10, 3, 11, false),
       None
+    );
+  }
+
+  #[test]
+  fn fx_animation_frame_index_selects_and_clamps_integer_frames() {
+    assert_eq!(fx_animation_frame_index_at_elapsed(0, 100, 4), Some(0));
+    assert_eq!(fx_animation_frame_index_at_elapsed(24, 100, 4), Some(0));
+    assert_eq!(fx_animation_frame_index_at_elapsed(25, 100, 4), Some(1));
+    assert_eq!(fx_animation_frame_index_at_elapsed(75, 100, 4), Some(3));
+    assert_eq!(fx_animation_frame_index_at_elapsed(100, 100, 4), Some(3));
+    assert_eq!(fx_animation_frame_index_at_elapsed(101, 100, 4), Some(3));
+    assert_eq!(fx_animation_frame_index_at_elapsed(0, 10, 3), Some(0));
+    assert_eq!(fx_animation_frame_index_at_elapsed(3, 10, 3), Some(0));
+    assert_eq!(fx_animation_frame_index_at_elapsed(4, 10, 3), Some(1));
+    assert_eq!(fx_animation_frame_index_at_elapsed(6, 10, 3), Some(1));
+    assert_eq!(fx_animation_frame_index_at_elapsed(7, 10, 3), Some(2));
+    assert_eq!(
+      fx_animation_frame_index_at_elapsed(u64::MAX, 10, 1),
+      Some(0)
+    );
+  }
+
+  #[test]
+  fn fx_animation_frame_index_rejects_empty_metadata_and_stays_overflow_safe() {
+    assert_eq!(fx_animation_frame_index_at_elapsed(0, 0, 4), None);
+    assert_eq!(fx_animation_frame_index_at_elapsed(0, 100, 0), None);
+    assert_eq!(
+      fx_animation_frame_index_at_elapsed(u64::MAX, 1, u16::MAX),
+      Some(u16::MAX - 1)
+    );
+    assert_eq!(
+      fx_animation_frame_index_at_elapsed(u64::MAX, u64::MAX, u16::MAX),
+      Some(u16::MAX - 1)
     );
   }
 

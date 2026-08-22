@@ -44,6 +44,7 @@ types shared by core, MCP, bots, and frontends.
   `explosion_mark_phase` selection,
   `effect_segment_index_at_elapsed` arithmetic,
   `kill_animation_segment_index_at_elapsed` arithmetic,
+  `fx_animation_frame_index_at_elapsed` arithmetic,
   post-process glow/LUT coordinate math and pure blur-tap plans,
   event-ordered `EffectSpan` timing, and renderer-neutral `LayerDraw` plans
   carrying atlas layers, imported source metadata, explicit layer roles, fair
@@ -106,6 +107,9 @@ types shared by core, MCP, bots, and frontends.
   reverse-branch, quotient, and terminal-clamp arithmetic. It rejects empty or
   zero-duration metadata without importing actor, sprite-table, light, or
   lifecycle state.
+- `fx_animation_frame_index_at_elapsed` preserves the pinned FX quotient and
+  terminal clamp. It rejects empty or zero-duration metadata without importing
+  sprite IDs, atlas columns, lifecycle, or backend state.
 - `active_effect_frames` reports normalized progress only for the supplied
   spans at the supplied frontend tick. It omits zero-duration/overflowed spans
   and cannot create new events or inspect simulation state.
