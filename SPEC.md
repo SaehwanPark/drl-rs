@@ -133,14 +133,12 @@ Chrome 151 WebGPU smoke playthrough          PASS (Apple Metal-3, 1280x720, DPR 
                                              start with explicit gesture-gated
                                              audio state, move, mute, restart;
                                              pixel-grid scene visible after move)
-GitHub Actions run 32546343062               PASS (prior repository + Ubuntu
-                                             WASM jobs for the sprite UV slice;
-                                             this draw-plan slice is not
-                                             included)
+GitHub Actions run 32546867436               PASS (repository + Ubuntu WASM
+                                             browser jobs for this draw-plan
+                                             slice)
 ```
 
-The existing local and remote functional gates pass for the preceding UV
-slice. This draw-plan slice requires a new hosted run, currently `NOT_RUN`; local
+The local and hosted functional gates pass for this draw-plan slice; local
 browser execution remains `NOT_RUN` when the runner is unavailable. The
 existing Chrome run records browser/version, OS,
 adapter/backend, viewport, DPR, build revision, and audio unlock/mute state,
