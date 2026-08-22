@@ -6,7 +6,7 @@ use std::collections::BTreeMap;
 /// Supported MCP protocol version string.
 pub const MCP_PROTOCOL_VERSION: &str = "2024-11-05";
 /// Current DRL-MCP server version.
-pub const DRL_MCP_VERSION: &str = "0.1.0";
+pub const DRL_MCP_VERSION: &str = env!("CARGO_PKG_VERSION");
 /// Server identifier.
 pub const SERVER_NAME: &str = "drl-mcp";
 

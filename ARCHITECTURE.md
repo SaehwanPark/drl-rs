@@ -37,7 +37,9 @@ types shared by core, MCP, bots, and frontends.
   and per-seed replay records. `CohortReport::validate` checks record count,
   wrapping seed order, replay seed identity, and aggregate-summary coherence;
   `CohortTolerances` and `CohortComparison` add pure compatible-report
-  regression math. None of these types change game execution.
+  regression math. `CohortOutcomeDistribution` derives distinct outcome
+  counts and sample-normalized rates only after report validation. None of
+  these types change game execution.
   `drl-core::level_definition` owns the immutable standard procedural-level
   policy; callers can still supply custom `LevelGeneratorConfig` values.
 - `drl-protocol`: stable semantic boundary. Player observations now include
@@ -95,8 +97,9 @@ types shared by core, MCP, bots, and frontends.
   deterministic release-manifest generation/checks for static bundles, source-
   derived service-worker cache versioning, a local accessible browser-support
   diagnostics surface, a static accessibility contract for the HTML shell, and
-  recoverable GPU/audio status. It never mirrors authoritative gameplay state
-  into JavaScript.
+  recoverable GPU/audio status. Project version projections are checked by the
+  repository harness and release-manifest verifier. It never mirrors
+  authoritative gameplay state into JavaScript.
 - `drl-mcp`: zero-dependency JSON-RPC/MCP semantic server and fairness boundary.
 - `drl-app`: native headless demo and MCP stdio runner, retained for tooling.
 - `drl-script`: conversion/content boundary placeholder; no runtime Lua.

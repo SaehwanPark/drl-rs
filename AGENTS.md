@@ -41,3 +41,8 @@
 - Browser acceptance records browser/version, OS, GPU backend, viewport, DPR,
   build revision, and audio state. Unsupported WebGPU/audio or unavailable
   Linux legacy captures are `NOT_RUN`, not inferred passes.
+- Project versioning is canonical in `VERSION` and follows
+  [docs/VERSIONING.md](docs/VERSIONING.md): code changes require one valid
+  `x.y.z` transition, while documentation-only and setting-only changes do
+  not bump the version. Run `scripts/check-version.sh`; CI supplies
+  `DRL_VERSION_BASE` so the agent harness can enforce the transition.

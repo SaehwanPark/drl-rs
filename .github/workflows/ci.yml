@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Install stable Rust
         run: |
           rustup toolchain install stable --profile minimal \
@@ -23,6 +25,8 @@ jobs:
             --component clippy
           rustup default stable
       - name: Run repository checks
+        env:
+          DRL_VERSION_BASE: ${{ github.event.pull_request.base.sha || '' }}
         run: sh scripts/check-repository.sh
 
   web:

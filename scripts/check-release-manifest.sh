@@ -20,6 +20,9 @@ dist = manifest_path.parent
 data = json.loads(manifest_path.read_text())
 if data.get("schema_version") != 1:
     raise SystemExit("unsupported release manifest schema")
+project_version = pathlib.Path("VERSION").read_text().strip()
+if data.get("project_version") != project_version:
+    raise SystemExit("release manifest project version does not match VERSION")
 if not isinstance(data.get("source_revision"), str) or not data["source_revision"]:
     raise SystemExit("release manifest source revision is missing")
 if data.get("generated") != ["release-manifest.json", "service-worker.js"]:
