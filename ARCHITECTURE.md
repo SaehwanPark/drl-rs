@@ -99,6 +99,7 @@ types shared by core, MCP, bots, and frontends.
   deterministic release-manifest generation/checks plus a manifest digest
   sidecar for static bundles, source-
   project-versioned/source-derived service-worker cache versioning, a local
+  mocked service-worker lifecycle/fetch contract,
   accessible browser-support diagnostics surface, a static accessibility
   contract for the HTML shell, and
   recoverable GPU/audio status. Project version projections are checked by the

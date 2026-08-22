@@ -286,14 +286,23 @@ checker verifies the generated literal matches both inputs. This is a
 deterministic invalidation policy for static bundles, not proof of offline
 behavior, a signed release, or cross-browser acceptance.
 
-## Present — M12 manifest integrity sidecar
+## Delivered — M12 manifest integrity sidecar
 
-Status: the active slice adds a deterministic `dist/release-manifest.sha256`
+Status: this delivered slice adds a deterministic `dist/release-manifest.sha256`
 sidecar for the generated manifest. The release-manifest checker validates the
 sidecar's canonical filename, lowercase SHA-256 digest, and exact manifest
 bytes, while the generated service worker precaches the sidecar. This is local
 packaging integrity evidence, not a cryptographic signature, offline proof, or
 cross-browser acceptance claim.
+
+## Present — M12 service-worker lifecycle contract
+
+Status: the active slice adds a dependency-free contract harness for the
+generated worker's install, activate, and same-origin GET fetch branches. It
+checks precache population, stale-cache deletion, cache-first assets, network
+navigation fallback to the shell, and rejection of cross-origin or non-GET
+requests. These deterministic mocks are behavioral evidence, not full browser
+offline acceptance or cross-browser support.
 
 ### Observable behavior
 
@@ -333,6 +342,9 @@ cross-browser acceptance claim.
   release manifest rejects mismatches without broadening offline claims.
 - Generated bundles declare and precache `release-manifest.sha256`; the release
   checker rejects malformed, non-lowercase, or mismatched sidecar digests.
+- The service-worker contract harness verifies install precache, activation
+  cleanup, cache-first assets, navigation fallback, and same-origin GET gating
+  without making a browser-offline claim.
 - `drl-audio` maps events to semantic cues. The WASM mixer uses generated tones,
   mute/volume settings, and user-gesture unlock; blocked audio never blocks
   gameplay.
@@ -611,9 +623,10 @@ sh scripts/check-assets.sh                  PASS (32 PNGs, license, hashes)
 scripts/check-reference-capture.sh          PASS (`NOT_RUN` on arm64 macOS)
 scripts/test-reference-capture.sh           PASS (fixture coverage)
 scripts/check-release-manifest.sh           PASS (after `scripts/build-web.sh`, including sidecar)
+scripts/test-service-worker.sh               PASS (mocked lifecycle/fetch contract)
 scripts/check-browser-diagnostics.sh        PASS (via `scripts/check-web.sh`)
 scripts/check-browser-accessibility.sh      PASS (via `scripts/check-web.sh`)
-scripts/check-version.sh                    PASS (`0.1.5` projections and transition)
+scripts/check-version.sh                    PASS (`0.1.6` projections and transition)
 cargo check --locked -p drl-web --target wasm32-unknown-unknown  PASS
 cargo test -p drl-render                      PASS (pixel-grid, lighting, tone, and timeline contracts)
 cargo test -p drl-core --test batch_simulation PASS (fixed-seed cohort sample,
@@ -671,15 +684,17 @@ capture is available.
   significance. Static browser accessibility is a shell contract, not full
   WCAG or screen-reader acceptance.
 - Offline-after-first-load, signed release verification, and cross-browser
-  acceptance remain outside the static cache and manifest-sidecar policies.
+  acceptance remain outside the static cache, manifest-sidecar, and mocked
+  service-worker policies.
 
 ## Next
 
 The fixed-seed cohort report, integrity gate, outcome-distribution view,
 compatible outcome comparison, and outcome-rate tolerance gate are covered by
 focused headless tests. The project-versioned cache policy is covered by
-static/build checks; the active manifest-sidecar slice is covered by the
-release-manifest checker; broader offline and release-hardening work remains.
+static/build checks; the manifest-sidecar slice is covered by the
+release-manifest checker; the active service-worker lifecycle slice is covered
+by deterministic mocks; broader offline and release-hardening work remains.
 The pixel-scale
 viewport,
 atlas metadata, UV geometry, draw-plan source
