@@ -42,8 +42,9 @@ types shared by core, MCP, bots, and frontends.
   event-ordered `EffectSpan` timing, and renderer-neutral `LayerDraw` plans
   carrying atlas layers, imported source metadata, explicit layer roles, fair
   lighting, evidence-backed Green Armor/Phase Device colorization tint,
-  optional outline-mask transport, evidenced sprite animation metadata, pixel
-  destinations, and normalized UVs;
+  optional outline-mask transport, evidenced sprite animation metadata and
+  caller-supplied progress-selected UVs, pixel destinations, and normalized
+  UVs;
   `sprite_composite_plan`
   groups complete role sets for a future backend. It consumes player
   observations/events
@@ -124,8 +125,9 @@ types shared by core, MCP, bots, and frontends.
   fallback; outline-mask sources are now transported and bound but not blended;
   additional per-sprite tint sources and visible outline/glow compositing remain
   later boundaries. Player/current actor/Phase Device descriptor metadata is
-  carried through layer plans and grouped composites, but frame selection and
-  timing remain frontend responsibilities. The WGSL pass
+  carried through layer plans and grouped composites; callers may provide
+  normalized progress for pure UV selection, while timing remains a frontend
+  responsibility. The WGSL pass
   discards base fragments below the verified `0.1`
   alpha cutoff before source-alpha blending. The WGSL source is defined at the
   crate boundary so a native contract test can guard its binding and

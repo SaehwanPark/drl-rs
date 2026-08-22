@@ -129,6 +129,9 @@ documented in this file.
   frame rectangles, and metadata preservation through layer draws/composites.
   Browser timing, broader content animation, and capture-backed parity remain
   open.
+- Added caller-supplied normalized-progress layer planning: evidenced animated
+  descriptors can select frame-specific UVs deterministically, while the
+  existing frame-zero plan and browser output remain unchanged.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch

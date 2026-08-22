@@ -63,8 +63,8 @@ automated regressions, and human review.
   visible outline/glow blending remains open. Pure frontend effect progress
   and caller-supplied animation frame selection are now available; legacy
   player/actor/Phase Device frame metadata is now pinned at two frames and
-  500 ms, while browser scheduling, broader content animation, and capture
-  parity remain open.
+  500 ms, and callers can select frame UVs from normalized progress; browser
+  scheduling, broader content animation, and capture parity remain open.
 - `SPEC.md` contains the single active M8 slice; it is not a second roadmap.
 
 ## Milestones
@@ -159,10 +159,11 @@ base-color sprites with linear normalized atlas storage, a native-tested WGSL
 contract, fair lighting, the emissive red-channel floor, the legacy alpha
 cutoff, optional mask sampling with bounded Green Armor and Phase Device tint
 mappings, outline-mask GPU transport, pure caller-supplied animation frame
-selection, and evidenced player/actor/Phase Device animation metadata.
+selection, evidenced player/actor/Phase Device animation metadata, and
+progress-selected frame UV plans.
 Remaining work is visible outline/glow role-specific shader blending/layer
-compositing, additional per-sprite tint sourcing, broader animation scheduling
-and content metadata;
+compositing, additional per-sprite tint sourcing, browser animation scheduling
+and broader content metadata;
 implement
 capture-backed lighting/LUT parity,
 particles, animation/effect timing, HUD typography, cleared legacy or
