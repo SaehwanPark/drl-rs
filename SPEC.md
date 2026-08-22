@@ -39,14 +39,16 @@ carries the pinned yellow `StairsDown` tile color through that same mask path.
 Earlier M8 work carries the renderer-neutral `SpriteComposite::shadow` source
 into an optional
 outline-mask WebGPU binding, using the retained transparent fallback when an
-atlas has no shadow source. The shader receives the resource but leaves output
-unchanged. It also carries pinned two-frame/500 ms metadata for the current
+atlas has no shadow source. The current bounded follow-up composites the
+optional outline behind the base sprite with a tested straight-alpha equation;
+opaque base pixels remain unchanged and the resolved output still uses the
+verified alpha cutoff. It also carries pinned two-frame/500 ms metadata for the current
 player, actors, and Phase Device into renderer-neutral descriptors and grouped
 draws. This slice adds a caller-supplied normalized-progress layer-plan helper
 that selects those frame UVs deterministically while preserving the existing
 frame-zero API; no wall-clock scheduling is introduced. It also exposes pure
 elapsed-milliseconds selection with explicit loop/clamp policy over the pinned
-metadata. Visible outline/glow equations, broader animation timing/content, and
+metadata. The exact legacy outline equation, broader animation timing/content, and
 capture-backed audiovisual equivalence remain open.
 This slice also exposes elapsed-time layer-plan UV selection with explicit
 loop/clamp policy while preserving the existing frame-zero and normalized-
@@ -74,16 +76,16 @@ The delivered low-health follow-up also exposes the pinned blood-pulse target as
 health and caller-supplied elapsed milliseconds. It preserves the observed
 `current < max / 3` threshold, five-radian-per-second sine term, positive
 target guard, and `[0, 1]` bound without owning a clock or mutable smoothing
-state. The active follow-up adds `drl_render::low_health_pulse_state_step`, a
+state. The preceding follow-up adds `drl_render::low_health_pulse_state_step`, a
 caller-owned pure transition that preserves the legacy `aMSec / 500`
 move-toward rule and independent pending-target decay without inventing
 internal clamps. Low-life texture compositing, blur/LUT compositor execution,
 and capture-backed audiovisual parity remain explicitly open.
 The delivered post-process follow-up exposes the observed glow add, the
 declared/effective blur weights, and channel-swizzled LUT-coordinate
-normalization as pure renderer helpers. It
-does not create blur framebuffers, sample a LUT, blend outline masks, or claim
-capture-backed color parity.
+normalization as pure renderer helpers. It does not create blur framebuffers,
+sample a LUT, or claim capture-backed color parity. Outline-mask compositing is
+owned by the separate bounded WebGPU pass below.
 The preceding follow-up exposed pure horizontal/vertical blur tap plans with
 caller-supplied screen dimensions, normalized offsets, effective weights, and
 the observed center-alpha source index, plus a five-sample RGB/center-alpha
@@ -94,7 +96,7 @@ distinguishes direct scene drawing from captured-scene processing and preserves
 the observed optional horizontal/vertical blur then composite order across
 glow/LUT gates. It owns no framebuffer, texture, sampler, scheduling, or
 capture-parity behavior.
-The active follow-up now exposes `drl_render::explosion_mark_phase`, preserving
+The preceding follow-up exposes `drl_render::explosion_mark_phase`, preserving
 the pinned normalized-duration, three-bucket integer selector and its
 post-duration second-phase fallback. Delay scheduling, lifecycle, palette
 mapping, sprite rendering, and capture parity remain outside the helper.
@@ -102,7 +104,7 @@ It also exposes `drl_render::effect_segment_index_at_elapsed`, preserving the
 signed quotient and sign correction used by cell/item animation draws while
 rejecting zero durations and out-of-range results. Sprite, level, item, and
 lifecycle ownership remain outside the helper.
-The active follow-up also exposes
+The preceding follow-up also exposes
 `drl_render::kill_animation_segment_index_at_elapsed`, preserving the
 source's lead-delay branch, reverse-branch selection, integer segment quotient,
 and terminal clamp with explicit invalid-input rejection. Actor, sprite-table,
@@ -297,20 +299,30 @@ cross-browser acceptance claim.
 
 ## Delivered — M12 service-worker lifecycle contract
 
-Status: the active slice adds a dependency-free contract harness for the
+Status: the delivered slice adds a dependency-free contract harness for the
 generated worker's install, activate, and same-origin GET fetch branches. It
 checks precache population, stale-cache deletion, cache-first assets, network
 navigation fallback to the shell, and rejection of cross-origin or non-GET
 requests. These deterministic mocks are behavioral evidence, not full browser
 offline acceptance or cross-browser support.
 
-## Present — M12 release source-identity audit
+## Delivered — M12 release source-identity audit
 
-Status: the active slice requires `source_revision` to be either the explicit
+Status: the delivered slice requires `source_revision` to be either the explicit
 `unknown` fallback or a lowercase 40-character Git object identity before it
 participates in release-manifest and cache-version checks. This rejects
 malformed provenance without requiring signed releases or claiming repository
 history authenticity.
+
+## Present — M8 outline-mask compositing
+
+Status: the active slice adds a renderer-neutral straight-alpha contract for
+the optional shadow/outline source and applies the same outside-base equation
+in the WebGPU textured pass. Transparent fallback textures remain inert,
+opaque base pixels retain their color, and the resolved alpha continues through
+the existing `0.1` fragment cutoff. This is a bounded compositing behavior,
+not a claim that the exact legacy glow/outline equation or capture parity is
+recovered.
 
 ### Observable behavior
 
@@ -355,6 +367,10 @@ history authenticity.
   without making a browser-offline claim.
 - Release-manifest checks reject source revisions that are neither `unknown` nor
   a lowercase 40-character Git object identity.
+- `drl-render::outline_mask_composite` resolves the optional outline behind the
+  base sprite with straight-alpha weights and caller-supplied lighting;
+  `drl-web` applies the same equation to the optional outline texture before
+  the existing alpha cutoff.
 - `drl-audio` maps events to semantic cues. The WASM mixer uses generated tones,
   mute/volume settings, and user-gesture unlock; blocked audio never blocks
   gameplay.
@@ -412,8 +428,7 @@ history authenticity.
   `drl-render::post_process_lut_coordinate` preserve the observed post-process
   RGB add, `xzy` channel order, scale, offset, and coordinate clamp from the
   pinned shader. They consume caller-supplied values only; blur generation,
-  LUT sampling, outline blending, and capture parity remain outside the
-  current boundary.
+  LUT sampling, and capture parity remain outside the current boundary.
 - `drl-render::post_process_blur_taps` emits five normalized horizontal or
   vertical taps for valid caller-supplied screen dimensions. It preserves the
   pinned `weights[abs(i)]` effective weights and center-alpha index while
@@ -636,7 +651,7 @@ scripts/check-release-manifest.sh           PASS (after `scripts/build-web.sh`, 
 scripts/test-service-worker.sh               PASS (mocked lifecycle/fetch contract)
 scripts/check-browser-diagnostics.sh        PASS (via `scripts/check-web.sh`)
 scripts/check-browser-accessibility.sh      PASS (via `scripts/check-web.sh`)
-scripts/check-version.sh                    PASS (`0.1.7` projections and transition)
+scripts/check-version.sh                    PASS (`0.2.0` projections and transition)
 cargo check --locked -p drl-web --target wasm32-unknown-unknown  PASS
 cargo test -p drl-render                      PASS (pixel-grid, lighting, tone, and timeline contracts)
 cargo test -p drl-core --test batch_simulation PASS (fixed-seed cohort sample,
@@ -685,7 +700,7 @@ capture is available.
 - Legacy audio/music/fonts are not shipped until rights are documented.
 - Full audiovisual equivalence is M8: capture-backed tolerances, visual
   regressions, cue timing, and structured human comparison.
-- Visible outline/glow equations, effect ownership, broader content-specific
+- The exact legacy outline/glow equations, effect ownership, broader content-specific
   animation timing, additional per-sprite tint sources, and capture-backed
   legacy shader equivalence remain future M8 slices. The M11 cohort and
   tolerance/integrity boundaries intentionally record and validate evidence,
@@ -703,8 +718,9 @@ The fixed-seed cohort report, integrity gate, outcome-distribution view,
 compatible outcome comparison, and outcome-rate tolerance gate are covered by
 focused headless tests. The project-versioned cache policy is covered by
 static/build checks; the manifest-sidecar slice is covered by the
-release-manifest checker; the active service-worker lifecycle slice is covered
-by deterministic mocks; broader offline and release-hardening work remains.
+release-manifest checker; the service-worker lifecycle and source-identity
+slices are covered by deterministic checks; broader offline and release-
+hardening work remains.
 The pixel-scale
 viewport,
 atlas metadata, UV geometry, draw-plan source
@@ -717,8 +733,9 @@ selection, and
 the evidenced player/actor/Phase Device animation metadata, progress-driven
 frame plans, elapsed-time layer plans, caller-driven elapsed WebGPU forwarding,
 and bounded browser scheduling with visibility-lifecycle rebasing are covered
-by local checks and hosted WASM browser jobs. Continue M8 with visible
-outline/glow compositing, broader content, additional tint sources, or
+by local checks and hosted WASM browser jobs. The outline-mask compositing
+contract is covered by renderer and shader checks. Continue M8 with the exact
+legacy outline/glow equation, broader content, additional tint sources, or
 capture-backed measurement of
 lighting, effects, typography, and audio. Do not claim audiovisual parity from
 renderer-neutral grouping or the `NOT_RUN` legacy captures.

@@ -76,7 +76,8 @@ types shared by core, MCP, bots, and frontends.
   carrying atlas layers, imported source metadata, explicit layer roles, fair
   lighting, evidence-backed Green Armor/Phase Device/StairsDown colorization
   tint,
-  optional outline-mask transport, evidenced sprite animation metadata,
+  optional outline-mask transport and straight-alpha compositing, evidenced
+  sprite animation metadata,
   caller-supplied progress-selected UVs, elapsed-time playback math and layer
   plans, pixel destinations, and normalized
   UVs;
@@ -223,9 +224,10 @@ types shared by core, MCP, bots, and frontends.
   items/player equipped armor, the byte-quantized Phase Device value on visible
   ground items, and the pinned yellow StairsDown value. Missing optional roles
   use a retained transparent 1x1
-  fallback; outline-mask sources are now transported and bound but not blended;
-  additional per-sprite tint sources and visible outline/glow compositing remain
-  later boundaries. Player/current actor/Phase Device descriptor metadata is
+  fallback; outline-mask sources are transported, bound, and composited behind
+  base pixels with a renderer-neutral straight-alpha contract. Additional
+  per-sprite tint sources and exact legacy outline/glow parity remain later
+  boundaries. Player/current actor/Phase Device descriptor metadata is
   carried through layer plans and grouped composites; callers may provide
   normalized progress or elapsed-time playback for pure UV selection and layer
   planning, while wall-clock scheduling remains a frontend responsibility. The WGSL pass
@@ -252,8 +254,9 @@ types shared by core, MCP, bots, and frontends.
   logical direct/capture pass order. The declared entries 3–4 are
   retained as observed artifacts because the source indexes by `abs(i)`; the
   effective exported weights cover center/one-pixel/two-pixel offsets. These
-  helpers do not own framebuffers, blur sampling, LUT textures, outline
-  blending, or capture parity. The pass plan distinguishes direct scene draw
+  helpers do not own framebuffers, blur sampling, LUT textures, or capture
+  parity. `outline_mask_composite` owns only caller-supplied straight-alpha
+  color resolution; the pass plan distinguishes direct scene draw
   from captured scene input and carries only caller-supplied glow/LUT gates. The
   reducer intentionally does not renormalize RGB or clamp values and takes
   alpha only from the center sample.

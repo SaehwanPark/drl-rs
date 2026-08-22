@@ -62,10 +62,11 @@ automated regressions, and human review.
   tint for visible ground items/player equipped armor, the byte-quantized
   Phase Device tint for visible ground items, and the pinned yellow StairsDown
   tile tint; other current archetypes remain neutral. Additional per-sprite
-  tint sourcing, outline/glow role compositing
-  and capture-backed parity remain open. The optional outline-mask source is
-  now transported into the browser binding with a transparent fallback, but
-  visible outline/glow blending remains open. Pure frontend effect progress
+  tint sourcing and capture-backed parity remain open. The optional
+  outline-mask source is now transported into the browser binding with a
+  transparent fallback and composited behind the base sprite with a tested
+  straight-alpha equation; exact legacy glow/outline parity remains
+  capture-gated. Pure frontend effect progress
   and caller-supplied animation frame selection are now available; legacy
   player/actor/Phase Device frame metadata is now pinned at two frames and
   500 ms, and callers can select frame UVs from normalized progress or
@@ -75,7 +76,7 @@ automated regressions, and human review.
   content animation and capture parity remain open. A read-only capture
   manifest preflight now validates pinned metadata, rights, media hashes, and
   evidence status while preserving `NOT_RUN`.
-- `SPEC.md` contains the single active M12 release-source-identity-audit
+- `SPEC.md` contains the single active M8 outline-mask-compositing
   slice; it is not a second roadmap.
 - The first bounded M11 cohort slice adds explicit fixed-seed sample
   definitions and reports around the existing headless batch runner. Reports
@@ -104,7 +105,7 @@ automated regressions, and human review.
 - The delivered M12 service-worker follow-up runs dependency-free mocked lifecycle
   and fetch contracts for precache, stale-cache cleanup, navigation fallback,
   and same-origin GET gating; full browser-offline acceptance remains open.
-- The active M12 release-audit follow-up rejects malformed source revision
+- The delivered M12 release-audit follow-up rejects malformed source revision
   identities before manifest/cache policy is accepted; signed history
   authenticity remains open.
 - The M12 diagnostics slice adds a local accessible browser-support and
@@ -192,7 +193,7 @@ stdio runner, and replay-verified virtual-agent tests.
   capture-backed reference-scene comparison; legacy capture execution remains
   `NOT_RUN` on this host.
 
-### M8 — Audiovisual parity (pixel-scale slice delivered; parity planned)
+### M8 — Audiovisual parity (pixel-scale and outline-compositing slices delivered; parity planned)
 
 The first bounded pixel-scale layout slice is delivered: measure-free,
 observation-independent viewport math chooses centered integer square cells for
@@ -215,7 +216,10 @@ selection, evidenced player/actor/Phase Device animation metadata, and
 progress-selected frame UV plans plus elapsed-time loop/clamp selection,
 caller-supplied elapsed-time layer-plan math, WebGPU forwarding, and bounded
 browser scheduling, and the capture-manifest preflight with clean-checkout
-provenance and evidence classification.
+provenance and evidence classification. The optional outline-mask pass now
+resolves the shadow source behind the base sprite with straight-alpha weights
+and applies the existing fragment cutoff to the combined alpha; opaque base
+pixels are preserved and the exact legacy equation remains capture-gated.
 The preceding follow-up also exposed a pure source-derived low-health pulse
 target from fair HP and caller-supplied elapsed milliseconds. The current
 follow-up adds caller-owned pure smoothing and pending-target decay using the
@@ -286,8 +290,8 @@ best-effort WASM localStorage boundary with save/load/clear controls, and a
 versioned same-origin service-worker cache generated from the complete static
 bundle. Offline browser acceptance and cross-browser behavior remain
 `NOT_RUN`; signed release invalidation and broader PWA policy remain M12 work.
-Remaining work is visible outline/glow role-specific shader blending/layer
-compositing, additional per-sprite tint sourcing, broader content metadata;
+Remaining work is exact legacy outline/glow role parity, additional per-sprite
+tint sourcing, broader content metadata;
 capture-backed lighting/LUT parity,
 particles, animation/effect timing, HUD typography, cleared legacy or
 replacement audio, music transitions, and automated visual/audio regressions
@@ -321,7 +325,7 @@ absolute per-category rate deltas without adding a tolerance or significance
 claim. The delivered tolerance gate applies a caller-owned finite non-negative
 bound without adding statistical interpretation.
 
-### M12 — Static web productization and release hardening (manifest, cache, diagnostics, accessibility, sidecar, and worker-contract slices delivered; hardening open)
+### M12 — Static web productization and release hardening (manifest, cache, diagnostics, accessibility, sidecar, worker-contract, and source-audit slices delivered; hardening open)
 
 Produce reproducible static HTTPS/PWA bundles, asset license notices,
 cache/version policy, accessibility audit, browser support/error screens,
@@ -331,10 +335,10 @@ service-worker coverage; its cache-version follow-up derives the generated
 worker name from the project version and source-revision prefix; the diagnostics
 slice adds a local accessible browser-support/startup-diagnostics panel with recovery
  guidance and no telemetry; the delivered follow-up statically audits shell
- landmarks and control semantics. The active release-hardening follow-up adds a
- deterministic SHA-256 sidecar for the manifest and precaches it. The active
+ landmarks and control semantics. The delivered release-hardening follow-up adds a
+ deterministic SHA-256 sidecar for the manifest and precaches it. The delivered
  follow-up runs dependency-free mocked service-worker lifecycle/fetch checks;
- full browser-offline acceptance remains open. The active release-audit
+ full browser-offline acceptance remains open. The delivered release-audit
  follow-up validates source revision identity syntax. Signing, release audits, broader
 invalidation policy, dynamic accessibility acceptance, and untested-browser
 support remain open. WebGPU remains the 1.0 baseline; do not imply support for
