@@ -601,6 +601,19 @@ pub fn active_effect_frames(spans: &[EffectSpan], presentation_tick: u32) -> Vec
     .collect()
 }
 
+/// Maps normalized frontend progress to a caller-supplied zero-based frame.
+///
+/// Frame counts are intentionally supplied by the caller: this helper does
+/// not infer asset animation metadata or legacy timing.
+#[must_use]
+pub fn animation_frame_index(progress: f32, frame_count: u16) -> Option<u16> {
+  if frame_count == 0 || !progress.is_finite() || !(0.0..1.0).contains(&progress) {
+    return None;
+  }
+  let index = (progress * f32::from(frame_count)).floor() as u16;
+  Some(index.min(frame_count.saturating_sub(1)))
+}
+
 fn event_entity_ids(event: &GameEvent) -> [Option<EntityId>; 2] {
   match event {
     GameEvent::EntityMoved { entity_id, .. }
@@ -1021,6 +1034,29 @@ mod tests {
       active_effect_frames(&spans, 3),
       active_effect_frames(&spans, 3)
     );
+  }
+
+  #[test]
+  fn animation_frame_index_is_bounded_and_deterministic() {
+    assert_eq!(animation_frame_index(0.0, 4), Some(0));
+    assert_eq!(animation_frame_index(0.249_999, 4), Some(0));
+    assert_eq!(animation_frame_index(0.25, 4), Some(1));
+    assert_eq!(animation_frame_index(0.5, 4), Some(2));
+    assert_eq!(animation_frame_index(0.999_999, 4), Some(3));
+    assert_eq!(
+      animation_frame_index(0.999_999, 4),
+      animation_frame_index(0.999_999, 4)
+    );
+  }
+
+  #[test]
+  fn animation_frame_index_rejects_invalid_progress_and_counts() {
+    assert_eq!(animation_frame_index(0.0, 0), None);
+    assert_eq!(animation_frame_index(-0.01, 4), None);
+    assert_eq!(animation_frame_index(1.0, 4), None);
+    assert_eq!(animation_frame_index(f32::NAN, 4), None);
+    assert_eq!(animation_frame_index(f32::INFINITY, 4), None);
+    assert_eq!(animation_frame_index(f32::NEG_INFINITY, 4), None);
   }
 
   #[test]

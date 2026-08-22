@@ -56,9 +56,9 @@ automated regressions, and human review.
   the browser pass, plus the legacy textured-fragment alpha cutoff, while
   optional colorization-mask sampling with a neutral tint boundary is now
   wired through the browser pass; per-sprite tint sourcing, outline/glow role
-  compositing and capture-backed parity remain open. Pure
-  frontend effect progress is now available; legacy animation timing remains
-  capture-gated.
+  compositing and capture-backed parity remain open. Pure frontend effect
+  progress and caller-supplied animation frame selection are now available;
+  legacy animation timing and frame metadata remain capture-gated.
 - `SPEC.md` contains the single active M8 slice; it is not a second roadmap.
 
 ## Milestones
@@ -151,9 +151,11 @@ composite inputs, and validated browser source loading are available, and
 operations; the renderer now retains a 24-source GPU texture cache and samples
 base-color sprites with linear normalized atlas storage, a native-tested WGSL
 contract, fair lighting, the emissive red-channel floor, the legacy alpha
-cutoff, and optional mask sampling with a neutral tint boundary.
-Remaining work is per-sprite tint sourcing and outline/glow role-specific
-shader sampling/layer compositing; implement
+cutoff, optional mask sampling with a neutral tint boundary, and pure
+caller-supplied animation frame selection.
+Remaining work is per-sprite tint sourcing, outline/glow role-specific shader
+sampling/layer compositing, legacy animation timing, and frame metadata;
+implement
 capture-backed lighting/LUT parity,
 particles, animation/effect timing, HUD typography, cleared legacy or
 replacement audio, music transitions, and automated visual/audio regressions

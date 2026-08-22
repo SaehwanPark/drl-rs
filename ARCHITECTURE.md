@@ -80,6 +80,9 @@ types shared by core, MCP, bots, and frontends.
 - `active_effect_frames` reports normalized progress only for the supplied
   spans at the supplied frontend tick. It omits zero-duration/overflowed spans
   and cannot create new events or inspect simulation state.
+- `animation_frame_index` maps that normalized progress to a caller-supplied
+  nonzero frame count. It is pure frontend math and does not infer asset
+  metadata or legacy timing.
 - Atlas descriptors convert the pinned legacy one-based, sixteen-column
   sprite-sheet slots to bounded 32-pixel cells. Dimensions are metadata from
   the imported PNGs; no image decoding or texture upload occurs in this crate.
