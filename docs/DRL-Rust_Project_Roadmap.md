@@ -66,7 +66,8 @@ automated regressions, and human review.
   500 ms, and callers can select frame UVs from normalized progress or
   elapsed milliseconds with explicit loop/clamp policy; the WASM renderer now
   forwards that caller-owned selection through a bounded browser animation loop
-  while broader content animation and capture parity remain open.
+  and rebases its presentation clock on visibility changes while broader
+  content animation and capture parity remain open.
 - `SPEC.md` contains the single active M8 slice; it is not a second roadmap.
 
 ## Milestones
@@ -166,8 +167,7 @@ progress-selected frame UV plans plus elapsed-time loop/clamp selection,
 caller-supplied elapsed-time layer-plan math, WebGPU forwarding, and bounded
 browser scheduling.
 Remaining work is visible outline/glow role-specific shader blending/layer
-compositing, additional per-sprite tint sourcing, visibility-lifecycle
-hardening, and broader content metadata;
+compositing, additional per-sprite tint sourcing, broader content metadata;
 implement
 capture-backed lighting/LUT parity,
 particles, animation/effect timing, HUD typography, cleared legacy or
