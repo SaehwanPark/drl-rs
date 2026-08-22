@@ -22,7 +22,7 @@ player/actor/Phase Device animation metadata and progress-selected frame UVs,
 plus pure effect progress, caller-supplied animation frame selection,
 elapsed-time playback math and layer plans, a
 low-health scene tone, a pure source-derived low-health pulse target, and
-event-ordered timing. Full
+event-ordered timing, plus pure post-process glow/LUT math contracts. Full
 audiovisual equivalence, broader content, PWA persistence, and other browsers
 remain staged roadmap work. Do not read the placeholder M7 atlas rectangles as
 a fidelity claim.
@@ -104,7 +104,9 @@ legacy graphics metadata; it is not a dependency of the core.
   renderer-neutral animation metadata, and progress-selected frame UVs.
   It also exposes the pure source-derived low-health pulse target from fair
   health and caller-supplied elapsed time; smoothing and compositing remain
-  presentation-backend work.
+  presentation-backend work. The post-process helpers preserve the pinned
+  glow add and LUT coordinate math without creating a browser post-process
+  pipeline.
 - `crates/drl-audio`: semantic cues and WASM Web Audio mixer.
 - `crates/drl-web`: browser session, validated same-origin texture-source
   loading, renderer-owned WebGPU texture uploads, the partial base/mask/
