@@ -26,7 +26,8 @@ automated regressions, and human review.
 - M3 graphics import/checks are delivered. Controlled legacy runtime captures
   are `NOT_RUN` on the current arm64 macOS host because the available binary is
   Linux x86-64; the read-only manifest preflight validates this boundary and
-  records checkout dirty-state, requiring a clean checkout for promotion; see
+  records checkout dirty-state and evidence classification, requiring a clean
+  checkout and directly observed evidence for promotion; see
   `docs/reference-captures/manifest.md`.
 - M7 browser session/WebGPU/WASM functional acceptance passed locally and in
   remote web-CI run `32538527707` for the merged M7 head; reference-scene
@@ -171,7 +172,7 @@ selection, evidenced player/actor/Phase Device animation metadata, and
 progress-selected frame UV plans plus elapsed-time loop/clamp selection,
 caller-supplied elapsed-time layer-plan math, WebGPU forwarding, and bounded
 browser scheduling, and the capture-manifest preflight with clean-checkout
-provenance.
+provenance and evidence classification.
 Remaining work is visible outline/glow role-specific shader blending/layer
 compositing, additional per-sprite tint sourcing, broader content metadata;
 implement

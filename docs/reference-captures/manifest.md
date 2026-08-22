@@ -16,6 +16,11 @@ The machine-readable manifest also records `legacy_dirty_state=clean` or
 `READY_FOR_CONTROLLED_CAPTURE`, `INCONCLUSIVE`, or `PASS` record must say
 `clean`; the current dirty checkout remains `NOT_RUN`.
 
+Each record carries `evidence_classification` using the proposal vocabulary:
+`observed`, `inferred`, `implementation-artifact`, `ambiguous`, or
+`drl-rust-decision`. Promotable statuses require `observed`; a non-observed
+classification cannot become capture evidence by inference.
+
 Required scenes:
 
 | Scene | Media | Rights/acceptance |
@@ -27,6 +32,6 @@ Required scenes:
 | inventory and HUD | still | font rights recorded before bundling |
 | level transition | still + video + music cue | music rights recorded before bundling |
 
-Every record must include legacy revision, dirty state, executable SHA-256,
-build/config flags, front-end, viewport, actions, capture tool versions,
-hashes, and an observed/inferred/provenance classification.
+Every record must include legacy revision, dirty state, evidence
+classification, executable SHA-256, build/config flags, front-end, viewport,
+actions, capture tool versions, hashes, and provenance.

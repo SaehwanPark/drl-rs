@@ -155,7 +155,8 @@ documented in this file.
   checks the pinned revision, required fidelity scenes, executable/hash
   metadata, status vocabulary, placeholder policy, and recorded checkout
   dirty-state while preserving `NOT_RUN` on hosts without the controlled Linux
-  x86-64 runtime. Promotable capture statuses now require a clean checkout.
+  x86-64 runtime. Promotable capture statuses now require a clean checkout and
+  directly observed evidence classification.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch
