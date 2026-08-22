@@ -74,8 +74,8 @@ item cannot be mistaken for an implemented capability.
   timing, missile steps/ray spacing, and screen-shake fading. They do not own
   GPU resources or claim capture parity.
 - [x] Particle burst origin, direction, range sampling, decal cell mapping,
-  decal pixel placement, and caller-resolved in-bounds/non-liquid/
-  non-blocking eligibility are implemented.
+  decal pixel placement, caller-resolved in-bounds/non-liquid/non-blocking
+  eligibility, and the caller-owned sprite insertion request are implemented.
 - [x] Read-only capture-manifest preflight validates pinned revision/scenes,
   clean checkout, rights status, media hashes, and evidence classification;
   unavailable captures remain `NOT_RUN`/`INCONCLUSIVE`.
@@ -122,13 +122,12 @@ item cannot be mistaken for an implemented capability.
 - [ ] Signed releases, offline acceptance, dynamic accessibility, broader
   invalidation policy, and untested-browser support.
 
-## Present — M8 particle-decal insertion request
+## Delivered — M8 particle-decal insertion request
 
-Status: this is the single active implementation slice. Version 0.2.8 already
-delivers placement and eligibility; this slice packages those results with the
-caller-provided decal sprite identifier. It must remain a renderer-neutral
-request and must not introduce map storage, particle-engine state, or rendering
-side effects.
+Status: version 0.2.9 packages the accepted placement and eligibility results
+with the caller-provided decal sprite identifier. The request remains
+renderer-neutral and introduces no map storage, particle-engine state, or
+rendering side effects.
 
 ### Legacy evidence boundary
 
@@ -138,10 +137,10 @@ The legacy `DecalCallback` in `src/drlparticles.pas` performs these steps:
 - [x] Maps the rounded world position to a one-based cell and offset pixel
   position.
 - [x] Rejects out-of-bounds, liquid, or movement-blocking cells.
-- [ ] Adds the accepted pixel position and caller-provided `aDecalSprite` to
-  level decal storage. Storage is intentionally outside this slice.
+- [x] Preserves the accepted pixel position and caller-provided `aDecalSprite`
+  as a pure insertion request; level decal storage remains outside this slice.
 
-### Proposed pure contract
+### Delivered pure contract
 
 - Input: caller-rounded world position `[i32; 2]`, caller-resolved cell flags,
   and caller-provided decal sprite identifier `u32`.
@@ -151,16 +150,33 @@ The legacy `DecalCallback` in `src/drlparticles.pas` performs these steps:
 - Ownership: the caller selects the sprite, owns decal storage and lifetime,
   and decides whether/how a renderer draws the request.
 
+### Delivered acceptance criteria
+
+- [x] Reuse the existing checked placement and eligibility helpers rather than
+  repeating offset or flag logic.
+- [x] Preserve the legacy cell, pixel, and sprite identifier exactly.
+- [x] Reject every ineligible cell and every unrepresentable offset.
+- [x] Add focused tests for accepted, liquid, blocked, out-of-bounds, combined-
+  flag, and offset-overflow cases.
+- [x] Keep the helper pure, deterministic, and independent of `drl-core`, map
+  storage, RNG, particle-engine state, WebGPU resources, and browser timing.
+
+## Present — M8 particle-decal storage boundary
+
+Status: the next bounded slice will define how accepted insertion requests are
+retained in deterministic order without coupling `drl-core` to renderer state.
+It must preserve every request exactly and leave sprite selection, map ownership,
+particle spawning, and GPU rendering to callers.
+
 ### Acceptance criteria
 
-- [ ] Reuse the existing checked placement and eligibility helpers rather than
-  repeating offset or flag logic.
-- [ ] Preserve the legacy cell, pixel, and sprite identifier exactly.
-- [ ] Reject every ineligible cell and every unrepresentable offset.
-- [ ] Add focused tests for accepted, liquid, blocked, out-of-bounds, combined-
-  flag, and offset-overflow cases.
-- [ ] Keep the helper pure, deterministic, and independent of `drl-core`, map
-  storage, RNG, particle-engine state, WebGPU resources, and browser timing.
+- [ ] Preserve insertion order and duplicate sprite/position requests.
+- [ ] Keep storage deterministic, bounded by caller policy, and independent of
+  map flags, RNG, particle-engine state, WebGPU resources, and browser timing.
+- [ ] Reject or report capacity policy explicitly rather than silently dropping
+  accepted requests.
+- [ ] Add focused tests for empty, append, duplicate, and capacity-boundary
+  behavior.
 
 ## Shared observable behavior
 
@@ -213,15 +229,14 @@ The legacy `DecalCallback` in `src/drlparticles.pas` performs these steps:
 - [x] Pure evaluation APIs: `CohortConfig`, `CohortReport`, integrity checks,
   outcome/telemetry projections, compatible comparisons, and tolerance gates.
 - [x] Pure M8 particle APIs: burst origin/direction/range, decal cell mapping,
-  `ParticleDecalPlacement`, and `particle_decal_cell_is_eligible`.
-- [ ] Present slice API: `ParticleDecalInsertion` and its constructor described
-  above are not implemented until the active slice is delivered.
+  `ParticleDecalPlacement`, `particle_decal_cell_is_eligible`,
+  `ParticleDecalInsertion`, and its constructor.
 - [x] `drl-core` and `drl-protocol` have no presentation, browser, audio,
   filesystem, network, or MCP dependency.
 
 ## Verification
 
-### Baseline already verified on 0.2.8
+### Baseline already verified on 0.2.9
 
 - [x] `sh scripts/check-repository.sh` — repository tests and harness checks.
 - [x] `sh scripts/check-assets.sh` — 32 imported PNGs, license, and hashes.
@@ -232,23 +247,23 @@ The legacy `DecalCallback` in `src/drlparticles.pas` performs these steps:
   release bundle and 44-artifact manifest.
 - [x] `scripts/check-version.sh main` — version projections and transition.
 - [x] `cargo fmt --all -- --check` and `git diff --check`.
-- [x] Hosted PR checks for the preceding eligibility slice, including repository
-  run `32599529226` and WASM browser job `97095620224`.
+- [x] Hosted PR checks for the insertion slice, including repository run
+  `32599529226` and WASM browser job `97095620224`.
 - [ ] Reference-capture execution and audiovisual comparison remain `NOT_RUN`.
 
-### Present-slice verification
+### Present storage-slice verification
 
-- [ ] Focused `drl-render` tests cover all insertion acceptance criteria.
+- [ ] Focused `drl-render` tests cover all storage acceptance criteria.
 - [ ] Full repository, asset, web, build, manifest, formatting, and version
   checks pass after implementation.
-- [ ] Hosted repository and WASM jobs pass for the insertion PR.
+- [ ] Hosted repository and WASM jobs pass for the storage PR.
 
 ## Future
 
 - [ ] M8 exact legacy outline/glow and lighting/LUT equivalence from approved
   captures.
 - [ ] M8 broader tint sources, content animation/effect timing, HUD typography,
-  particle decal storage/rendering, cleared replacement audio/music, and
+  particle decal rendering, cleared replacement audio/music, and
   automated visual/audio regression.
 - [ ] M9 broader typed content migration with fairness, replay, provenance, and
   asset-mapping gates.

@@ -19,6 +19,7 @@ capabilities, not an architecture to copy into `drl-core`.
 | Particle decal cell mapping | `drlparticles.pas` | caller-owned renderer cell math | observed |
 | Particle decal placement | `drlparticles.pas` | caller-owned renderer cell/pixel math | observed |
 | Particle decal eligibility | `drlparticles.pas` | caller-owned renderer eligibility gate | observed |
+| Particle decal insertion | `drlparticles.pas` | caller-owned renderer insertion request | observed |
 | Animation sequencing | `drlanimation.pas` | deterministic presentation timeline | observed |
 | HUD, inventory, low-life treatment | `drlgfxio.pas`; `low_life_glow.png` | semantic DOM HUD plus pixel effects | observed/inferred |
 | LUT color grading | `lut_*.png` | optional M8 post-process | observed |

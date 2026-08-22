@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.9]
+
+- Added the bounded M8 particle-decal insertion request: accepted placement
+  coordinates now travel with the unchanged caller-provided sprite identifier,
+  while sprite selection, decal storage, particle spawning, and rendering stay
+  caller-owned.
+
 ## [0.2.8]
 
 - Added the bounded M8 particle-decal eligibility contract: caller-resolved

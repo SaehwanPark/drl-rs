@@ -30,7 +30,7 @@ replays, and regression testing.
     shot accuracy, damage, kill, pickup, and item-use totals/rates without
     inferring balance conclusions.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.8`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.9`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:
@@ -43,9 +43,10 @@ replays, and regression testing.
     floor, optional outline-mask compositing, and animation frame
     metadata/selection.
   - Pure contracts cover effect timing, low-health tone/pulse, explosion marks,
-    movement and missile progress, screen-shake fade, particle origins and
-    burst directions/range sampling, decal-cell/placement mapping, and
-    post-process glow/LUT math without claiming full backend fidelity.
+    movement and missile progress, screen-shake fade, particle origins,
+    burst directions/range sampling, decal cell/placement/eligibility,
+    caller-owned insertion requests, and post-process glow/LUT math without
+    claiming full backend fidelity.
 - Staged work:
   - Full audiovisual equivalence, broader content migration, PWA persistence,
     and support for other browsers remain roadmap work.
@@ -129,7 +130,8 @@ legacy graphics metadata; it is not a dependency of the core.
   - Pure scene construction, pixel viewport layout, layer/composite plans,
     lighting, animation selection, and observed tint mappings.
   - Source-derived contracts for health tone/pulse, effect and missile timing,
-    screen shake, particle origins, and post-process glow/LUT math.
+    screen shake, particle origins, decal placement/eligibility/insertion, and
+    post-process glow/LUT math.
   - Renderer/backend and full audiovisual equivalence remain staged work.
 - `crates/drl-audio`: semantic cues and WASM Web Audio mixer.
 - `crates/drl-web`:
