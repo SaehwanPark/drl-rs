@@ -234,6 +234,11 @@ The current tile-definition follow-up centralizes the five existing tile
 semantics in an immutable protocol-owned table while preserving core map/FOV
 behavior, observations, replay/protocol schemas, and separate core storage;
 broader level/asset migration and legacy parity remain open.
+The current level-content follow-up centralizes the existing core default and
+level-descent policy in one immutable `standard-procedural` definition while
+preserving custom generator configs, the MCP five-room policy, seeded output,
+and replay/MCP boundaries; broader level conversion and legacy parity remain
+open.
 The current M10 follow-ups add a versioned fixed-M4 command-history snapshot,
 bounded corruption/version handling, transactional replay restore, a
 best-effort WASM localStorage boundary with save/load/clear controls, and a

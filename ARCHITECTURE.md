@@ -32,6 +32,8 @@ types shared by core, MCP, bots, and frontends.
   applied to a caller-supplied roll and `monster_roll_definition` owns the
   pure four-outcome generated-monster lookup. Core `Tile` values delegate
   physical semantics through the protocol-owned immutable `TileKind` table.
+  `drl-core::level_definition` owns the immutable standard procedural-level
+  policy; callers can still supply custom `LevelGeneratorConfig` values.
 - `drl-protocol`: stable semantic boundary. Player observations now include
   map dimensions and player HP; actor/item views include stable presentation
   identifiers. `MonsterKind::definition()` is the Rust-owned typed content

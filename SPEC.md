@@ -165,6 +165,13 @@ for the five existing `TileKind` semantics and routes core `Tile` physical
 flags through it. Map indexing, FOV, observations, replay V1, and protocol
 schemas remain unchanged; broader level/asset migration and legacy parity stay
 open.
+The current level-content follow-up adds one immutable Rust-owned
+`standard-procedural` definition for the existing core default (40x20, six
+rooms, room sizes 4..=8, and two monster/item attempts per populated room).
+Default construction and level descent read that record; caller-owned custom
+configs and the MCP session's five-room policy remain explicit. Generation,
+RNG consumption, replay, and MCP schemas remain unchanged; broader level
+conversion and legacy parity stay open.
 The current M10 follow-ups add a versioned fixed-M4 command-history snapshot
 token with a bounded codec, transactional deterministic replay, a best-effort
 WASM `localStorage` boundary, and a versioned same-origin service-worker cache

@@ -9,6 +9,7 @@ use std::collections::{HashSet, VecDeque};
 
 use crate::grid::{Map, Tile};
 use crate::item::Item;
+use crate::level_definition::{LevelDefinition, standard_procedural};
 use crate::loot_definition::generated_loot_definition_for_roll;
 use crate::monster_roll_definition::generated_monster_definition_for_roll;
 use crate::rng::GameRng;
@@ -72,14 +73,28 @@ pub struct LevelGeneratorConfig {
 
 impl Default for LevelGeneratorConfig {
   fn default() -> Self {
-    Self {
-      width: 40,
-      height: 20,
-      max_rooms: 6,
-      min_room_size: 4,
-      max_room_size: 8,
-      max_monsters_per_room: 2,
-      max_items_per_room: 2,
+    standard_procedural().config()
+  }
+}
+
+impl LevelDefinition {
+  /// Materializes this immutable profile with its default dimensions.
+  #[must_use]
+  pub const fn config(self) -> LevelGeneratorConfig {
+    self.config_for_dimensions(self.width, self.height)
+  }
+
+  /// Materializes this profile while replacing only its map dimensions.
+  #[must_use]
+  pub const fn config_for_dimensions(self, width: u32, height: u32) -> LevelGeneratorConfig {
+    LevelGeneratorConfig {
+      width,
+      height,
+      max_rooms: self.max_rooms,
+      min_room_size: self.min_room_size,
+      max_room_size: self.max_room_size,
+      max_monsters_per_room: self.max_monsters_per_room,
+      max_items_per_room: self.max_items_per_room,
     }
   }
 }
@@ -348,6 +363,47 @@ mod tests {
 
     let r3 = Room::new(15, 15, 4, 4);
     assert!(!r1.intersects(&r3));
+  }
+
+  #[test]
+  fn standard_profile_matches_current_default_and_explicit_generation() {
+    let profile = standard_procedural();
+    let table_config = profile.config();
+    let explicit_config = LevelGeneratorConfig {
+      width: 40,
+      height: 20,
+      max_rooms: 6,
+      min_room_size: 4,
+      max_room_size: 8,
+      max_monsters_per_room: 2,
+      max_items_per_room: 2,
+    };
+
+    assert_eq!(table_config, LevelGeneratorConfig::default());
+    assert_eq!(table_config, explicit_config);
+    assert_eq!(
+      profile.config_for_dimensions(31, 17),
+      LevelGeneratorConfig {
+        width: 31,
+        height: 17,
+        ..explicit_config
+      }
+    );
+
+    for seed in [1, 42, 12_345] {
+      let mut table_rng = GameRng::from_seed(seed);
+      let mut table_counter = 0;
+      let table_level = LevelGenerator::generate(&table_config, &mut table_rng, &mut table_counter);
+
+      let mut explicit_rng = GameRng::from_seed(seed);
+      let mut explicit_counter = 0;
+      let explicit_level =
+        LevelGenerator::generate(&explicit_config, &mut explicit_rng, &mut explicit_counter);
+
+      assert_eq!(table_level, explicit_level, "seed {seed}");
+      assert_eq!(table_rng, explicit_rng, "seed {seed} RNG");
+      assert_eq!(table_counter, explicit_counter, "seed {seed} item counter");
+    }
   }
 
   #[test]
