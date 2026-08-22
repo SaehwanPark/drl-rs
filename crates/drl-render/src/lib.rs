@@ -743,7 +743,8 @@ pub fn renderer_name() -> &'static str {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use drl_core::Game;
+  use drl_core::{Game, scenario::Scenario};
+  use drl_protocol::{ItemSpawnKind, PlayerSpawnConfig};
 
   #[test]
   fn pixel_viewport_centers_square_integer_cells() {
@@ -854,6 +855,33 @@ mod tests {
     };
     assert_eq!(equipped_colorization_tint(None), [0, 0, 0, 0]);
     assert_eq!(equipped_colorization_tint(Some(&armor)), [0, 255, 0, 255]);
+  }
+
+  #[test]
+  fn scene_and_composites_forward_observed_green_armor_tint() {
+    let mut scenario =
+      Scenario::from_ascii("green armor", "", "#####\n#@..#\n#####").expect("scenario");
+    scenario.player_config = Some(PlayerSpawnConfig {
+      equipped_armor: Some(ItemSpawnKind::GreenArmor),
+      ..PlayerSpawnConfig::default()
+    });
+    let observation = scenario.instantiate().expect("game").observe_player();
+    let scene = RenderScene::from_observation(&observation);
+    assert_eq!(
+      scene
+        .actors
+        .iter()
+        .find(|actor| actor.is_player)
+        .map(|actor| actor.colorization_tint),
+      Some([0, 255, 0, 255])
+    );
+    let viewport = PixelViewport::fit(scene.map_width, scene.map_height, 96, 32);
+    let composites = sprite_composite_plan(&layer_draw_plan(&scene, viewport));
+    assert!(
+      composites
+        .iter()
+        .any(|composite| composite.colorization_tint == [0, 255, 0, 255])
+    );
   }
 
   #[test]

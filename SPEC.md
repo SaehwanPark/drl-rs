@@ -140,17 +140,19 @@ equations, and capture-backed audiovisual equivalence remain open.
   survive and all other lighting behavior is unchanged.
 - The textured fragment shader samples an optional colorization-mask source and
   adds its RGB contribution multiplied by the supplied per-vertex tint. The
-  current fair scene path supplies a neutral zero tint, and a transparent
-  fallback is used when a mask source is unavailable.
+  fair scene path supplies the evidence-backed Green Armor tint for the
+  applicable visible ground-item/player draws and a neutral zero tint for
+  other current roles; a transparent fallback is used when a mask source is
+  unavailable.
 - `drl-render::item_colorization_tint` maps the currently implemented
   `GreenArmor` item to the evidence-backed `[0, 255, 0, 255]` tint and keeps
   every other archetype neutral. Visible ground-item layer draws carry that
   tint; tiles and non-player actors remain neutral, while the player draw uses
   the observed equipped armor when it is `GreenArmor`.
 - The WGSL source is shared with a native shader-contract test that checks the
-  base/emissive/mask samples, fair-lighting `max`, neutral tint input, alpha
-  cutout, and output path; native tests therefore guard the WASM-only runtime
-  shader text.
+  base/emissive/mask samples, fair-lighting `max`, tint forwarding, neutral
+  fallback input, alpha cutout, and output path; native tests therefore guard
+  the WASM-only runtime shader text.
 - Every layer draw carries its fair `LightingBand`: explored tile memory uses
   the fixed explored factor, while visible tiles/items/actors use full light.
 - `drl-render::active_effect_frames` returns normalized `[0, 1)` progress for
