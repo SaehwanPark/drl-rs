@@ -205,6 +205,14 @@ sample definition match; it reports absolute win-rate and average-turn deltas
 and a boolean tolerance result. Non-finite or negative tolerances are rejected
 without changing either report.
 
+## Present — M11 cohort report integrity
+
+Status: the active slice adds `CohortReport::validate`, a pure evidence gate
+that requires the configured record count, contiguous wrapping seed sequence,
+per-record replay seed identity, and exact `BatchSummary` recomputation to
+agree. It reports the first integrity failure without rerunning episodes or
+interpreting the resulting metrics.
+
 ## Delivered — M12 static release manifest and source-derived cache version
 
 Status: this delivered slice extends `scripts/build-web.sh` with a deterministic
@@ -226,9 +234,9 @@ revision (`v1-` plus its first 12 characters), with
 template remains a marker-bearing source; only the generated bundle receives
 the concrete version.
 
-## Present — M12 browser support and error diagnostics
+## Delivered — M12 browser support and error diagnostics
 
-Status: the active slice adds a static, accessible diagnostics panel to the
+Status: this delivered slice adds a static, accessible diagnostics panel to the
 browser shell. It reports missing WebGPU, startup/rendering failures, and
 offline-cache registration warnings with actionable desktop-WebGPU guidance.
 Diagnostics are local DOM text only: they do not inspect authoritative game
@@ -255,6 +263,9 @@ state, send telemetry, or broaden the WebGPU support claim.
 - `CohortReport::compare_with` compares compatible reports using caller-owned
   non-negative finite win-rate and average-turn tolerances. It rejects policy
   or sample-definition mismatches and never mutates either report.
+- `CohortReport::validate` rejects incomplete or tampered evidence when record
+  count, wrapping seed order, replay seed identity, or aggregate summary no
+  longer matches the cohort definition; it never reruns a simulation.
 - `drl-audio` maps events to semantic cues. The WASM mixer uses generated tones,
   mute/volume settings, and user-gesture unlock; blocked audio never blocks
   gameplay.
@@ -509,7 +520,9 @@ state, send telemetry, or broaden the WebGPU support claim.
   offline acceptance, and cross-browser claims remain later M12/M13 work; the
   source-derived cache version is only deterministic naming, not a release
   invalidation policy. The diagnostics panel is a local recovery surface, not
-  a browser compatibility guarantee or telemetry channel.
+  a browser compatibility guarantee or telemetry channel. Cohort report
+  integrity validation is an evidence-consistency gate, not a balance,
+  difficulty, or statistical-significance claim.
 
 ### Verification
 
@@ -526,8 +539,8 @@ cargo check --locked -p drl-web --target wasm32-unknown-unknown  PASS
 cargo test -p drl-render                      PASS (pixel-grid, lighting, tone, and timeline contracts)
 cargo test -p drl-core --test batch_simulation PASS (fixed-seed cohort sample,
                                              identity, wrapping, replay
-                                             determinism, and tolerance-gate
-                                             contracts)
+                                             determinism, tolerance-gate, and
+                                             integrity contracts)
 cargo test -p drl-assets                      PASS (slot mappings, atlas bounds,
                                              layer sets, roles, descriptor order,
                                              UVs)
@@ -571,14 +584,15 @@ capture is available.
 - Visible outline/glow equations, effect ownership, broader content-specific
   animation timing, additional per-sprite tint sources, and capture-backed
   legacy shader equivalence remain future M8 slices. The M11 cohort and
-  tolerance boundaries intentionally record evidence and declared deltas
-  without claiming a balance result, difficulty target, or statistical
-  significance.
+  tolerance/integrity boundaries intentionally record and validate evidence
+  and declared deltas without claiming a balance result, difficulty target, or
+  statistical significance.
 
 ## Next
 
-The fixed-seed cohort report is covered by focused headless tests and should be
-used for the next M11 balance/evaluation slice. The pixel-scale viewport,
+The fixed-seed cohort report and integrity gate are covered by focused
+headless tests; the next M11 slice is balance/evaluation work. The pixel-scale
+viewport,
 atlas metadata, UV geometry, draw-plan source
 metadata, fair lighting factors, effect progress, layer input roles, grouped
 sprite composites, validated browser source loading, renderer-owned GPU

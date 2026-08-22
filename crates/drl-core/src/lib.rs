@@ -31,7 +31,8 @@ pub use actor::Actor;
 pub use agent::{AgentPolicy, ExplorerBot, GreedyCombatBot, RandomBot};
 pub use ai::{MonsterAction, MonsterAi};
 pub use batch::{
-  BatchRunner, CohortComparison, CohortConfig, CohortReport, CohortTolerances, EpisodeRecord,
+  BatchRunner, CohortComparison, CohortConfig, CohortReport, CohortReportError, CohortTolerances,
+  EpisodeRecord,
 };
 pub use combat::CombatResolver;
 pub use fov::{DEFAULT_VISION_RADIUS, compute_fov, has_line_of_sight, line_points};
