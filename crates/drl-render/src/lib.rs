@@ -101,6 +101,31 @@ pub struct EffectSpan {
   pub duration_ticks: u16,
 }
 
+/// Three color/frame phases used by the legacy explosion-mark effect.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum ExplosionMarkPhase {
+  First,
+  Second,
+  Third,
+}
+
+/// Selects the source-derived explosion-mark phase.
+///
+/// The legacy effect normalizes zero duration to one millisecond and divides
+/// elapsed time into three integer phases. Values at or beyond the duration
+/// take the source's fallback second phase. This helper owns no lifecycle,
+/// scheduling, palette selection, or sprite rendering.
+#[must_use]
+pub fn explosion_mark_phase(elapsed_ms: u64, duration_ms: u64) -> ExplosionMarkPhase {
+  let duration_ms = if duration_ms == 0 { 1 } else { duration_ms };
+  match (elapsed_ms as u128) * 3 / duration_ms as u128 {
+    0 => ExplosionMarkPhase::First,
+    1 => ExplosionMarkPhase::Second,
+    2 => ExplosionMarkPhase::Third,
+    _ => ExplosionMarkPhase::Second,
+  }
+}
+
 /// Visibility-derived presentation bands for deterministic scene shading.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum LightingBand {
@@ -1887,6 +1912,35 @@ mod tests {
           duration_ticks: 2,
         },
       ]
+    );
+  }
+
+  #[test]
+  fn explosion_mark_phase_matches_three_integer_buckets_and_fallback() {
+    assert_eq!(explosion_mark_phase(0, 10), ExplosionMarkPhase::First);
+    assert_eq!(explosion_mark_phase(3, 10), ExplosionMarkPhase::First);
+    assert_eq!(explosion_mark_phase(4, 10), ExplosionMarkPhase::Second);
+    assert_eq!(explosion_mark_phase(6, 10), ExplosionMarkPhase::Second);
+    assert_eq!(explosion_mark_phase(7, 10), ExplosionMarkPhase::Third);
+    assert_eq!(explosion_mark_phase(9, 10), ExplosionMarkPhase::Third);
+    assert_eq!(explosion_mark_phase(10, 10), ExplosionMarkPhase::Second);
+  }
+
+  #[test]
+  fn explosion_mark_phase_normalizes_zero_and_avoids_elapsed_overflow() {
+    assert_eq!(explosion_mark_phase(0, 0), ExplosionMarkPhase::First);
+    assert_eq!(explosion_mark_phase(1, 0), ExplosionMarkPhase::Second);
+    assert_eq!(
+      explosion_mark_phase(u64::MAX, 1),
+      ExplosionMarkPhase::Second
+    );
+    assert_eq!(
+      explosion_mark_phase(u64::MAX - 1, u64::MAX),
+      ExplosionMarkPhase::Third
+    );
+    assert_eq!(
+      explosion_mark_phase(u64::MAX, u64::MAX),
+      ExplosionMarkPhase::Second
     );
   }
 

@@ -89,11 +89,15 @@ caller-supplied screen dimensions, normalized offsets, effective weights, and
 the observed center-alpha source index, plus a five-sample RGB/center-alpha
 reduction. It rejects zero dimensions and does not execute sampling or own a
 render pass.
-The active follow-up now exposes `drl_render::post_process_pass_plan`, which
+The preceding follow-up exposed `drl_render::post_process_pass_plan`, which
 distinguishes direct scene drawing from captured-scene processing and preserves
 the observed optional horizontal/vertical blur then composite order across
 glow/LUT gates. It owns no framebuffer, texture, sampler, scheduling, or
 capture-parity behavior.
+The active follow-up now exposes `drl_render::explosion_mark_phase`, preserving
+the pinned normalized-duration, three-bucket integer selector and its
+post-duration second-phase fallback. Delay scheduling, lifecycle, palette
+mapping, sprite rendering, and capture parity remain outside the helper.
 Sampler edge/wrap addressing remains a backend and capture concern; the helper
 does not select it.
 
@@ -164,6 +168,11 @@ does not select it.
   LUT-only, and captured scene plus horizontal blur, vertical blur, and
   composite when glow is enabled. The returned feature flags do not validate
   resources or execute a backend pass.
+- `drl-render::explosion_mark_phase` maps caller-supplied elapsed/duration units
+  through the source `(elapsed * 3) div max(duration, 1)` selector: buckets
+  zero, one, and two select the first, second, and third phases, while later
+  buckets use the observed second-phase fallback. It owns no delay queue,
+  sprite, palette, or animation lifecycle.
 - WebGPU uses that shared clear-color rule; health-tone presentation remains an
   effect and cannot reveal hidden world state.
 - `drl-render::effect_timeline` preserves event order and assigns each bounded

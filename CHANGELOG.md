@@ -186,6 +186,11 @@ documented in this file.
   observed captured-scene, optional horizontal/vertical blur, and composite
   stages across glow/LUT gate combinations. It owns no GPU resources, sampling,
   or capture-parity claim.
+- Added pure `drl-render::explosion_mark_phase` selection for the pinned
+  three-bucket integer effect rule, including zero-duration normalization,
+  overflow-safe arithmetic, and the observed post-duration second-phase
+  fallback. Delay scheduling, palette mapping, sprite rendering, and capture
+  parity remain outside the helper.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch
