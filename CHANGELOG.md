@@ -166,6 +166,10 @@ documented in this file.
   The helper consumes caller-supplied elapsed time and exposes only the
   instantaneous bounded target; legacy smoothing, low-life compositing, and
   capture-backed LUT/glow parity remain open.
+- Added pure `drl-render::low_health_pulse_state_step` planning for the pinned
+  `aMSec / 500` move-toward smoothing and independent pending-target decay.
+  State and elapsed time remain caller-owned; draw-time clamping, texture
+  compositing, and capture-backed parity remain open.
 - Added pure post-process glow contracts: the pinned declared/effective blur
   weights (including the source's unused declared entries),
   `post_process_glow_color`'s `1.6 * blur alpha` add, and the channel-swizzled

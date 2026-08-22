@@ -186,6 +186,50 @@ pub fn low_health_pulse_target_alpha(player_hp: Option<HitPoints>, elapsed_ms: u
   target.clamp(0.0, 1.0)
 }
 
+/// Caller-owned low-health pulse values after one presentation-time step.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct LowHealthPulseState {
+  /// Smoothed pulse alpha before any draw-time clamping.
+  pub alpha: f32,
+  /// Pending event target after its independent decay.
+  pub pending_target_alpha: f32,
+}
+
+/// Applies the pinned low-health pulse smoothing and pending-target decay.
+///
+/// The legacy presentation moves its current alpha toward its caller-selected
+/// target by at most `elapsed_ms / 500`, then decays the pending target by that
+/// same step. The values are intentionally not clamped here: the legacy
+/// compositor clamps only when drawing, and pulse events may carry values above
+/// one. Callers own target selection, state, and the clock.
+#[must_use]
+pub fn low_health_pulse_state_step(
+  current_alpha: f32,
+  selected_target_alpha: f32,
+  pending_target_alpha: f32,
+  elapsed_ms: u64,
+) -> LowHealthPulseState {
+  let step = elapsed_ms as f32 / 500.0;
+  let alpha = if selected_target_alpha > current_alpha {
+    current_alpha + (selected_target_alpha - current_alpha).min(step)
+  } else if selected_target_alpha < current_alpha {
+    current_alpha - (current_alpha - selected_target_alpha).min(step)
+  } else {
+    current_alpha
+  };
+
+  let pending_target_alpha = if pending_target_alpha > 0.0 {
+    pending_target_alpha - pending_target_alpha.min(step)
+  } else {
+    pending_target_alpha
+  };
+
+  LowHealthPulseState {
+    alpha,
+    pending_target_alpha,
+  }
+}
+
 /// The pinned shader's declared blur-weight array, in source order.
 ///
 /// Its `weights[abs(i)]` loop samples only entries 0–2; entries 3–4 are
@@ -1126,6 +1170,36 @@ mod tests {
       let target = low_health_pulse_target_alpha(Some(HitPoints::new(0, 50)), elapsed_ms);
       assert!((0.0..=1.0).contains(&target));
     }
+  }
+
+  #[test]
+  fn low_health_pulse_state_step_moves_and_decays_independently() {
+    assert_eq!(
+      low_health_pulse_state_step(0.25, 0.5, 0.75, 0),
+      LowHealthPulseState {
+        alpha: 0.25,
+        pending_target_alpha: 0.75,
+      }
+    );
+
+    let stepped = low_health_pulse_state_step(0.1, 0.8, 0.8, 100);
+    assert!((stepped.alpha - 0.3).abs() < 0.000_001);
+    assert!((stepped.pending_target_alpha - 0.6).abs() < 0.000_001);
+
+    let downward = low_health_pulse_state_step(0.9, 0.0, 0.0, 100);
+    assert!((downward.alpha - 0.7).abs() < 0.000_001);
+    assert_eq!(downward.pending_target_alpha, 0.0);
+  }
+
+  #[test]
+  fn low_health_pulse_state_step_handles_large_and_negative_values() {
+    let snapped = low_health_pulse_state_step(1.5, 2.5, 1.5, 1_000);
+    assert_eq!(snapped.alpha, 2.5);
+    assert_eq!(snapped.pending_target_alpha, 0.0);
+
+    let negative = low_health_pulse_state_step(0.5, 0.0, -0.5, 100);
+    assert!((negative.alpha - 0.3).abs() < 0.000_001);
+    assert_eq!(negative.pending_target_alpha, -0.5);
   }
 
   #[test]

@@ -39,7 +39,8 @@ types shared by core, MCP, bots, and frontends.
   candidates, bounded event-to-effect builders, observation-independent
   `PixelViewport`/`PixelRect` layout math, visibility-derived
   `LightingBand`/`shade_color` rules, health-derived `SceneTone`/clear color,
-  and the pure source-derived `low_health_pulse_target_alpha` target,
+  and the pure source-derived `low_health_pulse_target_alpha` target plus
+  caller-owned `LowHealthPulseState` smoothing,
   post-process glow/LUT coordinate math and pure blur-tap plans,
   event-ordered `EffectSpan` timing, and renderer-neutral `LayerDraw` plans
   carrying atlas layers, imported source metadata, explicit layer roles, fair
@@ -161,6 +162,10 @@ types shared by core, MCP, bots, and frontends.
   threshold and pulse equation while owning no clock, mutable smoothing state,
   texture, LUT, or post-processing; full low-life overlay parity remains
   capture-gated.
+- `low_health_pulse_state_step` applies the pinned `aMSec / 500` move-toward
+  rule and independent positive pending-target decay to caller-owned values.
+  It intentionally does not clamp internal values or own pulse selection,
+  texture compositing, post-processing, or capture parity.
 - `POST_PROCESS_BLUR_DECLARED_WEIGHTS`, `POST_PROCESS_BLUR_WEIGHTS`,
   `post_process_blur_taps`, `post_process_blur_rgba`, `post_process_glow_color`,
   and
