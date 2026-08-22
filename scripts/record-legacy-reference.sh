@@ -25,6 +25,7 @@ reason='legacy executable is unavailable or not executable'
 binary_hash=unavailable
 legacy_dirty_state=unavailable
 evidence_classification=observed
+rights_status=not-assessed
 if [ -d "$legacy_repo/.git" ]; then
   if legacy_status=$(git -C "$legacy_repo" status --porcelain=v1 --untracked-files=all 2>/dev/null); then
     if [ -n "$legacy_status" ]; then
@@ -55,6 +56,7 @@ fi
   printf '%s\n' "capture_host=$platform"
   printf '%s\n' "legacy_dirty_state=$legacy_dirty_state"
   printf '%s\n' "evidence_classification=$evidence_classification"
+  printf '%s\n' "rights_status=$rights_status"
   printf '%s\n' "reason=$reason"
   printf '%s\n' "frontend=$frontend"
   printf '%s\n' "configuration=$configuration"

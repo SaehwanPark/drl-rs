@@ -5,7 +5,7 @@ set -eu
 repo_root=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)
 expected_revision=17d9be1204751899b2d69d8d3a2dde247bd0cc5c
 manifest=${DRL_CAPTURE_MANIFEST:-"$repo_root/_workspace/reference-captures/manifest.txt"}
-required_keys='status legacy_repository legacy_revision executable executable_sha256 capture_host legacy_dirty_state evidence_classification reason frontend configuration viewport dpr scenario actions capture_tool capture_tool_version media_hashes scenes media_root'
+required_keys='status legacy_repository legacy_revision executable executable_sha256 capture_host legacy_dirty_state evidence_classification rights_status reason frontend configuration viewport dpr scenario actions capture_tool capture_tool_version media_hashes scenes media_root'
 required_scenes='lighting fog targeting ranged knockback low-health inventory hud transition'
 placeholder_fields='viewport dpr scenario actions capture_tool capture_tool_version media_hashes'
 
@@ -41,7 +41,9 @@ executable_sha256=$(field executable_sha256)
 capture_host=$(field capture_host)
 legacy_dirty_state=$(field legacy_dirty_state)
 evidence_classification=$(field evidence_classification)
+rights_status=$(field rights_status)
 reason=$(field reason)
+media_hashes=$(field media_hashes)
 scenes=$(field scenes)
 
 if [ "$legacy_revision" != "$expected_revision" ]; then
@@ -61,6 +63,11 @@ esac
 case "$evidence_classification" in
   observed|inferred|implementation-artifact|ambiguous|drl-rust-decision) ;;
   *) error "unsupported evidence_classification: $evidence_classification" ;;
+esac
+
+case "$rights_status" in
+  not-assessed|cleared|unclear|rejected) ;;
+  *) error "unsupported rights_status: $rights_status" ;;
 esac
 
 if [ -z "$reason" ]; then
@@ -96,8 +103,21 @@ case "$status" in
     if [ "$evidence_classification" != 'observed' ]; then
       error "$status manifests require evidence_classification=observed"
     fi
+    if ! printf '%s\n' "$media_hashes" | grep -Eq '^sha256:[0-9A-Fa-f]{64}(,sha256:[0-9A-Fa-f]{64})*$'; then
+      error "$status manifests require comma-separated sha256:<64-hex> media_hashes"
+    fi
     if [ ! -x "$executable" ]; then
       error "executable is not available/executable: $executable"
+    fi
+    if [ "$status" = 'READY_FOR_CONTROLLED_CAPTURE' ]; then
+      case "$rights_status" in
+        not-assessed|cleared) ;;
+        *) error 'READY_FOR_CONTROLLED_CAPTURE manifests require rights_status=not-assessed or cleared' ;;
+      esac
+    else
+      if [ "$rights_status" != 'cleared' ]; then
+        error 'PASS manifests require rights_status=cleared'
+      fi
     fi
     ;;
   INCONCLUSIVE)

@@ -7,6 +7,7 @@ checker="$repo_root/scripts/check-reference-capture.sh"
 base="$repo_root/_workspace/reference-captures/manifest.txt"
 fixture_dir=$(mktemp -d)
 trap 'rm -rf "$fixture_dir"' EXIT
+valid_hash=sha256:0000000000000000000000000000000000000000000000000000000000000000
 
 expect_pass() {
   manifest=$1
@@ -49,6 +50,14 @@ missing_classification="$fixture_dir/missing-classification.txt"
 sed '/^evidence_classification=/d' "$base" > "$missing_classification"
 expect_fail "$missing_classification"
 
+missing_rights="$fixture_dir/missing-rights.txt"
+sed '/^rights_status=/d' "$base" > "$missing_rights"
+expect_fail "$missing_rights"
+
+invalid_rights="$fixture_dir/invalid-rights.txt"
+sed 's/^rights_status=.*/rights_status=unknown/' "$base" > "$invalid_rights"
+expect_fail "$invalid_rights"
+
 invalid_classification="$fixture_dir/invalid-classification.txt"
 sed 's/^evidence_classification=.*/evidence_classification=unknown/' "$base" > "$invalid_classification"
 expect_fail "$invalid_classification"
@@ -73,13 +82,13 @@ expect_fail "$ready_placeholders"
 ready_dirty="$fixture_dir/ready-dirty.txt"
 sed -e 's/^status=.*/status=READY_FOR_CONTROLLED_CAPTURE/' \
   -e 's/^capture_host=.*/capture_host=Linux-x86_64/' \
+  -e "s/^media_hashes=.*/media_hashes=$valid_hash/" \
   -e 's/^viewport=.*/viewport=1280x720/' \
   -e 's/^dpr=.*/dpr=1/' \
   -e 's/^scenario=.*/scenario=fixed/' \
   -e 's/^actions=.*/actions=smoke/' \
   -e 's/^capture_tool=.*/capture_tool=tool/' \
-  -e 's/^capture_tool_version=.*/capture_tool_version=1/' \
-  -e 's/^media_hashes=.*/media_hashes=recorded/' "$base" > "$ready_dirty"
+  -e 's/^capture_tool_version=.*/capture_tool_version=1/' "$base" > "$ready_dirty"
 expect_fail "$ready_dirty"
 
 ready_inferred="$fixture_dir/ready-inferred.txt"
@@ -93,25 +102,68 @@ sed -e 's/^status=.*/status=READY_FOR_CONTROLLED_CAPTURE/' \
   -e 's/^actions=.*/actions=smoke/' \
   -e 's/^capture_tool=.*/capture_tool=tool/' \
   -e 's/^capture_tool_version=.*/capture_tool_version=1/' \
-  -e 's/^media_hashes=.*/media_hashes=recorded/' "$base" > "$ready_inferred"
+  -e "s/^media_hashes=.*/media_hashes=$valid_hash/" "$base" > "$ready_inferred"
 expect_fail "$ready_inferred"
 
 ready="$fixture_dir/ready.txt"
 sed -e 's/^status=.*/status=READY_FOR_CONTROLLED_CAPTURE/' \
   -e 's/^capture_host=.*/capture_host=Linux-x86_64/' \
   -e 's/^legacy_dirty_state=.*/legacy_dirty_state=clean/' \
+  -e "s/^media_hashes=.*/media_hashes=$valid_hash/" \
+  -e 's/^viewport=.*/viewport=1280x720/' \
+  -e 's/^dpr=.*/dpr=1/' \
+  -e 's/^scenario=.*/scenario=fixed/' \
+  -e 's/^actions=.*/actions=smoke/' \
+  -e 's/^capture_tool=.*/capture_tool=tool/' \
+  -e 's/^capture_tool_version=.*/capture_tool_version=1/' "$base" > "$ready"
+expect_pass "$ready"
+
+malformed_hash="$fixture_dir/malformed-hash.txt"
+sed -e 's/^status=.*/status=READY_FOR_CONTROLLED_CAPTURE/' \
+  -e 's/^capture_host=.*/capture_host=Linux-x86_64/' \
+  -e 's/^legacy_dirty_state=.*/legacy_dirty_state=clean/' \
+  -e 's/^media_hashes=.*/media_hashes=sha256:not-a-hash/' \
+  -e 's/^viewport=.*/viewport=1280x720/' \
+  -e 's/^dpr=.*/dpr=1/' \
+  -e 's/^scenario=.*/scenario=fixed/' \
+  -e 's/^actions=.*/actions=smoke/' \
+  -e 's/^capture_tool=.*/capture_tool=tool/' \
+  -e 's/^capture_tool_version=.*/capture_tool_version=1/' "$base" > "$malformed_hash"
+expect_fail "$malformed_hash"
+
+inconclusive_dirty="$fixture_dir/inconclusive-dirty.txt"
+sed 's/^status=.*/status=INCONCLUSIVE/' "$base" > "$inconclusive_dirty"
+expect_fail "$inconclusive_dirty"
+
+pass_unclear="$fixture_dir/pass-unclear.txt"
+sed -e 's/^status=.*/status=PASS/' \
+  -e 's/^capture_host=.*/capture_host=Linux-x86_64/' \
+  -e 's/^legacy_dirty_state=.*/legacy_dirty_state=clean/' \
+  -e 's/^rights_status=.*/rights_status=unclear/' \
+  -e "s/^media_hashes=.*/media_hashes=$valid_hash/" \
   -e 's/^viewport=.*/viewport=1280x720/' \
   -e 's/^dpr=.*/dpr=1/' \
   -e 's/^scenario=.*/scenario=fixed/' \
   -e 's/^actions=.*/actions=smoke/' \
   -e 's/^capture_tool=.*/capture_tool=tool/' \
   -e 's/^capture_tool_version=.*/capture_tool_version=1/' \
-  -e 's/^media_hashes=.*/media_hashes=recorded/' "$base" > "$ready"
-expect_pass "$ready"
+  "$base" > "$pass_unclear"
+expect_fail "$pass_unclear"
 
-inconclusive_dirty="$fixture_dir/inconclusive-dirty.txt"
-sed 's/^status=.*/status=INCONCLUSIVE/' "$base" > "$inconclusive_dirty"
-expect_fail "$inconclusive_dirty"
+pass="$fixture_dir/pass.txt"
+sed -e 's/^status=.*/status=PASS/' \
+  -e 's/^capture_host=.*/capture_host=Linux-x86_64/' \
+  -e 's/^legacy_dirty_state=.*/legacy_dirty_state=clean/' \
+  -e 's/^rights_status=.*/rights_status=cleared/' \
+  -e "s/^media_hashes=.*/media_hashes=$valid_hash/" \
+  -e 's/^viewport=.*/viewport=1280x720/' \
+  -e 's/^dpr=.*/dpr=1/' \
+  -e 's/^scenario=.*/scenario=fixed/' \
+  -e 's/^actions=.*/actions=smoke/' \
+  -e 's/^capture_tool=.*/capture_tool=tool/' \
+  -e 's/^capture_tool_version=.*/capture_tool_version=1/' \
+  "$base" > "$pass"
+expect_pass "$pass"
 
 bad_hash="$fixture_dir/bad-hash.txt"
 sed 's/^executable_sha256=.*/executable_sha256=deadbeef/' "$base" > "$bad_hash"

@@ -157,6 +157,10 @@ documented in this file.
   dirty-state while preserving `NOT_RUN` on hosts without the controlled Linux
   x86-64 runtime. Promotable capture statuses now require a clean checkout and
   directly observed evidence classification.
+- Added capture-attestation checks for explicit rights status and
+  `sha256:<64-hex>` media hashes; a `PASS` capture now requires cleared rights
+  and valid hashes while unresolved environments remain `NOT_RUN` or
+  `INCONCLUSIVE`.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch

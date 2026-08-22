@@ -15,7 +15,7 @@ progress. This file expands exactly one active implementation slice.
   redistribution-gated; its controlled reference-capture gate is `NOT_RUN` on
   arm64 macOS and remains an M8 acceptance dependency.
 
-## Present — M8 reference-capture evidence classification
+## Present — M8 reference-capture attestation
 
 Status: The M7 browser slice passed functional acceptance locally and in
 remote web CI. The delivered M8 pixel-grid, visibility-band, low-health tone,
@@ -62,12 +62,13 @@ callbacks are throttled; simulation commands remain event-driven. The exact
 legacy outline/glow equation and broader tint sources remain capture/evidence
 gated. The preceding slices added a read-only
 `scripts/check-reference-capture.sh` preflight for the ignored legacy-capture
-manifest, including `legacy_dirty_state` and clean-checkout gating. This slice
-adds the recorder's `evidence_classification` field, validates the proposal's
-classification vocabulary, and requires `observed` before a manifest can claim
-`READY_FOR_CONTROLLED_CAPTURE`, `INCONCLUSIVE`, or `PASS`. Missing, dirty, or
-non-observed manifests remain `NOT_RUN`; only a controlled Linux x86-64 capture
-from a clean checkout can promote the fidelity gate.
+manifest, including `legacy_dirty_state` and clean-checkout gating, and the
+proposal's evidence-classification vocabulary. This slice adds
+`rights_status`, validates comma-separated `sha256:<64-hex>` media hashes, and
+requires `rights_status=cleared` plus valid hashes before a manifest can claim
+`PASS`. Missing, dirty, non-observed, uncleared, or malformed manifests remain
+`NOT_RUN`/`INCONCLUSIVE`; only a controlled Linux x86-64 capture from a clean
+checkout can promote the fidelity gate.
 
 ### Observable behavior
 
@@ -227,8 +228,9 @@ from a clean checkout can promote the fidelity gate.
   simulation state or advance gameplay.
 - `scripts/check-reference-capture.sh` validates required capture metadata,
   pinned revision/scenes, executable/hash consistency, status vocabulary,
-  placeholder policy, recorded legacy dirty state, and evidence classification
-  without executing the legacy binary or changing `NOT_RUN`.
+  placeholder policy, recorded legacy dirty state, evidence classification,
+  rights status, and media-hash syntax without executing the legacy binary or
+  changing `NOT_RUN`.
 
 ### Public contracts
 
