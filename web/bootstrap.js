@@ -32,6 +32,20 @@ function queueAudioSetting(setting) {
     .catch(() => writeStatus("Audio unavailable; gameplay continues."));
 }
 
+async function registerOfflineCache() {
+  if (!("serviceWorker" in navigator)) {
+    return " Offline cache unavailable in this browser.";
+  }
+  try {
+    const registration = await navigator.serviceWorker.register("./service-worker.js", { scope: "./" });
+    return registration.active
+      ? " Offline cache ready for the next reload."
+      : " Offline cache installation started for the next reload.";
+  } catch (error) {
+    return ` Offline cache unavailable (${error}).`;
+  }
+}
+
 start.addEventListener("click", async () => {
   if (started) return;
   try {
@@ -42,7 +56,9 @@ start.addEventListener("click", async () => {
     canvas.focus();
     // `boot()` writes the accurate ready/suspended/unavailable audio state.
     // Keep that message and mirror it to the log instead of assuming success.
-    log.textContent = status.textContent || `Ready (${result}).`;
+    const readyMessage = status.textContent || `Ready (${result}).`;
+    log.textContent = readyMessage;
+    writeStatus(`${readyMessage}${await registerOfflineCache()}`);
   } catch (error) {
     writeStatus(`Browser graphics unavailable: ${error}`);
   }

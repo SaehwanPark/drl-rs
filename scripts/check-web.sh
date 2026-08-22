@@ -4,6 +4,8 @@ set -eu
 
 cd "$(dirname "$0")/.."
 
+sh scripts/check-service-worker.sh
+
 if ! rustup target list --installed | awk '$1 == "wasm32-unknown-unknown" { found = 1 } END { exit found ? 0 : 1 }'; then
   printf '%s\n' 'wasm32-unknown-unknown target is required; install it with rustup target add wasm32-unknown-unknown.' >&2
   exit 1

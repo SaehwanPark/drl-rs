@@ -233,8 +233,9 @@ documented in this file.
   behavior remain unchanged.
 - Added a versioned fixed-session snapshot codec with strict size/corruption
   handling, deterministic replay restore, and best-effort WASM localStorage
-  save/load controls. Replay V1 and authoritative simulation schemas remain
-  unchanged.
+  save/load controls. The static bundle now includes a manually versioned
+  same-origin service-worker cache and manifest. Replay V1 and authoritative
+  simulation schemas remain unchanged.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch

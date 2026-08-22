@@ -144,12 +144,14 @@ numeric parity.
 The current M9 follow-up routes all game death-drop construction through the
 existing `Item::from_spawn_kind` factory, preserving item IDs, payloads,
 positions, events, and replay behavior without adding item variants.
-The current M10 persistence slice adds a versioned fixed-M4 command-history
-snapshot token with a bounded codec, transactional deterministic replay, and a
-best-effort WASM `localStorage` boundary. Unsupported versions, malformed or
+The current M10 follow-ups add a versioned fixed-M4 command-history snapshot
+token with a bounded codec, transactional deterministic replay, a best-effort
+WASM `localStorage` boundary, and a versioned same-origin service-worker cache
+generated from the complete static bundle. Unsupported versions, malformed or
 oversized tokens, unavailable storage, and commands rejected during restore do
 not replace the active session. Replay V1, MCP schemas, and authoritative game
-state remain unchanged; service-worker/offline behavior is still open.
+state remain unchanged; offline browser acceptance and cross-browser behavior
+remain `NOT_RUN`, while broader PWA/cache policy remains M12 work.
 Sampler edge/wrap addressing remains a backend and capture concern; the helper
 does not select it.
 

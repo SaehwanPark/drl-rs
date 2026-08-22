@@ -1,0 +1,10 @@
+{
+  "name": "DRL-Rust browser slice",
+  "short_name": "DRL-Rust",
+  "description": "A deterministic Doom the Roguelike browser slice.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#111827",
+  "theme_color": "#111827"
+}
