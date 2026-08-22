@@ -15,18 +15,18 @@ progress. This file expands exactly one active implementation slice.
   redistribution-gated; its controlled reference-capture gate is `NOT_RUN` on
   arm64 macOS and remains an M8 acceptance dependency.
 
-## Present — M8 deterministic texture-source bindings
+## Present — M8 deterministic layer lighting factors
 
 Status: The M7 browser slice passed functional acceptance locally and in
 remote web CI. The delivered M8 pixel-grid, visibility-band, low-health tone,
 and fair effect-span slices share pure presentation rules. The preceding M8
 slices replaced placeholder atlas cells with measured 32-pixel slots, carried
 registered source-layer sets through semantic descriptors, exposed normalized
-UV geometry, and built ordered layer draw plans with screen rectangles and UVs
-from fair render scenes. This bounded follow-up attaches deterministic
-imported texture-source paths and dimensions to each layer draw entry. It
-remains platform-neutral and is not an actual uploader, compositor, or
-capture-backed parity claim.
+UV geometry, built ordered layer draw plans with screen rectangles and UVs
+from fair render scenes, and attached imported texture-source paths and
+dimensions. This bounded follow-up carries the same fair visible/explored
+lighting band into each layer draw entry. It remains platform-neutral and is
+not an actual uploader, compositor, or capture-backed parity claim.
 
 ### Observable behavior
 
@@ -103,6 +103,8 @@ capture-backed parity claim.
 - `drl-render::layer_draw_plan` emits ordered atlas/layer entries with a
   `PixelRect` destination, normalized UVs, and the resolved texture source for
   each visible scene sprite.
+- Every layer draw carries its fair `LightingBand`: explored tile memory uses
+  the fixed explored factor, while visible tiles/items/actors use full light.
 - Layer draw planning consumes only `RenderScene`; it cannot inspect hidden
   simulation state or advance gameplay.
 
@@ -128,7 +130,8 @@ cargo test -p drl-render                      PASS (pixel-grid, lighting, tone, 
 cargo test -p drl-assets                      PASS (slot mappings, atlas bounds,
                                              layer sets, descriptor order, UVs)
 cargo test -p drl-render                      PASS (layer draw ordering,
-                                             screen/UV geometry, and sources)
+                                             screen/UV geometry, sources, and
+                                             lighting factors)
 cargo test -p drl-web                         PASS (effect handoff preserves event/timeline parity)
 scripts/check-web.sh                        PASS for native/WASM builds;
                                              browser runner NOT_RUN if Chrome absent
@@ -137,13 +140,13 @@ Chrome 151 WebGPU smoke playthrough          PASS (Apple Metal-3, 1280x720, DPR 
                                              start with explicit gesture-gated
                                              audio state, move, mute, restart;
                                              pixel-grid scene visible after move)
-GitHub Actions run 32547435497               PASS (repository + Ubuntu WASM
-                                             browser jobs for this source
-                                             binding slice)
+GitHub Actions run 32548005999               PASS (repository + Ubuntu WASM
+                                             browser jobs for this lighting
+                                             factor slice)
 ```
 
-The local and hosted functional gates pass for this source-binding slice; local
-browser execution remains `NOT_RUN` when the runner is unavailable. The
+The local and hosted functional gates pass for this lighting-factor slice;
+local browser execution remains `NOT_RUN` when the runner is unavailable. The
 existing Chrome run records browser/version, OS,
 adapter/backend, viewport, DPR, build revision, and audio unlock/mute state,
 but the fidelity-matrix comparison remains `NOT_RUN` until a controlled legacy
@@ -163,9 +166,9 @@ capture is available.
 
 ## Next
 
-The pixel-scale viewport, atlas metadata, UV geometry, and draw-plan source
-metadata are covered by local checks and prior hosted WASM browser jobs.
-Continue M8 only with actual layer compositing or capture-backed measurement
-of lighting, effects, typography, and audio. Do not claim audiovisual parity
-from the current metadata-only source bindings or the `NOT_RUN` legacy
-captures.
+The pixel-scale viewport, atlas metadata, UV geometry, draw-plan source
+metadata, and lighting factors are covered by local checks and prior hosted
+WASM browser jobs. Continue M8 only with actual layer compositing or
+capture-backed measurement of lighting, effects, typography, and audio. Do not
+claim audiovisual parity from the current metadata-only lighting factors or
+the `NOT_RUN` legacy captures.

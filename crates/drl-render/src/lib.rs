@@ -142,6 +142,7 @@ pub struct LayerDraw {
   pub atlas: AtlasId,
   pub layer: SpriteLayer,
   pub source: AtlasTextureSource,
+  pub lighting: LightingBand,
   pub destination: PixelRect,
   pub uv: SpriteUv,
 }
@@ -346,6 +347,7 @@ impl RenderScene {
 fn append_layer_draws(
   plan: &mut Vec<LayerDraw>,
   descriptor: SpriteDescriptor,
+  lighting: LightingBand,
   destination: Option<PixelRect>,
 ) {
   let Some(destination) = destination else {
@@ -359,6 +361,7 @@ fn append_layer_draws(
     atlas: descriptor.atlas,
     layer,
     source: descriptor.atlas.texture_source(layer),
+    lighting,
     destination,
     uv,
   }));
@@ -378,13 +381,28 @@ pub fn layer_draw_plan(scene: &RenderScene, viewport: PixelViewport) -> Vec<Laye
     if !tile.visible && !tile.explored {
       continue;
     }
-    append_layer_draws(&mut plan, tile.sprite, viewport.tile_rect(tile.position));
+    append_layer_draws(
+      &mut plan,
+      tile.sprite,
+      tile.lighting_band(),
+      viewport.tile_rect(tile.position),
+    );
   }
   for item in &scene.items {
-    append_layer_draws(&mut plan, item.sprite, viewport.tile_rect(item.position));
+    append_layer_draws(
+      &mut plan,
+      item.sprite,
+      LightingBand::Visible,
+      viewport.tile_rect(item.position),
+    );
   }
   for actor in &scene.actors {
-    append_layer_draws(&mut plan, actor.sprite, viewport.tile_rect(actor.position));
+    append_layer_draws(
+      &mut plan,
+      actor.sprite,
+      LightingBand::Visible,
+      viewport.tile_rect(actor.position),
+    );
   }
   plan
 }
@@ -665,6 +683,7 @@ mod tests {
       assert_eq!(draw.atlas, first_tile.sprite.atlas);
       assert_eq!(draw.layer, layer);
       assert_eq!(draw.source, draw.atlas.texture_source(draw.layer));
+      assert_eq!(draw.lighting, first_tile.lighting_band());
       assert_eq!(draw.destination, first_destination);
       assert_eq!(draw.uv, first_uv);
     }
@@ -690,7 +709,22 @@ mod tests {
       plan[tile_draws + item_draws].atlas,
       first_actor.sprite.atlas
     );
+    assert_eq!(
+      plan[tile_draws + item_draws].lighting,
+      LightingBand::Visible
+    );
     assert_eq!(plan, layer_draw_plan(&scene, viewport));
+
+    let mut explored_scene = scene.clone();
+    explored_scene.tiles[0].visible = false;
+    explored_scene.tiles[0].explored = true;
+    let explored_plan = layer_draw_plan(&explored_scene, viewport);
+    assert!(
+      explored_plan
+        .iter()
+        .take(first_tile.sprite.layers.len())
+        .all(|draw| draw.lighting == LightingBand::Explored)
+    );
   }
 
   #[test]

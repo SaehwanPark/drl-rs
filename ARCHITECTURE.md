@@ -39,9 +39,9 @@ types shared by core, MCP, bots, and frontends.
   `PixelViewport`/`PixelRect` layout math, visibility-derived
   `LightingBand`/`shade_color` rules, health-derived `SceneTone`/clear color,
   event-ordered `EffectSpan` timing, and renderer-neutral `LayerDraw` plans
-  carrying atlas layers, imported source metadata, pixel destinations, and
-  normalized UVs. It consumes player observations/events only; GPU ownership is
-  in the WASM shell.
+  carrying atlas layers, imported source metadata, fair lighting, pixel
+  destinations, and normalized UVs. It consumes player observations/events
+  only; GPU ownership is in the WASM shell.
   `drl-web` carries fair, visibility-filtered spans through each successful
   `PresentationStep`.
 - `drl-audio`: deterministic event-to-`AudioCue` mapping and a WASM Web Audio
@@ -87,6 +87,9 @@ types shared by core, MCP, bots, and frontends.
 - `AtlasTextureSource` records the relative imported path and measured
   dimensions for a registered atlas layer. Frontends own file loading and
   image/GPU resource lifetime.
+- `LayerDraw::lighting` carries the fair visibility band for the source sprite;
+  explored tile memory is shaded by the shared fog factor and visible scene
+  sprites use full light. A compositor must not derive this from hidden state.
 - `PresentationStep::effects` is computed at the command boundary from the
   returned event list and visible actor sets. Ordinary effects require both
   endpoints; terminal hit/death effects use pre-step visibility. Rejected

@@ -68,6 +68,9 @@ documented in this file.
   draw-plan entries now carry imported relative paths and measured dimensions
   for a future frontend upload boundary. No image loading or compositing is
   claimed.
+- Carried the shared fair `LightingBand` into every `LayerDraw`, preserving the
+  fixed explored-memory fog factor and full-light visible-sprite factor for a
+  future compositor without exposing hidden state.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch
