@@ -336,81 +336,43 @@ impl Actor {
   /// Factory: Former Human (pistol zombie).
   #[must_use]
   pub fn former_human(id: EntityId, position: Position) -> Self {
-    let kind = MonsterKind::FormerHuman;
-    Self::new(id, position, kind.name(), false)
-      .with_stats(
-        HitPoints::full(kind.default_hp()),
-        Speed::new(kind.default_speed()),
-        kind.default_melee_damage(),
-        Some((4, 8)),
-        7,
-        65,
-      )
-      .with_monster_kind(kind)
-      .with_death_drop(Some(ItemSpawnKind::Ammo9mm(10)))
+    Self::from_monster_kind(id, position, MonsterKind::FormerHuman)
   }
 
   /// Factory: Former Sergeant (shotgun sergeant).
   #[must_use]
   pub fn former_sergeant(id: EntityId, position: Position) -> Self {
-    let kind = MonsterKind::FormerSergeant;
-    Self::new(id, position, kind.name(), false)
-      .with_stats(
-        HitPoints::full(kind.default_hp()),
-        Speed::new(kind.default_speed()),
-        kind.default_melee_damage(),
-        Some((8, 14)),
-        5,
-        60,
-      )
-      .with_knockback(1)
-      .with_monster_kind(kind)
-      .with_death_drop(Some(ItemSpawnKind::AmmoShells(4)))
+    Self::from_monster_kind(id, position, MonsterKind::FormerSergeant)
   }
 
   /// Factory: Demonic Imp (fireball thrower).
   #[must_use]
   pub fn imp(id: EntityId, position: Position) -> Self {
-    let kind = MonsterKind::Imp;
-    Self::new(id, position, kind.name(), false)
-      .with_stats(
-        HitPoints::full(kind.default_hp()),
-        Speed::new(kind.default_speed()),
-        kind.default_melee_damage(),
-        Some((5, 10)),
-        8,
-        70,
-      )
-      .with_monster_kind(kind)
-      .with_death_drop(Some(ItemSpawnKind::SmallMedPack))
+    Self::from_monster_kind(id, position, MonsterKind::Imp)
   }
 
   /// Factory: Pinky Demon (fast melee rusher).
   #[must_use]
   pub fn demon(id: EntityId, position: Position) -> Self {
-    let kind = MonsterKind::Demon;
-    Self::new(id, position, kind.name(), false)
-      .with_stats(
-        HitPoints::full(kind.default_hp()),
-        Speed::new(kind.default_speed()),
-        kind.default_melee_damage(),
-        None,
-        0,
-        75,
-      )
-      .with_monster_kind(kind)
-      .with_death_drop(None)
+    Self::from_monster_kind(id, position, MonsterKind::Demon)
   }
 
   /// Constructs an actor from a given `MonsterKind`.
   #[must_use]
   pub fn from_monster_kind(id: EntityId, position: Position, kind: MonsterKind) -> Self {
-    match kind {
-      MonsterKind::FormerHuman => Self::former_human(id, position),
-      MonsterKind::FormerSergeant => Self::former_sergeant(id, position),
-      MonsterKind::Imp => Self::imp(id, position),
-      MonsterKind::Demon => Self::demon(id, position),
-    }
+    let definition = kind.definition();
+    Self::new(id, position, definition.name, false)
+      .with_stats(
+        HitPoints::full(definition.hp),
+        Speed::new(definition.speed),
+        definition.melee_damage,
+        definition.ranged_damage,
+        definition.ranged_range,
+        definition.accuracy,
+      )
+      .with_knockback(definition.knockback)
+      .with_monster_kind(kind)
+      .with_death_drop(definition.death_drop)
   }
 }
 

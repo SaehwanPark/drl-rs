@@ -74,6 +74,7 @@ impl World {
           monster.ranged_range,
           monster.accuracy,
         );
+        actor = actor.with_knockback(monster.knockback);
         actor.set_death_drop(monster.death_drop);
         world.actors.insert(id, actor);
       }

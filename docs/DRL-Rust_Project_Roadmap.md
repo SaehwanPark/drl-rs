@@ -211,6 +211,10 @@ offsets, strength/direction scaling, scheduling, and rendering remain open.
 The current follow-up also adds caller-owned particle-burst origin math for the
 pinned one-based 32-pixel cell-center conversion. Direction, random burst
 sampling, decals, particle-engine integration, and rendering remain open.
+The current M9 content slice adds a Rust-owned `MonsterKind::definition()` table
+for the four implemented archetypes and routes actor factories/generated spawns
+through it without changing current values or replay schemas. Legacy numeric
+parity and broader Lua/content migration remain open.
 Remaining work is visible outline/glow role-specific shader blending/layer
 compositing, additional per-sprite tint sourcing, broader content metadata;
 capture-backed lighting/LUT parity,

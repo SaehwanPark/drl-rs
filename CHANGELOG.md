@@ -224,6 +224,10 @@ documented in this file.
   the pinned one-based 32-pixel cell-center conversion with checked signed
   overflow handling. Direction, random burst parameters, decals, particle
   engine state, rendering, lifecycle, and capture behavior remain outside.
+- Added the Rust-owned `MonsterKind::definition()` table for the four current
+  archetypes and routed actor factories/generated spawns through it, including
+  knockback and death-drop metadata. Existing values and replay schemas remain
+  unchanged; divergent legacy numeric values are not claimed as migrated.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch

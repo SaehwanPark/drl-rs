@@ -26,8 +26,8 @@ event-ordered timing, pure low-health pulse smoothing, the source-derived
 three-phase explosion-mark selector, signed effect-segment arithmetic, and
 caller-owned kill-animation segment selection and FX frame selection, plus
 caller-owned movement progress selection, missile step selection, missile
-ray-spacing selection, screen-shake fade timing, and particle-burst origin
-math, plus pure post-process
+ray-spacing selection, screen-shake fade timing, particle-burst origin math,
+and a Rust-owned typed monster definition table, plus pure post-process
 glow/LUT math contracts. Full audiovisual equivalence, broader content, PWA
 persistence, and other browsers remain staged roadmap work. Do not read the
 placeholder M7 atlas rectangles as a fidelity claim.
@@ -122,6 +122,8 @@ legacy graphics metadata; it is not a dependency of the core.
   metric/visibility/render agnostic and preserves the source overshoot; the
   screen-shake fade helper remains frequency/offset/render agnostic; the
   particle-burst origin helper remains coordinate-base/particle-engine agnostic.
+  Typed monster definitions are current Rust-owned content and do not claim
+  legacy numeric parity.
 - `crates/drl-audio`: semantic cues and WASM Web Audio mixer.
 - `crates/drl-web`: browser session, validated same-origin texture-source
   loading, renderer-owned WebGPU texture uploads, the partial base/mask/
