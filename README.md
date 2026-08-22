@@ -64,6 +64,7 @@ recoverable and never advances the game.
 sh scripts/check-repository.sh
 sh scripts/check-assets.sh
 scripts/check-web.sh
+scripts/check-reference-capture.sh
 ```
 
 `check-web.sh` compiles the WASM target and runs native contract tests. It runs

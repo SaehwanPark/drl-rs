@@ -25,7 +25,8 @@ automated regressions, and human review.
   `c07c44e` ([run](https://github.com/SaehwanPark/drl-rust/actions/runs/32408102745)).
 - M3 graphics import/checks are delivered. Controlled legacy runtime captures
   are `NOT_RUN` on the current arm64 macOS host because the available binary is
-  Linux x86-64; see `docs/reference-captures/manifest.md`.
+  Linux x86-64; the read-only manifest preflight now validates this boundary;
+  see `docs/reference-captures/manifest.md`.
 - M7 browser session/WebGPU/WASM functional acceptance passed locally and in
   remote web-CI run `32538527707` for the merged M7 head; reference-scene
   comparison remains open because legacy captures are `NOT_RUN`.
@@ -68,7 +69,8 @@ automated regressions, and human review.
   elapsed milliseconds with explicit loop/clamp policy; the WASM renderer now
   forwards that caller-owned selection through a bounded browser animation loop
   and rebases its presentation clock on visibility changes while broader
-  content animation and capture parity remain open.
+  content animation and capture parity remain open. A read-only capture
+  manifest preflight now validates pinned metadata and preserves `NOT_RUN`.
 - `SPEC.md` contains the single active M8 slice; it is not a second roadmap.
 
 ## Milestones
@@ -167,7 +169,7 @@ animation frame
 selection, evidenced player/actor/Phase Device animation metadata, and
 progress-selected frame UV plans plus elapsed-time loop/clamp selection,
 caller-supplied elapsed-time layer-plan math, WebGPU forwarding, and bounded
-browser scheduling.
+browser scheduling, and the capture-manifest preflight.
 Remaining work is visible outline/glow role-specific shader blending/layer
 compositing, additional per-sprite tint sourcing, broader content metadata;
 implement

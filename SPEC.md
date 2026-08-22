@@ -15,7 +15,7 @@ progress. This file expands exactly one active implementation slice.
   redistribution-gated; its controlled reference-capture gate is `NOT_RUN` on
   arm64 macOS and remains an M8 acceptance dependency.
 
-## Present — M8 StairsDown colorization tint
+## Present — M8 reference-capture manifest preflight
 
 Status: The M7 browser slice passed functional acceptance locally and in
 remote web CI. The delivered M8 pixel-grid, visibility-band, low-health tone,
@@ -60,7 +60,9 @@ resets its presentation baseline on restart, and installs one idempotent
 `visibilitychange` listener that rebases the clock even when hidden RAF
 callbacks are throttled; simulation commands remain event-driven. The exact
 legacy outline/glow equation and broader tint sources remain capture/evidence
-gated.
+gated. This slice adds a read-only `scripts/check-reference-capture.sh`
+preflight for the ignored legacy-capture manifest. Missing manifests remain
+`NOT_RUN`; only a controlled Linux x86-64 capture can promote the fidelity gate.
 
 ### Observable behavior
 
@@ -218,6 +220,10 @@ gated.
   index; invalid progress or frame counts return `None`.
 - Layer draw planning consumes only `RenderScene`; it cannot inspect hidden
   simulation state or advance gameplay.
+- `scripts/check-reference-capture.sh` validates required capture metadata,
+  pinned revision/scenes, executable/hash consistency, status vocabulary, and
+  placeholder policy without executing the legacy binary or changing
+  `NOT_RUN`.
 
 ### Public contracts
 
@@ -237,6 +243,8 @@ Local checks:
 ```text
 sh scripts/check-repository.sh              PASS (baseline plus new crates)
 sh scripts/check-assets.sh                  PASS (32 PNGs, license, hashes)
+scripts/check-reference-capture.sh          PASS (`NOT_RUN` on arm64 macOS)
+scripts/test-reference-capture.sh           PASS (fixture coverage)
 cargo check --locked -p drl-web --target wasm32-unknown-unknown  PASS
 cargo test -p drl-render                      PASS (pixel-grid, lighting, tone, and timeline contracts)
 cargo test -p drl-assets                      PASS (slot mappings, atlas bounds,
@@ -260,9 +268,9 @@ GitHub Actions run 32548718408               PASS (repository + Ubuntu WASM
                                              effect-progress slice)
 ```
 
-The local and hosted functional gates pass for the preceding textured-pass
-slices; this pure frame-selector slice must add its own hosted run to the
-handoff artifact.
+The local and hosted functional gates pass for the preceding presentation
+slices; this preflight slice must add its own hosted run to the handoff
+artifact. Legacy runtime and audiovisual comparison remain `NOT_RUN`.
 
 local browser execution remains `NOT_RUN` when the runner is unavailable. The
 existing Chrome run records browser/version, OS,
@@ -283,7 +291,7 @@ capture is available.
   animation timing, additional per-sprite tint sources, and capture-backed
   legacy shader equivalence remain future M8 slices; this pass is intentionally
   limited to the evidence-backed StairsDown tint through the existing
-  colorization-mask boundary.
+  colorization-mask boundary and a non-destructive capture-manifest preflight.
 
 ## Next
 
