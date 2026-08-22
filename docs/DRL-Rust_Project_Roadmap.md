@@ -43,6 +43,9 @@ automated regressions, and human review.
 - The browser effect handoff now carries ordered spans in successful
   `PresentationStep` results with visibility filtering; visual frame mapping
   remains capture-gated.
+- The current M8 atlas-descriptor slice replaces placeholder cells with
+  pinned-legacy 32-pixel sprite slots and verified imported-sheet dimensions;
+  texture compositing and capture-backed parity remain open.
 - `SPEC.md` contains the single active M8 slice; it is not a second roadmap.
 
 ## Milestones
@@ -125,10 +128,12 @@ The first bounded pixel-scale layout slice is delivered: measure-free,
 observation-independent viewport math chooses centered integer square cells for
 the WebGPU surface. The baseline visible-versus-explored fog band is also
 centralized in `drl-render`; capture-backed lighting/LUT parity remains open.
-Remaining work is to measure atlas rectangles and layer compositing; implement
-capture-backed lighting/LUT parity, particles, animation/effect timing, HUD typography, cleared
-legacy or replacement audio, music transitions, and automated visual/audio
-regressions against the M3 capture matrix. Use human review with tolerances;
+Measured atlas rectangles for all currently implemented semantics now come from
+the pinned 16-column legacy grid, with pure bounds checks. Remaining work is
+texture/layer compositing; implement capture-backed lighting/LUT parity,
+particles, animation/effect timing, HUD typography, cleared legacy or
+replacement audio, music transitions, and automated visual/audio regressions
+against the M3 capture matrix. Use human review with tolerances;
 generated M7 tones are not an equivalence claim.
 
 ### M9 — Typed content migration and gameplay breadth (planned)
