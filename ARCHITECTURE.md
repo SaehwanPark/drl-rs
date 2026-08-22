@@ -30,11 +30,13 @@ types shared by core, MCP, bots, and frontends.
   the immutable Rust item-definition table used by that factory, while
   `drl-core::loot_definition` owns the pure six-outcome generated-loot lookup
   applied to a caller-supplied roll and `monster_roll_definition` owns the
-  pure four-outcome generated-monster lookup.
+  pure four-outcome generated-monster lookup. Core `Tile` values delegate
+  physical semantics through the protocol-owned immutable `TileKind` table.
 - `drl-protocol`: stable semantic boundary. Player observations now include
   map dimensions and player HP; actor/item views include stable presentation
   identifiers. `MonsterKind::definition()` is the Rust-owned typed content
-  table for current monster metadata; compatibility accessors remain stable.
+  table for current monster metadata; `TileKind::definition()` is the
+  Rust-owned five-tile semantic table; compatibility accessors remain stable.
   MCP wire serialization and replay schema remain compatible.
 - `drl-assets`: platform-neutral atlas IDs, imported PNG dimensions, measured
   32-pixel rectangles, deterministic registered layer sets and shader input

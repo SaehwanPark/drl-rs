@@ -160,6 +160,11 @@ roll outcomes (`0..40` Former Human, `40..65` Imp, `65..85` Former Sergeant,
 and `85..100` Demon). It preserves one roll per accepted candidate, spawn
 metadata/order, and `MonsterKind`/replay/protocol boundaries; it does not claim
 legacy random-placement parity or balance conclusions.
+The current tile-definition follow-up adds one immutable protocol-owned table
+for the five existing `TileKind` semantics and routes core `Tile` physical
+flags through it. Map indexing, FOV, observations, replay V1, and protocol
+schemas remain unchanged; broader level/asset migration and legacy parity stay
+open.
 The current M10 follow-ups add a versioned fixed-M4 command-history snapshot
 token with a bounded codec, transactional deterministic replay, a best-effort
 WASM `localStorage` boundary, and a versioned same-origin service-worker cache

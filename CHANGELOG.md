@@ -243,6 +243,10 @@ documented in this file.
   roll-bound table while preserving one-roll RNG consumption, spawn metadata,
   ordering, and `MonsterKind` definitions. This is not a balance or legacy
   parity claim.
+- Added a protocol-owned immutable definition table for the five current tile
+  semantics and routed core tile physical flags through it. Map behavior,
+  observations, replay V1, and protocol schemas remain unchanged; no legacy
+  parity is claimed.
 - Added a versioned fixed-session snapshot codec with strict size/corruption
   handling, deterministic replay restore, and best-effort WASM localStorage
   save/load controls. The static bundle now includes a manually versioned
