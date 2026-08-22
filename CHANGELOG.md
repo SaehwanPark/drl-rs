@@ -3,33 +3,100 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
-## Unreleased
+## [0.2.7]
 
 - Added the bounded M8 particle-decal placement contract: the pure callback
   math now returns both one-based cell and pixel insertion coordinates.
+- Continued retrospective project versioning at `0.2.7` from the untagged
+  `0.1.0` baseline. `VERSION`, Cargo/MCP metadata, and release manifests are
+  checked by the agent harness; code changes require one valid component
+  increment while document- and setting-only changes do not.
+
+## [0.2.6]
+
 - Added the bounded M8 particle-decal cell contract: caller-rounded world
   positions use the legacy 16-pixel offset and truncating 32-pixel mapping,
   while map/flag eligibility and decal storage remain caller-owned.
+
+## [0.2.5]
+
 - Added the bounded M8 particle-burst range contract: caller-owned unit
   samples use the legacy affine min/max calculation, including reversed bounds
   and without hidden clamping or RNG ownership.
+
+## [0.2.4]
+
 - Added the bounded M8 particle-burst direction contract: requested XY
   directions are normalized, zero vectors clear only XY, and positive distance
   scales apply the legacy arc-to-Z adjustment without owning random sampling,
   decals, or a particle engine.
+
+## [0.2.3]
+
 - Added compatible M11 telemetry comparisons with separate caller-owned shot
   accuracy and per-episode average tolerances; deltas remain descriptive and
   do not claim balance or statistical significance.
+
+## [0.2.2]
+
 - Added an M11 cohort telemetry distribution for validated shot accuracy,
   damage, enemy-kill, pickup, and item-use totals plus descriptive rates;
   it makes no balance or statistical-significance claim.
+
+## [0.2.1]
+
 - Added M12 checkout-identity binding: release-manifest validation now matches
   a source revision to Git `HEAD` (or `DRL_BUILD_REVISION`) when available and
   retains `unknown` only for unverifiable source archives.
+
+## [0.2.0]
+
 - Added the bounded M8 outline-mask compositing pass: optional shadow layers
   now resolve behind base sprites with tested straight-alpha weights in the
   renderer-neutral contract and WebGPU shader. Exact legacy glow/outline
   equation and capture parity remain open.
+
+## [0.1.7]
+
+- Added an M12 release-manifest source-identity audit that accepts only the
+  explicit `unknown` fallback or a lowercase 40-character Git object identity.
+
+## [0.1.6]
+
+- Added a dependency-free M12 service-worker lifecycle/fetch contract harness
+  for precache, stale-cache cleanup, navigation fallback, and same-origin GET
+  gating without claiming full browser-offline acceptance.
+
+## [0.1.5]
+
+- Added an M12 `release-manifest.sha256` sidecar with exact-byte verification
+  and service-worker precaching; this is packaging integrity evidence, not a
+  release signature or offline acceptance claim.
+
+## [0.1.4]
+
+- Strengthened M12 generated cache invalidation names to include both the
+  project version and source-revision prefix; release-manifest checks verify
+  the combined policy without claiming offline acceptance.
+
+## [0.1.3]
+
+- Added a caller-owned M11 outcome-rate tolerance gate that accepts only finite
+  non-negative bounds and reports whether every category delta is within it.
+
+## [0.1.2]
+
+- Added pure compatible M11 outcome comparisons with absolute per-category
+  rate deltas. Policy/sample mismatches and invalid reports are rejected, and
+  the comparison does not add tolerance or significance claims.
+
+## [0.1.1]
+
+- Added pure M11 cohort outcome distributions with distinct victory, death,
+  turn-limit, stalled, and in-progress counts plus sample-normalized rates;
+  invalid reports are rejected before projection and no balance claim is made.
+
+## [0.1.0] — Retrospective baseline (untagged history)
 
 - Added M12 static-bundle release manifests generated during web builds, with
   source revision, sorted artifact SHA-256 hashes, generated-file declarations,
@@ -45,25 +112,6 @@ documented in this file.
 - Added pure M11 cohort regression comparisons with caller-declared finite
   non-negative win-rate and average-turn tolerances. Policy/sample mismatches
   are rejected, and no statistical or balance claim is inferred.
-- Added pure M11 cohort outcome distributions with distinct victory, death,
-  turn-limit, stalled, and in-progress counts plus sample-normalized rates;
-  invalid reports are rejected before projection and no balance claim is made.
-- Added pure compatible M11 outcome comparisons with absolute per-category
-  rate deltas. Policy/sample mismatches and invalid reports are rejected, and
-  the comparison does not add tolerance or significance claims.
-- Added a caller-owned M11 outcome-rate tolerance gate that accepts only finite
-  non-negative bounds and reports whether every category delta is within it.
-- Strengthened M12 generated cache invalidation names to include both the
-  project version and source-revision prefix; release-manifest checks verify
-  the combined policy without claiming offline acceptance.
-- Added an M12 `release-manifest.sha256` sidecar with exact-byte verification
-  and service-worker precaching; this is packaging integrity evidence, not a
-  release signature or offline acceptance claim.
-- Added a dependency-free M12 service-worker lifecycle/fetch contract harness
-  for precache, stale-cache cleanup, navigation fallback, and same-origin GET
-  gating without claiming full browser-offline acceptance.
-- Added an M12 release-manifest source-identity audit that accepts only the
-  explicit `unknown` fallback or a lowercase 40-character Git object identity.
 - Added pure M11 cohort-report integrity validation for record count, wrapping
   seed order, replay seed identity, and aggregate-summary coherence.
 - Added M11 fixed-seed cohort reports around the existing headless batch
@@ -71,10 +119,6 @@ documented in this file.
   `CohortReport` retains policy identity, aggregate metrics, and per-seed
   replay evidence for reproducible evaluation without claiming balance
   conclusions.
-- Continued retrospective project versioning at `0.2.7` from the untagged
-  `0.1.0` baseline. `VERSION`, Cargo/MCP metadata, and release manifests are
-  checked by the agent harness; code changes require one valid component
-  increment while document- and setting-only changes do not.
 - Browser-first steering and playable-slice implementation: accepted ADRs
   0007/0008, reconciled proposal/roadmap/spec/architecture/README/contributor
   guidance, browser-aware agent harness rules, and dynamic repo-local skill
