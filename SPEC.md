@@ -15,7 +15,7 @@ progress. This file expands exactly one active implementation slice.
   redistribution-gated; its controlled reference-capture gate is `NOT_RUN` on
   arm64 macOS and remains an M8 acceptance dependency.
 
-## Present — M8 base textured pass
+## Present — M8 emissive role pass
 
 Status: The M7 browser slice passed functional acceptance locally and in
 remote web CI. The delivered M8 pixel-grid, visibility-band, low-health tone,
@@ -31,8 +31,10 @@ The GPU-upload follow-up builds a stable unique-source manifest and uploads
 those decoded images into renderer-owned WebGPU texture/view resources. This
 slice adds a nearest-filtered base-color WGSL pass driven by fair grouped
 sprite composites; the existing geometry pass remains underneath as a
-recoverable fallback. Role-specific blend equations and capture-backed
-audiovisual equivalence are not claimed.
+recoverable fallback. This slice also pairs each base source with its optional
+emissive source and applies the verified emissive lighting floor; role-specific
+blend equations beyond that floor and capture-backed audiovisual equivalence
+are not claimed.
 
 ### Observable behavior
 
@@ -126,8 +128,11 @@ audiovisual equivalence are not claimed.
   advance gameplay.
 - The WASM renderer samples each composite's base source with a nearest-filtered
   bind group, top-left-origin UVs, alpha blending, and the fair visible or
-  explored lighting factor. Missing cache entries skip only the textured pass;
-  the deterministic geometry fallback still presents the scene.
+  explored lighting factor. The paired emissive source samples its red channel
+  and raises, but never lowers, that fair lighting floor. A missing emissive
+  source binds a transparent 1x1 fallback; missing base cache entries skip only
+  the textured pass, and the deterministic geometry fallback still presents the
+  scene.
 - Every layer draw carries its fair `LightingBand`: explored tile memory uses
   the fixed explored factor, while visible tiles/items/actors use full light.
 - `drl-render::active_effect_frames` returns normalized `[0, 1)` progress for
@@ -176,7 +181,7 @@ GitHub Actions run 32548718408               PASS (repository + Ubuntu WASM
                                              effect-progress slice)
 ```
 
-The local and hosted functional gates pass for this texture-loader slice; the
+The local and hosted functional gates pass for this emissive-role slice; the
 hosted run is recorded in the handoff artifact.
 
 local browser execution remains `NOT_RUN` when the runner is unavailable. The
@@ -194,16 +199,17 @@ capture is available.
 - Legacy audio/music/fonts are not shipped until rights are documented.
 - Full audiovisual equivalence is M8: capture-backed tolerances, visual
   regressions, cue timing, and structured human comparison.
-- Mask/colorization, outline/glow, emissive, animation frame selection, and
-  capture-backed legacy shader equivalence remain future M8 slices; this base
-  pass is an intentionally partial compositor.
+- Mask/colorization, outline/glow, animation frame selection, and capture-backed
+  legacy shader equivalence remain future M8 slices; this pass is an
+  intentionally partial compositor.
 
 ## Next
 
 The pixel-scale viewport, atlas metadata, UV geometry, draw-plan source
 metadata, fair lighting factors, effect progress, layer input roles, grouped
 sprite composites, validated browser source loading, renderer-owned GPU
-texture upload, and base-color sampling are covered by local checks and prior
-hosted WASM browser jobs. Continue M8 only with role-specific compositing or capture-backed measurement of
+texture upload, base-color sampling, and the emissive lighting floor are
+covered by local checks and prior hosted WASM browser jobs. Continue M8 only
+with mask/colorization, outline/glow, animation, or capture-backed measurement of
 lighting, effects, typography, and audio. Do not claim audiovisual parity from
 renderer-neutral grouping or the `NOT_RUN` legacy captures.

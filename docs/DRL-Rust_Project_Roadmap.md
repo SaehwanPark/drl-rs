@@ -52,7 +52,9 @@ automated regressions, and human review.
   complete role sets are grouped into deterministic compositor inputs, while
   a subpath-safe WASM source loader now validates decoded image dimensions;
   renderer-owned GPU texture upload and a partial base-color textured pass are
-  now available; role compositing and capture-backed parity remain open. Pure
+  now available; the emissive red-channel lighting floor is also wired through
+  the browser pass, while mask/colorization, outline/glow role compositing and
+  capture-backed parity remain open. Pure
   frontend effect progress is now available; legacy animation timing remains
   capture-gated.
 - `SPEC.md` contains the single active M8 slice; it is not a second roadmap.
@@ -145,7 +147,8 @@ progress, explicit base/mask/outline/emissive input roles, grouped sprite
 composite inputs, and validated browser source loading are available, and
 `drl-render::layer_draw_plan` converts fair scenes into ordered pixel/UV
 operations; the renderer now retains a 24-source GPU texture cache and samples
-base-color sprites with fair lighting. Remaining work is role-specific shader
+base-color sprites with fair lighting plus the emissive red-channel floor.
+Remaining work is mask/colorization and outline/glow role-specific shader
 sampling/layer compositing; implement
 capture-backed lighting/LUT parity,
 particles, animation/effect timing, HUD typography, cleared legacy or

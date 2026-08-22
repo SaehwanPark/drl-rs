@@ -36,6 +36,12 @@ fn base_texture_lighting_factor(band: LightingBand) -> f32 {
   band.factor() as f32 / 100.0
 }
 
+/// Applies the legacy emissive floor to a fair RGB lighting scalar.
+#[allow(dead_code)]
+fn emissive_lighting_floor(lighting: f32, emissive: f32) -> f32 {
+  lighting.max(emissive)
+}
+
 /// Converts a physical destination rectangle into clip-space bounds.
 #[cfg_attr(not(target_arch = "wasm32"), allow(dead_code))]
 const fn base_texture_ndc_rect(rect: PixelRect, canvas_width: u32, canvas_height: u32) -> [f32; 4] {
@@ -540,7 +546,8 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
             ),
           ),
         };
-      let base_texture = BaseTexturePipeline::new(&device, config.format, textures.as_ref());
+      let base_texture =
+        BaseTexturePipeline::new(&device, &queue, config.format, textures.as_ref());
       Ok(Self {
         _instance: instance,
         surface,
@@ -1356,6 +1363,21 @@ mod tests {
   fn base_texture_lighting_factor_matches_fair_bands() {
     assert_eq!(base_texture_lighting_factor(LightingBand::Visible), 1.0);
     assert_eq!(base_texture_lighting_factor(LightingBand::Explored), 0.45);
+  }
+
+  #[test]
+  fn emissive_role_raises_but_never_reduces_fair_light() {
+    assert_eq!(emissive_lighting_floor(0.45, 0.8), 0.8);
+    assert_eq!(emissive_lighting_floor(1.0, 0.8), 1.0);
+  }
+
+  #[test]
+  fn emissive_role_pairing_uses_registered_atlas_source() {
+    let base = AtlasId::Enemies.texture_source(drl_assets::SpriteLayer::Base);
+    let emissive = AtlasId::Enemies.texture_source(drl_assets::SpriteLayer::Emissive);
+    assert_eq!(base.path, "enemies.png");
+    assert_eq!(emissive.path, "enemies_emissive.png");
+    assert_eq!((base.width, base.height), (emissive.width, emissive.height));
   }
 
   #[test]
