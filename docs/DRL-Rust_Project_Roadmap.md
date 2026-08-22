@@ -222,6 +222,10 @@ The current item-definition follow-up centralizes those nine existing spawn
 families in an immutable Rust-owned table while preserving supplied ammo
 counts, current properties, and replay/protocol schemas. Broader item and
 level migration, conversion tooling, and legacy parity remain open.
+The current generated-loot follow-up centralizes the six existing procedural
+room-item outcomes and their exact roll bounds/fixed ammo payloads while
+preserving one-roll RNG consumption, item IDs, ordering, and factory behavior;
+broader balance, conversion, and legacy parity remain open.
 The current M10 follow-ups add a versioned fixed-M4 command-history snapshot,
 bounded corruption/version handling, transactional replay restore, a
 best-effort WASM localStorage boundary with save/load/clear controls, and a

@@ -9,6 +9,7 @@ use std::collections::{HashSet, VecDeque};
 
 use crate::grid::{Map, Tile};
 use crate::item::Item;
+use crate::loot_definition::generated_loot_definition_for_roll;
 use crate::rng::GameRng;
 
 /// Bounded rectangular room in grid coordinates.
@@ -262,19 +263,8 @@ impl LevelGenerator {
           let item_id = ItemId::new(*item_id_counter);
 
           let roll = rng.gen_range(0..100);
-          let item = if roll < 35 {
-            Item::ammo_9mm(item_id, 20)
-          } else if roll < 55 {
-            Item::small_medpack(item_id)
-          } else if roll < 70 {
-            Item::ammo_shells(item_id, 8)
-          } else if roll < 85 {
-            Item::shotgun(item_id)
-          } else if roll < 95 {
-            Item::green_armor(item_id)
-          } else {
-            Item::phase_device(item_id)
-          };
+          let definition = generated_loot_definition_for_roll(roll);
+          let item = Item::from_spawn_kind(item_id, definition.spawn_kind);
           item_spawns.push((pos, item));
         }
       }
