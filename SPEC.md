@@ -130,6 +130,11 @@ screen-shake update's `1 - (elapsed / duration)^2` active envelope and its
 zero-at-expiry behavior. Random frequencies, trigonometric offsets, strength,
 direction, scheduling, sprite-map state, rendering, and lifecycle remain
 outside the helper.
+It also exposes `drl_render::particle_burst_origin_at_legacy_cell`, preserving
+the pinned one-based `((cell - 1) * 32 + 16)` origin conversion and zero Z
+coordinate with checked signed arithmetic. It does not convert current
+zero-based positions or own direction, randomness, decals, particle-engine,
+rendering, or lifecycle behavior.
 Sampler edge/wrap addressing remains a backend and capture concern; the helper
 does not select it.
 
@@ -237,6 +242,11 @@ does not select it.
   duration units to the source-derived quadratic fade, returning zero for zero
   or expired duration. It owns no random stream, offset, direction, strength,
   scheduling, sprite-map, rendering, lifecycle, or backend state.
+- `drl-render::particle_burst_origin_at_legacy_cell` maps explicit one-based
+  legacy cell coordinates to a centered integer pixel origin, returning `None`
+  for signed overflow. It performs no current-position conversion, direction
+  normalization, random sampling, decal selection, particle spawn, rendering,
+  lifecycle, or backend work.
 - WebGPU uses that shared clear-color rule; health-tone presentation remains an
   effect and cannot reveal hidden world state.
 - `drl-render::effect_timeline` preserves event order and assigns each bounded

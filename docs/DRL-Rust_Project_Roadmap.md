@@ -208,6 +208,9 @@ visibility, particles, and rendering remain open.
 The current follow-up also adds caller-owned screen-shake fade timing with the
 pinned active quadratic envelope and zero-at-expiry guard. Random frequencies,
 offsets, strength/direction scaling, scheduling, and rendering remain open.
+The current follow-up also adds caller-owned particle-burst origin math for the
+pinned one-based 32-pixel cell-center conversion. Direction, random burst
+sampling, decals, particle-engine integration, and rendering remain open.
 Remaining work is visible outline/glow role-specific shader blending/layer
 compositing, additional per-sprite tint sourcing, broader content metadata;
 capture-backed lighting/LUT parity,

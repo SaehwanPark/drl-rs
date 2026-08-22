@@ -293,6 +293,28 @@ pub fn screen_shake_fade_at_elapsed(elapsed_units: u64, duration_units: u64) -> 
   (1.0 - progress * progress) as f32
 }
 
+/// Converts a one-based legacy cell coordinate into a centered pixel origin.
+///
+/// The legacy particle-burst path uses `((cell - 1) * 32 + 16)` for each axis
+/// and a zero Z coordinate. Inputs are explicitly one-based legacy cells;
+/// checked signed arithmetic rejects values that cannot be represented. The
+/// helper does not convert current Rust positions or spawn/configure particles.
+#[must_use]
+pub fn particle_burst_origin_at_legacy_cell(
+  legacy_cell_x: i32,
+  legacy_cell_y: i32,
+) -> Option<[i32; 3]> {
+  let x = legacy_cell_x
+    .checked_sub(1)?
+    .checked_mul(32)?
+    .checked_add(16)?;
+  let y = legacy_cell_y
+    .checked_sub(1)?
+    .checked_mul(32)?
+    .checked_add(16)?;
+  Some([x, y, 0])
+}
+
 /// Visibility-derived presentation bands for deterministic scene shading.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum LightingBand {
@@ -2299,6 +2321,28 @@ mod tests {
     assert_eq!(screen_shake_fade_at_elapsed(100, 100), 0.0);
     assert_eq!(screen_shake_fade_at_elapsed(101, 100), 0.0);
     assert_eq!(screen_shake_fade_at_elapsed(u64::MAX, 0), 0.0);
+  }
+
+  #[test]
+  fn particle_burst_origin_centers_one_based_legacy_cells() {
+    assert_eq!(
+      particle_burst_origin_at_legacy_cell(1, 1),
+      Some([16, 16, 0])
+    );
+    assert_eq!(
+      particle_burst_origin_at_legacy_cell(3, 4),
+      Some([80, 112, 0])
+    );
+    assert_eq!(
+      particle_burst_origin_at_legacy_cell(0, 0),
+      Some([-16, -16, 0])
+    );
+  }
+
+  #[test]
+  fn particle_burst_origin_rejects_signed_overflow() {
+    assert_eq!(particle_burst_origin_at_legacy_cell(i32::MIN, 1), None);
+    assert_eq!(particle_burst_origin_at_legacy_cell(i32::MAX, 1), None);
   }
 
   #[test]
