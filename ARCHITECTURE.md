@@ -41,7 +41,8 @@ types shared by core, MCP, bots, and frontends.
   `LightingBand`/`shade_color` rules, health-derived `SceneTone`/clear color,
   event-ordered `EffectSpan` timing, and renderer-neutral `LayerDraw` plans
   carrying atlas layers, imported source metadata, explicit layer roles, fair
-  lighting, evidence-backed Green Armor/Phase Device colorization tint,
+  lighting, evidence-backed Green Armor/Phase Device/StairsDown colorization
+  tint,
   optional outline-mask transport, evidenced sprite animation metadata,
   caller-supplied progress-selected UVs, elapsed-time playback math and layer
   plans, pixel destinations, and normalized
@@ -137,8 +138,9 @@ types shared by core, MCP, bots, and frontends.
   emissive view raises the fair lighting floor from its red channel, and the
   optional colorization-mask view is sampled with a neutral zero per-vertex
   tint except for the evidence-backed Green Armor value on visible ground
-  items/player equipped armor and the byte-quantized Phase Device value on
-  visible ground items. Missing optional roles use a retained transparent 1x1
+  items/player equipped armor, the byte-quantized Phase Device value on visible
+  ground items, and the pinned yellow StairsDown value. Missing optional roles
+  use a retained transparent 1x1
   fallback; outline-mask sources are now transported and bound but not blended;
   additional per-sprite tint sources and visible outline/glow compositing remain
   later boundaries. Player/current actor/Phase Device descriptor metadata is

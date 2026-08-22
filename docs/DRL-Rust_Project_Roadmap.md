@@ -55,9 +55,10 @@ automated regressions, and human review.
   now available; the emissive red-channel lighting floor is also wired through
   the browser pass, plus the legacy textured-fragment alpha cutoff, while
   optional colorization-mask sampling now carries evidence-backed Green Armor
-  tint for visible ground items/player equipped armor and the byte-quantized
-  Phase Device tint for visible ground items; other current archetypes remain
-  neutral. Additional per-sprite tint sourcing, outline/glow role compositing
+  tint for visible ground items/player equipped armor, the byte-quantized
+  Phase Device tint for visible ground items, and the pinned yellow StairsDown
+  tile tint; other current archetypes remain neutral. Additional per-sprite
+  tint sourcing, outline/glow role compositing
   and capture-backed parity remain open. The optional outline-mask source is
   now transported into the browser binding with a transparent fallback, but
   visible outline/glow blending remains open. Pure frontend effect progress
@@ -160,8 +161,9 @@ composite inputs, and validated browser source loading are available, and
 operations; the renderer now retains a 24-source GPU texture cache and samples
 base-color sprites with linear normalized atlas storage, a native-tested WGSL
 contract, fair lighting, the emissive red-channel floor, the legacy alpha
-cutoff, optional mask sampling with bounded Green Armor and Phase Device tint
-mappings, outline-mask GPU transport, pure caller-supplied animation frame
+cutoff, optional mask sampling with bounded Green Armor, Phase Device, and
+StairsDown tint mappings, outline-mask GPU transport, pure caller-supplied
+animation frame
 selection, evidenced player/actor/Phase Device animation metadata, and
 progress-selected frame UV plans plus elapsed-time loop/clamp selection,
 caller-supplied elapsed-time layer-plan math, WebGPU forwarding, and bounded

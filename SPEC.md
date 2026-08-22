@@ -15,7 +15,7 @@ progress. This file expands exactly one active implementation slice.
   redistribution-gated; its controlled reference-capture gate is `NOT_RUN` on
   arm64 macOS and remains an M8 acceptance dependency.
 
-## Present — M8 visibility lifecycle hardening
+## Present — M8 StairsDown colorization tint
 
 Status: The M7 browser slice passed functional acceptance locally and in
 remote web CI. The delivered M8 pixel-grid, visibility-band, low-health tone,
@@ -33,8 +33,11 @@ base/emissive follow-ups add nearest-filtered WGSL sampling, the verified
 emissive lighting floor, the legacy alpha cutoff, a native shader contract, and
 optional colorization-mask sampling with a neutral per-vertex tint boundary.
 The preceding slices carry the legacy Green Armor and Phase Device colors into
-fair item scene metadata and the existing vertex tint path. This slice carries
-the renderer-neutral `SpriteComposite::shadow` source into an optional
+fair item scene metadata and the existing vertex tint path, and the browser
+shell now rebases its presentation clock on visibility changes. This slice
+carries the pinned yellow `StairsDown` tile color through that same mask path.
+Earlier M8 work carries the renderer-neutral `SpriteComposite::shadow` source
+into an optional
 outline-mask WebGPU binding, using the retained transparent fallback when an
 atlas has no shadow source. The shader receives the resource but leaves output
 unchanged. It also carries pinned two-frame/500 ms metadata for the current
@@ -55,7 +58,9 @@ After boot, the WASM shell schedules caller-owned elapsed rendering from
 `requestAnimationFrame` timestamps, skips frames while the document is hidden,
 resets its presentation baseline on restart, and installs one idempotent
 `visibilitychange` listener that rebases the clock even when hidden RAF
-callbacks are throttled; simulation commands remain event-driven.
+callbacks are throttled; simulation commands remain event-driven. The exact
+legacy outline/glow equation and broader tint sources remain capture/evidence
+gated.
 
 ### Observable behavior
 
@@ -164,15 +169,15 @@ callbacks are throttled; simulation commands remain event-driven.
   adds its RGB contribution multiplied by the supplied per-vertex tint. The
   fair scene path supplies the evidence-backed Green Armor tint for the
   applicable visible ground-item/player draws, the byte-quantized Phase
-  Device tint for visible ground items, and a neutral zero tint for other
-  current roles; a transparent fallback is used when a mask source is
-  unavailable.
+  Device tint for visible ground items, the pinned yellow StairsDown tile tint,
+  and a neutral zero tint for other current roles; a transparent fallback is
+  used when a mask source is unavailable.
 - `drl-render::item_colorization_tint` maps the currently implemented
   `GreenArmor` item to `[0, 255, 0, 255]` and the Phase Device ground item to
   the evidence-backed, byte-quantized `[0, 0, 179, 255]` tint; every other
-  archetype remains neutral. Visible ground-item layer draws carry the mapped
-  tint; tiles and non-player actors remain neutral, while the player draw uses
-  only the observed Green Armor equipment mapping.
+  archetype remains neutral. `drl-render::tile_colorization_tint` maps only
+  `StairsDown` to `[255, 255, 0, 255]`; other current tile kinds remain
+  neutral. Draw plans and grouped composites preserve these fair mappings.
 - `TextureBinding` and `TextureBatch` carry the optional `SpriteLayer::Shadow`
   source as an outline-mask binding. Atlases without a registered shadow layer
   bind the transparent 1x1 fallback; the WGSL contract declares and samples
@@ -220,7 +225,8 @@ callbacks are throttled; simulation commands remain event-driven.
 - Additive `ActorView::monster_kind`, `ItemArchetype`, and
   `ItemView::archetype`.
 - `PresentationStep { before, command, events, effects, after }`, `RenderScene`,
-  `AudioCue`, `BrowserSession`, and WASM-only `WebGpuRenderer`.
+  `AudioCue`, `BrowserSession`, `tile_colorization_tint`, and WASM-only
+  `WebGpuRenderer`.
 - MCP JSON serialization and replay schemas remain unchanged. `drl-core` has
   no presentation, browser, audio, filesystem, network, or MCP dependency.
 
@@ -276,9 +282,8 @@ capture is available.
 - Visible outline/glow equations, effect ownership, broader content-specific
   animation timing, additional per-sprite tint sources, and capture-backed
   legacy shader equivalence remain future M8 slices; this pass is intentionally
-  limited to caller-supplied renderer-neutral timing and layer-plan math,
-  caller-driven WASM forwarding, bounded browser scheduling, and explicit
-  visibility-lifecycle rebasing.
+  limited to the evidence-backed StairsDown tint through the existing
+  colorization-mask boundary.
 
 ## Next
 
@@ -286,8 +291,9 @@ The pixel-scale viewport, atlas metadata, UV geometry, draw-plan source
 metadata, fair lighting factors, effect progress, layer input roles, grouped
 sprite composites, validated browser source loading, renderer-owned GPU
 texture upload, base-color sampling, the emissive lighting floor, the legacy
-alpha cutoff, optional mask sampling, the Green Armor and Phase Device tint
-boundaries, outline-mask GPU transport, caller-supplied frame selection, and
+alpha cutoff, optional mask sampling, the Green Armor, Phase Device, and
+StairsDown tint boundaries, outline-mask GPU transport, caller-supplied frame
+selection, and
 the evidenced player/actor/Phase Device animation metadata, progress-driven
 frame plans, elapsed-time layer plans, caller-driven elapsed WebGPU forwarding,
 and bounded browser scheduling with visibility-lifecycle rebasing are covered

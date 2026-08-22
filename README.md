@@ -97,12 +97,14 @@ legacy graphics metadata; it is not a dependency of the core.
   layout, atlas/layer draw-plan geometry with source metadata, roles, grouped
   composites, lighting, normalized effect progress, caller-supplied animation
   frame selection, elapsed-time playback math and layer plans, and the
-  observed Green Armor/Phase Device tint mappings, outline-mask transport,
+  observed Green Armor/Phase Device/StairsDown tint mappings, outline-mask
+  transport,
   renderer-neutral animation metadata, and progress-selected frame UVs.
 - `crates/drl-audio`: semantic cues and WASM Web Audio mixer.
 - `crates/drl-web`: browser session, validated same-origin texture-source
   loading, renderer-owned WebGPU texture uploads, the partial base/mask/
-  emissive textured pass with Green Armor/Phase Device colorization tint,
+  emissive textured pass with Green Armor/Phase Device/StairsDown colorization
+  tint,
   optional outline-mask transport, renderer-neutral animation metadata,
   progress-selected frame UVs, elapsed-time playback math and layer plans,
   caller-driven elapsed WebGPU rendering, bounded requestAnimationFrame
