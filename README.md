@@ -25,7 +25,7 @@ low-health scene tone, a pure source-derived low-health pulse target, and
 event-ordered timing, pure low-health pulse smoothing, the source-derived
 three-phase explosion-mark selector, signed effect-segment arithmetic, and
 caller-owned kill-animation segment selection and FX frame selection, plus
-caller-owned movement progress selection, plus
+caller-owned movement progress selection and missile step selection, plus
 pure post-process
 glow/LUT math contracts. Full audiovisual equivalence, broader content, PWA
 persistence, and other browsers remain staged roadmap work. Do not read the
@@ -116,7 +116,8 @@ legacy graphics metadata; it is not a dependency of the core.
   explosion-mark phase helper, signed effect-segment selector,
   kill-animation segment selector, and FX frame selector remain
   palette/sprite/lifecycle agnostic; the movement progress helper remains
-  coordinate/light/entity agnostic.
+  coordinate/light/entity agnostic; the missile step helper remains
+  path/visibility/particle agnostic.
 - `crates/drl-audio`: semantic cues and WASM Web Audio mixer.
 - `crates/drl-web`: browser session, validated same-origin texture-source
   loading, renderer-owned WebGPU texture uploads, the partial base/mask/

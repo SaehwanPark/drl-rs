@@ -237,6 +237,24 @@ pub fn move_animation_progress_at_elapsed(elapsed_units: u64, duration_units: u6
   Some(progress.min(1.0) as f32)
 }
 
+/// Returns the caller-owned missile path step at elapsed time.
+///
+/// The legacy constructor derives `step_delay` as
+/// `max(duration / max(path_length, 1), 1)`, then updates the path step with
+/// `elapsed div step_delay`. Zero duration and path length therefore normalize
+/// to a one-unit delay. An index outside the Rust `u16` step range is rejected;
+/// path traversal, visibility, particles, and lifecycle remain outside this
+/// arithmetic helper.
+#[must_use]
+pub fn missile_step_index_at_elapsed(
+  elapsed_units: u64,
+  duration_units: u64,
+  path_length_units: u64,
+) -> Option<u16> {
+  let step_delay = (duration_units / path_length_units.max(1)).max(1);
+  u16::try_from(elapsed_units / step_delay).ok()
+}
+
 /// Visibility-derived presentation bands for deterministic scene shading.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum LightingBand {
@@ -2182,6 +2200,30 @@ mod tests {
   fn move_animation_progress_rejects_zero_duration() {
     assert_eq!(move_animation_progress_at_elapsed(0, 0), None);
     assert_eq!(move_animation_progress_at_elapsed(u64::MAX, 0), None);
+  }
+
+  #[test]
+  fn missile_step_index_uses_normalized_step_delay() {
+    assert_eq!(missile_step_index_at_elapsed(0, 100, 10), Some(0));
+    assert_eq!(missile_step_index_at_elapsed(9, 100, 10), Some(0));
+    assert_eq!(missile_step_index_at_elapsed(10, 100, 10), Some(1));
+    assert_eq!(missile_step_index_at_elapsed(99, 100, 10), Some(9));
+    assert_eq!(missile_step_index_at_elapsed(100, 100, 10), Some(10));
+    assert_eq!(missile_step_index_at_elapsed(5, 5, 100), Some(5));
+  }
+
+  #[test]
+  fn missile_step_index_normalizes_zero_inputs_and_stays_overflow_safe() {
+    assert_eq!(missile_step_index_at_elapsed(0, 0, 0), Some(0));
+    assert_eq!(missile_step_index_at_elapsed(u64::MAX, 0, 0), None);
+    assert_eq!(
+      missile_step_index_at_elapsed(u64::MAX, u64::MAX, 1),
+      Some(1)
+    );
+    assert_eq!(
+      missile_step_index_at_elapsed(u64::MAX, u64::MAX, u64::MAX),
+      None
+    );
   }
 
   #[test]
