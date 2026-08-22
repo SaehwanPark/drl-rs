@@ -14,6 +14,8 @@ replays, and regression testing.
   - Stable tile, item, monster, and standard-level definitions, canonical item
     factories, and table-driven generated item/monster selection with preserved
     RNG boundaries.
+  - Fixed-seed cohort reports preserve sample definitions, policy identity,
+    aggregate metrics, and per-seed replay evidence for evaluation.
 - Browser and presentation slice:
   - M7 functional checks pass locally and in remote web CI.
   - M8 provides square pixel-grid letterboxing, shared lighting bands, measured

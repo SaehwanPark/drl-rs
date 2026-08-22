@@ -15,7 +15,7 @@ progress. This file expands exactly one active implementation slice.
   redistribution-gated; its controlled reference-capture gate is `NOT_RUN` on
   arm64 macOS and remains an M8 acceptance dependency.
 
-## Present — M8 reference-capture attestation
+## Delivered — M8 presentation and attestation slices
 
 Status: The M7 browser slice passed functional acceptance locally and in
 remote web CI. The delivered M8 pixel-grid, visibility-band, low-health tone,
@@ -183,6 +183,22 @@ remain `NOT_RUN`, while broader PWA/cache policy remains M12 work.
 Sampler edge/wrap addressing remains a backend and capture concern; the helper
 does not select it.
 
+## Present — M11 fixed-seed cohort reports
+
+Status: this bounded slice adds an explicit evaluation sample boundary around
+the existing deterministic batch runner. `CohortConfig` records the starting
+seed, episode count, and per-episode turn limit. `CohortReport` records the
+caller-supplied policy identity, the exact sample definition, aggregate
+`BatchSummary`, and per-seed `EpisodeRecord` replay evidence in cohort order.
+Scenario and procedural cohort entrypoints reuse the existing batch behavior;
+they do not alter simulation, replay, or MCP schemas.
+
+The seed sequence is contiguous with wrapping `u64` arithmetic, so a cohort is
+reproducible even when its range crosses `u64::MAX`. Repeating a cohort with
+the same scenario/configuration/policy factory must produce an equal report.
+This makes sample size, seed range, and timeout budget explicit before any
+future balance or difficulty interpretation.
+
 ### Observable behavior
 
 - `BrowserSession` creates the fixed deterministic M4 arena and exposes only a
@@ -197,6 +213,10 @@ does not select it.
 - `drl-render::RenderScene` consumes only the fair observation. It exposes map
   dimensions, visible/explored tiles, visible actors/items, target-ready
   positions, and HUD values; hidden world state is unavailable.
+- `drl-core::batch::CohortConfig` produces a deterministic contiguous seed
+  sequence, and the scenario/procedural cohort entrypoints preserve that
+  definition and per-seed replay records in `CohortReport` without changing
+  game execution.
 - `drl-audio` maps events to semantic cues. The WASM mixer uses generated tones,
   mute/volume settings, and user-gesture unlock; blocked audio never blocks
   gameplay.
@@ -428,6 +448,9 @@ does not select it.
   `WebGpuRenderer`.
 - MCP JSON serialization and replay schemas remain unchanged. `drl-core` has
   no presentation, browser, audio, filesystem, network, or MCP dependency.
+- `drl_core::{CohortConfig, CohortReport}` and the two `BatchRunner` cohort
+  entrypoints are headless evaluation helpers; they do not expose hidden state
+  to agents or frontends.
 
 ### Verification
 
@@ -440,6 +463,9 @@ scripts/check-reference-capture.sh          PASS (`NOT_RUN` on arm64 macOS)
 scripts/test-reference-capture.sh           PASS (fixture coverage)
 cargo check --locked -p drl-web --target wasm32-unknown-unknown  PASS
 cargo test -p drl-render                      PASS (pixel-grid, lighting, tone, and timeline contracts)
+cargo test -p drl-core --test batch_simulation PASS (fixed-seed cohort sample,
+                                             identity, wrapping, and replay
+                                             determinism contracts)
 cargo test -p drl-assets                      PASS (slot mappings, atlas bounds,
                                              layer sets, roles, descriptor order,
                                              UVs)
@@ -482,13 +508,15 @@ capture is available.
   regressions, cue timing, and structured human comparison.
 - Visible outline/glow equations, effect ownership, broader content-specific
   animation timing, additional per-sprite tint sources, and capture-backed
-  legacy shader equivalence remain future M8 slices; this pass is intentionally
-  limited to the evidence-backed StairsDown tint through the existing
-  colorization-mask boundary and a non-destructive capture-manifest preflight.
+  legacy shader equivalence remain future M8 slices. The M11 cohort boundary
+  intentionally records evidence and sample definitions without claiming a
+  balance result, difficulty target, or statistical tolerance.
 
 ## Next
 
-The pixel-scale viewport, atlas metadata, UV geometry, draw-plan source
+The fixed-seed cohort report is covered by focused headless tests and should be
+used for the next M11 balance/evaluation slice. The pixel-scale viewport,
+atlas metadata, UV geometry, draw-plan source
 metadata, fair lighting factors, effect progress, layer input roles, grouped
 sprite composites, validated browser source loading, renderer-owned GPU
 texture upload, base-color sampling, the emissive lighting floor, the legacy

@@ -30,7 +30,7 @@ pub mod world;
 pub use actor::Actor;
 pub use agent::{AgentPolicy, ExplorerBot, GreedyCombatBot, RandomBot};
 pub use ai::{MonsterAction, MonsterAi};
-pub use batch::{BatchRunner, EpisodeRecord};
+pub use batch::{BatchRunner, CohortConfig, CohortReport, EpisodeRecord};
 pub use combat::CombatResolver;
 pub use fov::{DEFAULT_VISION_RADIUS, compute_fov, has_line_of_sight, line_points};
 pub use game::{Game, GameState};

@@ -5,6 +5,11 @@ documented in this file.
 
 ## Unreleased
 
+- Added M11 fixed-seed cohort reports around the existing headless batch
+  runner. `CohortConfig` records seed range, sample size, and turn budget;
+  `CohortReport` retains policy identity, aggregate metrics, and per-seed
+  replay evidence for reproducible evaluation without claiming balance
+  conclusions.
 - Browser-first steering and playable-slice implementation: accepted ADRs
   0007/0008, reconciled proposal/roadmap/spec/architecture/README/contributor
   guidance, browser-aware agent harness rules, and dynamic repo-local skill
