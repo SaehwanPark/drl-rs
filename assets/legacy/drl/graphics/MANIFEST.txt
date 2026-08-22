@@ -1,4 +1,4 @@
-legacy_revision=17d9be1204751899b2d69d8d3a2dde247bd0cc5c5
+legacy_revision=17d9be1204751899b2d69d8d3a2dde247bd0cc5c
 source_path=bin/data/drl/graphics
 license=CC BY-SA 4.0 (see LICENSE)
 files=

@@ -5,7 +5,7 @@ set -eu
 repo_root=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)
 asset_dir="$repo_root/assets/legacy/drl/graphics"
 manifest="$asset_dir/SHA256SUMS"
-expected_revision=17d9be1204751899b2d69d8d3a2dde247bd0cc5c5
+expected_revision=17d9be1204751899b2d69d8d3a2dde247bd0cc5c
 
 test -s "$asset_dir/LICENSE" || { printf '%s\n' 'Missing graphics license.' >&2; exit 1; }
 test -s "$asset_dir/MANIFEST.txt" || { printf '%s\n' 'Missing graphics provenance manifest.' >&2; exit 1; }

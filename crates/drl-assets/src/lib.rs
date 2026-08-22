@@ -47,6 +47,19 @@ impl AtlasId {
     }
   }
 
+  /// Registered source layers in deterministic legacy registration order.
+  #[must_use]
+  pub const fn layers(self) -> &'static [SpriteLayer] {
+    match self {
+      Self::Dguy => PLAYER_LAYERS,
+      Self::Enemies | Self::EnemiesBig => ACTOR_LAYERS,
+      Self::GunsAndPickups => ITEM_LAYERS,
+      Self::Levels => LEVEL_LAYERS,
+      Self::DoorsAndDecorations => DOOR_LAYERS,
+      Self::Fx => FX_LAYERS,
+    }
+  }
+
   /// Returns the path for a compositing layer of this atlas.
   #[must_use]
   pub const fn layer_path(self, layer: SpriteLayer) -> &'static str {
@@ -129,12 +142,26 @@ pub struct SpriteDescriptor {
   pub layers: &'static [SpriteLayer],
 }
 
-const BASE: &[SpriteLayer] = &[SpriteLayer::Base];
-const LIT: &[SpriteLayer] = &[
+const LEVEL_LAYERS: &[SpriteLayer] = &[SpriteLayer::Base, SpriteLayer::Mask, SpriteLayer::Emissive];
+const DOOR_LAYERS: &[SpriteLayer] = &[
   SpriteLayer::Base,
-  SpriteLayer::Emissive,
+  SpriteLayer::Mask,
   SpriteLayer::Shadow,
+  SpriteLayer::Emissive,
 ];
+const ITEM_LAYERS: &[SpriteLayer] = DOOR_LAYERS;
+const ACTOR_LAYERS: &[SpriteLayer] = &[
+  SpriteLayer::Base,
+  SpriteLayer::Shadow,
+  SpriteLayer::Emissive,
+];
+const PLAYER_LAYERS: &[SpriteLayer] = &[
+  SpriteLayer::Base,
+  SpriteLayer::Mask,
+  SpriteLayer::Shadow,
+  SpriteLayer::Emissive,
+];
+const FX_LAYERS: &[SpriteLayer] = LEVEL_LAYERS;
 
 const SPRITE_CELL_SIZE: u32 = 32;
 const SPRITE_COLUMNS: u32 = 16;
@@ -162,27 +189,27 @@ pub const fn tile_sprite(tile: TileKind) -> SpriteDescriptor {
     TileKind::Floor => SpriteDescriptor {
       atlas: AtlasId::Levels,
       rect: legacy_slot(1),
-      layers: BASE,
+      layers: LEVEL_LAYERS,
     },
     TileKind::Wall => SpriteDescriptor {
       atlas: AtlasId::Levels,
       rect: legacy_slot(15 * SPRITE_COLUMNS + 1),
-      layers: BASE,
+      layers: LEVEL_LAYERS,
     },
     TileKind::DoorClosed => SpriteDescriptor {
       atlas: AtlasId::DoorsAndDecorations,
       rect: legacy_slot(1),
-      layers: BASE,
+      layers: DOOR_LAYERS,
     },
     TileKind::DoorOpen => SpriteDescriptor {
       atlas: AtlasId::DoorsAndDecorations,
       rect: legacy_slot(3 * SPRITE_COLUMNS + 1),
-      layers: BASE,
+      layers: DOOR_LAYERS,
     },
     TileKind::StairsDown => SpriteDescriptor {
       atlas: AtlasId::DoorsAndDecorations,
       rect: legacy_slot(7 * SPRITE_COLUMNS + 1),
-      layers: LIT,
+      layers: DOOR_LAYERS,
     },
   }
 }
@@ -194,27 +221,27 @@ pub const fn actor_sprite(kind: Option<MonsterKind>) -> SpriteDescriptor {
     None => SpriteDescriptor {
       atlas: AtlasId::Dguy,
       rect: legacy_slot(1),
-      layers: LIT,
+      layers: PLAYER_LAYERS,
     },
     Some(MonsterKind::FormerHuman) => SpriteDescriptor {
       atlas: AtlasId::Enemies,
       rect: legacy_slot(1),
-      layers: LIT,
+      layers: ACTOR_LAYERS,
     },
     Some(MonsterKind::FormerSergeant) => SpriteDescriptor {
       atlas: AtlasId::Enemies,
       rect: legacy_slot(2),
-      layers: LIT,
+      layers: ACTOR_LAYERS,
     },
     Some(MonsterKind::Imp) => SpriteDescriptor {
       atlas: AtlasId::Enemies,
       rect: legacy_slot(5),
-      layers: LIT,
+      layers: ACTOR_LAYERS,
     },
     Some(MonsterKind::Demon) => SpriteDescriptor {
       atlas: AtlasId::Enemies,
       rect: legacy_slot(6),
-      layers: LIT,
+      layers: ACTOR_LAYERS,
     },
   }
 }
@@ -226,52 +253,52 @@ pub const fn item_sprite(archetype: ItemArchetype) -> SpriteDescriptor {
     ItemArchetype::Unknown => SpriteDescriptor {
       atlas: AtlasId::Fx,
       rect: legacy_slot(1),
-      layers: BASE,
+      layers: FX_LAYERS,
     },
     ItemArchetype::CombatKnife => SpriteDescriptor {
       atlas: AtlasId::GunsAndPickups,
       rect: legacy_slot(2),
-      layers: LIT,
+      layers: ITEM_LAYERS,
     },
     ItemArchetype::Pistol => SpriteDescriptor {
       atlas: AtlasId::GunsAndPickups,
       rect: legacy_slot(4),
-      layers: LIT,
+      layers: ITEM_LAYERS,
     },
     ItemArchetype::Shotgun => SpriteDescriptor {
       atlas: AtlasId::GunsAndPickups,
       rect: legacy_slot(5),
-      layers: LIT,
+      layers: ITEM_LAYERS,
     },
     ItemArchetype::GreenArmor => SpriteDescriptor {
       atlas: AtlasId::GunsAndPickups,
       rect: legacy_slot(SPRITE_COLUMNS + 1),
-      layers: LIT,
+      layers: ITEM_LAYERS,
     },
     ItemArchetype::Ammo9mm => SpriteDescriptor {
       atlas: AtlasId::GunsAndPickups,
       rect: legacy_slot(SPRITE_COLUMNS + 7),
-      layers: LIT,
+      layers: ITEM_LAYERS,
     },
     ItemArchetype::AmmoShells => SpriteDescriptor {
       atlas: AtlasId::GunsAndPickups,
       rect: legacy_slot(SPRITE_COLUMNS + 9),
-      layers: LIT,
+      layers: ITEM_LAYERS,
     },
     ItemArchetype::SmallMedPack => SpriteDescriptor {
       atlas: AtlasId::GunsAndPickups,
       rect: legacy_slot(3 * SPRITE_COLUMNS + 9),
-      layers: LIT,
+      layers: ITEM_LAYERS,
     },
     ItemArchetype::LargeMedPack => SpriteDescriptor {
       atlas: AtlasId::GunsAndPickups,
       rect: legacy_slot(3 * SPRITE_COLUMNS + 10),
-      layers: LIT,
+      layers: ITEM_LAYERS,
     },
     ItemArchetype::PhaseDevice => SpriteDescriptor {
       atlas: AtlasId::GunsAndPickups,
       rect: legacy_slot(SPRITE_COLUMNS + 15),
-      layers: LIT,
+      layers: ITEM_LAYERS,
     },
   }
 }
@@ -283,7 +310,7 @@ pub const fn asset_path(file: &str) -> &str {
 }
 
 /// The legacy graphics revision imported by the asset pipeline.
-pub const LEGACY_REVISION: &str = "17d9be1204751899b2d69d8d3a2dde247bd0cc5c5";
+pub const LEGACY_REVISION: &str = "17d9be1204751899b2d69d8d3a2dde247bd0cc5c";
 
 #[cfg(test)]
 mod tests {
@@ -304,6 +331,7 @@ mod tests {
         descriptor.atlas.dimensions().0,
         descriptor.atlas.dimensions().1
       ));
+      assert_eq!(descriptor.layers, descriptor.atlas.layers());
     }
     for kind in [
       None,
@@ -318,11 +346,27 @@ mod tests {
         descriptor.atlas.dimensions().0,
         descriptor.atlas.dimensions().1
       ));
+      assert_eq!(descriptor.layers, descriptor.atlas.layers());
     }
-    assert_eq!(
-      item_sprite(ItemArchetype::Pistol).atlas,
-      AtlasId::GunsAndPickups
-    );
+    for archetype in [
+      ItemArchetype::Unknown,
+      ItemArchetype::Pistol,
+      ItemArchetype::Shotgun,
+      ItemArchetype::CombatKnife,
+      ItemArchetype::Ammo9mm,
+      ItemArchetype::AmmoShells,
+      ItemArchetype::SmallMedPack,
+      ItemArchetype::LargeMedPack,
+      ItemArchetype::GreenArmor,
+      ItemArchetype::PhaseDevice,
+    ] {
+      let descriptor = item_sprite(archetype);
+      assert!(descriptor.rect.is_within(
+        descriptor.atlas.dimensions().0,
+        descriptor.atlas.dimensions().1
+      ));
+      assert_eq!(descriptor.layers, descriptor.atlas.layers());
+    }
     assert_eq!(
       AtlasId::Dguy.layer_path(SpriteLayer::Emissive),
       "dguy_emissive.png"
@@ -399,5 +443,45 @@ mod tests {
     assert_eq!(AtlasId::Levels.dimensions(), (512, 1152));
     assert_eq!(AtlasId::DoorsAndDecorations.dimensions(), (512, 288));
     assert_eq!(AtlasId::Fx.dimensions(), (512, 64));
+  }
+
+  #[test]
+  fn atlas_layers_match_registered_source_order() {
+    assert_eq!(
+      AtlasId::Levels.layers(),
+      &[SpriteLayer::Base, SpriteLayer::Mask, SpriteLayer::Emissive]
+    );
+    assert_eq!(
+      AtlasId::DoorsAndDecorations.layers(),
+      &[
+        SpriteLayer::Base,
+        SpriteLayer::Mask,
+        SpriteLayer::Shadow,
+        SpriteLayer::Emissive,
+      ]
+    );
+    assert_eq!(
+      AtlasId::GunsAndPickups.layers(),
+      AtlasId::DoorsAndDecorations.layers()
+    );
+    assert_eq!(
+      AtlasId::Enemies.layers(),
+      &[
+        SpriteLayer::Base,
+        SpriteLayer::Shadow,
+        SpriteLayer::Emissive
+      ]
+    );
+    assert_eq!(AtlasId::EnemiesBig.layers(), AtlasId::Enemies.layers());
+    assert_eq!(
+      AtlasId::Dguy.layers(),
+      &[
+        SpriteLayer::Base,
+        SpriteLayer::Mask,
+        SpriteLayer::Shadow,
+        SpriteLayer::Emissive,
+      ]
+    );
+    assert_eq!(AtlasId::Fx.layers(), AtlasId::Levels.layers());
   }
 }

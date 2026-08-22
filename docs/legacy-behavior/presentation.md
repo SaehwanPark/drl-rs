@@ -4,7 +4,7 @@ Status: evidence catalogued; reference capture execution is `NOT_RUN` on the
 current arm64 macOS host.
 
 The source revision used for this catalog is
-`17d9be1204751899b2d69d8d3a2dde247bd0cc5c5`. The legacy renderer describes a
+`17d9be1204751899b2d69d8d3a2dde247bd0cc5c`. The legacy renderer describes a
 layered 2D sprite map in `src/drlspritemap.pas`, animation timing in
 `src/drlanimation.pas`, particle effects in `src/drlparticles.pas`, and color
 post-processing LUTs in `bin/data/drl/graphics/`. These are evidence of

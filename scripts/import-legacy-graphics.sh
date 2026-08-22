@@ -4,7 +4,7 @@ set -eu
 
 repo_root=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)
 legacy_repo=${DRL_LEGACY_REPO:-"$repo_root/../doom-the-roughlike-original"}
-revision=${DRL_LEGACY_REVISION:-17d9be1204751899b2d69d8d3a2dde247bd0cc5c5}
+revision=${DRL_LEGACY_REVISION:-17d9be1204751899b2d69d8d3a2dde247bd0cc5c}
 destination="$repo_root/assets/legacy/drl/graphics"
 
 if ! git -C "$legacy_repo" cat-file -e "$revision^{commit}" 2>/dev/null; then

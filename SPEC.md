@@ -10,20 +10,21 @@ progress. This file expands exactly one active implementation slice.
 - M0 steering was reconciled to browser-first delivery. ADRs 0007 and 0008
   record the accepted Rust/WASM/WebGPU and build-time-content decisions.
 - M3 asset infrastructure imported the complete tracked legacy graphics atlas
-  from Git revision `17d9be1204751899b2d69d8d3a2dde247bd0cc5c5`, with CC BY-SA
+  from Git revision `17d9be1204751899b2d69d8d3a2dde247bd0cc5c`, with CC BY-SA
   attribution and SHA-256 checksums. Legacy audio, music, and fonts remain
   redistribution-gated; its controlled reference-capture gate is `NOT_RUN` on
   arm64 macOS and remains an M8 acceptance dependency.
 
-## Present — M8 measured atlas descriptors
+## Present — M8 deterministic atlas layer metadata
 
 Status: The M7 browser slice passed functional acceptance locally and in
 remote web CI. The delivered M8 pixel-grid, visibility-band, low-health tone,
-and fair effect-span slices share pure presentation rules. This bounded
-follow-up replaces placeholder atlas cells with measured 32-pixel slots from
-the pinned legacy sprite-sheet grid and exposes atlas dimensions for bounds
-validation. It remains platform-neutral and is not a capture-backed parity
-claim.
+and fair effect-span slices share pure presentation rules. The preceding M8
+slice replaced placeholder atlas cells with measured 32-pixel slots from the
+pinned legacy sprite-sheet grid. This bounded follow-up exposes each atlas's
+registered source-layer set and carries it through semantic descriptors in a
+deterministic order. It remains platform-neutral and is not a compositor or
+capture-backed parity claim.
 
 ### Observable behavior
 
@@ -85,6 +86,12 @@ claim.
   entry remains a bounded FX cell.
 - Descriptor bounds tests reject any current rectangle that exceeds its
   imported atlas dimensions.
+- `drl-assets::AtlasId::layers` exposes the registered source-layer order for
+  each imported atlas; semantic descriptors reference the matching static set.
+- Layer metadata is descriptive input for a future compositor. It does not
+  load, blend, or sample image data.
+- The asset manifest, import/check scripts, provenance notes, and
+  `LEGACY_REVISION` all use the exact 40-character pinned Git commit.
 
 ### Public contracts
 
@@ -105,7 +112,8 @@ sh scripts/check-repository.sh              PASS (baseline plus new crates)
 sh scripts/check-assets.sh                  PASS (32 PNGs, license, hashes)
 cargo check --locked -p drl-web --target wasm32-unknown-unknown  PASS
 cargo test -p drl-render                      PASS (pixel-grid, lighting, tone, and timeline contracts)
-cargo test -p drl-assets                      PASS (measured slot mappings and atlas bounds)
+cargo test -p drl-assets                      PASS (slot mappings, atlas bounds,
+                                             layer sets, descriptor order)
 cargo test -p drl-web                         PASS (effect handoff preserves event/timeline parity)
 scripts/check-web.sh                        PASS for native/WASM builds;
                                              browser runner NOT_RUN if Chrome absent
@@ -114,14 +122,16 @@ Chrome 151 WebGPU smoke playthrough          PASS (Apple Metal-3, 1280x720, DPR 
                                              start with explicit gesture-gated
                                              audio state, move, mute, restart;
                                              pixel-grid scene visible after move)
-GitHub Actions run 32545325186               PASS (repository + Ubuntu WASM
-                                             jobs for the measured atlas
-                                             descriptor slice)
+GitHub Actions run 32545325186               PASS (prior repository + Ubuntu
+                                             WASM jobs for the measured atlas
+                                             descriptor slice; this layer slice
+                                             is not included)
 ```
 
-The local and remote functional gates pass for this slice. The remote run
-records repository and Ubuntu WASM checks; the local browser runner is
-`NOT_RUN`. The existing Chrome run records browser/version, OS,
+The existing local and remote functional gates pass for the preceding atlas
+slice. This layer-metadata slice requires a new hosted run, currently
+`NOT_RUN`; local browser execution remains `NOT_RUN` when the runner is
+unavailable. The existing Chrome run records browser/version, OS,
 adapter/backend, viewport, DPR, build revision, and audio unlock/mute state,
 but the fidelity-matrix comparison remains `NOT_RUN` until a controlled legacy
 capture is available.
@@ -140,8 +150,8 @@ capture is available.
 
 ## Next
 
-The pixel-scale viewport is covered by local in-app Chrome smoke and the
-hosted WASM browser job. Continue M8 only with capture-backed measurement of
-atlas rectangles, lighting, effects, typography, and audio. Do not claim
-audiovisual parity from the current placeholder atlas rectangles or the
-`NOT_RUN` legacy captures.
+The pixel-scale viewport and atlas metadata are covered by local checks and
+the prior hosted WASM browser job. Continue M8 only with capture-backed
+measurement of layer compositing, lighting, effects, typography, and audio.
+Do not claim audiovisual parity from the current metadata-only compositor
+inputs or the `NOT_RUN` legacy captures.
