@@ -61,7 +61,7 @@ manifest = {
     "rights": ["assets/legacy/drl/graphics/LICENSE"],
 }
 manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")
-cache_version = f"v1-{manifest['source_revision'][:12]}"
+cache_version = f"v1-{manifest['project_version']}-{manifest['source_revision'][:12]}"
 cache_marker = '/* __CACHE_VERSION__ */ "v1"'
 if cache_marker not in template:
     raise SystemExit("service-worker cache version marker is missing")

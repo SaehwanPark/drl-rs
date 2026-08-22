@@ -229,11 +229,11 @@ The manifest is evidence for reproducible static packaging only. It is not a
 signature, a cache invalidation policy, or proof of offline or cross-browser
 acceptance.
 
-The generated service-worker cache version derives from the manifest source
-revision (`v1-` plus its first 12 characters), with
-`v1-unknown` when the build revision cannot be resolved. The checked-in worker
-template remains a marker-bearing source; only the generated bundle receives
-the concrete version.
+The generated service-worker cache version derives from the manifest project
+version and source revision (`v1-<project>-` plus the first 12 revision
+characters), with an `unknown` revision suffix when the build revision cannot
+be resolved. The checked-in worker template remains a marker-bearing source;
+only the generated bundle receives the concrete version.
 
 ## Delivered — M12 browser support and error diagnostics
 
@@ -270,13 +270,21 @@ category and rejects incompatible or invalid reports through the existing
 integrity gate. It does not add tolerance policy, rerun episodes, or claim
 statistical significance or balance conclusions.
 
-## Present — M11 outcome-rate tolerance gate
+## Delivered — M11 outcome-rate tolerance gate
 
-Status: the active slice adds `CohortOutcomeTolerances` and a pure
+Status: this delivered slice adds `CohortOutcomeTolerances` and a pure
 `CohortOutcomeComparison::within_tolerance` gate. Callers provide one finite,
 non-negative maximum absolute rate delta shared by all outcome categories.
 Invalid thresholds return `false`; the gate does not mutate reports, rerun
 episodes, or claim statistical significance or balance conclusions.
+
+## Present — M12 project-versioned cache policy
+
+Status: the active slice derives generated service-worker cache names from the
+canonical project version and source-revision prefix. The release-manifest
+checker verifies the generated literal matches both inputs. This is a
+deterministic invalidation policy for static bundles, not proof of offline
+behavior, a signed release, or cross-browser acceptance.
 
 ### Observable behavior
 
@@ -311,6 +319,9 @@ episodes, or claim statistical significance or balance conclusions.
 - `CohortOutcomeComparison::within_tolerance` applies a caller-owned finite,
   non-negative maximum absolute rate delta to every outcome category and
   rejects invalid thresholds without changing the comparison.
+- Generated service-worker bundles use a cache name containing `v1`, the
+  canonical project version, and the first 12 source-revision characters; the
+  release manifest rejects mismatches without broadening offline claims.
 - `drl-audio` maps events to semantic cues. The WASM mixer uses generated tones,
   mute/volume settings, and user-gesture unlock; blocked audio never blocks
   gameplay.
@@ -327,9 +338,10 @@ episodes, or claim statistical significance or balance conclusions.
   revision, sorted artifact hashes, generated-file declarations, and graphics
   rights metadata; the release-manifest check rejects missing, unsafe, or
   mismatched entries and missing service-worker coverage.
-- The generated service worker uses the manifest source revision prefix in its
-  cache version, so two different known build revisions do not share the same
-  cache name; the checked-in template remains unversioned marker input.
+- The generated service worker uses the manifest project version and source
+  revision prefix in its cache version, so two different known build revisions
+  or project versions do not share the same cache name; the checked-in
+  template remains unversioned marker input.
 - Startup and presentation failures expose an accessible `#game-diagnostics`
   alert with a title, detail, and recovery guidance; it remains hidden after a
   successful start unless the offline-cache boundary reports a warning.
@@ -564,10 +576,13 @@ episodes, or claim statistical significance or balance conclusions.
 - `CohortTolerances` and `CohortComparison` are regression-gate math only;
   they do not claim statistical significance, balance correctness, or a
   difficulty target.
-- The release manifest is unsigned metadata; signing, cache invalidation,
-  offline acceptance, and cross-browser claims remain later M12/M13 work; the
-  source-derived cache version is only deterministic naming, not a release
-  invalidation policy. The diagnostics panel is a local recovery surface, not
+- `CohortOutcomeTolerances` and `CohortOutcomeComparison` are regression-gate
+  math only; they do not claim statistical significance, balance correctness,
+  or a difficulty target.
+- The release manifest is unsigned metadata; signing, offline acceptance, and
+  cross-browser claims remain later M12/M13 work. The project/source-derived
+  cache version is a deterministic invalidation policy, not a signed release
+  proof. The diagnostics panel is a local recovery surface, not
   a browser compatibility guarantee or telemetry channel. Cohort report
   integrity validation is an evidence-consistency gate, not a balance,
   difficulty, or statistical-significance claim. The static accessibility
@@ -586,7 +601,7 @@ scripts/test-reference-capture.sh           PASS (fixture coverage)
 scripts/check-release-manifest.sh           PASS (after `scripts/build-web.sh`)
 scripts/check-browser-diagnostics.sh        PASS (via `scripts/check-web.sh`)
 scripts/check-browser-accessibility.sh      PASS (via `scripts/check-web.sh`)
-scripts/check-version.sh                    PASS (`0.1.3` projections and transition)
+scripts/check-version.sh                    PASS (`0.1.4` projections and transition)
 cargo check --locked -p drl-web --target wasm32-unknown-unknown  PASS
 cargo test -p drl-render                      PASS (pixel-grid, lighting, tone, and timeline contracts)
 cargo test -p drl-core --test batch_simulation PASS (fixed-seed cohort sample,
@@ -643,12 +658,15 @@ capture is available.
   without claiming a balance result, difficulty target, or statistical
   significance. Static browser accessibility is a shell contract, not full
   WCAG or screen-reader acceptance.
+- Offline-after-first-load, signed release verification, and cross-browser
+  acceptance remain outside the static cache-version policy.
 
 ## Next
 
 The fixed-seed cohort report, integrity gate, outcome-distribution view,
 compatible outcome comparison, and outcome-rate tolerance gate are covered by
-focused headless tests; broader M11 balance/evaluation work remains.
+focused headless tests. The project-versioned cache policy is covered by
+static/build checks; broader offline and release-hardening work remains.
 The pixel-scale
 viewport,
 atlas metadata, UV geometry, draw-plan source

@@ -75,8 +75,8 @@ automated regressions, and human review.
   content animation and capture parity remain open. A read-only capture
   manifest preflight now validates pinned metadata, rights, media hashes, and
   evidence status while preserving `NOT_RUN`.
-- `SPEC.md` contains the single active M11 outcome-tolerance slice; it is
-  not a second roadmap.
+- `SPEC.md` contains the single active M12 project-versioned cache-policy
+  slice; it is not a second roadmap.
 - The first bounded M11 cohort slice adds explicit fixed-seed sample
   definitions and reports around the existing headless batch runner. Reports
   retain policy identity, aggregate metrics, and per-seed replay evidence;
@@ -96,8 +96,8 @@ automated regressions, and human review.
   service-worker coverage. Signed releases, cache invalidation policy, and
   offline/cross-browser acceptance remain open.
 - The M12 cache-version follow-up derives the generated service-worker cache
-  name from the manifest source-revision prefix; this is deterministic naming,
-  not a signed release invalidation policy.
+  name from the manifest project version and source-revision prefix; this is a
+  deterministic invalidation policy, not a signed release or offline claim.
 - The M12 diagnostics slice adds a local accessible browser-support and
   startup-error panel with recovery guidance; it sends no telemetry and does
   not extend the tested WebGPU browser claim.
@@ -276,8 +276,7 @@ bounded corruption/version handling, transactional replay restore, a
 best-effort WASM localStorage boundary with save/load/clear controls, and a
 versioned same-origin service-worker cache generated from the complete static
 bundle. Offline browser acceptance and cross-browser behavior remain
-`NOT_RUN`; broader PWA/cache policy and signed release invalidation remain M12
-work.
+`NOT_RUN`; signed release invalidation and broader PWA policy remain M12 work.
 Remaining work is visible outline/glow role-specific shader blending/layer
 compositing, additional per-sprite tint sourcing, broader content metadata;
 capture-backed lighting/LUT parity,
@@ -320,8 +319,8 @@ cache/version policy, accessibility audit, browser support/error screens,
 telemetry-free diagnostics, and signed release manifests. The first manifest
 slice records source revision, artifact hashes, rights metadata, and
 service-worker coverage; its cache-version follow-up derives the generated
-worker name from that source-revision prefix. The diagnostics slice adds a
-local accessible browser-support/startup-diagnostics panel with recovery
+worker name from the project version and source-revision prefix; the diagnostics
+slice adds a local accessible browser-support/startup-diagnostics panel with recovery
  guidance and no telemetry; the delivered follow-up statically audits shell
  landmarks and control semantics. Signing, release audits, broader
 invalidation policy, dynamic accessibility acceptance, and untested-browser

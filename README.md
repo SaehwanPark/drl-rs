@@ -132,7 +132,7 @@ legacy graphics metadata; it is not a dependency of the core.
     renderer-owned WebGPU uploads, and the partial textured pass.
   - Animation playback, bounded scheduling, fixed-session snapshots,
     best-effort localStorage, generated-bundle service-worker cache, and the
-    source-revision-derived cache version recorded by release manifests.
+    project-version/source-revision cache policy recorded by release manifests.
   - Local accessible browser-support/startup diagnostics with recovery guidance;
     no telemetry or untested-browser support claim.
   - Static shell accessibility audit for names, labels, focus, and live regions;
