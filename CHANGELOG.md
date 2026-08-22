@@ -220,6 +220,10 @@ documented in this file.
   quadratic active envelope and zero-at-expiry guard. Random frequencies,
   offsets, strength/direction scaling, scheduling, rendering, lifecycle, and
   capture behavior remain outside the helper.
+- Added pure `drl-render::particle_burst_origin_at_legacy_cell` arithmetic for
+  the pinned one-based 32-pixel cell-center conversion with checked signed
+  overflow handling. Direction, random burst parameters, decals, particle
+  engine state, rendering, lifecycle, and capture behavior remain outside.
 
 - `CONTRIBUTING.md` added at the repository root, covering workspace crate
   map, prerequisites, code style (2-space indent, `rustfmt`, `clippy`), branch

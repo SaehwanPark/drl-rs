@@ -49,6 +49,7 @@ types shared by core, MCP, bots, and frontends.
   `missile_step_index_at_elapsed` arithmetic,
   `missile_ray_sample_distance_at_index` arithmetic,
   `screen_shake_fade_at_elapsed` arithmetic,
+  `particle_burst_origin_at_legacy_cell` arithmetic,
   post-process glow/LUT coordinate math and pure blur-tap plans,
   event-ordered `EffectSpan` timing, and renderer-neutral `LayerDraw` plans
   carrying atlas layers, imported source metadata, explicit layer roles, fair
@@ -131,6 +132,10 @@ types shared by core, MCP, bots, and frontends.
   zero-at-expiry guard. It intentionally does not reproduce random frequencies,
   trigonometric offsets, strength/direction scaling, scheduling, sprite-map
   state, lifecycle, rendering, or backend behavior.
+- `particle_burst_origin_at_legacy_cell` preserves the pinned one-based
+  `((cell - 1) * 32 + 16)` centered origin and zero Z coordinate with checked
+  signed arithmetic. It does not convert current zero-based positions or spawn,
+  randomize, configure, or render particles.
 - `active_effect_frames` reports normalized progress only for the supplied
   spans at the supplied frontend tick. It omits zero-duration/overflowed spans
   and cannot create new events or inspect simulation state.
