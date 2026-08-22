@@ -317,6 +317,37 @@ pub fn particle_burst_origin_at_legacy_cell(
   Some([x, y, 0])
 }
 
+/// Resolves the caller-owned direction for one legacy particle burst sample.
+///
+/// The legacy burst normalizes the requested XY direction when its length is
+/// positive, otherwise it clears only XY and retains the emitter Z direction.
+/// A positive distance scale then replaces Z with `emitter_z * arc / scale`.
+/// Random range selection, spread, decals, and particle-engine ownership stay
+/// outside this deterministic helper.
+#[must_use]
+pub fn particle_burst_direction(
+  emitter_direction: [f32; 3],
+  requested_direction: [f32; 2],
+  arc: f32,
+  distance_scale: f32,
+) -> [f32; 3] {
+  let length = (requested_direction[0] * requested_direction[0]
+    + requested_direction[1] * requested_direction[1])
+    .sqrt();
+  let mut direction = emitter_direction;
+  if length > 0.0 {
+    direction[0] = requested_direction[0] / length;
+    direction[1] = requested_direction[1] / length;
+  } else {
+    direction[0] = 0.0;
+    direction[1] = 0.0;
+  }
+  if distance_scale > 0.0 {
+    direction[2] = emitter_direction[2] * arc / distance_scale;
+  }
+  direction
+}
+
 /// Visibility-derived presentation bands for deterministic scene shading.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum LightingBand {
@@ -2345,6 +2376,34 @@ mod tests {
   fn particle_burst_origin_rejects_signed_overflow() {
     assert_eq!(particle_burst_origin_at_legacy_cell(i32::MIN, 1), None);
     assert_eq!(particle_burst_origin_at_legacy_cell(i32::MAX, 1), None);
+  }
+
+  #[test]
+  fn particle_burst_direction_normalizes_xy_and_scales_z() {
+    assert_eq!(
+      particle_burst_direction([1.0, 2.0, 3.0], [3.0, 4.0], 2.0, 4.0),
+      [0.6, 0.8, 1.5]
+    );
+  }
+
+  #[test]
+  fn particle_burst_direction_clears_zero_xy_and_keeps_z_without_scale() {
+    assert_eq!(
+      particle_burst_direction([1.0, 2.0, 3.0], [0.0, 0.0], 2.0, 0.0),
+      [0.0, 0.0, 3.0]
+    );
+    assert_eq!(
+      particle_burst_direction([1.0, 2.0, 3.0], [0.0, 0.0], 2.0, -1.0),
+      [0.0, 0.0, 3.0]
+    );
+  }
+
+  #[test]
+  fn particle_burst_direction_preserves_unit_axis_and_zero_emitter_z() {
+    assert_eq!(
+      particle_burst_direction([0.0, 0.0, 0.0], [-2.0, 0.0], 5.0, 2.0),
+      [-1.0, 0.0, 0.0]
+    );
   }
 
   #[test]

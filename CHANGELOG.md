@@ -5,6 +5,10 @@ documented in this file.
 
 ## Unreleased
 
+- Added the bounded M8 particle-burst direction contract: requested XY
+  directions are normalized, zero vectors clear only XY, and positive distance
+  scales apply the legacy arc-to-Z adjustment without owning random sampling,
+  decals, or a particle engine.
 - Added compatible M11 telemetry comparisons with separate caller-owned shot
   accuracy and per-episode average tolerances; deltas remain descriptive and
   do not claim balance or statistical significance.
@@ -59,7 +63,7 @@ documented in this file.
   `CohortReport` retains policy identity, aggregate metrics, and per-seed
   replay evidence for reproducible evaluation without claiming balance
   conclusions.
-- Continued retrospective project versioning at `0.2.3` from the untagged
+- Continued retrospective project versioning at `0.2.4` from the untagged
   `0.1.0` baseline. `VERSION`, Cargo/MCP metadata, and release manifests are
   checked by the agent harness; code changes require one valid component
   increment while document- and setting-only changes do not.
