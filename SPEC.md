@@ -119,6 +119,12 @@ It also exposes `drl_render::missile_step_index_at_elapsed`, preserving the
 source's normalized step-delay derivation and elapsed quotient, including the
 one-unit minimums for zero duration or path length. Path traversal, visibility,
 particles, and lifecycle remain outside the helper.
+It also exposes `drl_render::missile_ray_sample_distance_at_index`, preserving
+the ray branch's strict pre-increment half-grid test, fixed 20-unit spacing,
+and possible endpoint overshoot with checked arithmetic. Zero endpoint length
+and unrepresentable intermediate/output values return `None`; endpoint metrics,
+interpolation, path, visibility, particles, and rendering remain outside the
+helper.
 Sampler edge/wrap addressing remains a backend and capture concern; the helper
 does not select it.
 
@@ -216,6 +222,12 @@ does not select it.
   and integer quotient. It returns `None` for a quotient outside the Rust step
   range and performs no path traversal, visibility, particle, lifecycle, or
   backend work.
+- `drl-render::missile_ray_sample_distance_at_index` maps a caller-owned
+  endpoint length, grid size, and sample ordinal through the pinned strict
+  pre-increment ray schedule. It returns `None` for an ineligible sample or
+  checked-arithmetic failure and preserves the source's possible overshoot
+  without selecting a distance metric, interpolation coordinate, visibility,
+  particle, lifecycle, or backend behavior.
 - WebGPU uses that shared clear-color rule; health-tone presentation remains an
   effect and cannot reveal hidden world state.
 - `drl-render::effect_timeline` preserves event order and assigns each bounded

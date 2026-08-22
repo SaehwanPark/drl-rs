@@ -47,6 +47,7 @@ types shared by core, MCP, bots, and frontends.
   `fx_animation_frame_index_at_elapsed` arithmetic,
   `move_animation_progress_at_elapsed` arithmetic,
   `missile_step_index_at_elapsed` arithmetic,
+  `missile_ray_sample_distance_at_index` arithmetic,
   post-process glow/LUT coordinate math and pure blur-tap plans,
   event-ordered `EffectSpan` timing, and renderer-neutral `LayerDraw` plans
   carrying atlas layers, imported source metadata, explicit layer roles, fair
@@ -120,6 +121,11 @@ types shared by core, MCP, bots, and frontends.
   delay and elapsed quotient. Zero duration/path length normalize to the
   source's one-unit delay; unrepresentable step indexes are rejected without
   importing path, visibility, particle, lifecycle, or backend state.
+- `missile_ray_sample_distance_at_index` preserves the pinned strict
+  pre-increment half-grid test, fixed 20-unit spacing, and possible endpoint
+  overshoot with checked arithmetic. It accepts caller-owned endpoint length and
+  does not infer distance metrics, interpolation, visibility, particles,
+  rendering, lifecycle, or backend behavior.
 - `active_effect_frames` reports normalized progress only for the supplied
   spans at the supplied frontend tick. It omits zero-duration/overflowed spans
   and cannot create new events or inspect simulation state.

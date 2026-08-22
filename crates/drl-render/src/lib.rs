@@ -255,6 +255,28 @@ pub fn missile_step_index_at_elapsed(
   u16::try_from(elapsed_units / step_delay).ok()
 }
 
+/// Returns the caller-owned ray sample distance at a zero-based sample index.
+///
+/// The legacy ray draw starts at half the integer-divided grid size, requires
+/// that pre-increment distance to be strictly below the endpoint length, then
+/// adds a fixed 20-unit spacing before sampling. The final sample can therefore
+/// overshoot the endpoint. Checked arithmetic rejects invalid or unrepresentable
+/// values; endpoint metrics, interpolation, visibility, and rendering remain
+/// outside this numeric helper.
+#[must_use]
+pub fn missile_ray_sample_distance_at_index(
+  sample_index: u64,
+  endpoint_length_units: u64,
+  grid_size_units: u64,
+) -> Option<u64> {
+  let start_distance = grid_size_units / 2;
+  let pre_increment_distance = start_distance.checked_add(sample_index.checked_mul(20)?)?;
+  if pre_increment_distance >= endpoint_length_units {
+    return None;
+  }
+  pre_increment_distance.checked_add(20)
+}
+
 /// Visibility-derived presentation bands for deterministic scene shading.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum LightingBand {
@@ -2222,6 +2244,29 @@ mod tests {
     );
     assert_eq!(
       missile_step_index_at_elapsed(u64::MAX, u64::MAX, u64::MAX),
+      None
+    );
+  }
+
+  #[test]
+  fn missile_ray_sample_preserves_spacing_boundaries_and_overshoot() {
+    assert_eq!(missile_ray_sample_distance_at_index(0, 10, 20), None);
+    assert_eq!(missile_ray_sample_distance_at_index(0, 31, 20), Some(30));
+    assert_eq!(missile_ray_sample_distance_at_index(1, 40, 20), Some(50));
+    assert_eq!(missile_ray_sample_distance_at_index(1, 30, 20), None);
+  }
+
+  #[test]
+  fn missile_ray_sample_floors_grid_start_and_rejects_overflow() {
+    assert_eq!(missile_ray_sample_distance_at_index(0, 31, 21), Some(30));
+    assert_eq!(missile_ray_sample_distance_at_index(0, 0, 0), None);
+    assert_eq!(missile_ray_sample_distance_at_index(0, 20, 0), Some(20));
+    assert_eq!(
+      missile_ray_sample_distance_at_index(u64::MAX, u64::MAX, u64::MAX),
+      None
+    );
+    assert_eq!(
+      missile_ray_sample_distance_at_index((u64::MAX - 15) / 20, u64::MAX, 0,),
       None
     );
   }
