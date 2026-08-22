@@ -27,7 +27,7 @@ replays, and regression testing.
   - Outcome comparisons accept one finite, non-negative per-category rate
     tolerance and expose a deterministic pass/fail gate.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.1.3`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.0`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:
@@ -37,7 +37,8 @@ replays, and regression testing.
     observation-derived presentation, and validated texture-source loading.
   - Native-tested base/mask/emissive rendering includes evidence-backed Green
     Armor, Phase Device, and StairsDown tint boundaries, an emissive lighting
-    floor, optional outline transport, and animation frame metadata/selection.
+    floor, optional outline-mask compositing, and animation frame
+    metadata/selection.
   - Pure contracts cover effect timing, low-health tone/pulse, explosion marks,
     movement and missile progress, screen-shake fade, particle origins, and
     post-process glow/LUT math without claiming full backend fidelity.

@@ -5,6 +5,11 @@ documented in this file.
 
 ## Unreleased
 
+- Added the bounded M8 outline-mask compositing pass: optional shadow layers
+  now resolve behind base sprites with tested straight-alpha weights in the
+  renderer-neutral contract and WebGPU shader. Exact legacy glow/outline
+  equation and capture parity remain open.
+
 - Added M12 static-bundle release manifests generated during web builds, with
   source revision, sorted artifact SHA-256 hashes, generated-file declarations,
   graphics rights metadata, and a service-worker coverage check. The manifest
@@ -45,7 +50,7 @@ documented in this file.
   `CohortReport` retains policy identity, aggregate metrics, and per-seed
   replay evidence for reproducible evaluation without claiming balance
   conclusions.
-- Continued retrospective project versioning at `0.1.7` from the untagged
+- Continued retrospective project versioning at `0.2.0` from the untagged
   `0.1.0` baseline. `VERSION`, Cargo/MCP metadata, and release manifests are
   checked by the agent harness; code changes require one valid component
   increment while document- and setting-only changes do not.

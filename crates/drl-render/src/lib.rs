@@ -5,8 +5,10 @@
 //! presentation timing can never advance the simulation.
 
 mod animation;
+mod outline;
 
 pub use animation::{AnimationPlayback, animation_frame_index_at_elapsed};
+pub use outline::outline_mask_composite;
 
 use drl_assets::{
   AtlasId, AtlasTextureSource, LayerRole, SpriteAnimation, SpriteDescriptor, SpriteLayer, SpriteUv,

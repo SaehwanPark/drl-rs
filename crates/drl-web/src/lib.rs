@@ -51,7 +51,7 @@ fn retains_textured_fragment(alpha: f32) -> bool {
   alpha >= 0.1
 }
 
-/// Shared WGSL source for the bounded base/mask/emissive textured pass.
+/// Shared WGSL source for the bounded base/mask/emissive/outline textured pass.
 #[cfg_attr(not(target_arch = "wasm32"), allow(dead_code))]
 const BASE_TEXTURE_SHADER: &str = r#"
 struct VertexInput {
@@ -89,12 +89,14 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
   let sampled = textureSample(base_texture, base_sampler, input.uv);
   let emissive = textureSample(emissive_texture, base_sampler, input.uv).r;
   let mask = textureSample(mask_texture, base_sampler, input.uv);
-  // Outline transport is wired; glow/outline compositing remains deferred
-  // until pinned shader/capture evidence is available.
-  let _outline = textureSample(outline_texture, base_sampler, input.uv);
+  let outline = textureSample(outline_texture, base_sampler, input.uv);
   let colorized = sampled.rgb + mask.rgb * input.colorization.rgb;
   let lighting = max(input.lighting.rgb, vec3<f32>(emissive));
-  let output = vec4<f32>(colorized * lighting, sampled.a);
+  let outline_alpha = outline.a * (1.0 - sampled.a);
+  let output_alpha = sampled.a + outline_alpha;
+  let output_rgb = (colorized * sampled.a + outline.rgb * outline_alpha)
+    / max(output_alpha, 0.0001);
+  let output = vec4<f32>(output_rgb * lighting, output_alpha);
   if (output.a < 0.1) {
     discard;
   }
@@ -1855,7 +1857,9 @@ mod tests {
     assert!(BASE_TEXTURE_SHADER.contains("mask.rgb * input.colorization.rgb"));
     assert!(BASE_TEXTURE_SHADER.contains("output.colorization = input.colorization"));
     assert!(BASE_TEXTURE_SHADER.contains("max(input.lighting.rgb"));
-    assert!(BASE_TEXTURE_SHADER.contains("colorized * lighting, sampled.a"));
+    assert!(BASE_TEXTURE_SHADER.contains("outline.a * (1.0 - sampled.a)"));
+    assert!(BASE_TEXTURE_SHADER.contains("colorized * sampled.a + outline.rgb * outline_alpha"));
+    assert!(BASE_TEXTURE_SHADER.contains("output_rgb * lighting, output_alpha"));
     assert!(BASE_TEXTURE_SHADER.contains("if (output.a < 0.1)"));
     assert!(BASE_TEXTURE_SHADER.contains("return output;"));
   }
