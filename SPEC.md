@@ -123,9 +123,10 @@ are not claimed.
   image and rejects dimensions that differ from the pinned manifest.
 - `drl-web::texture_source_manifest` emits the 24 unique registered layer
   sources in stable atlas order, and the WASM renderer uploads each validated
-  source once into a persistent `Rgba8UnormSrgb` texture/view cache using the
-  WebGPU external-image copy API. The cache is renderer-owned and does not
-  advance gameplay.
+  source once into a persistent linear `Rgba8Unorm` texture/view cache using
+  the WebGPU external-image copy API, matching the observed legacy `GL_RGBA8`
+  storage contract. The cache is renderer-owned and does not advance gameplay;
+  display color-space parity remains capture-gated.
 - The WASM renderer samples each composite's base source with a nearest-filtered
   bind group, top-left-origin UVs, alpha blending, and the fair visible or
   explored lighting factor. The paired emissive source samples its red channel

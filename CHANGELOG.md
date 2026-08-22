@@ -94,6 +94,9 @@ documented in this file.
 - Added the verified legacy `0.1` fragment-alpha cutoff to the textured WGSL
   pass; transparent edge fragments are discarded before source-alpha blending,
   while the fair/emissive lighting floor remains unchanged.
+- Aligned renderer-owned atlas and transparent role-fallback storage with the
+  observed legacy `GL_RGBA8` contract by using linear normalized
+  `Rgba8Unorm`; browser display color-space parity remains capture-gated.
 - Added pure `active_effect_frames` progress mapping for fair effect spans;
   frontend ticks receive stable normalized progress without advancing gameplay
   or claiming legacy animation-frame parity.

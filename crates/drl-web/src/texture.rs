@@ -9,6 +9,9 @@ use drl_render::{PixelRect, PixelViewport, RenderScene, layer_draw_plan, sprite_
 use wasm_bindgen::JsValue;
 use wgpu::util::DeviceExt;
 
+/// Legacy sprite sheets are normalized linear GL_RGBA8 uploads.
+const ATLAS_TEXTURE_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Rgba8Unorm;
+
 /// One uploaded source and its view. The texture is retained so the view stays
 /// valid for the renderer's lifetime.
 struct UploadedTexture {
@@ -56,7 +59,7 @@ impl GpuTextureCache {
         mip_level_count: 1,
         sample_count: 1,
         dimension: wgpu::TextureDimension::D2,
-        format: wgpu::TextureFormat::Rgba8UnormSrgb,
+        format: ATLAS_TEXTURE_FORMAT,
         usage: wgpu::TextureUsages::COPY_DST | wgpu::TextureUsages::TEXTURE_BINDING,
         view_formats: &[],
       });
@@ -250,7 +253,7 @@ impl BaseTexturePipeline {
       mip_level_count: 1,
       sample_count: 1,
       dimension: wgpu::TextureDimension::D2,
-      format: wgpu::TextureFormat::Rgba8UnormSrgb,
+      format: ATLAS_TEXTURE_FORMAT,
       usage: wgpu::TextureUsages::COPY_DST | wgpu::TextureUsages::TEXTURE_BINDING,
       view_formats: &[],
     });
