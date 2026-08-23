@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.25`
+Current project version: `0.2.26`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,52 +23,65 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M11 Descriptive Cohort Depth Distribution
+## 2. Active Implementation Slice: M12 Dynamic Interaction Accessibility Contract
 
 ### 2.1 Scope & Objective
 
-Project validated `EpisodeMetrics.level_reached` into deterministic, ascending
-depth buckets and stable CLI fields. The slice is descriptive only: it does
-not define canonical difficulty targets, balance thresholds, or significance
-claims.
+Improve the browser shell's dynamic interaction semantics for keyboard and
+assistive-technology users. Generated inventory actions carry item-qualified
+names with escaped text; only `#game-status` announces dynamic status; canvas
+help is explicitly associated; focus-visible and diagnostic recovery behavior
+are deterministic. This slice does not claim WCAG 2.1 AA or screen-reader
+acceptance.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
-1. **Validated cohort reports (v0.2.13–v0.2.24)**:
-   - Fixed-seed reports retain episode metrics and replay evidence behind
-     integrity validation, including `level_reached >= 1`.
-2. **Evaluation boundary**:
-   - Existing outcome/telemetry projections are descriptive and observation
-     free; no canonical difficulty target values are present in the repository.
+1. **Existing browser shell (v0.2.7–v0.2.25)**:
+   - Static landmarks, named controls, keyboard bindings, diagnostics, and
+     browser contract scripts already exist.
+2. **User-experience boundary**:
+   - The common task is start, focus the board, play with keyboard/canvas, and
+     recover from browser or storage diagnostics without losing session state.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Validated grouping**: Project each record's deepest observed level only
-  after the report integrity gate succeeds.
-- [x] **Stable ordering**: Group with an ordered map and emit ascending
-  `LevelId` buckets with exact episode counts.
-- [x] **Normalized rates**: Expose per-bucket sample rates with an explicit
-  zero result for empty cohorts or absent levels.
-- [x] **CLI projection**: Emit stable `depth.total` and
-  `depth.deepest_level.<id>.episodes/rate` fields for single and matrix runs.
-- [x] **Boundary discipline**: Keep player observations, game policies, and
-  canonical balance interpretation outside this projection.
-- [ ] **Canonical difficulty curve validation**: Validate against externally
-  approved target metrics when those targets are supplied.
+- [x] **Qualified inventory actions**: Render stable group IDs and item-
+  qualified `Equip`, `Use`, and `Drop` accessible names from escaped item text.
+- [x] **Single live status**: Keep `#game-status` as the only dynamic polite
+  announcement channel; keyboard help in `#game-log` remains static.
+- [x] **Canvas help association**: Connect the focusable canvas to keyboard
+  instructions with `aria-describedby` and retain an accessible canvas name.
+- [x] **Focus and diagnostics**: Add authored `:focus-visible` styling and
+  focus the same diagnostic alert panel for JS- and Rust-originated failures.
+- [x] **Contract coverage**: Extend static shell checks and native markup tests
+  for names, escaping, roles, live-channel count, help association, and focus.
+- [ ] **Full accessibility acceptance**: Real screen-reader, WCAG 2.1 AA,
+  contrast, and broad browser acceptance remain open.
 
 ### 2.4 Pure Contract
 
-- **Input**: An integrity-checked `CohortReport` retaining per-episode
-  `level_reached` metrics.
-- **Output**: `CohortDepthDistribution` buckets and deterministic CLI lines.
+- **Input**: Player-observation item names and browser status/diagnostic events
+  crossing the Rust/WASM/HTML shell boundary.
+- **Output**: Escaped, item-qualified controls; one dynamic status channel;
+  associated canvas help; visible focus and deterministic diagnostic recovery.
 - **Ownership Boundary**:
-  - `drl-core::batch` owns validation, ordered grouping, and rate projection.
-  - `drl-app::cohort_cli` owns line-oriented formatting and matrix prefixes.
-  - No game loop, policy, save format, or player-observation boundary changes.
+  - `drl-web` owns pure markup generation and WASM DOM updates.
+  - `web/index.html` owns static semantics, CSS focus treatment, and help text.
+  - `web/bootstrap.js` owns browser-originated status/diagnostic interaction.
+  - No game loop, keyboard mapping, save format, or player-observation content
+    changes.
 
 ---
 
 ## 3. Recent Delivered Slices
+
+### M12 — Dynamic Interaction Accessibility Contract (`VERSION` 0.2.26)
+
+- [x] Added item-qualified escaped inventory actions, one live status channel,
+  canvas help association, focus-visible styling, and diagnostic focus parity.
+- [x] Added static shell and native markup contract coverage.
+- [ ] WCAG 2.1 AA, screen-reader, contrast, and broad browser acceptance remain
+  open.
 
 ### M11 — Descriptive Cohort Depth Distribution (`VERSION` 0.2.25)
 
@@ -298,7 +311,7 @@ claims.
 
 ## 6. Verification Gates
 
-### Verified Baseline (`VERSION` 0.2.25)
+### Verified Baseline (`VERSION` 0.2.26)
 
 6024a15 feat(eval): add cohort depth distribution (#116)
 cae3b09 feat(web): migrate browser saves to v2 (#115)

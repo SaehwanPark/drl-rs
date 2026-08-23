@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.25`
+Current project version: `0.2.26`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -282,7 +282,19 @@ Presentation Boundary
   grouping `level_reached` into ascending buckets and sample rates; it carries
   no canonical difficulty or balance interpretation.
 
-### 4.8 Persistence & Release Packaging
+### 4.8 Browser Interaction Accessibility
+- **Qualified Inventory Actions**: Generated controls use escaped item names in
+  group labels and action-specific accessible names; item IDs remain data-only
+  command handles.
+- **Announcement Boundary**: `#game-status` is the sole dynamic polite status
+  channel; keyboard help remains static and is associated with the focusable
+  canvas through `aria-describedby`.
+- **Recovery Focus**: Browser and Rust-originated diagnostics reveal and focus
+  the same alert panel. Focus-visible styling is authored in the HTML shell.
+- **Acceptance Boundary**: These are structural/native/browser-contract
+  guarantees, not WCAG 2.1 AA, screen-reader, or broad browser claims.
+
+### 4.9 Persistence & Release Packaging
 - **Session Snapshots**: `drl-web::persistence` encodes complete command
   histories as strict V2 command-count tokens, accepts only the shipped V1
   token for transactional replay, and migrates successful V1 restores in the

@@ -2,7 +2,6 @@ import init, { boot, clear_save, dispatch_inventory, load, resize, restart as re
 import { registerOfflineCache } from "./offline-cache.mjs";
 
 const status = document.querySelector("#game-status");
-const log = document.querySelector("#game-log");
 const diagnostics = document.querySelector("#game-diagnostics");
 const diagnosticTitle = document.querySelector("#diagnostics-title");
 const diagnosticDetail = document.querySelector("#diagnostics-detail");
@@ -21,7 +20,6 @@ let audioTask = Promise.resolve();
 
 function writeStatus(message) {
   status.textContent = message;
-  log.textContent = message;
 }
 
 function writeDiagnostic(title, detail, action) {
@@ -74,15 +72,16 @@ start.addEventListener("click", async () => {
   }
   try {
     await init();
+    clearDiagnostic();
     const result = await boot();
     started = true;
     start.disabled = true;
-    canvas.focus();
-    clearDiagnostic();
+    if (diagnostics.hidden) {
+      canvas.focus();
+    }
     // `boot()` writes the accurate ready/suspended/unavailable audio state.
-    // Keep that message and mirror it to the log instead of assuming success.
+    // Keep that message instead of assuming audio or graphics success.
     const readyMessage = status.textContent || `Ready (${result}).`;
-    log.textContent = readyMessage;
     const offlineMessage = await offlineCacheReady;
     if (offlineMessage.includes("Offline cache unavailable")) {
       writeDiagnostic(

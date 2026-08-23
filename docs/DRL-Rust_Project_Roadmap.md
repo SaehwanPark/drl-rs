@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.25`
+Current project version: `0.2.26`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.25)
+## 3. Current Progress Summary (`VERSION` 0.2.26)
 
 ### Delivered Foundations
 
@@ -84,13 +84,17 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active Milestone Slice (M11)**: Validated cohort reports now expose sorted
-  deepest-level buckets and descriptive sample rates; canonical difficulty
-  targets remain open.
+- **Active Milestone Slice (M12)**: Browser interaction semantics now qualify
+  generated inventory actions, keep one live status channel, associate canvas
+  help, and focus diagnostics; WCAG/screen-reader acceptance remains open.
 - **M9 Content Evidence**: Base, expansion, user-item, being, and terrain-cell
   evidence slices are delivered without runtime Lua or gameplay overclaims.
 - **M11 Evaluation**: Deterministic cohort reports support a three-policy
   matrix plus descriptive depth distributions; canonical difficulty targets
+  remain open.
+- **M12 Accessibility**: Static and native contracts cover generated names,
+  escaping, live-channel boundaries, help association, focus styling, and
+  diagnostic recovery; real assistive-technology and broad browser acceptance
   remain open.
 - **M12 Release Hardening**: Optional detached release-manifest signing has
   repository and hosted ephemeral-key CI smoke coverage; production key
@@ -412,6 +416,9 @@ diagnostics.
 - [x] Git checkout-identity binding and source-identity validation.
 - [x] Static HTML shell accessibility audit (landmarks, named controls,
   labels, focus, live regions).
+- [x] Dynamic interaction accessibility contract: escaped item-qualified
+  inventory actions, one live status channel, canvas help association,
+  focus-visible styling, and diagnostic focus recovery.
 - [x] Local accessible browser-support and startup diagnostics panel.
 - [x] Optional detached cryptographic release signing and fail-closed manifest
   verification using an externally supplied OpenSSL key.

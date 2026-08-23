@@ -8,8 +8,8 @@ use drl_assets::{AtlasId, AtlasTextureSource, SpriteUv};
 use drl_core::item::Item;
 use drl_core::{Game, Tile};
 use drl_protocol::{
-  Command, Direction, ItemId, ItemSpawnKind, ItemSpawnSpec, MonsterKind, MonsterSpawnSpec,
-  PlayerObservation, Position, ReplayLog,
+  Command, Direction, ItemId, ItemSpawnKind, ItemSpawnSpec, ItemView, MonsterKind,
+  MonsterSpawnSpec, PlayerObservation, Position, ReplayLog,
 };
 use drl_render::{
   LightingBand, ParticleDecalSprite, ParticleDecalStorageError, ParticleDecalStore, PixelRect,
@@ -18,6 +18,41 @@ use drl_render::{
 
 mod persistence;
 pub use persistence::SnapshotError;
+
+/// Escapes user-visible item names before they cross the HTML string boundary.
+#[cfg_attr(not(target_arch = "wasm32"), allow(dead_code))]
+fn escape_html(value: &str) -> String {
+  let mut escaped = String::with_capacity(value.len());
+  for character in value.chars() {
+    match character {
+      '&' => escaped.push_str("&amp;"),
+      '<' => escaped.push_str("&lt;"),
+      '>' => escaped.push_str("&gt;"),
+      '"' => escaped.push_str("&quot;"),
+      '\'' => escaped.push_str("&#39;"),
+      _ => escaped.push(character),
+    }
+  }
+  escaped
+}
+
+/// Builds item-qualified inventory controls for the browser's semantic DOM.
+#[cfg_attr(not(target_arch = "wasm32"), allow(dead_code))]
+fn inventory_markup(items: &[ItemView]) -> String {
+  use std::fmt::Write;
+
+  let mut controls = String::new();
+  for item in items {
+    let name = escape_html(&item.name);
+    let item_id = item.id.as_u64();
+    write!(
+      controls,
+      "<div id=\"inventory-item-{item_id}\" role=\"group\" aria-label=\"Inventory item: {name}\"><span>{name}</span><button type=\"button\" data-action=\"equip\" data-item-id=\"{item_id}\" aria-label=\"Equip {name}\">Equip</button><button type=\"button\" data-action=\"use\" data-item-id=\"{item_id}\" aria-label=\"Use {name}\">Use</button><button type=\"button\" data-action=\"drop\" data-item-id=\"{item_id}\" aria-label=\"Drop {name}\">Drop</button></div>"
+    )
+    .expect("writing inventory markup to a String cannot fail");
+  }
+  controls
+}
 
 /// Returns the six UV coordinates for a top-left-origin textured quad.
 #[must_use]
@@ -537,7 +572,7 @@ pub(crate) mod wasm {
   use std::cell::RefCell;
   use wasm_bindgen::prelude::*;
   use wasm_bindgen_futures::JsFuture;
-  use web_sys::{HtmlCanvasElement, HtmlImageElement, Storage, Window};
+  use web_sys::{HtmlCanvasElement, HtmlElement, HtmlImageElement, Storage, Window};
   use wgpu::util::DeviceExt;
   use winit::application::ApplicationHandler;
   use winit::event::{ElementState, WindowEvent};
@@ -1322,21 +1357,7 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
       targets.set_text_content(Some(&value));
     }
     if let Some(inventory) = document.get_element_by_id("inventory") {
-      let controls = observation
-        .inventory
-        .iter()
-        .map(|item| {
-          format!(
-            "<p>{}</p><button type=\"button\" data-action=\"equip\" data-item-id=\"{}\">Equip</button><button type=\"button\" data-action=\"use\" data-item-id=\"{}\">Use</button><button type=\"button\" data-action=\"drop\" data-item-id=\"{}\">Drop</button>",
-            item.name,
-            item.id.as_u64(),
-            item.id.as_u64(),
-            item.id.as_u64()
-          )
-        })
-        .collect::<Vec<_>>()
-        .join("");
-      inventory.set_inner_html(&controls);
+      inventory.set_inner_html(&inventory_markup(&observation.inventory));
     }
   }
 
@@ -1349,9 +1370,6 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
   fn set_status(document: &web_sys::Document, message: &str) {
     if let Some(status) = document.get_element_by_id("game-status") {
       status.set_text_content(Some(message));
-    }
-    if let Some(log) = document.get_element_by_id("game-log") {
-      log.set_text_content(Some(message));
     }
   }
 
@@ -1367,6 +1385,12 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
     }
     if let Some(action_node) = document.get_element_by_id("diagnostics-action") {
       action_node.set_text_content(Some(action));
+    }
+    if let Some(panel) = document
+      .get_element_by_id("game-diagnostics")
+      .and_then(|panel| panel.dyn_into::<HtmlElement>().ok())
+    {
+      let _ = panel.focus();
     }
   }
 
@@ -1580,6 +1604,12 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
       set_status(
         &document,
         &format!("Browser animation scheduling unavailable; gameplay continues: {error:?}"),
+      );
+      set_diagnostic(
+        &document,
+        "Browser animation scheduling unavailable",
+        &format!("The browser rejected the initial animation-frame request ({error:?})."),
+        "Gameplay continues without animation; reload to retry presentation scheduling.",
       );
     }
     SESSION.with(|slot| {
@@ -1931,6 +1961,35 @@ pub use wasm::{
 #[cfg(test)]
 mod tests {
   use super::*;
+  use drl_protocol::{ItemArchetype, ItemCategory};
+
+  fn test_item(name: &str) -> ItemView {
+    ItemView {
+      id: ItemId::new(7),
+      archetype: ItemArchetype::Pistol,
+      name: name.to_string(),
+      category: ItemCategory::Weapon,
+      count: 1,
+      description: String::new(),
+      clip: None,
+      damage: None,
+      armor_value: None,
+      heal_amount: None,
+      knockback: None,
+    }
+  }
+
+  #[test]
+  fn inventory_markup_qualifies_actions_and_escapes_names() {
+    let markup = inventory_markup(&[test_item("Pistol <&\"'")]);
+    assert!(markup.contains("id=\"inventory-item-7\""));
+    assert!(markup.contains("role=\"group\""));
+    assert!(markup.contains("aria-label=\"Inventory item: Pistol &lt;&amp;&quot;&#39;\""));
+    assert!(markup.contains("aria-label=\"Equip Pistol &lt;&amp;&quot;&#39;\""));
+    assert!(markup.contains("aria-label=\"Use Pistol &lt;&amp;&quot;&#39;\""));
+    assert!(markup.contains("aria-label=\"Drop Pistol &lt;&amp;&quot;&#39;\""));
+    assert!(!markup.contains("Pistol <&\"'"));
+  }
 
   #[test]
   fn texture_source_urls_are_same_origin_and_dimensions_are_checked() {

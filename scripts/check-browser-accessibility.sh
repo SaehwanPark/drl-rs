@@ -44,6 +44,7 @@ class ShellAudit(HTMLParser):
 
 
 html = Path("web/index.html").read_text()
+bootstrap = Path("web/bootstrap.js").read_text()
 audit = ShellAudit()
 audit.feed(html)
 by_id = {
@@ -65,7 +66,6 @@ require("browser-support" in audit.summary_parents, "support disclosure summary 
 
 live_regions = {
     "game-status": ("status", "polite"),
-    "game-log": ("log", "polite"),
     "game-diagnostics": ("alert", "assertive"),
 }
 for element_id, (role, live) in live_regions.items():
@@ -73,6 +73,12 @@ for element_id, (role, live) in live_regions.items():
     require(tag is not None, f"required shell element is missing: {element_id}")
     require(attributes.get("role") == role, f"{element_id} role is invalid")
     require(attributes.get("aria-live") == live, f"{element_id} live region is invalid")
+
+status_attributes = by_id["game-status"][1]
+require(status_attributes.get("aria-atomic") == "true", "game status must be atomic")
+log_tag, log_attributes = by_id.get("game-log", (None, {}))
+require(log_tag == "p", "keyboard help must remain a paragraph")
+require("role" not in log_attributes and "aria-live" not in log_attributes, "keyboard help must not be a live region")
 
 for button_id in (
     "start-button",
@@ -96,9 +102,14 @@ tag, attributes = by_id.get("game-canvas", (None, {}))
 require(tag == "canvas", "game canvas is missing")
 require(attributes.get("tabindex") is not None, "game canvas is not keyboard focusable")
 require(attributes.get("aria-label"), "game canvas has no accessible name")
+require(attributes.get("aria-describedby") == "game-log", "game canvas is not associated with keyboard help")
 
 tag, attributes = by_id.get("inventory", (None, {}))
-require(tag is not None and attributes.get("aria-label"), "inventory region is unnamed")
+require(tag is not None and attributes.get("role") == "region", "inventory region role is missing")
+require(attributes.get("aria-label"), "inventory region is unnamed")
+require("button:focus-visible" in html, "focus-visible control styling is missing")
+require("clearDiagnostic();\n    const result = await boot();" in bootstrap, "startup must clear stale diagnostics before boot")
+require("if (diagnostics.hidden)" in bootstrap, "startup must preserve boot diagnostics and focus")
 for tag, attributes in audit.elements:
     if tag == "img":
         require(attributes.get("alt") is not None, "image is missing alt text")

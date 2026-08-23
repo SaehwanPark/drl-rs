@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.26]
+
+- Added item-qualified, escaped inventory action names and a shared semantic
+  interaction contract for the browser shell.
+- Kept dynamic status announcements in one live region, associated canvas
+  keyboard help, and focused diagnostics with visible focus styling.
+- WCAG 2.1 AA, screen-reader, and broad cross-browser acceptance remain open.
+
 ## [0.2.25]
 
 - Added validated, deterministic cohort depth buckets and per-level sample
