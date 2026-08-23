@@ -3,6 +3,12 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.75]
+
+- Added typed `Chainsaw` content with pinned description, melee shape, `4d6`
+  damage range, replay JSON kind, and measured `SPRITE_CHAINSAW` atlas slot.
+  First-pickup callbacks, exotic flags, and exact timing parity remain open.
+
 ## [0.2.74]
 
 - Added typed `Chaingun` content with pinned description, 9mm-ammo relation,

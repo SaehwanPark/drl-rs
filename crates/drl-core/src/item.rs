@@ -382,6 +382,12 @@ impl Item {
     Self::from_spawn_kind(id, ItemSpawnKind::RocketLauncher)
   }
 
+  /// Factory: chainsaw (melee, 4d6 damage policy).
+  #[must_use]
+  pub fn chainsaw(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::Chainsaw)
+  }
+
   /// Factory: Combat Knife melee weapon.
   #[must_use]
   pub fn combat_knife(id: ItemId) -> Self {
@@ -661,60 +667,61 @@ mod tests {
         ItemSpawnKind::RocketLauncher,
         Item::rocket_launcher(ItemId::new(5)),
       ),
+      (ItemSpawnKind::Chainsaw, Item::chainsaw(ItemId::new(6))),
       (
         ItemSpawnKind::CombatKnife,
-        Item::combat_knife(ItemId::new(6)),
+        Item::combat_knife(ItemId::new(7)),
       ),
-      (ItemSpawnKind::Ammo9mm(0), Item::ammo_9mm(ItemId::new(7), 0)),
+      (ItemSpawnKind::Ammo9mm(0), Item::ammo_9mm(ItemId::new(8), 0)),
       (
         ItemSpawnKind::Ammo9mm(107),
-        Item::ammo_9mm(ItemId::new(8), 107),
+        Item::ammo_9mm(ItemId::new(9), 107),
       ),
       (
         ItemSpawnKind::AmmoShells(7),
-        Item::ammo_shells(ItemId::new(9), 7),
+        Item::ammo_shells(ItemId::new(10), 7),
       ),
       (
         ItemSpawnKind::AmmoRockets(3),
-        Item::ammo_rockets(ItemId::new(10), 3),
+        Item::ammo_rockets(ItemId::new(11), 3),
       ),
       (
         ItemSpawnKind::AmmoCells(20),
-        Item::ammo_cells(ItemId::new(11), 20),
+        Item::ammo_cells(ItemId::new(12), 20),
       ),
       (
         ItemSpawnKind::AmmoPackRockets,
-        Item::ammo_pack_rockets(ItemId::new(12)),
+        Item::ammo_pack_rockets(ItemId::new(13)),
       ),
       (
         ItemSpawnKind::AmmoPackCells,
-        Item::ammo_pack_cells(ItemId::new(13)),
+        Item::ammo_pack_cells(ItemId::new(14)),
       ),
       (
         ItemSpawnKind::AmmoPack9mm,
-        Item::ammo_pack_9mm(ItemId::new(14)),
+        Item::ammo_pack_9mm(ItemId::new(15)),
       ),
       (
         ItemSpawnKind::AmmoPackShells,
-        Item::ammo_pack_shells(ItemId::new(15)),
+        Item::ammo_pack_shells(ItemId::new(16)),
       ),
       (
         ItemSpawnKind::SmallMedPack,
-        Item::small_medpack(ItemId::new(16)),
+        Item::small_medpack(ItemId::new(17)),
       ),
       (
         ItemSpawnKind::LargeMedPack,
-        Item::large_medpack(ItemId::new(17)),
+        Item::large_medpack(ItemId::new(18)),
       ),
       (
         ItemSpawnKind::GreenArmor,
-        Item::green_armor(ItemId::new(18)),
+        Item::green_armor(ItemId::new(19)),
       ),
-      (ItemSpawnKind::BlueArmor, Item::blue_armor(ItemId::new(19))),
-      (ItemSpawnKind::RedArmor, Item::red_armor(ItemId::new(20))),
+      (ItemSpawnKind::BlueArmor, Item::blue_armor(ItemId::new(20))),
+      (ItemSpawnKind::RedArmor, Item::red_armor(ItemId::new(21))),
       (
         ItemSpawnKind::PhaseDevice,
-        Item::phase_device(ItemId::new(21)),
+        Item::phase_device(ItemId::new(22)),
       ),
     ];
     for (kind, factory_item) in cases {
@@ -759,6 +766,7 @@ mod tests {
       ItemSpawnKind::Chaingun,
       ItemSpawnKind::PlasmaRifle,
       ItemSpawnKind::RocketLauncher,
+      ItemSpawnKind::Chainsaw,
       ItemSpawnKind::CombatKnife,
       ItemSpawnKind::Ammo9mm(7),
       ItemSpawnKind::AmmoShells(7),

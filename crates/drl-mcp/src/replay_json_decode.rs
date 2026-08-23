@@ -275,6 +275,7 @@ fn item_kind(value: &JsonValue, context: &str) -> Result<ItemSpawnKind, String> 
     "chaingun" => Ok(ItemSpawnKind::Chaingun),
     "rocket_launcher" => Ok(ItemSpawnKind::RocketLauncher),
     "plasma_rifle" => Ok(ItemSpawnKind::PlasmaRifle),
+    "chainsaw" => Ok(ItemSpawnKind::Chainsaw),
     "combat_knife" => Ok(ItemSpawnKind::CombatKnife),
     "ammo_9mm" => Ok(ItemSpawnKind::Ammo9mm(u32_value(
       required(object, "count")?,
