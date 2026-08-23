@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.79`
+Current project version: `0.2.80`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.79)
+## 3. Current Progress Summary (`VERSION` 0.2.80)
 
 ### Delivered Foundations
 
@@ -79,7 +79,7 @@ verification item uses explicit status semantics:
   blue/red-armor families, pinned med-pack descriptions, and a typed plasma
   rifle, rocket launcher, chaingun, chainsaw, BFG 9000, shotgun variants, and
   exotic Blaster/Laser Rifle/Missile Launcher, Nuclear Plasma Rifle, Nuclear
-  BFG 9000, and BFG 10K variants;
+  BFG 9000, BFG 10K, Mega Buster, Grammaton Beretta, and Frag Shotgun variants;
   versioned
   fixed-session snapshot codec with localStorage
   persistence, bounded rejected-save quarantine, and static service-worker
@@ -503,6 +503,10 @@ scripting.
   descriptions, cell relations, clips/damage scalars, replay kinds, and
   measured plasma/BFG/BFG10K atlas slots; recharge, exact-hit, chainfire,
   explosion, and mod callbacks remain open.
+- [x] Typed `umega`, `uberetta`, and `ufshotgun` preserve pinned unique-firearm
+  descriptions, 9mm relations, clips/damage/range scalars, replay kinds, and
+  measured plasma/pistol/combat-shotgun atlas slots; mode switching, kill
+  medals, mods, spread, and timing callbacks remain open.
 - [ ] Full migration of legacy monsters, weapons, armor, mods, and consumable
   items.
 - [ ] Full migration of special levels, vaults, and dungeon branches.

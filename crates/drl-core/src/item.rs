@@ -412,6 +412,24 @@ impl Item {
     Self::from_spawn_kind(id, ItemSpawnKind::Bfg10k)
   }
 
+  /// Factory: unique Mega Buster (1d8 damage policy).
+  #[must_use]
+  pub fn mega_buster(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::MegaBuster)
+  }
+
+  /// Factory: unique Grammaton Cleric Beretta (2d6 damage policy).
+  #[must_use]
+  pub fn grammaton_beretta(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::GrammatonBeretta)
+  }
+
+  /// Factory: unique Frag Shotgun (6d3 damage policy).
+  #[must_use]
+  pub fn frag_shotgun(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::FragShotgun)
+  }
+
   /// Factory: chaingun (40-round 9mm clip, 1d6 damage policy).
   #[must_use]
   pub fn chaingun(id: ItemId) -> Self {
@@ -735,6 +753,18 @@ mod tests {
         Item::nuclear_bfg9000(ItemId::new(9)),
       ),
       (ItemSpawnKind::Bfg10k, Item::bfg10k(ItemId::new(10))),
+      (
+        ItemSpawnKind::MegaBuster,
+        Item::mega_buster(ItemId::new(32)),
+      ),
+      (
+        ItemSpawnKind::GrammatonBeretta,
+        Item::grammaton_beretta(ItemId::new(33)),
+      ),
+      (
+        ItemSpawnKind::FragShotgun,
+        Item::frag_shotgun(ItemId::new(34)),
+      ),
       (ItemSpawnKind::Chaingun, Item::chaingun(ItemId::new(11))),
       (
         ItemSpawnKind::PlasmaRifle,
@@ -852,6 +882,9 @@ mod tests {
       ItemSpawnKind::NuclearPlasmaRifle,
       ItemSpawnKind::NuclearBfg9000,
       ItemSpawnKind::Bfg10k,
+      ItemSpawnKind::MegaBuster,
+      ItemSpawnKind::GrammatonBeretta,
+      ItemSpawnKind::FragShotgun,
       ItemSpawnKind::Chaingun,
       ItemSpawnKind::PlasmaRifle,
       ItemSpawnKind::RocketLauncher,

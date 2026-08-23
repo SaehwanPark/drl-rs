@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.80]
+
+- Added typed `MegaBuster`, `GrammatonBeretta`, and `FragShotgun` families
+  from pinned unique-firearm records, preserving descriptions, 9mm relations,
+  clips, damage/range scalars, replay JSON kinds, and measured atlas slots.
+  Mode switching, kill medals, mods, spread, and timing callbacks remain open.
+
 ## [0.2.79]
 
 - Added typed `NuclearPlasmaRifle`, `NuclearBfg9000`, and `Bfg10k` families

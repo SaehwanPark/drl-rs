@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.79`
+Current project version: `0.2.80`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -30,7 +30,7 @@ criteria, and verification boundaries.
 Migrate the pinned legacy `rocket`, `cell`, `barmor`, `rarmor`, `smed`,
 `lmed`, `dshotgun`, `ashotgun`, `chainsaw`, `chaingun`, `bfg9000`, `plasma`, and
 `bazooka`, `ublaster`, `ulaser`, `umbazooka`, `unplasma`, `unbfg9000`, and
-`ubfg10k` records into
+`ubfg10k`, `umega`, `uberetta`, and `ufshotgun` records into
 typed immutable Rust definitions and replay-compatible spawn contracts.
 Preserve
 source-backed scalar fields, measured atlas slots, and verified armor
@@ -117,6 +117,12 @@ presentation tints without importing Lua callbacks or unverified combat rules.
   measured `SPRITE_PLASMA`/`SPRITE_BFG9000`/`SPRITE_BFG10K` atlas slots;
   recharge, exact-hit, chainfire, explosion, and mod callbacks remain explicit
   gaps.
+- [x] **Unique-firearm boundary**: typed `MegaBuster`, `GrammatonBeretta`,
+  and `FragShotgun` preserve pinned descriptions, 9mm relations, clips
+  (`60`/`18`/`16`), damage ranges (`1d8`/`2d6`/`6d3`), the frag range (`15`),
+  replay kinds, and measured plasma/pistol/combat-shotgun atlas slots; mode
+  switching, kill medals, mods, spread, and timing callbacks remain explicit
+  gaps.
 - [ ] **Full migration**: shotgun/BFG/chainsaw/chaingun/rocket/plasma/exotic
   weapon behavior, dynamic callbacks,
   balance/fairness, and remaining legacy item families remain open.
@@ -178,6 +184,10 @@ presentation tints without importing Lua callbacks or unverified combat rules.
   cell-ammo weapons preserving pinned clips, damage policies, descriptions,
   replay kinds, and measured atlas geometry. Recharge, exact-hit, explosion,
   chainfire, and mod callbacks are not claimed as parity.
+- `MegaBuster`, `GrammatonBeretta`, and `FragShotgun` are definition-backed
+  9mm weapons preserving pinned clips, damage policies, descriptions, replay
+  kinds, and measured atlas geometry. Mode switching, kill medals, mods,
+  spread, and exact timing are not claimed as parity.
 - **Ownership Boundary**: Rust typed definitions own runtime item semantics;
   pinned Lua evidence informs only the migrated scalar fields and provenance.
 
