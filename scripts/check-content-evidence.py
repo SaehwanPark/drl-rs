@@ -244,9 +244,37 @@ def validate_bundle(kind: str, path: Path, expected: dict[str, object], revision
 
   records = payload.get("records")
   require(isinstance(records, list), f"{kind} records are not a list")
+  for index, record in enumerate(records):
+    require(isinstance(record, dict), f"{kind} record {index} is not an object")
+    line = record.get("line")
+    require(
+      isinstance(line, int) and not isinstance(line, bool) and line > 0,
+      f"{kind} record {index} has an invalid source line",
+    )
+    fields = record.get("fields")
+    require(isinstance(fields, dict), f"{kind} record {index} fields are not an object")
+    for field, value in fields.items():
+      require(isinstance(field, str) and field, f"{kind} record {index} has an invalid field name")
+      require(
+        isinstance(value, (str, int, bool)) and not isinstance(value, (dict, list, tuple)),
+        f"{kind} record {index} field {field} is not a scalar",
+      )
+    gaps = record.get("migration_gaps")
+    require(isinstance(gaps, list), f"{kind} record {index} migration gaps are not a list")
+    for gap_index, gap in enumerate(gaps):
+      require(isinstance(gap, dict), f"{kind} record {index} gap {gap_index} is not an object")
+      gap_field = gap.get("field")
+      gap_line = gap.get("line")
+      require(
+        isinstance(gap_field, str) and gap_field,
+        f"{kind} record {index} gap {gap_index} has an invalid field",
+      )
+      require(
+        isinstance(gap_line, int) and not isinstance(gap_line, bool) and gap_line > 0,
+        f"{kind} record {index} gap {gap_index} has an invalid source line",
+      )
   require(len(records) == expected.get("record_count"), f"{kind} record count changed")
-  ids = [record.get("id") for record in records if isinstance(record, dict)]
-  require(len(ids) == len(records), f"{kind} contains a non-object record")
+  ids = [record.get("id") for record in records]
   require(
     all(isinstance(record_id, str) and record_id for record_id in ids),
     f"{kind} contains an invalid record ID",
