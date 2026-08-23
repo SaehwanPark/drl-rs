@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.18]
+
+- Added repository and hosted WASM CI coverage for detached release signing
+  with an ephemeral runner-local RSA key.
+- The private key stays outside `dist`; manifest signatures are verified
+  fail-closed while production key custody, rotation, and trust-root policy
+  remain open.
+
 ## [0.2.17]
 
 - Added a pinned-source build-time Lua content evidence converter for shallow

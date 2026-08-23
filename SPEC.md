@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.17`
+Current project version: `0.2.18`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,53 +23,61 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 Legacy Content Evidence Converter
+## 2. Active Implementation Slice: M12 Signed-Release CI Smoke
 
 ### 2.1 Scope & Objective
 
-Provide a build-time, dependency-light extractor for the shallow declarative
-fields in pinned legacy Lua content records. The converter emits a provenance-
-bearing JSON table and records nested tables/functions as explicit migration
-gaps. It is not a Lua interpreter and does not infer behavior.
+Protect the optional detached release-signing path with repository and hosted
+CI smoke coverage. CI generates an ephemeral RSA key outside the bundle,
+builds a signed static release, and verifies the manifest fail-closed. This
+slice does not establish production key custody, rotation, or trust-root
+governance.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
-1. **Typed Rust content (v0.2.4–v0.2.13)**:
-   - Current monster, item, tile, loot, and level definitions are owned by
-     Rust and tested independently of legacy runtime code.
-2. **Build-time boundary (ADR 0008)**:
-   - Legacy files are pinned research inputs; the browser ships no Lua VM or
-     legacy object model, and unknown behavior remains an explicit gap.
+1. **Detached signing (v0.2.14)**:
+   - `build-web.sh` optionally emits a detached signature/public-key pair and
+     `check-release-manifest.sh` verifies present signature artifacts.
+2. **Release integrity (v0.2.1–v0.2.17)**:
+   - Manifests bind version, source revision, hashes, rights metadata, and
+     service-worker cache identity; signing remains externally keyed.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Pinned source**: Read a specified legacy Git revision (defaulting to the
-  recorded DRL revision) and include path, revision, and SHA-256 provenance.
-- [x] **Declarative extraction**: Extract scalar fields from shallow
-  `register_being` and `register_item` records in deterministic ID order.
-- [x] **Explicit gaps**: Preserve nested tables and function-valued fields as
-  named migration gaps instead of dropping or guessing them.
-- [x] **Fixture coverage**: Verify being/item records, scalar types,
-  provenance, deterministic ordering, and gap retention without a Lua runtime.
-- [ ] **Full content migration**: Expand typed coverage and validate behavior,
-  assets, and fairness for all legacy content families.
+- [x] **Repository smoke**: Run ephemeral-key signing, verification, and
+  mutation-rejection coverage in `check-repository.sh`.
+- [x] **Hosted smoke**: Generate a runner-local RSA key in the WASM job, build
+  a signed bundle, verify the manifest, and assert the private key is outside
+  `dist`.
+- [x] **Fail-closed boundary**: Require `.sig` and `.pub` together whenever
+  signing artifacts or an explicit verification key are present.
+- [ ] **Production governance**: Key custody, CI secret provisioning,
+  rotation, and trust-root policy remain open.
 
 ### 2.4 Pure Contract
 
-- **Input**: A pinned legacy Git revision and one Lua source path, or an explicit
-  fixture input for conversion tests.
-- **Output**: JSON with schema version, source provenance, sorted scalar fields,
-  and explicit migration-gap entries.
+- **Input**: A built static bundle plus an ephemeral or externally supplied
+  signing key; verification consumes the generated public key and manifest.
+- **Output**: A signed `release-manifest.json` with `.sig` and `.pub` artifacts,
+  plus a fail-closed verification result.
 - **Ownership Boundary**:
-  - `scripts/convert-legacy-content.py` owns build-time extraction only.
-  - `drl-core` remains the gameplay authority; conversion output is reviewed
-    input, not a runtime dependency.
-  - The browser bundle receives no Lua source, interpreter, or legacy object
-    model.
+  - `scripts/build-web.sh` and `scripts/sign-release-manifest.sh` own artifact
+    generation; `scripts/check-release-manifest.sh` owns verification.
+  - CI owns ephemeral smoke-key lifecycle for this test only; no production
+    private key is committed or copied into `dist`.
+  - Release governance and trust-root decisions remain outside this slice.
 
 ---
 
 ## 3. Recent Delivered Slices
+
+### M12 — Signed-Release CI Smoke (`VERSION` 0.2.18)
+
+- [x] Added repository contract coverage for signing and mutation rejection.
+- [x] Added hosted WASM CI coverage with a runner-local ephemeral RSA key.
+- [x] Asserted signed artifacts are present and the private key stays outside
+  `dist`.
+- [ ] Production key custody, rotation, and trust-root governance remain open.
 
 ### M9 — Legacy Content Evidence Converter (`VERSION` 0.2.17)
 
@@ -239,8 +247,9 @@ gaps. It is not a Lua interpreter and does not infer behavior.
 
 ## 6. Verification Gates
 
-### Verified Baseline (`VERSION` 0.2.17)
+### Verified Baseline (`VERSION` 0.2.18)
 
+3cfe62e feat(content): add pinned legacy content evidence converter (#108)
 f305503 feat(eval): add deterministic cohort study CLI (#107)
 22e0e8b feat(web): start offline cache registration at bootstrap (#106)
 af0fcf8 feat(release): add optional manifest signing (#105)
