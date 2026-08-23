@@ -187,9 +187,9 @@ Presentation Boundary
     `tools/call.arguments` must be an object when present, with malformed
     envelopes returning `-32602` before session or resource execution.
   - `game_start` and `game_load_scenario` reject wrong-typed optional integer
-    arguments and values outside the accepted finite unsigned-integer ranges
-    (`u32` for dimensions) with `-32602` before session mutation; omitted fields
-    retain their existing defaults.
+    arguments and values outside the accepted finite JSON-safe integer range
+    (`0..=2^53`, with `u32` for dimensions) with `-32602` before session
+    mutation; omitted fields retain their existing defaults.
   - A private `Uninitialized → AwaitingInitialized → Ready` phase gate requires
     an identified initialize request followed by `notifications/initialized`
     before tools and resources are available; premature/duplicate transitions

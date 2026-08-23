@@ -29,10 +29,11 @@ criteria, and verification boundaries.
 
 Validate optional integer arguments for the stateful `game_start` and
 `game_load_scenario` tools without changing valid gameplay. Present `seed` and
-`max_turns` values must be finite, non-negative integers representable as `u64`;
-`width` and `height` must be finite, non-negative integers representable as
-`u32`. Wrong types or values outside those accepted ranges return deterministic
-`-32602` errors before session mutation. Preserve method-envelope, request-ID,
+`max_turns` values must be finite, non-negative integers in the JSON parser's
+exact safe-integer range (`0..=2^53`); `width` and `height` must be finite,
+non-negative integers in that range and representable as `u32`. Wrong types or
+values outside those accepted ranges return deterministic `-32602` errors
+before session mutation. Preserve method-envelope, request-ID,
 notification, batch, initialize, and lifecycle contracts from predecessor
 slices.
 
@@ -60,7 +61,8 @@ slices.
 - [x] **Optional integer fields**: `game_start` validates `seed`, `max_turns`,
   `width`, and `height`; `game_load_scenario` validates `max_turns` when
   present, returning `-32602` for wrong types or values outside the accepted
-  unsigned integer ranges.
+  JSON-safe unsigned integer range (`0..=2^53`), with dimensions also bounded
+  by `u32`.
 - [x] **State safety**: Malformed numeric arguments never start, reset, or
   mutate a game session; valid omitted fields retain existing defaults.
 - [x] **Predecessor contracts retained**: Method-envelope/request-ID

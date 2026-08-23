@@ -266,14 +266,15 @@ fn test_jsonrpc_rejects_non_object_method_params_without_execution() {
 }
 
 #[test]
-fn test_jsonrpc_rejects_wrong_typed_tool_arguments_without_execution() {
+fn test_jsonrpc_rejects_invalid_numeric_tool_arguments_without_execution() {
   let mut server = ready_server();
   for request in [
     r#"{"jsonrpc":"2.0","id":40,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":"7"}}}"#,
     r#"{"jsonrpc":"2.0","id":41,"method":"tools/call","params":{"name":"game_start","arguments":{"width":4294967296}}}"#,
     r##"{"jsonrpc":"2.0","id":42,"method":"tools/call","params":{"name":"game_load_scenario","arguments":{"ascii_map":"#@>#","max_turns":true}}}"##,
-    r#"{"jsonrpc":"2.0","id":43,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":18446744073709551616}}}"#,
-    r#"{"jsonrpc":"2.0","id":44,"method":"tools/call","params":{"name":"game_start","arguments":{"max_turns":18446744073709551616}}}"#,
+    r#"{"jsonrpc":"2.0","id":43,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":9007199254740993}}}"#,
+    r#"{"jsonrpc":"2.0","id":44,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":18446744073709551616}}}"#,
+    r#"{"jsonrpc":"2.0","id":45,"method":"tools/call","params":{"name":"game_start","arguments":{"max_turns":18446744073709551616}}}"#,
   ] {
     let response = JsonValue::parse(&server.handle_request(request)).unwrap();
     assert_eq!(
@@ -285,4 +286,22 @@ fn test_jsonrpc_rejects_wrong_typed_tool_arguments_without_execution() {
     );
   }
   assert!(!server.session().is_active());
+}
+
+#[test]
+fn test_jsonrpc_accepts_maximum_exact_json_integer() {
+  let mut server = ready_server();
+  let response = JsonValue::parse(&server.handle_request(
+    r#"{"jsonrpc":"2.0","id":46,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":9007199254740992}}}"#,
+  ))
+  .unwrap();
+  assert!(response.get("error").is_none());
+  assert_eq!(
+    response
+      .get("result")
+      .and_then(|result| result.get("data"))
+      .and_then(|data| data.get("seed"))
+      .and_then(|seed| seed.as_u64()),
+    Some(9_007_199_254_740_992)
+  );
 }

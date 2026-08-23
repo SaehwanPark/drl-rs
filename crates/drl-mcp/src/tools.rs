@@ -322,7 +322,7 @@ fn exact_u64(value: &JsonValue) -> Option<u64> {
       if number.is_finite()
         && *number >= 0.0
         && number.fract() == 0.0
-        && *number < 18_446_744_073_709_551_616.0 =>
+        && *number <= 9_007_199_254_740_992.0 =>
     {
       Some(*number as u64)
     }

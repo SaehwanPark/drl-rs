@@ -12,6 +12,10 @@ pub enum JsonValue {
   Bool(bool),
   /// JSON numeric value.
   Number(f64),
+  /// Numeric literal retained lexically when converting it to `f64` would
+  /// lose integer precision. Tool validators reject this value rather than
+  /// executing with a silently rounded argument.
+  RawNumber(String),
   /// JSON string value.
   String(String),
   /// JSON array of values.
@@ -50,6 +54,7 @@ impl JsonValue {
   pub fn as_f64(&self) -> Option<f64> {
     match self {
       Self::Number(n) => Some(*n),
+      Self::RawNumber(raw) => raw.parse().ok(),
       _ => None,
     }
   }
@@ -59,6 +64,7 @@ impl JsonValue {
   pub fn as_i64(&self) -> Option<i64> {
     match self {
       Self::Number(n) if n.fract() == 0.0 => Some(*n as i64),
+      Self::RawNumber(raw) => raw.parse().ok(),
       _ => None,
     }
   }
@@ -68,6 +74,7 @@ impl JsonValue {
   pub fn as_u64(&self) -> Option<u64> {
     match self {
       Self::Number(n) if *n >= 0.0 && n.fract() == 0.0 => Some(*n as u64),
+      Self::RawNumber(raw) => raw.parse().ok(),
       _ => None,
     }
   }
@@ -157,6 +164,7 @@ impl JsonValue {
           out.push_str(&format!("{n}"));
         }
       }
+      Self::RawNumber(raw) => out.push_str(raw),
       Self::String(s) => {
         out.push('"');
         for c in s.chars() {
@@ -248,6 +256,63 @@ impl From<f64> for JsonValue {
   fn from(n: f64) -> Self {
     Self::Number(n)
   }
+}
+
+/// Returns whether a JSON numeric literal is an integer larger than the range
+/// that `f64` can represent without losing integer precision.
+fn number_exceeds_exact_integer_range(raw: &str) -> bool {
+  const SAFE_INTEGER_MAX: &str = "9007199254740992";
+
+  let unsigned = raw.strip_prefix('-').unwrap_or(raw);
+  let (mantissa, exponent) = match unsigned.split_once(['e', 'E']) {
+    Some((mantissa, exponent)) => {
+      let exponent = match exponent.parse::<i64>() {
+        Ok(exponent) => exponent,
+        Err(_) => return true,
+      };
+      (mantissa, exponent)
+    }
+    None => (unsigned, 0),
+  };
+  let (whole, fraction) = mantissa.split_once('.').unwrap_or((mantissa, ""));
+  let digits = format!("{whole}{fraction}");
+  let decimal_index = whole.len() as i64 + exponent;
+  if decimal_index <= 0 {
+    return false;
+  }
+
+  let digit_count = digits.len() as i64;
+  if decimal_index < digit_count
+    && digits[decimal_index as usize..]
+      .bytes()
+      .any(|digit| digit != b'0')
+  {
+    return false;
+  }
+
+  let integer_end = decimal_index.min(digit_count) as usize;
+  let significant = digits[..integer_end].trim_start_matches('0');
+  if significant.is_empty() {
+    return false;
+  }
+
+  let trailing_zeros_count = (decimal_index - digit_count).max(0);
+  if trailing_zeros_count > SAFE_INTEGER_MAX.len() as i64 {
+    return true;
+  }
+  let trailing_zeros = trailing_zeros_count as usize;
+  let integer_length = significant.len() + trailing_zeros;
+  if integer_length != SAFE_INTEGER_MAX.len() {
+    return integer_length > SAFE_INTEGER_MAX.len();
+  }
+  if trailing_zeros == 0 {
+    return significant > SAFE_INTEGER_MAX;
+  }
+
+  let mut padded = String::with_capacity(integer_length);
+  padded.push_str(significant);
+  padded.extend(std::iter::repeat_n('0', trailing_zeros));
+  padded.as_str() > SAFE_INTEGER_MAX
 }
 
 struct JsonParser<'a> {
@@ -429,6 +494,9 @@ impl<'a> JsonParser<'a> {
     let num: f64 = raw
       .parse()
       .map_err(|e| format!("Failed to parse number '{raw}': {e}"))?;
+    if number_exceeds_exact_integer_range(&raw) {
+      return Ok(JsonValue::RawNumber(raw));
+    }
     Ok(JsonValue::Number(num))
   }
 
@@ -520,6 +588,18 @@ mod tests {
     assert_eq!(JsonValue::parse("false").unwrap(), JsonValue::Bool(false));
     assert_eq!(JsonValue::parse("123").unwrap(), JsonValue::Number(123.0));
     assert_eq!(JsonValue::parse("-45.5").unwrap(), JsonValue::Number(-45.5));
+    assert_eq!(
+      JsonValue::parse("9007199254740993").unwrap(),
+      JsonValue::RawNumber("9007199254740993".to_string())
+    );
+    assert_eq!(
+      JsonValue::parse("9007199254740992.0").unwrap(),
+      JsonValue::Number(9_007_199_254_740_992.0)
+    );
+    assert_eq!(
+      JsonValue::parse("9007199254740993.0").unwrap(),
+      JsonValue::RawNumber("9007199254740993.0".to_string())
+    );
     assert_eq!(
       JsonValue::parse("\"hello\\nworld\"").unwrap(),
       JsonValue::String("hello\nworld".to_string())

@@ -7,8 +7,8 @@ documented in this file.
 
 - Added typed validation for optional integer arguments on `game_start` and
   `game_load_scenario`; wrong types and values outside the accepted finite
-  unsigned-integer ranges return `-32602` before session mutation while omitted
-  defaults remain unchanged.
+  JSON-safe integer range (`0..=2^53`, with `u32` dimensions) return `-32602`
+  before session mutation while omitted defaults remain unchanged.
 - Preserved valid MCP tool/resource, request-ID, initialize, lifecycle,
   notification, and batch contracts; full MCP schema/client compatibility
   remains open.

@@ -83,7 +83,7 @@ impl JsonRpcRequest {
     if let Some(id) = &id
       && !matches!(
         id,
-        JsonValue::Null | JsonValue::Number(_) | JsonValue::String(_)
+        JsonValue::Null | JsonValue::Number(_) | JsonValue::RawNumber(_) | JsonValue::String(_)
       )
     {
       return Err(JsonRpcError::new(
