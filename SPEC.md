@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.45`
+Current project version: `0.2.46`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,15 +23,16 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M13 JSON-RPC Request-ID Validation
+## 2. Active Implementation Slice: M13 Method-Parameter Envelope Validation
 
 ### 2.1 Scope & Objective
 
-Validate the JSON-RPC request identifier domain without expanding lifecycle or
-client claims. Request IDs may be strings, numbers, or explicit `null`; boolean,
-array, and object IDs return deterministic `-32600` invalid-request errors.
-Preserve omitted-ID notification suppression, explicit null-ID responses, and
-the predecessor initialize-envelope and lifecycle contracts.
+Validate the MCP method-parameter envelopes that reach stateful discovery and
+resource operations without expanding lifecycle or client claims. Require
+object params for `tools/call` and `resources/read`, and require object
+`tools/call.arguments` when present. Malformed envelopes return deterministic
+`-32602` errors before execution. Preserve request-ID, notification, batch,
+initialize, and lifecycle contracts from predecessor slices.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
@@ -54,33 +55,41 @@ the predecessor initialize-envelope and lifecycle contracts.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Identifier domain**: Request IDs accept strings, numbers, and explicit
-  `null`; booleans, arrays, and objects return `-32600` before dispatch.
-- [x] **Transport boundary**: Invalid-ID responses retain a `null` response ID;
-  omitted-ID notifications remain suppressed and explicit null IDs still emit
-  responses.
-- [x] **Predecessor contracts retained**: Initialize envelope validation,
-  version fallback, lifecycle gating, `-32003`, ping, batch ordering, and
-  game-reset separation remain covered.
+- [x] **Method params**: `tools/call` and `resources/read` require object
+  params; missing or non-object values return `-32602` before dispatch.
+- [x] **Tool arguments**: `tools/call.arguments`, when present, must be an
+  object; malformed arguments never start or mutate a game session.
+- [x] **Predecessor contracts retained**: Request-ID validation, initialize
+  envelope/version fallback, lifecycle gating, notification suppression, batch
+  ordering, and game-reset separation remain covered.
 - [x] **No expansion of claims**: Full initialize-schema validation, reconnect/
   resume, concurrency, HTTP, external clients, and production deployment
   remain open.
 
 ### 2.4 Pure Contract
 
-- **Input**: A JSON-RPC request with an omitted ID, or an ID that is a string,
-  number, or explicit `null`.
-- **Output**: Valid IDs preserve request dispatch and response identity;
-  non-scalar IDs emit `-32600` with a `null` response ID and no state change.
+- **Input**: `tools/call` or `resources/read` requests with object params;
+  `tools/call` may include object `arguments`.
+- **Output**: Valid envelopes dispatch normally; malformed method params emit
+  `-32602` with no tool execution or game-state mutation.
 - **Ownership Boundary**:
-  - `drl-mcp::JsonRpcRequest::parse` owns identifier-domain validation.
-  - `McpServer::handle_request` and `run_stdio` preserve dispatch, batch framing,
-    and notification suppression after parsing.
+  - `McpServer::handle_tools_call` and `handle_resources_read` own method-
+    parameter shape validation before session or resource dispatch.
+  - `JsonRpcRequest::parse` and `run_stdio` preserve request-ID, batch framing,
+    and notification suppression contracts.
   - Game reset remains a session operation and does not alter protocol phase.
 
 ---
 
 ## 3. Recent Delivered Slices
+
+### M13 — Method-Parameter Envelope Validation (`VERSION` 0.2.46)
+
+- [x] `tools/call` and `resources/read` require object params; tool arguments
+  must be an object when present, with malformed calls returning `-32602`
+  without state mutation.
+- [x] Request-ID, initialize, lifecycle, notification, and batch contracts
+  remain deterministic; full MCP schema/client compatibility remains open.
 
 ### M13 — JSON-RPC Request-ID Validation (`VERSION` 0.2.45)
 

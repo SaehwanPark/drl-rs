@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.46]
+
+- Added bounded MCP method-parameter validation: `tools/call` and
+  `resources/read` require object params, and `tools/call.arguments` must be an
+  object when present; malformed calls return `-32602` before execution.
+- Preserved request-ID, initialize, lifecycle, notification, batch, resource,
+  and valid gameplay contracts; full MCP schema/client compatibility remains
+  open.
+
 ## [0.2.45]
 
 - Added JSON-RPC request-ID domain validation: string, number, and explicit
