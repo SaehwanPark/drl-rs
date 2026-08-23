@@ -12,6 +12,11 @@ grep -F '/* __PRECACHE_URLS__ */ []' "$worker" >/dev/null
 grep -F 'request.method === "GET"' "$worker" >/dev/null
 grep -F 'self.location.origin' "$worker" >/dev/null
 grep -F 'cacheSuccessfulResponse' "$worker" >/dev/null
+grep -F 'async function matchCurrentCache' "$worker" >/dev/null
+if grep -F 'caches.match(' "$worker" >/dev/null; then
+  printf '%s\n' 'Service worker must read only the current release cache.' >&2
+  exit 1
+fi
 grep -F 'assets/legacy' scripts/build-web.sh >/dev/null
 grep -F 'service-worker.js' scripts/build-web.sh >/dev/null
 grep -F 'release-manifest.json' scripts/build-web.sh scripts/check-release-manifest.sh >/dev/null

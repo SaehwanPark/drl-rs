@@ -19,6 +19,11 @@ async function cacheSuccessfulResponse(request, response) {
   return response;
 }
 
+async function matchCurrentCache(request) {
+  const cache = await caches.open(CACHE_NAME);
+  return cache.match(request);
+}
+
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
@@ -49,13 +54,13 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       fetch(request)
         .then((response) => cacheSuccessfulResponse(request, response))
-        .catch(() => caches.match(shellUrl()).then((response) => response || Response.error())),
+        .catch(() => matchCurrentCache(shellUrl()).then((response) => response || Response.error())),
     );
     return;
   }
 
   event.respondWith(
-    caches.match(request).then((cached) =>
+    matchCurrentCache(request).then((cached) =>
       cached || fetch(request).then((response) => cacheSuccessfulResponse(request, response)),
     ),
   );

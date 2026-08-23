@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.26`
+Current project version: `0.2.27`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.26)
+## 3. Current Progress Summary (`VERSION` 0.2.27)
 
 ### Delivered Foundations
 
@@ -84,9 +84,9 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active Milestone Slice (M12)**: Browser interaction semantics now qualify
-  generated inventory actions, keep one live status channel, associate canvas
-  help, and focus diagnostics; WCAG/screen-reader acceptance remains open.
+- **Active Milestone Slice (M10)**: Service-worker offline reads now isolate the
+  current generated release cache; real install/control/reload acceptance
+  remains open.
 - **M9 Content Evidence**: Base, expansion, user-item, being, and terrain-cell
   evidence slices are delivered without runtime Lua or gameplay overclaims.
 - **M11 Evaluation**: Deterministic cohort reports support a three-policy
@@ -106,8 +106,9 @@ verification item uses explicit status semantics:
 - **Content Breadth & Balance (M9, M11)**: Pinned-source conversion evidence,
   expanded content tables, and canonical difficulty target studies.
 - **PWA & Release Hardening (M10, M12, M13)**: Bootstrap-independent offline
-  cache registration and signed releases are delivered; full offline-after-
-  first-load acceptance and 1.0 desktop Chromium deployment remain open.
+  cache registration, current-cache-only reads, and signed releases are
+  delivered; full offline-after-first-load acceptance and 1.0 desktop
+  Chromium deployment remain open.
 
 ---
 
@@ -362,6 +363,8 @@ Implement robust client-side save state and offline browser capabilities.
 - [x] Service-worker registration begins during page bootstrap independently of
   WebGPU startup, with explicit capability, installing, ready, and failure
   diagnostics.
+- [x] Service-worker navigation and asset reads are isolated to the current
+  generated release cache; stale/unrelated cache namespaces fail closed.
 - [ ] Full offline-after-first-load PWA lifecycle acceptance.
 - [x] Corruption recovery policy: fail-closed restore, bounded quarantine, and
   playable boot/load when storage cleanup is unavailable.

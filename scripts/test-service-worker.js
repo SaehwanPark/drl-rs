@@ -149,6 +149,14 @@ async function main() {
   assert.equal(cachesByName.has("unrelated-cache"), true);
   assert.equal(cachesByName.has(currentName), true);
 
+  const staleShellUrl = `${scope}stale.html`;
+  const staleAssetUrl = `${scope}stale.js`;
+  const unrelated = cachesByName.get("unrelated-cache");
+  unrelated.entries.set(keyFor(`${scope}index.html`), new MockResponse("stale shell"));
+  unrelated.entries.set(keyFor(staleAssetUrl), new MockResponse("stale asset"));
+  current.entries.delete(keyFor(staleShellUrl));
+  current.entries.delete(keyFor(staleAssetUrl));
+
   const navigationUrl = `${origin}/app/level`;
   fetchResponses.set(navigationUrl, new MockResponse("online shell"));
   const navigation = {
@@ -164,6 +172,23 @@ async function main() {
   fetchResponses.set(navigationUrl, new Error("offline"));
   response = await dispatch("fetch", { request: navigation });
   assert.equal(response.body, "precache:./index.html");
+
+  current.entries.delete(keyFor(`${scope}index.html`));
+  fetchResponses.set(staleShellUrl, new Error("offline stale shell"));
+  response = await dispatch("fetch", {
+    request: { method: "GET", mode: "navigate", url: staleShellUrl },
+  });
+  assert.equal(response.status, 0, "navigation must fail closed without current-cache shell");
+  assert.equal(response.body, "");
+
+  fetchResponses.set(staleAssetUrl, new Error("offline stale asset"));
+  await assert.rejects(
+    dispatch("fetch", {
+      request: { method: "GET", mode: "same-origin", url: staleAssetUrl },
+    }),
+    /offline stale asset/,
+    "asset fetch must not use an unrelated cache entry",
+  );
 
   const cachedAsset = {
     method: "GET",
