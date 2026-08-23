@@ -182,6 +182,57 @@ const MISSILE_LAUNCHER: ItemDefinition = ItemDefinition {
   },
 };
 
+const NUCLEAR_PLASMA_RIFLE: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::NuclearPlasmaRifle,
+  name: "Nuclear Plasma Rifle",
+  description: "A self-charging plasma rifle -- too bad it can't be manually reloaded.",
+  kind: ItemDefinitionKind::Weapon {
+    is_ranged: true,
+    ammo_type: Some(AmmoType::Cell),
+    clip_capacity: 24,
+    damage: (1, 7),
+    range: 8,
+    accuracy: 70,
+    knockback: 0,
+    fire_cost: ActionCost::RANGED_ATTACK,
+    reload_cost: ActionCost::STANDARD,
+  },
+};
+
+const NUCLEAR_BFG_9000: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::NuclearBfg9000,
+  name: "Nuclear BFG 9000",
+  description: "A self-charging BFG9000! How much more lucky can you get?",
+  kind: ItemDefinitionKind::Weapon {
+    is_ranged: true,
+    ammo_type: Some(AmmoType::Cell),
+    clip_capacity: 40,
+    damage: (8, 48),
+    range: 8,
+    accuracy: 70,
+    knockback: 0,
+    fire_cost: ActionCost::RANGED_ATTACK,
+    reload_cost: ActionCost::STANDARD,
+  },
+};
+
+const BFG_10K: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::Bfg10k,
+  name: "BFG 10K",
+  description: "The Ultimate Big Fucking Gun. Redefines the word \"wallpaper\".",
+  kind: ItemDefinitionKind::Weapon {
+    is_ranged: true,
+    ammo_type: Some(AmmoType::Cell),
+    clip_capacity: 50,
+    damage: (6, 24),
+    range: 8,
+    accuracy: 70,
+    knockback: 0,
+    fire_cost: ActionCost::RANGED_ATTACK,
+    reload_cost: ActionCost::STANDARD,
+  },
+};
+
 const CHAINGUN: ItemDefinition = ItemDefinition {
   archetype: ItemArchetype::Chaingun,
   name: "Chaingun",
@@ -437,6 +488,9 @@ pub const fn definition_for_spawn_kind(kind: ItemSpawnKind) -> &'static ItemDefi
     ItemSpawnKind::Blaster => &BLASTER,
     ItemSpawnKind::LaserRifle => &LASER_RIFLE,
     ItemSpawnKind::MissileLauncher => &MISSILE_LAUNCHER,
+    ItemSpawnKind::NuclearPlasmaRifle => &NUCLEAR_PLASMA_RIFLE,
+    ItemSpawnKind::NuclearBfg9000 => &NUCLEAR_BFG_9000,
+    ItemSpawnKind::Bfg10k => &BFG_10K,
     ItemSpawnKind::Chaingun => &CHAINGUN,
     ItemSpawnKind::PlasmaRifle => &PLASMA_RIFLE,
     ItemSpawnKind::RocketLauncher => &ROCKET_LAUNCHER,
@@ -490,6 +544,17 @@ mod tests {
         ItemArchetype::MissileLauncher,
         "Missile Launcher",
       ),
+      (
+        ItemSpawnKind::NuclearPlasmaRifle,
+        ItemArchetype::NuclearPlasmaRifle,
+        "Nuclear Plasma Rifle",
+      ),
+      (
+        ItemSpawnKind::NuclearBfg9000,
+        ItemArchetype::NuclearBfg9000,
+        "Nuclear BFG 9000",
+      ),
+      (ItemSpawnKind::Bfg10k, ItemArchetype::Bfg10k, "BFG 10K"),
       (ItemSpawnKind::Chaingun, ItemArchetype::Chaingun, "Chaingun"),
       (
         ItemSpawnKind::PlasmaRifle,
@@ -690,6 +755,48 @@ mod tests {
         damage: (6, 36),
         range: 8,
         accuracy: 75,
+        knockback: 0,
+        fire_cost: ActionCost::RANGED_ATTACK,
+        reload_cost: ActionCost::STANDARD,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::NuclearPlasmaRifle).kind,
+      ItemDefinitionKind::Weapon {
+        is_ranged: true,
+        ammo_type: Some(AmmoType::Cell),
+        clip_capacity: 24,
+        damage: (1, 7),
+        range: 8,
+        accuracy: 70,
+        knockback: 0,
+        fire_cost: ActionCost::RANGED_ATTACK,
+        reload_cost: ActionCost::STANDARD,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::NuclearBfg9000).kind,
+      ItemDefinitionKind::Weapon {
+        is_ranged: true,
+        ammo_type: Some(AmmoType::Cell),
+        clip_capacity: 40,
+        damage: (8, 48),
+        range: 8,
+        accuracy: 70,
+        knockback: 0,
+        fire_cost: ActionCost::RANGED_ATTACK,
+        reload_cost: ActionCost::STANDARD,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::Bfg10k).kind,
+      ItemDefinitionKind::Weapon {
+        is_ranged: true,
+        ammo_type: Some(AmmoType::Cell),
+        clip_capacity: 50,
+        damage: (6, 24),
+        range: 8,
+        accuracy: 70,
         knockback: 0,
         fire_cost: ActionCost::RANGED_ATTACK,
         reload_cost: ActionCost::STANDARD,

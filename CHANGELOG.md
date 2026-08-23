@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.79]
+
+- Added typed `NuclearPlasmaRifle`, `NuclearBfg9000`, and `Bfg10k` families
+  from pinned heavy-energy records, preserving descriptions, cell relations,
+  clips, damage ranges, replay JSON kinds, and measured plasma/BFG/BFG10K atlas
+  slots. Recharge, exact-hit, chainfire, explosion, and mod callbacks remain
+  open.
+
 ## [0.2.78]
 
 - Added typed `Blaster`, `LaserRifle`, and `MissileLauncher` families from
