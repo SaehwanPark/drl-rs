@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.62`
+Current project version: `0.2.63`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.62)
+## 3. Current Progress Summary (`VERSION` 0.2.63)
 
 ### Delivered Foundations
 
@@ -72,7 +72,8 @@ verification item uses explicit status semantics:
   tints (Green Armor, Phase Device, StairsDown), outline-mask compositing,
   elapsed-time animation scheduling, pure effect/missile math, bounded
   particle-decal insertion and storage contracts, and a fair explored-topology
-  minimap projection with visible actor markers.
+  minimap projection with visible actor markers plus a bounded accessible DOM
+  text-grid surface.
 - **Typed Content & Persistence (M9, M10)**: Rust-owned definitions for current
   monsters, items, tiles, and levels; versioned fixed-session snapshot codec
   with localStorage persistence, bounded rejected-save quarantine, and static
@@ -392,12 +393,14 @@ rigorous contracts.
 - [x] Renderer-neutral `MinimapState` projection from explored tiles and
   currently visible actor/player markers, with deterministic ordering,
   duplicate resolution, and malformed-position rejection.
+- [x] Bounded semantic DOM minimap text grid with focusable, labelled markup,
+  stable glyph mapping, and fail-closed oversized-dimension handling.
 
 #### Present Slice (Expanded in `SPEC.md`)
 
 - [x] Project explored minimap topology and fair visible actor markers without
-  hidden-world access. Exact legacy minimap geometry and capture-backed visual
-  parity remain open.
+  hidden-world access, then expose it through the browser's semantic DOM.
+  Exact legacy minimap geometry and capture-backed visual parity remain open.
 
 #### Open Work
 

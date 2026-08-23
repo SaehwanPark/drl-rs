@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.63]
+
+- Added a bounded accessible minimap region to the browser shell. It renders
+  the fair `MinimapState` as a focusable text grid, keeps `aria-live` off, and
+  fails closed for oversized or malformed dimensions without exposing hidden
+  map state.
+- Added native contracts for glyph mapping and bounded DOM output; exact legacy
+  minimap pixel parity remains open.
+
 ## [0.2.62]
 
 - Added a deterministic renderer-neutral `MinimapState` projection from fair

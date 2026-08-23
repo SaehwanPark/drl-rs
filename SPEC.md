@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.62`
+Current project version: `0.2.63`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,37 +23,36 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M8 Explored-Topology Minimap Projection
+## 2. Active Implementation Slice: M8 Semantic Minimap DOM Surface
 
 ### 2.1 Scope & Objective
 
-Expose a deterministic, renderer-neutral minimap projection from the fair
-`PlayerObservation` boundary. The projection may contain explored tile
-topology and currently visible actor/player markers, but must never infer or
-surface unexplored map cells or hidden actors. This is presentation planning,
-not a claim of exact legacy pixel parity.
+Expose the existing fair `MinimapState` projection through a bounded,
+keyboard-focusable semantic DOM text grid. The browser surface must render only
+explored topology and currently visible actor/player markers, while malformed
+or oversized dimensions fail closed. This is accessibility-oriented
+presentation plumbing, not a claim of exact legacy pixel parity.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
-1. **Fair observation boundary**: `PlayerObservation` contains explored tile
-   memory with per-tile visibility plus actors currently inside active FOV.
-2. **One-way presentation**: `drl-render` consumes observations only; minimap
-   construction cannot mutate simulation state or query `World` internals.
-3. **Parity boundary**: exact legacy minimap geometry, palette, typography, and
-   capture-backed visual regressions remain open work.
+1. **Fair projection**: `drl-render::MinimapState` already contains explored
+   tile memory and actors currently inside active FOV.
+2. **One-way browser surface**: `drl-web` updates the semantic DOM from each
+   fair observation; DOM updates never mutate the simulation.
+3. **Bounded output**: grids larger than 4,096 cells show a stable unavailable
+   message instead of allocating unbounded browser text.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Explored topology**: every minimap cell comes from an explored tile in
-  the observation; unexplored positions are omitted.
-- [x] **Visibility markers**: the player marker and non-player actor markers
-  are derived only from the fair observation, with player precedence at a
-  shared position.
-- [x] **Stable projection**: cells are deduplicated and sorted by map position,
-  and malformed out-of-bounds observation entries are ignored.
-- [x] **Focused contract coverage**: pure Rust tests cover hidden-state
-  exclusion, actor visibility, marker precedence, ordering, and malformed
-  positions.
+- [x] **Accessible surface**: the page exposes a labelled minimap region with
+  a focusable `<pre>` text grid and `aria-live="off"` to avoid command spam.
+- [x] **Fair rendering**: the DOM consumes only `MinimapState` cells, preserving
+  explored-only topology and player/visible-actor marker precedence.
+- [x] **Bounded failure**: zero-sized or over-4,096-cell dimensions return
+  `Minimap unavailable.` without allocating a grid.
+- [x] **Focused contract coverage**: native Rust tests cover glyph mapping,
+  projected markers, malformed dimensions, and the existing renderer
+  projection tests cover hidden-state exclusion and ordering.
 - [ ] **Exact legacy parity**: pixel geometry, palette, typography, and
   capture-backed minimap regressions remain `NOT_RUN`/open.
 - [x] **Explicit non-goals**: no gameplay/core rule, observation schema,
@@ -61,12 +60,13 @@ not a claim of exact legacy pixel parity.
 
 ### 2.4 Pure Contract
 
-- **Input**: a fair `PlayerObservation` with map dimensions, explored tile
-  views, player position, and visible actor views.
-- **Output**: a sorted `MinimapState` containing explored topology plus
-  `Player`/`VisibleActor` markers; no unknown-cell records are emitted.
-- **Ownership Boundary**: `drl-render` owns only pure projection; `drl-core`
-  remains authoritative for world state and visibility.
+- **Input**: a fair `PlayerObservation` delivered to the browser update DOM.
+- **Output**: bounded text rows using `#`, `.`, `+`, `/`, `>`, `@`, and `a` for
+  projected walls, floor, doors, stairs, player, and visible actors; unknown
+  cells remain spaces.
+- **Ownership Boundary**: `drl-web` owns glyph formatting and DOM updates;
+  `drl-render` owns the fair projection and `drl-core` remains authoritative
+  for world state and visibility.
 
 ---
 
