@@ -36,7 +36,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.78`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.79`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:
@@ -93,8 +93,9 @@ replays, and regression testing.
   - M9 now includes definition-backed rocket and power-cell ammo families,
     base/rocket/power-battery ammo packs, blue/red armor, pinned med-pack
     descriptions, typed double/combat shotguns, Blaster, Laser Rifle, Missile
-    Launcher, BFG 9000, chainsaw, chaingun, plasma-rifle, and rocket-launcher
-    families with replay/atlas coverage;
+    Launcher, Nuclear Plasma Rifle, Nuclear BFG 9000, BFG 10K, BFG 9000,
+    chainsaw, chaingun, plasma-rifle, and rocket-launcher families with
+    replay/atlas coverage;
     resistance, movement,
     prepared-slot consumption,
     dynamic healing, weapon callbacks/effects, and broader legacy item behavior
