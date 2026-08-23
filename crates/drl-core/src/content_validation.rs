@@ -158,8 +158,23 @@ fn validate_item_definition(definition: &ItemDefinition) -> Result<(), ContentVa
         require_positive("item", key, "range", range)?;
       }
     }
-    ItemDefinitionKind::Ammo { max_stack, .. } => {
+    ItemDefinitionKind::Ammo {
+      max_stack,
+      initial_amount,
+      ..
+    } => {
       require_positive("item", key, "max_stack", max_stack)?;
+      if let Some(initial_amount) = initial_amount
+        && initial_amount > max_stack
+      {
+        return Err(ContentValidationError::InvalidRange {
+          table: "item",
+          key,
+          field: "initial_amount",
+          minimum: initial_amount,
+          maximum: max_stack,
+        });
+      }
     }
     ItemDefinitionKind::MedPack { heal_amount } => {
       require_positive("item", key, "heal_amount", heal_amount)?;

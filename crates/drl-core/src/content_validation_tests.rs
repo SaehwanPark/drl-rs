@@ -88,6 +88,30 @@ fn rejects_ranged_weapon_without_range_or_ammo() {
   );
 }
 
+#[test]
+fn rejects_ammo_initial_amount_above_stack_limit() {
+  let invalid = ItemDefinition {
+    kind: ItemDefinitionKind::Ammo {
+      ammo_type: drl_protocol::AmmoType::Rocket,
+      max_stack: 10,
+      initial_amount: Some(11),
+    },
+    archetype: drl_protocol::ItemArchetype::AmmoRockets,
+    name: "test rocket",
+    description: "test",
+  };
+  assert_eq!(
+    validate_item_definition(&invalid),
+    Err(ContentValidationError::InvalidRange {
+      table: "item",
+      key: "test rocket",
+      field: "initial_amount",
+      minimum: 11,
+      maximum: 10,
+    })
+  );
+}
+
 fn test_level() -> LevelDefinition {
   LevelDefinition {
     key: "test",

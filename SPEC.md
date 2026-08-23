@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.64`
+Current project version: `0.2.65`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -35,7 +35,7 @@ and measured atlas slots without importing Lua callbacks or weapon behavior.
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
 1. **Pinned evidence**: Git objects at legacy revision
-   `17d9be1204751899b2d69d8d3a2dde247bd0cc5c` provide scalar item and sprite
+  `17d9be1204751899b2d69d8d3a2dde247bd0cc5c` provide scalar item and sprite
    records; the dirty legacy working tree is not an evidence source.
 2. **Typed content boundary**: `drl-core` owns immutable `ItemDefinition`
    records and factories; `drl-protocol` owns stable spawn/archetype values.
@@ -45,9 +45,10 @@ and measured atlas slots without importing Lua callbacks or weapon behavior.
 ### 2.3 Present Slice Acceptance Criteria
 
 - [x] **Rocket definition**: typed `AmmoRockets` preserves the observed
-  description, amount `3`, maximum stack `10`, and `SPRITE_ROCKET` slot.
+  description, immutable initial amount `3`, maximum stack `10`, and
+  `SPRITE_ROCKET` slot.
 - [x] **Power-cell definition**: typed `AmmoCells` preserves the observed
-  description, amount `20`, maximum stack `50`, two-frame marker, and
+  description, immutable initial amount `20`, maximum stack `50`, two-frame marker, and
   `SPRITE_CELL` slot; frame duration remains an explicit Rust decision.
 - [x] **Factory and view coverage**: item counts, ammo types, archetypes,
   descriptions, and stack policies are deterministic and definition-backed.
@@ -65,8 +66,9 @@ and measured atlas slots without importing Lua callbacks or weapon behavior.
 - **Input**: `ItemSpawnKind::AmmoRockets(count)` or
   `ItemSpawnKind::AmmoCells(count)`.
 - **Output**: a definition-backed stackable `Item` with the observed ammo type,
-  count, maximum stack, description, and atlas archetype; MCP JSON uses
-  `ammo_rockets`/`ammo_cells` plus `count`.
+  count, maximum stack, description, and atlas archetype; the definitions also
+  expose pinned initial counts (`3`/`20`) while MCP JSON uses
+  `ammo_rockets`/`ammo_cells` plus caller-owned `count`.
 - **Ownership Boundary**: Rust typed definitions own runtime item semantics;
   pinned Lua evidence informs only the migrated scalar fields and provenance.
 

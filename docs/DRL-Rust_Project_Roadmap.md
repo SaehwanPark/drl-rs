@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.64`
+Current project version: `0.2.65`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.64)
+## 3. Current Progress Summary (`VERSION` 0.2.65)
 
 ### Delivered Foundations
 
@@ -456,7 +456,8 @@ scripting.
 - [x] The evidence crosswalk uses schema version 2 for its exact-digest and
   complete-catalog contract; obsolete schema versions fail closed.
 - [x] Typed rocket and power-cell ammo families preserve pinned scalar fields,
-  stack policies, replay JSON names, and atlas slots without Lua runtime code.
+  immutable initial amounts, stack policies, replay JSON names, and atlas slots
+  without Lua runtime code.
 - [ ] Full migration of legacy monsters, weapons, armor, mods, and consumable
   items.
 - [ ] Full migration of special levels, vaults, and dungeon branches.

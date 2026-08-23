@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.65]
+
+- Promoted the pinned rocket (`3`) and power-cell (`20`) pickup amounts into
+  immutable ammo-definition metadata and added structural validation that a
+  known initial amount cannot exceed its stack limit. Replay/scenario counts
+  remain caller-owned and existing gameplay behavior is unchanged.
+
 ## [0.2.64]
 
 - Added definition-backed `AmmoRockets` and `AmmoCells` spawn families using
