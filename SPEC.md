@@ -385,6 +385,7 @@ only, not full MCP/client compatibility.
 
 ### Verified Baseline (`VERSION` 0.2.40)
 
+eeb246d feat(mcp): handle stdio notifications correctly (#131)
 1441667 feat(content): validate typed definition invariants (#130)
 fbd7eee feat(release): harden signing key inputs (#129)
 a127868 test(mcp): cover stdio lifecycle (#128)
