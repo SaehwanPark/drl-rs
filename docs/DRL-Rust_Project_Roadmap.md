@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.86`
+Current project version: `0.2.87`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.86)
+## 3. Current Progress Summary (`VERSION` 0.2.87)
 
 ### Delivered Foundations
 
@@ -83,7 +83,8 @@ verification item uses explicit status semantics:
   Launcher, Railgun, Acid Spitter, Combat Pistol, Assault Shotgun, Plasma
   Shotgun, Jackhammer, Super Shotgun, Tristar Blaster, Butcher's Cleaver,
   Mjollnir, Subtle Knife, Trigun, Anti-Freak Jackal, Minigun, Onyx Armor,
-  Phaseshift Armor, and Gothic Armor variants;
+  Phaseshift Armor, Gothic Armor, Malek's Armor, Cybernetic Armor, and
+  Necroarmor variants;
   versioned
   fixed-session snapshot codec with localStorage
   persistence, bounded rejected-save quarantine, and static service-worker
@@ -537,6 +538,9 @@ scripting.
   armor values, Gothic durability, replay kinds, and shared armor atlas
   geometry; resistance, movement/knockback, no-durability, set effects, and
   callbacks remain open.
+- [x] Typed `umarmor`, `ucarmor`, and `unarmor` preserve pinned descriptions,
+  armor values, replay kinds, and shared armor atlas geometry; resistance,
+  movement/knockback, no-destroy, item-set, and callbacks remain open.
 - [ ] Full migration of legacy monsters, weapons, armor, mods, and consumable
   items.
 - [ ] Full migration of special levels, vaults, and dungeon branches.

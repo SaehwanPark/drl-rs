@@ -155,6 +155,9 @@ pub enum ItemSpawnKind {
   OnyxArmor,
   PhaseshiftArmor,
   GothicArmor,
+  MaleksArmor,
+  CyberneticArmor,
+  Necroarmor,
   PhaseDevice,
 }
 

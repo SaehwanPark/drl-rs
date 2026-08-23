@@ -642,6 +642,24 @@ pub const fn item_sprite(archetype: ItemArchetype) -> SpriteDescriptor {
       layers: ITEM_LAYERS,
       animation: STATIC_ANIMATION,
     },
+    ItemArchetype::MaleksArmor => SpriteDescriptor {
+      atlas: AtlasId::GunsAndPickups,
+      rect: legacy_slot(SPRITE_COLUMNS + 1),
+      layers: ITEM_LAYERS,
+      animation: STATIC_ANIMATION,
+    },
+    ItemArchetype::CyberneticArmor => SpriteDescriptor {
+      atlas: AtlasId::GunsAndPickups,
+      rect: legacy_slot(SPRITE_COLUMNS + 1),
+      layers: ITEM_LAYERS,
+      animation: STATIC_ANIMATION,
+    },
+    ItemArchetype::Necroarmor => SpriteDescriptor {
+      atlas: AtlasId::GunsAndPickups,
+      rect: legacy_slot(SPRITE_COLUMNS + 1),
+      layers: ITEM_LAYERS,
+      animation: STATIC_ANIMATION,
+    },
     ItemArchetype::Ammo9mm => SpriteDescriptor {
       atlas: AtlasId::GunsAndPickups,
       rect: legacy_slot(SPRITE_COLUMNS + 7),
@@ -826,6 +844,9 @@ mod tests {
       ItemArchetype::OnyxArmor,
       ItemArchetype::PhaseshiftArmor,
       ItemArchetype::GothicArmor,
+      ItemArchetype::MaleksArmor,
+      ItemArchetype::CyberneticArmor,
+      ItemArchetype::Necroarmor,
       ItemArchetype::PhaseDevice,
     ] {
       let descriptor = item_sprite(archetype);
@@ -984,6 +1005,13 @@ mod tests {
         (0, 32),
       ),
       (ItemArchetype::GothicArmor, AtlasId::GunsAndPickups, (0, 32)),
+      (ItemArchetype::MaleksArmor, AtlasId::GunsAndPickups, (0, 32)),
+      (
+        ItemArchetype::CyberneticArmor,
+        AtlasId::GunsAndPickups,
+        (0, 32),
+      ),
+      (ItemArchetype::Necroarmor, AtlasId::GunsAndPickups, (0, 32)),
       (ItemArchetype::Ammo9mm, AtlasId::GunsAndPickups, (192, 32)),
       (
         ItemArchetype::AmmoShells,
@@ -1155,6 +1183,9 @@ mod tests {
       ItemArchetype::OnyxArmor,
       ItemArchetype::PhaseshiftArmor,
       ItemArchetype::GothicArmor,
+      ItemArchetype::MaleksArmor,
+      ItemArchetype::CyberneticArmor,
+      ItemArchetype::Necroarmor,
       ItemArchetype::Ammo9mm,
       ItemArchetype::AmmoShells,
       ItemArchetype::AmmoRockets,

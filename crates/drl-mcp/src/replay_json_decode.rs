@@ -332,6 +332,9 @@ fn item_kind(value: &JsonValue, context: &str) -> Result<ItemSpawnKind, String> 
     "onyx_armor" => Ok(ItemSpawnKind::OnyxArmor),
     "phaseshift_armor" => Ok(ItemSpawnKind::PhaseshiftArmor),
     "gothic_armor" => Ok(ItemSpawnKind::GothicArmor),
+    "maleks_armor" => Ok(ItemSpawnKind::MaleksArmor),
+    "cybernetic_armor" => Ok(ItemSpawnKind::CyberneticArmor),
+    "necroarmor" => Ok(ItemSpawnKind::Necroarmor),
     "phase_device" => Ok(ItemSpawnKind::PhaseDevice),
     _ => Err(format!("{context}.kind has unsupported item kind '{kind}'")),
   }

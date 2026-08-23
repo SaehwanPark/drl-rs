@@ -652,6 +652,24 @@ impl Item {
     Self::from_spawn_kind(id, ItemSpawnKind::GothicArmor)
   }
 
+  /// Factory: Malek's Armor (3 armor protection policy).
+  #[must_use]
+  pub fn maleks_armor(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::MaleksArmor)
+  }
+
+  /// Factory: Cybernetic Armor (7 armor protection policy).
+  #[must_use]
+  pub fn cybernetic_armor(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::CyberneticArmor)
+  }
+
+  /// Factory: Necroarmor (6 armor protection policy).
+  #[must_use]
+  pub fn necroarmor(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::Necroarmor)
+  }
+
   /// Factory: Phase Device (emergency teleportation consumable).
   #[must_use]
   pub fn phase_device(id: ItemId) -> Self {
@@ -927,6 +945,15 @@ mod tests {
         ItemSpawnKind::GothicArmor,
         Item::gothic_armor(ItemId::new(52)),
       ),
+      (
+        ItemSpawnKind::MaleksArmor,
+        Item::maleks_armor(ItemId::new(53)),
+      ),
+      (
+        ItemSpawnKind::CyberneticArmor,
+        Item::cybernetic_armor(ItemId::new(54)),
+      ),
+      (ItemSpawnKind::Necroarmor, Item::necroarmor(ItemId::new(55))),
       (ItemSpawnKind::Chaingun, Item::chaingun(ItemId::new(11))),
       (
         ItemSpawnKind::PlasmaRifle,
