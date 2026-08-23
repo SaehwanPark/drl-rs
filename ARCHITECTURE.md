@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.43`
+Current project version: `0.2.44`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -177,6 +177,9 @@ Presentation Boundary
   - `initialize` validates a string `protocolVersion`, echoes supported
     `2024-11-05`, and returns that version as a deterministic fallback for
     unsupported strings; missing/non-string values return `-32602`.
+  - Initialize params also require object `capabilities` and `clientInfo`
+    fields with string `name` and `version`; unknown nested fields remain
+    tolerated and malformed required fields return `-32602`.
   - A private `Uninitialized → AwaitingInitialized → Ready` phase gate requires
     an identified initialize request followed by `notifications/initialized`
     before tools and resources are available; premature/duplicate transitions

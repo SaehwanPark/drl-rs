@@ -6,7 +6,7 @@ use drl_mcp::json::JsonValue;
 fn ready_server() -> McpServer {
   let mut server = McpServer::new();
   let _ = server.handle_request(
-    r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05"}}"#,
+    r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"drl-tools","version":"1"}}}"#,
   );
   let _ = server.handle_request(r#"{"jsonrpc":"2.0","method":"notifications/initialized"}"#);
   server

@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.43`
+Current project version: `0.2.44`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.43)
+## 3. Current Progress Summary (`VERSION` 0.2.44)
 
 ### Delivered Foundations
 
@@ -84,11 +84,10 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active Milestone Slice (M13)**: MCP lifecycle state now advances through
-  identified `initialize` and `notifications/initialized` phases before gating
-  discovery, tools, and resources. Premature/duplicate transitions return a
-  deterministic protocol error; full external-client compatibility remains
-  open.
+- **Active Milestone Slice (M13)**: MCP `initialize` now validates object
+  `capabilities` and string `clientInfo.name`/`version` fields while retaining
+  identified lifecycle gating before discovery, tools, and resources. Full
+  schema validation and external-client compatibility remain open.
 - **M9 Content Evidence**: Base, expansion, user-item, being, terrain-cell,
   and special-level evidence slices are delivered without runtime Lua or
   gameplay overclaims.
@@ -503,6 +502,10 @@ Final release readiness, documentation, and static distribution.
 - [x] Lifecycle phase gate requires identified `initialize` followed by
   `notifications/initialized` before discovery, tools, or resources; premature
   and duplicate transitions return `-32003` without resetting game state.
+- [x] Initialize envelope validation requires object `capabilities` and
+  `clientInfo` with string `name`/`version`, returning `-32602` without
+  advancing lifecycle for malformed fields; full schema/client compatibility
+  remains open.
 - [ ] Complete deterministic headless/MCP agent tooling suite and external
   client compatibility.
 - [ ] Comprehensive public rights inventory and release documentation.
