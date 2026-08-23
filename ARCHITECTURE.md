@@ -6,6 +6,12 @@ Current project version: `0.2.88`
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
 
+Near-term architecture corrections and migration constraints are tracked in
+[`docs/steering/`](docs/steering/README.md). Steering may identify a documented
+invariant as a correction target when audit evidence shows the current
+implementation does not yet satisfy it; such a target must not be read as a
+verified implementation claim.
+
 ---
 
 ## 1. Core Architectural Principles
@@ -18,7 +24,9 @@ invariants:
   to the outer boundary crates (`drl-web`, `drl-audio`, `drl-app`).
 - **Strict Determinism & Replayability**: Seedable PRNG (`GameRng`), explicit
   command-driven turn execution, zero ambient state, and bit-exact replay
-  verification.
+  verification within a declared compatible gameplay-semantics/ruleset
+  boundary. Cross-version archival compatibility requires explicit versioning;
+  see the replay/RNG steering decision.
 - **Fair Information Boundaries**: Frontends and AI agents consume only fair
   `PlayerObservation` views (active FOV, explored fog memory, visible entities);
   internal `World` state is never exposed to clients.
@@ -62,8 +70,13 @@ Presentation Boundary
    `drl-web`) consume observations and events only. Rendering, animation, audio,
    tab visibility, viewport resize, or GPU device loss **never** advance the
    simulation or alter PRNG streams.
-4. **Transactional Rollback**: Illegal or rejected commands roll back the
-   session checkpoint without advancing turn counters or modifying world state.
+4. **Atomic Rejection Contract — Active Correction Gate**: A rejected command
+   is required to leave the complete simulation state unchanged, including
+   world, inventory/equipment, scheduler/turn state, counters, and RNG state.
+   Audit evidence found current mutation-before-error paths, so this is an
+   active correctness target rather than a verified repository-wide property
+   until the generic `Err => before == after` invariant passes. See
+   [`docs/steering/decisions/atomic-command-transactions.md`](docs/steering/decisions/atomic-command-transactions.md).
 
 ---
 
@@ -71,14 +84,18 @@ Presentation Boundary
 
 ### `drl-protocol` — Shared Semantic Contracts
 - **Role**: Stable semantic boundary shared across core, renderers, MCP, and
-  frontends.
+  frontends. New gameplay balance, content policy, or behavior should not be
+  added here merely because a semantic identifier crosses a boundary; see the
+  content/behavior steering decision.
 - **Key Modules & Types**:
   - Domain primitives: `Position`, `Direction`, `Turn`, `EntityId`, `ItemId`,
     `LevelId`.
   - Commands & Errors: `Command`, `CommandError`.
   - Observations: `PlayerObservation`, `TileView`, `ActorView`, `ItemView`.
   - Events: `GameEvent` stream (combat, movement, items, levels).
-  - Typed Content: `MonsterKind::definition()`, `TileKind::definition()`.
+  - Current residual typed-content helpers include `MonsterKind::definition()`
+    and `TileKind::definition()`; their gameplay-policy ownership is a tracked
+    boundary-cleanup item, not a pattern for further expansion.
   - Replay contracts: `ReplayVersion::V1`, `ReplayLog`.
 - **Dependencies**: Pure `std` only; zero dependencies on any other workspace
   crate.
@@ -202,10 +219,12 @@ Presentation Boundary
     replays, including state-safe deterministic replay verification.
   - `game_verify_replay` verifies either the complete in-memory replay or a
     supplied canonical V1 JSON envelope without mutating session state,
-    including recorded procedural generator parameters. MCP session creation
-    enforces bounded dimensions and generator parameters before export; replay
-    file IO, migration, and cross-version interchange remain outside this
-    boundary.
+    including recorded procedural generator parameters. This establishes
+    repeatability under the current compatible engine semantics; replay wire
+    acceptance alone is not a cross-version gameplay-compatibility promise.
+    MCP session creation enforces bounded dimensions and generator parameters
+    before export; replay file IO, migration, and cross-version interchange
+    remain outside this boundary.
   - `game_load_replay` decodes the exact canonical V1 envelope, executes it in
     a temporary `ReplayEngine` state, and commits the game/metrics/replay log
     only after success. The imported log and optional MCP turn limit remain the
@@ -289,7 +308,10 @@ Presentation Boundary
   `scripts/check-content-evidence.py` validates reviewed source coverage and
   validates version-2 crosswalks with complete record ID catalogs, scalar-only
   evidence fields, structured migration gaps, and exact pinned source digests;
-  runtime Lua remains prohibited.
+  runtime Lua remains prohibited. Because runtime scripting is no longer a
+  responsibility, the crate name/existence is an active cleanup question; do
+  not grow it into a runtime script host. See the content/behavior steering
+  decision.
 
 ---
 
@@ -300,7 +322,8 @@ Presentation Boundary
   When an actor reaches the action threshold, it executes one action costing
   standard energy units.
 - **Deterministic PRNG**: All randomness flows through `GameRng`. No ambient or
-  thread-local RNG is permitted.
+  thread-local RNG is permitted. Bounded integer sampling must be unbiased and
+  its replay-visible semantics explicitly versioned when changed.
 - **Combat Resolution**: `CombatResolver` evaluates melee bump attacks and
   targeted ranged attacks with explicit distance accuracy scaling, uniform
   damage rolls, armor protection mitigation, and health clamping.
@@ -309,15 +332,27 @@ Presentation Boundary
   actors.
 
 ### 4.2 Content Tables & Definitions
-- **Monster Definitions**: `MonsterKind::definition()` in `drl-protocol` owns
-  the authoritative immutable stats, speeds, attack ranges, accuracies, and
-  drop tables for all current archetypes.
+- **Monster Definitions**: `MonsterKind::definition()` in `drl-protocol`
+  currently owns immutable stats, speeds, attack ranges, accuracies, and drop
+  tables for current archetypes. This is existing structure, not the desired
+  ownership for new gameplay policy; migrate gameplay definitions toward the
+  core/domain side while stable semantic kind IDs remain protocol-safe.
 - **Item Definitions**: `drl-core::item_definition` owns item definitions;
-  `Item::from_spawn_kind` serves as canonical item factory.
+  `Item::from_spawn_kind` serves as canonical item factory. New routine content
+  should converge on one authoritative compile-time catalog whose projections
+  supply enums/lookup/display/replay/validation coverage instead of manual
+  cross-crate registry duplication.
+- **Behavior Definitions**: Callback-heavy legacy semantics should be expressed
+  through a bounded typed Rust vocabulary (modifiers, equip/use/attack/kill
+  effects, alternate actions, recharge/periodic policy, set membership, and
+  explicit typed state machines for exceptional cases), not a generic runtime
+  callback/event bus.
 - **Loot & Monster Rolls**: Pure roll-bound tables map caller-supplied PRNG
   rolls to procedural room loot and monster spawns.
-- **Tile Definitions**: `TileKind::definition()` in `drl-protocol` defines
-  physical walkability, transparency, and liquid properties for all tile kinds.
+- **Tile Definitions**: `TileKind::definition()` in `drl-protocol` currently
+  defines physical walkability, transparency, and liquid properties. As with
+  monster balance, current ownership does not justify adding unrelated
+  gameplay policy to the protocol boundary.
 - **Level Policy**: `drl-core::level_definition` provides standard procedural
   generation parameters.
 - **Special-Level Metadata**: `drl-core::special_level_definition` exposes
@@ -384,7 +419,14 @@ Presentation Boundary
 
 ### 4.7 Replays, Cohorts & Evaluation
 - **Replay V1 Engine**: `ReplayEngine` records and executes versioned replay
-  logs with exact initial spawn metadata and command streams.
+  logs with exact initial spawn metadata and command streams. Current
+  verification proves deterministic reproduction under the implementation and
+  semantics that interpret that log; it does not by itself define archival
+  compatibility across future gameplay/content/RNG changes.
+- **Replay Compatibility Layers**: Wire/schema version, engine/gameplay
+  semantics version, and ruleset/content identity must be distinguished before
+  cross-version compatibility is claimed. Generator semantics should be
+  versioned separately when they can change replay outcomes.
 - **Cohort Reports**: `CohortConfig` / `CohortReport` execute multi-seed sweeps,
   validating seed order, record counts, and summary metrics.
 - **Descriptive Telemetry**: Cohort outcome distributions and telemetry
@@ -420,19 +462,25 @@ Presentation Boundary
   graphics license/provenance and excluded legacy material; the source and
   optional bundle checks in `scripts/check-release-rights.sh` reject legacy
   code, audio/music, fonts, WADs, and other excluded media without making a
-  legal-clearance claim.
+  legal-clearance claim. Legacy-derived creative text in Rust/content
+  definitions is tracked as a separate provenance review question rather than
+  silently grouped with numeric mechanics.
 
 ---
 
 ## 5. Architectural Invariants
 
-Every change to the codebase must preserve these non-negotiable invariants:
+Every change to the codebase must preserve these design invariants. Where the
+current audit has identified an implementation gap, the invariant remains the
+target contract but is not reported as already verified:
 
 1. **No Ambient State in Core**: No global variables, thread-local state,
    ambient RNG, wall clocks, or non-deterministic hash iteration in `drl-core`.
-2. **Deterministic Replay**: Given identical seed and command stream, the
-   simulation must produce bit-exact identical observations, events, and final
-   world state across all platforms.
+2. **Deterministic Replay**: Given identical seed, command stream, declared
+   gameplay semantics, and ruleset/content identity, the simulation must
+   produce bit-exact identical observations, events, and final world state on
+   supported platforms. Cross-version compatibility is an explicit contract,
+   not an implication of using the same wire schema.
 3. **Observation Decoupling**: Renderers, bots, and MCP agents consume only
    fair `PlayerObservation` views; they must never access `World` or inspect
    unexplored tiles.
@@ -440,8 +488,9 @@ Every change to the codebase must preserve these non-negotiable invariants:
    canvas resizing, and tab visibility transitions must never mutate simulation
    state or advance game turns.
 5. **No Runtime Scripting**: No Lua VM or JavaScript gameplay interpreters.
-6. **Explicit Error Handling**: Illegal commands and corrupt saves fail
-   transactionally without partial mutations.
+6. **Atomic Rejection**: Illegal/rejected commands and corrupt saves must fail
+   without partial simulation mutation. Command-wide verification is an active
+   correction gate documented in `docs/steering/`.
 
 ---
 
@@ -452,6 +501,9 @@ The repository enforces architectural boundaries via automated test suites:
 - **Boundary Enforcement**: `crates/drl-core/tests/boundaries.rs` validates
   dependency direction and ensures core remains free of presentation or platform
   crates.
+- **Steering Gates**: `docs/steering/current-priorities.md` and the repo-local
+  milestone-delivery skill define temporary stop gates. A gate is retired only
+  after its acceptance evidence exists and enduring documentation is reconciled.
 - **Repository Health**: `sh scripts/check-repository.sh` runs formatting,
   clippy, unit tests, integration tests, and harness checks.
 - **Asset Manifest**: `sh scripts/check-assets.sh` verifies graphics licensing

@@ -9,16 +9,14 @@
 ## Context
 
 DRL-Rust's core value proposition as a testing platform depends on
-reproducibility: given the same seed and the same sequence of commands, two
-independent runs must produce bit-identical state at every step.
+reproducibility: under the same declared simulation semantics, the same initial
+state/seed and command sequence must produce bit-identical state transitions.
 
-This guarantee is impossible to maintain if any part of the simulation uses
-ambient, thread-local, or OS-seeded randomness — sources that are invisible
-in the game's state snapshot and cannot be replicated from a recorded seed.
-
-The legacy Pascal implementation uses its own global RNG. DRL-Rust must not
-reproduce that pattern, but must achieve the same net result: all randomness
-in the simulation is fully determined by the initial seed.
+This guarantee is impossible if any simulation path uses ambient, thread-local,
+or OS-seeded randomness. It also depends on the sampling algorithms layered on
+top of the raw PRNG: changing bounded-range reduction or probability conversion
+changes deterministic histories even if the underlying generator and seed stay
+the same.
 
 ---
 
@@ -27,45 +25,47 @@ in the simulation is fully determined by the initial seed.
 All gameplay randomness in DRL-Rust flows through a single explicit `GameRng`
 value that is:
 
-1. **Owned and threaded explicitly** — `GameRng` is passed as an explicit
-   parameter to every function that needs randomness. It is never stored in a
-   global, thread-local, or static variable.
+1. **Owned explicitly** — `GameRng` is simulation state and is never global,
+   thread-local, static, or presentation-owned.
 
 2. **Seeded from a known initial seed** — sessions are initialized with an
-   explicit `u64` seed. The same seed always produces the same `GameRng`
-   state sequence, and therefore the same game outcomes for the same commands.
+   explicit `u64` seed.
 
-3. **Based on a documented algorithm** — `GameRng` wraps SplitMix64 (for
-   seed mixing) and Xoshiro256++ (for output). Both algorithms are
-   deterministic, fast, and have well-understood statistical properties.
+3. **Based on documented algorithms** — `GameRng` uses SplitMix64 for seed
+   mixing and Xoshiro256++ for raw output.
 
-4. **Isolated from presentation** — rendering frame timing, audio callbacks,
+4. **Sampled through documented deterministic contracts** — bounded integers
+   use an unbiased algorithm rather than modulo reduction; boolean/probability
+   conversion is explicitly defined. Raw output and representative derived
+   samples are pinned by golden vectors.
+
+5. **Isolated from presentation** — rendering frame timing, audio callbacks,
    UI input handling, and network I/O must not consume from or influence
    `GameRng`.
 
-5. **Prohibited from ambient sources** — `rand::thread_rng()`, `OsRng`,
-   `SystemTime`-based seeding, and any other non-explicit randomness source
-   are banned from `drl-core` and `drl-protocol`. This is enforced by the
-   crate dependency graph (those crates are not declared as dependencies).
+6. **Prohibited from ambient sources** — `rand::thread_rng()`, `OsRng`,
+   `SystemTime`-based seeding, and other non-explicit randomness sources are
+   banned from simulation authority.
 
-### Lua consideration
+7. **Versioned when replay-visible semantics change** — an intentional change
+   to PRNG or sampling semantics must advance the appropriate gameplay/RNG
+   semantics contract rather than silently reinterpret historical replay data.
 
-When Lua scripting is introduced (Milestone 3), Lua-driven behavior that
-requires randomness must receive a deterministic seed or generator derived
-from `GameRng`. Lua scripts must not seed their own RNG independently.
+Runtime Lua is not part of the architecture; ADR 0008 supersedes the earlier
+transitional scripting plan.
+
+The near-term migration contract is detailed in
+[`docs/steering/decisions/replay-semantics-and-rng-stability.md`](../steering/decisions/replay-semantics-and-rng-stability.md).
 
 ---
 
 ## Consequences
 
-- Any session is fully reproducible: seed + command stream → bit-identical
-  outcomes, regardless of host machine, OS, Rust version (within the defined
-  toolchain), or time of execution.
-- Batch simulation, scenario testing, and replay regression suites are
-  reliable by construction.
-- Debugging probabilistic issues is tractable: a failing seed can be replayed
-  exactly.
-- New gameplay features that require randomness must thread `GameRng` through
-  their call chain rather than creating local sources.
-- Saving and loading game state must include the current `GameRng` state to
-  preserve reproducibility from mid-session save points.
+- A failing seed can be reproduced exactly under the same declared semantics.
+- Batch simulation, scenarios, and replay regression suites have an explicit
+  RNG contract rather than relying on implementation accident.
+- New gameplay features that require randomness must use `GameRng` and preserve
+  command-rejection atomicity; a rejected action must not consume RNG.
+- Saving/loading game state must include current RNG state.
+- Cross-version reproducibility is an explicit compatibility property, not an
+  automatic consequence of using the same seed and command stream.

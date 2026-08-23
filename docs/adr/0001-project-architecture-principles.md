@@ -18,6 +18,10 @@ The project needs a coherent set of architecture principles that will guide
 design decisions across many milestones, multiple contributors, and an
 extended implementation timeline.
 
+Current near-term applications of these principles are tracked in
+[`docs/steering/`](../steering/README.md). Steering notes may constrain work but
+do not silently supersede this accepted ADR.
+
 ---
 
 ## Decision
@@ -27,10 +31,10 @@ precedence:
 
 ### 1. Functional core, imperative shell
 
-The deterministic simulation kernel (`drl-core`) is a pure function: given
-current state and a command, it produces new state and a list of events. All
-I/O, rendering, audio, persistence, and network communication live outside
-this boundary.
+The deterministic simulation kernel (`drl-core`) is a pure function in the
+architectural sense: given current simulation state and a command, it produces
+the deterministic next state and ordered events. All I/O, rendering, audio,
+persistence, and network communication live outside this boundary.
 
 ### 2. Typed domain model
 
@@ -41,38 +45,46 @@ states difficult or impossible to represent.
 
 ### 3. Algebraic data types over inheritance
 
-Variant behavior is modeled with `enum`, not trait hierarchies or runtime
-polymorphism. This keeps exhaustiveness checking, serialization, and
-determinism tractable.
+Variant behavior is modeled with `enum` and explicit composition rather than
+trait hierarchies or runtime callback polymorphism by default. This keeps
+exhaustiveness checking, serialization, and determinism tractable.
 
 ### 4. Explicit state transitions
 
 State changes are the result of processing commands through a single,
-auditable kernel path (`Game::step`). Implicit mutations, side-channeled
-state, and action-at-a-distance are avoided.
+auditable kernel path (`Game::step`). Implicit mutations, side-channeled state,
+and action-at-a-distance are avoided. Expected command rejection is atomic:
+failed commands must not leave partial simulation mutation.
 
 ### 5. No ambient or global state
 
 No global mutable state. No thread-local RNG. No ambient singletons. All
-inputs to a computation are explicit parameters.
+inputs to a computation are explicit or owned by the explicit simulation state.
 
 ### 6. Clean architectural boundaries
 
-Crate dependencies enforce the layering: `drl-protocol` (types only) →
-`drl-core` (simulation) → `drl-mcp` / `drl-app` (presentation and transport).
-Boundary violations are caught by automated tests.
+Crate dependencies enforce layering. `drl-protocol` owns stable semantic
+contracts that must cross boundaries: commands, observations, events, stable
+IDs/newtypes, and replay/wire representations. `drl-core` owns gameplay rules,
+balance, behavior definitions, and simulation policy. Presentation and
+transport crates depend outward from those contracts.
+
+A gameplay concept does not become protocol-owned merely because one of its
+stable identifiers or views crosses a protocol boundary.
 
 ### 7. Testability as first-class design
 
 Every domain rule should be independently testable. The headless simulation
-core is designed to run scenarios, bots, and replays without any rendering or
-I/O. Randomness is explicit and seedable.
+core is designed to run scenarios, bots, and replays without rendering or I/O.
+Randomness is explicit and seedable. Consequential invariants should be
+executable tests rather than documentation-only promises.
 
 ### 8. Avoid premature abstraction
 
-Do not introduce ECS frameworks, trait towers, or plugin architectures until
-the gameplay domain is well understood and the abstraction provides clear,
-concrete value. Start concrete; generalize from verified evidence.
+Do not introduce ECS frameworks, trait towers, generic callback buses, or
+plugin architectures until the gameplay domain is well understood and the
+abstraction provides clear, concrete value. Start concrete; generalize from
+verified evidence and difficult representative cases.
 
 ---
 
@@ -82,7 +94,14 @@ concrete value. Start concrete; generalize from verified evidence.
   or any crate with I/O or rendering capability.
 - All simulation results are expressed as `GameEvent` streams; presentation
   reacts to events rather than polling or mutating simulation state directly.
-- Contributors must introduce new domain concepts as types in `drl-protocol`
-  before implementing behavior in `drl-core`.
+- Stable concepts needed across crate/client boundaries are introduced in
+  `drl-protocol`; gameplay balance and behavior policy remain in `drl-core` or
+  a future domain/content boundary with the same dependency direction.
+- Rejected-command state identity, including RNG state, is part of the explicit
+  state-transition principle. See
+  [`docs/steering/decisions/atomic-command-transactions.md`](../steering/decisions/atomic-command-transactions.md).
+- Content abstraction work should preserve compiler exhaustiveness while
+  avoiding duplicated manual registries. See
+  [`docs/steering/decisions/content-catalog-and-typed-behavior-model.md`](../steering/decisions/content-catalog-and-typed-behavior-model.md).
 - Architecture changes require `ARCHITECTURE.md` to be updated from verified
   evidence, not speculation.

@@ -7,7 +7,9 @@
   and a bounded browser/WASM playable slice; full audiovisual parity remains
   staged.
 - `docs/DRL-Rust_Project_Roadmap.md` is the canonical project plan and progress
-  tracker. `SPEC.md` expands only the active milestone slice.
+  tracker. `docs/steering/current-priorities.md` constrains near-term slice
+  selection while its stop gates remain open. `SPEC.md` expands only the active
+  milestone slice.
 - `ARCHITECTURE.md` records verified current structure and invariants.
   `CHANGELOG.md` records delivered contributor- or user-visible changes.
 - The legacy Pascal and Lua implementation is a behavioral reference, not an
@@ -19,12 +21,14 @@
 - Keep the future simulation deterministic, headless, and independent from
   graphics, audio, operating-system, filesystem, and MCP concerns.
 - Distinguish implemented facts from the target design in the project proposal.
+- Keep correctness and canonical behavior ahead of scalar content breadth when
+  the current steering gates identify unresolved foundation work.
 
 ## How
 
-- Before changing a milestone item, read the roadmap, the active `SPEC.md`
-  slice, applicable architecture constraints, and relevant implementation or
-  legacy evidence.
+- Before changing a milestone item, read the roadmap, `docs/steering/README.md`,
+  the active `SPEC.md` slice, applicable architecture constraints, and relevant
+  implementation or legacy evidence.
 - Use `.agents/skills/drl-milestone-delivery/SKILL.md` for milestone work.
 - For coordinated work, follow `docs/harness/drl-delivery/team-spec.md`; keep
   one milestone owner and serialize canonical-document writes.
@@ -38,6 +42,10 @@
 
 - Update the roadmap only from verified evidence. Keep incomplete work active
   and do not claim remote CI success until the remote check has passed.
+- Apply the stop gates in `docs/steering/current-priorities.md`: rejected
+  commands must be atomic, replay/RNG semantics explicit, content registration
+  single-sourced, and callback-heavy behavior typed before broad scalar-only
+  content migration resumes.
 - Browser acceptance records browser/version, OS, GPU backend, viewport, DPR,
   build revision, and audio state. Unsupported WebGPU/audio or unavailable
   Linux legacy captures are `NOT_RUN`, not inferred passes.

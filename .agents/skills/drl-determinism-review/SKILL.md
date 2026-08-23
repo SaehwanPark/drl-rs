@@ -1,6 +1,6 @@
 ---
 name: drl-determinism-review
-description: Independently review a bounded DRL-Rust change for reproducibility, semantic-boundary integrity, evidence coherence, and claims that exceed implemented capability.
+description: Independently review a bounded DRL-Rust change for reproducibility, transactional safety, replay semantics, boundary integrity, evidence coherence, and claims that exceed implemented capability.
 ---
 
 # DRL Determinism Review
@@ -17,7 +17,9 @@ description: Independently review a bounded DRL-Rust change for reproducibility,
 ## Required Inputs
 
 - the original request and active `SPEC.md` slice;
-- the relevant roadmap outcomes and architecture invariants;
+- `docs/steering/README.md`, `docs/steering/current-priorities.md`, and
+  applicable steering decisions;
+- relevant roadmap outcomes and architecture invariants;
 - the produced diff, implementation, and tests;
 - legacy evidence when behavior fidelity is claimed;
 - test-play plans, run artifacts, and verification results when present.
@@ -31,32 +33,44 @@ Compare both sides of every applicable boundary:
 
 - specification outcomes against test assertions;
 - semantic commands against actual state transitions;
+- rejected commands against exact pre/post `Game` identity, including RNG;
 - player observations against hidden world state;
 - semantic events against presentation or platform effects;
-- initial state, seed, and command stream against reproduced outcomes;
-- Lua or content requests against Rust-owned world authority;
+- initial state, seed, RNG semantics, command stream, and replay metadata
+  against reproduced outcomes;
+- replay wire/schema version against gameplay/ruleset compatibility claims;
+- legacy evidence against typed Rust behavior claims;
+- content catalog identity against generated/derived protocol, replay,
+  validation, and presentation projections;
 - direct simulation calls against replay, bot, frontend, or MCP clients;
 - local and remote completion claims against exact verification evidence.
 
-Also inspect for ambient randomness, unstable iteration, wall-clock decisions,
-filesystem or operating-system dependencies in the simulation, presentation
-timing that changes gameplay, unbounded episodes, unstable identifiers in
-canonical output, and retries that conceal nondeterminism.
+Also inspect for ambient randomness, modulo-biased bounded sampling, unstable
+iteration, wall-clock decisions, filesystem/OS dependencies in simulation,
+presentation timing that changes gameplay, unbounded episodes, unstable IDs in
+canonical output, retries that conceal nondeterminism, mutation-before-error,
+and hidden-state leakage.
 
 ## Workflow
 
-1. Restate the slice's observable outcomes, non-goals, and acceptance evidence.
-2. Identify the consequential boundaries touched by the change.
+1. Restate the slice's observable outcomes, non-goals, acceptance evidence, and
+   steering-gate impact.
+2. Identify consequential boundaries touched by the change.
 3. Read producer and consumer sides of each boundary together.
 4. Trace randomness, time, iteration order, I/O, and state mutation from input
    to semantic outcome.
-5. Compare each completion claim with the exact test, run, inspection, or
+5. For changed command paths, inspect both success and representative rejection
+   paths; `Err` must not mutate world, inventory, energy, counters, turn, or RNG.
+6. For replay-visible changes, distinguish current-version repeatability from
+   cross-version compatibility and check semantics metadata explicitly.
+7. For legacy behavior/content changes, verify that static-definition coverage
+   is not reported as behavior-complete without the required typed behavior and
+   evidence.
+8. Compare each completion claim with the exact test, run, inspection, or
    remote result that supports it.
-6. Attempt the smallest relevant reproduction or targeted check when the
-   review environment permits it.
-7. Report concrete findings with impact, evidence, and the smallest safe fix
-   path.
-8. Return one disposition:
+9. Attempt the smallest relevant reproduction or targeted check when permitted.
+10. Report concrete findings with impact, evidence, and the smallest safe fix.
+11. Return one disposition:
    - `pass`: no blocking mismatch remains;
    - `fix`: bounded corrections can satisfy the existing slice;
    - `blocked`: missing evidence, contradictory sources, scope conflict, or an
@@ -72,13 +86,11 @@ For coordinated work, write or return content shaped as
 
 - run identifier, owner and role;
 - input and output repository state;
-- predecessor artifact and revision, normally `02-test-plan.md` or the nearest
-  prior artifact;
+- predecessor artifact and revision;
 - review disposition;
-- slice and input revision;
+- steering gates inspected;
 - boundaries inspected;
-- blocking findings;
-- non-blocking risks;
+- blocking findings and non-blocking risks;
 - checks or reproductions run;
 - unverified surfaces;
 - required fix or decision;
@@ -90,7 +102,8 @@ assumption.
 
 ## Stop Conditions
 
-- The active specification and roadmap conflict.
+- The active specification, roadmap, accepted architecture, and steering rules
+  conflict.
 - Required implementation, evidence, or run artifacts are unavailable.
 - The diff contains unrelated work that prevents bounded review.
 - A determinism claim depends on inputs or outputs that were not recorded.
@@ -102,21 +115,19 @@ Return `blocked` with the exact missing input or decision.
 
 - Both sides of each reported boundary were inspected.
 - Findings cite concrete repository or run evidence.
+- Rejection atomicity is reviewed for changed command paths.
+- Replay-current repeatability is not conflated with cross-version compatibility.
+- Static content coverage is not conflated with behavior or legacy parity.
 - Current defects are separated from future planned capability.
-- `pass` has affirmative evidence, not merely an absence of observed failure.
-- Local, remote, playability, replay, fidelity, and MCP claims are evaluated
-  independently.
+- `pass` has affirmative evidence, not merely absence of observed failure.
 - The review does not modify producer output or silently expand scope.
 
 ## Browser Boundary Checks
 
-- Inspect the full path `Command -> Game -> observation/events -> scene/cues ->
-  WebGPU/Web Audio`; presentation callbacks, RAF timing, tab visibility, and
-  device-pixel-ratio changes must not mutate the game.
-- Reproduce an identical seed and semantic command stream through the browser
-  session and direct core, comparing events, final observation, and replay.
-- Check that GPU loss, blocked audio, unsupported WebGPU, and failed asset
-  loads produce an explicit status/error without hidden-state access or a
-  simulation step.
-- Treat a remote web-CI result and a local browser playthrough as separate
-  claims; do not promote either from `NOT_RUN` or `INCONCLUSIVE` by inference.
+- Inspect `Command -> Game -> observation/events -> scene/cues -> WebGPU/Web
+  Audio`; presentation callbacks, RAF timing, tab visibility, and DPR changes
+  must not mutate the game.
+- Reproduce an identical seed and semantic command stream through browser and
+  direct core, comparing events, final observation, and replay semantics.
+- Check GPU loss, blocked audio, unsupported WebGPU, and failed assets produce
+  explicit status/error without hidden-state access or a simulation step.

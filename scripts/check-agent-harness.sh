@@ -137,9 +137,15 @@ for path in \
   CHANGELOG.md \
   docs/VERSIONING.md \
   docs/DRL-Rust_Project_Roadmap.md \
+  docs/steering/README.md \
+  docs/steering/current-priorities.md \
+  docs/steering/decisions/atomic-command-transactions.md \
+  docs/steering/decisions/content-catalog-and-typed-behavior-model.md \
+  docs/steering/decisions/replay-semantics-and-rng-stability.md \
   docs/harness/drl-delivery/team-spec.md \
   docs/harness/drl-delivery/validation-scenarios.md \
   .agents/skills/drl-milestone-delivery/SKILL.md \
+  .agents/skills/drl-milestone-delivery/references/steering-gates.md \
   .agents/skills/drl-legacy-archaeology/SKILL.md \
   .agents/skills/drl-test-play/SKILL.md \
   .agents/skills/drl-test-play/references/test-play-modes.md \
@@ -203,10 +209,12 @@ require_text "docs/harness/drl-delivery/validation-scenarios.md" "Unlicensed ass
 require_text "docs/harness/drl-delivery/validation-scenarios.md" "Background-tab timing"
 require_text "docs/adr/0007-browser-first-product.md" "Rust/WASM"
 require_text "docs/adr/0008-build-time-legacy-content-migration.md" "no Lua VM"
+require_text "AGENTS.md" "docs/steering/README.md"
 require_text "AGENTS.md" "DRL_VERSION_BASE"
 require_text "docs/VERSIONING.md" "x.y.z"
 require_text "docs/harness/drl-delivery/team-spec.md" "Automatic carry-over"
 require_text ".agents/skills/drl-milestone-delivery/SKILL.md" "scripts/check-version.sh"
+require_text ".agents/skills/drl-milestone-delivery/SKILL.md" "steering-gates.md"
 
 sh scripts/check-version.sh "${DRL_VERSION_BASE:-}"
 

@@ -9,10 +9,6 @@ Activation:
 
 - the Rust scaffold or relevant legacy checkout and setup exist.
 
-Scaffold checks are the only DRL-Rust execution available during Milestone 0.
-Legacy evidence probes remain available in later milestones whenever a bounded
-behavior question requires them.
-
 Allowed activities:
 
 - launch and repository-check smoke tests for the Rust scaffold;
@@ -46,7 +42,7 @@ Required inputs:
 - scenario identifier;
 - build or revision;
 - canonical initial state or fixture;
-- seed or scripted focused outcomes;
+- seed and RNG-semantics version, or scripted focused outcomes;
 - ordered semantic commands;
 - command and simulation-turn limits;
 - expected outcomes and invariants.
@@ -58,28 +54,30 @@ Required evidence:
 - repeat execution from identical inputs;
 - diagnostic turn or command context for failure.
 
-Do not freeze an external fixture schema before its active milestone or ADR
-selects one. Rust constructors are valid early scenario inputs.
+When testing a rejected command, compare the complete `Game` pre/post state,
+including RNG, energy, counters, inventory/equipment, turn, and terminal state.
 
 ## Mode 2: Replay validation
 
 Activation:
 
 - a versioned replay schema exists;
-- build/content version, seed, initial configuration, and command stream are
-  recorded;
+- build, gameplay/ruleset semantics, seed, initial configuration, and command
+  stream are recorded;
 - replay validation reports mismatch context.
 
 Required evidence:
 
-- replay schema and content version;
+- replay wire/schema version;
+- engine/gameplay semantics version;
+- ruleset/content semantics identifier and generator semantics where separate;
 - original and replayed outcomes;
 - first mismatch with turn and command context;
 - stable reproduction on the relevant build.
 
-A replay mismatch is `FAIL`. A replay that cannot be parsed because its
-declared schema is unsupported is `INCONCLUSIVE` unless compatibility behavior
-defines a different expected result.
+A replay mismatch is `FAIL`. An unsupported declared semantics version is an
+expected compatibility rejection when the contract says to reject it; do not
+label current-build repeatability as cross-version compatibility.
 
 ## Mode 3: Scripted-bot cohort
 
@@ -92,6 +90,7 @@ Activation:
 Required inputs:
 
 - fixed seed cohort;
+- RNG/gameplay semantics identifiers;
 - bot policy and version;
 - character and difficulty configuration;
 - command and turn limits;
@@ -103,29 +102,27 @@ Required evidence:
 - pathological seeds and replay candidates;
 - aggregate summary that does not hide individual hard failures.
 
-Do not give a bot omniscient state for an ordinary-player result. Developer
-instrumentation must be separate and labeled.
+Do not give a bot omniscient state for an ordinary-player result.
 
 ## Mode 4: MCP parity and exploratory play
 
 Activation:
 
-- the MCP lifecycle, observation, legal-action, and command interfaces exist;
+- MCP lifecycle, observation, legal-action, and command interfaces exist;
 - resource and episode limits are enforced;
 - direct simulation behavior can be compared with MCP behavior.
 
 Required evidence:
 
-- MCP schema or capability version;
+- MCP schema/capability version;
 - semantic requests and responses;
 - corresponding direct-simulation result for parity checks;
 - ordinary-player observation boundary;
 - replay or deterministic scenario for actionable failures.
 
-Keep model reasoning and conversation transcripts separate from authoritative
-test results. A model-found issue remains exploratory until deterministic
-reduction, except for directly captured crash, corruption, or information-leak
-evidence.
+Keep model reasoning and transcripts separate from authoritative test results.
+A model-found issue remains exploratory until deterministic reduction, except
+for directly captured crash, corruption, or information-leak evidence.
 
 ## Mode 5: Human frontend play
 
@@ -141,22 +138,13 @@ Browser-first requirements:
   adapter/backend, viewport, DPR, build revision, focus ownership, and audio
   unlock/mute state;
 - compare named scenes against a revisioned reference-capture manifest with
-  explicit tolerances; missing rights or capture metadata is `INCONCLUSIVE`;
+  explicit tolerances; missing rights/capture metadata is `INCONCLUSIVE`;
 - exercise unsupported WebGPU, GPU loss, blocked/suspended audio,
   background-tab visibility, resize/DPR, and page-scroll recovery; none may
   change simulation state;
 - keep Firefox/Safari/WebGL2 fallback, mobile/touch, controllers, and native
   desktop packaging post-1.0 until their acceptance gates are implemented.
 
-Use structured tasks for:
-
-- discoverability and input ergonomics;
-- feedback, readability, pacing, audio, and game feel;
-- frontend-to-command mapping;
-- recovery from invalid input or interrupted flow.
-
-Record task, participant context relevant to interpretation, build,
-configuration, actions, observations, and subjective judgments separately.
 Human feedback may motivate a change, but deterministic mechanics claims still
 require simulation evidence.
 
@@ -172,7 +160,7 @@ Declare before execution:
 
 - hypothesis;
 - immutable evaluation surface;
-- build and content versions;
+- build, replay wire, RNG, gameplay, and content semantics versions;
 - fixed seed cohort;
 - player archetype and bot policy;
 - metric, sample size, tolerance, and decision rule;
@@ -183,52 +171,27 @@ until a threshold passes, or treat every distribution shift as a defect.
 
 ## Artifact Naming
 
-Before a committed scenario schema exists, use descriptive working identifiers:
+Before a committed scenario schema exists, use:
 
 ```text
 m{NN}-{domain}-{behavior}-v{NNN}
 ```
 
-Example:
-
-```text
-m01-movement-blocked-boundary-v001
-```
-
-Until a milestone selects a committed schema, keep bulk run artifacts under:
+Keep bulk run artifacts under:
 
 ```text
 target/test-play/{suite-id}/{run-key}/
 ```
 
-Derive `{run-key}` from immutable inputs where practical, for example:
-
-```text
-build-{git12}__inputs-{manifest-sha12}
-```
-
-Exclude wall-clock time, absolute paths, presentation timing, map iteration
-order, and ephemeral identifiers from canonical comparisons.
-
-The active scenario or replay milestone may replace the working identifier
-shape. When replay and fixture formats are explicitly selected, prefer these
-durable locations:
-
-```text
-tests/fixtures/{milestone}/
-tests/scenarios/{milestone}/
-tests/replays/regressions/
-```
-
-Do not create those directories merely to satisfy this reference; their active
-milestone must define the format and ownership first.
+Derive `{run-key}` from immutable inputs where practical. Exclude wall-clock
+time, absolute paths, presentation timing, map iteration order, and ephemeral
+identifiers from canonical comparisons.
 
 ## Failure Promotion
 
 - Reproduce a deterministic failure twice from the same recorded inputs.
-- If the outcomes differ, classify a nondeterminism defect.
-- Minimize the setup and command stream while preserving the failure.
+- If outcomes differ, classify a nondeterminism defect.
+- Minimize setup and command stream while preserving failure.
 - Promote only diagnostic artifacts into the repository.
 - Update an expected result only with an intentional behavior decision,
-  specification reconciliation, semantic diff review, and independent
-  approval.
+  specification reconciliation, semantic diff review, and independent approval.

@@ -4,9 +4,11 @@ Last reviewed: 2026-08-23
 Current project version: `0.2.88`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
-ordering, and delivery tracking. This file expands **exactly one active
-implementation slice** into observable behavior, pure contracts, acceptance
-criteria, and verification boundaries.
+ordering, and delivery tracking. The current steering constraints in
+[`docs/steering/`](docs/steering/README.md) govern which candidate work is
+eligible to become active while their stop gates remain open. This file expands
+**exactly one active implementation slice** into observable behavior, pure
+contracts, acceptance criteria, and verification boundaries.
 
 ---
 
@@ -16,845 +18,241 @@ criteria, and verification boundaries.
   tests, or artifacts.
 - `[ ]` — **Present or Future Work**: Open implementation task or acceptance
   gate.
-- `NOT_RUN` — **Environment Unavailable**: Required prerequisites (e.g., Linux
-  x86-64 binary or browser WebGPU) were not present; not an inferred pass.
+- `NOT_RUN` — **Environment Unavailable**: Required prerequisites were not
+  present; not an inferred pass.
 - `INCONCLUSIVE` — **Unresolved Evidence**: Output exists but cannot
   definitively satisfy criteria without additional evidence.
 
 ---
 
-## 2. Active Implementation Slice: M9 Typed Content Families
+## 2. Active Implementation Slice: M1/M9 Correctness and Behavior Foundation
 
-### 2.1 Scope & Objective
+### 2.1 Objective
 
-Migrate the pinned legacy `rocket`, `cell`, `barmor`, `rarmor`, `smed`,
-`lmed`, `dshotgun`, `ashotgun`, `chainsaw`, `chaingun`, `bfg9000`, `plasma`, and
-`bazooka`, `ublaster`, `ulaser`, `umbazooka`, `unplasma`, `unbfg9000`, and
-`ubfg10k`, `umega`, `uberetta`, `ufshotgun`, `urbazooka`, `urailgun`, `uacid`,
-`ucpistol`, `uashotgun`, `upshotgun`, `usjack`, `udshotgun`, `utrigun`,
-`ubutcher`, `umjoll`, `usubtle`, `utrigun`, `ujackal`, `uminigun`, `uoarmor`,
-`uparmor`, `ugarmor`, `umarmor`, `ucarmor`, `unarmor`, `umedparmor`,
-`ulavaarmor`, and `ushieldarmor` records
-into
-typed immutable Rust definitions and replay-compatible spawn contracts.
-Preserve
-source-backed scalar fields, measured atlas slots, and verified armor
-presentation tints without importing Lua callbacks or unverified combat rules.
+Close correctness and architecture gaps that would otherwise become more
+expensive as legacy content migration accelerates.
 
-### 2.2 Predecessor Foundation (Delivered Slices)
+This slice establishes four foundations before additional broad item-family
+migration:
 
-1. **Pinned evidence**: Git objects at legacy revision
-  `17d9be1204751899b2d69d8d3a2dde247bd0cc5c` provide scalar item and sprite
-   records; the dirty legacy working tree is not an evidence source.
-2. **Typed content boundary**: `drl-core` owns immutable `ItemDefinition`
-   records and factories; `drl-protocol` owns stable spawn/archetype values.
-3. **Replay boundary**: canonical MCP replay JSON encodes and decodes both new
-   stackable ammo families without changing existing variants.
+1. rejected player commands are transactionally state-identical;
+2. deterministic RNG uses an unbiased bounded sampler with explicit semantics;
+3. replay compatibility distinguishes wire schema from gameplay semantics;
+4. legacy callback-heavy behavior has a typed Rust representation and a single
+   authoritative content-catalog path rather than proliferating manual
+   cross-crate registries.
 
-### 2.3 Present Slice Acceptance Criteria
+The legacy Pascal/Lua implementation remains the behavioral reference. Its
+architecture, global callback machinery, and runtime Lua object model remain
+non-goals for reproduction.
 
-- [x] **Rocket definition**: typed `AmmoRockets` preserves the observed
-  description, immutable initial amount `3`, maximum stack `10`, and
-  `SPRITE_ROCKET` slot.
-- [x] **Power-cell definition**: typed `AmmoCells` preserves the observed
-  description, immutable initial amount `20`, maximum stack `50`, two-frame marker, and
-  `SPRITE_CELL` slot; frame duration remains an explicit Rust decision.
-- [x] **Factory and view coverage**: item counts, ammo types, archetypes,
-  descriptions, and stack policies are deterministic and definition-backed.
-- [x] **Replay coverage**: canonical MCP JSON round-trips both new spawn
-  families while existing replay variants remain unchanged.
-- [x] **Asset coverage**: atlas descriptors are bounded and checked against
-  pinned slot coordinates; no working-tree legacy assets are imported.
-- [x] **Rocket-box pack boundary**: typed `AmmoPackRockets` preserves the
-  observed amount `25`, capacity `25`, rocket relation, description, and
-  `SPRITE_PROCKET` slot without pretending prepared-slot use is implemented.
-- [x] **Power-battery pack boundary**: typed `AmmoPackCells` preserves the
-  observed amount/capacity `120`, cell relation, description, two-frame marker,
-  and `SPRITE_PCELL` slot without prepared-slot use.
-- [x] **Base ammo-pack boundary**: typed `AmmoPack9mm` and `AmmoPackShells`
-  preserve pinned amounts/capacities (`250`/`250`, `100`/`100`), descriptions,
-  replay kinds, and `SPRITE_PAMMO`/`SPRITE_PSHELL` slots.
-- [x] **Blue armor boundary**: typed `BlueArmor` preserves pinned protection
-  (`2`), description, `SPRITE_ARMOR` slot, replay kind, and pure blue
-  presentation tint; legacy plasma resistance and movement modifiers remain
-  explicit gaps.
-- [x] **Red armor boundary**: typed `RedArmor` preserves pinned protection
-  (`4`), description, `SPRITE_ARMOR` slot, replay kind, and pure red
-  presentation tint; legacy fire resistance and movement modifiers remain
-  explicit gaps.
-- [x] **Med-pack description boundary**: current `SmallMedPack` and
-  `LargeMedPack` definitions preserve pinned descriptions and existing med-pack
-  atlas slots; dynamic difficulty/perk healing formulas remain an explicit gap.
-- [x] **Plasma rifle boundary**: typed `PlasmaRifle` preserves the pinned
-  description, cell-ammo relation, six-shot clip, `1d7` damage range, replay
-  kind, and `SPRITE_PLASMA` slot. Range/accuracy/timing policy and dynamic
-  chainfire/overcharge callbacks remain explicit gaps.
-- [x] **Rocket launcher boundary**: typed `RocketLauncher` preserves the
-  pinned description, rocket-ammo relation, one-shot clip, `6d6` damage range,
-  replay kind, and `SPRITE_BAZOOKA` slot. Blast radius, projectile/explosion,
-  rocket-jump, accuracy, and timing semantics remain explicit gaps.
-- [x] **Chaingun boundary**: typed `Chaingun` preserves the pinned description,
-  9mm-ammo relation, 40-round clip, `1d6` damage range, replay kind, and
-  `SPRITE_CHAINGUN` slot. Chainfire callbacks, burst semantics, effects,
-  accuracy, and timing remain explicit gaps.
-- [x] **Chainsaw boundary**: typed `Chainsaw` preserves the pinned description,
-  melee shape, `4d6` damage range, replay kind, and `SPRITE_CHAINSAW` slot.
-  First-pickup callbacks, exotic flags, sound/UI behavior, and exact timing
-  remain explicit gaps.
-- [x] **BFG 9000 boundary**: typed `Bfg9000` preserves the pinned description,
-  cell-ammo relation, 100-cell clip, `10d6` damage range, replay kind, and
-  `SPRITE_BFG9000` slot. Exact-hit/shot-cost, radius/explosion, overcharge,
-  callback, accuracy, and timing semantics remain explicit gaps.
-- [x] **Shotgun variant boundary**: typed `DoubleShotgun` and `CombatShotgun`
-  preserve pinned descriptions, shell relation, clips (`2`/`5`), damage
-  ranges (`9d3`/`7d3`), ranges (`8`/`15`), replay kinds, and slots
-  `SPRITE_DSHOTGUN`/`SPRITE_CSHOTGUN`; callbacks, spread/falloff, exact timing,
-  and legacy knockback scale remain explicit gaps.
-- [x] **Exotic weapon boundary**: typed `Blaster`, `LaserRifle`, and
-  `MissileLauncher` preserve pinned descriptions, cell/cell/rocket relations,
-  clips (`10`/`40`/`4`), damage ranges (`2d4`/`1d7`/`6d6`), replay kinds, and
-  measured reuse of the `SPRITE_PISTOL`/`SPRITE_PLASMA`/`SPRITE_BAZOOKA` slots;
-  recharge, chainfire, rocket-jump, explosion, and exact timing callbacks
-  remain explicit gaps.
-- [x] **Heavy-energy weapon boundary**: typed `NuclearPlasmaRifle`,
-  `NuclearBfg9000`, and `Bfg10k` preserve pinned descriptions, cell relations,
-  clips (`24`/`40`/`50`), damage ranges (`1d7`/`8d6`/`6d4`), replay kinds, and
-  measured `SPRITE_PLASMA`/`SPRITE_BFG9000`/`SPRITE_BFG10K` atlas slots;
-  recharge, exact-hit, chainfire, explosion, and mod callbacks remain explicit
-  gaps.
-- [x] **Unique-firearm boundary**: typed `MegaBuster`, `GrammatonBeretta`,
-  and `FragShotgun` preserve pinned descriptions, 9mm relations, clips
-  (`60`/`18`/`16`), damage ranges (`1d8`/`2d6`/`6d3`), the frag range (`15`),
-  replay kinds, and measured plasma/pistol/combat-shotgun atlas slots; mode
-  switching, kill medals, mods, spread, and timing callbacks remain explicit
-  gaps.
-- [x] **Special-projectile boundary**: typed `RevenantsLauncher`, `Railgun`,
-  and `AcidSpitter` preserve pinned descriptions, rocket/cell/rocket
-  relations, clips (`1`/`40`/`10`), damage ranges (`7d6`/`8d8`/`10d10`), range
-  `15` for the latter two, replay kinds, and measured bazooka/plasma atlas
-  slots; homing, piercing, acid-map, explosion, and timing callbacks remain
-  explicit gaps.
-- [x] **Eitems shotgun-family boundary**: typed `CombatPistol`,
-  `AssaultShotgun`, and `PlasmaShotgun` preserve pinned descriptions,
-  ammo relations, clips (`15`/`6`/`30`), damage ranges (`3d3`/`7d3`/`7d3`),
-  source ranges where present (`15` for both shotguns), replay kinds, and
-  measured pistol/combat-shotgun/shotgun atlas-slot reuse; aimed-fire and
-  alternate-reload perks, spread/falloff, plasma shot cost, callbacks,
-  knockback scale, accuracy, and timing remain explicit gaps.
-- [x] **Heavy-shotgun boundary**: typed `Jackhammer`, `SuperShotgun`, and
-  `TristarBlaster` preserve pinned descriptions, shell/cell relations, clips
-  (`10`/`2`/`45`), damage ranges (`8d3`/`8d4`/`4d6`), source range `15` for
-  Jackhammer and Super Shotgun, replay kinds, and measured
-  combat-shotgun/double-shotgun atlas-slot reuse; alternate reload, dual-shot,
-  spread, chainfire, shot cost, explosions, callbacks, accuracy, knockback
-  scale, and timing remain explicit gaps.
-- [x] **Unique-melee boundary**: typed `ButchersCleaver`, `Mjollnir`, and
-  `SubtleKnife` preserve pinned descriptions, melee damage ranges
-  (`5d6`/`1d25`/`3d5`), observed Mjollnir range `5`, replay kinds, and measured
-  cleaver/knife atlas-slot reuse; blade/throw/alt-fire perks, callbacks,
-  sound/UI, accuracy, and timing remain explicit gaps.
-- [x] **User-firearms boundary**: typed `Trigun`, `AntiFreakJackal`, and
-  `Minigun` preserve pinned descriptions, 9mm relations, clips (`6`/`6`/`200`),
-  damage ranges (`3d6`/`5d3`/`1d6`), replay kinds, and measured
-  pistol/chaingun atlas-slot reuse; aimed/chainfire perks, fire-rate,
-  explosions, callbacks, accuracy, and timing remain explicit gaps.
-- [x] **Exotic-armor boundary**: typed `OnyxArmor`, `PhaseshiftArmor`, and
-  `GothicArmor` preserve pinned descriptions, armor values (`2`/`2`/`6`),
-  Gothic durability (`200`), replay kinds, and shared `SPRITE_ARMOR` geometry;
-  resistance, movement/knockback, no-durability, set effects, callbacks, and
-  exact tint remain explicit gaps.
-- [x] **Unique-armor boundary**: typed `MaleksArmor`, `CyberneticArmor`, and
-  `Necroarmor` preserve pinned descriptions, armor values (`3`/`7`/`6`),
-  replay kinds, and shared `SPRITE_ARMOR` geometry; resistance,
-  movement/knockback, no-destroy, item-set, recharge/cursed/necro callbacks,
-  and exact tint remain explicit gaps.
-- [x] **Specialized-armor boundary**: typed `MedicalPowerarmor`, `LavaArmor`,
-  and `ShieldedArmor` preserve pinned descriptions, armor values (`6`/`4`/`2`),
-  replay kinds, and shared `SPRITE_ARMOR` geometry; resistance,
-  movement/knockback, no-durability, recharge/healing callbacks, and exact tint
-  remain explicit gaps.
-- [ ] **Full migration**: shotgun/BFG/chainsaw/chaingun/rocket/plasma/exotic
-  weapon behavior, dynamic callbacks,
-  balance/fairness, and remaining legacy item families remain open.
-- [x] **Explicit non-goals**: no gameplay/core rule, observation schema,
-  Lua runtime, dynamic item callback, or broad balance claim is added.
+### 2.2 Why this slice supersedes content breadth
 
-### 2.4 Pure Contract
+The preceding M9 work successfully established provenance-aware immutable
+content definitions and replay-visible item families. It also intentionally left
+many legacy behaviors open: callbacks, resistances, movement modifiers,
+alternate actions, recharge, set effects, exact weapon timing, and other
+special-case semantics.
 
-- **Input**: typed item spawn kinds, including `ItemSpawnKind::Chaingun`,
-  `RocketLauncher`, `PlasmaRifle`, `CombatPistol`, `AssaultShotgun`, or
-  `PlasmaShotgun`, `Jackhammer`, `SuperShotgun`, `TristarBlaster`,
-  `ButchersCleaver`, `Mjollnir`, or `SubtleKnife`, plus the existing ammo
-  families, plus `Trigun`, `AntiFreakJackal`, or `Minigun`.
-  Exotic armor also includes `OnyxArmor`, `PhaseshiftArmor`, or `GothicArmor`;
-  unique armor includes `MaleksArmor`, `CyberneticArmor`, or `Necroarmor`;
-  specialized armor includes `MedicalPowerarmor`, `LavaArmor`, or
-  `ShieldedArmor`.
-- **Output**: a definition-backed stackable `Item` with the observed ammo type,
-  count, maximum stack, description, and atlas archetype; the definitions also
-  expose pinned initial counts (`3`/`20`) while MCP JSON uses
-  `ammo_rockets`/`ammo_cells` plus caller-owned `count`.
-- **Pack output**: `AmmoPackRockets` is a distinct bounded item view with fixed
-  amount/capacity metadata; MCP JSON uses `ammo_pack_rockets` without a caller
-  count. Prepared-slot consumption remains open.
-- `AmmoPackCells` follows the same fixed replay/view contract with
-  `ammo_pack_cells`; its two-frame duration remains the existing bounded Rust
-  presentation policy.
-- `BlueArmor` is a definition-backed armor item with protection `2`, the pinned
-  description, `blue_armor` replay kind, shared `SPRITE_ARMOR` geometry, and a
-  pure blue tint. Resistance, movement, and durability parity are not claimed.
-- `RedArmor` is a definition-backed armor item with protection `4`, the pinned
-  description, `red_armor` replay kind, shared `SPRITE_ARMOR` geometry, and a
-  pure red tint. Resistance, movement, and durability parity are not claimed.
-- `SmallMedPack` and `LargeMedPack` retain pinned descriptions and their
-  measured med-pack atlas slots. Their fixed Rust heal amounts are policy, not
-  a claim of parity with legacy dynamic callbacks.
-- `PlasmaRifle` is a definition-backed cell-ammo weapon with six-shot clip and
-  `1d7` damage policy, `plasma_rifle` replay kind, and measured atlas geometry.
-  Current range, accuracy, action costs, and callback behavior are not claimed
-  as legacy parity.
-- `RocketLauncher` is a definition-backed rocket-ammo weapon with one-shot clip,
-  `6d6` damage policy, `rocket_launcher` replay kind, and measured atlas
-  geometry. Blast/effect callbacks and timing/accuracy semantics are not
-  claimed as legacy parity.
-- `Chaingun` is a definition-backed 9mm-ammo weapon with a 40-round clip,
-  `1d6` damage policy, `chaingun` replay kind, and measured atlas geometry.
-  Chainfire/burst callbacks and timing/accuracy semantics are not claimed as
-  legacy parity.
-- `Chainsaw` is a definition-backed melee weapon with `4d6` damage policy,
-  `chainsaw` replay kind, and measured atlas geometry. First-pickup callbacks,
-  exotic flags, and exact timing semantics are not claimed as legacy parity.
-- `Bfg9000` is a definition-backed cell-ammo weapon with a 100-cell clip,
-  `10d6` damage policy, `bfg9000` replay kind, and measured atlas geometry.
-  Exact-hit/shot-cost, radius/explosion, callback, and timing semantics are
-  not claimed as legacy parity.
-- `DoubleShotgun` and `CombatShotgun` are definition-backed shell-ammo weapons
-  preserving their pinned clips, damage/range policies, replay kinds, and
-  measured atlas geometry. Dual-shot/pump callbacks, spread/falloff, exact
-  timing, and legacy knockback scale are not claimed as parity.
-- `Blaster`, `LaserRifle`, and `MissileLauncher` are definition-backed exotic
-  weapons preserving their pinned ammo relations, clips, damage policies,
-  descriptions, replay kinds, and measured atlas-slot reuse. Recharge,
-  chainfire, rocket-jump, explosion, and exact timing behavior are not claimed
-  as parity.
-- `NuclearPlasmaRifle`, `NuclearBfg9000`, and `Bfg10k` are definition-backed
-  cell-ammo weapons preserving pinned clips, damage policies, descriptions,
-  replay kinds, and measured atlas geometry. Recharge, exact-hit, explosion,
-  chainfire, and mod callbacks are not claimed as parity.
-- `MegaBuster`, `GrammatonBeretta`, and `FragShotgun` are definition-backed
-  9mm weapons preserving pinned clips, damage policies, descriptions, replay
-  kinds, and measured atlas geometry. Mode switching, kill medals, mods,
-  spread, and exact timing are not claimed as parity.
-- `RevenantsLauncher`, `Railgun`, and `AcidSpitter` are definition-backed
-  special-projectile weapons preserving pinned ammo relations, clips, damage/
-  range policies, descriptions, replay kinds, and measured atlas geometry.
-  Homing, piercing, acid-map, explosion, and exact timing are not claimed as
-  parity.
-- `CombatPistol`, `AssaultShotgun`, and `PlasmaShotgun` are definition-backed
-  exotic weapons preserving pinned descriptions, ammo relations, clips,
-  damage/range policies, replay kinds, and measured atlas-slot reuse. Aimed
-  fire, alternate reload, spread/falloff, plasma shot cost, callbacks,
-  knockback scale, accuracy, and exact timing are not claimed as parity.
-- `Jackhammer`, `SuperShotgun`, and `TristarBlaster` are definition-backed
-  exotic weapons preserving pinned descriptions, ammo relations, clips,
-  damage/range policies, replay kinds, and measured atlas-slot reuse. Alternate
-  reload, dual-shot, spread, chainfire, shot cost, explosions, callbacks,
-  knockback scale, accuracy, and exact timing are not claimed as parity.
-- `ButchersCleaver`, `Mjollnir`, and `SubtleKnife` are definition-backed melee
-  weapons preserving pinned descriptions, damage/range policies, replay kinds,
-  and measured atlas-slot reuse. Blade/throw/alt-fire perks, callbacks,
-  sound/UI, accuracy, and exact timing are not claimed as parity.
-- `Trigun`, `AntiFreakJackal`, and `Minigun` are definition-backed 9mm weapons
-  preserving pinned descriptions, clips, damage policies, replay kinds, and
-  measured pistol/chaingun atlas-slot reuse. Aimed/chainfire perks, fire-rate,
-  explosions, callbacks, accuracy, and exact timing are not claimed as parity.
-- `OnyxArmor`, `PhaseshiftArmor`, and `GothicArmor` are definition-backed armor
-  items preserving pinned descriptions, protection, Gothic durability, replay
-  kinds, and shared armor atlas geometry. Resistance, movement/knockback,
-  no-durability, set effects, callbacks, and exact tint are not claimed as
-  parity.
-- `MaleksArmor`, `CyberneticArmor`, and `Necroarmor` are definition-backed
-  armor items preserving pinned descriptions, protection, replay kinds, and
-  shared armor atlas geometry. Resistance, movement/knockback, no-destroy,
-  item-set, recharge/cursed/necro callbacks, and exact tint are not claimed as
-  parity.
-- `MedicalPowerarmor`, `LavaArmor`, and `ShieldedArmor` are definition-backed
-  armor items preserving pinned descriptions, protection, replay kinds, and
-  shared armor atlas geometry. Resistance, movement/knockback, no-durability,
-  recharge/healing callbacks, and exact tint are not claimed as parity.
-- **Ownership Boundary**: Rust typed definitions own runtime item semantics;
-  pinned Lua evidence informs only the migrated scalar fields and provenance.
+At the same time, adding a conventional content family now fans out across
+protocol enums, definitions, validation, replay codecs, assets, documentation,
+and other exhaustive registries. Continuing scalar-only breadth before a
+behavior model is selected would increase both migration debt and change
+amplification.
+
+Therefore, additional broad scalar-only family additions are temporarily
+blocked by the exit gates in Section 2.7.
+
+### 2.3 Transactional Command Contract
+
+For every `Game::step(command)` invocation:
+
+- if the result is `Ok(events)`, all state changes must correspond to the
+  accepted command and emitted simulation events;
+- if the result is `Err(error)`, the complete `Game` value after the call must
+  compare equal to the complete `Game` value before the call.
+
+State identity on rejection includes, at minimum:
+
+- world and actor state;
+- inventory and equipment;
+- item/entity counters;
+- map and explored/visibility state;
+- scheduler energy;
+- turn and terminal state;
+- RNG internal state;
+- any future simulation-owned counters or caches included in `Game` equality.
+
+#### Acceptance criteria
+
+- [ ] Add a reusable invariant test helper asserting `Err => before == after`.
+- [ ] Cover all current command classes with at least one rejected-command
+  scenario where rejection is reachable without malformed construction.
+- [ ] Fix ranged attacks so target geometry/range/legality is validated before
+  ammunition, RNG, or other mutable state is consumed.
+- [ ] Fix equip/use/drop/reload and other multi-step commands so expected
+  validation failures cannot lose or partially mutate items.
+- [ ] Audit all current `Game::step` command paths for mutation-before-error
+  behavior.
+- [ ] Preserve turn and RNG state exactly on rejection.
+- [ ] Document the chosen implementation pattern: prepare/commit is preferred;
+  a bounded rollback guard may be used as an interim correctness backstop.
+
+### 2.4 RNG and Replay Semantics Contract
+
+Determinism means more than running the current implementation twice. A replay
+must state which gameplay semantics it expects, and random sampling behavior
+must be intentional because changing it changes deterministic histories.
+
+#### Acceptance criteria
+
+- [ ] Replace modulo-based bounded integer sampling with an unbiased algorithm
+  whose output contract is documented and tested.
+- [ ] Define boolean/probability sampling without relying on unspecified or
+  avoidable floating-point behavior in the simulation contract.
+- [ ] Add fixed golden RNG vectors for the supported semantics version.
+- [ ] Distinguish replay wire-schema version from engine/gameplay semantics
+  version.
+- [ ] Record a ruleset/content semantics identifier sufficient to reject or
+  explicitly migrate incompatible replays.
+- [ ] Define whether procedural-generation semantics are part of the same
+  ruleset identifier or receive a separate generator version.
+- [ ] Reject incompatible replay semantics explicitly until a migration path is
+  implemented; do not silently reinterpret an old replay through current item
+  definitions.
+
+### 2.5 Typed Content and Behavior Architecture Contract
+
+The project must retain compile-time exhaustiveness without requiring every new
+ordinary content archetype to be manually synchronized across many independent
+registries.
+
+Legacy Lua callbacks are evidence of required behavior, not an architecture to
+recreate. The Rust model should use a small number of explicit typed effect and
+action concepts, with bespoke state machines only where composition is
+insufficient.
+
+#### Acceptance criteria
+
+- [ ] Inventory all current manual fan-out points for adding an item archetype.
+- [ ] Establish one authoritative compile-time item/content catalog or
+  equivalent source of truth.
+- [ ] Generate or mechanically derive routine projections such as stable IDs,
+  display strings, validation coverage, replay names, and presentation lookup
+  where doing so does not weaken type safety.
+- [ ] Keep genuinely behavioral code explicit and reviewable rather than
+  embedding arbitrary callbacks in the catalog.
+- [ ] Define a typed behavior vocabulary that can represent at least:
+  - passive stat/resistance modifiers;
+  - equip/unequip effects and item-set membership;
+  - attack/hit/kill effects;
+  - alternate fire/reload/use actions;
+  - recharge or periodic effects;
+  - explicit costs such as HP, energy, ammo, or status;
+  - deterministic target selection over fair/current simulation state.
+- [ ] Avoid a generic string-keyed event bus or unconstrained dynamic callback
+  registry in `drl-core`.
+- [ ] Keep runtime Lua absent from the shipped game.
+
+### 2.6 Behavior Stress Cases
+
+The behavior model is not accepted based on toy examples alone. Demonstrate it
+using a small set of deliberately difficult legacy cases selected to exercise
+different mechanisms.
+
+The initial target set should include at least three of the following or
+similarly difficult equivalents, with source evidence recorded from the pinned
+legacy revision:
+
+- an equipment set with reversible equip/unequip modifiers;
+- Subtle Knife-style alternate action with health/status cost and visible-target
+  iteration;
+- Trigun-style alternate reload with destructive special action;
+- Null Pointer-style on-hit behavior with target-dependent branching;
+- a recharge/healing armor with periodic behavior.
+
+#### Acceptance criteria
+
+- [ ] Each selected stress case has a legacy evidence note identifying scalar
+  fields, callback behavior, ordering assumptions, and unresolved ambiguity.
+- [ ] Each behavior is represented using the typed model without adding a
+  one-off global hook framework.
+- [ ] Deterministic scenario tests exercise successful behavior and at least one
+  rejected/edge path.
+- [ ] Behavior-complete migration is distinguished from scalar-definition
+  coverage in roadmap/status language.
+
+### 2.7 Exit Gates Before Broad Content Migration Resumes
+
+All of the following are required:
+
+- [ ] Rejected commands are state-identical across the audited command surface.
+- [ ] RNG sampling semantics are unbiased, golden-tested, and versioned.
+- [ ] Replays declare gameplay semantics compatibility and reject incompatible
+  interpretation.
+- [ ] Routine content registration has one authoritative catalog path with
+  materially reduced manual fan-out.
+- [ ] The typed behavior model passes the selected legacy stress cases.
+- [ ] `drl-protocol` contains stable semantic contracts but no longer owns
+  mutable gameplay balance merely because a type crosses a boundary.
+- [ ] Large implementation modules touched by this work are split only where
+  there are clear independent reasons to change; no new crate is introduced
+  solely to reduce file size.
+- [ ] Repository, deterministic scenario, replay, and supported browser checks
+  pass for the resulting revision.
+
+Once these gates pass, the next active slice should be a **vertical canonical
+fidelity slice**, not another scalar-only family batch.
+
+### 2.8 Vertical Fidelity Successor Slice
+
+The successor slice should select one bounded canonical progression or encounter
+and migrate it end-to-end, including relevant interactions among:
+
+- canonical turn economy;
+- representative monsters and AI;
+- weapon behavior and timing;
+- armor/resistance or traits where relevant;
+- one or more callback-derived special behaviors;
+- deterministic replay/scenario evidence;
+- browser presentation required to play the slice.
+
+Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
+execution environment is unavailable. Source similarity alone is not parity
+proof.
+
+### 2.9 Explicit Non-Goals
+
+This active slice does **not** include:
+
+- broad addition of more scalar-only item families;
+- full DRL content completion;
+- new MCP surface area unrelated to the correctness changes;
+- new release-signing or deployment features;
+- new browser/platform targets;
+- runtime Lua;
+- an ECS/plugin framework;
+- full audiovisual parity;
+- unsupported legal-clearance claims.
 
 ---
 
-## 3. Recent Delivered Slices
-
-### M6/M13 — Tool-Execution Error Results (`VERSION` 0.2.59)
-
-- [x] Recognized runtime failures are successful MCP results with
-  `isError: true`, stable text, and numeric details; malformed envelopes,
-  unsafe arguments, malformed replay input, and unknown methods/tools retain
-  JSON-RPC errors.
-- [x] State safety, notification suppression, batch ordering, pagination, and
-  deterministic stdio output remain covered.
-
-### M13/M6 — Deterministic List Pagination (`VERSION` 0.2.58)
-
-- [x] `tools/list` and `resources/list` expose stable fixed-size pages (4 and
-  2 entries) with method-scoped cursors, deterministic continuation, final-page
-  omission, and fail-closed invalid-cursor handling.
-- [x] No-params behavior, session state, tool/resource content, lifecycle, and
-  broader external MCP compatibility remain unchanged/open.
-
-### M13/M6 — Read-Only Canonical V1 Replay Verification (`VERSION` 0.2.57)
-
-- [x] `game_verify_replay` decodes and verifies supplied canonical V1 replay
-  JSON without an active session or mutation; malformed, unsafe, out-of-bounds,
-  and type-invalid input returns `-32602`, while replay execution failures use
-  the recognized runtime-error result boundary.
-- [x] MCP session dimensions and generator parameters are bounded before export;
-  canonical same-version loading is now delivered, while replay-file IO,
-  migration, and external interchange remain open.
-
-### M13 — Canonical Complete V1 MCP Replay Export (`VERSION` 0.2.56)
-
-- [x] `game_save_replay` exports every in-memory V1 field and semantic command
-  through the deterministic `drl-rust-replay-v1` envelope; supplied replay
-  verification and same-version object loading consume this exact contract.
-- [x] Replay-file IO, migration, and external interchange remain explicitly
-  open.
-
-### M13 — Exact Fair-Observation Legal-Action Enumeration (`VERSION` 0.2.55)
-
-- [x] Fair candidates are filtered through cloned core probes and the exact
-  catalog drives MCP listing, response payloads, and pre-dispatch admission.
-- [x] Terminal catalogs become empty, rejected commands remain state-safe, and
-  hidden-state search, unbounded generation, and external compatibility remain
-  open.
-
-### M13 — Legal-Action Catalog Coherence (`VERSION` 0.2.54)
-
-- [x] Added explicit adjacent `attack_melee` and equipped-slot `unequip`
-  entries, then rejected recognized commands not currently advertised before
-  live simulation with `-32001`; unknown/malformed input remains `-32602`.
-- [x] Preserved state safety, terminal/reset precedence, core geometry/LOS/range
-  authority, virtual-player behavior, and deterministic stdio output.
-
-### M13 — Public Release-Rights Inventory (`VERSION` 0.2.53)
-
-- [x] `docs/release-rights.md` records included, excluded, notice-only, and
-  unavailable evidence categories without claiming legal clearance.
-- [x] Source and optional bundle gates validate pinned graphics provenance,
-  exact manifest rights, recursive checksums, symlink/non-regular rejection,
-  and excluded legacy code/audio/music/font/WAD boundaries; absent bundles are
-  `NOT_RUN`.
-
-### M13 — Conditional `game_step_action` Schema (`VERSION` 0.2.52)
-
-- [x] Added deterministic action/command discriminator and conditional
-  direction, ranged-coordinate-alias, item-ID, slot, and no-argument branches.
-- [x] Preserved runtime aliases, malformed-input behavior, unknown-property
-  tolerance, action precedence, mixed coordinate aliases, and repeated stdio
-  output; the catalog/pre-dispatch coherence contract was delivered in 0.2.54,
-  while exact fair-observation filtering is delivered in the active 0.2.55
-  slice.
-
-### M13 — MCP Terminal-Outcome Gate (`VERSION` 0.2.51)
-
-- [x] Terminal victory, death, turn-limit, and stalled sessions reject later
-  actions with `-32001` without mutating metrics or replay; reset remains
-  available.
-- [x] Stair transitions report `Victory`, and terminal replays remain
-  deterministic; core gameplay, replay format, and external compatibility
-  claims remain unchanged.
-
-### M13 — Truthful MCP Tool Schemas (`VERSION` 0.2.50)
-
-- [x] `tools/list` publishes action, direction, slot, `command`, and `x`/`y`
-  aliases with enum domains and exact numeric bounds for stateful arguments.
-- [x] Unknown properties remained tolerated; conditional action schemas,
-  gameplay changes, and external-client certification remained open at that
-  slice.
-
-### M13 — Typed `game_step_action` Numbers (`VERSION` 0.2.49)
-
-- [x] Ranged coordinates and item IDs reject unsafe or wrong-typed numeric
-  arguments before state mutation while preserving valid aliases and actions.
-- [x] Added state-safety, direct parser, virtual gameplay, and repeated stdio
-  coverage; complete action-schema validation remains open.
-
-### M13 — MCP Replay Verification (`VERSION` 0.2.48)
-
-- [x] Added `game_verify_replay` for state-safe deterministic verification of
-  procedural and custom-scenario in-memory replays with command-count/version
-  metadata.
-- [x] Added inactive-session, repeated-response, virtual-player, and repeated
-  real-stdio coverage; replay import/load and external interchange remain open.
-
-### M13 — Tool-Argument Type Validation (`VERSION` 0.2.47)
-
-- [x] Optional integer fields for `game_start` and `game_load_scenario` reject
-  wrong types and dimensions outside the accepted 32-bit range with `-32602`
-  before state mutation.
-- [x] Valid defaults and predecessor method-envelope/request-ID/lifecycle
-  contracts remain deterministic; full MCP schema/client compatibility remains
-  open.
-
-### M13 — Method-Parameter Envelope Validation (`VERSION` 0.2.46)
-
-- [x] `tools/call` and `resources/read` require object params; tool arguments
-  must be an object when present, with malformed calls returning `-32602`
-  without state mutation.
-- [x] Request-ID, initialize, lifecycle, notification, and batch contracts
-  remain deterministic; full MCP schema/client compatibility remains open.
-
-### M13 — JSON-RPC Request-ID Validation (`VERSION` 0.2.45)
-
-- [x] Request IDs accept strings, numbers, and explicit `null`; non-scalar IDs
-  return `-32600` without dispatch or state mutation.
-- [x] Real stdio notification and explicit-null response behavior remains
-  deterministic; initialize envelope and lifecycle contracts remain delivered.
-
-### M13 — Required Initialize Envelope Validation (`VERSION` 0.2.44)
-
-- [x] Initialize requires object params, object capabilities, and clientInfo
-  with string name/version; malformed fields return `-32602` without unlock.
-- [x] Version negotiation and the predecessor identified lifecycle gate remain
-  deterministic; full MCP schema/client compatibility remains open.
-
-### M13 — MCP Lifecycle State Gate (Phase 1) (`VERSION` 0.2.43)
-
-- [x] Identified initialize → initialized transitions gate tools and resources
-  behind `Ready`, with deterministic `-32003` pre-ready errors.
-- [x] Premature/duplicate/omitted-ID transitions do not advance state; ping,
-  malformed input, batch order, and notification suppression remain bounded.
-- [x] Game reset remains separate from protocol lifecycle; full external-client
-  compatibility and reconnect/resume remain open.
-
-### M13 — Version-Aware JSON-RPC Initialize (`VERSION` 0.2.42)
-
-- [x] Supported `2024-11-05` requests echo the requested version.
-- [x] Unsupported strings receive the deterministic supported fallback;
-  missing/non-string versions return `-32602`.
-- [x] Existing capabilities, server metadata, stdio framing, batch ordering,
-  notifications, and tool semantics remain unchanged.
-- [ ] Full MCP lifecycle enforcement, external-client compatibility, and
-  production deployment remain open.
-
-### M13 — JSON-RPC Batch Stdio Transport (`VERSION` 0.2.41)
-
-- [x] Batch arrays preserve response order, omit notification members, and
-  reject empty batches.
-- [x] Existing notification, null-ID, malformed-input, and identified-request
-  contracts remain covered; full external-client compatibility remains open.
-
-### M10 — Browser Offline Lifecycle Acceptance (evidence baseline)
-
-- [x] A real desktop Chromium run installed the generated service worker,
-  reloaded from the current release cache with network requests disabled, and
-  started the cached WASM game successfully. The recorded environment and
-  boundary are in
-  [`docs/acceptance/browser-offline-2026-08-23.md`](docs/acceptance/browser-offline-2026-08-23.md).
-- [x] The browser shell now requires an explicit accessible Clear Save
-  confirmation; Cancel and Escape preserve the save and active simulation, with
-  live supported-Chromium evidence in the acceptance record.
-- [ ] The destructive confirmation step remains `NOT_RUN`; OS-level PWA
-  installation prompts, production HTTPS deployment, other browsers/backends,
-  WCAG/screen-reader behavior, audible output, and capture-backed parity remain
-  open.
-
-### M12 — Supported-Chromium Dynamic DOM Acceptance (evidence baseline)
-
-- [x] Runtime evidence covers supported-start focus transfer to the canvas,
-  authored focus styling, live status updates after keyboard input, static
-  keyboard help, and item-qualified inventory action names. See
-  [`docs/acceptance/browser-dynamic-dom-2026-08-23.md`](docs/acceptance/browser-dynamic-dom-2026-08-23.md).
-- [ ] WCAG 2.1 AA, screen-reader/assistive-technology, contrast, complete
-  keyboard traversal, and broad-browser acceptance remain `NOT_RUN`.
-
-### M13 — JSON-RPC Notification-Correct Stdio (`VERSION` 0.2.40)
-
-- [x] Valid omitted-ID requests mutate session state without emitting a response
-  from the stdio transport.
-- [x] Identified requests, explicit `id: null`, and malformed-input parse errors
-  retain one response each.
-
-### M9 — Rust-Owned Content Invariant Validation (`VERSION` 0.2.39)
-
-- [x] Added a pure validator for current monster, item, loot, level, and
-  descriptive special-level table invariants.
-- [x] Focused negative tests reject invalid damage ranges, weapon shape,
-  roll-bound coverage, and level dimensions/room bounds.
-- [ ] Legacy parity, fairness targets, and full dynamic content migration
-  remain open.
-
-### M12 — Signing-Key Boundary Hygiene (`VERSION` 0.2.38)
-
-- [x] Signing rejects release-tree keys, symlinks, and group/world-readable
-  private keys before OpenSSL writes artifacts.
-- [x] Existing valid signing, detached verification, and mutation rejection
-  remain covered.
-- [ ] Production custody, provisioning, rotation, and trust-root governance
-  remain open.
-
-### M13 — Stdio MCP Lifecycle (`VERSION` 0.2.37)
-
-- [x] Added a fixed JSON-lines subprocess fixture covering initialization,
-  discovery, gameplay, replay/metrics, reset, scenario loading, and resources.
-- [x] Repeated runs are byte-identical and preserve permission denial for the
-  default omniscient dev-state request.
-- [ ] Full external MCP-client compatibility and production deployment remain
-  open.
-
-### M10 — PWA Update Freshness (`VERSION` 0.2.36)
-
-- [x] Registration freshness and waiting-update status are implemented and
-  covered by deterministic Node fixtures.
-- [x] Real browser offline installation and reload are covered by the later
-  evidence baseline; update activation remains open.
-
-### M12 — Browser-Environment Diagnostics (`VERSION` 0.2.35)
-
-- [x] Pure classifier distinguishes insecure contexts from missing WebGPU.
-- [x] Start-up guard routes unsupported environments through the focused
-  diagnostic panel before WASM initialization.
-- [x] Node tests cover both failure classes, supported startup, and stable
-  recovery text.
-- [x] The supported desktop Chromium target and offline installation are
-  covered by the later evidence baseline; broader browser, WCAG, and
-  screen-reader acceptance remain open.
-
-### M9 — Representative Content-Evidence Coverage (`VERSION` 0.2.34)
-
-- [x] Added a reviewed crosswalk and validator for pinned being, item-family,
-  terrain-cell, and special-level evidence bundles.
-- [x] Added provenance, digest-shape, ordering, uniqueness, representative,
-  and complete 26-level coverage checks plus fixture rejection cases.
-- [x] Synchronized the reviewed 26-level ID list with the Rust descriptive
-  `SPECIAL_LEVEL_DEFINITIONS` catalog and rejected fixture drift.
-- [x] Compared all descriptive scalar fields against the pinned level evidence
-  records without importing maps, callbacks, or level behavior.
-- [x] Locked every reviewed source to its exact pinned SHA-256 digest and added
-  wrong-digest rejection coverage.
-- [x] Pinned complete being, item-family, and terrain-cell record ID catalogs
-  and added converter-output catalog drift rejection coverage.
-- [x] Enforced scalar-only evidence fields, structured migration gaps, and
-  positive source lines without importing nested Lua data.
-- [x] Versioned the expanded crosswalk as schema 2 and added obsolete-schema
-  rejection coverage.
-- [ ] Full typed migration, assets, callbacks, and gameplay parity remain open.
-
-### M10 — Same-Release Offline-Cache Isolation (`VERSION` 0.2.27)
-
-- [x] Service-worker reads now match only the current generated release cache;
-  stale/unrelated namespaces cannot satisfy offline requests.
-- [x] Node worker contracts cover current-cache hits and fail-closed stale
-  isolation while preserving routing and activation behavior.
-- [x] Real browser offline install/control/reload acceptance is recorded in
-  the later evidence baseline.
-
-### M12 — Dynamic Interaction Accessibility Contract (`VERSION` 0.2.26)
-
-- [x] Added item-qualified escaped inventory actions, one live status channel,
-  canvas help association, focus-visible styling, and diagnostic focus parity.
-- [x] Added static shell and native markup contract coverage.
-- [ ] WCAG 2.1 AA, screen-reader, contrast, and broad browser acceptance remain
-  open.
-
-### M11 — Descriptive Cohort Depth Distribution (`VERSION` 0.2.25)
-
-- [x] Added validated, sorted deepest-level buckets and sample rates to cohort
-  reports and single-policy/matrix CLI output.
-- [x] Added empty-cohort, invalid-evidence, deterministic-order, and stable
-  formatting coverage.
-- [ ] Canonical difficulty targets and externally approved progression metrics
-  remain open.
-
-### M10 — Replay-Compatible Save Migration (`VERSION` 0.2.24)
-
-- [x] Added strict V2 command-count encoding and V1 decode compatibility.
-- [x] Migrated successful V1 restores in place while preserving fail-closed
-  quarantine and transactional replay.
-- [x] Real offline browser lifecycle acceptance is recorded in the later
-  evidence baseline.
-
-### M9 — Special-Level Identity Catalog (`VERSION` 0.2.23)
-
-- [x] Added immutable Rust metadata for 26 active level IDs, names, and texts.
-- [x] Preserved optional legacy depth values and missing scalar fields.
-- [ ] Full typed special-level migration, assets, and behavior validation remain
-  open.
-
-### M9 — Special-Level Evidence Index (`VERSION` 0.2.22)
-
-- [x] Added pinned index coverage across 24 level files and 26 active records.
-- [x] Added long-bracket map-string handling and explicit dynamic gaps.
-
-### M9 — Item-Family Evidence Bundle (`VERSION` 0.2.21)
-
-- [x] Added multi-source base/expansion/user-item evidence bundling.
-- [x] Added source provenance, source indices, sorted merge, duplicate rejection,
-  and fixture/pinned coverage.
-- [ ] Full typed item-family migration and behavior validation remain open.
-
-### M11 — Cohort Policy Matrix (`VERSION` 0.2.20)
-
-- [x] Added deterministic `--bot all` output for greedy, random, and explorer.
-- [x] Preserved shared seed/episode/turn configuration and prefixed report
-  fields.
-- [x] Added native repeatability and repository contract coverage.
-- [ ] Canonical difficulty targets and statistical interpretation remain open.
-
-### M9 — Terrain-Cell Evidence Converter (`VERSION` 0.2.19)
-
-- [x] Added pinned-source extraction for shallow `register_cell` scalar data.
-- [x] Added deterministic byte/single-quoted string handling and explicit
-  nested/function/symbolic migration gaps.
-- [x] Added fixture repeatability and pinned `cells.lua` coverage.
-- [ ] Full typed terrain migration, asset mapping, and parity validation remain
-  open.
-
-### M12 — Signed-Release CI Smoke (`VERSION` 0.2.18)
-
-- [x] Added repository contract coverage for signing and mutation rejection.
-- [x] Added hosted WASM CI coverage with a runner-local ephemeral RSA key.
-- [x] Asserted signed artifacts are present and the private key stays outside
-  `dist`.
-- [ ] Production key custody, rotation, and trust-root governance remain open.
-
-### M9 — Legacy Content Evidence Converter (`VERSION` 0.2.17)
-
-- [x] Added pinned-source extraction for shallow being/item scalar records.
-- [x] Added provenance fields and explicit nested/function migration gaps.
-- [x] Added deterministic fixture coverage without a Lua runtime.
-- [ ] Full content migration and behavior validation remain open.
-
-### M11 — Cohort Study CLI (`VERSION` 0.2.16)
-
-- [x] Added bounded deterministic `drl-rust cohort` reports for three bots.
-- [x] Added stable metadata, outcome, and telemetry line fields with validation.
-- [x] Added repeatability and invalid-option contract tests.
-- [ ] Canonical difficulty targets and statistical interpretation remain open.
-
-### M10 — Offline-Cache Readiness (`VERSION` 0.2.15)
-
-- [x] Started service-worker registration independently of WebGPU startup.
-- [x] Added explicit unavailable/installing/ready/failure diagnostics.
-- [x] Added injected-capability tests and bootstrap ordering checks.
-- [x] Real browser offline installation and reload are recorded in the later
-  evidence baseline.
-
-### M12 — Detached Release Signing (`VERSION` 0.2.14)
-
-- [x] Added optional detached manifest signing and public-key derivation.
-- [x] Added fail-closed verification when signature artifacts are present.
-- [x] Added ephemeral-key shell coverage for tamper rejection.
-- [ ] Key custody, CI enforcement, and production trust-root governance remain
-  open.
-
-### M11 — Cohort Telemetry Integrity (`VERSION` 0.2.13)
-
-- [x] Added typed telemetry-invariant diagnostics for shot counts, level
-  identity, and configured turn budgets.
-- [x] Enforced the invariants before outcome or telemetry projection without
-  mutating reports or accessing player observations.
-- [x] Added focused integration coverage for each rejected metric shape.
-- [ ] Automated large-scale balance and canonical difficulty studies remain
-  open.
-
-### M10 — Browser-Save Corruption Recovery (`VERSION` 0.2.12)
-
-- [x] Quarantined malformed, unsupported, oversized, and replay-invalid save
-  values in a bounded browser-owned diagnostic slot.
-- [x] Cleared rejected active values when storage permits and kept boot/load
-  playable when storage access or cleanup fails.
-- [x] Preserved transactional restore and tested active-session immutability.
-- [ ] Explicit replay-compatible migration for recognized older formats.
-
-### M8 — Particle-Decal Renderer Integration (`VERSION` 0.2.11)
-
-- [x] Resolved opaque caller-provided sprite handles through presentation-only
-  descriptor tables without guessing a legacy blood atlas or slot.
-- [x] Preserved stored-pixel sub-cell placement and inserted decals between
-  terrain and ordinary objects in renderer-neutral plans.
-- [x] Added browser WebGPU entry points and native ordering/immutability tests;
-  capture-backed visual parity remains `NOT_RUN`.
-
-### M8 — Particle-Decal Storage Boundary (`VERSION` 0.2.10)
-
-- [x] Implemented `ParticleDecalStore` with caller-configured maximum capacity.
-- [x] Preserved insertion order and duplicate requests deterministically.
-- [x] Explicit `CapacityExceeded` error reporting without dropping prior
-  entries.
-- [x] Comprehensive test coverage for empty, append, duplicate, and capacity
-  limits.
-
-### M8 — Particle-Decal Insertion Request (`VERSION` 0.2.9)
-
-- [x] Packaged accepted placement coordinates with caller-provided sprite ID.
-- [x] Reused checked placement and eligibility math without duplicate logic.
-- [x] Preserved legacy cell, pixel offset, and sprite ID representations.
-
-### M12 — Release Hardening & Integrity (`VERSION` 0.2.1)
-
-- [x] Git checkout-identity binding in release manifest generator.
-- [x] Release manifest SHA-256 sidecar (`release-manifest.sha256`).
-- [x] Versioned service-worker cache invalidation based on version and commit.
-- [x] Mocked service worker lifecycle and fetch contract test harness.
-- [x] Static HTML shell accessibility audit (landmarks, focus, live regions).
-
-### M11 — Cohort Telemetry & Outcome Projections (`VERSION` 0.1.1–0.2.3)
-
-- [x] Fixed-seed cohort reports (`CohortConfig`, `CohortReport`) with integrity
-  validation.
-- [x] Cohort outcome distributions (victory, death, turn limit, stalled, in
-  progress).
-- [x] Pure outcome-rate and telemetry tolerance gates for regression detection.
-- [x] Descriptive telemetry metrics: shot accuracy, damage dealt/taken, kills,
-  pickups, and item usage.
-
----
-
-## 4. Shared Observable Behavior & Invariants
-
-### 4.1 Simulation & Fairness
-
-- **Information Decoupling**: `BrowserSession` and MCP tools expose only fair
-  `PlayerObservation` and `GameEvent` streams. Hidden world state is never
-  accessible.
-- **Replay Determinism**: Identical seed and command sequences produce bit-exact
-  identical events and end states across headless, MCP, and browser runners.
-- **Transactional Rollback**: Rejected or illegal commands roll back session
-  state without advancing the simulation turn or consuming energy.
-
-### 4.2 Browser & WebGPU Presentation
-
-- **Input Translation**: Browser shell maps keyboard/numpad, wait, pickup,
-  reload, descend, ranged targeting, and DOM inventory clicks directly to
-  protocol `Command`s.
-- **No Simulation Side Effects**: Canvas resize, DPR change, animation tick,
-  audio playback, tab visibility change, or WebGPU device loss never advance
-  simulation time.
-- **Square-Cell Viewport**: Integer scaling and centering ensure square game
-  tiles without non-uniform axis stretching.
-- **Visibility-Derived Lighting**: Full light for tiles in active FOV; fixed fog
-  factor for remembered explored tiles. Presentation never queries hidden
-  tiles.
-
-### 4.3 Evaluation & Telemetry
-
-- **Contiguous Seeds**: Cohort reports record contiguous seed ranges and
-  preserve per-seed replay logs.
-- **Descriptive Metrics**: Projections report descriptive counts and rates; they
-  do not assert balance conclusions or statistical significance.
-
-### 4.4 Release Packaging
-
-- **Manifest Validation**: Release scripts verify manifest schema, sorted
-  SHA-256 hashes, license metadata, worker coverage, sidecar digests, and source
-  commit identity.
-
----
-
-## 5. Public Contracts & Boundaries
-
-### 5.1 Protocol & Simulation (`drl-protocol`, `drl-core`)
-
-- **Domain Types**: `Position`, `Direction`, `Turn`, `EntityId`, `ItemId`,
-  `LevelId`, `HitPoints`, `Speed`, `ActionCost`.
-- **Commands**: `Command::Move`, `Command::Wait`, `Command::Pickup`,
-  `Command::Drop`, `Command::Equip`, `Command::Unequip`, `Command::Reload`,
-  `Command::Use`, `Command::AttackMelee`, `Command::AttackRanged`,
-  `Command::Descend`.
-- **Observations**: `PlayerObservation` (FOV tiles, visible actors, ground
-  items, inventory, equipment, player HP, map dimensions).
-- **Events**: `GameEvent::AttackResolved`, `GameEvent::DamageApplied`,
-  `GameEvent::ActorDied`, `GameEvent::ActorKnockedBack`,
-  `GameEvent::PlayerTeleported`, `GameEvent::LevelTransitioned`, etc.
-
-### 5.2 Presentation & Assets (`drl-render`, `drl-assets`, `drl-web`)
-
-- **Layout**: `PixelViewport`, `PixelRect`, integer cell scaling.
-- **Shading & Tone**: `LightingBand`, `shade_color`, `SceneTone`,
-  `low_health_pulse_target_alpha`, `LowHealthPulseState`.
-- **Draw Plans**: `layer_draw_plan`, `sprite_composite_plan`, `LayerRole`,
-  `AtlasTextureSource`.
-- **Decals & Particles**: `ParticleDecalPlacement`, `ParticleDecalInsertion`,
-  `ParticleDecalStore`, burst origins/directions/ranges.
-
-### 5.3 Decoupling Invariants
-
-- `drl-core` and `drl-protocol` have **zero** dependencies on WebGPU, Web
-  Audio, DOM, filesystem, network, or MCP crates.
-
----
-
-## 6. Verification Gates
-
-### Verified Baseline (`VERSION` 0.2.45)
-
-9c0eccf feat(mcp): support deterministic stdio batches (#132)
-eeb246d feat(mcp): handle stdio notifications correctly (#131)
-1441667 feat(content): validate typed definition invariants (#130)
-fbd7eee feat(release): harden signing key inputs (#129)
-a127868 test(mcp): cover stdio lifecycle (#128)
-cf597d3 feat(web): report fresh service-worker updates (#127)
-47f3526 feat(web): classify unsupported browser environments (#126)
-d9d78ea feat(content): version evidence crosswalk schema (#125)
-a8cda3e feat(content): validate evidence record shape (#124)
-e3583de feat(content): pin complete evidence ID catalogs (#123)
-75888b4 feat(content): lock pinned evidence source digests (#122)
-6aade20 feat(content): synchronize special-level scalar evidence (#121)
-3c8d618 docs(spec): record catalog sync baseline
-872914c feat(content): synchronize special-level evidence (#120)
-4263241 docs(spec): record merged evidence baseline
-a3d8fd2 feat(content): add evidence coverage gate (#119)
-0d919ec docs(spec): record merged cache isolation baseline
-9f0d601 feat(web): isolate service-worker cache reads (#118)
-afdc01f feat(web): harden dynamic accessibility semantics (#117)
-6024a15 feat(eval): add cohort depth distribution (#116)
-cae3b09 feat(web): migrate browser saves to v2 (#115)
-d7e5602 feat(content): add special-level metadata catalog (#114)
-1fd09d5 feat(content): add pinned special-level evidence index (#113)
-d1a8903 feat(content): bundle legacy item family evidence (#112)
-34a9578 feat(eval): add deterministic cohort policy matrix (#111)
-8486e15 feat(content): add pinned terrain cell evidence conversion (#110)
-2a5e149 ci(release): smoke-test ephemeral manifest signing (#109)
-3cfe62e feat(content): add pinned legacy content evidence converter (#108)
-f305503 feat(eval): add deterministic cohort study CLI (#107)
-22e0e8b feat(web): start offline cache registration at bootstrap (#106)
-af0fcf8 feat(release): add optional manifest signing (#105)
-- [x] `sh scripts/check-repository.sh` — Full repository test suite, formatting,
-  clippy, and harness checks.
-- [x] `sh scripts/check-assets.sh` — 32 imported legacy PNGs, licensing, and
-  SHA-256 checksums.
-- [x] `scripts/test-reference-capture.sh` — Preflight fixture test suite for
-  capture manifests.
-- [x] `sh scripts/check-web.sh` — WASM target compilation and native/WASM web
-  contract tests.
-- [x] `sh scripts/build-web.sh && sh scripts/check-release-manifest.sh` — Static
-  bundle build and 44-artifact manifest validation.
-- [x] `scripts/check-version.sh` — Project version consistency and transition
-  rules.
-
-### Environment-Gated Verification
-
-- [ ] Controlled Linux x86-64 reference captures (`NOT_RUN` on macOS arm64).
-- [ ] Direct visual/audio diff against legacy reference captures (`NOT_RUN`).
-
----
-
-## 7. Explicit Non-Goals
-
-- **Pre-1.0 Multiplatform**: No WebGL2 fallback, mobile/touch UI, gamepad
-  navigation, or native desktop packaging before the 1.0 desktop Chromium
-  release.
-- **No Runtime Scripting**: No Lua VM or JavaScript gameplay logic. All
-  simulation is pure compiled Rust.
-- **No Online Services**: No player accounts, multiplayer networking, or
-  remote backend servers.
-- **No Unattributed Assets**: No bundling of legacy audio, music, or fonts
-  without documented redistribution rights.
-- **No False Parity Claims**: Pure mathematical contracts and generated audio
-  tones are not claimed as full legacy audiovisual equivalence until validated
-  against reference captures.
+## 3. Verification Requirements
+
+At minimum, the final delivery must run:
+
+```sh
+cargo fmt --all -- --check
+cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
+cargo test --locked --workspace
+sh scripts/check-repository.sh
+```
+
+Add focused tests for command rejection atomicity, RNG golden vectors, replay
+compatibility rejection, catalog exhaustiveness, and the selected behavior
+stress cases.
+
+Browser checks remain required if the slice changes WASM-visible contracts or
+presentation behavior. Controlled legacy runtime comparison remains separately
+reported as `PASS`, `FAIL`, `INCONCLUSIVE`, or `NOT_RUN`; it must never be
+inferred from Rust-only tests.

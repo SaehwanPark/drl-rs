@@ -30,7 +30,7 @@ DRL-Rust is a Cargo workspace. All crates live under `crates/`.
 | `drl-core` | Deterministic headless simulation kernel (no I/O, no rendering, no audio) |
 | `drl-mcp` | MCP JSON-RPC 2.0 server and semantic tool suite |
 | `drl-app` | Executable entry point: headless demo, bot play, batch sweeps, MCP stdio runner |
-| `drl-script` | Build-time content/Lua conversion boundary; no runtime Lua |
+| `drl-script` | Build-time content/Lua conversion boundary; no runtime Lua; naming/continued need is under steering review |
 | `drl-assets` | Platform-neutral atlas identifiers, provenance, and mappings |
 | `drl-render` | Pure scene/presentation builders consumed by browser renderers |
 | `drl-audio` | Semantic cues and WASM Web Audio mixer |
@@ -41,11 +41,17 @@ Key documents:
 | File | Purpose |
 |---|---|
 | `docs/DRL-Rust_Project_Roadmap.md` | Canonical milestone plan and progress tracker |
+| `docs/steering/README.md` | Steering document hierarchy and current steering set |
+| `docs/steering/current-priorities.md` | Near-term priority/stop gates constraining slice selection |
 | `SPEC.md` | Active implementation slice: outcomes, verification, and non-goals |
-| `ARCHITECTURE.md` | Verified current structure and architectural invariants |
+| `ARCHITECTURE.md` | Verified current structure, invariants, and explicitly labeled correction targets |
 | `CHANGELOG.md` | Contributor- and user-visible history |
-| `docs/adr/` | Architecture Decision Records |
+| `docs/adr/` | Accepted Architecture Decision Records |
 | `docs/legacy-behavior/` | Behavioral specification notes from legacy research |
+
+The roadmap continues to own milestone scope and progress. Steering does not
+replace it; steering constrains which candidate roadmap work should become the
+next active slice while its temporary gates remain open.
 
 ---
 
@@ -112,7 +118,9 @@ CI and manual Chrome/Edge acceptance remain separate gates.
 - No `unwrap()` or `expect()` in simulation paths unless the invariant is
   explicitly documented and enforced by construction.
 - No `println!` or `eprintln!` in `drl-core` or `drl-protocol`.
-- Randomness must flow through `GameRng`; see the RNG ADR.
+- Randomness must flow through simulation-owned `GameRng`; see the RNG ADR.
+- Expected command rejection must not leave partial state mutation or consume
+  RNG. Prefer validation/preparation before commit for multi-step actions.
 
 ### Clippy
 
@@ -160,26 +168,31 @@ for agent-created branches). Keep descriptions concise.
    git checkout main && git pull && git checkout -b feature/my-change
    ```
 
-2. **Implement** your change with tests where applicable.
+2. **Select the slice** against `docs/steering/current-priorities.md` and the
+   active `SPEC.md`. A slice should close a current gate or record a concrete
+   reason it is exempt.
 
-3. **Check locally**:
+3. **Implement** your change with tests where applicable.
+
+4. **Check locally**:
    ```sh
    sh scripts/check-repository.sh
    ```
 
-4. **Push** your branch and **open a PR** against `main` on GitHub.
+5. **Push** your branch and **open a PR** against `main` on GitHub.
 
-5. **PR description** should include:
-   - Which roadmap item or SPEC.md slice this addresses.
+6. **PR description** should include:
+   - Which roadmap item or `SPEC.md` slice this addresses.
+   - Which current steering gate it closes, or why it is exempt.
    - What observable outcomes the change delivers.
    - How it was verified (test commands, manual steps).
    - Any known limitations or follow-up items.
 
-6. **Review** — at least one review approval is required before merging.
+7. **Review** — at least one review approval is required before merging.
 
-7. **Merge** using squash-merge to keep `main` history linear.
+8. **Merge** using squash-merge to keep `main` history linear.
 
-8. **Delete** the remote and local branch after merge.
+9. **Delete** the remote and local branch after merge.
 
 ---
 
@@ -187,6 +200,8 @@ for agent-created branches). Keep descriptions concise.
 
 These constraints are load-bearing. Violating them can corrupt the simulation's
 determinism guarantees or couple presentation concerns into the simulation core.
+See `ARCHITECTURE.md`, accepted ADRs, and the active decisions under
+`docs/steering/decisions/` for the exact current contract.
 
 ### drl-core must stay pure
 
@@ -195,22 +210,30 @@ MCP, network, or filesystem I/O. It depends only on `drl-protocol` and the
 Rust standard library. This is enforced by automated boundary tests in
 `crates/drl-core/tests/boundaries.rs`.
 
-### drl-protocol must be dependency-free
+### drl-protocol must stay a stable semantic boundary
 
-`drl-protocol` contains only data types and must not depend on `drl-core`,
-`drl-mcp`, or any presentation crate.
+`drl-protocol` must remain dependency-free and contain contracts that need to
+cross crate/client boundaries. Do not place new gameplay balance or behavior
+policy there merely because a stable kind ID or view crosses the protocol.
+Current definition helpers in the protocol are migration debt to clean up, not
+a default pattern for new content.
 
 ### No ambient or global RNG
 
-All randomness in the simulation must pass through the explicit `GameRng`
-parameter. Never use `rand::thread_rng()` or any other ambient source inside
-`drl-core`. See `docs/adr/0004-explicit-deterministic-rng.md`.
+All simulation randomness must flow through explicit simulation-owned
+`GameRng`. Never use `rand::thread_rng()` or another ambient source inside
+`drl-core`. Bounded range sampling must be unbiased, and replay-visible RNG
+semantic changes require an explicit compatibility decision. See
+`docs/adr/0004-explicit-deterministic-rng.md`.
 
 ### All clients use the same Command model
 
-Human input, scripted bots, and MCP agents must all submit `drl-protocol::Command`
-values through the standard simulation API. No client may modify world state
-directly or bypass command validation. See `docs/adr/0003-semantic-command-model.md`.
+Human input, scripted bots, and MCP agents must all submit
+`drl-protocol::Command` values through the standard simulation API. No client
+may modify world state directly or bypass command validation. Rejected commands
+must leave the complete simulation state unchanged. See
+`docs/adr/0003-semantic-command-model.md` and the atomic-command steering
+decision.
 
 ### Deterministic collection ordering
 
@@ -233,23 +256,41 @@ resize/DPR, tab visibility, or GPU loss advance simulation. Start/error/help,
 HUD, and inventory controls remain semantic DOM regions even when the world is
 drawn on a pixel-scaled WebGPU canvas.
 
-### Asset provenance
+### Content migration and behavior
+
+Routine content registration should converge on one authoritative compile-time
+catalog rather than requiring repeated manual registry synchronization. Legacy
+Lua callbacks must be translated into explicit typed effects/actions/state
+machines; do not recreate a generic runtime callback bus. Definition coverage
+and behavior coverage are separate claims. See the content/behavior steering
+decision.
+
+### Asset and text provenance
 
 Import only from the pinned legacy Git revision recorded in the asset manifest,
 never from a dirty checkout. Keep source path, attribution, license, and
 checksum records with every asset group. The graphics atlas is CC BY-SA 4.0;
 legacy code, audio/music, and fonts require separate rights decisions.
+Legacy-derived descriptive/creative text embedded in Rust or content
+definitions is also a separate provenance review question; see
+`docs/release-rights.md`.
 
 ---
 
 ## Documentation and specification
 
-- Before implementing a milestone item, read `SPEC.md` (active slice) and the
-  relevant section of the roadmap.
+- Before implementing a milestone item, read `docs/steering/README.md`, the
+  current steering priorities, `SPEC.md` (active slice), and the relevant
+  roadmap section.
 - Update `SPEC.md` to reflect the active slice before writing code.
-- Record verified architectural changes in `ARCHITECTURE.md`.
+- Record verified architectural changes in `ARCHITECTURE.md`. If steering
+  identifies an invariant as a correction target, do not describe it as
+  already verified until the acceptance evidence exists.
 - Add changelog entries in `CHANGELOG.md` after delivery.
 - Mark roadmap tasks complete only when the stated result exists and is verified.
+- Retire temporary steering gates after their evidence-backed acceptance
+  conditions are satisfied and reconcile durable decisions into ADRs/
+  architecture where appropriate.
 - When documenting legacy behavior, distinguish observed fact from inferred
   design intent. See `docs/legacy-behavior/_template.md`.
 
@@ -264,5 +305,7 @@ Open a GitHub issue describing:
 - Actual behavior.
 - Relevant game seed and replay log if available.
 
-If you have a reproducible replay, attach it. The replay log format makes
-defects much easier to isolate and verify.
+If you have a reproducible replay, attach it. For replay-related defects, also
+record the replay wire/schema version and any available gameplay/ruleset/RNG
+semantics identity so a cross-version mismatch is not mistaken for current-
+semantics nondeterminism.

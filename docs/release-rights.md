@@ -5,6 +5,9 @@ source tree and static bundle. It is evidence tracking, not a legal opinion or
 a grant of rights. `scripts/check-release-rights.sh` validates the machine-
 checkable fields and rejects excluded material from an available bundle.
 
+For the current provenance review priorities, also see
+[`docs/steering/current-priorities.md`](steering/current-priorities.md).
+
 ## Machine inventory
 
 ```text
@@ -43,6 +46,19 @@ license: dependency metadata scope; no blanket redistribution clearance
 source_path: Cargo.lock and package metadata
 ```
 
+## Review-only provenance gap: legacy-derived creative text
+
+The machine inventory above remains unchanged so the existing automated rights
+check keeps its current contract. Separately, legacy-derived names,
+descriptions, flavor text, and other creative expression copied into Rust or
+content definitions require an explicit provenance/redistribution review.
+Treat this question as `INCONCLUSIVE` until the relevant source, license, and
+intended redistribution basis are recorded. Numeric mechanics, identifiers,
+and creative text should not be assumed to share the same rights analysis.
+
+This section records a review requirement only; it is not a legal conclusion
+and does not change the status of the machine-checkable categories above.
+
 ## Boundary decisions
 
 - The bundled graphics are copied from the pinned legacy revision and retain
@@ -52,6 +68,9 @@ source_path: Cargo.lock and package metadata
   capture media are excluded from the static bundle until separate evidence
   supports redistribution. Their presence as reference material in the
   source tree is not a clearance claim.
+- Legacy-derived creative text embedded in project-authored data or Rust
+  definitions is reviewed separately from code mechanics before a release
+  claims its redistribution basis is complete.
 - Generated release manifests continue to declare exactly
   `assets/legacy/drl/graphics/LICENSE` as the bundle rights file. Full artifact
   hashes, service-worker coverage, and optional signatures remain governed by
