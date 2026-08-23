@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.46`
+Current project version: `0.2.47`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -186,6 +186,9 @@ Presentation Boundary
   - Stateful `tools/call` and `resources/read` methods require object params;
     `tools/call.arguments` must be an object when present, with malformed
     envelopes returning `-32602` before session or resource execution.
+  - `game_start` and `game_load_scenario` reject wrong-typed optional integer
+    arguments and dimensions outside the accepted 32-bit range with `-32602`
+    before session mutation; omitted fields retain their existing defaults.
   - A private `Uninitialized → AwaitingInitialized → Ready` phase gate requires
     an identified initialize request followed by `notifications/initialized`
     before tools and resources are available; premature/duplicate transitions

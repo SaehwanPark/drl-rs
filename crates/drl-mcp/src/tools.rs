@@ -90,10 +90,10 @@ pub fn execute_tool(
 ) -> Result<JsonValue, JsonRpcError> {
   match name {
     "game_start" => {
-      let seed = arguments.get("seed").and_then(|v| v.as_u64()).unwrap_or(1);
-      let max_turns = arguments.get("max_turns").and_then(|v| v.as_u64());
-      let width = arguments.get("width").and_then(|v| v.as_u32());
-      let height = arguments.get("height").and_then(|v| v.as_u32());
+      let seed = optional_u64_argument(arguments, "seed")?.unwrap_or(1);
+      let max_turns = optional_u64_argument(arguments, "max_turns")?;
+      let width = optional_u32_argument(arguments, "width")?;
+      let height = optional_u32_argument(arguments, "height")?;
 
       let obs = session
         .start_game(seed, max_turns, width, height)
@@ -123,7 +123,7 @@ pub fn execute_tool(
         .ok_or_else(|| {
           JsonRpcError::new(error_codes::INVALID_PARAMS, "Missing 'ascii_map' parameter")
         })?;
-      let max_turns = arguments.get("max_turns").and_then(|v| v.as_u64());
+      let max_turns = optional_u64_argument(arguments, "max_turns")?;
 
       let obs = session
         .load_scenario(ascii, max_turns)
@@ -287,6 +287,34 @@ fn wrap_mcp_tool_result(content_json: JsonValue) -> JsonValue {
   map.insert("isError".to_string(), JsonValue::Bool(false));
   map.insert("data".to_string(), content_json);
   JsonValue::Object(map)
+}
+
+fn optional_u64_argument(arguments: &JsonValue, name: &str) -> Result<Option<u64>, JsonRpcError> {
+  match arguments.get(name) {
+    None => Ok(None),
+    Some(value) => value.as_u64().map(Some).ok_or_else(|| {
+      JsonRpcError::new(
+        error_codes::INVALID_PARAMS,
+        format!("'{name}' argument must be a non-negative integer"),
+      )
+    }),
+  }
+}
+
+fn optional_u32_argument(arguments: &JsonValue, name: &str) -> Result<Option<u32>, JsonRpcError> {
+  match arguments.get(name) {
+    None => Ok(None),
+    Some(value) => value
+      .as_u64()
+      .and_then(|number| u32::try_from(number).ok())
+      .map(Some)
+      .ok_or_else(|| {
+        JsonRpcError::new(
+          error_codes::INVALID_PARAMS,
+          format!("'{name}' argument must be a non-negative 32-bit integer"),
+        )
+      }),
+  }
 }
 
 fn replay_to_json_value(replay: &ReplayLog) -> JsonValue {

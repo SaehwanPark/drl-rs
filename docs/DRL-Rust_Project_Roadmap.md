@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.46`
+Current project version: `0.2.47`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.46)
+## 3. Current Progress Summary (`VERSION` 0.2.47)
 
 ### Delivered Foundations
 
@@ -88,8 +88,9 @@ verification item uses explicit status semantics:
   `capabilities` and string `clientInfo.name`/`version` fields while retaining
   identified lifecycle gating before discovery, tools, and resources; JSON-RPC
   request IDs now reject non-scalar values before dispatch, and stateful method
-  envelopes reject non-object params/arguments before execution. Full schema
-  validation and external-client compatibility remain open.
+  envelopes reject non-object params/arguments before execution; stateful tool
+  arguments now reject wrong-typed optional integers before mutation. Full
+  schema validation and external-client compatibility remain open.
 - **M9 Content Evidence**: Base, expansion, user-item, being, terrain-cell,
   and special-level evidence slices are delivered without runtime Lua or
   gameplay overclaims.
@@ -514,6 +515,9 @@ Final release readiness, documentation, and static distribution.
 - [x] `tools/call` and `resources/read` reject non-object params, and
   `tools/call.arguments` rejects non-object values with `-32602` before stateful
   execution; full MCP schema compatibility remains open.
+- [x] `game_start` and `game_load_scenario` reject wrong-typed optional integer
+  arguments and dimensions outside the accepted 32-bit range with `-32602`
+  before session mutation; valid defaults remain unchanged.
 - [ ] Complete deterministic headless/MCP agent tooling suite and external
   client compatibility.
 - [ ] Comprehensive public rights inventory and release documentation.
