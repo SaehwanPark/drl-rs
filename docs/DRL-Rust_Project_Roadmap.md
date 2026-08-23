@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.14`
+Current project version: `0.2.15`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.14)
+## 3. Current Progress Summary (`VERSION` 0.2.15)
 
 ### Delivered Foundations
 
@@ -83,8 +83,11 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active Milestone Slice (M12)**: Optional detached release-manifest signing
-  and fail-closed verification are delivered and verified; key governance and
+- **Active Milestone Slice (M10)**: Bootstrap-independent service-worker
+  registration and readiness diagnostics are delivered and verified; real
+  browser offline installation remains open.
+- **M12 Release Hardening**: Optional detached release-manifest signing and
+  fail-closed verification are delivered and verified; key governance and
   production trust-root policy remain open.
 - **Open Audiovisual Parity (M8)**: Exact legacy outline/glow and lighting/LUT
   equations from reference captures, HUD typography, and replacement audio.
@@ -92,8 +95,9 @@ verification item uses explicit status semantics:
   on macOS arm64; pending execution in a controlled Linux x86-64 environment.
 - **Content Breadth & Balance (M9, M11)**: Build-time Lua conversion tooling,
   expanded content tables, and statistical gameplay balance studies.
-- **PWA & Release Hardening (M10, M12, M13)**: Full offline-after-first-load
-  acceptance, signed releases, and 1.0 desktop Chromium deployment.
+- **PWA & Release Hardening (M10, M12, M13)**: Bootstrap-independent offline
+  cache registration and signed releases are delivered; full offline-after-
+  first-load acceptance and 1.0 desktop Chromium deployment remain open.
 
 ---
 
@@ -336,6 +340,9 @@ Implement robust client-side save state and offline browser capabilities.
 - [x] Deterministic transactional replay restore from snapshots.
 - [x] Best-effort browser `localStorage` save/load controls in `drl-web`.
 - [x] Versioned static service-worker caching boundary.
+- [x] Service-worker registration begins during page bootstrap independently of
+  WebGPU startup, with explicit capability, installing, ready, and failure
+  diagnostics.
 - [ ] Full offline-after-first-load PWA lifecycle acceptance.
 - [x] Corruption recovery policy: fail-closed restore, bounded quarantine, and
   playable boot/load when storage cleanup is unavailable.

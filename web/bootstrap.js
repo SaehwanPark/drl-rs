@@ -1,4 +1,5 @@
 import init, { boot, clear_save, dispatch_inventory, load, resize, restart as restart_game, save, set_muted, set_volume, unlock_audio } from "./pkg/drl_web.js";
+import { registerOfflineCache } from "./offline-cache.mjs";
 
 const status = document.querySelector("#game-status");
 const log = document.querySelector("#game-log");
@@ -58,29 +59,7 @@ function queueAudioSetting(setting) {
     });
 }
 
-async function registerOfflineCache() {
-  if (!("serviceWorker" in navigator)) {
-    writeDiagnostic(
-      "Offline cache unavailable",
-      "This browser does not expose service workers for this deployment.",
-      "Gameplay can continue online; no data is sent by this diagnostic."
-    );
-    return " Offline cache unavailable in this browser.";
-  }
-  try {
-    const registration = await navigator.serviceWorker.register("./service-worker.js", { scope: "./" });
-    return registration.active
-      ? " Offline cache ready for the next reload."
-      : " Offline cache installation started for the next reload.";
-  } catch (error) {
-    writeDiagnostic(
-      "Offline cache unavailable",
-      `The service worker could not be registered locally (${error}).`,
-      "Gameplay can continue online; retry after checking the HTTPS deployment."
-    );
-    return ` Offline cache unavailable (${error}).`;
-  }
-}
+const offlineCacheReady = registerOfflineCache(navigator, writeDiagnostic);
 
 start.addEventListener("click", async () => {
   if (started) return;
@@ -104,7 +83,15 @@ start.addEventListener("click", async () => {
     // Keep that message and mirror it to the log instead of assuming success.
     const readyMessage = status.textContent || `Ready (${result}).`;
     log.textContent = readyMessage;
-    writeStatus(`${readyMessage}${await registerOfflineCache()}`);
+    const offlineMessage = await offlineCacheReady;
+    if (offlineMessage.includes("Offline cache unavailable")) {
+      writeDiagnostic(
+        "Offline cache unavailable",
+        offlineMessage.trim(),
+        "Gameplay can continue online; retry after checking the HTTPS deployment.",
+      );
+    }
+    writeStatus(`${readyMessage}${offlineMessage}`);
   } catch (error) {
     writeDiagnostic(
       "Browser graphics unavailable",
