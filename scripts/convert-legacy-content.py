@@ -17,7 +17,7 @@ from pathlib import Path
 
 PINNED_REVISION = "17d9be1204751899b2d69d8d3a2dde247bd0cc5c"
 DEFAULT_LEGACY_REPO = Path(__file__).resolve().parents[1].parent / "doom-the-roughlike-original"
-RECORD_START = re.compile(r'^\s*register_(being|item|cell)\s+"([^"]+)"\s*$')
+RECORD_START = re.compile(r'^\s*register_(being|item|cell|level)\s+"([^"]+)"\s*$')
 SCALAR = re.compile(
     r'^\s*(?P<field>[A-Za-z_]\w*)\s*=\s*'
     r'(?:(?P<double>"(?:\\.|[^"])*")|(?P<single>\'(?:\\.|[^\'])*\')|'
@@ -68,24 +68,85 @@ def scalar_value(match: re.Match[str]) -> object:
     return match.group("bool") == "true"
 
 
-def brace_delta(line: str) -> int:
-    """Count structural braces while ignoring Lua strings and comments."""
+class LuaLexState:
+    def __init__(self) -> None:
+        self.quote: str | None = None
+        self.escaped = False
+        self.long_end: str | None = None
+        self.long_comment_end: str | None = None
+
+
+def record_candidate(line: str, state: LuaLexState) -> str:
+    """Hide long strings/comments before checking record declarations."""
+    if state.long_end is not None:
+        end = line.find(state.long_end)
+        if end < 0:
+            return ""
+        line = line[end + len(state.long_end) :]
+        state.long_end = None
+    if state.long_comment_end is not None:
+        end = line.find(state.long_comment_end)
+        if end < 0:
+            return ""
+        line = line[end + len(state.long_comment_end) :]
+        state.long_comment_end = None
+    stripped = line.lstrip()
+    if stripped.startswith("--"):
+        opener = re.match(r"--\[(=*)\[", stripped)
+        if opener:
+            state.long_comment_end = "]" + opener.group(1) + "]"
+            content = stripped[opener.end() :]
+            end = content.find(state.long_comment_end)
+            if end < 0:
+                return ""
+            line = content[end + len(state.long_comment_end) :]
+            state.long_comment_end = None
+            return line
+        return ""
+    return line
+
+
+def brace_delta(line: str, state: LuaLexState) -> int:
+    """Count braces outside Lua quoted, long-bracket, and comment text."""
     delta = 0
-    quote: str | None = None
-    escaped = False
     index = 0
     while index < len(line):
+        if state.long_end is not None:
+            end = line.find(state.long_end, index)
+            if end < 0:
+                return delta
+            index = end + len(state.long_end)
+            state.long_end = None
+            continue
+        if state.long_comment_end is not None:
+            end = line.find(state.long_comment_end, index)
+            if end < 0:
+                return delta
+            index = end + len(state.long_comment_end)
+            state.long_comment_end = None
+            continue
         char = line[index]
-        if quote is not None:
-            if escaped:
-                escaped = False
+        if state.quote is not None:
+            if state.escaped:
+                state.escaped = False
             elif char == "\\":
-                escaped = True
-            elif char == quote:
-                quote = None
+                state.escaped = True
+            elif char == state.quote:
+                state.quote = None
         elif char in ('"', "'"):
-            quote = char
+            state.quote = char
+        elif char == "[":
+            opener = re.match(r"\[(=*)\[", line[index:])
+            if opener:
+                state.long_end = "]" + opener.group(1) + "]"
+                index += len(opener.group(0))
+                continue
         elif char == "-" and index + 1 < len(line) and line[index + 1] == "-":
+            opener = re.match(r"--\[(=*)\[", line[index:])
+            if opener:
+                state.long_comment_end = "]" + opener.group(1) + "]"
+                index += len(opener.group(0))
+                continue
             break
         elif char == "{":
             delta += 1
@@ -99,14 +160,16 @@ def extract_records(source: str, expected_kind: str) -> list[dict[str, object]]:
     records: list[dict[str, object]] = []
     active: dict[str, object] | None = None
     depth = 0
+    lex_state = LuaLexState()
     for line_number, line in enumerate(source.splitlines(), start=1):
-        start = RECORD_START.match(line)
+        candidate = record_candidate(line, lex_state)
+        start = RECORD_START.match(candidate)
         if start:
-            if active is not None:
-                raise ValueError(f"unterminated record before line {line_number}")
             kind, record_id = start.groups()
             if kind != expected_kind:
                 continue
+            if active is not None:
+                raise ValueError(f"unterminated record before line {line_number}")
             active = {
                 "id": record_id,
                 "fields": {},
@@ -114,10 +177,11 @@ def extract_records(source: str, expected_kind: str) -> list[dict[str, object]]:
                 "line": line_number,
             }
             depth = 0
+            lex_state = LuaLexState()
             continue
         if active is None:
             continue
-        stripped = line.strip()
+        stripped = candidate.strip()
         if depth == 0:
             if stripped.startswith("{"):
                 depth = 1
@@ -134,7 +198,7 @@ def extract_records(source: str, expected_kind: str) -> list[dict[str, object]]:
                     gaps = active["migration_gaps"]
                     assert isinstance(gaps, list)
                     gaps.append({"field": field.group(1), "line": line_number})
-        depth += brace_delta(line)
+        depth += brace_delta(candidate, lex_state)
         if depth == 0:
             records.append(active)
             active = None
@@ -186,7 +250,7 @@ def read_source(args: argparse.Namespace) -> tuple[str, dict[str, str]]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--kind", choices=("being", "item", "cell"), required=True)
+    parser.add_argument("--kind", choices=("being", "item", "cell", "level"), required=True)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--input", type=Path, help="unbound fixture/input file for tests")
     parser.add_argument("--legacy-repo", default=str(DEFAULT_LEGACY_REPO))
@@ -197,6 +261,7 @@ def main() -> int:
         "being": "bin/data/drl/beings.lua",
         "item": "bin/data/drl/items/items.lua",
         "cell": "bin/data/drl/cells.lua",
+        "level": "bin/data/drl/levels/armory.lua",
     }
     if args.source is None:
         args.source = default_sources[args.kind]
