@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.88`
+Current project version: `0.2.89`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -73,9 +73,10 @@ Presentation Boundary
 4. **Atomic Rejection Contract — Active Correction Gate**: A rejected command
    is required to leave the complete simulation state unchanged, including
    world, inventory/equipment, scheduler/turn state, counters, and RNG state.
-   Audit evidence found current mutation-before-error paths, so this is an
-   active correctness target rather than a verified repository-wide property
-   until the generic `Err => before == after` invariant passes. See
+   The ranged-attack path now validates target legality and range before its
+   prepare/commit mutation boundary, with focused equality tests. The
+   repository-wide command invariant remains an active correction target until
+   every command family has equivalent evidence. See
    [`docs/steering/decisions/atomic-command-transactions.md`](docs/steering/decisions/atomic-command-transactions.md).
 
 ---
@@ -489,8 +490,9 @@ target contract but is not reported as already verified:
    state or advance game turns.
 5. **No Runtime Scripting**: No Lua VM or JavaScript gameplay interpreters.
 6. **Atomic Rejection**: Illegal/rejected commands and corrupt saves must fail
-   without partial simulation mutation. Command-wide verification is an active
-   correction gate documented in `docs/steering/`.
+   without partial simulation mutation. Ranged-command rejection is covered by
+   `crates/drl-core/tests/command_atomicity.rs`; command-wide verification is
+   still an active correction gate documented in `docs/steering/`.
 
 ---
 

@@ -18,6 +18,8 @@ replays, and regression testing.
   - `drl-core::validate_current_content()` checks current typed definitions,
     roll coverage, level bounds, and special-level catalog ordering without
     claiming legacy parity or balance targets.
+  - Rejected ranged attacks validate target legality and range before consuming
+    ammo or RNG; focused tests assert exact `Game` state preservation.
   - Fixed-seed cohort reports preserve sample definitions, policy identity,
     aggregate metrics, and per-seed replay evidence for evaluation.
   - Cohort regression math applies explicit win-rate and average-turn
@@ -36,7 +38,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.88`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.89`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:
