@@ -42,6 +42,7 @@ for kind in ("being", "item", "cell", "level"):
   ids = [record["id"] for record in payload["records"]]
   entry = {
     "sources": [source["path"] for source in payload["sources"]],
+    "source_sha256": [source["sha256"] for source in payload["sources"]],
     "record_count": len(ids),
     "required_ids": ids,
   }
@@ -248,6 +249,24 @@ if python3 scripts/check-content-evidence.py --config "$temp_dir/wrong-revision.
   --bundle "cell=$temp_dir/cell.json" \
   --bundle "level=$temp_dir/level.json" >/dev/null 2>&1; then
   printf '%s\n' 'wrong evidence revision must be rejected' >&2
+  exit 1
+fi
+
+python3 - "$temp_dir/config.json" "$temp_dir/wrong-digest.json" <<'PY'
+import json
+import pathlib
+import sys
+
+config = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
+config["bundles"]["being"]["source_sha256"][0] = "0" * 64
+pathlib.Path(sys.argv[2]).write_text(json.dumps(config), encoding="utf-8")
+PY
+if python3 scripts/check-content-evidence.py --config "$temp_dir/wrong-digest.json" \
+  --bundle "being=$temp_dir/being.json" \
+  --bundle "item=$temp_dir/item.json" \
+  --bundle "cell=$temp_dir/cell.json" \
+  --bundle "level=$temp_dir/level.json" >/dev/null 2>&1; then
+  printf '%s\n' 'wrong evidence digest must be rejected' >&2
   exit 1
 fi
 

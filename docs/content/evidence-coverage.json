@@ -6,6 +6,9 @@
       "sources": [
         "bin/data/drl/beings.lua"
       ],
+      "source_sha256": [
+        "092d718dfd8c013b5d6fe691db573e6d121762481ebb5583835a5c267cd09d5c"
+      ],
       "record_count": 38,
       "required_ids": [
         "demon",
@@ -19,6 +22,11 @@
         "bin/data/drl/items/items.lua",
         "bin/data/drl/items/eitems.lua",
         "bin/data/drl/items/uitems.lua"
+      ],
+      "source_sha256": [
+        "555e23f465289de7aaa77e041a50bd837ca05ae6d1c09bfe8755d5917cba6610",
+        "dad160851c32197014948fa5e3c7b2f222a89a3f384ee450185dbf47542b02d9",
+        "c8d7f3526fd7bca122007c0507246df7ba27d78efbb3d2554b6b5941a1b6f2fc"
       ],
       "record_count": 126,
       "required_ids": [
@@ -36,6 +44,9 @@
     "cell": {
       "sources": [
         "bin/data/drl/cells.lua"
+      ],
+      "source_sha256": [
+        "92aaf1fcdcc19b96430580f43fc15098564dad6c4c1f338ca32f9125991fe5ce"
       ],
       "record_count": 26,
       "required_ids": [
@@ -72,6 +83,32 @@
         "bin/data/drl/levels/toxinrefinery.lua",
         "bin/data/drl/levels/vaults.lua",
         "bin/data/drl/levels/wall.lua"
+      ],
+      "source_sha256": [
+        "19672e97cb1c057985be52ca9c40814efcac8eb7ea62fd52589ac872729c092b",
+        "d3265cdbdb430737817fa8c6df227f0cee31555292380b2c462859481282f443",
+        "59c3bb7baa053b0bcb34505639dc8bba046b267ea02b3ac32f949bc566b4b1b1",
+        "69967d6cc2b50fc3142b6443ff798ca4444b8a3c2d01f97ddcc92188bd52b9c0",
+        "41b135fb28c64bdb9a0ae0e8e8d1c8ce17f2c1663f973ad35f7f09eca51765ed",
+        "7f85df254cbecd739c8c48ded74d1afc6873653458cfaaccaae98c1882f5faad",
+        "347664193f88d4c4af39a17b3bc8ce60656af1750efb4da3a0cbe897b7cc8e5a",
+        "2b4a1ab55a9849cd9abefa2152407d408165f122042fbb82451fc36558f34994",
+        "f866200e0f307b2e4d616269997abdeea297abd5c2bc756c1f19182480bc21bf",
+        "1ff072e9b5bb280f5be56132faffd9bc659346b5891ae1f673c91b9d0bdcd5b5",
+        "e5328513c24e69cd2049d8d994b06fa286fb2d6eb79819e1dd7754b88d4e829a",
+        "a2438d2cd5cce66dc526648382bf4238fe442ae075763beba6e9ca444eaa67c3",
+        "4776e591eecbdbc13e14dc02af69664592cbbf74e89528cc7fffb824ac7bc9c5",
+        "b2a4d55beddcf52fc4a8ee6da4811dfb62d35950f1ca6bfad1c5b033318e8a12",
+        "ed032ec9a9754147d972deb3bd1a8c384588c371cdfedf693764f8ec3d33ef15",
+        "bb93315e7a798afcce6989fa5d8f3e1396cecbb9ccd9699308724543fd147eab",
+        "a1970d2026aa1b11d09afb167ae64915795902fc8cc7db26ffcc74657faa00a2",
+        "4ec679fef965f6504cc14ea2859a4aa23d9e60a88f93751a836c5d0b2a001719",
+        "60a963479b9c5f77ec0d4616a42d53c18f6cc2c50fca0c9d8e544ce7eaffd0d6",
+        "51a11aa76c45b75cd9dfa01adffe59ea0fe2016ca02b815e10df4ac7b39d23f9",
+        "565b08aa3d37c591b39f412e8674d2a9606bba210ef6b23d2288f4559eae1c52",
+        "a39b4fc40a35c185d53984a421f438cd17dd613f760ed5d325dc7d2b2884ccdc",
+        "f097bf2db733d0a3651026925d8ef55c32b940c9c0aadf9c4d0c28abde780688",
+        "c4a86760d32d8101221ce40e5b5f1a986e96cfcfb6c4d72e9615bb30acb42b16"
       ],
       "record_count": 26,
       "record_ids": [
