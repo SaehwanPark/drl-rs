@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-import { registerOfflineCache } from "../web/offline-cache.mjs";
+import {
+  offlineRegistrationStatus,
+  registerOfflineCache,
+} from "../web/offline-cache.mjs";
 
 const diagnostics = [];
 const writeDiagnostic = (...message) => diagnostics.push(message);
@@ -22,13 +25,25 @@ const installing = await registerOfflineCache(
   writeDiagnostic,
 );
 assert.equal(installing, " Offline cache installation started for the next reload.");
-assert.deepEqual(registrationCall, ["./service-worker.js", { scope: "./" }]);
+assert.deepEqual(registrationCall, [
+  "./service-worker.js",
+  { scope: "./", updateViaCache: "none" },
+]);
 
 const ready = await registerOfflineCache(
   { serviceWorker: { register: async () => ({ active: true }) } },
   writeDiagnostic,
 );
 assert.equal(ready, " Offline cache ready for the next reload.");
+
+const updateReady = await registerOfflineCache(
+  { serviceWorker: { register: async () => ({ active: true, waiting: {} }) } },
+  writeDiagnostic,
+);
+assert.equal(updateReady, " Offline cache update is ready; reload when convenient.");
+assert.equal(offlineRegistrationStatus({ active: false, waiting: null }), " Offline cache installation started for the next reload.");
+assert.equal(offlineRegistrationStatus({ active: true, waiting: null }), " Offline cache ready for the next reload.");
+assert.equal(offlineRegistrationStatus({ active: false, waiting: {} }), " Offline cache update is ready; reload when convenient.");
 
 const failure = await registerOfflineCache(
   {
@@ -51,4 +66,4 @@ assert.ok(
 assert.match(bootstrap, /await offlineCacheReady/);
 assert.match(bootstrap, /offlineMessage\.includes\("Offline cache unavailable"\)/);
 
-console.log("Offline-cache bootstrap contract: PASS (capability, install, ready, failure, ordering)");
+console.log("Offline-cache bootstrap contract: PASS (capability, install, ready, update, failure, ordering)");

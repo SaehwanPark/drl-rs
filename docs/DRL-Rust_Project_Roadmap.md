@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.35`
+Current project version: `0.2.36`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.35)
+## 3. Current Progress Summary (`VERSION` 0.2.36)
 
 ### Delivered Foundations
 
@@ -110,9 +110,10 @@ verification item uses explicit status semantics:
 - **Content Breadth & Balance (M9, M11)**: Full typed migration, expanded
   content tables, and canonical difficulty target studies.
 - **PWA & Release Hardening (M10, M12, M13)**: Bootstrap-independent offline
-  cache registration, current-cache-only reads, and signed releases are
-  delivered; full offline-after-first-load acceptance and 1.0 desktop
-  Chromium deployment remain open.
+  cache registration, no-HTTP-cache worker update checks, waiting-update
+  status, current-cache-only reads, and signed releases are delivered; full
+  offline-after-first-load acceptance and 1.0 desktop Chromium deployment
+  remain open.
 
 ---
 
@@ -383,6 +384,8 @@ Implement robust client-side save state and offline browser capabilities.
 - [x] Service-worker registration begins during page bootstrap independently of
   WebGPU startup, with explicit capability, installing, ready, and failure
   diagnostics.
+- [x] Registration bypasses browser HTTP caching for worker updates and reports
+  waiting updates without forcing active-client takeover.
 - [x] Service-worker navigation and asset reads are isolated to the current
   generated release cache; stale/unrelated cache namespaces fail closed.
 - [ ] Full offline-after-first-load PWA lifecycle acceptance.
