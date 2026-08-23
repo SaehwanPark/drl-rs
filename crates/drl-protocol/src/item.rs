@@ -75,6 +75,9 @@ pub enum ItemArchetype {
   Shotgun,
   DoubleShotgun,
   CombatShotgun,
+  Blaster,
+  LaserRifle,
+  MissileLauncher,
   Chaingun,
   RocketLauncher,
   PlasmaRifle,
@@ -105,6 +108,9 @@ impl fmt::Display for ItemArchetype {
       Self::Shotgun => "shotgun",
       Self::DoubleShotgun => "double_shotgun",
       Self::CombatShotgun => "combat_shotgun",
+      Self::Blaster => "blaster",
+      Self::LaserRifle => "laser_rifle",
+      Self::MissileLauncher => "missile_launcher",
       Self::Chaingun => "chaingun",
       Self::RocketLauncher => "rocket_launcher",
       Self::PlasmaRifle => "plasma_rifle",
@@ -194,6 +200,12 @@ mod tests {
     );
     assert_eq!(ItemArchetype::BlueArmor.to_string(), "blue_armor");
     assert_eq!(ItemArchetype::RedArmor.to_string(), "red_armor");
+    assert_eq!(ItemArchetype::Blaster.to_string(), "blaster");
+    assert_eq!(ItemArchetype::LaserRifle.to_string(), "laser_rifle");
+    assert_eq!(
+      ItemArchetype::MissileLauncher.to_string(),
+      "missile_launcher"
+    );
     assert_eq!(ItemArchetype::PlasmaRifle.to_string(), "plasma_rifle");
     assert_eq!(ItemArchetype::RocketLauncher.to_string(), "rocket_launcher");
   }

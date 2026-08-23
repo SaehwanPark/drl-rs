@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.77`
+Current project version: `0.2.78`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.77)
+## 3. Current Progress Summary (`VERSION` 0.2.78)
 
 ### Delivered Foundations
 
@@ -77,7 +77,8 @@ verification item uses explicit status semantics:
 - **Typed Content & Persistence (M9, M10)**: Rust-owned definitions for current
   monsters, items, tiles, and levels, including pinned rocket, power-cell, and
   blue/red-armor families, pinned med-pack descriptions, and a typed plasma
-  rifle, rocket launcher, chaingun, chainsaw, BFG 9000, and shotgun variants;
+  rifle, rocket launcher, chaingun, chainsaw, BFG 9000, shotgun variants, and
+  exotic Blaster/Laser Rifle/Missile Launcher variants;
   versioned
   fixed-session snapshot codec with localStorage
   persistence, bounded rejected-save quarantine, and static service-worker
@@ -493,6 +494,10 @@ scripting.
 - [x] Typed double/combat shotguns preserve pinned shell relation, clips,
   damage/range scalars, descriptions, replay kinds, and `SPRITE_DSHOTGUN`/
   `SPRITE_CSHOTGUN` slots; callbacks and spread/falloff remain open.
+- [x] Typed `ublaster`, `ulaser`, and `umbazooka` preserve pinned exotic
+  descriptions, ammo relations, clip/damage scalars, replay kinds, and
+  measured reuse of pistol/plasma/bazooka atlas slots; recharge, chainfire,
+  rocket-jump, and explosion callbacks remain open.
 - [ ] Full migration of legacy monsters, weapons, armor, mods, and consumable
   items.
 - [ ] Full migration of special levels, vaults, and dungeon branches.

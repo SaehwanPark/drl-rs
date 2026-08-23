@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.77`
+Current project version: `0.2.78`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -94,8 +94,9 @@ Presentation Boundary
     Rocket and power-cell ammo families, their typed pack boundaries, and blue
     and red armor are definition-backed spawns; pinned pickup amounts are immutable
     definition metadata, while replay/scenario counts remain caller-owned.
-    Chainsaw is a typed melee weapon; double/combat shotguns, BFG 9000,
-    Chaingun, Plasma Rifle, and Rocket Launcher are typed ammo weapons with
+    Chainsaw is a typed melee weapon; double/combat shotguns, Blaster, Laser
+    Rifle, Missile Launcher, BFG 9000, Chaingun, Plasma Rifle, and Rocket
+    Launcher are typed ammo weapons with
     pinned clip and damage ranges;
     current range, accuracy, and timing are Rust policy.
     Blue and red armor preserve protection, descriptions, the shared sprite
