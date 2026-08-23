@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.81]
+
+- Added typed `RevenantsLauncher`, `Railgun`, and `AcidSpitter` families from
+  pinned special-projectile records, preserving descriptions, ammo relations,
+  clips, damage/range scalars, replay JSON kinds, and measured atlas slots.
+  Homing, piercing, acid-map, explosion, and timing callbacks remain open.
+
 ## [0.2.80]
 
 - Added typed `MegaBuster`, `GrammatonBeretta`, and `FragShotgun` families

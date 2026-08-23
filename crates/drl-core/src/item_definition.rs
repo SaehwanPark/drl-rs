@@ -284,6 +284,57 @@ const FRAG_SHOTGUN: ItemDefinition = ItemDefinition {
   },
 };
 
+const REVENANTS_LAUNCHER: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::RevenantsLauncher,
+  name: "Revenant's Launcher",
+  description: "Two can play the homing missile game.",
+  kind: ItemDefinitionKind::Weapon {
+    is_ranged: true,
+    ammo_type: Some(AmmoType::Rocket),
+    clip_capacity: 1,
+    damage: (7, 42),
+    range: 8,
+    accuracy: 75,
+    knockback: 0,
+    fire_cost: ActionCost::RANGED_ATTACK,
+    reload_cost: ActionCost::STANDARD,
+  },
+};
+
+const RAILGUN: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::Railgun,
+  name: "Railgun",
+  description: "Groovy! Wait 'til they stand in a row, and watch them being impaled.",
+  kind: ItemDefinitionKind::Weapon {
+    is_ranged: true,
+    ammo_type: Some(AmmoType::Cell),
+    clip_capacity: 40,
+    damage: (8, 64),
+    range: 15,
+    accuracy: 90,
+    knockback: 0,
+    fire_cost: ActionCost::RANGED_ATTACK,
+    reload_cost: ActionCost::STANDARD,
+  },
+};
+
+const ACID_SPITTER: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::AcidSpitter,
+  name: "Acid Spitter",
+  description: "Woah, looks cool, but how do I reload it?",
+  kind: ItemDefinitionKind::Weapon {
+    is_ranged: true,
+    ammo_type: Some(AmmoType::Rocket),
+    clip_capacity: 10,
+    damage: (10, 100),
+    range: 15,
+    accuracy: 70,
+    knockback: 0,
+    fire_cost: ActionCost::RANGED_ATTACK,
+    reload_cost: ActionCost::STANDARD,
+  },
+};
+
 const CHAINGUN: ItemDefinition = ItemDefinition {
   archetype: ItemArchetype::Chaingun,
   name: "Chaingun",
@@ -545,6 +596,9 @@ pub const fn definition_for_spawn_kind(kind: ItemSpawnKind) -> &'static ItemDefi
     ItemSpawnKind::MegaBuster => &MEGA_BUSTER,
     ItemSpawnKind::GrammatonBeretta => &GRAMMATON_BERETTA,
     ItemSpawnKind::FragShotgun => &FRAG_SHOTGUN,
+    ItemSpawnKind::RevenantsLauncher => &REVENANTS_LAUNCHER,
+    ItemSpawnKind::Railgun => &RAILGUN,
+    ItemSpawnKind::AcidSpitter => &ACID_SPITTER,
     ItemSpawnKind::Chaingun => &CHAINGUN,
     ItemSpawnKind::PlasmaRifle => &PLASMA_RIFLE,
     ItemSpawnKind::RocketLauncher => &ROCKET_LAUNCHER,
@@ -623,6 +677,17 @@ mod tests {
         ItemSpawnKind::FragShotgun,
         ItemArchetype::FragShotgun,
         "Frag Shotgun",
+      ),
+      (
+        ItemSpawnKind::RevenantsLauncher,
+        ItemArchetype::RevenantsLauncher,
+        "Revenant's Launcher",
+      ),
+      (ItemSpawnKind::Railgun, ItemArchetype::Railgun, "Railgun"),
+      (
+        ItemSpawnKind::AcidSpitter,
+        ItemArchetype::AcidSpitter,
+        "Acid Spitter",
       ),
       (ItemSpawnKind::Chaingun, ItemArchetype::Chaingun, "Chaingun"),
       (
@@ -909,6 +974,48 @@ mod tests {
         range: 15,
         accuracy: 65,
         knockback: 1,
+        fire_cost: ActionCost::RANGED_ATTACK,
+        reload_cost: ActionCost::STANDARD,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::RevenantsLauncher).kind,
+      ItemDefinitionKind::Weapon {
+        is_ranged: true,
+        ammo_type: Some(AmmoType::Rocket),
+        clip_capacity: 1,
+        damage: (7, 42),
+        range: 8,
+        accuracy: 75,
+        knockback: 0,
+        fire_cost: ActionCost::RANGED_ATTACK,
+        reload_cost: ActionCost::STANDARD,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::Railgun).kind,
+      ItemDefinitionKind::Weapon {
+        is_ranged: true,
+        ammo_type: Some(AmmoType::Cell),
+        clip_capacity: 40,
+        damage: (8, 64),
+        range: 15,
+        accuracy: 90,
+        knockback: 0,
+        fire_cost: ActionCost::RANGED_ATTACK,
+        reload_cost: ActionCost::STANDARD,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::AcidSpitter).kind,
+      ItemDefinitionKind::Weapon {
+        is_ranged: true,
+        ammo_type: Some(AmmoType::Rocket),
+        clip_capacity: 10,
+        damage: (10, 100),
+        range: 15,
+        accuracy: 70,
+        knockback: 0,
         fire_cost: ActionCost::RANGED_ATTACK,
         reload_cost: ActionCost::STANDARD,
       }
