@@ -45,9 +45,9 @@ for kind in ("being", "item", "cell", "level"):
     "source_sha256": [source["sha256"] for source in payload["sources"]],
     "record_count": len(ids),
     "required_ids": ids,
+    "record_ids": ids,
   }
   if kind == "level":
-    entry["record_ids"] = ids
     level_records = payload["records"]
   bundles[kind] = entry
 (root / "config.json").write_text(
@@ -179,6 +179,24 @@ check_catalog_rejected 'Rust special-level name drift' "$temp_dir/catalog-name.r
 check_catalog_rejected 'Rust special-level depth drift' "$temp_dir/catalog-depth.rs"
 check_catalog_rejected 'Rust special-level entry gap drift' "$temp_dir/catalog-entry-gap.rs"
 check_catalog_rejected 'Rust special-level welcome gap drift' "$temp_dir/catalog-welcome-gap.rs"
+
+python3 - "$temp_dir/config.json" "$temp_dir/wrong-record-catalog.json" <<'PY'
+import json
+import pathlib
+import sys
+
+config = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
+config["bundles"]["being"]["record_ids"][0] = "drifted-record"
+pathlib.Path(sys.argv[2]).write_text(json.dumps(config), encoding="utf-8")
+PY
+if python3 scripts/check-content-evidence.py --config "$temp_dir/wrong-record-catalog.json" \
+  --bundle "being=$temp_dir/being.json" \
+  --bundle "item=$temp_dir/item.json" \
+  --bundle "cell=$temp_dir/cell.json" \
+  --bundle "level=$temp_dir/level.json" >/dev/null 2>&1; then
+  printf '%s\n' 'wrong evidence record catalog must be rejected' >&2
+  exit 1
+fi
 
 python3 - "$temp_dir/being.json" "$temp_dir/duplicate.json" <<'PY'
 import json

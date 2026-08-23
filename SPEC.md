@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.31`
+Current project version: `0.2.32`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -29,8 +29,8 @@ criteria, and verification boundaries.
 
 Validate the existing pinned legacy-content converters with a reviewed
 crosswalk. The gate checks source provenance, exact SHA-256 digests,
-deterministic ordering/uniqueness, representative being/item/cell IDs, and
-complete coverage of all 26 indexed special-level IDs. It also synchronizes
+deterministic ordering/uniqueness, complete being/item/cell record ID catalogs,
+and complete coverage of all 26 indexed special-level IDs. It also synchronizes
 those IDs with the Rust descriptive catalog, including names, optional depths,
 entry strings, and welcome strings. It records evidence coverage only; it does
 not import runtime Lua behavior or assert gameplay parity.
@@ -54,9 +54,9 @@ not import runtime Lua behavior or assert gameplay parity.
   revision and an exact reviewed 64-character SHA-256 digest.
 - [x] **Deterministic record validation**: Bundles are sorted and duplicate-free;
   source indices remain within the declared provenance list.
-- [x] **Representative coverage**: Being, item-family, and terrain-cell bundles
-  cover the reviewed current representatives; the level bundle matches all 26
-  indexed special-level IDs.
+- [x] **Record catalog coverage**: Being, item-family, and terrain-cell bundles
+  match their complete reviewed record ID catalogs; the level bundle matches
+  all 26 indexed special-level IDs.
 - [x] **Rust catalog synchronization**: The reviewed level IDs match the
   `SPECIAL_LEVEL_DEFINITIONS` source IDs exactly.
 - [x] **Scalar synchronization**: Each Rust special-level name, optional
@@ -91,7 +91,7 @@ not import runtime Lua behavior or assert gameplay parity.
 
 ## 3. Recent Delivered Slices
 
-### M9 — Representative Content-Evidence Coverage (`VERSION` 0.2.31)
+### M9 — Representative Content-Evidence Coverage (`VERSION` 0.2.32)
 
 - [x] Added a reviewed crosswalk and validator for pinned being, item-family,
   terrain-cell, and special-level evidence bundles.
@@ -103,6 +103,8 @@ not import runtime Lua behavior or assert gameplay parity.
   records without importing maps, callbacks, or level behavior.
 - [x] Locked every reviewed source to its exact pinned SHA-256 digest and added
   wrong-digest rejection coverage.
+- [x] Pinned complete being, item-family, and terrain-cell record ID catalogs
+  and added converter-output catalog drift rejection coverage.
 - [ ] Full typed migration, assets, callbacks, and gameplay parity remain open.
 
 ### M10 — Same-Release Offline-Cache Isolation (`VERSION` 0.2.27)
@@ -349,7 +351,7 @@ not import runtime Lua behavior or assert gameplay parity.
 
 ## 6. Verification Gates
 
-### Verified Baseline (`VERSION` 0.2.31)
+### Verified Baseline (`VERSION` 0.2.32)
 
 75888b4 feat(content): lock pinned evidence source digests (#122)
 6aade20 feat(content): synchronize special-level scalar evidence (#121)
