@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.20`
+Current project version: `0.2.21`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,52 +23,61 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M11 Cohort Policy Matrix
+## 2. Active Implementation Slice: M9 Item-Family Evidence Bundle
 
 ### 2.1 Scope & Objective
 
-Add a bounded deterministic matrix mode to the descriptive cohort-study CLI.
-`drl-rust cohort --bot all` runs the existing greedy, random, and explorer
-policies over the same declared seed/episode/turn configuration and emits
-stable prefixed fields for each policy. It does not infer balance, difficulty,
-statistical significance, or canonical target performance.
+Add a build-time multi-source evidence bundle for legacy item families. The
+bundle reuses the shallow converter across base, expansion, and user-item Lua
+files, preserves per-source path/revision/SHA-256 provenance, sorts records by
+ID, rejects duplicate IDs, and retains nested/callback/symbolic values as
+explicit gaps. It does not import legacy Lua or alter Rust item definitions.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
-1. **Single-policy cohort CLI (v0.2.16)**:
-   - Greedy, random, and explorer reports already validate telemetry and emit
-     deterministic descriptive line-oriented fields.
-2. **Evaluation boundary (M11)**:
-   - Cohorts remain fixed-seed, observation-free, and integrity-checked; output
-     is evidence for later study, not a balance conclusion.
+1. **Being/item/cell evidence (v0.2.19)**:
+   - The shallow converter handles scalar records, provenance, deterministic
+     ordering, explicit gaps, and simple Lua lexical boundaries.
+2. **Build-time boundary (ADR 0008)**:
+   - Legacy files remain pinned research inputs; the browser ships no Lua VM or
+     legacy object model, and unknown behavior remains an explicit gap.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Matrix selection**: Accept `--bot all` alongside the three existing
-  single-policy selections.
-- [x] **Stable matrix output**: Emit schema, declared policy order, count, and
-  prefixed per-policy report fields in deterministic order.
-- [x] **Shared configuration**: Run every policy with the same seed range,
-  episode count, and maximum-turn budget; validate each report before output.
-- [x] **Repeatability coverage**: Repeat a bounded matrix and require
-  byte-identical output in native and repository contract tests.
-- [ ] **Difficulty targets**: Canonical target metrics and statistical study
-  interpretation remain open.
+- [x] **Multi-source input**: Bundle the default base, expansion, and user-item
+  sources, or accept repeatable fixture inputs for contract tests.
+- [x] **Per-source provenance**: Retain each source path, revision, and SHA-256
+  while attaching a source index to every record.
+- [x] **Deterministic merge**: Sort all records by ID and reject duplicate IDs
+  before writing output.
+- [x] **Fixture and pinned coverage**: Verify 3 fixture records and 126 pinned
+  item-family records without a Lua runtime.
+- [ ] **Full item migration**: Expand typed definitions, behavior, assets, and
+  fairness validation for all legacy item families.
 
 ### 2.4 Pure Contract
 
-- **Input**: Seed, episode count, maximum turns, and `greedy`, `random`,
-  `explorer`, or `all` policy selection.
-- **Output**: Stable line-oriented fields; matrix mode prefixes each validated
-  single-policy report with its deterministic matrix index.
+- **Input**: A record kind and repeatable pinned Lua source paths, or explicit
+  fixture inputs.
+- **Output**: JSON with schema version, a source-provenance list, sorted records,
+  and explicit migration-gap entries.
 - **Ownership Boundary**:
-  - `drl-core` owns deterministic cohort execution and integrity validation.
-  - `drl-app` owns argument parsing, policy ordering, and stable formatting.
-  - The CLI emits no hidden observations or statistical interpretation.
+  - `scripts/convert-legacy-content.py` owns single-source extraction.
+  - `scripts/convert-legacy-content-bundle.py` owns deterministic merge and
+    per-source attribution only.
+  - The browser bundle receives no Lua source, interpreter, or legacy object
+    model.
 
 ---
 
 ## 3. Recent Delivered Slices
+
+### M9 — Item-Family Evidence Bundle (`VERSION` 0.2.21)
+
+- [x] Added multi-source base/expansion/user-item evidence bundling.
+- [x] Added source provenance, source indices, sorted merge, duplicate rejection,
+  and fixture/pinned coverage.
+- [ ] Full typed item-family migration and behavior validation remain open.
 
 ### M11 — Cohort Policy Matrix (`VERSION` 0.2.20)
 
@@ -263,8 +272,9 @@ statistical significance, or canonical target performance.
 
 ## 6. Verification Gates
 
-### Verified Baseline (`VERSION` 0.2.20)
+### Verified Baseline (`VERSION` 0.2.21)
 
+34a9578 feat(eval): add deterministic cohort policy matrix (#111)
 8486e15 feat(content): add pinned terrain cell evidence conversion (#110)
 2a5e149 ci(release): smoke-test ephemeral manifest signing (#109)
 3cfe62e feat(content): add pinned legacy content evidence converter (#108)

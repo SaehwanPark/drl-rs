@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.21]
+
+- Added a multi-source legacy item-family evidence bundle covering base,
+  expansion, and user-item Lua files with per-source provenance and sorted
+  records.
+- Duplicate IDs fail closed; nested callbacks/tables and symbolic fields stay
+  explicit migration gaps.
+
 ## [0.2.20]
 
 - Added `drl-rust cohort --bot all`, a deterministic matrix report covering
