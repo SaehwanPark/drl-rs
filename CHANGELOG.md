@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.39]
+
+- Added a pure `drl-core` content-invariant validator covering current monster,
+  item, roll-bound, procedural-level, and descriptive special-level tables.
+- Added focused rejection tests for malformed ranges, weapon shapes, roll
+  coverage, and level bounds; legacy parity and fairness claims remain open.
+
 ## [0.2.38]
 
 - Hardened detached release signing to reject private keys inside `dist`,

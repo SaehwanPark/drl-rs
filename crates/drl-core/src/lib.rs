@@ -10,6 +10,7 @@ pub mod agent;
 pub mod ai;
 pub mod batch;
 pub mod combat;
+pub mod content_validation;
 pub mod fov;
 pub mod game;
 pub mod generator;
@@ -37,6 +38,7 @@ pub use batch::{
   CohortReportError, CohortTolerances, EpisodeRecord,
 };
 pub use combat::CombatResolver;
+pub use content_validation::{ContentValidationError, validate_current_content};
 pub use fov::{DEFAULT_VISION_RADIUS, compute_fov, has_line_of_sight, line_points};
 pub use game::{Game, GameState};
 pub use generator::{GeneratedLevel, LevelGenerator, LevelGeneratorConfig, MonsterSpawn, Room};

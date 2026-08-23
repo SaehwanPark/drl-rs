@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.38`
+Current project version: `0.2.39`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,50 +23,57 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M12 Signing-Key Boundary Hygiene
+## 2. Active Implementation Slice: M9 Rust-Owned Content Invariant Validation
 
 ### 2.1 Scope & Objective
 
-Make the optional detached-release signing boundary reject unsafe private-key
-inputs before OpenSSL runs. Keys inside the generated `dist` tree, symlinks,
-and group/world-readable files are rejected; valid externally supplied keys
-continue to sign the manifest. This is local key-handling hygiene, not a
-production custody, rotation, or trust-root implementation.
+Validate the internal shape of the current Rust-owned monster, item, loot,
+level, and descriptive special-level tables before they are treated as valid
+content. This is a structural invariant gate, not a legacy-balance, fairness,
+or content-parity claim.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
-1. **Detached signing path (v0.2.14–v0.2.18)**:
-   - Release manifests can be signed with an externally supplied OpenSSL key,
-     and hosted CI exercises an ephemeral runner-local key.
-2. **Manifest verification boundary**:
-   - The verifier already checks detached signatures and keeps private keys
-     outside generated artifacts; this slice adds input hygiene before signing.
+1. **Typed content definitions**:
+   - Current monster, item, roll-bound, level, and descriptive special-level
+     definitions are immutable Rust-owned tables.
+2. **Evidence boundary**:
+   - Legacy Lua remains build-time evidence only; this slice checks current
+     Rust invariants without importing dynamic legacy behavior or target values.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Path boundary**: A signing key inside `dist` or a symlink is rejected
-  before any signature artifact is written.
-- [x] **Permission boundary**: Group/world-readable private keys are rejected;
-  owner-readable keys remain accepted.
-- [x] **Focused tests**: Release-signing fixtures cover valid signing and each
-  unsafe-key rejection without weakening mutation or detached verification.
-- [x] **No expansion of claims**: Production custody, secret provisioning,
-  rotation, trust roots, and hosted secret policy remain open.
+- [x] **Definition fields**: Current monster and item definitions reject empty,
+  non-positive, reversed, or incompatible scalar fields.
+- [x] **Roll coverage**: Monster and loot tables require strictly increasing
+  bounds ending at 100, and each emitted kind resolves to a current definition.
+- [x] **Level/catalog shape**: Procedural-level dimensions and room bounds are
+  positive and ordered; special-level metadata stays sorted and unique.
+- [x] **No expansion of claims**: Legacy parity, fairness targets, and full
+  dynamic content migration remain open.
 
 ### 2.4 Pure Contract
 
-- **Input**: An externally supplied private-key path and generated release
-  directory.
-- **Output**: Signing proceeds only for a regular, non-symlink, owner-readable
-  key outside the generated release tree.
+- **Input**: Immutable current Rust-owned content definitions.
+- **Output**: `validate_current_content()` returns `Ok(())` or a typed
+  structural diagnostic.
 - **Ownership Boundary**:
-  - `scripts/sign-release-manifest.sh` owns key-input validation and signing.
-  - `scripts/test-release-signing.sh` owns deterministic rejection fixtures.
-  - No simulation, browser, telemetry, or gameplay changes.
+  - `drl-core::content_validation` owns structural checks and diagnostics.
+  - Existing content tables remain the single source of gameplay values.
+  - No legacy runtime, browser, telemetry, or balance policy is introduced.
 
 ---
 
 ## 3. Recent Delivered Slices
+
+### M9 — Rust-Owned Content Invariant Validation (`VERSION` 0.2.39)
+
+- [x] Added a pure validator for current monster, item, loot, level, and
+  descriptive special-level table invariants.
+- [x] Focused negative tests reject invalid damage ranges, weapon shape,
+  roll-bound coverage, and level dimensions/room bounds.
+- [ ] Legacy parity, fairness targets, and full dynamic content migration
+  remain open.
 
 ### M12 — Signing-Key Boundary Hygiene (`VERSION` 0.2.38)
 
@@ -367,7 +374,7 @@ production custody, rotation, or trust-root implementation.
 
 ## 6. Verification Gates
 
-### Verified Baseline (`VERSION` 0.2.38)
+### Verified Baseline (`VERSION` 0.2.39)
 
 fbd7eee feat(release): harden signing key inputs (#129)
 a127868 test(mcp): cover stdio lifecycle (#128)
