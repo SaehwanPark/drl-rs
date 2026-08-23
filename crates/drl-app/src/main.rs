@@ -295,7 +295,7 @@ fn run_mcp_interface_demo() {
   let mut server = McpServer::new();
 
   // 1. Initialize
-  let init_req = r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}"#;
+  let init_req = r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"drl-demo","version":"1"}}}"#;
   let init_resp = server.handle_request(init_req);
   println!("MCP Initialize Response: {init_resp}");
 

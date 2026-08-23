@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.42]
+
+- Added version-aware MCP `initialize` negotiation: supported
+  `2024-11-05` is echoed, unsupported strings receive a deterministic supported
+  fallback, and missing/non-string versions return JSON-RPC `-32602`.
+- Updated the real stdio lifecycle fixture and examples while keeping full MCP
+  lifecycle enforcement, external-client compatibility, and production
+  deployment open.
+
 ## [0.2.41]
 
 - Added deterministic JSON-RPC batch responses over stdio, preserving request

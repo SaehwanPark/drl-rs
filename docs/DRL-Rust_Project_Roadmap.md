@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.41`
+Current project version: `0.2.42`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.41)
+## 3. Current Progress Summary (`VERSION` 0.2.42)
 
 ### Delivered Foundations
 
@@ -84,11 +84,10 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active Milestone Slice (M9)**: Current Rust-owned content now has a pure
-  structural invariant gate alongside the reviewed evidence-coverage gate.
-  Pinned provenance, complete record catalogs, scalar-only fields, exact
-  source digests, roll coverage, level bounds, and special-level ordering are
-  checked without importing runtime Lua or asserting gameplay parity.
+- **Active Milestone Slice (M13)**: MCP `initialize` now validates the required
+  protocol-version string, echoes the supported `2024-11-05` version, and
+  returns that version as a deterministic fallback for unsupported strings.
+  Full lifecycle enforcement and external-client compatibility remain open.
 - **M9 Content Evidence**: Base, expansion, user-item, being, terrain-cell,
   and special-level evidence slices are delivered without runtime Lua or
   gameplay overclaims.
@@ -96,9 +95,10 @@ verification item uses explicit status semantics:
   matrix plus descriptive depth distributions; canonical difficulty targets
   remain open.
 - **M13 Tooling**: The actual `drl-app --mcp` stdio transport now has a fixed,
-  repeatable JSON-RPC lifecycle contract with notification side effects,
-  ordered batch responses, explicit null-ID responses, and malformed-input
-  errors; full external-client compatibility remains open.
+  repeatable JSON-RPC contract with version-aware initialize negotiation,
+  notification side effects, ordered batch responses, explicit null-ID
+  responses, and malformed-input errors; full external-client compatibility
+  remains open.
 - **M12 Accessibility**: Static and native contracts cover generated names,
   escaping, live-channel boundaries, help association, focus styling, and
   diagnostic recovery; startup now classifies insecure contexts and missing
@@ -496,6 +496,9 @@ Final release readiness, documentation, and static distribution.
   explicit null-ID, and malformed requests retain response contracts.
 - [x] Nonempty stdio batch arrays preserve response order, omit notification
   members, and reject empty batches deterministically.
+- [x] `initialize` echoes supported `2024-11-05`, falls back deterministically
+  for unsupported strings, and rejects missing/non-string versions with
+  `-32602`; full lifecycle and external-client compatibility remain open.
 - [ ] Complete deterministic headless/MCP agent tooling suite and external
   client compatibility.
 - [ ] Comprehensive public rights inventory and release documentation.

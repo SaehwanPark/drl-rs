@@ -26,6 +26,10 @@ fn test_jsonrpc_initialize_handshake() {
   assert_eq!(resp.get("id").and_then(|v| v.as_u64()), Some(1));
 
   let result = resp.get("result").expect("Initialize result present");
+  assert_eq!(
+    result.get("protocolVersion").and_then(|v| v.as_str()),
+    Some("2024-11-05")
+  );
   let server_info = result.get("serverInfo").expect("serverInfo present");
   assert_eq!(
     server_info.get("name").and_then(|v| v.as_str()),
@@ -35,6 +39,41 @@ fn test_jsonrpc_initialize_handshake() {
   let caps = result.get("capabilities").expect("capabilities present");
   assert!(caps.get("tools").is_some());
   assert!(caps.get("resources").is_some());
+}
+
+#[test]
+fn test_jsonrpc_initialize_falls_back_for_unsupported_version() {
+  let mut server = McpServer::new();
+  let request =
+    r#"{"jsonrpc":"2.0","id":7,"method":"initialize","params":{"protocolVersion":"2099-01-01"}}"#;
+  let response = JsonValue::parse(&server.handle_request(request)).unwrap();
+
+  assert_eq!(
+    response
+      .get("result")
+      .and_then(|result| result.get("protocolVersion"))
+      .and_then(|version| version.as_str()),
+    Some("2024-11-05")
+  );
+}
+
+#[test]
+fn test_jsonrpc_initialize_requires_protocol_version_string() {
+  let mut server = McpServer::new();
+  for request in [
+    r#"{"jsonrpc":"2.0","id":8,"method":"initialize"}"#,
+    r#"{"jsonrpc":"2.0","id":9,"method":"initialize","params":{}}"#,
+    r#"{"jsonrpc":"2.0","id":10,"method":"initialize","params":{"protocolVersion":null}}"#,
+  ] {
+    let response = JsonValue::parse(&server.handle_request(request)).unwrap();
+    assert_eq!(
+      response
+        .get("error")
+        .and_then(|error| error.get("code"))
+        .and_then(|code| code.as_i64()),
+      Some(error_codes::INVALID_PARAMS as i64)
+    );
+  }
 }
 
 #[test]

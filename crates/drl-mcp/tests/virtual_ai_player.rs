@@ -8,7 +8,8 @@ fn test_virtual_ai_agent_playing_scenario_via_mcp() {
   let mut server = McpServer::new();
 
   // 1. Handshake
-  let init_req = r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}"#;
+  let init_req =
+    r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05"}}"#;
   let init_res = server.handle_request(init_req);
   assert!(init_res.contains("\"name\":\"drl-mcp\""));
 
