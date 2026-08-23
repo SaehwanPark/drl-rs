@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.53`
+Current project version: `0.2.54`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.53)
+## 3. Current Progress Summary (`VERSION` 0.2.54)
 
 ### Delivered Foundations
 
@@ -84,11 +84,19 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active Milestone Slice (M13)**: The public release-rights inventory and
-  source/optional-bundle gate now make the pinned CC BY-SA 4.0 graphics import,
-  excluded legacy code/audio/music/fonts/WADs, and unavailable capture/media
-  evidence explicit without claiming legal clearance. The preceding MCP
-  `tools/list` conditional `allOf`/`if`/`then` branches for move/melee
+- **Active Milestone Slice (M13)**: The MCP legal-action catalog now advertises
+  supported `unequip` and explicit adjacent `attack_melee` commands, and a
+  pre-dispatch gate rejects recognized commands not currently advertised with
+  existing `-32001` before `Game::step`. Unknown/malformed action inputs remain
+  `-32602`; the core remains authoritative for geometry, LOS, range, and other
+  rules that fair observations cannot prove. Rejected commands leave turn,
+  metrics, recent events, replay, and observation unchanged; full legal-action
+  enumeration and external-client compatibility remain open. The delivered
+  release-rights inventory and source/optional-bundle gate make the pinned
+  CC BY-SA 4.0 graphics import, excluded legacy code/audio/music/fonts/WADs,
+  and unavailable capture/media evidence explicit without claiming legal
+  clearance. The preceding MCP `tools/list` conditional `allOf`/`if`/`then`
+  branches for move/melee
   directions, ranged coordinate aliases, item IDs, unequip slots, and
   no-argument actions remain delivered; unknown properties remain tolerated and
   runtime dispatch is unchanged. Terminal sessions reject post-outcome actions
@@ -101,8 +109,8 @@ verification item uses explicit status semantics:
   arguments now reject wrong-typed optional integers before mutation, and
   `game_verify_replay` exposes deterministic in-memory replay verification
   without mutating sessions; `game_step_action` now rejects unsafe numeric
-  coordinates and item IDs before mutation. Legal-action validation and
-  external-client compatibility remain open.
+  coordinates and item IDs before mutation. Full dynamic legal-action
+  enumeration and external-client compatibility remain open.
 - **M9 Content Evidence**: Base, expansion, user-item, being, terrain-cell,
   and special-level evidence slices are delivered without runtime Lua or
   gameplay overclaims.
@@ -544,6 +552,11 @@ Final release readiness, documentation, and static distribution.
   arguments and values outside the accepted finite JSON-safe integer range
   (`0..=2^53`, with `u32` for dimensions) with `-32602` before session
   mutation; valid defaults remain unchanged.
+- [x] `game_list_actions` advertises explicit adjacent `attack_melee` and
+  equipped-slot `unequip` commands; recognized commands not currently
+  advertised are rejected before `Game::step` with `-32001` without mutating
+  turn, metrics, recent events, replay, or observation; malformed input remains
+  `-32602` and core geometry/LOS/range validation remains authoritative.
 - [ ] Complete deterministic headless/MCP agent tooling suite and external
   client compatibility.
 - [x] Comprehensive public rights inventory and release documentation is

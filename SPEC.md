@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.53`
+Current project version: `0.2.54`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,19 +23,16 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M13 Public Release-Rights Inventory
+## 2. Active Implementation Slice: M13 Legal-Action Catalog Coherence
 
 ### 2.1 Scope & Objective
 
-Make release-rights scope explicit and machine-checkable at the source and
-static-bundle boundaries. Record project-authored MIT material, the bundled
-legacy graphics import (pinned revision, CC BY-SA 4.0 attribution, license,
-manifest, and checksums), excluded legacy code/audio/music/fonts, and
-capture/media categories whose rights evidence is unavailable. Add a gate that
-validates the inventory, graphics provenance, declared manifest rights, and
-the absence of excluded paths or media extensions in an available bundle.
-Keep legal adjudication, media additions, and release-manifest schema changes
-outside this slice.
+Make the MCP legal-action catalog coherent with the commands that the runtime
+accepts. Advertise explicit `unequip` and `attack_melee` actions where the
+current fair observation can establish them, then reject recognized commands
+that are not currently advertised before calling the live simulation. Preserve
+the core as the authority for geometry, line-of-sight, range, and other rules
+that a fair observation cannot prove; do not build a second rules engine.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
@@ -54,47 +51,60 @@ outside this slice.
 4. **Evidence vocabulary**:
    - Rights and capture uncertainty are recorded as `NOT_RUN`, `INCONCLUSIVE`,
      or `NOT_CLEARED`, never inferred from repository presence alone.
+5. **MCP semantic boundary**:
+   - `game_list_actions` already derives fair actions from
+     `PlayerObservation`; this slice makes that catalog executable as a
+     pre-dispatch admission check without moving simulation rules into MCP.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Inventory**: `docs/release-rights.md` records all required categories,
-  statuses, licenses, source paths, and evidence boundaries without claiming
-  unresolved clearance.
-- [x] **Source gate**: The pinned graphics license, provenance manifest, and
-  checksums pass the existing asset validator; excluded legacy source paths
-  remain outside the bundle boundary.
-- [x] **Bundle gate**: An available `dist` or `RELEASE_DIST` contains the
-  declared graphics rights material, has the exact release-manifest rights
-  declaration, and contains no legacy code, audio/music, font, WAD, or other
-  excluded media paths.
-- [x] **Negative fixtures**: Focused tests reject missing license evidence and
-  injected legacy-code, audio/music, and font files in temporary bundles.
-- [x] **Repository integration**: The source gate runs from
-  `scripts/check-repository.sh`; absent bundles are reported `NOT_RUN`, not
-  treated as a false pass.
-- [x] **No expansion of claims**: No legal clearance, new media, audiovisual
-  parity, capture approval, deployment, PWA work, manifest schema change,
-  gameplay/core change, or MCP behavior change is claimed.
+- [x] **Catalog coverage**: `game_list_actions` advertises valid `unequip`
+  commands for equipped slots and explicit adjacent `attack_melee` actions;
+  existing move/bump, ranged, pickup/use/equip/drop/reload, and descend
+  entries remain executable.
+- [x] **Pre-dispatch gate**: A recognized command that is not currently
+  advertised is rejected with existing `-32001` before `Game::step`; unknown
+  or malformed action input remains `-32602`.
+- [x] **State safety**: Rejected blocked movement, off-stairs descent,
+  absent-item use/drop, invalid unequip, and unsupported explicit actions leave
+  turn, metrics, recent events, replay, and observation unchanged.
+- [x] **Core boundary**: Advertised commands still reach the core for geometry,
+  line-of-sight, range, and other simulation validation; no duplicate rules
+  engine or gameplay change is added.
+- [x] **Determinism**: Reset, terminal precedence, virtual-player catalog use,
+  and repeated stdio malformed/valid action output remain deterministic.
+- [x] **No expansion of claims**: Full legal-action enumeration, balance,
+  legacy parity, replay import/load, transport/lifecycle, rights, browser/PWA,
+  deployment, and external-client certification remain outside this slice.
 
 ### 2.4 Pure Contract
 
-- **Input**: Tracked source assets, rights inventory, and an optional static
-  bundle directory.
-- **Output**: Deterministic `PASS`/`FAIL` source validation; bundle validation
-  is `PASS` when an available bundle satisfies the declared boundary and
-  `NOT_RUN` when no bundle is present.
+- **Input**: A parsed semantic `Command` and the current fair
+  `PlayerObservation` from an active `McpSession`.
+- **Output**: The command is either admitted to the existing core step or
+  rejected with the existing invalid-action error before any live mutation.
 - **Ownership Boundary**:
-  - `docs/release-rights.md` owns the human-readable inventory and evidence
-    status; it does not grant or adjudicate rights.
-  - `scripts/check-release-rights.sh` owns deterministic source and optional
-    bundle boundary checks; `scripts/check-assets.sh` remains the graphics
-    provenance authority.
-  - `scripts/check-release-manifest.sh` remains responsible for full artifact
-    hashes and cache/signature consistency; this slice does not redesign it.
+  - `compute_legal_actions` owns the fair, advertised command catalog and its
+    parameter projections; it does not infer hidden geometry or dynamic core
+    rules.
+  - `McpSession::step` owns the pre-dispatch catalog gate and must leave live
+    state untouched when a recognized command is not advertised.
+  - `drl_core::Game::step` remains authoritative for geometry, line of sight,
+    range, combat, inventory, and other simulation validation; this slice does
+    not duplicate or alter those rules.
 
 ---
 
 ## 3. Recent Delivered Slices
+
+### M13 — Public Release-Rights Inventory (`VERSION` 0.2.53)
+
+- [x] `docs/release-rights.md` records included, excluded, notice-only, and
+  unavailable evidence categories without claiming legal clearance.
+- [x] Source and optional bundle gates validate pinned graphics provenance,
+  exact manifest rights, recursive checksums, symlink/non-regular rejection,
+  and excluded legacy code/audio/music/font/WAD boundaries; absent bundles are
+  `NOT_RUN`.
 
 ### M13 — Conditional `game_step_action` Schema (`VERSION` 0.2.52)
 
@@ -102,7 +112,9 @@ outside this slice.
   direction, ranged-coordinate-alias, item-ID, slot, and no-argument branches.
 - [x] Preserved runtime aliases, malformed-input behavior, unknown-property
   tolerance, action precedence, mixed coordinate aliases, and repeated stdio
-  output; legal-action validation remains open.
+  output; the catalog/pre-dispatch coherence contract is delivered in the
+  active 0.2.54 slice, while full dynamic legal-action enumeration remains
+  open.
 
 ### M13 — MCP Terminal-Outcome Gate (`VERSION` 0.2.51)
 

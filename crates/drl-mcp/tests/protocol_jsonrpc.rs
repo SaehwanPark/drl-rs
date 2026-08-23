@@ -516,6 +516,8 @@ fn test_jsonrpc_resources_list_and_read() {
   assert_eq!(contents.len(), 1);
   let text = contents[0].get("text").unwrap().as_str().unwrap();
   assert!(text.contains("Semantic Action Catalog"));
+  assert!(text.contains("`attack_melee`"));
+  assert!(text.contains("`unequip`"));
 }
 
 #[test]

@@ -30,6 +30,9 @@ cat >"$requests" <<'EOF'
 {"jsonrpc":"2.0","id":19,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"wait"}}}
 {"jsonrpc":"2.0","id":20,"method":"resources/read","params":{"uri":"drl://rules/actions"}}
 {"jsonrpc":"2.0","id":21,"method":"resources/read","params":{"uri":"drl://session/metrics"}}
+{"jsonrpc":"2.0","id":22,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":778,"width":20,"height":10}}}
+{"jsonrpc":"2.0","id":23,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"use","item_id":999}}}
+{"jsonrpc":"2.0","id":24,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"wait"}}}
 EOF
 
 fallback_requests="$temp_dir/fallback-requests.jsonl"
@@ -47,10 +50,10 @@ import json
 import sys
 
 lines = [line for line in open(sys.argv[1], encoding="utf-8") if line.strip()]
-if len(lines) != 21:
-    raise SystemExit(f"expected 21 JSON-RPC responses, found {len(lines)}")
+if len(lines) != 24:
+    raise SystemExit(f"expected 24 JSON-RPC responses, found {len(lines)}")
 responses = [json.loads(line) for line in lines]
-if [response.get("id") for response in responses] != list(range(1, 22)):
+if [response.get("id") for response in responses] != list(range(1, 25)):
     raise SystemExit("stdio response IDs are not in request order")
 if not responses[0].get("result", {}).get("serverInfo", {}).get("name") == "drl-mcp":
     raise SystemExit("initialize response lacks server identity")
@@ -123,6 +126,12 @@ if not responses[19].get("result", {}).get("contents"):
     raise SystemExit("rules resource read returned no contents")
 if not responses[20].get("result", {}).get("contents"):
     raise SystemExit("metrics resource read returned no contents")
+if responses[21].get("result", {}).get("data", {}).get("status") != "GameStarted":
+    raise SystemExit("pre-dispatch state-safety fixture did not restart a game")
+if responses[22].get("error", {}).get("code") != -32001:
+    raise SystemExit("recognized but unadvertised action did not return INVALID_ACTION")
+if responses[23].get("result", {}).get("data", {}).get("game_over") is not False:
+    raise SystemExit("valid action after pre-dispatch rejection did not execute")
 PY
 
 for run in 1 2; do

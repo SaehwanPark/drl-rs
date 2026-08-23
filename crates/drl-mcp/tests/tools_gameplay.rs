@@ -131,6 +131,196 @@ fn test_mcp_procedural_gameplay_tools() {
 }
 
 #[test]
+fn test_mcp_legal_action_pre_dispatch_gate_is_state_safe() {
+  let mut server = ready_server();
+  let ascii = "\n#####\n#@..#\n#####\n";
+  let load_request = format!(
+    r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"name":"game_load_scenario","arguments":{{"ascii_map":{}}}}}}}"#,
+    JsonValue::from(ascii).to_compact_string()
+  );
+  assert!(
+    JsonValue::parse(&server.handle_request(&load_request))
+      .unwrap()
+      .get("result")
+      .is_some()
+  );
+
+  let observation_request = r#"{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"game_get_observation","arguments":{}}}"#;
+  let metrics_request = r#"{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"game_get_metrics","arguments":{}}}"#;
+  let replay_request = r#"{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"game_save_replay","arguments":{}}}"#;
+  let observation_before = server.handle_request(observation_request);
+  let metrics_before = server.handle_request(metrics_request);
+  let replay_before = server.handle_request(replay_request);
+
+  for action in [
+    r#"{"action":"move","direction":"North"}"#,
+    r#"{"action":"descend"}"#,
+    r#"{"action":"use","item_id":999}"#,
+    r#"{"action":"drop","item_id":999}"#,
+    r#"{"action":"unequip","slot":"Armor"}"#,
+  ] {
+    let request = format!(
+      r#"{{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{{"name":"game_step_action","arguments":{action}}}}}"#
+    );
+    let response = JsonValue::parse(&server.handle_request(&request)).unwrap();
+    assert_eq!(
+      response
+        .get("error")
+        .and_then(|error| error.get("code"))
+        .and_then(JsonValue::as_i64),
+      Some(drl_mcp::protocol::error_codes::INVALID_ACTION as i64)
+    );
+    assert_eq!(
+      server.handle_request(observation_request),
+      observation_before
+    );
+    assert_eq!(server.handle_request(metrics_request), metrics_before);
+    assert_eq!(server.handle_request(replay_request), replay_before);
+  }
+
+  let malformed = r#"{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"teleport"}}}"#;
+  let malformed_response = JsonValue::parse(&server.handle_request(malformed)).unwrap();
+  assert_eq!(
+    malformed_response
+      .get("error")
+      .and_then(|error| error.get("code"))
+      .and_then(JsonValue::as_i64),
+    Some(drl_mcp::protocol::error_codes::INVALID_PARAMS as i64)
+  );
+  assert_eq!(
+    server.handle_request(observation_request),
+    observation_before
+  );
+
+  let valid_wait = r#"{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"wait"}}}"#;
+  let wait_response = JsonValue::parse(&server.handle_request(valid_wait)).unwrap();
+  assert!(wait_response.get("result").is_some());
+  let replay_after = JsonValue::parse(&server.handle_request(replay_request)).unwrap();
+  assert_eq!(
+    replay_after
+      .get("result")
+      .and_then(|result| result.get("data"))
+      .and_then(|data| data.get("commands"))
+      .and_then(JsonValue::as_array)
+      .map(Vec::len),
+    Some(1)
+  );
+}
+
+#[test]
+fn test_mcp_catalog_advertises_and_executes_explicit_melee() {
+  let mut server = ready_server();
+  let ascii = "\n#####\n#@h.#\n#####\n";
+  let load_request = format!(
+    r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"name":"game_load_scenario","arguments":{{"ascii_map":{}}}}}}}"#,
+    JsonValue::from(ascii).to_compact_string()
+  );
+  assert!(
+    JsonValue::parse(&server.handle_request(&load_request))
+      .unwrap()
+      .get("result")
+      .is_some()
+  );
+
+  let list = JsonValue::parse(&server.handle_request(
+    r#"{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"game_list_actions","arguments":{}}}"#,
+  ))
+  .unwrap();
+  let actions = list
+    .get("result")
+    .and_then(|result| result.get("data"))
+    .and_then(|data| data.get("legal_actions"))
+    .and_then(JsonValue::as_array)
+    .unwrap();
+  assert!(actions.iter().any(|action| {
+    action.get("action").and_then(JsonValue::as_str) == Some("AttackMelee")
+      && action
+        .get("params")
+        .and_then(|params| params.get("direction"))
+        .and_then(JsonValue::as_str)
+        == Some("East")
+  }));
+
+  let attack = JsonValue::parse(&server.handle_request(
+    r#"{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"attack_melee","direction":"East"}}}"#,
+  ))
+  .unwrap();
+  assert!(attack.get("result").is_some());
+
+  let pistol_ascii = "\n######\n#@p..#\n######\n";
+  let load_pistol = format!(
+    r#"{{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{{"name":"game_load_scenario","arguments":{{"ascii_map":{}}}}}}}"#,
+    JsonValue::from(pistol_ascii).to_compact_string()
+  );
+  assert!(
+    JsonValue::parse(&server.handle_request(&load_pistol))
+      .unwrap()
+      .get("result")
+      .is_some()
+  );
+  assert!(server
+    .handle_request(
+      r#"{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"move","direction":"East"}}}"#,
+    )
+    .contains("\"result\""));
+  assert!(server
+    .handle_request(
+      r#"{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"pickup"}}}"#,
+    )
+    .contains("\"result\""));
+  let observation = JsonValue::parse(&server.handle_request(
+    r#"{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"game_get_observation","arguments":{}}}"#,
+  ))
+  .unwrap();
+  let pistol_id = observation
+    .get("result")
+    .and_then(|result| result.get("data"))
+    .and_then(|data| data.get("observation"))
+    .and_then(|data| data.get("inventory"))
+    .and_then(JsonValue::as_array)
+    .and_then(|items| {
+      items
+        .iter()
+        .find(|item| item.get("category").and_then(JsonValue::as_str) == Some("Weapon"))
+    })
+    .and_then(|item| item.get("id"))
+    .and_then(JsonValue::as_u64)
+    .expect("scenario pistol in inventory");
+  let equip = format!(
+    r#"{{"jsonrpc":"2.0","id":8,"method":"tools/call","params":{{"name":"game_step_action","arguments":{{"action":"equip","item_id":{pistol_id}}}}}}}"#
+  );
+  assert!(server.handle_request(&equip).contains("\"result\""));
+  let actions = JsonValue::parse(&server.handle_request(
+    r#"{"jsonrpc":"2.0","id":9,"method":"tools/call","params":{"name":"game_list_actions","arguments":{}}}"#,
+  ))
+  .unwrap();
+  assert!(
+    actions
+      .get("result")
+      .and_then(|result| result.get("data"))
+      .and_then(|data| data.get("legal_actions"))
+      .and_then(JsonValue::as_array)
+      .is_some_and(|items| {
+        items.iter().any(|item| {
+          item.get("action").and_then(JsonValue::as_str) == Some("Unequip")
+            && item
+              .get("params")
+              .and_then(|params| params.get("slot"))
+              .and_then(JsonValue::as_str)
+              == Some("Weapon")
+        })
+      })
+  );
+  let unequip = r#"{"jsonrpc":"2.0","id":10,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"unequip","slot":"Weapon"}}}"#;
+  assert!(
+    JsonValue::parse(&server.handle_request(unequip))
+      .unwrap()
+      .get("result")
+      .is_some()
+  );
+}
+
+#[test]
 fn test_mcp_scenario_combat_and_item_use() {
   let mut server = ready_server();
 
