@@ -272,6 +272,7 @@ fn item_kind(value: &JsonValue, context: &str) -> Result<ItemSpawnKind, String> 
   match kind {
     "pistol" => Ok(ItemSpawnKind::Pistol),
     "shotgun" => Ok(ItemSpawnKind::Shotgun),
+    "plasma_rifle" => Ok(ItemSpawnKind::PlasmaRifle),
     "combat_knife" => Ok(ItemSpawnKind::CombatKnife),
     "ammo_9mm" => Ok(ItemSpawnKind::Ammo9mm(u32_value(
       required(object, "count")?,

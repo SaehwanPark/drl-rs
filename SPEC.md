@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.71`
+Current project version: `0.2.72`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -28,8 +28,8 @@ criteria, and verification boundaries.
 ### 2.1 Scope & Objective
 
 Migrate the pinned legacy `rocket`, `cell`, `barmor`, `rarmor`, `smed`, and
-`lmed` records into typed immutable Rust definitions and replay-compatible
-spawn contracts. Preserve
+`lmed`, and `plasma` records into typed immutable Rust definitions and
+replay-compatible spawn contracts. Preserve
 source-backed scalar fields, measured atlas slots, and verified armor
 presentation tints without importing Lua callbacks or unverified combat rules.
 
@@ -77,6 +77,10 @@ presentation tints without importing Lua callbacks or unverified combat rules.
 - [x] **Med-pack description boundary**: current `SmallMedPack` and
   `LargeMedPack` definitions preserve pinned descriptions and existing med-pack
   atlas slots; dynamic difficulty/perk healing formulas remain an explicit gap.
+- [x] **Plasma rifle boundary**: typed `PlasmaRifle` preserves the pinned
+  description, cell-ammo relation, six-shot clip, `1d7` damage range, replay
+  kind, and `SPRITE_PLASMA` slot. Range/accuracy/timing policy and dynamic
+  chainfire/overcharge callbacks remain explicit gaps.
 - [ ] **Full migration**: rocket/plasma weapon behavior, dynamic callbacks,
   balance/fairness, and remaining legacy item families remain open.
 - [x] **Explicit non-goals**: no gameplay/core rule, observation schema,
@@ -105,6 +109,10 @@ presentation tints without importing Lua callbacks or unverified combat rules.
 - `SmallMedPack` and `LargeMedPack` retain pinned descriptions and their
   measured med-pack atlas slots. Their fixed Rust heal amounts are policy, not
   a claim of parity with legacy dynamic callbacks.
+- `PlasmaRifle` is a definition-backed cell-ammo weapon with six-shot clip and
+  `1d7` damage policy, `plasma_rifle` replay kind, and measured atlas geometry.
+  Current range, accuracy, action costs, and callback behavior are not claimed
+  as legacy parity.
 - **Ownership Boundary**: Rust typed definitions own runtime item semantics;
   pinned Lua evidence informs only the migrated scalar fields and provenance.
 
