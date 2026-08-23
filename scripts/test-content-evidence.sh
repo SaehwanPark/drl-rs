@@ -198,6 +198,42 @@ if python3 scripts/check-content-evidence.py --config "$temp_dir/wrong-record-ca
   exit 1
 fi
 
+python3 - "$temp_dir/being.json" "$temp_dir/malformed-fields.json" <<'PY'
+import json
+import pathlib
+import sys
+
+payload = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
+payload["records"][0]["fields"]["nested"] = {"not": "scalar"}
+pathlib.Path(sys.argv[2]).write_text(json.dumps(payload), encoding="utf-8")
+PY
+if python3 scripts/check-content-evidence.py --config "$temp_dir/config.json" \
+  --bundle "being=$temp_dir/malformed-fields.json" \
+  --bundle "item=$temp_dir/item.json" \
+  --bundle "cell=$temp_dir/cell.json" \
+  --bundle "level=$temp_dir/level.json" >/dev/null 2>&1; then
+  printf '%s\n' 'nested evidence fields must be rejected' >&2
+  exit 1
+fi
+
+python3 - "$temp_dir/being.json" "$temp_dir/malformed-gaps.json" <<'PY'
+import json
+import pathlib
+import sys
+
+payload = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
+payload["records"][0]["migration_gaps"].append({"field": "nested", "line": "unknown"})
+pathlib.Path(sys.argv[2]).write_text(json.dumps(payload), encoding="utf-8")
+PY
+if python3 scripts/check-content-evidence.py --config "$temp_dir/config.json" \
+  --bundle "being=$temp_dir/malformed-gaps.json" \
+  --bundle "item=$temp_dir/item.json" \
+  --bundle "cell=$temp_dir/cell.json" \
+  --bundle "level=$temp_dir/level.json" >/dev/null 2>&1; then
+  printf '%s\n' 'malformed migration gaps must be rejected' >&2
+  exit 1
+fi
+
 python3 - "$temp_dir/being.json" "$temp_dir/duplicate.json" <<'PY'
 import json
 import pathlib

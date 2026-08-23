@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.32`
+Current project version: `0.2.33`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -30,7 +30,8 @@ criteria, and verification boundaries.
 Validate the existing pinned legacy-content converters with a reviewed
 crosswalk. The gate checks source provenance, exact SHA-256 digests,
 deterministic ordering/uniqueness, complete being/item/cell record ID catalogs,
-and complete coverage of all 26 indexed special-level IDs. It also synchronizes
+scalar-only fields, structured migration gaps, and complete coverage of all 26
+indexed special-level IDs. It also synchronizes
 those IDs with the Rust descriptive catalog, including names, optional depths,
 entry strings, and welcome strings. It records evidence coverage only; it does
 not import runtime Lua behavior or assert gameplay parity.
@@ -63,6 +64,9 @@ not import runtime Lua behavior or assert gameplay parity.
   depth, entry string, and welcome string matches the pinned evidence record.
 - [x] **Exact source digests**: Every configured source digest matches the
   pinned revision content; digest drift is rejected by fixtures.
+- [x] **Evidence record shape**: Every record has scalar fields, structured
+  migration-gap entries, and positive source line metadata; nested imports are
+  rejected by fixtures.
 - [x] **Fixture rejection coverage**: Validator tests reject duplicate IDs,
   unsorted records, missing representatives, wrong revisions, and wrong
   source digests.
@@ -91,7 +95,7 @@ not import runtime Lua behavior or assert gameplay parity.
 
 ## 3. Recent Delivered Slices
 
-### M9 — Representative Content-Evidence Coverage (`VERSION` 0.2.32)
+### M9 — Representative Content-Evidence Coverage (`VERSION` 0.2.33)
 
 - [x] Added a reviewed crosswalk and validator for pinned being, item-family,
   terrain-cell, and special-level evidence bundles.
@@ -105,6 +109,8 @@ not import runtime Lua behavior or assert gameplay parity.
   wrong-digest rejection coverage.
 - [x] Pinned complete being, item-family, and terrain-cell record ID catalogs
   and added converter-output catalog drift rejection coverage.
+- [x] Enforced scalar-only evidence fields, structured migration gaps, and
+  positive source lines without importing nested Lua data.
 - [ ] Full typed migration, assets, callbacks, and gameplay parity remain open.
 
 ### M10 — Same-Release Offline-Cache Isolation (`VERSION` 0.2.27)
@@ -351,7 +357,7 @@ not import runtime Lua behavior or assert gameplay parity.
 
 ## 6. Verification Gates
 
-### Verified Baseline (`VERSION` 0.2.32)
+### Verified Baseline (`VERSION` 0.2.33)
 
 e3583de feat(content): pin complete evidence ID catalogs (#123)
 75888b4 feat(content): lock pinned evidence source digests (#122)

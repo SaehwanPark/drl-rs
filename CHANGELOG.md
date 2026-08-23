@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.33]
+
+- Enforced scalar-only evidence fields, structured migration gaps, and positive
+  source line metadata; malformed nested imports are rejected.
+- Kept the evidence gate descriptive-only; no runtime Lua or gameplay behavior
+  changed.
+
 ## [0.2.32]
 
 - Pinned complete being, item-family, and terrain-cell record ID catalogs and
