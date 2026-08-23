@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.81`
+Current project version: `0.2.82`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -30,8 +30,8 @@ criteria, and verification boundaries.
 Migrate the pinned legacy `rocket`, `cell`, `barmor`, `rarmor`, `smed`,
 `lmed`, `dshotgun`, `ashotgun`, `chainsaw`, `chaingun`, `bfg9000`, `plasma`, and
 `bazooka`, `ublaster`, `ulaser`, `umbazooka`, `unplasma`, `unbfg9000`, and
-`ubfg10k`, `umega`, `uberetta`, `ufshotgun`, `urbazooka`, `urailgun`, and
-`uacid` records into
+`ubfg10k`, `umega`, `uberetta`, `ufshotgun`, `urbazooka`, `urailgun`, `uacid`,
+`ucpistol`, `uashotgun`, and `upshotgun` records into
 typed immutable Rust definitions and replay-compatible spawn contracts.
 Preserve
 source-backed scalar fields, measured atlas slots, and verified armor
@@ -130,6 +130,13 @@ presentation tints without importing Lua callbacks or unverified combat rules.
   `15` for the latter two, replay kinds, and measured bazooka/plasma atlas
   slots; homing, piercing, acid-map, explosion, and timing callbacks remain
   explicit gaps.
+- [x] **Eitems shotgun-family boundary**: typed `CombatPistol`,
+  `AssaultShotgun`, and `PlasmaShotgun` preserve pinned descriptions,
+  ammo relations, clips (`15`/`6`/`30`), damage ranges (`3d3`/`7d3`/`7d3`),
+  source ranges where present (`15` for both shotguns), replay kinds, and
+  measured pistol/combat-shotgun/shotgun atlas-slot reuse; aimed-fire and
+  alternate-reload perks, spread/falloff, plasma shot cost, callbacks,
+  knockback scale, accuracy, and timing remain explicit gaps.
 - [ ] **Full migration**: shotgun/BFG/chainsaw/chaingun/rocket/plasma/exotic
   weapon behavior, dynamic callbacks,
   balance/fairness, and remaining legacy item families remain open.
@@ -139,7 +146,8 @@ presentation tints without importing Lua callbacks or unverified combat rules.
 ### 2.4 Pure Contract
 
 - **Input**: typed item spawn kinds, including `ItemSpawnKind::Chaingun`,
-  `RocketLauncher`, or `PlasmaRifle`, plus the existing ammo families.
+  `RocketLauncher`, `PlasmaRifle`, `CombatPistol`, `AssaultShotgun`, or
+  `PlasmaShotgun`, plus the existing ammo families.
 - **Output**: a definition-backed stackable `Item` with the observed ammo type,
   count, maximum stack, description, and atlas archetype; the definitions also
   expose pinned initial counts (`3`/`20`) while MCP JSON uses
@@ -200,6 +208,11 @@ presentation tints without importing Lua callbacks or unverified combat rules.
   range policies, descriptions, replay kinds, and measured atlas geometry.
   Homing, piercing, acid-map, explosion, and exact timing are not claimed as
   parity.
+- `CombatPistol`, `AssaultShotgun`, and `PlasmaShotgun` are definition-backed
+  exotic weapons preserving pinned descriptions, ammo relations, clips,
+  damage/range policies, replay kinds, and measured atlas-slot reuse. Aimed
+  fire, alternate reload, spread/falloff, plasma shot cost, callbacks,
+  knockback scale, accuracy, and exact timing are not claimed as parity.
 - **Ownership Boundary**: Rust typed definitions own runtime item semantics;
   pinned Lua evidence informs only the migrated scalar fields and provenance.
 

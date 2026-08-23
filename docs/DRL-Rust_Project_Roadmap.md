@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.81`
+Current project version: `0.2.82`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.81)
+## 3. Current Progress Summary (`VERSION` 0.2.82)
 
 ### Delivered Foundations
 
@@ -80,7 +80,8 @@ verification item uses explicit status semantics:
   rifle, rocket launcher, chaingun, chainsaw, BFG 9000, shotgun variants, and
   exotic Blaster/Laser Rifle/Missile Launcher, Nuclear Plasma Rifle, Nuclear
   BFG 9000, BFG 10K, Mega Buster, Grammaton Beretta, Frag Shotgun, Revenant's
-  Launcher, Railgun, and Acid Spitter variants;
+  Launcher, Railgun, Acid Spitter, Combat Pistol, Assault Shotgun, and Plasma
+  Shotgun variants;
   versioned
   fixed-session snapshot codec with localStorage
   persistence, bounded rejected-save quarantine, and static service-worker
@@ -512,6 +513,11 @@ scripting.
   special-projectile descriptions, ammo relations, clips/damage/range scalars,
   replay kinds, and measured bazooka/plasma atlas slots; homing, piercing,
   acid-map, explosion, and timing callbacks remain open.
+- [x] Typed `ucpistol`, `uashotgun`, and `upshotgun` preserve pinned eitems
+  descriptions, ammo relations, clips/damage/range scalars, replay kinds, and
+  measured pistol/combat-shotgun/shotgun atlas slots; aimed-fire,
+  alternate-reload, spread/falloff, shot-cost, and callback semantics remain
+  open.
 - [ ] Full migration of legacy monsters, weapons, armor, mods, and consumable
   items.
 - [ ] Full migration of special levels, vaults, and dungeon branches.

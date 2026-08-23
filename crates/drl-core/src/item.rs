@@ -448,6 +448,24 @@ impl Item {
     Self::from_spawn_kind(id, ItemSpawnKind::AcidSpitter)
   }
 
+  /// Factory: exotic combat pistol (3d3 damage policy).
+  #[must_use]
+  pub fn combat_pistol(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::CombatPistol)
+  }
+
+  /// Factory: exotic assault shotgun (7d3 damage policy).
+  #[must_use]
+  pub fn assault_shotgun(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::AssaultShotgun)
+  }
+
+  /// Factory: exotic plasma shotgun (7d3 damage policy).
+  #[must_use]
+  pub fn plasma_shotgun(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::PlasmaShotgun)
+  }
+
   /// Factory: chaingun (40-round 9mm clip, 1d6 damage policy).
   #[must_use]
   pub fn chaingun(id: ItemId) -> Self {
@@ -791,6 +809,18 @@ mod tests {
       (
         ItemSpawnKind::AcidSpitter,
         Item::acid_spitter(ItemId::new(37)),
+      ),
+      (
+        ItemSpawnKind::CombatPistol,
+        Item::combat_pistol(ItemId::new(38)),
+      ),
+      (
+        ItemSpawnKind::AssaultShotgun,
+        Item::assault_shotgun(ItemId::new(39)),
+      ),
+      (
+        ItemSpawnKind::PlasmaShotgun,
+        Item::plasma_shotgun(ItemId::new(40)),
       ),
       (ItemSpawnKind::Chaingun, Item::chaingun(ItemId::new(11))),
       (

@@ -335,6 +335,57 @@ const ACID_SPITTER: ItemDefinition = ItemDefinition {
   },
 };
 
+const COMBAT_PISTOL: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::CombatPistol,
+  name: "Combat Pistol",
+  description: "This is the kind of handgun given to your superiors. Doesn't look like they're using it right now...",
+  kind: ItemDefinitionKind::Weapon {
+    is_ranged: true,
+    ammo_type: Some(AmmoType::Ammo9mm),
+    clip_capacity: 15,
+    damage: (3, 9),
+    range: 8,
+    accuracy: 75,
+    knockback: 0,
+    fire_cost: ActionCost::RANGED_ATTACK,
+    reload_cost: ActionCost::STANDARD,
+  },
+};
+
+const ASSAULT_SHOTGUN: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::AssaultShotgun,
+  name: "Assault Shotgun",
+  description: "Big, bad and ugly.",
+  kind: ItemDefinitionKind::Weapon {
+    is_ranged: true,
+    ammo_type: Some(AmmoType::Shells),
+    clip_capacity: 6,
+    damage: (7, 21),
+    range: 15,
+    accuracy: 65,
+    knockback: 1,
+    fire_cost: ActionCost::RANGED_ATTACK,
+    reload_cost: ActionCost::STANDARD,
+  },
+};
+
+const PLASMA_SHOTGUN: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::PlasmaShotgun,
+  name: "Plasma Shotgun",
+  description: "Plasma shotgun -- the best of two worlds.",
+  kind: ItemDefinitionKind::Weapon {
+    is_ranged: true,
+    ammo_type: Some(AmmoType::Cell),
+    clip_capacity: 30,
+    damage: (7, 21),
+    range: 15,
+    accuracy: 65,
+    knockback: 1,
+    fire_cost: ActionCost::RANGED_ATTACK,
+    reload_cost: ActionCost::STANDARD,
+  },
+};
+
 const CHAINGUN: ItemDefinition = ItemDefinition {
   archetype: ItemArchetype::Chaingun,
   name: "Chaingun",
@@ -599,6 +650,9 @@ pub const fn definition_for_spawn_kind(kind: ItemSpawnKind) -> &'static ItemDefi
     ItemSpawnKind::RevenantsLauncher => &REVENANTS_LAUNCHER,
     ItemSpawnKind::Railgun => &RAILGUN,
     ItemSpawnKind::AcidSpitter => &ACID_SPITTER,
+    ItemSpawnKind::CombatPistol => &COMBAT_PISTOL,
+    ItemSpawnKind::AssaultShotgun => &ASSAULT_SHOTGUN,
+    ItemSpawnKind::PlasmaShotgun => &PLASMA_SHOTGUN,
     ItemSpawnKind::Chaingun => &CHAINGUN,
     ItemSpawnKind::PlasmaRifle => &PLASMA_RIFLE,
     ItemSpawnKind::RocketLauncher => &ROCKET_LAUNCHER,
@@ -688,6 +742,21 @@ mod tests {
         ItemSpawnKind::AcidSpitter,
         ItemArchetype::AcidSpitter,
         "Acid Spitter",
+      ),
+      (
+        ItemSpawnKind::CombatPistol,
+        ItemArchetype::CombatPistol,
+        "Combat Pistol",
+      ),
+      (
+        ItemSpawnKind::AssaultShotgun,
+        ItemArchetype::AssaultShotgun,
+        "Assault Shotgun",
+      ),
+      (
+        ItemSpawnKind::PlasmaShotgun,
+        ItemArchetype::PlasmaShotgun,
+        "Plasma Shotgun",
       ),
       (ItemSpawnKind::Chaingun, ItemArchetype::Chaingun, "Chaingun"),
       (
@@ -1016,6 +1085,48 @@ mod tests {
         range: 15,
         accuracy: 70,
         knockback: 0,
+        fire_cost: ActionCost::RANGED_ATTACK,
+        reload_cost: ActionCost::STANDARD,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::CombatPistol).kind,
+      ItemDefinitionKind::Weapon {
+        is_ranged: true,
+        ammo_type: Some(AmmoType::Ammo9mm),
+        clip_capacity: 15,
+        damage: (3, 9),
+        range: 8,
+        accuracy: 75,
+        knockback: 0,
+        fire_cost: ActionCost::RANGED_ATTACK,
+        reload_cost: ActionCost::STANDARD,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::AssaultShotgun).kind,
+      ItemDefinitionKind::Weapon {
+        is_ranged: true,
+        ammo_type: Some(AmmoType::Shells),
+        clip_capacity: 6,
+        damage: (7, 21),
+        range: 15,
+        accuracy: 65,
+        knockback: 1,
+        fire_cost: ActionCost::RANGED_ATTACK,
+        reload_cost: ActionCost::STANDARD,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::PlasmaShotgun).kind,
+      ItemDefinitionKind::Weapon {
+        is_ranged: true,
+        ammo_type: Some(AmmoType::Cell),
+        clip_capacity: 30,
+        damage: (7, 21),
+        range: 15,
+        accuracy: 65,
+        knockback: 1,
         fire_cost: ActionCost::RANGED_ATTACK,
         reload_cost: ActionCost::STANDARD,
       }

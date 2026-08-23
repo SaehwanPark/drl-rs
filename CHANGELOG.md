@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.82]
+
+- Added typed `CombatPistol`, `AssaultShotgun`, and `PlasmaShotgun` families
+  from pinned eitems records, preserving descriptions, ammo relations, clips,
+  damage/range scalars, replay JSON kinds, and measured atlas-slot reuse.
+  Aimed-fire and alternate-reload perks, spread/falloff, shot-cost, callbacks,
+  and exact timing remain open.
+
 ## [0.2.81]
 
 - Added typed `RevenantsLauncher`, `Railgun`, and `AcidSpitter` families from
