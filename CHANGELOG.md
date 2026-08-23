@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.87]
+
+- Added typed `MaleksArmor`, `CyberneticArmor`, and `Necroarmor` families from
+  pinned unique-item records, preserving descriptions, armor values, replay
+  JSON kinds, and measured shared armor atlas geometry. Resistance,
+  movement/knockback, no-destroy, item-set, callbacks, and exact tint remain
+  open.
+
 ## [0.2.86]
 
 - Added typed `OnyxArmor`, `PhaseshiftArmor`, and `GothicArmor` families from

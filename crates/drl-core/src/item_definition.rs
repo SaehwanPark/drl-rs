@@ -809,6 +809,39 @@ const GOTHIC_ARMOR: ItemDefinition = ItemDefinition {
   },
 };
 
+const MALEKS_ARMOR: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::MaleksArmor,
+  name: "Malek's Armor",
+  description: "The personal armor of the most famous Imperial Inquisitor.",
+  kind: ItemDefinitionKind::Armor {
+    protection: 3,
+    durability: 100,
+    max_durability: 100,
+  },
+};
+
+const CYBERNETIC_ARMOR: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::CyberneticArmor,
+  name: "Cybernetic Armor",
+  description: "All those cybernetic dongles look fishy!",
+  kind: ItemDefinitionKind::Armor {
+    protection: 7,
+    durability: 100,
+    max_durability: 100,
+  },
+};
+
+const NECROARMOR: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::Necroarmor,
+  name: "Necroarmor",
+  description: "Something about this armor gives you the chills.",
+  kind: ItemDefinitionKind::Armor {
+    protection: 6,
+    durability: 100,
+    max_durability: 100,
+  },
+};
+
 const PHASE_DEVICE: ItemDefinition = ItemDefinition {
   archetype: ItemArchetype::PhaseDevice,
   name: "Phase Device",
@@ -870,6 +903,9 @@ pub const fn definition_for_spawn_kind(kind: ItemSpawnKind) -> &'static ItemDefi
     ItemSpawnKind::OnyxArmor => &ONYX_ARMOR,
     ItemSpawnKind::PhaseshiftArmor => &PHASESHIFT_ARMOR,
     ItemSpawnKind::GothicArmor => &GOTHIC_ARMOR,
+    ItemSpawnKind::MaleksArmor => &MALEKS_ARMOR,
+    ItemSpawnKind::CyberneticArmor => &CYBERNETIC_ARMOR,
+    ItemSpawnKind::Necroarmor => &NECROARMOR,
     ItemSpawnKind::PhaseDevice => &PHASE_DEVICE,
   }
 }
@@ -1086,6 +1122,21 @@ mod tests {
         ItemSpawnKind::GothicArmor,
         ItemArchetype::GothicArmor,
         "gothic armor",
+      ),
+      (
+        ItemSpawnKind::MaleksArmor,
+        ItemArchetype::MaleksArmor,
+        "Malek's Armor",
+      ),
+      (
+        ItemSpawnKind::CyberneticArmor,
+        ItemArchetype::CyberneticArmor,
+        "Cybernetic Armor",
+      ),
+      (
+        ItemSpawnKind::Necroarmor,
+        ItemArchetype::Necroarmor,
+        "Necroarmor",
       ),
       (
         ItemSpawnKind::PhaseDevice,
@@ -1602,6 +1653,30 @@ mod tests {
         protection: 6,
         durability: 200,
         max_durability: 200,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::MaleksArmor).kind,
+      ItemDefinitionKind::Armor {
+        protection: 3,
+        durability: 100,
+        max_durability: 100,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::CyberneticArmor).kind,
+      ItemDefinitionKind::Armor {
+        protection: 7,
+        durability: 100,
+        max_durability: 100,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::Necroarmor).kind,
+      ItemDefinitionKind::Armor {
+        protection: 6,
+        durability: 100,
+        max_durability: 100,
       }
     );
     assert_eq!(
