@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.83`
+Current project version: `0.2.84`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -31,8 +31,8 @@ Migrate the pinned legacy `rocket`, `cell`, `barmor`, `rarmor`, `smed`,
 `lmed`, `dshotgun`, `ashotgun`, `chainsaw`, `chaingun`, `bfg9000`, `plasma`, and
 `bazooka`, `ublaster`, `ulaser`, `umbazooka`, `unplasma`, `unbfg9000`, and
 `ubfg10k`, `umega`, `uberetta`, `ufshotgun`, `urbazooka`, `urailgun`, `uacid`,
-`ucpistol`, `uashotgun`, `upshotgun`, `usjack`, `udshotgun`, and `utrigun`
-records into
+`ucpistol`, `uashotgun`, `upshotgun`, `usjack`, `udshotgun`, `utrigun`,
+`ubutcher`, `umjoll`, and `usubtle` records into
 typed immutable Rust definitions and replay-compatible spawn contracts.
 Preserve
 source-backed scalar fields, measured atlas slots, and verified armor
@@ -145,6 +145,11 @@ presentation tints without importing Lua callbacks or unverified combat rules.
   combat-shotgun/double-shotgun atlas-slot reuse; alternate reload, dual-shot,
   spread, chainfire, shot cost, explosions, callbacks, accuracy, knockback
   scale, and timing remain explicit gaps.
+- [x] **Unique-melee boundary**: typed `ButchersCleaver`, `Mjollnir`, and
+  `SubtleKnife` preserve pinned descriptions, melee damage ranges
+  (`5d6`/`1d25`/`3d5`), observed Mjollnir range `5`, replay kinds, and measured
+  cleaver/knife atlas-slot reuse; blade/throw/alt-fire perks, callbacks,
+  sound/UI, accuracy, and timing remain explicit gaps.
 - [ ] **Full migration**: shotgun/BFG/chainsaw/chaingun/rocket/plasma/exotic
   weapon behavior, dynamic callbacks,
   balance/fairness, and remaining legacy item families remain open.
@@ -155,8 +160,9 @@ presentation tints without importing Lua callbacks or unverified combat rules.
 
 - **Input**: typed item spawn kinds, including `ItemSpawnKind::Chaingun`,
   `RocketLauncher`, `PlasmaRifle`, `CombatPistol`, `AssaultShotgun`, or
-  `PlasmaShotgun`, `Jackhammer`, `SuperShotgun`, or `TristarBlaster`, plus the
-  existing ammo families.
+  `PlasmaShotgun`, `Jackhammer`, `SuperShotgun`, `TristarBlaster`,
+  `ButchersCleaver`, `Mjollnir`, or `SubtleKnife`, plus the existing ammo
+  families.
 - **Output**: a definition-backed stackable `Item` with the observed ammo type,
   count, maximum stack, description, and atlas archetype; the definitions also
   expose pinned initial counts (`3`/`20`) while MCP JSON uses
@@ -227,6 +233,10 @@ presentation tints without importing Lua callbacks or unverified combat rules.
   damage/range policies, replay kinds, and measured atlas-slot reuse. Alternate
   reload, dual-shot, spread, chainfire, shot cost, explosions, callbacks,
   knockback scale, accuracy, and exact timing are not claimed as parity.
+- `ButchersCleaver`, `Mjollnir`, and `SubtleKnife` are definition-backed melee
+  weapons preserving pinned descriptions, damage/range policies, replay kinds,
+  and measured atlas-slot reuse. Blade/throw/alt-fire perks, callbacks,
+  sound/UI, accuracy, and exact timing are not claimed as parity.
 - **Ownership Boundary**: Rust typed definitions own runtime item semantics;
   pinned Lua evidence informs only the migrated scalar fields and provenance.
 
