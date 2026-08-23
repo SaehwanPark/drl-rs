@@ -1,6 +1,7 @@
 //! MCP semantic session manager, legal action synthesis, and simulation bridge.
 
 use crate::json::JsonValue;
+use crate::replay_json::MAX_REPLAY_DIMENSION;
 use drl_core::Game;
 use drl_core::generator::LevelGeneratorConfig;
 use drl_core::grid::Tile;
@@ -865,6 +866,7 @@ impl McpSession {
   ) -> Result<PlayerObservation, String> {
     let w = width.unwrap_or(40);
     let h = height.unwrap_or(20);
+    validate_replay_dimensions(w, h)?;
 
     let config = LevelGeneratorConfig {
       width: w,
@@ -913,8 +915,10 @@ impl McpSession {
     ascii_map: &str,
     max_turns: Option<u64>,
   ) -> Result<PlayerObservation, String> {
+    validate_ascii_dimensions(ascii_map)?;
     let scenario = Scenario::from_ascii("McpScenario", "Scenario loaded via MCP", ascii_map)
       .map_err(|e| format!("Failed to parse scenario ASCII: {e}"))?;
+    validate_replay_dimensions(scenario.width, scenario.height)?;
 
     let game = scenario
       .instantiate()
@@ -1114,6 +1118,31 @@ impl McpSession {
   pub fn recent_events(&self) -> &[GameEvent] {
     &self.recent_events
   }
+}
+
+fn validate_replay_dimensions(width: u32, height: u32) -> Result<(), String> {
+  if !(3..=MAX_REPLAY_DIMENSION).contains(&width) || !(3..=MAX_REPLAY_DIMENSION).contains(&height) {
+    return Err(format!(
+      "Map dimensions must be within 3..={MAX_REPLAY_DIMENSION}"
+    ));
+  }
+  Ok(())
+}
+
+fn validate_ascii_dimensions(ascii: &str) -> Result<(), String> {
+  let mut height = 0_u32;
+  let mut width = 0_u32;
+  for line in ascii.lines().filter(|line| !line.is_empty()) {
+    height = height.saturating_add(1);
+    let line_width = line.chars().take(MAX_REPLAY_DIMENSION as usize + 1).count() as u32;
+    width = width.max(line_width);
+    if height > MAX_REPLAY_DIMENSION || line_width > MAX_REPLAY_DIMENSION {
+      return Err(format!(
+        "ASCII scenario dimensions must be within 3..={MAX_REPLAY_DIMENSION}"
+      ));
+    }
+  }
+  validate_replay_dimensions(width, height)
 }
 
 fn replay_log_for_scenario(scenario: &Scenario) -> ReplayLog {

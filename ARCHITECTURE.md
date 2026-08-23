@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.56`
+Current project version: `0.2.57`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -172,14 +172,17 @@ Presentation Boundary
   - Full MCP method suite (`initialize`, `tools/*`, `resources/*`).
   - Semantic tools for game control, observation, action enumeration, and
     replays, including state-safe deterministic replay verification.
-  - `game_verify_replay` exports and verifies the complete in-memory replay
-    without mutating session state, including the recorded procedural
-    generator parameters; replay import/load remains outside this boundary.
+  - `game_verify_replay` verifies either the complete in-memory replay or a
+    supplied canonical V1 JSON envelope without mutating session state,
+    including recorded procedural generator parameters. MCP session creation
+    enforces bounded dimensions and generator parameters before export; session
+    activation, replay-file IO, and import/load remain outside this boundary.
   - `game_save_replay` projects every V1 `ReplayLog` field through the
     deterministic `replay_json` envelope (`drl-rust-replay-v1`) with structured
     semantic command objects, complete initial-state containers, and explicit
-    nulls for absent optional values; this boundary does not parse, validate,
-    import, or claim external replay interchange.
+    nulls for absent optional values. `replay_json` also decodes this exact V1
+    envelope for read-only verification; it does not activate sessions, migrate
+    versions, perform file IO, or claim external replay interchange.
   - Strict observation boundaries with explicit `dev_mode` flag for omniscient
     inspection.
   - `initialize` validates a string `protocolVersion`, echoes supported

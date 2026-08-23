@@ -1,10 +1,10 @@
 //! Deterministic MCP tool input schemas.
 
 use crate::json::JsonValue;
+use crate::replay_json::MAX_REPLAY_DIMENSION;
 use std::collections::BTreeMap;
 
 const JSON_SAFE_INTEGER_MAX: f64 = 9_007_199_254_740_992.0;
-const U32_MAX: f64 = 4_294_967_295.0;
 const I32_MIN: f64 = -2_147_483_648.0;
 const I32_MAX: f64 = 2_147_483_647.0;
 
@@ -130,14 +130,14 @@ pub fn game_start_schema() -> JsonValue {
       "Map width in tiles (default: 40)",
       false,
     )
-    .with_range(0.0, U32_MAX),
+    .with_range(3.0, f64::from(MAX_REPLAY_DIMENSION)),
     SchemaField::new(
       "height",
       "integer",
       "Map height in tiles (default: 20)",
       false,
     )
-    .with_range(0.0, U32_MAX),
+    .with_range(3.0, f64::from(MAX_REPLAY_DIMENSION)),
   ])
 }
 
@@ -159,6 +159,28 @@ pub fn game_load_scenario_schema() -> JsonValue {
     )
     .with_range(0.0, JSON_SAFE_INTEGER_MAX),
   ])
+}
+
+/// Schema for optional supplied replay verification.
+#[must_use]
+pub fn game_verify_replay_schema() -> JsonValue {
+  let JsonValue::Object(mut schema) = create_object_schema(&[]) else {
+    unreachable!("object schema builder must return an object");
+  };
+  let mut replay = BTreeMap::new();
+  replay.insert("type".to_string(), JsonValue::from("object"));
+  replay.insert(
+    "description".to_string(),
+    JsonValue::from("Canonical drl-rust-replay-v1 schema_version 1 envelope to verify read-only"),
+  );
+  schema.insert(
+    "properties".to_string(),
+    JsonValue::Object(BTreeMap::from([(
+      "replay".to_string(),
+      JsonValue::Object(replay),
+    )])),
+  );
+  JsonValue::Object(schema)
 }
 
 /// Schema for `game_step_action` arguments, including action-specific needs.

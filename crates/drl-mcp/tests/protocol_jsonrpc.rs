@@ -195,9 +195,16 @@ fn test_jsonrpc_tools_list_publishes_truthful_input_schemas() {
   assert_eq!(
     start_props
       .get("width")
+      .and_then(|field| field.get("minimum"))
+      .and_then(JsonValue::as_u64),
+    Some(3)
+  );
+  assert_eq!(
+    start_props
+      .get("width")
       .and_then(|field| field.get("maximum"))
       .and_then(JsonValue::as_u64),
-    Some(u32::MAX as u64)
+    Some(512)
   );
 
   let load = schema_for("game_load_scenario");
@@ -379,6 +386,16 @@ fn test_jsonrpc_tools_list_publishes_truthful_input_schemas() {
     item_id.get("maximum").and_then(JsonValue::as_u64),
     Some(9_007_199_254_740_992)
   );
+
+  let verify_replay = schema_for("game_verify_replay");
+  assert_eq!(
+    verify_replay
+      .get("properties")
+      .and_then(|properties| properties.get("replay"))
+      .and_then(|replay| replay.get("type"))
+      .and_then(JsonValue::as_str),
+    Some("object")
+  );
 }
 
 #[test]
@@ -494,6 +511,235 @@ fn test_jsonrpc_verify_replay_reconstructs_procedural_layout() {
       .and_then(|data| data.get("command_count"))
       .and_then(|value| value.as_u64()),
     Some(17)
+  );
+}
+
+#[test]
+fn test_jsonrpc_supplied_replay_verification_is_read_only_and_inactive_safe() {
+  let mut active = ready_server();
+  let _ = active.handle_request(
+    r#"{"jsonrpc":"2.0","id":40,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":123,"width":20,"height":10}}}"#,
+  );
+  let _ = active.handle_request(
+    r#"{"jsonrpc":"2.0","id":41,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"wait"}}}"#,
+  );
+  let saved = JsonValue::parse(&active.handle_request(
+    r#"{"jsonrpc":"2.0","id":42,"method":"tools/call","params":{"name":"game_save_replay","arguments":{}}}"#,
+  ))
+  .unwrap();
+  let replay = saved
+    .get("result")
+    .and_then(|result| result.get("data"))
+    .expect("replay export data")
+    .to_compact_string();
+  let supplied_request = format!(
+    r#"{{"jsonrpc":"2.0","id":43,"method":"tools/call","params":{{"name":"game_verify_replay","arguments":{{"replay":{replay}}}}}}}"#
+  );
+  let before_metrics = active.handle_request(
+    r#"{"jsonrpc":"2.0","id":44,"method":"tools/call","params":{"name":"game_get_metrics","arguments":{}}}"#,
+  );
+  let first = active.handle_request(&supplied_request);
+  let second = active.handle_request(&supplied_request);
+  assert_eq!(first, second);
+  let response = JsonValue::parse(&first).unwrap();
+  let data = response.get("result").and_then(|result| result.get("data"));
+  assert_eq!(
+    data
+      .and_then(|data| data.get("deterministic"))
+      .and_then(JsonValue::as_bool),
+    Some(true)
+  );
+  assert_eq!(
+    data
+      .and_then(|data| data.get("command_count"))
+      .and_then(JsonValue::as_u64),
+    Some(1)
+  );
+  assert_eq!(
+    before_metrics,
+    active.handle_request(
+      r#"{"jsonrpc":"2.0","id":44,"method":"tools/call","params":{"name":"game_get_metrics","arguments":{}}}"#,
+    )
+  );
+
+  let mut inactive = ready_server();
+  let inactive_supplied = JsonValue::parse(&inactive.handle_request(&supplied_request)).unwrap();
+  assert!(inactive_supplied.get("result").is_some());
+  let inactive_current = JsonValue::parse(&inactive.handle_request(
+    r#"{"jsonrpc":"2.0","id":45,"method":"tools/call","params":{"name":"game_verify_replay","arguments":{}}}"#,
+  ))
+  .unwrap();
+  assert_eq!(
+    inactive_current
+      .get("error")
+      .and_then(|error| error.get("code"))
+      .and_then(JsonValue::as_i64),
+    Some(error_codes::SESSION_NOT_ACTIVE as i64)
+  );
+}
+
+#[test]
+fn test_jsonrpc_supplied_replay_rejects_malformed_input_without_mutation() {
+  let mut server = ready_server();
+  let _ = server.handle_request(
+    r#"{"jsonrpc":"2.0","id":50,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":5,"width":20,"height":10}}}"#,
+  );
+  let before = server.handle_request(
+    r#"{"jsonrpc":"2.0","id":51,"method":"tools/call","params":{"name":"game_get_metrics","arguments":{}}}"#,
+  );
+  for replay in [
+    "null",
+    "[]",
+    "{\"format\":\"wrong\"}",
+    "{\"format\":\"drl-rust-replay-v1\",\"schema_version\":1,\"version\":1,\"metadata\":{},\"player_config\":null,\"procedural_config\":null,\"seed\":1,\"width\":1,\"height\":1,\"player_start\":{\"x\":0,\"y\":0},\"initial_stairs\":null,\"initial_monsters\":[],\"initial_items\":[],\"custom_tiles\":[],\"commands\":[{\"action\":\"unknown\"}]}",
+  ] {
+    let request = format!(
+      r#"{{"jsonrpc":"2.0","id":52,"method":"tools/call","params":{{"name":"game_verify_replay","arguments":{{"replay":{replay}}}}}}}"#
+    );
+    let response = JsonValue::parse(&server.handle_request(&request)).unwrap();
+    assert_eq!(
+      response
+        .get("error")
+        .and_then(|error| error.get("code"))
+        .and_then(JsonValue::as_i64),
+      Some(error_codes::INVALID_PARAMS as i64)
+    );
+  }
+  let exported = JsonValue::parse(&server.handle_request(
+    r#"{"jsonrpc":"2.0","id":53,"method":"tools/call","params":{"name":"game_save_replay","arguments":{}}}"#,
+  ))
+  .unwrap();
+  let mut invalid_simulation = exported
+    .get("result")
+    .and_then(|result| result.get("data"))
+    .cloned()
+    .expect("replay export data");
+  invalid_simulation
+    .as_object_mut()
+    .unwrap()
+    .insert("width".to_string(), JsonValue::from(0_u32));
+  let request = format!(
+    r#"{{"jsonrpc":"2.0","id":54,"method":"tools/call","params":{{"name":"game_verify_replay","arguments":{{"replay":{}}}}}}}"#,
+    invalid_simulation.to_compact_string()
+  );
+  let response = JsonValue::parse(&server.handle_request(&request)).unwrap();
+  assert_eq!(
+    response
+      .get("error")
+      .and_then(|error| error.get("code"))
+      .and_then(JsonValue::as_i64),
+    Some(error_codes::INVALID_PARAMS as i64)
+  );
+  let mut unsafe_config = exported
+    .get("result")
+    .and_then(|result| result.get("data"))
+    .cloned()
+    .expect("replay export data");
+  unsafe_config
+    .as_object_mut()
+    .and_then(|object| object.get_mut("procedural_config"))
+    .and_then(JsonValue::as_object_mut)
+    .unwrap()
+    .insert(
+      "max_rooms".to_string(),
+      JsonValue::RawNumber("4294967295".to_string()),
+    );
+  let request = format!(
+    r#"{{"jsonrpc":"2.0","id":55,"method":"tools/call","params":{{"name":"game_verify_replay","arguments":{{"replay":{}}}}}}}"#,
+    unsafe_config.to_compact_string()
+  );
+  let response = JsonValue::parse(&server.handle_request(&request)).unwrap();
+  assert_eq!(
+    response
+      .get("error")
+      .and_then(|error| error.get("code"))
+      .and_then(JsonValue::as_i64),
+    Some(error_codes::INVALID_PARAMS as i64)
+  );
+  assert_eq!(
+    before,
+    server.handle_request(
+      r#"{"jsonrpc":"2.0","id":51,"method":"tools/call","params":{"name":"game_get_metrics","arguments":{}}}"#,
+    )
+  );
+}
+
+#[test]
+fn test_jsonrpc_game_start_rejects_dimensions_outside_replay_bounds() {
+  let mut server = ready_server();
+  let response = JsonValue::parse(&server.handle_request(
+    r#"{"jsonrpc":"2.0","id":56,"method":"tools/call","params":{"name":"game_start","arguments":{"width":513,"height":20}}}"#,
+  ))
+  .unwrap();
+  assert_eq!(
+    response
+      .get("error")
+      .and_then(|error| error.get("code"))
+      .and_then(JsonValue::as_i64),
+    Some(error_codes::INVALID_ACTION as i64)
+  );
+}
+
+#[test]
+fn test_jsonrpc_supplied_custom_replay_verifies_without_session() {
+  let mut source = ready_server();
+  let load_request = format!(
+    r#"{{"jsonrpc":"2.0","id":60,"method":"tools/call","params":{{"name":"game_load_scenario","arguments":{{"ascii_map":"{}","max_turns":4}}}}}}"#,
+    "#####\n#@.>#\n#####"
+  );
+  let _ = source.handle_request(&load_request);
+  let saved = JsonValue::parse(&source.handle_request(
+    r#"{"jsonrpc":"2.0","id":61,"method":"tools/call","params":{"name":"game_save_replay","arguments":{}}}"#,
+  ))
+  .unwrap();
+  let replay = saved
+    .get("result")
+    .and_then(|result| result.get("data"))
+    .expect("custom replay export data")
+    .to_compact_string();
+
+  let mut target = ready_server();
+  let request = format!(
+    r#"{{"jsonrpc":"2.0","id":62,"method":"tools/call","params":{{"name":"game_verify_replay","arguments":{{"replay":{replay}}}}}}}"#
+  );
+  let response = JsonValue::parse(&target.handle_request(&request)).unwrap();
+  let data = response.get("result").and_then(|result| result.get("data"));
+  assert_eq!(
+    data
+      .and_then(|data| data.get("deterministic"))
+      .and_then(JsonValue::as_bool),
+    Some(true)
+  );
+  assert_eq!(
+    data
+      .and_then(|data| data.get("command_count"))
+      .and_then(JsonValue::as_u64),
+    Some(0)
+  );
+  assert!(!target.session().is_active());
+
+  let mut invalid_custom = saved
+    .get("result")
+    .and_then(|result| result.get("data"))
+    .cloned()
+    .expect("custom replay export data");
+  invalid_custom
+    .as_object_mut()
+    .and_then(|object| object.get_mut("custom_tiles"))
+    .and_then(JsonValue::as_array_mut)
+    .unwrap()
+    .push(JsonValue::parse(r#"{"position":{"x":99,"y":99},"kind":"floor"}"#).unwrap());
+  let invalid_request = format!(
+    r#"{{"jsonrpc":"2.0","id":63,"method":"tools/call","params":{{"name":"game_verify_replay","arguments":{{"replay":{}}}}}}}"#,
+    invalid_custom.to_compact_string()
+  );
+  let invalid_response = JsonValue::parse(&target.handle_request(&invalid_request)).unwrap();
+  assert_eq!(
+    invalid_response
+      .get("error")
+      .and_then(|error| error.get("code"))
+      .and_then(JsonValue::as_i64),
+    Some(error_codes::INVALID_PARAMS as i64)
   );
 }
 

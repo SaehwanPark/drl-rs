@@ -7,8 +7,14 @@ use drl_protocol::{
 };
 use std::collections::BTreeMap;
 
+pub use crate::replay_json_decode::from_json_value;
+
 const FORMAT: &str = "drl-rust-replay-v1";
 const SCHEMA_VERSION: u32 = 1;
+pub(crate) const MAX_REPLAY_DIMENSION: u32 = 512;
+pub(crate) const MAX_PROCEDURAL_ROOMS: u32 = 64;
+pub(crate) const MAX_ROOM_SIZE: u32 = 64;
+pub(crate) const MAX_CONTENT_PER_ROOM: u32 = 64;
 
 /// Converts every field of a V1 replay log to a deterministic JSON envelope.
 ///
@@ -360,7 +366,7 @@ mod tests {
       equipped_weapon: Some(ItemSpawnKind::Shotgun),
       equipped_armor: Some(ItemSpawnKind::GreenArmor),
     };
-    let mut replay = ReplayLog::new(42, 12, 10, Position::new(-1, 2))
+    let mut replay = ReplayLog::new(42, 12, 10, Position::new(1, 2))
       .with_procedural_config(ProceduralGenerationConfig {
         max_rooms: 5,
         min_room_size: 4,
@@ -410,6 +416,8 @@ mod tests {
     let second = to_json_value(&replay).to_compact_string();
     assert_eq!(first, second);
     assert!(JsonValue::parse(&first).is_ok());
+    let decoded = from_json_value(&JsonValue::parse(&first).unwrap()).unwrap();
+    assert_eq!(decoded, replay);
     let value = to_json_value(&replay);
     assert_eq!(
       value.get("format").and_then(JsonValue::as_str),
@@ -438,6 +446,15 @@ mod tests {
     replay.commands.push(Command::Drop(ItemId::new(item_id)));
 
     let value = to_json_value(&replay);
+    let decoded = from_json_value(&value).unwrap();
+    assert_eq!(decoded.seed, seed);
+    assert_eq!(decoded.commands, vec![Command::Drop(ItemId::new(item_id))]);
+    let mut extended = value.clone();
+    extended
+      .as_object_mut()
+      .unwrap()
+      .insert("future_field".to_string(), JsonValue::Bool(true));
+    assert_eq!(from_json_value(&extended).unwrap(), replay);
     assert_eq!(
       value.get("seed").map(JsonValue::to_compact_string),
       Some(seed.to_string())

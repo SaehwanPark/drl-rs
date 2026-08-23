@@ -9,6 +9,7 @@ use crate::session::{
 };
 use crate::tools_schema::{
   empty_object_schema, game_load_scenario_schema, game_start_schema, game_step_action_schema,
+  game_verify_replay_schema,
 };
 use drl_core::ReplayEngine;
 use std::collections::BTreeMap;
@@ -59,8 +60,8 @@ pub fn get_all_tool_definitions() -> Vec<ToolDefinition> {
     },
     ToolDefinition {
       name: "game_verify_replay".to_string(),
-      description: "Verify the current session's replay is deterministic without changing game state.".to_string(),
-      input_schema: empty_object_schema(),
+      description: "Verify the current session's replay, or a supplied canonical V1 replay, without changing game state.".to_string(),
+      input_schema: game_verify_replay_schema(),
     },
     ToolDefinition {
       name: "game_get_dev_state".to_string(),
@@ -256,14 +257,23 @@ pub fn execute_tool(
     }
 
     "game_verify_replay" => {
-      let replay = session
-        .export_replay()
-        .map_err(|e| JsonRpcError::new(error_codes::SESSION_NOT_ACTIVE, e))?;
-      let deterministic = ReplayEngine::verify_determinism(replay).map_err(|e| {
-        JsonRpcError::new(
-          error_codes::INTERNAL_ERROR,
-          format!("Replay verification failed: {e}"),
-        )
+      let supplied = arguments.get("replay").is_some();
+      let replay = if let Some(value) = arguments.get("replay") {
+        replay_json::from_json_value(value)
+          .map_err(|e| JsonRpcError::new(error_codes::INVALID_PARAMS, e))?
+      } else {
+        session
+          .export_replay()
+          .map_err(|e| JsonRpcError::new(error_codes::SESSION_NOT_ACTIVE, e))?
+          .clone()
+      };
+      let deterministic = ReplayEngine::verify_determinism(&replay).map_err(|e| {
+        let code = if supplied {
+          error_codes::INVALID_PARAMS
+        } else {
+          error_codes::INTERNAL_ERROR
+        };
+        JsonRpcError::new(code, format!("Replay verification failed: {e}"))
       })?;
       let mut res = BTreeMap::new();
       res.insert("deterministic".to_string(), JsonValue::Bool(deterministic));

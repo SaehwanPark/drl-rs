@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.56`
+Current project version: `0.2.57`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.56)
+## 3. Current Progress Summary (`VERSION` 0.2.57)
 
 ### Delivered Foundations
 
@@ -84,12 +84,16 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active Milestone Slice (M13)**: `game_save_replay` now emits a complete
-  deterministic `drl-rust-replay-v1` JSON envelope for every in-memory V1
-  `ReplayLog` field, including initial-state containers and typed semantic
-  commands. The export is state-safe and parseable with byte-identical repeats;
-  replay import/load, validation, external interchange, and migration remain
-  open. The preceding fair legal-action catalog derives candidates from
+- **Active Milestone Slice (M13/M6)**: `game_verify_replay` now accepts an
+  exact `drl-rust-replay-v1` JSON envelope and verifies it read-only, including
+  without an active session. The decoder covers every V1 field, nested optional
+  value, enum, command variant, coordinate, and exact u64; malformed or
+  simulation-invalid supplied input returns `-32602`, while current-session
+  zero-argument verification remains unchanged. Session activation/load,
+  replay-file IO, migration, external interchange, and client certification
+  remain open. The preceding 0.2.56 export emits every in-memory V1 `ReplayLog`
+  field with deterministic typed commands and byte-identical repeats. The fair
+  legal-action catalog derives candidates from
   `PlayerObservation`, probes each candidate on a cloned `drl_core::Game`, and
   uses the filtered set for listing, response payloads, and pre-dispatch
   admission without mutating live state or exposing hidden search. Unknown/
@@ -110,8 +114,8 @@ verification item uses explicit status semantics:
   request IDs now reject non-scalar values before dispatch, and stateful method
   envelopes reject non-object params/arguments before execution; stateful tool
   arguments now reject wrong-typed optional integers before mutation, and
-  `game_verify_replay` exposes deterministic in-memory replay verification
-  without mutating sessions; `game_step_action` now rejects unsafe numeric
+  `game_verify_replay` exposes deterministic in-memory and supplied canonical
+  V1 replay verification without mutating sessions; `game_step_action` now rejects unsafe numeric
   coordinates and item IDs before mutation. Hidden-state search, unbounded
   candidate generation, and external-client compatibility remain open.
 - **M9 Content Evidence**: Base, expansion, user-item, being, terrain-cell,
@@ -286,6 +290,11 @@ tooling.
 - [x] `game_save_replay` exports complete V1 replay metadata, initial-state
   containers, and typed command variants through a deterministic JSON envelope;
   replay import/load and external interchange remain open.
+- [x] `game_verify_replay` decodes and verifies a supplied canonical V1 replay
+  read-only, including inactive-session verification and fail-closed malformed
+  input handling. MCP session creation enforces bounded dimensions and
+  procedural parameters before export; session activation/load and replay-file
+  IO remain open.
 - [x] Terminal `game_step_action` calls are rejected after victory, death,
   turn-limit, or stalled outcomes; stair transitions report victory while
   reset and replay/metrics inspection remain available.
