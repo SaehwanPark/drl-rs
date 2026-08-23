@@ -5,6 +5,7 @@
 pub mod json;
 pub mod protocol;
 pub mod replay_json;
+mod replay_json_decode;
 pub mod resources;
 pub mod server;
 pub mod session;

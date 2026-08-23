@@ -66,8 +66,8 @@ tool_map = {tool.get("name"): tool for tool in tools}
 start_props = tool_map["game_start"]["inputSchema"]["properties"]
 if start_props["seed"]["maximum"] != 9007199254740992:
     raise SystemExit("game_start seed schema lacks JSON-safe maximum")
-if start_props["width"]["maximum"] != 4294967295:
-    raise SystemExit("game_start width schema lacks u32 maximum")
+if start_props["width"]["maximum"] != 512 or start_props["width"]["minimum"] != 3:
+    raise SystemExit("game_start width schema lacks bounded replay dimensions")
 step_schema = tool_map["game_step_action"]["inputSchema"]
 discriminator = step_schema.get("anyOf", [])
 if len(discriminator) != 2 or {field for branch in discriminator for field in branch.get("required", [])} != {"action", "command"}:

@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.56`
+Current project version: `0.2.57`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,16 +23,18 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M13 Canonical Complete V1 MCP Replay Export
+## 2. Active Implementation Slice: M13/M6 Read-Only Canonical V1 Replay Verification
 
 ### 2.1 Scope & Objective
 
-Make `game_save_replay` expose a complete, deterministic JSON projection of the
-existing in-memory `ReplayLog` V1 contract. Preserve every replay field,
-including metadata, optional player/procedural configuration, initial map
-content, and every semantic command variant, using stable tagged objects and
-deterministic ordering. Keep import/load, validation, and external interchange
-outside this export-only boundary.
+Make `game_verify_replay` optionally verify the exact canonical V1 JSON emitted
+by `game_save_replay` without activating or mutating the current session. Decode
+every replay field, nested spawn/config value, and typed command, then run the
+existing deterministic replay authority. Keep session loading, file/network
+transport, migration, and external interchange outside this read-only boundary.
+MCP-created envelopes use bounded session dimensions (3..512 tiles per axis)
+and bounded procedural generation parameters; the producer and published
+`game_start` schema enforce those same limits before export.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
@@ -54,45 +56,53 @@ outside this export-only boundary.
 5. **MCP semantic boundary**:
    - `game_list_actions` derives fair candidates from `PlayerObservation`, and
      the 0.2.55 slice filters them through cloned core probes before listing or
-     dispatching; this slice changes only replay JSON projection.
+     dispatching; the preceding 0.2.56 slice owns complete replay export, while
+     this slice adds only read-only supplied-input verification.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Stable envelope**: Export includes `format: drl-rust-replay-v1`,
-  `schema_version: 1`, replay version, complete metadata, and every direct
-  `ReplayLog` field with explicit nulls for absent optional values.
-- [x] **Complete initial state**: Player configuration, procedural generation
-  configuration, seed/dimensions/start, stairs, all initial monsters/items,
-  custom tile overrides, and their nested fields are represented.
-- [x] **Structured commands**: Move, melee, ranged, wait, pickup, drop, equip,
-  unequip, use, reload, and descend commands export as typed action objects
-  with canonical directions, coordinates, item IDs, and slots.
-- [x] **Determinism and parseability**: Repeated exports are byte-identical,
-  JSON parses successfully, command order is preserved, and no timestamps or
-  process-local identifiers are emitted.
-- [x] **Non-mutation**: Saving a replay does not change turn, metrics, replay,
-  or verification state; `game_verify_replay` remains deterministic and
-  unchanged.
-- [x] **Error boundary**: Inactive sessions retain the existing
-  `SESSION_NOT_ACTIVE` error; replay import/load, schema validation, external
-  interchange, migrations, and client certification remain open.
+- [x] **Exact decoder**: `replay_json::from_json_value` accepts only the
+  `drl-rust-replay-v1` / `schema_version: 1` envelope and reconstructs every
+  V1 field, enum, optional value, command variant, coordinate, and exact u64.
+- [x] **Read-only verification**: An optional `replay` object runs through
+  `ReplayEngine::verify_determinism` without requiring or changing a session;
+  zero-argument current-session verification remains unchanged.
+- [x] **Fail-closed input boundary**: Missing, wrong-typed, unsupported, or
+  malformed replay values return `-32602`; simulation failure for supplied
+  input is also an input error, while deterministic false remains successful.
+- [x] **Round-trip and state safety**: Procedural and custom exports decode and
+  verify, repeated supplied verification is byte-identical, and active
+  observation/metrics/replay state remains unchanged.
+- [x] **Explicit non-goals**: No session activation/load/reset, replay-file
+  IO, migration, cross-version negotiation, external interchange, or client
+  certification is claimed.
 
 ### 2.4 Pure Contract
 
-- **Input**: An active `McpSession` and its immutable in-memory `ReplayLog` V1.
-- **Output**: A deterministic JSON object that contains the complete replay
-  projection and structured semantic command sequence.
+- **Input**: Either an active `McpSession` for the existing zero-argument path,
+  or an exact canonical V1 replay JSON object supplied to `game_verify_replay`.
+- **Output**: A deterministic verification result containing `deterministic`,
+  `command_count`, and `version`.
 - **Ownership Boundary**:
   - `ReplayLog` and `ReplayEngine` remain the core replay representation and
     deterministic authority; neither is changed by this slice.
-  - `drl-mcp::replay_json` owns only the stable JSON projection and does not
-    parse, validate, import, or mutate replay state.
-  - `game_save_replay` owns the MCP envelope; `game_verify_replay` continues to
-    operate on the in-memory log directly.
+  - `drl-mcp::replay_json` owns the stable projection and exact V1 decoder; it
+    does not activate sessions, perform file IO, migrate versions, or mutate
+    replay state.
+  - `game_save_replay` owns export; `game_verify_replay` owns read-only supplied
+    verification while preserving the current in-memory path.
 
 ---
 
 ## 3. Recent Delivered Slices
+
+### M13 — Canonical Complete V1 MCP Replay Export (`VERSION` 0.2.56)
+
+- [x] `game_save_replay` exports every in-memory V1 field and semantic command
+  through the deterministic `drl-rust-replay-v1` envelope; supplied replay
+  verification now consumes this exact contract without loading a session.
+- [x] Import/load, replay-file IO, migration, and external interchange remain
+  explicitly open.
 
 ### M13 — Exact Fair-Observation Legal-Action Enumeration (`VERSION` 0.2.55)
 

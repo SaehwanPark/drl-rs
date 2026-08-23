@@ -3,6 +3,19 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.57]
+
+- Added read-only supplied replay verification to `game_verify_replay` using an
+  exact inverse decoder for the canonical `drl-rust-replay-v1` envelope. It
+  validates every V1 field, enum, optional value, command variant, coordinate,
+  and exact u64 before deterministic verification. MCP session creation enforces
+  bounded dimensions and generator parameters before export.
+- Supplied verification works without an active session, preserves the existing
+  zero-argument current-session path, returns `-32602` for malformed or
+  simulation-invalid supplied input, and leaves active session state unchanged.
+- Session loading/activation, replay-file IO, migrations, cross-version and
+  external interchange, and client certification remain open.
+
 ## [0.2.56]
 
 - Replaced the lossy MCP replay projection with a complete deterministic V1
