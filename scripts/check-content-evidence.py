@@ -9,6 +9,7 @@ import re
 from pathlib import Path
 
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
+RUST_LEVEL_ID = re.compile(r'^\s+id:\s+"([^"]+)",\s*$', re.MULTILINE)
 KINDS = ("being", "item", "cell", "level")
 
 
@@ -21,6 +22,11 @@ def parse_args() -> argparse.Namespace:
     required=True,
     metavar="KIND=PATH",
     help="evidence bundle to validate; repeat once for each configured kind",
+  )
+  parser.add_argument(
+    "--rust-catalog",
+    type=Path,
+    help="Rust special-level definition source to synchronize with the level bundle",
   )
   return parser.parse_args()
 
@@ -50,6 +56,16 @@ def bundle_paths(values: list[str]) -> dict[str, Path]:
 def require(condition: bool, message: str) -> None:
   if not condition:
     raise SystemExit(f"content evidence coverage failed: {message}")
+
+
+def validate_rust_catalog(path: Path, expected_ids: object) -> None:
+  require(isinstance(expected_ids, list), "level crosswalk lacks a Rust catalog ID list")
+  try:
+    source = path.read_text(encoding="utf-8")
+  except OSError as error:
+    raise SystemExit(f"unable to read Rust special-level catalog {path}: {error}") from error
+  ids = RUST_LEVEL_ID.findall(source)
+  require(ids == expected_ids, "Rust special-level IDs differ from the reviewed level catalog")
 
 
 def validate_bundle(kind: str, path: Path, expected: dict[str, object], revision: str) -> int:
@@ -121,10 +137,14 @@ def main() -> int:
     kind: validate_bundle(kind, paths[kind], bundles[kind], revision)
     for kind in KINDS
   }
+  if args.rust_catalog is not None:
+    validate_rust_catalog(args.rust_catalog, bundles["level"].get("record_ids"))
   print(
     "Content evidence coverage: PASS "
     f"(being={counts['being']}, item={counts['item']}, "
-    f"cell={counts['cell']}, level={counts['level']}; pinned {revision})"
+    f"cell={counts['cell']}, level={counts['level']}; pinned {revision}"
+    + ("; Rust catalog synchronized" if args.rust_catalog is not None else "")
+    + ")"
   )
   return 0
 

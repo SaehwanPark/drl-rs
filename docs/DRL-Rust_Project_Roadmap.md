@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.28`
+Current project version: `0.2.29`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.28)
+## 3. Current Progress Summary (`VERSION` 0.2.29)
 
 ### Delivered Foundations
 
@@ -85,8 +85,9 @@ verification item uses explicit status semantics:
 ### Active & Open Work
 
 - **Active Milestone Slice (M9)**: A reviewed evidence-coverage gate validates
-  pinned provenance and representative being/item/cell records plus all 26
-  indexed special levels; runtime Lua and gameplay overclaims remain open.
+  pinned provenance and representative being/item/cell records, all 26 indexed
+  special levels, and synchronization with the Rust descriptive catalog;
+  runtime Lua and gameplay overclaims remain open.
 - **M9 Content Evidence**: Base, expansion, user-item, being, terrain-cell,
   and special-level evidence slices are delivered without runtime Lua or
   gameplay overclaims.
@@ -349,6 +350,8 @@ scripting.
   item families, terrain cells, and all 26 indexed special-level IDs; source
   provenance, SHA-256 shape, ordering, uniqueness, and dynamic gaps remain
   explicit.
+- [x] Evidence-level IDs are checked against the Rust
+  `SPECIAL_LEVEL_DEFINITIONS` catalog to prevent descriptive metadata drift.
 - [ ] Full migration of legacy monsters, weapons, armor, mods, and consumable
   items.
 - [ ] Full migration of special levels, vaults, and dungeon branches.

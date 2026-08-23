@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.29]
+
+- Synchronized the reviewed 26-level evidence catalog with the Rust
+  `SPECIAL_LEVEL_DEFINITIONS` IDs in the repository gate.
+- Added fixture coverage that rejects drift between evidence IDs and the Rust
+  descriptive catalog; no runtime behavior or gameplay semantics changed.
+
 ## [0.2.28]
 
 - Added a reviewed M9 evidence-coverage crosswalk and validator for pinned

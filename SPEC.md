@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.28`
+Current project version: `0.2.29`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -30,8 +30,9 @@ criteria, and verification boundaries.
 Validate the existing pinned legacy-content converters with a reviewed
 crosswalk. The gate checks source provenance, SHA-256 shape, deterministic
 ordering/uniqueness, representative being/item/cell IDs, and complete coverage
-of all 26 indexed special-level IDs. It records evidence coverage only; it
-does not import runtime Lua behavior or assert gameplay parity.
+of all 26 indexed special-level IDs. It also synchronizes those IDs with the
+Rust descriptive catalog. It records evidence coverage only; it does not
+import runtime Lua behavior or assert gameplay parity.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
@@ -55,6 +56,8 @@ does not import runtime Lua behavior or assert gameplay parity.
 - [x] **Representative coverage**: Being, item-family, and terrain-cell bundles
   cover the reviewed current representatives; the level bundle matches all 26
   indexed special-level IDs.
+- [x] **Rust catalog synchronization**: The reviewed level IDs match the
+  `SPECIAL_LEVEL_DEFINITIONS` source IDs exactly.
 - [x] **Fixture rejection coverage**: Validator tests reject duplicate IDs,
   unsorted records, missing representatives, and wrong revisions.
 - [ ] **Full typed content migration and behavior validation**: Nested tables,
@@ -72,6 +75,8 @@ does not import runtime Lua behavior or assert gameplay parity.
   - `scripts/convert-legacy-content-bundle.py` and
     `scripts/convert-legacy-level-index.py` own extraction.
   - `scripts/check-content-evidence.py` owns crosswalk validation.
+  - `crates/drl-core/src/special_level_definition.rs` owns the descriptive
+    Rust ID catalog checked by the validator.
   - `docs/content/evidence-coverage.json` owns reviewed coverage scope.
   - No simulation, browser runtime, Lua interpreter, or inferred gameplay
     behavior changes.
@@ -80,12 +85,14 @@ does not import runtime Lua behavior or assert gameplay parity.
 
 ## 3. Recent Delivered Slices
 
-### M9 — Representative Content-Evidence Coverage (`VERSION` 0.2.28)
+### M9 — Representative Content-Evidence Coverage (`VERSION` 0.2.29)
 
 - [x] Added a reviewed crosswalk and validator for pinned being, item-family,
   terrain-cell, and special-level evidence bundles.
 - [x] Added provenance, digest-shape, ordering, uniqueness, representative,
   and complete 26-level coverage checks plus fixture rejection cases.
+- [x] Synchronized the reviewed 26-level ID list with the Rust descriptive
+  `SPECIAL_LEVEL_DEFINITIONS` catalog and rejected fixture drift.
 - [ ] Full typed migration, assets, callbacks, and gameplay parity remain open.
 
 ### M10 — Same-Release Offline-Cache Isolation (`VERSION` 0.2.27)
@@ -332,8 +339,9 @@ does not import runtime Lua behavior or assert gameplay parity.
 
 ## 6. Verification Gates
 
-### Verified Baseline (`VERSION` 0.2.28)
+### Verified Baseline (`VERSION` 0.2.29)
 
+4263241 docs(spec): record merged evidence baseline
 a3d8fd2 feat(content): add evidence coverage gate (#119)
 0d919ec docs(spec): record merged cache isolation baseline
 9f0d601 feat(web): isolate service-worker cache reads (#118)
