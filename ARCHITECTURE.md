@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.69`
+Current project version: `0.2.70`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -92,11 +92,12 @@ Presentation Boundary
   - Perception & AI: Field of View (`fov`), Line of Sight, `MonsterAi`.
   - Items & Inventory: `Inventory`, `Equipment`, `Item::from_spawn_kind`.
     Rocket and power-cell ammo families, their typed pack boundaries, and blue
-    armor are definition-backed spawns; pinned pickup amounts are immutable
+    and red armor are definition-backed spawns; pinned pickup amounts are immutable
     definition metadata, while replay/scenario counts remain caller-owned.
-    Blue armor currently preserves protection, description, sprite slot, and
-    blue presentation tint; legacy resistance and movement modifiers remain
-    explicit gaps, as do prepared-slot consumption and broader item behavior.
+    Blue and red armor preserve protection, descriptions, the shared sprite
+    slot, and their presentation tints; legacy resistance and movement
+    modifiers remain explicit gaps, as do prepared-slot consumption and
+    broader item behavior.
   - Level Generation: `generator` (BFS reachability, room connectivity).
   - Content Definitions: `item_definition`, `loot_definition`,
     `monster_roll_definition`, `level_definition`, and descriptive

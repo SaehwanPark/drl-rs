@@ -120,6 +120,7 @@ pub enum ItemSpawnKind {
   LargeMedPack,
   GreenArmor,
   BlueArmor,
+  RedArmor,
   PhaseDevice,
 }
 

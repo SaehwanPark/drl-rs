@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.69`
+Current project version: `0.2.70`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.69)
+## 3. Current Progress Summary (`VERSION` 0.2.70)
 
 ### Delivered Foundations
 
@@ -76,7 +76,7 @@ verification item uses explicit status semantics:
   text-grid surface.
 - **Typed Content & Persistence (M9, M10)**: Rust-owned definitions for current
   monsters, items, tiles, and levels, including pinned rocket, power-cell, and
-  blue-armor families; versioned fixed-session snapshot codec with localStorage
+  blue/red-armor families; versioned fixed-session snapshot codec with localStorage
   persistence, bounded rejected-save quarantine, and static service-worker
   cache.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
@@ -466,6 +466,9 @@ scripting.
   amount/capacity, replay kinds, descriptions, and atlas slots.
 - [x] Typed blue armor preserves pinned protection, description, replay kind,
   shared armor atlas slot, and pure blue presentation tint; legacy resistance
+  and movement modifiers remain explicit migration gaps.
+- [x] Typed red armor preserves pinned protection, description, replay kind,
+  shared armor atlas slot, and pure red presentation tint; legacy resistance
   and movement modifiers remain explicit migration gaps.
 - [ ] Full migration of legacy monsters, weapons, armor, mods, and consumable
   items.
