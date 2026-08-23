@@ -36,7 +36,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.60`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.61`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:
@@ -82,8 +82,10 @@ replays, and regression testing.
     full external-client compatibility remain open.
   - Browser saves use a bounded V2 command-count token, accept the shipped V1
     token for transactional replay, and migrate successful V1 restores in place;
-    offline Save/Load is verified on the supported local Chromium target, while
-    the full Clear Save lifecycle remains open.
+    offline Save/Load is verified on the supported local Chromium target, and
+    Clear Save now requires an explicit accessible confirmation with a tested
+    cancel path. Destructive confirmation remains an action-time acceptance
+    step.
   - The service worker reads only the current generated release cache, so stale
     or unrelated Cache Storage namespaces cannot satisfy offline requests;
     registration bypasses browser HTTP caching for worker updates and reports

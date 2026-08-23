@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.60`
+Current project version: `0.2.61`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,84 +23,54 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M5/M6/M13 Transactional Canonical V1 Replay Session Restore
+## 2. Active Implementation Slice: M10 Clear Save Confirmation Guard
 
 ### 2.1 Scope & Objective
 
-Restore a required canonical `drl-rust-replay-v1` object through
-`game_load_replay` without partially replacing an active session. The server
-must decode the exact V1 envelope, execute it in temporary core state through
-`ReplayEngine::run_with_diagnostics`, and commit the final game, metrics,
-events, and imported replay log only after successful validation and
-simulation. The imported log is retained as the deterministic reset source;
-later valid actions append to the active log, while reset reruns the original
-source and discards those later actions. The optional MCP turn limit is part
-of the emitted V1 envelope so `TurnLimitReached` terminal state survives a
-load. This is a same-version in-memory restore contract, not a replay-file or
-external-interchange format.
+Protect the browser's destructive **Clear save** control with an explicit
+confirmation step. A started game must ask whether the player wants to remove
+the saved session from this device; cancelling must leave storage and the
+active simulation untouched, while confirmation continues to the existing
+Rust-owned storage removal function. This is a presentation-boundary safety
+guard, not a change to snapshot encoding or gameplay state.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
-1. **Graphics provenance**:
-   - `assets/legacy/drl/graphics/` is pinned to revision
-     `17d9be1204751899b2d69d8d3a2dde247bd0cc5c` with copied CC BY-SA 4.0
-     license, source manifest, and SHA-256 checksums.
-2. **Asset boundary**:
-   - `assets/README.md` and `docs/legacy-behavior/asset-provenance.md` keep
-     legacy code, audio/music, and fonts out of the browser bundle pending
-     separate rights evidence.
-3. **Release packaging**:
-   - `build-web.sh` copies only the cleared graphics tree into `dist/` and
-     emits a release manifest whose rights declaration names the graphics
-     license; full artifact and service-worker validation remains separate.
-4. **Evidence vocabulary**:
-   - Rights and capture uncertainty are recorded as `NOT_RUN`, `INCONCLUSIVE`,
-     or `NOT_CLEARED`, never inferred from repository presence alone.
-5. **MCP semantic boundary**:
-   - `game_list_actions` derives fair candidates from `PlayerObservation`, and
-     the 0.2.55 slice filters them through cloned core probes before listing or
-     dispatching; replay export and supplied verification remain separate
-     deterministic contracts.
+1. **Persistence boundary**: `drl-web` owns fixed-session snapshot encoding,
+   transactional restore, bounded rejected-save quarantine, and best-effort
+   localStorage operations; `drl-core` remains storage-free.
+2. **Browser shell**: `web/bootstrap.js` owns DOM event wiring and reports
+   recoverable Save/Load/Clear Save status messages without advancing turns.
+3. **Offline evidence**: local Chromium evidence covers offline navigation,
+   startup, Save, and Load; destructive Clear Save execution remains an
+   action-time acceptance step and must not be inferred from static tests.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Exact input boundary**: `game_load_replay` requires an object-shaped
-  `replay` argument; malformed, wrong-type, unsafe, out-of-bounds, or
-  unsupported-version envelopes return `-32602` before session replacement.
-- [x] **Transactional simulation**: Valid input is executed in temporary core
-  state. Simulation-invalid input is reported through the recognized
-  `tools/call` runtime-result boundary and leaves an existing session byte
-  identical.
-- [x] **Loaded session contract**: Success returns `status: "ReplayLoaded"`,
-  the deterministic final observation, legal actions, and metrics. The
-  imported V1 log and optional turn limit are retained; subsequent valid
-  actions append to it and supplied/current replay verification remains
-  deterministic.
-- [x] **Reset and terminal behavior**: Reset reruns the retained imported
-  source, and terminal loaded replays expose no legal actions and reject later
-  steps state-safely. The existing replay-engine terminal-prefix behavior is
-  retained: any commands after a terminal transition remain in the imported
-  log but are not simulated.
-- [x] **Transport and predecessor safety**: Notifications, batches, list
-  pagination, resources, lifecycle gates, and delivered tool-error result
-  semantics remain deterministic and unchanged.
-- [x] **Explicit non-goals**: No replay file IO, stdin/network transport,
-  migration, cross-version schema, reconnect/resume, gameplay/core rule, or
-  external-client certification claim is made.
+- [x] **Confirmation boundary**: a started browser session opens an explicit,
+  keyboard-accessible confirmation dialog with focus cycling before invoking
+  `clear_save()`.
+- [x] **Cancel safety**: dismissing the prompt reports `Saved session kept.`
+  and does not call the storage-removal function or alter simulation state.
+- [x] **Confirmed compatibility**: accepting the prompt still returns the
+  existing Rust-owned Clear Save result; no snapshot or core API changes are
+  introduced.
+- [x] **Focused contract coverage**: a Node contract test protects the prompt,
+  cancel status, and existing clear call; the live supported-Chromium run
+  verifies the prompt and cancel path.
+- [ ] **Destructive browser action**: actually accepting the prompt and
+  deleting local save data remains `NOT_RUN` because action-time deletion was
+  not authorized for this run.
+- [x] **Explicit non-goals**: no gameplay/core rule, snapshot schema,
+  service-worker cache, or cross-browser accessibility claim is changed.
 
 ### 2.4 Pure Contract
 
-- **Input**: A validated `tools/call` envelope containing the exact canonical
-  V1 replay object emitted by `game_save_replay`.
-- **Output**: Successful restore returns `{content, isError: false, data}`
-  with `status: "ReplayLoaded"`; malformed input remains a JSON-RPC
-  `-32602`, and simulation failure is a successful `isError: true` result.
-- **Ownership Boundary**:
-  - `replay_json` owns exact V1 decoding; `ReplayEngine` remains the sole
-    replay execution authority; `McpSession` commits only after temporary
-    execution succeeds and retains the imported source for reset.
-  - `McpServer` preserves the delivered distinction between malformed
-    protocol/input errors and recognized runtime tool failures.
+- **Input**: a click on the started page's `Clear save` button.
+- **Output**: cancellation returns `Saved session kept.`; confirmation invokes
+  the existing `clear_save()` export and returns its storage result.
+- **Ownership Boundary**: JavaScript owns only user confirmation and status
+  presentation; Rust/WASM remains authoritative for localStorage mutation.
 
 ---
 
@@ -272,10 +242,13 @@ external-interchange format.
   started the cached WASM game successfully. The recorded environment and
   boundary are in
   [`docs/acceptance/browser-offline-2026-08-23.md`](docs/acceptance/browser-offline-2026-08-23.md).
-- [ ] The test-plan-required offline Clear Save action is awaiting explicit
-  action-time confirmation; OS-level PWA installation prompts, production
-  HTTPS deployment, other browsers/backends, WCAG/screen-reader behavior,
-  audible output, and capture-backed parity remain open.
+- [x] The browser shell now requires an explicit accessible Clear Save
+  confirmation; Cancel and Escape preserve the save and active simulation, with
+  live supported-Chromium evidence in the acceptance record.
+- [ ] The destructive confirmation step remains `NOT_RUN`; OS-level PWA
+  installation prompts, production HTTPS deployment, other browsers/backends,
+  WCAG/screen-reader behavior, audible output, and capture-backed parity remain
+  open.
 
 ### M12 — Supported-Chromium Dynamic DOM Acceptance (evidence baseline)
 

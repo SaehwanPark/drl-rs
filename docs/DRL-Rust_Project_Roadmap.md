@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.60`
+Current project version: `0.2.61`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.60)
+## 3. Current Progress Summary (`VERSION` 0.2.61)
 
 ### Delivered Foundations
 
@@ -470,8 +470,10 @@ Implement robust client-side save state and offline browser capabilities.
   waiting updates without forcing active-client takeover.
 - [x] Service-worker navigation and asset reads are isolated to the current
   generated release cache; stale/unrelated cache namespaces fail closed.
+- [x] Clear Save uses an explicit accessible confirmation dialog; cancel and
+  Escape preserve the saved session and active simulation without mutation.
 - [ ] Full offline-after-first-load PWA lifecycle acceptance remains open while
-  the test-plan-required Clear Save action awaits confirmation; offline
+  destructive confirmation remains an action-time acceptance step. Offline
   navigation/startup and Save/Load are evidenced on the local desktop
   Chromium target in
   [`docs/acceptance/browser-offline-2026-08-23.md`](acceptance/browser-offline-2026-08-23.md).

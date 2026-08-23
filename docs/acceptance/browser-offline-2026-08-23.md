@@ -5,13 +5,15 @@ Run date: 2026-08-23
 Owner/role: `/root`, milestone owner
 Predecessor: `_workspace/drl/m10-offline/02-test-plan.md`
 Predecessor revision: `729f5c6` (generated web bundle baseline)
-Input revision: `729f5c69217539a46da9715b64bb5567aa856406`
-Output revision: `cbc25a2` (reviewed evidence revision)
+Input revision: `56155fb` (transactional replay baseline)
+Output revision: `b9dba12` (`0.2.61` evidence revision)
 Overall status: `PARTIAL PASS` — offline navigation/startup and Save/Load pass;
-Clear Save remains `NOT_RUN` pending action-time confirmation
-Build: `0.2.41`, generated from the input revision
+the Clear Save confirmation/cancel guard passes, while destructive confirmation
+remains `NOT_RUN`
+Build: `0.2.61`, generated from the current branch
 Targets: `http://127.0.0.1:8765/index.html` initial smoke and fresh-origin
-`http://127.0.0.1:8766/index.html`, generated with `sh scripts/build-web.sh`
+`http://127.0.0.1:8766/index.html`, generated with `sh scripts/build-web.sh`;
+confirmation guard: fresh origin `http://127.0.0.1:8769/index.html`
 
 ## Environment
 
@@ -24,8 +26,11 @@ Targets: `http://127.0.0.1:8765/index.html` initial smoke and fresh-origin
 - Fresh profile: `NOT_RUN`; the second pass used a fresh loopback origin
   (`http://127.0.0.1:8766/`) in the existing Codex browser profile.
 - Durable runtime state: service worker `activated` and controlling the page;
-  Cache Storage contained exactly `drl-rust-m10-v1-0.2.41-729f5c692175`;
-  `localStorage` availability was `true`.
+  the predecessor offline run's Cache Storage contained exactly
+  `drl-rust-m10-v1-0.2.41-729f5c692175` (historical evidence), while the
+  current `0.2.61` bundle generated
+  `drl-rust-m10-v1-0.2.61-56155fbdc381`; `localStorage` availability was
+  `true`.
 
 ## Procedure and result
 
@@ -44,9 +49,22 @@ Targets: `http://127.0.0.1:8765/index.html` initial smoke and fresh-origin
    **Load** returned `Session loaded from this device.`: `PASS`. The move
    between those actions was intentionally auto-persisted by the browser
    session, so this run does not claim rollback-to-an-earlier-turn behavior.
-7. **Clear save** is `NOT_RUN` pending action-time confirmation because it
-   deletes local browser data; no console errors were observed.
-8. Restored the browser network after the check: `PASS`.
+7. On the fresh `8769` origin, saved the session and opened **Clear save**:
+   the explicit dialog was visible, focus moved to **Cancel**, and no storage
+   mutation occurred while the dialog was open: `PASS`.
+8. Tab and reverse-Tab cycled focus between **Cancel** and **Clear save**;
+   Escape remained available as a cancellation path: `PASS`.
+9. Clicked **Cancel**, which returned `Saved session kept.`, restored focus to
+   the outer Clear save button, and left the dialog hidden: `PASS`.
+10. Clicked **Load** after cancellation and received
+   `Session loaded from this device.`: the saved session remained available:
+   `PASS`.
+11. Pressed **Escape** while the dialog was open; it returned
+    `Saved session kept.` and closed without mutation: `PASS`.
+12. Accepting **Clear save** to delete local browser data remains `NOT_RUN`
+    for the new guard; the earlier exploratory origin had already been cleared
+    during native-prompt investigation and is not used as this acceptance.
+13. Restored the browser network after the check: `PASS`.
 
 ## Recorded controls
 
@@ -59,8 +77,8 @@ Targets: `http://127.0.0.1:8765/index.html` initial smoke and fresh-origin
 ## Boundary
 
 This is real browser evidence for service-worker installation, current-cache
-control, offline navigation, offline WASM startup, and offline Save/Load after
-one online load. It does not claim the test-plan-required Clear Save action
-until confirmed, an OS-level PWA install prompt, production HTTPS deployment,
-other browsers or GPU backends, WCAG/screen-reader acceptance, audible output,
-or legacy visual/audio parity.
+control, offline navigation, offline WASM startup, offline Save/Load after one
+online load, and the Clear Save confirmation/cancel guard. It does not claim
+destructive confirmation acceptance, an OS-level PWA install prompt, production
+HTTPS deployment, other browsers or GPU backends, WCAG/screen-reader
+acceptance, audible output, or legacy visual/audio parity.

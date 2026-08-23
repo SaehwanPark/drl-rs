@@ -13,6 +13,9 @@ const restart = document.querySelector("#restart-button");
 const saveButton = document.querySelector("#save-button");
 const loadButton = document.querySelector("#load-button");
 const clearSaveButton = document.querySelector("#clear-save-button");
+const clearSaveDialog = document.querySelector("#clear-save-dialog");
+const cancelClearSaveButton = document.querySelector("#cancel-clear-save");
+const confirmClearSaveButton = document.querySelector("#confirm-clear-save");
 const inventory = document.querySelector("#inventory");
 const mute = document.querySelector("#mute-button");
 const volume = document.querySelector("#volume-control");
@@ -126,8 +129,38 @@ loadButton.addEventListener("click", () => {
   if (started) writeStatus(load());
 });
 
+function closeClearSaveDialog(statusMessage) {
+  clearSaveDialog.hidden = true;
+  clearSaveButton.focus();
+  writeStatus(statusMessage);
+}
+
 clearSaveButton.addEventListener("click", () => {
-  if (started) writeStatus(clear_save());
+  if (!started) return;
+  clearSaveDialog.hidden = false;
+  cancelClearSaveButton.focus();
+});
+
+cancelClearSaveButton.addEventListener("click", () => {
+  closeClearSaveDialog("Saved session kept.");
+});
+
+confirmClearSaveButton.addEventListener("click", () => {
+  closeClearSaveDialog(clear_save());
+});
+
+document.addEventListener("keydown", (event) => {
+  if (clearSaveDialog.hidden) return;
+  if (event.key === "Tab") {
+    event.preventDefault();
+    const focusables = [cancelClearSaveButton, confirmClearSaveButton];
+    const currentIndex = focusables.indexOf(document.activeElement);
+    const direction = event.shiftKey ? -1 : 1;
+    focusables[(currentIndex + direction + focusables.length) % focusables.length].focus();
+  } else if (event.key === "Escape") {
+    event.preventDefault();
+    closeClearSaveDialog("Saved session kept.");
+  }
 });
 
 mute.addEventListener("click", () => {
