@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "revision": "17d9be1204751899b2d69d8d3a2dde247bd0cc5c",
+  "bundles": {
+    "being": {
+      "sources": [
+        "bin/data/drl/beings.lua"
+      ],
+      "record_count": 38,
+      "required_ids": [
+        "demon",
+        "former",
+        "imp",
+        "sergeant"
+      ]
+    },
+    "item": {
+      "sources": [
+        "bin/data/drl/items/items.lua",
+        "bin/data/drl/items/eitems.lua",
+        "bin/data/drl/items/uitems.lua"
+      ],
+      "record_count": 126,
+      "required_ids": [
+        "ammo",
+        "garmor",
+        "knife",
+        "lmed",
+        "phase",
+        "pistol",
+        "shell",
+        "shotgun",
+        "smed"
+      ]
+    },
+    "cell": {
+      "sources": [
+        "bin/data/drl/cells.lua"
+      ],
+      "record_count": 26,
+      "required_ids": [
+        "door",
+        "floor",
+        "odoor",
+        "stairs",
+        "wall"
+      ]
+    },
+    "level": {
+      "sources": [
+        "bin/data/drl/levels/abyssal.lua",
+        "bin/data/drl/levels/arena.lua",
+        "bin/data/drl/levels/armory.lua",
+        "bin/data/drl/levels/asmosden.lua",
+        "bin/data/drl/levels/boss.lua",
+        "bin/data/drl/levels/carnage.lua",
+        "bin/data/drl/levels/centralprocessing.lua",
+        "bin/data/drl/levels/chained.lua",
+        "bin/data/drl/levels/containment.lua",
+        "bin/data/drl/levels/deimoslab.lua",
+        "bin/data/drl/levels/fortress.lua",
+        "bin/data/drl/levels/house.lua",
+        "bin/data/drl/levels/intro.lua",
+        "bin/data/drl/levels/lavapits.lua",
+        "bin/data/drl/levels/limbo.lua",
+        "bin/data/drl/levels/milibase.lua",
+        "bin/data/drl/levels/mortuary.lua",
+        "bin/data/drl/levels/mterebus.lua",
+        "bin/data/drl/levels/phoboslab.lua",
+        "bin/data/drl/levels/skulls.lua",
+        "bin/data/drl/levels/spider.lua",
+        "bin/data/drl/levels/toxinrefinery.lua",
+        "bin/data/drl/levels/vaults.lua",
+        "bin/data/drl/levels/wall.lua"
+      ],
+      "record_count": 26,
+      "record_ids": [
+        "abyssal_plains",
+        "central_processing",
+        "city_of_skulls",
+        "containment_area",
+        "deimos_lab",
+        "dis",
+        "halls_of_carnage",
+        "hell_fortress",
+        "hellgate",
+        "hells_arena",
+        "hells_armory",
+        "house_of_pain",
+        "intro",
+        "limbo",
+        "military_base",
+        "mt_erebus",
+        "phobos_lab",
+        "spiders_lair",
+        "the_chained_court",
+        "the_lava_pits",
+        "the_mortuary",
+        "the_vaults",
+        "the_wall",
+        "tower_of_babel",
+        "toxin_refinery",
+        "unholy_cathedral"
+      ]
+    }
+  }
+}

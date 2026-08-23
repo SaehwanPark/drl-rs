@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.28]
+
+- Added a reviewed M9 evidence-coverage crosswalk and validator for pinned
+  being, item-family, terrain-cell, and special-level bundles.
+- Enforced source provenance, SHA-256 shape, sorted unique records, required
+  representative IDs, and complete coverage of all 26 indexed special levels;
+  no runtime Lua or gameplay behavior was added.
+
 ## [0.2.27]
 
 - Isolated service-worker offline reads to the current generated release cache,
