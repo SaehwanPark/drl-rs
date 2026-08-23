@@ -394,6 +394,18 @@ impl Item {
     Self::from_spawn_kind(id, ItemSpawnKind::AmmoPackCells)
   }
 
+  /// Factory: 10mm ammunition chain for the prepared slot.
+  #[must_use]
+  pub fn ammo_pack_9mm(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::AmmoPack9mm)
+  }
+
+  /// Factory: shell box for the prepared slot.
+  #[must_use]
+  pub fn ammo_pack_shells(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::AmmoPackShells)
+  }
+
   /// Factory: rocket ammunition box.
   #[must_use]
   pub fn ammo_rockets(id: ItemId, count: u32) -> Self {
@@ -577,7 +589,28 @@ mod tests {
       Some((AmmoType::Cell, 120, 120))
     );
 
-    let device = Item::phase_device(ItemId::new(7));
+    let ammo_pack = Item::ammo_pack_9mm(ItemId::new(7));
+    assert_eq!(ammo_pack.count(), 250);
+    assert_eq!(
+      ammo_pack.ammo_pack_properties().map(|props| (
+        props.ammo_type,
+        props.amount,
+        props.max_amount
+      )),
+      Some((AmmoType::Ammo9mm, 250, 250))
+    );
+    let shell_pack = Item::ammo_pack_shells(ItemId::new(8));
+    assert_eq!(shell_pack.count(), 100);
+    assert_eq!(
+      shell_pack.ammo_pack_properties().map(|props| (
+        props.ammo_type,
+        props.amount,
+        props.max_amount
+      )),
+      Some((AmmoType::Shells, 100, 100))
+    );
+
+    let device = Item::phase_device(ItemId::new(9));
     assert!(device.is_consumable());
     assert!(device.is_phase_device());
     assert_eq!(device.category(), ItemCategory::PhaseDevice);
@@ -619,20 +652,28 @@ mod tests {
         Item::ammo_pack_cells(ItemId::new(10)),
       ),
       (
+        ItemSpawnKind::AmmoPack9mm,
+        Item::ammo_pack_9mm(ItemId::new(11)),
+      ),
+      (
+        ItemSpawnKind::AmmoPackShells,
+        Item::ammo_pack_shells(ItemId::new(12)),
+      ),
+      (
         ItemSpawnKind::SmallMedPack,
-        Item::small_medpack(ItemId::new(11)),
+        Item::small_medpack(ItemId::new(13)),
       ),
       (
         ItemSpawnKind::LargeMedPack,
-        Item::large_medpack(ItemId::new(12)),
+        Item::large_medpack(ItemId::new(14)),
       ),
       (
         ItemSpawnKind::GreenArmor,
-        Item::green_armor(ItemId::new(13)),
+        Item::green_armor(ItemId::new(15)),
       ),
       (
         ItemSpawnKind::PhaseDevice,
-        Item::phase_device(ItemId::new(14)),
+        Item::phase_device(ItemId::new(16)),
       ),
     ];
     for (kind, factory_item) in cases {
@@ -681,6 +722,8 @@ mod tests {
       ItemSpawnKind::AmmoCells(20),
       ItemSpawnKind::AmmoPackRockets,
       ItemSpawnKind::AmmoPackCells,
+      ItemSpawnKind::AmmoPack9mm,
+      ItemSpawnKind::AmmoPackShells,
       ItemSpawnKind::SmallMedPack,
       ItemSpawnKind::LargeMedPack,
       ItemSpawnKind::GreenArmor,
