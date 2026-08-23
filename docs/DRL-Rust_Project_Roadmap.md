@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.15`
+Current project version: `0.2.16`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.15)
+## 3. Current Progress Summary (`VERSION` 0.2.16)
 
 ### Delivered Foundations
 
@@ -78,14 +78,15 @@ verification item uses explicit status semantics:
   service-worker cache.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
-  outcome/telemetry projections; release manifests with SHA-256 sidecars,
+  outcome/telemetry projections and a deterministic cohort-study CLI; release
+  manifests with SHA-256 sidecars,
   optional detached signatures, cache invalidation, and checkout binding.
 
 ### Active & Open Work
 
-- **Active Milestone Slice (M10)**: Bootstrap-independent service-worker
-  registration and readiness diagnostics are delivered and verified; real
-  browser offline installation remains open.
+- **Active Milestone Slice (M11)**: The bounded deterministic cohort-study CLI
+  and report contract are delivered and verified; canonical difficulty targets
+  remain open.
 - **M12 Release Hardening**: Optional detached release-manifest signing and
   fail-closed verification are delivered and verified; key governance and
   production trust-root policy remain open.
@@ -94,7 +95,7 @@ verification item uses explicit status semantics:
 - **Controlled Reference Captures (M3, M7, M8)**: Runtime captures are `NOT_RUN`
   on macOS arm64; pending execution in a controlled Linux x86-64 environment.
 - **Content Breadth & Balance (M9, M11)**: Build-time Lua conversion tooling,
-  expanded content tables, and statistical gameplay balance studies.
+  expanded content tables, and canonical difficulty target studies.
 - **PWA & Release Hardening (M10, M12, M13)**: Bootstrap-independent offline
   cache registration and signed releases are delivered; full offline-after-
   first-load acceptance and 1.0 desktop Chromium deployment remain open.
@@ -368,7 +369,9 @@ balance.
   used) and delta comparisons.
 - [x] Telemetry invariant gate rejects impossible shot counts, level zero, and
   records beyond the configured turn budget before projection.
-- [ ] Automated large-scale balance and economic evaluations.
+- [x] Bounded deterministic `drl-rust cohort` study command emits stable
+  machine-readable outcome and telemetry reports for greedy, random, and
+  explorer policies.
 - [ ] Difficulty curve validation against canonical target metrics.
 - [x] Strict isolation between player observations and evaluation telemetry is
   enforced by the observation-free `EpisodeRecord` boundary.

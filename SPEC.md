@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.15`
+Current project version: `0.2.16`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,55 +23,62 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M10 Offline-Cache Readiness
+## 2. Active Implementation Slice: M11 Cohort Study CLI
 
 ### 2.1 Scope & Objective
 
-Start service-worker registration during page bootstrap, independently of game
-graphics and WebGPU startup. Report unavailable, installing, ready, and failed
-registration states without changing simulation behavior. Real browser offline
-installation remains an environment-gated acceptance item.
+Provide a bounded native command for reproducible procedural cohort studies.
+The command selects one observation-only bot, runs a fixed contiguous seed
+range, validates the retained report, and emits stable line-oriented outcome
+and telemetry fields for CI or artifact capture. Output is descriptive and
+does not infer balance, difficulty, or statistical significance.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
-1. **Release manifest and detached signing (v0.2.1–v0.2.14)**:
-   - `release-manifest.json` records version, source identity, artifact hashes,
-     generated files, rights metadata, and optional detached signature artifacts.
-2. **Static service-worker boundary (v0.2.1–v0.2.14)**:
-   - SHA-256 sidecars and service-worker checks validate every generated bundle
-     without requiring secrets or external services; the worker has tested
-     install, activate, navigation fallback, and same-origin GET behavior.
+1. **Fixed-seed cohort reports (v0.1.1–v0.2.13)**:
+   - `CohortConfig` and `CohortReport` retain contiguous seeds, policy identity,
+     aggregate summaries, telemetry, and per-seed replay evidence.
+2. **Integrity and descriptive projections (v0.2.13)**:
+   - Reports reject impossible telemetry before outcome or telemetry projection;
+     comparisons never infer balance or statistical significance.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Bootstrap registration**: Begin registration before the Start handler
-  can reject unsupported WebGPU, and await the same readiness result after game
-  startup for user-facing status.
-- [x] **Capability and failure diagnostics**: Distinguish unavailable service
-  workers, installation in progress, active registration, and registration
-  failures without telemetry or simulation side effects.
-- [x] **Bundle boundary**: Copy the registration helper into the generated
-  static bundle and include it in release-manifest/service-worker coverage.
-- [x] **Deterministic contract tests**: Cover capability, installing, ready,
-  failure, and bootstrap ordering with injected browser capabilities.
-- [ ] **Real browser acceptance**: Verify first-load installation and offline
-  reload in an approved desktop Chromium environment.
+- [x] **Bounded CLI**: `drl-rust cohort` accepts fixed seed, episode count,
+  turn budget, and `greedy`, `random`, or `explorer` policy selection.
+- [x] **Stable report**: Emit schema, policy, seed range, sample definition,
+  terminal outcome counts/rates, and validated descriptive telemetry fields in
+  deterministic line-oriented form.
+- [x] **Safety limits**: Reject zero or overlarge episode/turn values and
+  unknown options before running a study.
+- [x] **Repeatability tests**: Repeat a bounded study and require byte-identical
+  output; retain native contract coverage in repository checks.
+- [ ] **Difficulty targets**: Canonical target metrics and statistical study
+  interpretation remain open.
 
 ### 2.4 Pure Contract
 
-- **Input**: Browser service-worker capability and registration promise.
-- **Output**: A descriptive readiness string; registration failures never throw
-  into game startup and never mutate simulation state.
+- **Input**: Fixed seed, contiguous episode count, maximum turns, and one
+  observation-only policy.
+- **Output**: A validated report rendered as stable `key=value` lines; no replay
+  evidence or hidden observations are emitted by the CLI.
 - **Ownership Boundary**:
-  - `web/offline-cache.mjs` owns registration and diagnostics formatting.
-  - `web/bootstrap.js` starts registration before graphics and reports its
-    result after the simulation boot path.
-  - The service worker owns cache lifecycle; offline behavior remains subject
-    to controlled browser acceptance.
+  - `drl-core` owns deterministic cohort execution, integrity validation, and
+    descriptive projections.
+  - `drl-app` owns argument parsing and stable report formatting.
+  - Policy outputs remain observation-only; no hidden world state enters the
+    report.
 
 ---
 
 ## 3. Recent Delivered Slices
+
+### M11 — Cohort Study CLI (`VERSION` 0.2.16)
+
+- [x] Added bounded deterministic `drl-rust cohort` reports for three bots.
+- [x] Added stable metadata, outcome, and telemetry line fields with validation.
+- [x] Added repeatability and invalid-option contract tests.
+- [ ] Canonical difficulty targets and statistical interpretation remain open.
 
 ### M10 — Offline-Cache Readiness (`VERSION` 0.2.15)
 
@@ -227,8 +234,9 @@ installation remains an environment-gated acceptance item.
 
 ## 6. Verification Gates
 
-### Verified Baseline (`VERSION` 0.2.15)
+### Verified Baseline (`VERSION` 0.2.16)
 
+22e0e8b feat(web): start offline cache registration at bootstrap (#106)
 af0fcf8 feat(release): add optional manifest signing (#105)
 - [x] `sh scripts/check-repository.sh` — Full repository test suite, formatting,
   clippy, and harness checks.

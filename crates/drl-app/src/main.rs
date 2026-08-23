@@ -13,7 +13,25 @@ use drl_protocol::{
 };
 use std::io;
 
+mod cohort_cli;
+
+use cohort_cli::run_cohort_command;
+
 fn main() {
+  let args = std::env::args().skip(1).collect::<Vec<_>>();
+  if args
+    .first()
+    .is_some_and(|arg| arg == "cohort" || arg == "--cohort")
+  {
+    match run_cohort_command(&args[1..]) {
+      Ok(report) => print!("{report}"),
+      Err(error) => {
+        eprintln!("cohort: {error}");
+        std::process::exit(2);
+      }
+    }
+    return;
+  }
   // If invoked with `--mcp` or `mcp`, launch the stdio MCP server loop.
   if std::env::args().any(|arg| arg == "--mcp" || arg == "mcp") {
     let mut server = McpServer::new();
