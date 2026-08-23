@@ -126,7 +126,24 @@ fn test_virtual_ai_agent_playing_scenario_via_mcp() {
   let cmds = replay_data.get("commands").unwrap().as_array().unwrap();
   assert!(!cmds.is_empty());
 
-  // 6. Direct simulation replay determinism verification
+  // 6. Verify determinism through the MCP tool without changing the session.
+  let verify_req = r#"{"jsonrpc":"2.0","id":1001,"method":"tools/call","params":{"name":"game_verify_replay","arguments":{}}}"#;
+  let verify_resp = JsonValue::parse(&server.handle_request(verify_req)).unwrap();
+  let verify_data = verify_resp.get("result").unwrap().get("data").unwrap();
+  assert_eq!(
+    verify_data
+      .get("deterministic")
+      .and_then(|value| value.as_bool()),
+    Some(true)
+  );
+  assert_eq!(
+    verify_data
+      .get("command_count")
+      .and_then(|value| value.as_u64()),
+    Some(cmds.len() as u64)
+  );
+
+  // 7. Direct simulation replay determinism verification remains covered.
   let session_replay = server.session().export_replay().expect("Replay log exists");
   assert!(!session_replay.commands.is_empty());
 }

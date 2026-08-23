@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.47`
+Current project version: `0.2.48`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -171,7 +171,10 @@ Presentation Boundary
 - **Key Responsibilities**:
   - Full MCP method suite (`initialize`, `tools/*`, `resources/*`).
   - Semantic tools for game control, observation, action enumeration, and
-    replays.
+    replays, including state-safe deterministic replay verification.
+  - `game_verify_replay` exports and verifies the complete in-memory replay
+    without mutating session state, including the recorded procedural
+    generator parameters; replay import/load remains outside this boundary.
   - Strict observation boundaries with explicit `dev_mode` flag for omniscient
     inspection.
   - `initialize` validates a string `protocolVersion`, echoes supported

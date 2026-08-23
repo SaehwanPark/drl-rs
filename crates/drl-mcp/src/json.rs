@@ -276,7 +276,13 @@ fn number_exceeds_exact_integer_range(raw: &str) -> bool {
   };
   let (whole, fraction) = mantissa.split_once('.').unwrap_or((mantissa, ""));
   let digits = format!("{whole}{fraction}");
-  let decimal_index = whole.len() as i64 + exponent;
+  let decimal_index = match (whole.len() as i64).checked_add(exponent) {
+    Some(index) => index,
+    None if exponent.is_positive() => {
+      return digits.bytes().any(|digit| digit != b'0');
+    }
+    None => return false,
+  };
   if decimal_index <= 0 {
     return false;
   }
@@ -329,7 +335,11 @@ fn number_literal_is_integer(raw: &str) -> bool {
   };
   let (whole, fraction) = mantissa.split_once('.').unwrap_or((mantissa, ""));
   let digits = format!("{whole}{fraction}");
-  let decimal_index = whole.len() as i64 + exponent;
+  let decimal_index = match (whole.len() as i64).checked_add(exponent) {
+    Some(index) => index,
+    None if exponent.is_positive() => return true,
+    None => return digits.bytes().all(|digit| digit == b'0'),
+  };
   if decimal_index <= 0 {
     return digits.bytes().all(|digit| digit == b'0');
   }
@@ -641,6 +651,10 @@ mod tests {
         JsonValue::RawNumber(raw.to_string())
       );
     }
+    assert_eq!(
+      JsonValue::parse("1e9223372036854775807").unwrap(),
+      JsonValue::RawNumber("1e9223372036854775807".to_string())
+    );
     assert_eq!(
       JsonValue::parse("\"hello\\nworld\"").unwrap(),
       JsonValue::String("hello\nworld".to_string())

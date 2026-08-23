@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.47`
+Current project version: `0.2.48`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.47)
+## 3. Current Progress Summary (`VERSION` 0.2.48)
 
 ### Delivered Foundations
 
@@ -89,8 +89,10 @@ verification item uses explicit status semantics:
   identified lifecycle gating before discovery, tools, and resources; JSON-RPC
   request IDs now reject non-scalar values before dispatch, and stateful method
   envelopes reject non-object params/arguments before execution; stateful tool
-  arguments now reject wrong-typed optional integers before mutation. Full
-  schema validation and external-client compatibility remain open.
+  arguments now reject wrong-typed optional integers before mutation, and
+  `game_verify_replay` exposes deterministic in-memory replay verification
+  without mutating sessions. Full schema validation and external-client
+  compatibility remain open.
 - **M9 Content Evidence**: Base, expansion, user-item, being, terrain-cell,
   and special-level evidence slices are delivered without runtime Lua or
   gameplay overclaims.
@@ -252,7 +254,7 @@ tooling.
   `tools/call`, `resources/list`, `resources/read`).
 - [x] Complete semantic tool suite (`game_start`, `game_load_scenario`,
   `game_get_observation`, `game_list_actions`, `game_step_action`, `game_reset`,
-  `game_get_metrics`, `game_save_replay`).
+  `game_get_metrics`, `game_save_replay`, `game_verify_replay`).
 - [x] Strict information boundaries with explicit `dev_mode` flag for omniscient
   inspection.
 - [x] Stdio transport runner and CLI integration (`drl-rust --mcp`).

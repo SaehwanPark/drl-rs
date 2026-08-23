@@ -49,6 +49,21 @@ pub struct PlayerSpawnConfig {
   pub equipped_armor: Option<ItemSpawnKind>,
 }
 
+/// Procedural generator parameters needed to reconstruct an MCP replay.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ProceduralGenerationConfig {
+  /// Maximum number of rooms to generate.
+  pub max_rooms: u32,
+  /// Minimum generated room dimension.
+  pub min_room_size: u32,
+  /// Maximum generated room dimension.
+  pub max_room_size: u32,
+  /// Maximum monsters generated per room.
+  pub max_monsters_per_room: u32,
+  /// Maximum items generated per room.
+  pub max_items_per_room: u32,
+}
+
 impl Default for PlayerSpawnConfig {
   fn default() -> Self {
     Self {
@@ -179,6 +194,8 @@ pub struct ReplayLog {
   pub metadata: ReplayMetadata,
   /// Optional custom player spawn configuration.
   pub player_config: Option<PlayerSpawnConfig>,
+  /// Optional procedural generator parameters; absent for arena/scenario logs.
+  pub procedural_config: Option<ProceduralGenerationConfig>,
   /// RNG seed used to initialize the simulation.
   pub seed: u64,
   /// Initial level map width.
@@ -207,6 +224,7 @@ impl ReplayLog {
       version: ReplayVersion::V1,
       metadata: ReplayMetadata::default(),
       player_config: None,
+      procedural_config: None,
       seed,
       width,
       height,
@@ -223,6 +241,13 @@ impl ReplayLog {
   #[must_use]
   pub fn with_player_config(mut self, config: PlayerSpawnConfig) -> Self {
     self.player_config = Some(config);
+    self
+  }
+
+  /// Marks this replay as originating from procedural generation.
+  #[must_use]
+  pub fn with_procedural_config(mut self, config: ProceduralGenerationConfig) -> Self {
+    self.procedural_config = Some(config);
     self
   }
 
