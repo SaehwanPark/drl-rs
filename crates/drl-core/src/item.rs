@@ -364,6 +364,12 @@ impl Item {
     Self::from_spawn_kind(id, ItemSpawnKind::Shotgun)
   }
 
+  /// Factory: chaingun (40-round 9mm clip, 1d6 damage policy).
+  #[must_use]
+  pub fn chaingun(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::Chaingun)
+  }
+
   /// Factory: plasma rifle (six-cell clip, 1d7 damage policy).
   #[must_use]
   pub fn plasma_rifle(id: ItemId) -> Self {
@@ -646,68 +652,69 @@ mod tests {
     let cases = [
       (ItemSpawnKind::Pistol, Item::pistol(ItemId::new(1))),
       (ItemSpawnKind::Shotgun, Item::shotgun(ItemId::new(2))),
+      (ItemSpawnKind::Chaingun, Item::chaingun(ItemId::new(3))),
       (
         ItemSpawnKind::PlasmaRifle,
-        Item::plasma_rifle(ItemId::new(3)),
+        Item::plasma_rifle(ItemId::new(4)),
       ),
       (
         ItemSpawnKind::RocketLauncher,
-        Item::rocket_launcher(ItemId::new(4)),
+        Item::rocket_launcher(ItemId::new(5)),
       ),
       (
         ItemSpawnKind::CombatKnife,
-        Item::combat_knife(ItemId::new(5)),
+        Item::combat_knife(ItemId::new(6)),
       ),
-      (ItemSpawnKind::Ammo9mm(0), Item::ammo_9mm(ItemId::new(6), 0)),
+      (ItemSpawnKind::Ammo9mm(0), Item::ammo_9mm(ItemId::new(7), 0)),
       (
         ItemSpawnKind::Ammo9mm(107),
-        Item::ammo_9mm(ItemId::new(7), 107),
+        Item::ammo_9mm(ItemId::new(8), 107),
       ),
       (
         ItemSpawnKind::AmmoShells(7),
-        Item::ammo_shells(ItemId::new(8), 7),
+        Item::ammo_shells(ItemId::new(9), 7),
       ),
       (
         ItemSpawnKind::AmmoRockets(3),
-        Item::ammo_rockets(ItemId::new(9), 3),
+        Item::ammo_rockets(ItemId::new(10), 3),
       ),
       (
         ItemSpawnKind::AmmoCells(20),
-        Item::ammo_cells(ItemId::new(10), 20),
+        Item::ammo_cells(ItemId::new(11), 20),
       ),
       (
         ItemSpawnKind::AmmoPackRockets,
-        Item::ammo_pack_rockets(ItemId::new(11)),
+        Item::ammo_pack_rockets(ItemId::new(12)),
       ),
       (
         ItemSpawnKind::AmmoPackCells,
-        Item::ammo_pack_cells(ItemId::new(12)),
+        Item::ammo_pack_cells(ItemId::new(13)),
       ),
       (
         ItemSpawnKind::AmmoPack9mm,
-        Item::ammo_pack_9mm(ItemId::new(13)),
+        Item::ammo_pack_9mm(ItemId::new(14)),
       ),
       (
         ItemSpawnKind::AmmoPackShells,
-        Item::ammo_pack_shells(ItemId::new(14)),
+        Item::ammo_pack_shells(ItemId::new(15)),
       ),
       (
         ItemSpawnKind::SmallMedPack,
-        Item::small_medpack(ItemId::new(15)),
+        Item::small_medpack(ItemId::new(16)),
       ),
       (
         ItemSpawnKind::LargeMedPack,
-        Item::large_medpack(ItemId::new(16)),
+        Item::large_medpack(ItemId::new(17)),
       ),
       (
         ItemSpawnKind::GreenArmor,
-        Item::green_armor(ItemId::new(17)),
+        Item::green_armor(ItemId::new(18)),
       ),
-      (ItemSpawnKind::BlueArmor, Item::blue_armor(ItemId::new(18))),
-      (ItemSpawnKind::RedArmor, Item::red_armor(ItemId::new(19))),
+      (ItemSpawnKind::BlueArmor, Item::blue_armor(ItemId::new(19))),
+      (ItemSpawnKind::RedArmor, Item::red_armor(ItemId::new(20))),
       (
         ItemSpawnKind::PhaseDevice,
-        Item::phase_device(ItemId::new(20)),
+        Item::phase_device(ItemId::new(21)),
       ),
     ];
     for (kind, factory_item) in cases {
@@ -749,6 +756,7 @@ mod tests {
     let kinds = [
       ItemSpawnKind::Pistol,
       ItemSpawnKind::Shotgun,
+      ItemSpawnKind::Chaingun,
       ItemSpawnKind::PlasmaRifle,
       ItemSpawnKind::RocketLauncher,
       ItemSpawnKind::CombatKnife,

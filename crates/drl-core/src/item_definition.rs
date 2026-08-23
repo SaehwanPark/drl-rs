@@ -97,6 +97,23 @@ const SHOTGUN: ItemDefinition = ItemDefinition {
   },
 };
 
+const CHAINGUN: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::Chaingun,
+  name: "Chaingun",
+  description: "Chaingun directs heavy firepower into your opponent making him do the chaingun cha-cha.",
+  kind: ItemDefinitionKind::Weapon {
+    is_ranged: true,
+    ammo_type: Some(AmmoType::Ammo9mm),
+    clip_capacity: 40,
+    damage: (1, 6),
+    range: 8,
+    accuracy: 70,
+    knockback: 0,
+    fire_cost: ActionCost::RANGED_ATTACK,
+    reload_cost: ActionCost::STANDARD,
+  },
+};
+
 const PLASMA_RIFLE: ItemDefinition = ItemDefinition {
   archetype: ItemArchetype::PlasmaRifle,
   name: "Plasma Rifle",
@@ -296,6 +313,7 @@ pub const fn definition_for_spawn_kind(kind: ItemSpawnKind) -> &'static ItemDefi
   match kind {
     ItemSpawnKind::Pistol => &PISTOL,
     ItemSpawnKind::Shotgun => &SHOTGUN,
+    ItemSpawnKind::Chaingun => &CHAINGUN,
     ItemSpawnKind::PlasmaRifle => &PLASMA_RIFLE,
     ItemSpawnKind::RocketLauncher => &ROCKET_LAUNCHER,
     ItemSpawnKind::CombatKnife => &COMBAT_KNIFE,
@@ -325,6 +343,7 @@ mod tests {
     let cases = [
       (ItemSpawnKind::Pistol, ItemArchetype::Pistol, "Pistol"),
       (ItemSpawnKind::Shotgun, ItemArchetype::Shotgun, "Shotgun"),
+      (ItemSpawnKind::Chaingun, ItemArchetype::Chaingun, "Chaingun"),
       (
         ItemSpawnKind::PlasmaRifle,
         ItemArchetype::PlasmaRifle,
@@ -453,6 +472,21 @@ mod tests {
         knockback: 1,
         fire_cost: ActionCost::RANGED_ATTACK,
         reload_cost: ActionCost::new(1200),
+      }
+    );
+
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::Chaingun).kind,
+      ItemDefinitionKind::Weapon {
+        is_ranged: true,
+        ammo_type: Some(AmmoType::Ammo9mm),
+        clip_capacity: 40,
+        damage: (1, 6),
+        range: 8,
+        accuracy: 70,
+        knockback: 0,
+        fire_cost: ActionCost::RANGED_ATTACK,
+        reload_cost: ActionCost::STANDARD,
       }
     );
 
