@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "revision": "17d9be1204751899b2d69d8d3a2dde247bd0cc5c",
   "bundles": {
     "being": {

@@ -52,7 +52,7 @@ for kind in ("being", "item", "cell", "level"):
   bundles[kind] = entry
 (root / "config.json").write_text(
   json.dumps(
-    {"schema_version": 1, "revision": "unbound-input", "bundles": bundles},
+    {"schema_version": 2, "revision": "unbound-input", "bundles": bundles},
     indent=2,
   )
   + "\n",
@@ -321,6 +321,24 @@ if python3 scripts/check-content-evidence.py --config "$temp_dir/wrong-digest.js
   --bundle "cell=$temp_dir/cell.json" \
   --bundle "level=$temp_dir/level.json" >/dev/null 2>&1; then
   printf '%s\n' 'wrong evidence digest must be rejected' >&2
+  exit 1
+fi
+
+python3 - "$temp_dir/config.json" "$temp_dir/wrong-schema.json" <<'PY'
+import json
+import pathlib
+import sys
+
+config = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
+config["schema_version"] = 1
+pathlib.Path(sys.argv[2]).write_text(json.dumps(config), encoding="utf-8")
+PY
+if python3 scripts/check-content-evidence.py --config "$temp_dir/wrong-schema.json" \
+  --bundle "being=$temp_dir/being.json" \
+  --bundle "item=$temp_dir/item.json" \
+  --bundle "cell=$temp_dir/cell.json" \
+  --bundle "level=$temp_dir/level.json" >/dev/null 2>&1; then
+  printf '%s\n' 'obsolete evidence crosswalk schema must be rejected' >&2
   exit 1
 fi
 
