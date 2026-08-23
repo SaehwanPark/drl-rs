@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.38`
+Current project version: `0.2.39`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -95,6 +95,9 @@ Presentation Boundary
   - Content Definitions: `item_definition`, `loot_definition`,
     `monster_roll_definition`, `level_definition`, and descriptive
     `special_level_definition` metadata.
+  - Content Invariants: `content_validation::validate_current_content()`
+    rejects malformed current tables before they are treated as valid content;
+    it does not import legacy behavior or balance targets.
   - Evaluation & Cohorts: `CohortConfig`, `CohortReport`, `BatchRunner`,
     seed/summary/telemetry integrity validation, outcome distributions, and
     observation-free telemetry projections.

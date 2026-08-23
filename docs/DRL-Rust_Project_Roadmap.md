@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.38`
+Current project version: `0.2.39`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.38)
+## 3. Current Progress Summary (`VERSION` 0.2.39)
 
 ### Delivered Foundations
 
@@ -84,11 +84,11 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active Milestone Slice (M9)**: A reviewed evidence-coverage gate validates
-  pinned provenance and representative being/item/cell records, all 26 indexed
-  special levels, complete record ID catalogs, scalar-only evidence fields,
-  structured migration gaps, exact pinned source digests, and a versioned
-  crosswalk schema; runtime Lua and gameplay overclaims remain open.
+- **Active Milestone Slice (M9)**: Current Rust-owned content now has a pure
+  structural invariant gate alongside the reviewed evidence-coverage gate.
+  Pinned provenance, complete record catalogs, scalar-only fields, exact
+  source digests, roll coverage, level bounds, and special-level ordering are
+  checked without importing runtime Lua or asserting gameplay parity.
 - **M9 Content Evidence**: Base, expansion, user-item, being, terrain-cell,
   and special-level evidence slices are delivered without runtime Lua or
   gameplay overclaims.
@@ -343,6 +343,9 @@ scripting.
 - [x] Immutable roll-bound tables for procedural room loot and monster spawns.
 - [x] Protocol-owned immutable tile definitions (`TileKind::definition()`).
 - [x] Rust-owned standard procedural level generation policy.
+- [x] Pure current-content invariant validation rejects malformed typed
+  definitions, roll-bound tables, level bounds, and special-level ordering;
+  legacy parity, fairness targets, and dynamic migration remain open.
 - [x] Build-time conversion evidence tooling for pinned shallow `register_being`
   and `register_item` Lua records, with provenance and explicit migration gaps.
 - [x] Build-time conversion evidence for pinned shallow `register_cell` records,
