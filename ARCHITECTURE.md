@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.22`
+Current project version: `0.2.23`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -93,7 +93,8 @@ Presentation Boundary
   - Items & Inventory: `Inventory`, `Equipment`, `Item::from_spawn_kind`.
   - Level Generation: `generator` (BFS reachability, room connectivity).
   - Content Definitions: `item_definition`, `loot_definition`,
-    `monster_roll_definition`, `level_definition`.
+    `monster_roll_definition`, `level_definition`, and descriptive
+    `special_level_definition` metadata.
   - Evaluation & Cohorts: `CohortConfig`, `CohortReport`, `BatchRunner`,
     seed/summary/telemetry integrity validation, outcome distributions, and
     observation-free telemetry projections.
@@ -207,6 +208,9 @@ Presentation Boundary
   physical walkability, transparency, and liquid properties for all tile kinds.
 - **Level Policy**: `drl-core::level_definition` provides standard procedural
   generation parameters.
+- **Special-Level Metadata**: `drl-core::special_level_definition` exposes
+  pinned scalar names, text, and optional legacy depths only. It never selects,
+  generates, or executes legacy maps or callbacks.
 
 ### 4.3 Rendering Pipeline & Viewport
 - **Square-Cell Integer Viewport**: `PixelViewport` computes integer square

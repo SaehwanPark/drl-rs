@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.22`
+Current project version: `0.2.23`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,52 +23,45 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 Special-Level Evidence Index
+## 2. Active Implementation Slice: M9 Special-Level Identity Catalog
 
 ### 2.1 Scope & Objective
 
-Add a build-time evidence index for the pinned legacy special-level Lua files.
-The index reuses the shallow converter across all level sources, handles
-long-bracket map strings without treating their braces as structure, preserves
-per-source path/revision/SHA-256 provenance, sorts records by ID, rejects
-duplicate IDs, and retains nested creation/registration behavior as explicit
-gaps. It does not import legacy Lua or alter Rust level generation.
+Promote verified scalar metadata from the pinned special-level evidence index
+into an immutable Rust-owned catalog. The catalog covers active level IDs,
+display names, optional legacy depth values, and optional entry/welcome text
+while importing no Lua, map layouts, callbacks, assets, or gameplay behavior.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
-1. **Being/item/cell evidence (v0.2.19–v0.2.21)**:
-   - The shallow converter and item bundle handle scalar records, provenance,
-     deterministic ordering, explicit gaps, and simple Lua lexical boundaries.
+1. **Special-level evidence (v0.2.22)**:
+   - The pinned index covers 24 sources and 26 active records with provenance,
+     deterministic ordering, long-bracket boundaries, and explicit gaps.
 2. **Build-time boundary (ADR 0008)**:
    - Legacy files remain pinned research inputs; the browser ships no Lua VM or
      legacy object model, and unknown behavior remains an explicit gap.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Level source index**: Read all pinned `.lua` files under the legacy
-  special-level directory and accept repeatable fixture inputs.
-- [x] **Long-bracket boundary**: Ignore braces inside Lua `[=[...]=]` strings
-  while retaining the owning field as a migration gap.
-- [x] **Per-source provenance**: Retain each source path, revision, and SHA-256
-  while attaching a source index to every record.
-- [x] **Deterministic merge**: Sort all level records by ID and reject duplicate
-  IDs before writing output.
-- [x] **Fixture and pinned coverage**: Verify long strings plus 26 active pinned
-  level records across 24 files without a Lua runtime.
+- [x] **Typed metadata table**: Expose all 26 active pinned level IDs through
+  immutable `drl-core` definitions with proven name, entry, and welcome text.
+- [x] **Stable ordering and lookup**: Keep the catalog sorted by ID and expose
+  deterministic key lookup without changing generation policy.
+- [x] **Optional scalar evidence**: Preserve missing depth, entry, or welcome
+  fields as `None`; do not infer values.
+- [x] **Boundary tests**: Verify names, ordering, missing-depth handling, and
+  that the catalog does not alter procedural generation.
 - [ ] **Full special-level migration**: Expand typed generation, assets,
   behavior, and fairness validation for all legacy branches.
 
 ### 2.4 Pure Contract
 
-- **Input**: A pinned legacy revision and level directory, or explicit fixture
-  inputs.
-- **Output**: JSON with schema version, a source-provenance list, sorted records,
-  and explicit migration-gap entries.
+- **Input**: Verified output of the pinned special-level evidence index.
+- **Output**: An immutable Rust metadata catalog with optional depth and text.
 - **Ownership Boundary**:
-  - `scripts/convert-legacy-content.py` owns single-source extraction and Lua
-    lexical boundaries.
-  - `scripts/convert-legacy-level-index.py` owns deterministic level-file
-    discovery, merge, and per-source attribution only.
+  - `scripts/convert-legacy-level-index.py` remains the evidence owner.
+  - `drl-core` owns typed identity metadata only; it does not interpret Lua or
+    select special-level behavior.
   - The browser bundle receives no Lua source, interpreter, or legacy object
     model.
 
@@ -76,12 +69,17 @@ gaps. It does not import legacy Lua or alter Rust level generation.
 
 ## 3. Recent Delivered Slices
 
+### M9 — Special-Level Identity Catalog (`VERSION` 0.2.23)
+
+- [x] Added immutable Rust metadata for 26 active level IDs, names, and texts.
+- [x] Preserved optional legacy depth values and missing scalar fields.
+- [ ] Full typed special-level migration, assets, and behavior validation remain
+  open.
+
 ### M9 — Special-Level Evidence Index (`VERSION` 0.2.22)
 
 - [x] Added pinned index coverage across 24 level files and 26 active records.
 - [x] Added long-bracket map-string handling and explicit dynamic gaps.
-- [ ] Full typed special-level migration, assets, and behavior validation remain
-  open.
 
 ### M9 — Item-Family Evidence Bundle (`VERSION` 0.2.21)
 
@@ -283,8 +281,9 @@ gaps. It does not import legacy Lua or alter Rust level generation.
 
 ## 6. Verification Gates
 
-### Verified Baseline (`VERSION` 0.2.22)
+### Verified Baseline (`VERSION` 0.2.23)
 
+1fd09d5 feat(content): add pinned special-level evidence index (#113)
 d1a8903 feat(content): bundle legacy item family evidence (#112)
 34a9578 feat(eval): add deterministic cohort policy matrix (#111)
 8486e15 feat(content): add pinned terrain cell evidence conversion (#110)

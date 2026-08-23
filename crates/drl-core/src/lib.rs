@@ -24,6 +24,7 @@ pub mod replay;
 pub mod rng;
 pub mod scenario;
 pub mod scheduler;
+pub mod special_level_definition;
 pub mod targeting;
 pub mod world;
 
@@ -46,6 +47,9 @@ pub use replay::ReplayEngine;
 pub use rng::GameRng;
 pub use scenario::{Scenario, ScenarioRunner};
 pub use scheduler::{ACTION_THRESHOLD, Scheduler};
+pub use special_level_definition::{
+  SPECIAL_LEVEL_DEFINITIONS, SpecialLevelDefinition, at_legacy_depth, by_id,
+};
 pub use targeting::TargetingSystem;
 pub use world::World;
 
