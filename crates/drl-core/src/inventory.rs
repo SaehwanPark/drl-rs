@@ -299,10 +299,13 @@ mod tests {
     inv
       .add_item(Item::ammo_pack_rockets(ItemId::new(1)))
       .unwrap();
+    inv.add_item(Item::ammo_pack_cells(ItemId::new(2))).unwrap();
 
-    assert_eq!(inv.len(), 1);
+    assert_eq!(inv.len(), 2);
     assert_eq!(inv.total_ammo(AmmoType::Rocket), 0);
+    assert_eq!(inv.total_ammo(AmmoType::Cell), 0);
     assert!(!inv.has_ammo(AmmoType::Rocket, 1));
+    assert!(!inv.has_ammo(AmmoType::Cell, 1));
   }
 
   #[test]

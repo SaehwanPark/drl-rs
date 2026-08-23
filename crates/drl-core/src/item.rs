@@ -388,6 +388,12 @@ impl Item {
     Self::from_spawn_kind(id, ItemSpawnKind::AmmoPackRockets)
   }
 
+  /// Factory: power-cell ammunition box for the prepared slot.
+  #[must_use]
+  pub fn ammo_pack_cells(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::AmmoPackCells)
+  }
+
   /// Factory: rocket ammunition box.
   #[must_use]
   pub fn ammo_rockets(id: ItemId, count: u32) -> Self {
@@ -559,7 +565,19 @@ mod tests {
     );
     assert_eq!(pack.ammo_type(), None);
 
-    let device = Item::phase_device(ItemId::new(6));
+    let cell_pack = Item::ammo_pack_cells(ItemId::new(6));
+    assert!(cell_pack.is_ammo_pack());
+    assert_eq!(cell_pack.count(), 120);
+    assert_eq!(
+      cell_pack.ammo_pack_properties().map(|props| (
+        props.ammo_type,
+        props.amount,
+        props.max_amount
+      )),
+      Some((AmmoType::Cell, 120, 120))
+    );
+
+    let device = Item::phase_device(ItemId::new(7));
     assert!(device.is_consumable());
     assert!(device.is_phase_device());
     assert_eq!(device.category(), ItemCategory::PhaseDevice);
@@ -597,20 +615,24 @@ mod tests {
         Item::ammo_pack_rockets(ItemId::new(9)),
       ),
       (
+        ItemSpawnKind::AmmoPackCells,
+        Item::ammo_pack_cells(ItemId::new(10)),
+      ),
+      (
         ItemSpawnKind::SmallMedPack,
-        Item::small_medpack(ItemId::new(10)),
+        Item::small_medpack(ItemId::new(11)),
       ),
       (
         ItemSpawnKind::LargeMedPack,
-        Item::large_medpack(ItemId::new(11)),
+        Item::large_medpack(ItemId::new(12)),
       ),
       (
         ItemSpawnKind::GreenArmor,
-        Item::green_armor(ItemId::new(12)),
+        Item::green_armor(ItemId::new(13)),
       ),
       (
         ItemSpawnKind::PhaseDevice,
-        Item::phase_device(ItemId::new(13)),
+        Item::phase_device(ItemId::new(14)),
       ),
     ];
     for (kind, factory_item) in cases {
@@ -658,6 +680,7 @@ mod tests {
       ItemSpawnKind::AmmoRockets(3),
       ItemSpawnKind::AmmoCells(20),
       ItemSpawnKind::AmmoPackRockets,
+      ItemSpawnKind::AmmoPackCells,
       ItemSpawnKind::SmallMedPack,
       ItemSpawnKind::LargeMedPack,
       ItemSpawnKind::GreenArmor,

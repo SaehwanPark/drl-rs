@@ -80,6 +80,7 @@ pub fn validate_current_content() -> Result<(), ContentValidationError> {
     ItemSpawnKind::AmmoRockets(0),
     ItemSpawnKind::AmmoCells(0),
     ItemSpawnKind::AmmoPackRockets,
+    ItemSpawnKind::AmmoPackCells,
     ItemSpawnKind::SmallMedPack,
     ItemSpawnKind::LargeMedPack,
     ItemSpawnKind::GreenArmor,
