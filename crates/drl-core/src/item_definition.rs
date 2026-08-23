@@ -111,6 +111,26 @@ const AMMO_SHELLS: ItemDefinition = ItemDefinition {
   },
 };
 
+const AMMO_ROCKETS: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::AmmoRockets,
+  name: "Rocket",
+  description: "Rockets -- heavy, big and go boom.",
+  kind: ItemDefinitionKind::Ammo {
+    ammo_type: AmmoType::Rocket,
+    max_stack: 10,
+  },
+};
+
+const AMMO_CELLS: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::AmmoCells,
+  name: "Power Cell",
+  description: "Power cells, the peak of monster frying technology.",
+  kind: ItemDefinitionKind::Ammo {
+    ammo_type: AmmoType::Cell,
+    max_stack: 50,
+  },
+};
+
 const SMALL_MEDPACK: ItemDefinition = ItemDefinition {
   archetype: ItemArchetype::SmallMedPack,
   name: "Small MedPack",
@@ -152,6 +172,8 @@ pub const fn definition_for_spawn_kind(kind: ItemSpawnKind) -> &'static ItemDefi
     ItemSpawnKind::CombatKnife => &COMBAT_KNIFE,
     ItemSpawnKind::Ammo9mm(_) => &AMMO_9MM,
     ItemSpawnKind::AmmoShells(_) => &AMMO_SHELLS,
+    ItemSpawnKind::AmmoRockets(_) => &AMMO_ROCKETS,
+    ItemSpawnKind::AmmoCells(_) => &AMMO_CELLS,
     ItemSpawnKind::SmallMedPack => &SMALL_MEDPACK,
     ItemSpawnKind::LargeMedPack => &LARGE_MEDPACK,
     ItemSpawnKind::GreenArmor => &GREEN_ARMOR,
@@ -182,6 +204,16 @@ mod tests {
         ItemSpawnKind::AmmoShells(0),
         ItemArchetype::AmmoShells,
         "Shotgun Shells",
+      ),
+      (
+        ItemSpawnKind::AmmoRockets(0),
+        ItemArchetype::AmmoRockets,
+        "Rocket",
+      ),
+      (
+        ItemSpawnKind::AmmoCells(0),
+        ItemArchetype::AmmoCells,
+        "Power Cell",
       ),
       (
         ItemSpawnKind::SmallMedPack,
@@ -301,6 +333,20 @@ mod tests {
       definition_for_spawn_kind(ItemSpawnKind::AmmoShells(7)).kind,
       ItemDefinitionKind::Ammo {
         ammo_type: AmmoType::Shells,
+        max_stack: 50,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::AmmoRockets(7)).kind,
+      ItemDefinitionKind::Ammo {
+        ammo_type: AmmoType::Rocket,
+        max_stack: 10,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::AmmoCells(7)).kind,
+      ItemDefinitionKind::Ammo {
+        ammo_type: AmmoType::Cell,
         max_stack: 50,
       }
     );

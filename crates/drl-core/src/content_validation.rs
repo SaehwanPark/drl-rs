@@ -77,6 +77,8 @@ pub fn validate_current_content() -> Result<(), ContentValidationError> {
     ItemSpawnKind::CombatKnife,
     ItemSpawnKind::Ammo9mm(0),
     ItemSpawnKind::AmmoShells(0),
+    ItemSpawnKind::AmmoRockets(0),
+    ItemSpawnKind::AmmoCells(0),
     ItemSpawnKind::SmallMedPack,
     ItemSpawnKind::LargeMedPack,
     ItemSpawnKind::GreenArmor,

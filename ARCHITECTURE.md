@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.63`
+Current project version: `0.2.64`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -91,6 +91,8 @@ Presentation Boundary
   - Combat & Scheduling: `Scheduler`, `CombatResolver`, kinetic knockback.
   - Perception & AI: Field of View (`fov`), Line of Sight, `MonsterAi`.
   - Items & Inventory: `Inventory`, `Equipment`, `Item::from_spawn_kind`.
+    Rocket and power-cell ammo families are typed definition-backed spawns;
+    broader legacy weapons and item families remain staged.
   - Level Generation: `generator` (BFS reachability, room connectivity).
   - Content Definitions: `item_definition`, `loot_definition`,
     `monster_roll_definition`, `level_definition`, and descriptive

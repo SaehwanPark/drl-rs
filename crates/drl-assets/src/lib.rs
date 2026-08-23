@@ -438,6 +438,18 @@ pub const fn item_sprite(archetype: ItemArchetype) -> SpriteDescriptor {
       layers: ITEM_LAYERS,
       animation: STATIC_ANIMATION,
     },
+    ItemArchetype::AmmoRockets => SpriteDescriptor {
+      atlas: AtlasId::GunsAndPickups,
+      rect: legacy_slot(SPRITE_COLUMNS + 11),
+      layers: ITEM_LAYERS,
+      animation: STATIC_ANIMATION,
+    },
+    ItemArchetype::AmmoCells => SpriteDescriptor {
+      atlas: AtlasId::GunsAndPickups,
+      rect: legacy_slot(SPRITE_COLUMNS + 13),
+      layers: ITEM_LAYERS,
+      animation: TWO_FRAME_ANIMATION,
+    },
     ItemArchetype::SmallMedPack => SpriteDescriptor {
       atlas: AtlasId::GunsAndPickups,
       rect: legacy_slot(3 * SPRITE_COLUMNS + 9),
@@ -529,6 +541,8 @@ mod tests {
       ItemArchetype::CombatKnife,
       ItemArchetype::Ammo9mm,
       ItemArchetype::AmmoShells,
+      ItemArchetype::AmmoRockets,
+      ItemArchetype::AmmoCells,
       ItemArchetype::SmallMedPack,
       ItemArchetype::LargeMedPack,
       ItemArchetype::GreenArmor,
@@ -584,6 +598,12 @@ mod tests {
         AtlasId::GunsAndPickups,
         (256, 32),
       ),
+      (
+        ItemArchetype::AmmoRockets,
+        AtlasId::GunsAndPickups,
+        (320, 32),
+      ),
+      (ItemArchetype::AmmoCells, AtlasId::GunsAndPickups, (384, 32)),
       (
         ItemArchetype::SmallMedPack,
         AtlasId::GunsAndPickups,
@@ -689,6 +709,7 @@ mod tests {
       ItemArchetype::GreenArmor,
       ItemArchetype::Ammo9mm,
       ItemArchetype::AmmoShells,
+      ItemArchetype::AmmoRockets,
       ItemArchetype::SmallMedPack,
       ItemArchetype::LargeMedPack,
     ] {
@@ -697,6 +718,12 @@ mod tests {
       assert_eq!(descriptor.frame_rect(0), Some(descriptor.rect));
       assert!(descriptor.frame_rect(1).is_none());
     }
+    let cells = item_sprite(ItemArchetype::AmmoCells);
+    assert_eq!(
+      cells.animation.map(|animation| animation.frame_count),
+      Some(2)
+    );
+    assert!(cells.frame_rect(1).is_some());
   }
 
   #[test]

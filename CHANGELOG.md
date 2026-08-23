@@ -3,6 +3,16 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.64]
+
+- Added definition-backed `AmmoRockets` and `AmmoCells` spawn families using
+  pinned legacy scalar evidence for descriptions, stack limits, and graphics
+  slots. Added deterministic factories, item views, content validation, atlas
+  descriptors, and canonical MCP replay JSON names.
+- Kept Lua callbacks, weapon behavior, balance claims, and remaining legacy
+  content migration explicitly open; the cell frame duration is a documented
+  Rust presentation decision because the source only records two frames.
+
 ## [0.2.63]
 
 - Added a bounded accessible minimap region to the browser shell. It renders

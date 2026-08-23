@@ -74,6 +74,8 @@ pub enum ItemArchetype {
   CombatKnife,
   Ammo9mm,
   AmmoShells,
+  AmmoRockets,
+  AmmoCells,
   SmallMedPack,
   LargeMedPack,
   GreenArmor,
@@ -89,6 +91,8 @@ impl fmt::Display for ItemArchetype {
       Self::CombatKnife => "combat_knife",
       Self::Ammo9mm => "ammo_9mm",
       Self::AmmoShells => "ammo_shells",
+      Self::AmmoRockets => "ammo_rockets",
+      Self::AmmoCells => "ammo_cells",
       Self::SmallMedPack => "small_medpack",
       Self::LargeMedPack => "large_medpack",
       Self::GreenArmor => "green_armor",
@@ -143,6 +147,12 @@ mod tests {
     assert_eq!(AmmoType::Shells.to_string(), "shotgun shells");
     assert_eq!(AmmoType::Rocket.to_string(), "rockets");
     assert_eq!(AmmoType::Cell.to_string(), "energy cells");
+  }
+
+  #[test]
+  fn test_ammo_archetype_display() {
+    assert_eq!(ItemArchetype::AmmoRockets.to_string(), "ammo_rockets");
+    assert_eq!(ItemArchetype::AmmoCells.to_string(), "ammo_cells");
   }
 
   #[test]

@@ -353,6 +353,18 @@ impl Item {
     Self::from_spawn_kind(id, ItemSpawnKind::AmmoShells(count))
   }
 
+  /// Factory: rocket ammunition box.
+  #[must_use]
+  pub fn ammo_rockets(id: ItemId, count: u32) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::AmmoRockets(count))
+  }
+
+  /// Factory: power-cell ammunition box.
+  #[must_use]
+  pub fn ammo_cells(id: ItemId, count: u32) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::AmmoCells(count))
+  }
+
   /// Factory: Small MedPack (+10 HP).
   #[must_use]
   pub fn small_medpack(id: ItemId) -> Self {
@@ -381,7 +393,10 @@ impl Item {
   #[must_use]
   pub fn from_spawn_kind(id: ItemId, kind: ItemSpawnKind) -> Self {
     let count = match kind {
-      ItemSpawnKind::Ammo9mm(count) | ItemSpawnKind::AmmoShells(count) => count,
+      ItemSpawnKind::Ammo9mm(count)
+      | ItemSpawnKind::AmmoShells(count)
+      | ItemSpawnKind::AmmoRockets(count)
+      | ItemSpawnKind::AmmoCells(count) => count,
       _ => 1,
     };
     let definition = definition_for_spawn_kind(kind);
@@ -512,17 +527,28 @@ mod tests {
         Item::ammo_shells(ItemId::new(6), 7),
       ),
       (
+        ItemSpawnKind::AmmoRockets(3),
+        Item::ammo_rockets(ItemId::new(7), 3),
+      ),
+      (
+        ItemSpawnKind::AmmoCells(20),
+        Item::ammo_cells(ItemId::new(8), 20),
+      ),
+      (
         ItemSpawnKind::SmallMedPack,
-        Item::small_medpack(ItemId::new(7)),
+        Item::small_medpack(ItemId::new(9)),
       ),
       (
         ItemSpawnKind::LargeMedPack,
-        Item::large_medpack(ItemId::new(8)),
+        Item::large_medpack(ItemId::new(10)),
       ),
-      (ItemSpawnKind::GreenArmor, Item::green_armor(ItemId::new(9))),
+      (
+        ItemSpawnKind::GreenArmor,
+        Item::green_armor(ItemId::new(11)),
+      ),
       (
         ItemSpawnKind::PhaseDevice,
-        Item::phase_device(ItemId::new(10)),
+        Item::phase_device(ItemId::new(12)),
       ),
     ];
     for (kind, factory_item) in cases {
@@ -541,6 +567,12 @@ mod tests {
       (ItemSpawnKind::AmmoShells(0), 0, 50),
       (ItemSpawnKind::AmmoShells(7), 7, 50),
       (ItemSpawnKind::AmmoShells(51), 51, 50),
+      (ItemSpawnKind::AmmoRockets(0), 0, 10),
+      (ItemSpawnKind::AmmoRockets(3), 3, 10),
+      (ItemSpawnKind::AmmoRockets(11), 11, 10),
+      (ItemSpawnKind::AmmoCells(0), 0, 50),
+      (ItemSpawnKind::AmmoCells(20), 20, 50),
+      (ItemSpawnKind::AmmoCells(51), 51, 50),
     ];
     for (kind, expected_count, expected_max_stack) in ammo_cases {
       let item = Item::from_spawn_kind(ItemId::new(20), kind);
@@ -561,6 +593,8 @@ mod tests {
       ItemSpawnKind::CombatKnife,
       ItemSpawnKind::Ammo9mm(7),
       ItemSpawnKind::AmmoShells(7),
+      ItemSpawnKind::AmmoRockets(3),
+      ItemSpawnKind::AmmoCells(20),
       ItemSpawnKind::SmallMedPack,
       ItemSpawnKind::LargeMedPack,
       ItemSpawnKind::GreenArmor,
