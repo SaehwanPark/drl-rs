@@ -25,6 +25,9 @@ enum LifecyclePhase {
   Ready,
 }
 
+const TOOLS_PAGE_SIZE: usize = 4;
+const RESOURCES_PAGE_SIZE: usize = 2;
+
 impl Default for McpServer {
   fn default() -> Self {
     Self::new()
@@ -78,9 +81,11 @@ impl McpServer {
       }
       "notifications/initialized" | "initialized" => self.handle_initialized(),
       "ping" => Ok(JsonValue::Object(BTreeMap::new())),
-      "tools/list" => self.ready_then(|server| server.handle_tools_list()),
+      "tools/list" => self.ready_then(|server| server.handle_tools_list(req.params.as_ref())),
       "tools/call" => self.ready_then(|server| server.handle_tools_call(req.params.as_ref())),
-      "resources/list" => self.ready_then(|server| server.handle_resources_list()),
+      "resources/list" => {
+        self.ready_then(|server| server.handle_resources_list(req.params.as_ref()))
+      }
       "resources/read" => {
         self.ready_then(|server| server.handle_resources_read(req.params.as_ref()))
       }
@@ -209,12 +214,23 @@ impl McpServer {
     operation(self)
   }
 
-  fn handle_tools_list(&self) -> Result<JsonValue, JsonRpcError> {
+  fn handle_tools_list(&self, params: Option<&JsonValue>) -> Result<JsonValue, JsonRpcError> {
     let tools = get_all_tool_definitions();
-    let tools_json: Vec<JsonValue> = tools.iter().map(ToolDefinition::to_json_value).collect();
+    let offset = list_offset(params, "tools", TOOLS_PAGE_SIZE, tools.len())?;
+    let end = (offset + TOOLS_PAGE_SIZE).min(tools.len());
+    let tools_json: Vec<JsonValue> = tools[offset..end]
+      .iter()
+      .map(ToolDefinition::to_json_value)
+      .collect();
 
     let mut map = BTreeMap::new();
     map.insert("tools".to_string(), JsonValue::Array(tools_json));
+    if end < tools.len() {
+      map.insert(
+        "nextCursor".to_string(),
+        JsonValue::from(format!("tools-v1-{end}")),
+      );
+    }
     Ok(JsonValue::Object(map))
   }
 
@@ -247,15 +263,23 @@ impl McpServer {
     execute_tool(&mut self.session, name, args)
   }
 
-  fn handle_resources_list(&self) -> Result<JsonValue, JsonRpcError> {
+  fn handle_resources_list(&self, params: Option<&JsonValue>) -> Result<JsonValue, JsonRpcError> {
     let resources = get_all_resource_definitions();
-    let res_json: Vec<JsonValue> = resources
+    let offset = list_offset(params, "resources", RESOURCES_PAGE_SIZE, resources.len())?;
+    let end = (offset + RESOURCES_PAGE_SIZE).min(resources.len());
+    let res_json: Vec<JsonValue> = resources[offset..end]
       .iter()
       .map(crate::protocol::ResourceDefinition::to_json_value)
       .collect();
 
     let mut map = BTreeMap::new();
     map.insert("resources".to_string(), JsonValue::Array(res_json));
+    if end < resources.len() {
+      map.insert(
+        "nextCursor".to_string(),
+        JsonValue::from(format!("resources-v1-{end}")),
+      );
+    }
     Ok(JsonValue::Object(map))
   }
 
@@ -334,6 +358,44 @@ impl McpServer {
       Some(JsonValue::Array(responses).to_compact_string())
     }
   }
+}
+
+fn list_offset(
+  params: Option<&JsonValue>,
+  list_name: &str,
+  page_size: usize,
+  item_count: usize,
+) -> Result<usize, JsonRpcError> {
+  let Some(params) = params else {
+    return Ok(0);
+  };
+  let params = params.as_object().ok_or_else(|| {
+    JsonRpcError::new(
+      error_codes::INVALID_PARAMS,
+      format!("'{list_name}/list' params must be an object"),
+    )
+  })?;
+  let Some(cursor) = params.get("cursor") else {
+    return Ok(0);
+  };
+  let cursor = cursor.as_str().ok_or_else(|| {
+    JsonRpcError::new(
+      error_codes::INVALID_PARAMS,
+      format!("'{list_name}/list' cursor must be a string"),
+    )
+  })?;
+  let prefix = format!("{list_name}-v1-");
+  let offset = cursor
+    .strip_prefix(&prefix)
+    .and_then(|value| value.parse::<usize>().ok())
+    .filter(|offset| *offset > 0 && *offset < item_count && *offset % page_size == 0)
+    .ok_or_else(|| {
+      JsonRpcError::new(
+        error_codes::INVALID_PARAMS,
+        format!("Invalid {list_name}/list cursor"),
+      )
+    })?;
+  Ok(offset)
 }
 
 #[cfg(test)]

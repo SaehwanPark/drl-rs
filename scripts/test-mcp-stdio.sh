@@ -33,6 +33,9 @@ cat >"$requests" <<'EOF'
 {"jsonrpc":"2.0","id":22,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":778,"width":20,"height":10}}}
 {"jsonrpc":"2.0","id":23,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"use","item_id":999}}}
 {"jsonrpc":"2.0","id":24,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"wait"}}}
+{"jsonrpc":"2.0","id":25,"method":"tools/list","params":{"cursor":"tools-v1-4"}}
+{"jsonrpc":"2.0","id":26,"method":"tools/list","params":{"cursor":"tools-v1-8"}}
+{"jsonrpc":"2.0","id":27,"method":"resources/list","params":{"cursor":"resources-v1-2"}}
 EOF
 
 fallback_requests="$temp_dir/fallback-requests.jsonl"
@@ -50,10 +53,10 @@ import json
 import sys
 
 lines = [line for line in open(sys.argv[1], encoding="utf-8") if line.strip()]
-if len(lines) != 24:
-    raise SystemExit(f"expected 24 JSON-RPC responses, found {len(lines)}")
+if len(lines) != 27:
+    raise SystemExit(f"expected 27 JSON-RPC responses, found {len(lines)}")
 responses = [json.loads(line) for line in lines]
-if [response.get("id") for response in responses] != list(range(1, 25)):
+if [response.get("id") for response in responses] != list(range(1, 28)):
     raise SystemExit("stdio response IDs are not in request order")
 if not responses[0].get("result", {}).get("serverInfo", {}).get("name") == "drl-mcp":
     raise SystemExit("initialize response lacks server identity")
@@ -62,7 +65,18 @@ if responses[0].get("result", {}).get("protocolVersion") != "2024-11-05":
 tools = responses[2].get("result", {}).get("tools")
 if not tools:
     raise SystemExit("tools/list returned no tools")
-tool_map = {tool.get("name"): tool for tool in tools}
+if responses[2].get("result", {}).get("nextCursor") != "tools-v1-4":
+    raise SystemExit("tools/list first page lacks deterministic next cursor")
+tool_pages = [
+    tools,
+    responses[24].get("result", {}).get("tools", []),
+    responses[25].get("result", {}).get("tools", []),
+]
+if responses[24].get("result", {}).get("nextCursor") != "tools-v1-8":
+    raise SystemExit("tools/list second page lacks deterministic next cursor")
+if "nextCursor" in responses[25].get("result", {}):
+    raise SystemExit("tools/list final page unexpectedly has next cursor")
+tool_map = {tool.get("name"): tool for page in tool_pages for tool in page}
 start_props = tool_map["game_start"]["inputSchema"]["properties"]
 if start_props["seed"]["maximum"] != 9007199254740992:
     raise SystemExit("game_start seed schema lacks JSON-safe maximum")
@@ -98,6 +112,12 @@ if step_schema.get("additionalProperties") is False:
     raise SystemExit("game_step_action schema unexpectedly rejects unknown properties")
 if not responses[3].get("result", {}).get("resources"):
     raise SystemExit("resources/list returned no resources")
+if responses[3].get("result", {}).get("nextCursor") != "resources-v1-2":
+    raise SystemExit("resources/list first page lacks deterministic next cursor")
+if len(responses[3]["result"]["resources"]) + len(responses[26]["result"]["resources"]) != 4:
+    raise SystemExit("resources/list pagination omitted a resource")
+if "nextCursor" in responses[26].get("result", {}):
+    raise SystemExit("resources/list final page unexpectedly has next cursor")
 if responses[4].get("result", {}).get("data", {}).get("status") != "GameStarted":
     raise SystemExit("game_start did not report GameStarted")
 if not responses[6].get("result", {}).get("data", {}).get("legal_actions"):
