@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.19`
+Current project version: `0.2.20`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,57 +23,60 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 Terrain-Cell Evidence Converter
+## 2. Active Implementation Slice: M11 Cohort Policy Matrix
 
 ### 2.1 Scope & Objective
 
-Extend the build-time legacy Lua evidence boundary to terrain-cell records.
-The converter reads pinned `cells.lua`, preserves scalar metadata and source
-provenance, decodes only documented simple Lua string escapes, and records
-nested tables, callbacks, and symbolic values as explicit migration gaps. It
-does not change `TileKind`, import legacy data into the bundle, or interpret
-gameplay behavior.
+Add a bounded deterministic matrix mode to the descriptive cohort-study CLI.
+`drl-rust cohort --bot all` runs the existing greedy, random, and explorer
+policies over the same declared seed/episode/turn configuration and emits
+stable prefixed fields for each policy. It does not infer balance, difficulty,
+statistical significance, or canonical target performance.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
-1. **Being/item evidence (v0.2.17)**:
-   - Shallow `register_being` and `register_item` scalar fields are extracted
-     with pinned path/revision/SHA-256 provenance and explicit gaps.
-2. **Build-time boundary (ADR 0008)**:
-   - Legacy files remain pinned research inputs; the browser ships no Lua VM or
-     legacy object model, and unknown behavior remains an explicit gap.
+1. **Single-policy cohort CLI (v0.2.16)**:
+   - Greedy, random, and explorer reports already validate telemetry and emit
+     deterministic descriptive line-oriented fields.
+2. **Evaluation boundary (M11)**:
+   - Cohorts remain fixed-seed, observation-free, and integrity-checked; output
+     is evidence for later study, not a balance conclusion.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Cell extraction**: Extract scalar fields from shallow `register_cell`
-  records in deterministic ID order with pinned path/revision/SHA-256
-  provenance.
-- [x] **Lua lexical boundary**: Decode simple quoted strings, including
-  decimal byte escapes and semicolon terminators; reject unsupported escapes.
-- [x] **Explicit gaps**: Preserve nested tables, function-valued fields, and
-  symbolic constants as named migration gaps instead of guessing terrain
-  semantics.
-- [x] **Fixture and pinned coverage**: Verify ordering, deterministic repeated
-  output, escaped strings, and the pinned `cells.lua` source when available.
-- [ ] **Full terrain migration**: Expand typed coverage, asset mapping, and
-  behavior/fairness validation for all legacy terrain variants.
+- [x] **Matrix selection**: Accept `--bot all` alongside the three existing
+  single-policy selections.
+- [x] **Stable matrix output**: Emit schema, declared policy order, count, and
+  prefixed per-policy report fields in deterministic order.
+- [x] **Shared configuration**: Run every policy with the same seed range,
+  episode count, and maximum-turn budget; validate each report before output.
+- [x] **Repeatability coverage**: Repeat a bounded matrix and require
+  byte-identical output in native and repository contract tests.
+- [ ] **Difficulty targets**: Canonical target metrics and statistical study
+  interpretation remain open.
 
 ### 2.4 Pure Contract
 
-- **Input**: A pinned legacy Git revision and one Lua source path, or an explicit
-  cell fixture for conversion tests.
-- **Output**: JSON with schema version, source provenance, sorted scalar fields,
-  and explicit migration-gap entries.
+- **Input**: Seed, episode count, maximum turns, and `greedy`, `random`,
+  `explorer`, or `all` policy selection.
+- **Output**: Stable line-oriented fields; matrix mode prefixes each validated
+  single-policy report with its deterministic matrix index.
 - **Ownership Boundary**:
-  - `scripts/convert-legacy-content.py` owns build-time extraction only.
-  - `drl-core` remains the gameplay authority; conversion output is reviewed
-    input, not a runtime dependency.
-  - The browser bundle receives no Lua source, interpreter, or legacy object
-    model.
+  - `drl-core` owns deterministic cohort execution and integrity validation.
+  - `drl-app` owns argument parsing, policy ordering, and stable formatting.
+  - The CLI emits no hidden observations or statistical interpretation.
 
 ---
 
 ## 3. Recent Delivered Slices
+
+### M11 — Cohort Policy Matrix (`VERSION` 0.2.20)
+
+- [x] Added deterministic `--bot all` output for greedy, random, and explorer.
+- [x] Preserved shared seed/episode/turn configuration and prefixed report
+  fields.
+- [x] Added native repeatability and repository contract coverage.
+- [ ] Canonical difficulty targets and statistical interpretation remain open.
 
 ### M9 — Terrain-Cell Evidence Converter (`VERSION` 0.2.19)
 
@@ -260,8 +263,9 @@ gameplay behavior.
 
 ## 6. Verification Gates
 
-### Verified Baseline (`VERSION` 0.2.19)
+### Verified Baseline (`VERSION` 0.2.20)
 
+8486e15 feat(content): add pinned terrain cell evidence conversion (#110)
 2a5e149 ci(release): smoke-test ephemeral manifest signing (#109)
 3cfe62e feat(content): add pinned legacy content evidence converter (#108)
 f305503 feat(eval): add deterministic cohort study CLI (#107)
