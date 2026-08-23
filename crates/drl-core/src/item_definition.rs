@@ -386,6 +386,57 @@ const PLASMA_SHOTGUN: ItemDefinition = ItemDefinition {
   },
 };
 
+const JACKHAMMER: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::Jackhammer,
+  name: "Jackhammer",
+  description: "The Pancor Corporation Jackhammer is a 12-gauge, gas-operated automatic weapon.",
+  kind: ItemDefinitionKind::Weapon {
+    is_ranged: true,
+    ammo_type: Some(AmmoType::Shells),
+    clip_capacity: 10,
+    damage: (8, 24),
+    range: 15,
+    accuracy: 65,
+    knockback: 1,
+    fire_cost: ActionCost::RANGED_ATTACK,
+    reload_cost: ActionCost::STANDARD,
+  },
+};
+
+const SUPER_SHOTGUN: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::SuperShotgun,
+  name: "Super Shotgun",
+  description: "After the first hellish invasion, weapon engineers designed the super shotgun as the world's first firearm designed to kill demons. And boy does it do a good job.",
+  kind: ItemDefinitionKind::Weapon {
+    is_ranged: true,
+    ammo_type: Some(AmmoType::Shells),
+    clip_capacity: 2,
+    damage: (8, 32),
+    range: 15,
+    accuracy: 65,
+    knockback: 1,
+    fire_cost: ActionCost::RANGED_ATTACK,
+    reload_cost: ActionCost::STANDARD,
+  },
+};
+
+const TRISTAR_BLASTER: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::TristarBlaster,
+  name: "Tristar Blaster",
+  description: "Now this is a weird weapon.",
+  kind: ItemDefinitionKind::Weapon {
+    is_ranged: true,
+    ammo_type: Some(AmmoType::Cell),
+    clip_capacity: 45,
+    damage: (4, 24),
+    range: 8,
+    accuracy: 70,
+    knockback: 0,
+    fire_cost: ActionCost::RANGED_ATTACK,
+    reload_cost: ActionCost::STANDARD,
+  },
+};
+
 const CHAINGUN: ItemDefinition = ItemDefinition {
   archetype: ItemArchetype::Chaingun,
   name: "Chaingun",
@@ -653,6 +704,9 @@ pub const fn definition_for_spawn_kind(kind: ItemSpawnKind) -> &'static ItemDefi
     ItemSpawnKind::CombatPistol => &COMBAT_PISTOL,
     ItemSpawnKind::AssaultShotgun => &ASSAULT_SHOTGUN,
     ItemSpawnKind::PlasmaShotgun => &PLASMA_SHOTGUN,
+    ItemSpawnKind::Jackhammer => &JACKHAMMER,
+    ItemSpawnKind::SuperShotgun => &SUPER_SHOTGUN,
+    ItemSpawnKind::TristarBlaster => &TRISTAR_BLASTER,
     ItemSpawnKind::Chaingun => &CHAINGUN,
     ItemSpawnKind::PlasmaRifle => &PLASMA_RIFLE,
     ItemSpawnKind::RocketLauncher => &ROCKET_LAUNCHER,
@@ -757,6 +811,21 @@ mod tests {
         ItemSpawnKind::PlasmaShotgun,
         ItemArchetype::PlasmaShotgun,
         "Plasma Shotgun",
+      ),
+      (
+        ItemSpawnKind::Jackhammer,
+        ItemArchetype::Jackhammer,
+        "Jackhammer",
+      ),
+      (
+        ItemSpawnKind::SuperShotgun,
+        ItemArchetype::SuperShotgun,
+        "Super Shotgun",
+      ),
+      (
+        ItemSpawnKind::TristarBlaster,
+        ItemArchetype::TristarBlaster,
+        "Tristar Blaster",
       ),
       (ItemSpawnKind::Chaingun, ItemArchetype::Chaingun, "Chaingun"),
       (
@@ -1127,6 +1196,48 @@ mod tests {
         range: 15,
         accuracy: 65,
         knockback: 1,
+        fire_cost: ActionCost::RANGED_ATTACK,
+        reload_cost: ActionCost::STANDARD,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::Jackhammer).kind,
+      ItemDefinitionKind::Weapon {
+        is_ranged: true,
+        ammo_type: Some(AmmoType::Shells),
+        clip_capacity: 10,
+        damage: (8, 24),
+        range: 15,
+        accuracy: 65,
+        knockback: 1,
+        fire_cost: ActionCost::RANGED_ATTACK,
+        reload_cost: ActionCost::STANDARD,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::SuperShotgun).kind,
+      ItemDefinitionKind::Weapon {
+        is_ranged: true,
+        ammo_type: Some(AmmoType::Shells),
+        clip_capacity: 2,
+        damage: (8, 32),
+        range: 15,
+        accuracy: 65,
+        knockback: 1,
+        fire_cost: ActionCost::RANGED_ATTACK,
+        reload_cost: ActionCost::STANDARD,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::TristarBlaster).kind,
+      ItemDefinitionKind::Weapon {
+        is_ranged: true,
+        ammo_type: Some(AmmoType::Cell),
+        clip_capacity: 45,
+        damage: (4, 24),
+        range: 8,
+        accuracy: 70,
+        knockback: 0,
         fire_cost: ActionCost::RANGED_ATTACK,
         reload_cost: ActionCost::STANDARD,
       }

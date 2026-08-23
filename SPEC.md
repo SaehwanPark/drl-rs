@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.82`
+Current project version: `0.2.83`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -31,7 +31,8 @@ Migrate the pinned legacy `rocket`, `cell`, `barmor`, `rarmor`, `smed`,
 `lmed`, `dshotgun`, `ashotgun`, `chainsaw`, `chaingun`, `bfg9000`, `plasma`, and
 `bazooka`, `ublaster`, `ulaser`, `umbazooka`, `unplasma`, `unbfg9000`, and
 `ubfg10k`, `umega`, `uberetta`, `ufshotgun`, `urbazooka`, `urailgun`, `uacid`,
-`ucpistol`, `uashotgun`, and `upshotgun` records into
+`ucpistol`, `uashotgun`, `upshotgun`, `usjack`, `udshotgun`, and `utrigun`
+records into
 typed immutable Rust definitions and replay-compatible spawn contracts.
 Preserve
 source-backed scalar fields, measured atlas slots, and verified armor
@@ -137,6 +138,13 @@ presentation tints without importing Lua callbacks or unverified combat rules.
   measured pistol/combat-shotgun/shotgun atlas-slot reuse; aimed-fire and
   alternate-reload perks, spread/falloff, plasma shot cost, callbacks,
   knockback scale, accuracy, and timing remain explicit gaps.
+- [x] **Heavy-shotgun boundary**: typed `Jackhammer`, `SuperShotgun`, and
+  `TristarBlaster` preserve pinned descriptions, shell/cell relations, clips
+  (`10`/`2`/`45`), damage ranges (`8d3`/`8d4`/`4d6`), source range `15` for
+  Jackhammer and Super Shotgun, replay kinds, and measured
+  combat-shotgun/double-shotgun atlas-slot reuse; alternate reload, dual-shot,
+  spread, chainfire, shot cost, explosions, callbacks, accuracy, knockback
+  scale, and timing remain explicit gaps.
 - [ ] **Full migration**: shotgun/BFG/chainsaw/chaingun/rocket/plasma/exotic
   weapon behavior, dynamic callbacks,
   balance/fairness, and remaining legacy item families remain open.
@@ -147,7 +155,8 @@ presentation tints without importing Lua callbacks or unverified combat rules.
 
 - **Input**: typed item spawn kinds, including `ItemSpawnKind::Chaingun`,
   `RocketLauncher`, `PlasmaRifle`, `CombatPistol`, `AssaultShotgun`, or
-  `PlasmaShotgun`, plus the existing ammo families.
+  `PlasmaShotgun`, `Jackhammer`, `SuperShotgun`, or `TristarBlaster`, plus the
+  existing ammo families.
 - **Output**: a definition-backed stackable `Item` with the observed ammo type,
   count, maximum stack, description, and atlas archetype; the definitions also
   expose pinned initial counts (`3`/`20`) while MCP JSON uses
@@ -212,6 +221,11 @@ presentation tints without importing Lua callbacks or unverified combat rules.
   exotic weapons preserving pinned descriptions, ammo relations, clips,
   damage/range policies, replay kinds, and measured atlas-slot reuse. Aimed
   fire, alternate reload, spread/falloff, plasma shot cost, callbacks,
+  knockback scale, accuracy, and exact timing are not claimed as parity.
+- `Jackhammer`, `SuperShotgun`, and `TristarBlaster` are definition-backed
+  exotic weapons preserving pinned descriptions, ammo relations, clips,
+  damage/range policies, replay kinds, and measured atlas-slot reuse. Alternate
+  reload, dual-shot, spread, chainfire, shot cost, explosions, callbacks,
   knockback scale, accuracy, and exact timing are not claimed as parity.
 - **Ownership Boundary**: Rust typed definitions own runtime item semantics;
   pinned Lua evidence informs only the migrated scalar fields and provenance.

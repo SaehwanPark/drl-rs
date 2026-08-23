@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.83]
+
+- Added typed `Jackhammer`, `SuperShotgun`, and `TristarBlaster` families from
+  pinned user/eitems records, preserving descriptions, ammo relations, clips,
+  damage/range scalars, replay JSON kinds, and measured atlas-slot reuse.
+  Alternate reload, dual-shot, spread, chainfire, shot-cost, explosions,
+  callbacks, and exact timing remain open.
+
 ## [0.2.82]
 
 - Added typed `CombatPistol`, `AssaultShotgun`, and `PlasmaShotgun` families

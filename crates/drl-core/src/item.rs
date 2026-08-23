@@ -466,6 +466,24 @@ impl Item {
     Self::from_spawn_kind(id, ItemSpawnKind::PlasmaShotgun)
   }
 
+  /// Factory: unique Jackhammer shotgun (8d3 damage policy).
+  #[must_use]
+  pub fn jackhammer(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::Jackhammer)
+  }
+
+  /// Factory: exotic Super Shotgun (8d4 damage policy).
+  #[must_use]
+  pub fn super_shotgun(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::SuperShotgun)
+  }
+
+  /// Factory: exotic Tristar Blaster (4d6 damage policy).
+  #[must_use]
+  pub fn tristar_blaster(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::TristarBlaster)
+  }
+
   /// Factory: chaingun (40-round 9mm clip, 1d6 damage policy).
   #[must_use]
   pub fn chaingun(id: ItemId) -> Self {
@@ -821,6 +839,15 @@ mod tests {
       (
         ItemSpawnKind::PlasmaShotgun,
         Item::plasma_shotgun(ItemId::new(40)),
+      ),
+      (ItemSpawnKind::Jackhammer, Item::jackhammer(ItemId::new(41))),
+      (
+        ItemSpawnKind::SuperShotgun,
+        Item::super_shotgun(ItemId::new(42)),
+      ),
+      (
+        ItemSpawnKind::TristarBlaster,
+        Item::tristar_blaster(ItemId::new(43)),
       ),
       (ItemSpawnKind::Chaingun, Item::chaingun(ItemId::new(11))),
       (
