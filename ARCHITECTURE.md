@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.80`
+Current project version: `0.2.81`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -97,7 +97,8 @@ Presentation Boundary
     Chainsaw is a typed melee weapon; double/combat shotguns, Blaster, Laser
     Rifle, Missile Launcher, Nuclear Plasma Rifle, Nuclear BFG 9000, BFG 10K,
     BFG 9000, Mega Buster, Grammaton Beretta, Frag Shotgun, Chaingun, Plasma
-    Rifle, and Rocket Launcher are typed ammo weapons with
+    Rifle, Rocket Launcher, Revenant's Launcher, Railgun, and Acid Spitter are
+    typed ammo weapons with
     pinned clip and damage ranges;
     current range, accuracy, and timing are Rust policy.
     Blue and red armor preserve protection, descriptions, the shared sprite

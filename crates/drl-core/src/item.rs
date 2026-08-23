@@ -430,6 +430,24 @@ impl Item {
     Self::from_spawn_kind(id, ItemSpawnKind::FragShotgun)
   }
 
+  /// Factory: unique Revenant's Launcher (7d6 damage policy).
+  #[must_use]
+  pub fn revenants_launcher(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::RevenantsLauncher)
+  }
+
+  /// Factory: unique Railgun (8d8 damage policy).
+  #[must_use]
+  pub fn railgun(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::Railgun)
+  }
+
+  /// Factory: unique Acid Spitter (10d10 damage policy).
+  #[must_use]
+  pub fn acid_spitter(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::AcidSpitter)
+  }
+
   /// Factory: chaingun (40-round 9mm clip, 1d6 damage policy).
   #[must_use]
   pub fn chaingun(id: ItemId) -> Self {
@@ -765,6 +783,15 @@ mod tests {
         ItemSpawnKind::FragShotgun,
         Item::frag_shotgun(ItemId::new(34)),
       ),
+      (
+        ItemSpawnKind::RevenantsLauncher,
+        Item::revenants_launcher(ItemId::new(35)),
+      ),
+      (ItemSpawnKind::Railgun, Item::railgun(ItemId::new(36))),
+      (
+        ItemSpawnKind::AcidSpitter,
+        Item::acid_spitter(ItemId::new(37)),
+      ),
       (ItemSpawnKind::Chaingun, Item::chaingun(ItemId::new(11))),
       (
         ItemSpawnKind::PlasmaRifle,
@@ -885,6 +912,9 @@ mod tests {
       ItemSpawnKind::MegaBuster,
       ItemSpawnKind::GrammatonBeretta,
       ItemSpawnKind::FragShotgun,
+      ItemSpawnKind::RevenantsLauncher,
+      ItemSpawnKind::Railgun,
+      ItemSpawnKind::AcidSpitter,
       ItemSpawnKind::Chaingun,
       ItemSpawnKind::PlasmaRifle,
       ItemSpawnKind::RocketLauncher,

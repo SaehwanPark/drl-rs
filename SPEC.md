@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.80`
+Current project version: `0.2.81`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -30,7 +30,8 @@ criteria, and verification boundaries.
 Migrate the pinned legacy `rocket`, `cell`, `barmor`, `rarmor`, `smed`,
 `lmed`, `dshotgun`, `ashotgun`, `chainsaw`, `chaingun`, `bfg9000`, `plasma`, and
 `bazooka`, `ublaster`, `ulaser`, `umbazooka`, `unplasma`, `unbfg9000`, and
-`ubfg10k`, `umega`, `uberetta`, and `ufshotgun` records into
+`ubfg10k`, `umega`, `uberetta`, `ufshotgun`, `urbazooka`, `urailgun`, and
+`uacid` records into
 typed immutable Rust definitions and replay-compatible spawn contracts.
 Preserve
 source-backed scalar fields, measured atlas slots, and verified armor
@@ -123,6 +124,12 @@ presentation tints without importing Lua callbacks or unverified combat rules.
   replay kinds, and measured plasma/pistol/combat-shotgun atlas slots; mode
   switching, kill medals, mods, spread, and timing callbacks remain explicit
   gaps.
+- [x] **Special-projectile boundary**: typed `RevenantsLauncher`, `Railgun`,
+  and `AcidSpitter` preserve pinned descriptions, rocket/cell/rocket
+  relations, clips (`1`/`40`/`10`), damage ranges (`7d6`/`8d8`/`10d10`), range
+  `15` for the latter two, replay kinds, and measured bazooka/plasma atlas
+  slots; homing, piercing, acid-map, explosion, and timing callbacks remain
+  explicit gaps.
 - [ ] **Full migration**: shotgun/BFG/chainsaw/chaingun/rocket/plasma/exotic
   weapon behavior, dynamic callbacks,
   balance/fairness, and remaining legacy item families remain open.
@@ -188,6 +195,11 @@ presentation tints without importing Lua callbacks or unverified combat rules.
   9mm weapons preserving pinned clips, damage policies, descriptions, replay
   kinds, and measured atlas geometry. Mode switching, kill medals, mods,
   spread, and exact timing are not claimed as parity.
+- `RevenantsLauncher`, `Railgun`, and `AcidSpitter` are definition-backed
+  special-projectile weapons preserving pinned ammo relations, clips, damage/
+  range policies, descriptions, replay kinds, and measured atlas geometry.
+  Homing, piercing, acid-map, explosion, and exact timing are not claimed as
+  parity.
 - **Ownership Boundary**: Rust typed definitions own runtime item semantics;
   pinned Lua evidence informs only the migrated scalar fields and provenance.
 
