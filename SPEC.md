@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.63`
+Current project version: `0.2.64`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,50 +23,52 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M8 Semantic Minimap DOM Surface
+## 2. Active Implementation Slice: M9 Rocket and Power-Cell Ammo Families
 
 ### 2.1 Scope & Objective
 
-Expose the existing fair `MinimapState` projection through a bounded,
-keyboard-focusable semantic DOM text grid. The browser surface must render only
-explored topology and currently visible actor/player markers, while malformed
-or oversized dimensions fail closed. This is accessibility-oriented
-presentation plumbing, not a claim of exact legacy pixel parity.
+Migrate the pinned legacy `rocket` and `cell` ammunition records into typed,
+immutable Rust definitions and replay-compatible spawn contracts. Preserve
+source-backed names/descriptions, initial stack amounts, maximum stack limits,
+and measured atlas slots without importing Lua callbacks or weapon behavior.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
-1. **Fair projection**: `drl-render::MinimapState` already contains explored
-   tile memory and actors currently inside active FOV.
-2. **One-way browser surface**: `drl-web` updates the semantic DOM from each
-   fair observation; DOM updates never mutate the simulation.
-3. **Bounded output**: grids larger than 4,096 cells show a stable unavailable
-   message instead of allocating unbounded browser text.
+1. **Pinned evidence**: Git objects at legacy revision
+   `17d9be1204751899b2d69d8d3a2dde247bd0cc5c` provide scalar item and sprite
+   records; the dirty legacy working tree is not an evidence source.
+2. **Typed content boundary**: `drl-core` owns immutable `ItemDefinition`
+   records and factories; `drl-protocol` owns stable spawn/archetype values.
+3. **Replay boundary**: canonical MCP replay JSON encodes and decodes both new
+   stackable ammo families without changing existing variants.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Accessible surface**: the page exposes a labelled minimap region with
-  a focusable `<pre>` text grid and `aria-live="off"` to avoid command spam.
-- [x] **Fair rendering**: the DOM consumes only `MinimapState` cells, preserving
-  explored-only topology and player/visible-actor marker precedence.
-- [x] **Bounded failure**: zero-sized or over-4,096-cell dimensions return
-  `Minimap unavailable.` without allocating a grid.
-- [x] **Focused contract coverage**: native Rust tests cover glyph mapping,
-  projected markers, malformed dimensions, and the existing renderer
-  projection tests cover hidden-state exclusion and ordering.
-- [ ] **Exact legacy parity**: pixel geometry, palette, typography, and
-  capture-backed minimap regressions remain `NOT_RUN`/open.
+- [x] **Rocket definition**: typed `AmmoRockets` preserves the observed
+  description, amount `3`, maximum stack `10`, and `SPRITE_ROCKET` slot.
+- [x] **Power-cell definition**: typed `AmmoCells` preserves the observed
+  description, amount `20`, maximum stack `50`, two-frame marker, and
+  `SPRITE_CELL` slot; frame duration remains an explicit Rust decision.
+- [x] **Factory and view coverage**: item counts, ammo types, archetypes,
+  descriptions, and stack policies are deterministic and definition-backed.
+- [x] **Replay coverage**: canonical MCP JSON round-trips both new spawn
+  families while existing replay variants remain unchanged.
+- [x] **Asset coverage**: atlas descriptors are bounded and checked against
+  pinned slot coordinates; no working-tree legacy assets are imported.
+- [ ] **Full migration**: rocket/plasma weapon behavior, dynamic callbacks,
+  balance/fairness, and remaining legacy item families remain open.
 - [x] **Explicit non-goals**: no gameplay/core rule, observation schema,
-  browser storage, audio, or hidden-world access is changed.
+  Lua runtime, dynamic item callback, or broad balance claim is added.
 
 ### 2.4 Pure Contract
 
-- **Input**: a fair `PlayerObservation` delivered to the browser update DOM.
-- **Output**: bounded text rows using `#`, `.`, `+`, `/`, `>`, `@`, and `a` for
-  projected walls, floor, doors, stairs, player, and visible actors; unknown
-  cells remain spaces.
-- **Ownership Boundary**: `drl-web` owns glyph formatting and DOM updates;
-  `drl-render` owns the fair projection and `drl-core` remains authoritative
-  for world state and visibility.
+- **Input**: `ItemSpawnKind::AmmoRockets(count)` or
+  `ItemSpawnKind::AmmoCells(count)`.
+- **Output**: a definition-backed stackable `Item` with the observed ammo type,
+  count, maximum stack, description, and atlas archetype; MCP JSON uses
+  `ammo_rockets`/`ammo_cells` plus `count`.
+- **Ownership Boundary**: Rust typed definitions own runtime item semantics;
+  pinned Lua evidence informs only the migrated scalar fields and provenance.
 
 ---
 

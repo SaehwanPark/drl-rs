@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.63`
+Current project version: `0.2.64`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.63)
+## 3. Current Progress Summary (`VERSION` 0.2.64)
 
 ### Delivered Foundations
 
@@ -75,9 +75,10 @@ verification item uses explicit status semantics:
   minimap projection with visible actor markers plus a bounded accessible DOM
   text-grid surface.
 - **Typed Content & Persistence (M9, M10)**: Rust-owned definitions for current
-  monsters, items, tiles, and levels; versioned fixed-session snapshot codec
-  with localStorage persistence, bounded rejected-save quarantine, and static
-  service-worker cache.
+  monsters, items, tiles, and levels, including pinned rocket and power-cell
+  ammo families; versioned fixed-session snapshot codec with localStorage
+  persistence, bounded rejected-save quarantine, and static service-worker
+  cache.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
@@ -454,6 +455,8 @@ scripting.
   migration gaps, and positive source line metadata.
 - [x] The evidence crosswalk uses schema version 2 for its exact-digest and
   complete-catalog contract; obsolete schema versions fail closed.
+- [x] Typed rocket and power-cell ammo families preserve pinned scalar fields,
+  stack policies, replay JSON names, and atlas slots without Lua runtime code.
 - [ ] Full migration of legacy monsters, weapons, armor, mods, and consumable
   items.
 - [ ] Full migration of special levels, vaults, and dungeon branches.

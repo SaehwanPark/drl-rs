@@ -110,6 +110,8 @@ pub enum ItemSpawnKind {
   CombatKnife,
   Ammo9mm(u32),
   AmmoShells(u32),
+  AmmoRockets(u32),
+  AmmoCells(u32),
   SmallMedPack,
   LargeMedPack,
   GreenArmor,
