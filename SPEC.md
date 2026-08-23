@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.75`
+Current project version: `0.2.76`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -28,8 +28,9 @@ criteria, and verification boundaries.
 ### 2.1 Scope & Objective
 
 Migrate the pinned legacy `rocket`, `cell`, `barmor`, `rarmor`, `smed`,
-`lmed`, `chainsaw`, `chaingun`, `plasma`, and `bazooka` records into typed
-immutable Rust definitions and replay-compatible spawn contracts. Preserve
+`lmed`, `chainsaw`, `chaingun`, `bfg9000`, `plasma`, and `bazooka` records into
+typed immutable Rust definitions and replay-compatible spawn contracts.
+Preserve
 source-backed scalar fields, measured atlas slots, and verified armor
 presentation tints without importing Lua callbacks or unverified combat rules.
 
@@ -93,7 +94,11 @@ presentation tints without importing Lua callbacks or unverified combat rules.
   melee shape, `4d6` damage range, replay kind, and `SPRITE_CHAINSAW` slot.
   First-pickup callbacks, exotic flags, sound/UI behavior, and exact timing
   remain explicit gaps.
-- [ ] **Full migration**: chainsaw/chaingun/rocket/plasma weapon behavior,
+- [x] **BFG 9000 boundary**: typed `Bfg9000` preserves the pinned description,
+  cell-ammo relation, 100-cell clip, `10d6` damage range, replay kind, and
+  `SPRITE_BFG9000` slot. Exact-hit/shot-cost, radius/explosion, overcharge,
+  callback, accuracy, and timing semantics remain explicit gaps.
+- [ ] **Full migration**: BFG/chainsaw/chaingun/rocket/plasma weapon behavior,
   dynamic callbacks,
   balance/fairness, and remaining legacy item families remain open.
 - [x] **Explicit non-goals**: no gameplay/core rule, observation schema,
@@ -137,6 +142,10 @@ presentation tints without importing Lua callbacks or unverified combat rules.
 - `Chainsaw` is a definition-backed melee weapon with `4d6` damage policy,
   `chainsaw` replay kind, and measured atlas geometry. First-pickup callbacks,
   exotic flags, and exact timing semantics are not claimed as legacy parity.
+- `Bfg9000` is a definition-backed cell-ammo weapon with a 100-cell clip,
+  `10d6` damage policy, `bfg9000` replay kind, and measured atlas geometry.
+  Exact-hit/shot-cost, radius/explosion, callback, and timing semantics are
+  not claimed as legacy parity.
 - **Ownership Boundary**: Rust typed definitions own runtime item semantics;
   pinned Lua evidence informs only the migrated scalar fields and provenance.
 
