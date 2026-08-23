@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.52`
+Current project version: `0.2.53`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.52)
+## 3. Current Progress Summary (`VERSION` 0.2.53)
 
 ### Delivered Foundations
 
@@ -84,12 +84,15 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active Milestone Slice (M13)**: MCP `tools/list` now adds a deterministic
-  action-or-command discriminator and conditional `allOf`/`if`/`then` branches
-  for move/melee directions, ranged coordinate aliases, item IDs, unequip slots,
-  and no-argument actions; unknown properties remain tolerated and runtime
-  dispatch is unchanged. Terminal sessions reject post-outcome actions with
-  `-32001`, stair transitions report `Victory`, and reset/replay/metrics
+- **Active Milestone Slice (M13)**: The public release-rights inventory and
+  source/optional-bundle gate now make the pinned CC BY-SA 4.0 graphics import,
+  excluded legacy code/audio/music/fonts/WADs, and unavailable capture/media
+  evidence explicit without claiming legal clearance. The preceding MCP
+  `tools/list` conditional `allOf`/`if`/`then` branches for move/melee
+  directions, ranged coordinate aliases, item IDs, unequip slots, and
+  no-argument actions remain delivered; unknown properties remain tolerated and
+  runtime dispatch is unchanged. Terminal sessions reject post-outcome actions
+  with `-32001`, stair transitions report `Victory`, and reset/replay/metrics
   inspection remain available. MCP `initialize` also validates object
   `capabilities` and string `clientInfo.name`/`version` fields while retaining
   identified lifecycle gating before discovery, tools, and resources; JSON-RPC
@@ -543,7 +546,9 @@ Final release readiness, documentation, and static distribution.
   mutation; valid defaults remain unchanged.
 - [ ] Complete deterministic headless/MCP agent tooling suite and external
   client compatibility.
-- [ ] Comprehensive public rights inventory and release documentation.
+- [x] Comprehensive public rights inventory and release documentation is
+  machine-checked for source provenance, exact manifest rights, and optional
+  bundle exclusions; unresolved legal clearance remains open.
 
 ---
 

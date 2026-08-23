@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.53]
+
+- Added a canonical public release-rights inventory and deterministic source /
+  optional-bundle gate for the pinned CC BY-SA 4.0 graphics import.
+- Added negative bundle fixtures for missing license evidence and excluded
+  legacy code, audio/music, and font files; absent bundles remain `NOT_RUN`.
+- Kept legal clearance, media additions, deployment, and release-manifest
+  schema changes open.
+
 ## [0.2.52]
 
 - Added conditional MCP `game_step_action` input schemas with an

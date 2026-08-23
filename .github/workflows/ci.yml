@@ -50,6 +50,8 @@ jobs:
         run: sh scripts/build-web.sh
       - name: Verify release manifest
         run: sh scripts/check-release-manifest.sh
+      - name: Verify release rights boundary
+        run: sh scripts/check-release-rights.sh
       - name: Verify signed release manifest with ephemeral CI key
         env:
           RELEASE_SIGNING_KEY: ${{ runner.temp }}/drl-release-signing-key.pem
@@ -62,3 +64,4 @@ jobs:
           test ! -e "dist/$(basename "$RELEASE_SIGNING_KEY")"
           RELEASE_VERIFY_KEY="$PWD/dist/release-manifest.pub" \
             sh scripts/check-release-manifest.sh
+          sh scripts/check-release-rights.sh

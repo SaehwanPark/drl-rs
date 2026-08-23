@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.52`
+Current project version: `0.2.53`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -356,6 +356,11 @@ Presentation Boundary
   cache and fail closed when its shell/assets are absent.
 - **Release Manifests**: Build tooling generates `release-manifest.json` with
   sorted artifact SHA-256 hashes and a `.sha256` sidecar digest.
+- **Release-rights Boundary**: `docs/release-rights.md` records the bundled
+  graphics license/provenance and excluded legacy material; the source and
+  optional bundle checks in `scripts/check-release-rights.sh` reject legacy
+  code, audio/music, fonts, WADs, and other excluded media without making a
+  legal-clearance claim.
 
 ---
 
@@ -391,6 +396,9 @@ The repository enforces architectural boundaries via automated test suites:
   clippy, unit tests, integration tests, and harness checks.
 - **Asset Manifest**: `sh scripts/check-assets.sh` verifies graphics licensing
   and SHA-256 checksums.
+- **Release-rights Inventory**: `sh scripts/check-release-rights.sh` validates
+  the rights inventory, graphics evidence, exact manifest rights declaration,
+  and optional bundle exclusions; an absent bundle is reported `NOT_RUN`.
 - **Web Contracts**: `sh scripts/check-web.sh` checks WASM compilation and web
   contracts.
 - **Release Validation**: `scripts/check-release-manifest.sh` validates release
