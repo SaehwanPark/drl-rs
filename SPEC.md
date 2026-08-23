@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.61`
+Current project version: `0.2.62`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,54 +23,50 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M10 Clear Save Confirmation Guard
+## 2. Active Implementation Slice: M8 Explored-Topology Minimap Projection
 
 ### 2.1 Scope & Objective
 
-Protect the browser's destructive **Clear save** control with an explicit
-confirmation step. A started game must ask whether the player wants to remove
-the saved session from this device; cancelling must leave storage and the
-active simulation untouched, while confirmation continues to the existing
-Rust-owned storage removal function. This is a presentation-boundary safety
-guard, not a change to snapshot encoding or gameplay state.
+Expose a deterministic, renderer-neutral minimap projection from the fair
+`PlayerObservation` boundary. The projection may contain explored tile
+topology and currently visible actor/player markers, but must never infer or
+surface unexplored map cells or hidden actors. This is presentation planning,
+not a claim of exact legacy pixel parity.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
-1. **Persistence boundary**: `drl-web` owns fixed-session snapshot encoding,
-   transactional restore, bounded rejected-save quarantine, and best-effort
-   localStorage operations; `drl-core` remains storage-free.
-2. **Browser shell**: `web/bootstrap.js` owns DOM event wiring and reports
-   recoverable Save/Load/Clear Save status messages without advancing turns.
-3. **Offline evidence**: local Chromium evidence covers offline navigation,
-   startup, Save, and Load; destructive Clear Save execution remains an
-   action-time acceptance step and must not be inferred from static tests.
+1. **Fair observation boundary**: `PlayerObservation` contains explored tile
+   memory with per-tile visibility plus actors currently inside active FOV.
+2. **One-way presentation**: `drl-render` consumes observations only; minimap
+   construction cannot mutate simulation state or query `World` internals.
+3. **Parity boundary**: exact legacy minimap geometry, palette, typography, and
+   capture-backed visual regressions remain open work.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Confirmation boundary**: a started browser session opens an explicit,
-  keyboard-accessible confirmation dialog with focus cycling before invoking
-  `clear_save()`.
-- [x] **Cancel safety**: dismissing the prompt reports `Saved session kept.`
-  and does not call the storage-removal function or alter simulation state.
-- [x] **Confirmed compatibility**: accepting the prompt still returns the
-  existing Rust-owned Clear Save result; no snapshot or core API changes are
-  introduced.
-- [x] **Focused contract coverage**: a Node contract test protects the prompt,
-  cancel status, and existing clear call; the live supported-Chromium run
-  verifies the prompt and cancel path.
-- [ ] **Destructive browser action**: actually accepting the prompt and
-  deleting local save data remains `NOT_RUN` because action-time deletion was
-  not authorized for this run.
-- [x] **Explicit non-goals**: no gameplay/core rule, snapshot schema,
-  service-worker cache, or cross-browser accessibility claim is changed.
+- [x] **Explored topology**: every minimap cell comes from an explored tile in
+  the observation; unexplored positions are omitted.
+- [x] **Visibility markers**: the player marker and non-player actor markers
+  are derived only from the fair observation, with player precedence at a
+  shared position.
+- [x] **Stable projection**: cells are deduplicated and sorted by map position,
+  and malformed out-of-bounds observation entries are ignored.
+- [x] **Focused contract coverage**: pure Rust tests cover hidden-state
+  exclusion, actor visibility, marker precedence, ordering, and malformed
+  positions.
+- [ ] **Exact legacy parity**: pixel geometry, palette, typography, and
+  capture-backed minimap regressions remain `NOT_RUN`/open.
+- [x] **Explicit non-goals**: no gameplay/core rule, observation schema,
+  browser storage, audio, or hidden-world access is changed.
 
 ### 2.4 Pure Contract
 
-- **Input**: a click on the started page's `Clear save` button.
-- **Output**: cancellation returns `Saved session kept.`; confirmation invokes
-  the existing `clear_save()` export and returns its storage result.
-- **Ownership Boundary**: JavaScript owns only user confirmation and status
-  presentation; Rust/WASM remains authoritative for localStorage mutation.
+- **Input**: a fair `PlayerObservation` with map dimensions, explored tile
+  views, player position, and visible actor views.
+- **Output**: a sorted `MinimapState` containing explored topology plus
+  `Player`/`VisibleActor` markers; no unknown-cell records are emitted.
+- **Ownership Boundary**: `drl-render` owns only pure projection; `drl-core`
+  remains authoritative for world state and visibility.
 
 ---
 

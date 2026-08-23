@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.61`
+Current project version: `0.2.62`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.61)
+## 3. Current Progress Summary (`VERSION` 0.2.62)
 
 ### Delivered Foundations
 
@@ -70,8 +70,9 @@ verification item uses explicit status semantics:
 - **Audiovisual Contracts (M8)**: Measured 32px atlas slots, normalized UVs,
   layer draw plans, emissive floor sampling, `0.1` alpha cutoff, evidence-backed
   tints (Green Armor, Phase Device, StairsDown), outline-mask compositing,
-  elapsed-time animation scheduling, pure effect/missile math, and bounded
-  particle-decal insertion and storage contracts.
+  elapsed-time animation scheduling, pure effect/missile math, bounded
+  particle-decal insertion and storage contracts, and a fair explored-topology
+  minimap projection with visible actor markers.
 - **Typed Content & Persistence (M9, M10)**: Rust-owned definitions for current
   monsters, items, tiles, and levels; versioned fixed-session snapshot codec
   with localStorage persistence, bounded rejected-save quarantine, and static
@@ -388,12 +389,15 @@ rigorous contracts.
 - [x] Renderer-neutral particle-decal draw planning with opaque caller-resolved
   handles, stored-pixel placement, stable ordering, viewport filtering, and
   floor-level insertion into scene plans.
+- [x] Renderer-neutral `MinimapState` projection from explored tiles and
+  currently visible actor/player markers, with deterministic ordering,
+  duplicate resolution, and malformed-position rejection.
 
 #### Present Slice (Expanded in `SPEC.md`)
 
-- [x] Consume retained requests from `ParticleDecalStore::entries()` into
-  renderer draw passes without mutating store or simulation state. Full
-  capture-backed visual parity remains `NOT_RUN`.
+- [x] Project explored minimap topology and fair visible actor markers without
+  hidden-world access. Exact legacy minimap geometry and capture-backed visual
+  parity remain open.
 
 #### Open Work
 

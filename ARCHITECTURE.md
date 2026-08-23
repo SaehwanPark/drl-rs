@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.60`
+Current project version: `0.2.62`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -120,6 +120,8 @@ Presentation Boundary
   timing math.
 - **Key Responsibilities**:
   - Scene Construction: `PresentationStep`, `RenderScene`, target selection.
+  - Fair minimap projection: `MinimapState` includes explored topology and
+    currently visible actor/player markers only.
   - Viewport Layout: `PixelViewport`, `PixelRect` integer square-cell scaling.
   - Shading & Tone: `LightingBand` (FOV vs fog), `SceneTone` (player health),
     `low_health_pulse_target_alpha`, `LowHealthPulseState`.

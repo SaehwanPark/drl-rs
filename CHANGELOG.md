@@ -3,6 +3,16 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.62]
+
+- Added a deterministic renderer-neutral `MinimapState` projection from fair
+  player observations. It includes explored topology and currently visible
+  actor/player markers, rejects malformed positions, and never surfaces
+  unexplored map state.
+- Added focused Rust contracts for ordering, duplicate resolution, marker
+  precedence, and hidden-state exclusion. Exact legacy minimap pixel parity
+  remains open.
+
 ## [0.2.61]
 
 - Added an accessible Clear Save confirmation dialog in the browser shell.
