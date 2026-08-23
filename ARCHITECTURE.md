@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.14`
+Current project version: `0.2.15`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -148,9 +148,10 @@ Presentation Boundary
   - State Persistence: `SessionSnapshot` codec with localStorage save/load.
     Rejected values are quarantined in a bounded browser-owned slot before
     active storage cleanup; future version migration is explicit and gated.
-  - Release Packaging: Service worker caching, release manifest validation,
-    digest sidecars, checkout-identity verification, and optional detached
-    OpenSSL signature verification.
+  - Release Packaging: Bootstrap-independent service worker registration,
+    service worker caching, release manifest validation, digest sidecars,
+    checkout-identity verification, and optional detached OpenSSL signature
+    verification.
   - Accessibility: Accessible DOM shell, keyboard/numpad navigation, and
     diagnostics panel.
 - **Dependencies**: Depends on `drl-protocol`, `drl-render`, `drl-assets`,

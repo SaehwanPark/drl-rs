@@ -6,6 +6,7 @@ cd "$(dirname "$0")/.."
 
 sh scripts/check-service-worker.sh
 sh scripts/test-service-worker.sh
+sh scripts/test-offline-cache.sh
 sh scripts/check-browser-diagnostics.sh
 sh scripts/check-browser-accessibility.sh
 

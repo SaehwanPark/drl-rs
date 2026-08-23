@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.14`
+Current project version: `0.2.15`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,51 +23,62 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M12 Detached Release Signing
+## 2. Active Implementation Slice: M10 Offline-Cache Readiness
 
 ### 2.1 Scope & Objective
 
-Add an optional cryptographic signature boundary for the generated release
-manifest. Signed bundles include a detached signature and derived public key;
-verification fails closed when signature artifacts are present. Unsigned local
-and CI builds remain valid when no signing key is configured.
+Start service-worker registration during page bootstrap, independently of game
+graphics and WebGPU startup. Report unavailable, installing, ready, and failed
+registration states without changing simulation behavior. Real browser offline
+installation remains an environment-gated acceptance item.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
-1. **Release manifest (v0.2.1–v0.2.13)**:
+1. **Release manifest and detached signing (v0.2.1–v0.2.14)**:
    - `release-manifest.json` records version, source identity, artifact hashes,
-     generated files, and rights metadata.
-2. **Unsigned integrity (v0.2.1–v0.2.13)**:
+     generated files, rights metadata, and optional detached signature artifacts.
+2. **Static service-worker boundary (v0.2.1–v0.2.14)**:
    - SHA-256 sidecars and service-worker checks validate every generated bundle
-     without requiring secrets or external services.
+     without requiring secrets or external services; the worker has tested
+     install, activate, navigation fallback, and same-origin GET behavior.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Optional signing**: When `RELEASE_SIGNING_KEY` is configured, emit a
-  detached SHA-256 OpenSSL signature and derived public key for the manifest.
-- [x] **Fail-closed verification**: If either signature artifact exists, require
-  both and verify the manifest; unsigned builds remain accepted by default.
-- [x] **Private-key boundary**: Never copy the private key into `dist` or the
-  browser bundle.
-- [x] **Native shell tests**: Cover sign, verify, and mutation rejection with
-  an ephemeral key.
-- [ ] **Release governance gate**: Key custody, CI provisioning, rotation, and
-  production trust-root policy remain open.
+- [x] **Bootstrap registration**: Begin registration before the Start handler
+  can reject unsupported WebGPU, and await the same readiness result after game
+  startup for user-facing status.
+- [x] **Capability and failure diagnostics**: Distinguish unavailable service
+  workers, installation in progress, active registration, and registration
+  failures without telemetry or simulation side effects.
+- [x] **Bundle boundary**: Copy the registration helper into the generated
+  static bundle and include it in release-manifest/service-worker coverage.
+- [x] **Deterministic contract tests**: Cover capability, installing, ready,
+  failure, and bootstrap ordering with injected browser capabilities.
+- [ ] **Real browser acceptance**: Verify first-load installation and offline
+  reload in an approved desktop Chromium environment.
 
 ### 2.4 Pure Contract
 
-- **Input**: `dist/release-manifest.json` and an optional private/public key
-  configuration owned by the release environment.
-- **Output**: Detached signature artifacts or an explicit unsigned/not-run
-  result; verification never mutates the manifest.
+- **Input**: Browser service-worker capability and registration promise.
+- **Output**: A descriptive readiness string; registration failures never throw
+  into game startup and never mutate simulation state.
 - **Ownership Boundary**:
-  - Release scripts own key use and signature verification.
-  - `drl-web` and the browser bundle receive only public artifacts.
-  - Key custody and trust decisions remain outside the repository.
+  - `web/offline-cache.mjs` owns registration and diagnostics formatting.
+  - `web/bootstrap.js` starts registration before graphics and reports its
+    result after the simulation boot path.
+  - The service worker owns cache lifecycle; offline behavior remains subject
+    to controlled browser acceptance.
 
 ---
 
 ## 3. Recent Delivered Slices
+
+### M10 — Offline-Cache Readiness (`VERSION` 0.2.15)
+
+- [x] Started service-worker registration independently of WebGPU startup.
+- [x] Added explicit unavailable/installing/ready/failure diagnostics.
+- [x] Added injected-capability tests and bootstrap ordering checks.
+- [ ] Real browser offline installation and reload acceptance remain open.
 
 ### M12 — Detached Release Signing (`VERSION` 0.2.14)
 
@@ -216,8 +227,9 @@ and CI builds remain valid when no signing key is configured.
 
 ## 6. Verification Gates
 
-### Verified Baseline (`VERSION` 0.2.14)
+### Verified Baseline (`VERSION` 0.2.15)
 
+af0fcf8 feat(release): add optional manifest signing (#105)
 - [x] `sh scripts/check-repository.sh` — Full repository test suite, formatting,
   clippy, and harness checks.
 - [x] `sh scripts/check-assets.sh` — 32 imported legacy PNGs, licensing, and

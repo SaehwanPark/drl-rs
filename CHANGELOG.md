@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.15]
+
+- Started service-worker registration during page bootstrap, independently of
+  WebGPU startup, so unsupported graphics do not prevent offline-cache
+  installation from being attempted.
+- Added deterministic capability, installation, readiness, failure, and
+  bootstrap-order contract coverage; real browser offline installation remains
+  environment-gated.
+
 ## [0.2.14]
 
 - Added optional detached OpenSSL signing and verification for release
