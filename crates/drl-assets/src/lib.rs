@@ -456,6 +456,12 @@ pub const fn item_sprite(archetype: ItemArchetype) -> SpriteDescriptor {
       layers: ITEM_LAYERS,
       animation: STATIC_ANIMATION,
     },
+    ItemArchetype::AmmoPackCells => SpriteDescriptor {
+      atlas: AtlasId::GunsAndPickups,
+      rect: legacy_slot(SPRITE_COLUMNS + 14),
+      layers: ITEM_LAYERS,
+      animation: TWO_FRAME_ANIMATION,
+    },
     ItemArchetype::SmallMedPack => SpriteDescriptor {
       atlas: AtlasId::GunsAndPickups,
       rect: legacy_slot(3 * SPRITE_COLUMNS + 9),
@@ -550,6 +556,7 @@ mod tests {
       ItemArchetype::AmmoRockets,
       ItemArchetype::AmmoCells,
       ItemArchetype::AmmoPackRockets,
+      ItemArchetype::AmmoPackCells,
       ItemArchetype::SmallMedPack,
       ItemArchetype::LargeMedPack,
       ItemArchetype::GreenArmor,
@@ -615,6 +622,11 @@ mod tests {
         ItemArchetype::AmmoPackRockets,
         AtlasId::GunsAndPickups,
         (352, 32),
+      ),
+      (
+        ItemArchetype::AmmoPackCells,
+        AtlasId::GunsAndPickups,
+        (416, 32),
       ),
       (
         ItemArchetype::SmallMedPack,
@@ -737,6 +749,12 @@ mod tests {
       Some(2)
     );
     assert!(cells.frame_rect(1).is_some());
+    let cell_pack = item_sprite(ItemArchetype::AmmoPackCells);
+    assert_eq!(
+      cell_pack.animation.map(|animation| animation.frame_count),
+      Some(2)
+    );
+    assert!(cell_pack.frame_rect(1).is_some());
   }
 
   #[test]

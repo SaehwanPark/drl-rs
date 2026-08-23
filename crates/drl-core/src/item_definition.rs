@@ -169,6 +169,17 @@ const AMMO_PACK_ROCKETS: ItemDefinition = ItemDefinition {
   },
 };
 
+const AMMO_PACK_CELLS: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::AmmoPackCells,
+  name: "Power Battery",
+  description: "Joules of energetic fun! Might be useful in the prepared slot.",
+  kind: ItemDefinitionKind::AmmoPack {
+    ammo_type: AmmoType::Cell,
+    amount: 120,
+    max_amount: 120,
+  },
+};
+
 const SMALL_MEDPACK: ItemDefinition = ItemDefinition {
   archetype: ItemArchetype::SmallMedPack,
   name: "Small MedPack",
@@ -213,6 +224,7 @@ pub const fn definition_for_spawn_kind(kind: ItemSpawnKind) -> &'static ItemDefi
     ItemSpawnKind::AmmoRockets(_) => &AMMO_ROCKETS,
     ItemSpawnKind::AmmoCells(_) => &AMMO_CELLS,
     ItemSpawnKind::AmmoPackRockets => &AMMO_PACK_ROCKETS,
+    ItemSpawnKind::AmmoPackCells => &AMMO_PACK_CELLS,
     ItemSpawnKind::SmallMedPack => &SMALL_MEDPACK,
     ItemSpawnKind::LargeMedPack => &LARGE_MEDPACK,
     ItemSpawnKind::GreenArmor => &GREEN_ARMOR,
@@ -258,6 +270,11 @@ mod tests {
         ItemSpawnKind::AmmoPackRockets,
         ItemArchetype::AmmoPackRockets,
         "Rocket Box",
+      ),
+      (
+        ItemSpawnKind::AmmoPackCells,
+        ItemArchetype::AmmoPackCells,
+        "Power Battery",
       ),
       (
         ItemSpawnKind::SmallMedPack,
@@ -420,6 +437,14 @@ mod tests {
         ammo_type: AmmoType::Rocket,
         amount: 25,
         max_amount: 25,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::AmmoPackCells).kind,
+      ItemDefinitionKind::AmmoPack {
+        ammo_type: AmmoType::Cell,
+        amount: 120,
+        max_amount: 120,
       }
     );
   }

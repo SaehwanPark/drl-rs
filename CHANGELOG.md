@@ -3,6 +3,12 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.67]
+
+- Added the pinned `pcell` power-battery `AmmoPackCells` family with fixed
+  amount/capacity (`120`/`120`), cell relation, replay JSON kind, and animated
+  atlas slot. Prepared-slot consumption remains explicitly open.
+
 ## [0.2.66]
 
 - Added a distinct definition-backed `AmmoPackRockets` family for the pinned
