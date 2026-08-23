@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.39`
+Current project version: `0.2.40`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,48 +23,57 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 Rust-Owned Content Invariant Validation
+## 2. Active Implementation Slice: M13 JSON-RPC Notification-Correct Stdio
 
 ### 2.1 Scope & Objective
 
-Validate the internal shape of the current Rust-owned monster, item, loot,
-level, and descriptive special-level tables before they are treated as valid
-content. This is a structural invariant gate, not a legacy-balance, fairness,
-or content-parity claim.
+Make the line-oriented MCP stdio boundary process valid JSON-RPC notifications
+for their side effects without writing responses. Identified requests continue
+to receive one response, explicit `id: null` remains a request, and malformed
+input still receives a parse-error response. This is notification behavior
+only, not full MCP/client compatibility.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
-1. **Typed content definitions**:
-   - Current monster, item, roll-bound, level, and descriptive special-level
-     definitions are immutable Rust-owned tables.
-2. **Evidence boundary**:
-   - Legacy Lua remains build-time evidence only; this slice checks current
-     Rust invariants without importing dynamic legacy behavior or target values.
+1. **MCP semantic server**:
+   - In-process JSON-RPC routing already covers lifecycle, tools, resources,
+     gameplay, replay/metrics, reset, and fairness boundaries.
+2. **Stdio lifecycle contract**:
+   - The fixed subprocess fixture already proves repeatable identified-request
+     behavior; this slice adds the missing notification response boundary.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Definition fields**: Current monster and item definitions reject empty,
-  non-positive, reversed, or incompatible scalar fields.
-- [x] **Roll coverage**: Monster and loot tables require strictly increasing
-  bounds ending at 100, and each emitted kind resolves to a current definition.
-- [x] **Level/catalog shape**: Procedural-level dimensions and room bounds are
-  positive and ordered; special-level metadata stays sorted and unique.
-- [x] **No expansion of claims**: Legacy parity, fairness targets, and full
-  dynamic content migration remain open.
+- [x] **Notification suppression**: Valid requests without an `id` are applied
+  for side effects but produce no stdio response.
+- [x] **Response boundaries**: Identified requests and explicit `id: null`
+  requests receive one response; malformed input still returns parse error.
+- [x] **Repeatable fixture**: Subprocess tests cover session mutation,
+  suppression, parse errors, null IDs, and deterministic output.
+- [x] **No expansion of claims**: JSON-RPC batch requests, full MCP compliance,
+  external clients, and production deployment remain open.
 
 ### 2.4 Pure Contract
 
-- **Input**: Immutable current Rust-owned content definitions.
-- **Output**: `validate_current_content()` returns `Ok(())` or a typed
-  structural diagnostic.
+- **Input**: One JSON-RPC JSON-lines request at a time.
+- **Output**: `run_stdio` emits a response only for identified requests,
+  explicit `id: null`, or malformed input.
 - **Ownership Boundary**:
-  - `drl-core::content_validation` owns structural checks and diagnostics.
-  - Existing content tables remain the single source of gameplay values.
-  - No legacy runtime, browser, telemetry, or balance policy is introduced.
+  - `drl-mcp::McpServer::run_stdio` owns response suppression at the transport
+    boundary.
+  - `handle_request` retains its existing direct-call response API.
+  - No batch parser, external client adapter, or deployment policy is added.
 
 ---
 
 ## 3. Recent Delivered Slices
+
+### M13 — JSON-RPC Notification-Correct Stdio (`VERSION` 0.2.40)
+
+- [x] Valid omitted-ID requests now mutate session state without emitting a
+  response from the stdio transport.
+- [x] Identified requests, explicit `id: null`, and malformed-input parse errors
+  retain one response each; batch and external-client compatibility remain open.
 
 ### M9 — Rust-Owned Content Invariant Validation (`VERSION` 0.2.39)
 
@@ -374,7 +383,7 @@ or content-parity claim.
 
 ## 6. Verification Gates
 
-### Verified Baseline (`VERSION` 0.2.39)
+### Verified Baseline (`VERSION` 0.2.40)
 
 1441667 feat(content): validate typed definition invariants (#130)
 fbd7eee feat(release): harden signing key inputs (#129)

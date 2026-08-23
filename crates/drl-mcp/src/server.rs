@@ -164,10 +164,19 @@ impl McpServer {
     while reader.read_line(&mut line)? > 0 {
       let trimmed = line.trim();
       if !trimmed.is_empty() {
+        // Parse once at the transport boundary so valid notifications can
+        // mutate the session without producing a JSON-RPC response. An
+        // explicit `id: null` is a request and still receives a response;
+        // malformed input is also routed through the normal parse-error path.
+        let is_notification = JsonRpcRequest::parse(trimmed)
+          .map(|request| request.id.is_none())
+          .unwrap_or(false);
         let resp = self.handle_request(trimmed);
-        writer.write_all(resp.as_bytes())?;
-        writer.write_all(b"\n")?;
-        writer.flush()?;
+        if !is_notification {
+          writer.write_all(resp.as_bytes())?;
+          writer.write_all(b"\n")?;
+          writer.flush()?;
+        }
       }
       line.clear();
     }
@@ -224,5 +233,41 @@ mod tests {
     let start_resp = server.handle_request(start_req);
     let start_val = JsonValue::parse(&start_resp).unwrap();
     assert!(start_val.get("result").is_some());
+  }
+
+  #[test]
+  fn stdio_processes_notifications_without_responses() {
+    let requests = concat!(
+      "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}\n",
+      "{\"jsonrpc\":\"2.0\",\"method\":\"tools/call\",\"params\":{\"name\":\"game_start\",\"arguments\":{\"seed\":7}}}\n",
+      "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":\"game_get_metrics\"}}\n",
+      "not-json\n",
+      "{\"jsonrpc\":\"2.0\",\"id\":null,\"method\":\"ping\"}\n",
+    );
+    let mut server = McpServer::new();
+    let mut output = Vec::new();
+
+    server
+      .run_stdio(std::io::Cursor::new(requests), &mut output)
+      .expect("stdio request stream succeeds");
+
+    let responses: Vec<_> = String::from_utf8(output)
+      .expect("responses are UTF-8")
+      .lines()
+      .map(JsonValue::parse)
+      .collect::<Result<_, _>>()
+      .expect("each emitted line is JSON");
+    assert_eq!(responses.len(), 3);
+    assert_eq!(responses[0].get("id").and_then(JsonValue::as_u64), Some(1));
+    assert!(responses[0].get("result").is_some());
+    assert_eq!(
+      responses[1]
+        .get("error")
+        .and_then(|error| error.get("code"))
+        .and_then(JsonValue::as_i64),
+      Some(error_codes::PARSE_ERROR as i64)
+    );
+    assert!(responses[2].get("id").is_some_and(JsonValue::is_null));
+    assert!(responses[2].get("result").is_some());
   }
 }
