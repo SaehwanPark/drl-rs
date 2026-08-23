@@ -16,15 +16,16 @@ cat >"$requests" <<'EOF'
 {"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":777,"width":20,"height":10,"max_turns":5}}}
 {"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"game_get_observation","arguments":{}}}
 {"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"game_list_actions","arguments":{}}}
-{"jsonrpc":"2.0","id":8,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"wait"}}}
-{"jsonrpc":"2.0","id":9,"method":"tools/call","params":{"name":"game_get_metrics","arguments":{}}}
-{"jsonrpc":"2.0","id":10,"method":"tools/call","params":{"name":"game_save_replay","arguments":{}}}
-{"jsonrpc":"2.0","id":11,"method":"tools/call","params":{"name":"game_verify_replay","arguments":{}}}
-{"jsonrpc":"2.0","id":12,"method":"tools/call","params":{"name":"game_get_dev_state","arguments":{}}}
-{"jsonrpc":"2.0","id":13,"method":"tools/call","params":{"name":"game_reset","arguments":{}}}
-{"jsonrpc":"2.0","id":14,"method":"tools/call","params":{"name":"game_load_scenario","arguments":{"ascii_map":"#####\n#@.>#\n#####","max_turns":4}}}
-{"jsonrpc":"2.0","id":15,"method":"resources/read","params":{"uri":"drl://rules/actions"}}
-{"jsonrpc":"2.0","id":16,"method":"resources/read","params":{"uri":"drl://session/metrics"}}
+{"jsonrpc":"2.0","id":8,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"fire","target_x":2147483648,"target_y":0}}}
+{"jsonrpc":"2.0","id":9,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"wait"}}}
+{"jsonrpc":"2.0","id":10,"method":"tools/call","params":{"name":"game_get_metrics","arguments":{}}}
+{"jsonrpc":"2.0","id":11,"method":"tools/call","params":{"name":"game_save_replay","arguments":{}}}
+{"jsonrpc":"2.0","id":12,"method":"tools/call","params":{"name":"game_verify_replay","arguments":{}}}
+{"jsonrpc":"2.0","id":13,"method":"tools/call","params":{"name":"game_get_dev_state","arguments":{}}}
+{"jsonrpc":"2.0","id":14,"method":"tools/call","params":{"name":"game_reset","arguments":{}}}
+{"jsonrpc":"2.0","id":15,"method":"tools/call","params":{"name":"game_load_scenario","arguments":{"ascii_map":"#####\n#@.>#\n#####","max_turns":4}}}
+{"jsonrpc":"2.0","id":16,"method":"resources/read","params":{"uri":"drl://rules/actions"}}
+{"jsonrpc":"2.0","id":17,"method":"resources/read","params":{"uri":"drl://session/metrics"}}
 EOF
 
 fallback_requests="$temp_dir/fallback-requests.jsonl"
@@ -42,10 +43,10 @@ import json
 import sys
 
 lines = [line for line in open(sys.argv[1], encoding="utf-8") if line.strip()]
-if len(lines) != 16:
-    raise SystemExit(f"expected 16 JSON-RPC responses, found {len(lines)}")
+if len(lines) != 17:
+    raise SystemExit(f"expected 17 JSON-RPC responses, found {len(lines)}")
 responses = [json.loads(line) for line in lines]
-if [response.get("id") for response in responses] != list(range(1, 17)):
+if [response.get("id") for response in responses] != list(range(1, 18)):
     raise SystemExit("stdio response IDs are not in request order")
 if not responses[0].get("result", {}).get("serverInfo", {}).get("name") == "drl-mcp":
     raise SystemExit("initialize response lacks server identity")
@@ -59,23 +60,25 @@ if responses[4].get("result", {}).get("data", {}).get("status") != "GameStarted"
     raise SystemExit("game_start did not report GameStarted")
 if not responses[6].get("result", {}).get("data", {}).get("legal_actions"):
     raise SystemExit("game_list_actions returned no legal actions")
-if responses[8].get("result", {}).get("data", {}).get("turns_survived") is None:
+if responses[7].get("error", {}).get("code") != -32602:
+    raise SystemExit("invalid numeric action did not return INVALID_PARAMS")
+if responses[9].get("result", {}).get("data", {}).get("turns_survived") is None:
     raise SystemExit("game_get_metrics returned no turns_survived field")
-if not responses[9].get("result", {}).get("data", {}).get("commands"):
+if not responses[10].get("result", {}).get("data", {}).get("commands"):
     raise SystemExit("game_save_replay returned no commands")
-if responses[10].get("result", {}).get("data", {}).get("deterministic") is not True:
+if responses[11].get("result", {}).get("data", {}).get("deterministic") is not True:
     raise SystemExit("game_verify_replay did not report deterministic replay")
-if responses[10].get("result", {}).get("data", {}).get("command_count") != 1:
+if responses[11].get("result", {}).get("data", {}).get("command_count") != 1:
     raise SystemExit("game_verify_replay reported the wrong command count")
-if responses[11].get("error", {}).get("code") != -32002:
+if responses[12].get("error", {}).get("code") != -32002:
     raise SystemExit("dev-state request did not preserve permission denial")
-if responses[12].get("result", {}).get("data", {}).get("status") != "SessionReset":
+if responses[13].get("result", {}).get("data", {}).get("status") != "SessionReset":
     raise SystemExit("game_reset did not report SessionReset")
-if responses[13].get("result", {}).get("data", {}).get("status") != "ScenarioLoaded":
+if responses[14].get("result", {}).get("data", {}).get("status") != "ScenarioLoaded":
     raise SystemExit("game_load_scenario did not report ScenarioLoaded")
-if not responses[14].get("result", {}).get("contents"):
-    raise SystemExit("rules resource read returned no contents")
 if not responses[15].get("result", {}).get("contents"):
+    raise SystemExit("rules resource read returned no contents")
+if not responses[16].get("result", {}).get("contents"):
     raise SystemExit("metrics resource read returned no contents")
 PY
 

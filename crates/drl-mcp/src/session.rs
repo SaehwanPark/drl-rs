@@ -290,35 +290,18 @@ pub fn json_to_command(val: &JsonValue) -> Result<Command, String> {
       Ok(Command::AttackMelee(dir))
     }
     "attack_ranged" | "fire" | "shoot" => {
-      let target_x = obj
-        .get("target_x")
-        .or_else(|| obj.get("x"))
-        .and_then(|v| v.as_i64())
-        .ok_or_else(|| "Missing 'target_x' / 'x' parameter for ranged attack".to_string())?;
-      let target_y = obj
-        .get("target_y")
-        .or_else(|| obj.get("y"))
-        .and_then(|v| v.as_i64())
-        .ok_or_else(|| "Missing 'target_y' / 'y' parameter for ranged attack".to_string())?;
-      Ok(Command::AttackRanged(Position::new(
-        target_x as i32,
-        target_y as i32,
-      )))
+      let target_x = required_exact_i32(obj, &["target_x", "x"], "target_x / x")?;
+      let target_y = required_exact_i32(obj, &["target_y", "y"], "target_y / y")?;
+      Ok(Command::AttackRanged(Position::new(target_x, target_y)))
     }
     "wait" => Ok(Command::Wait),
     "pickup" => Ok(Command::Pickup),
     "drop" => {
-      let item_id = obj
-        .get("item_id")
-        .and_then(|v| v.as_u64())
-        .ok_or_else(|| "Missing 'item_id' parameter for drop action".to_string())?;
+      let item_id = required_exact_item_id(obj)?;
       Ok(Command::Drop(ItemId::new(item_id)))
     }
     "equip" => {
-      let item_id = obj
-        .get("item_id")
-        .and_then(|v| v.as_u64())
-        .ok_or_else(|| "Missing 'item_id' parameter for equip action".to_string())?;
+      let item_id = required_exact_item_id(obj)?;
       Ok(Command::Equip(ItemId::new(item_id)))
     }
     "unequip" => {
@@ -334,16 +317,59 @@ pub fn json_to_command(val: &JsonValue) -> Result<Command, String> {
       Ok(Command::Unequip(slot))
     }
     "use" => {
-      let item_id = obj
-        .get("item_id")
-        .and_then(|v| v.as_u64())
-        .ok_or_else(|| "Missing 'item_id' parameter for use action".to_string())?;
+      let item_id = required_exact_item_id(obj)?;
       Ok(Command::Use(ItemId::new(item_id)))
     }
     "reload" => Ok(Command::Reload),
     "descend" => Ok(Command::Descend),
     other => Err(format!("Unknown action type: '{other}'")),
   }
+}
+
+fn required_exact_i32(
+  obj: &BTreeMap<String, JsonValue>,
+  names: &[&str],
+  label: &str,
+) -> Result<i32, String> {
+  let value = names.iter().find_map(|name| obj.get(*name));
+  value
+    .and_then(exact_i32)
+    .ok_or_else(|| format!("Missing or invalid '{label}' parameter"))
+}
+
+fn required_exact_item_id(obj: &BTreeMap<String, JsonValue>) -> Result<u64, String> {
+  obj
+    .get("item_id")
+    .and_then(exact_item_id)
+    .ok_or_else(|| "Missing or invalid 'item_id' parameter".to_string())
+}
+
+fn exact_i32(value: &JsonValue) -> Option<i32> {
+  let JsonValue::Number(number) = value else {
+    return None;
+  };
+  if !number.is_finite()
+    || number.fract() != 0.0
+    || *number < f64::from(i32::MIN)
+    || *number > f64::from(i32::MAX)
+  {
+    return None;
+  }
+  Some(*number as i32)
+}
+
+fn exact_item_id(value: &JsonValue) -> Option<u64> {
+  let JsonValue::Number(number) = value else {
+    return None;
+  };
+  if !number.is_finite()
+    || *number < 0.0
+    || number.fract() != 0.0
+    || *number > 9_007_199_254_740_992.0
+  {
+    return None;
+  }
+  Some(*number as u64)
 }
 
 /// Converts a `PlayerObservation` to a JSON representation.
@@ -1045,6 +1071,45 @@ mod tests {
     let val_fire = JsonValue::parse(raw_fire).unwrap();
     let cmd_fire = json_to_command(&val_fire).unwrap();
     assert_eq!(cmd_fire, Command::AttackRanged(Position::new(5, 10)));
+
+    let alias_fire = JsonValue::parse(r#"{"action":"shoot","x":-3,"y":4}"#).unwrap();
+    assert_eq!(
+      json_to_command(&alias_fire).unwrap(),
+      Command::AttackRanged(Position::new(-3, 4))
+    );
+
+    let boundary =
+      JsonValue::parse(r#"{"action":"fire","target_x":-2147483648,"target_y":2147483647}"#)
+        .unwrap();
+    assert_eq!(
+      json_to_command(&boundary).unwrap(),
+      Command::AttackRanged(Position::new(i32::MIN, i32::MAX))
+    );
+
+    let item_boundary = JsonValue::parse(r#"{"action":"use","item_id":9007199254740992}"#).unwrap();
+    assert_eq!(
+      json_to_command(&item_boundary).unwrap(),
+      Command::Use(ItemId::new(9_007_199_254_740_992))
+    );
+  }
+
+  #[test]
+  fn test_json_to_command_rejects_unsafe_numeric_arguments() {
+    for raw in [
+      r#"{"action":"fire","target_x":2147483648,"target_y":0}"#,
+      r#"{"action":"fire","target_x":-2147483649,"target_y":0}"#,
+      r#"{"action":"fire","target_x":1.5,"target_y":0}"#,
+      r#"{"action":"fire","target_x":"1","target_y":0}"#,
+      r#"{"action":"use","item_id":-1}"#,
+      r#"{"action":"use","item_id":9007199254740993}"#,
+      r#"{"action":"drop","item_id":true}"#,
+    ] {
+      let value = JsonValue::parse(raw).unwrap();
+      assert!(
+        json_to_command(&value).is_err(),
+        "accepted invalid action: {raw}"
+      );
+    }
   }
 
   #[test]
