@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.55`
+Current project version: `0.2.56`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,16 +23,16 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M13 Exact Fair-Observation Legal-Action Enumeration
+## 2. Active Implementation Slice: M13 Canonical Complete V1 MCP Replay Export
 
 ### 2.1 Scope & Objective
 
-Make the MCP legal-action catalog exact within the fair observation boundary.
-Generate candidates from `PlayerObservation`, then probe each candidate against
-a cloned `drl_core::Game` and retain only commands accepted by the existing
-simulation authority. Use this filtered catalog for action listing, response
-payloads, and pre-dispatch admission without exposing hidden state or adding a
-second rules engine.
+Make `game_save_replay` expose a complete, deterministic JSON projection of the
+existing in-memory `ReplayLog` V1 contract. Preserve every replay field,
+including metadata, optional player/procedural configuration, initial map
+content, and every semantic command variant, using stable tagged objects and
+deterministic ordering. Keep import/load, validation, and external interchange
+outside this export-only boundary.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
@@ -52,52 +52,55 @@ second rules engine.
    - Rights and capture uncertainty are recorded as `NOT_RUN`, `INCONCLUSIVE`,
      or `NOT_CLEARED`, never inferred from repository presence alone.
 5. **MCP semantic boundary**:
-   - `game_list_actions` derives fair candidates from `PlayerObservation`; the
-     0.2.54 slice made that catalog executable as a pre-dispatch admission
-     check without moving simulation rules into MCP.
+   - `game_list_actions` derives fair candidates from `PlayerObservation`, and
+     the 0.2.55 slice filters them through cloned core probes before listing or
+     dispatching; this slice changes only replay JSON projection.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Candidate boundary**: Candidates remain derived only from the current
-  fair `PlayerObservation`; no hidden map search or omniscient enumeration is
-  added.
-- [x] **Core-probed catalog**: Each candidate is tested on a cloned
-  `drl_core::Game`; only commands for which `Game::step` succeeds are
-  advertised, including state-dependent inventory, target, and equipment
-  constraints.
-- [x] **Consistent consumers**: Filtered actions drive `game_list_actions`,
-  `legal_actions` response fields, and the pre-dispatch admission gate.
-- [x] **State safety and determinism**: Enumeration never mutates the live
-  session; repeated lists, reset/terminal precedence, virtual-player use, and
-  repeated stdio output remain deterministic.
-- [x] **Core boundary**: `drl_core::Game::step` remains the sole authority for
-  geometry, line-of-sight, range, combat, inventory, and other simulation
-  rules; MCP only probes clones.
-- [x] **No expansion of claims**: Hidden-state search, unbounded candidate
-  generation, gameplay changes, balance, legacy parity, replay import/load,
-  transport/lifecycle, rights, browser/PWA, deployment, and external-client
-  certification remain outside this slice.
+- [x] **Stable envelope**: Export includes `format: drl-rust-replay-v1`,
+  `schema_version: 1`, replay version, complete metadata, and every direct
+  `ReplayLog` field with explicit nulls for absent optional values.
+- [x] **Complete initial state**: Player configuration, procedural generation
+  configuration, seed/dimensions/start, stairs, all initial monsters/items,
+  custom tile overrides, and their nested fields are represented.
+- [x] **Structured commands**: Move, melee, ranged, wait, pickup, drop, equip,
+  unequip, use, reload, and descend commands export as typed action objects
+  with canonical directions, coordinates, item IDs, and slots.
+- [x] **Determinism and parseability**: Repeated exports are byte-identical,
+  JSON parses successfully, command order is preserved, and no timestamps or
+  process-local identifiers are emitted.
+- [x] **Non-mutation**: Saving a replay does not change turn, metrics, replay,
+  or verification state; `game_verify_replay` remains deterministic and
+  unchanged.
+- [x] **Error boundary**: Inactive sessions retain the existing
+  `SESSION_NOT_ACTIVE` error; replay import/load, schema validation, external
+  interchange, migrations, and client certification remain open.
 
 ### 2.4 Pure Contract
 
-- **Input**: An active `McpSession` whose current fair `PlayerObservation`
-  supplies candidate semantic commands.
-- **Output**: A deterministic filtered `LegalAction` list; a parsed command is
-  either admitted to the existing live core step or rejected with the existing
-  invalid-action error before any live mutation.
+- **Input**: An active `McpSession` and its immutable in-memory `ReplayLog` V1.
+- **Output**: A deterministic JSON object that contains the complete replay
+  projection and structured semantic command sequence.
 - **Ownership Boundary**:
-  - `compute_legal_actions` owns fair candidate generation and parameter
-    projections; it does not infer hidden geometry or dynamic core rules.
-  - `McpSession::legal_actions` owns clone-backed filtering and must leave live
-    state untouched while enumerating.
-  - `McpSession::step` uses the filtered catalog for pre-dispatch admission.
-  - `drl_core::Game::step` remains authoritative for geometry, line of sight,
-    range, combat, inventory, and other simulation validation; this slice does
-    not duplicate or alter those rules.
+  - `ReplayLog` and `ReplayEngine` remain the core replay representation and
+    deterministic authority; neither is changed by this slice.
+  - `drl-mcp::replay_json` owns only the stable JSON projection and does not
+    parse, validate, import, or mutate replay state.
+  - `game_save_replay` owns the MCP envelope; `game_verify_replay` continues to
+    operate on the in-memory log directly.
 
 ---
 
 ## 3. Recent Delivered Slices
+
+### M13 — Exact Fair-Observation Legal-Action Enumeration (`VERSION` 0.2.55)
+
+- [x] Fair candidates are filtered through cloned core probes and the exact
+  catalog drives MCP listing, response payloads, and pre-dispatch admission.
+- [x] Terminal catalogs become empty, rejected commands remain state-safe, and
+  hidden-state search, unbounded generation, and external compatibility remain
+  open.
 
 ### M13 — Legal-Action Catalog Coherence (`VERSION` 0.2.54)
 

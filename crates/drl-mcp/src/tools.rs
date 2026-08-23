@@ -2,6 +2,7 @@
 
 use crate::json::JsonValue;
 use crate::protocol::{JsonRpcError, ToolDefinition, error_codes};
+use crate::replay_json;
 use crate::session::{
   McpSession, episode_metrics_to_json, json_to_command, omniscient_observation_to_json,
   player_observation_to_json,
@@ -10,7 +11,6 @@ use crate::tools_schema::{
   empty_object_schema, game_load_scenario_schema, game_start_schema, game_step_action_schema,
 };
 use drl_core::ReplayEngine;
-use drl_protocol::ReplayLog;
 use std::collections::BTreeMap;
 
 /// Returns the complete registry of MCP tools exposed by DRL-Rust.
@@ -251,7 +251,7 @@ pub fn execute_tool(
       let replay = session
         .export_replay()
         .map_err(|e| JsonRpcError::new(error_codes::SESSION_NOT_ACTIVE, e))?;
-      let res = replay_to_json_value(replay);
+      let res = replay_json::to_json_value(replay);
       Ok(wrap_mcp_tool_result(res))
     }
 
@@ -348,33 +348,6 @@ fn exact_u64(value: &JsonValue) -> Option<u64> {
     }
     _ => None,
   }
-}
-
-fn replay_to_json_value(replay: &ReplayLog) -> JsonValue {
-  let mut map = BTreeMap::new();
-  map.insert(
-    "version".to_string(),
-    JsonValue::from(replay.version as u32),
-  );
-  map.insert("seed".to_string(), JsonValue::from(replay.seed));
-  map.insert("width".to_string(), JsonValue::from(replay.width));
-  map.insert("height".to_string(), JsonValue::from(replay.height));
-  map.insert(
-    "player_start_x".to_string(),
-    JsonValue::from(replay.player_start.x),
-  );
-  map.insert(
-    "player_start_y".to_string(),
-    JsonValue::from(replay.player_start.y),
-  );
-
-  let mut cmds = Vec::with_capacity(replay.commands.len());
-  for c in &replay.commands {
-    cmds.push(JsonValue::from(format!("{c:?}")));
-  }
-  map.insert("commands".to_string(), JsonValue::Array(cmds));
-
-  JsonValue::Object(map)
 }
 
 #[cfg(test)]

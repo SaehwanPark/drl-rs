@@ -396,6 +396,17 @@ fn test_jsonrpc_verify_replay_is_deterministic_and_state_safe() {
       .and_then(|code| code.as_i64()),
     Some(error_codes::SESSION_NOT_ACTIVE as i64)
   );
+  let inactive_save = JsonValue::parse(&server.handle_request(
+    r#"{"jsonrpc":"2.0","id":16,"method":"tools/call","params":{"name":"game_save_replay","arguments":{}}}"#,
+  ))
+  .unwrap();
+  assert_eq!(
+    inactive_save
+      .get("error")
+      .and_then(|error| error.get("code"))
+      .and_then(|code| code.as_i64()),
+    Some(error_codes::SESSION_NOT_ACTIVE as i64)
+  );
 
   let _ = server.handle_request(
     r#"{"jsonrpc":"2.0","id":11,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":91,"width":20,"height":10}}}"#,
