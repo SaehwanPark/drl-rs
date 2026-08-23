@@ -313,6 +313,7 @@ acceptance.
 
 ### Verified Baseline (`VERSION` 0.2.26)
 
+afdc01f feat(web): harden dynamic accessibility semantics (#117)
 6024a15 feat(eval): add cohort depth distribution (#116)
 cae3b09 feat(web): migrate browser saves to v2 (#115)
 d7e5602 feat(content): add special-level metadata catalog (#114)
