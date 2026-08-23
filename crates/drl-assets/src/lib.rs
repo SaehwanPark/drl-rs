@@ -624,6 +624,24 @@ pub const fn item_sprite(archetype: ItemArchetype) -> SpriteDescriptor {
       layers: ITEM_LAYERS,
       animation: STATIC_ANIMATION,
     },
+    ItemArchetype::OnyxArmor => SpriteDescriptor {
+      atlas: AtlasId::GunsAndPickups,
+      rect: legacy_slot(SPRITE_COLUMNS + 1),
+      layers: ITEM_LAYERS,
+      animation: STATIC_ANIMATION,
+    },
+    ItemArchetype::PhaseshiftArmor => SpriteDescriptor {
+      atlas: AtlasId::GunsAndPickups,
+      rect: legacy_slot(SPRITE_COLUMNS + 1),
+      layers: ITEM_LAYERS,
+      animation: STATIC_ANIMATION,
+    },
+    ItemArchetype::GothicArmor => SpriteDescriptor {
+      atlas: AtlasId::GunsAndPickups,
+      rect: legacy_slot(SPRITE_COLUMNS + 1),
+      layers: ITEM_LAYERS,
+      animation: STATIC_ANIMATION,
+    },
     ItemArchetype::Ammo9mm => SpriteDescriptor {
       atlas: AtlasId::GunsAndPickups,
       rect: legacy_slot(SPRITE_COLUMNS + 7),
@@ -805,6 +823,9 @@ mod tests {
       ItemArchetype::GreenArmor,
       ItemArchetype::BlueArmor,
       ItemArchetype::RedArmor,
+      ItemArchetype::OnyxArmor,
+      ItemArchetype::PhaseshiftArmor,
+      ItemArchetype::GothicArmor,
       ItemArchetype::PhaseDevice,
     ] {
       let descriptor = item_sprite(archetype);
@@ -956,6 +977,13 @@ mod tests {
       (ItemArchetype::GreenArmor, AtlasId::GunsAndPickups, (0, 32)),
       (ItemArchetype::BlueArmor, AtlasId::GunsAndPickups, (0, 32)),
       (ItemArchetype::RedArmor, AtlasId::GunsAndPickups, (0, 32)),
+      (ItemArchetype::OnyxArmor, AtlasId::GunsAndPickups, (0, 32)),
+      (
+        ItemArchetype::PhaseshiftArmor,
+        AtlasId::GunsAndPickups,
+        (0, 32),
+      ),
+      (ItemArchetype::GothicArmor, AtlasId::GunsAndPickups, (0, 32)),
       (ItemArchetype::Ammo9mm, AtlasId::GunsAndPickups, (192, 32)),
       (
         ItemArchetype::AmmoShells,
@@ -1124,6 +1152,9 @@ mod tests {
       ItemArchetype::GreenArmor,
       ItemArchetype::BlueArmor,
       ItemArchetype::RedArmor,
+      ItemArchetype::OnyxArmor,
+      ItemArchetype::PhaseshiftArmor,
+      ItemArchetype::GothicArmor,
       ItemArchetype::Ammo9mm,
       ItemArchetype::AmmoShells,
       ItemArchetype::AmmoRockets,

@@ -241,6 +241,9 @@ fn item_kind_to_json(kind: ItemSpawnKind) -> JsonValue {
     ItemSpawnKind::GreenArmor => ("green_armor", None),
     ItemSpawnKind::BlueArmor => ("blue_armor", None),
     ItemSpawnKind::RedArmor => ("red_armor", None),
+    ItemSpawnKind::OnyxArmor => ("onyx_armor", None),
+    ItemSpawnKind::PhaseshiftArmor => ("phaseshift_armor", None),
+    ItemSpawnKind::GothicArmor => ("gothic_armor", None),
     ItemSpawnKind::PhaseDevice => ("phase_device", None),
   };
   let mut map = BTreeMap::new();
@@ -443,6 +446,9 @@ mod tests {
         ItemSpawnKind::GreenArmor,
         ItemSpawnKind::BlueArmor,
         ItemSpawnKind::RedArmor,
+        ItemSpawnKind::OnyxArmor,
+        ItemSpawnKind::PhaseshiftArmor,
+        ItemSpawnKind::GothicArmor,
         ItemSpawnKind::PhaseDevice,
       ],
       equipped_weapon: Some(ItemSpawnKind::Shotgun),
