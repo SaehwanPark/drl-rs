@@ -233,6 +233,57 @@ const BFG_10K: ItemDefinition = ItemDefinition {
   },
 };
 
+const MEGA_BUSTER: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::MegaBuster,
+  name: "Mega Buster",
+  description: "You suddenly wish to slaughter the forces of Hell to 8-bit chiptune music.",
+  kind: ItemDefinitionKind::Weapon {
+    is_ranged: true,
+    ammo_type: Some(AmmoType::Ammo9mm),
+    clip_capacity: 60,
+    damage: (1, 8),
+    range: 8,
+    accuracy: 70,
+    knockback: 0,
+    fire_cost: ActionCost::RANGED_ATTACK,
+    reload_cost: ActionCost::STANDARD,
+  },
+};
+
+const GRAMMATON_BERETTA: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::GrammatonBeretta,
+  name: "Grammaton Cleric Beretta",
+  description: "No. Not without incident.",
+  kind: ItemDefinitionKind::Weapon {
+    is_ranged: true,
+    ammo_type: Some(AmmoType::Ammo9mm),
+    clip_capacity: 18,
+    damage: (2, 12),
+    range: 8,
+    accuracy: 80,
+    knockback: 0,
+    fire_cost: ActionCost::RANGED_ATTACK,
+    reload_cost: ActionCost::STANDARD,
+  },
+};
+
+const FRAG_SHOTGUN: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::FragShotgun,
+  name: "Frag Shotgun",
+  description: "Advanced pulverization technology converts bullets into shrapnel.",
+  kind: ItemDefinitionKind::Weapon {
+    is_ranged: true,
+    ammo_type: Some(AmmoType::Ammo9mm),
+    clip_capacity: 16,
+    damage: (6, 18),
+    range: 15,
+    accuracy: 65,
+    knockback: 1,
+    fire_cost: ActionCost::RANGED_ATTACK,
+    reload_cost: ActionCost::STANDARD,
+  },
+};
+
 const CHAINGUN: ItemDefinition = ItemDefinition {
   archetype: ItemArchetype::Chaingun,
   name: "Chaingun",
@@ -491,6 +542,9 @@ pub const fn definition_for_spawn_kind(kind: ItemSpawnKind) -> &'static ItemDefi
     ItemSpawnKind::NuclearPlasmaRifle => &NUCLEAR_PLASMA_RIFLE,
     ItemSpawnKind::NuclearBfg9000 => &NUCLEAR_BFG_9000,
     ItemSpawnKind::Bfg10k => &BFG_10K,
+    ItemSpawnKind::MegaBuster => &MEGA_BUSTER,
+    ItemSpawnKind::GrammatonBeretta => &GRAMMATON_BERETTA,
+    ItemSpawnKind::FragShotgun => &FRAG_SHOTGUN,
     ItemSpawnKind::Chaingun => &CHAINGUN,
     ItemSpawnKind::PlasmaRifle => &PLASMA_RIFLE,
     ItemSpawnKind::RocketLauncher => &ROCKET_LAUNCHER,
@@ -555,6 +609,21 @@ mod tests {
         "Nuclear BFG 9000",
       ),
       (ItemSpawnKind::Bfg10k, ItemArchetype::Bfg10k, "BFG 10K"),
+      (
+        ItemSpawnKind::MegaBuster,
+        ItemArchetype::MegaBuster,
+        "Mega Buster",
+      ),
+      (
+        ItemSpawnKind::GrammatonBeretta,
+        ItemArchetype::GrammatonBeretta,
+        "Grammaton Cleric Beretta",
+      ),
+      (
+        ItemSpawnKind::FragShotgun,
+        ItemArchetype::FragShotgun,
+        "Frag Shotgun",
+      ),
       (ItemSpawnKind::Chaingun, ItemArchetype::Chaingun, "Chaingun"),
       (
         ItemSpawnKind::PlasmaRifle,
@@ -798,6 +867,48 @@ mod tests {
         range: 8,
         accuracy: 70,
         knockback: 0,
+        fire_cost: ActionCost::RANGED_ATTACK,
+        reload_cost: ActionCost::STANDARD,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::MegaBuster).kind,
+      ItemDefinitionKind::Weapon {
+        is_ranged: true,
+        ammo_type: Some(AmmoType::Ammo9mm),
+        clip_capacity: 60,
+        damage: (1, 8),
+        range: 8,
+        accuracy: 70,
+        knockback: 0,
+        fire_cost: ActionCost::RANGED_ATTACK,
+        reload_cost: ActionCost::STANDARD,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::GrammatonBeretta).kind,
+      ItemDefinitionKind::Weapon {
+        is_ranged: true,
+        ammo_type: Some(AmmoType::Ammo9mm),
+        clip_capacity: 18,
+        damage: (2, 12),
+        range: 8,
+        accuracy: 80,
+        knockback: 0,
+        fire_cost: ActionCost::RANGED_ATTACK,
+        reload_cost: ActionCost::STANDARD,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::FragShotgun).kind,
+      ItemDefinitionKind::Weapon {
+        is_ranged: true,
+        ammo_type: Some(AmmoType::Ammo9mm),
+        clip_capacity: 16,
+        damage: (6, 18),
+        range: 15,
+        accuracy: 65,
+        knockback: 1,
         fire_cost: ActionCost::RANGED_ATTACK,
         reload_cost: ActionCost::STANDARD,
       }
