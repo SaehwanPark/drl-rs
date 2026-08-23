@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.77`
+Current project version: `0.2.78`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,13 +23,13 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 Typed Armor and Ammo Families
+## 2. Active Implementation Slice: M9 Typed Content Families
 
 ### 2.1 Scope & Objective
 
 Migrate the pinned legacy `rocket`, `cell`, `barmor`, `rarmor`, `smed`,
 `lmed`, `dshotgun`, `ashotgun`, `chainsaw`, `chaingun`, `bfg9000`, `plasma`, and
-`bazooka` records into
+`bazooka`, `ublaster`, `ulaser`, and `umbazooka` records into
 typed immutable Rust definitions and replay-compatible spawn contracts.
 Preserve
 source-backed scalar fields, measured atlas slots, and verified armor
@@ -104,8 +104,14 @@ presentation tints without importing Lua callbacks or unverified combat rules.
   ranges (`9d3`/`7d3`), ranges (`8`/`15`), replay kinds, and slots
   `SPRITE_DSHOTGUN`/`SPRITE_CSHOTGUN`; callbacks, spread/falloff, exact timing,
   and legacy knockback scale remain explicit gaps.
-- [ ] **Full migration**: shotgun/BFG/chainsaw/chaingun/rocket/plasma weapon behavior,
-  dynamic callbacks,
+- [x] **Exotic weapon boundary**: typed `Blaster`, `LaserRifle`, and
+  `MissileLauncher` preserve pinned descriptions, cell/cell/rocket relations,
+  clips (`10`/`40`/`4`), damage ranges (`2d4`/`1d7`/`6d6`), replay kinds, and
+  measured reuse of the `SPRITE_PISTOL`/`SPRITE_PLASMA`/`SPRITE_BAZOOKA` slots;
+  recharge, chainfire, rocket-jump, explosion, and exact timing callbacks
+  remain explicit gaps.
+- [ ] **Full migration**: shotgun/BFG/chainsaw/chaingun/rocket/plasma/exotic
+  weapon behavior, dynamic callbacks,
   balance/fairness, and remaining legacy item families remain open.
 - [x] **Explicit non-goals**: no gameplay/core rule, observation schema,
   Lua runtime, dynamic item callback, or broad balance claim is added.
@@ -156,6 +162,11 @@ presentation tints without importing Lua callbacks or unverified combat rules.
   preserving their pinned clips, damage/range policies, replay kinds, and
   measured atlas geometry. Dual-shot/pump callbacks, spread/falloff, exact
   timing, and legacy knockback scale are not claimed as parity.
+- `Blaster`, `LaserRifle`, and `MissileLauncher` are definition-backed exotic
+  weapons preserving their pinned ammo relations, clips, damage policies,
+  descriptions, replay kinds, and measured atlas-slot reuse. Recharge,
+  chainfire, rocket-jump, explosion, and exact timing behavior are not claimed
+  as parity.
 - **Ownership Boundary**: Rust typed definitions own runtime item semantics;
   pinned Lua evidence informs only the migrated scalar fields and provenance.
 

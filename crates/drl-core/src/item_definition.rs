@@ -131,6 +131,57 @@ const COMBAT_SHOTGUN: ItemDefinition = ItemDefinition {
   },
 };
 
+const BLASTER: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::Blaster,
+  name: "Blaster",
+  description: "This is the standard issue rechargeable energy side-arm. Cool!",
+  kind: ItemDefinitionKind::Weapon {
+    is_ranged: true,
+    ammo_type: Some(AmmoType::Cell),
+    clip_capacity: 10,
+    damage: (2, 8),
+    range: 8,
+    accuracy: 70,
+    knockback: 0,
+    fire_cost: ActionCost::RANGED_ATTACK,
+    reload_cost: ActionCost::STANDARD,
+  },
+};
+
+const LASER_RIFLE: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::LaserRifle,
+  name: "Laser Rifle",
+  description: "With no recoil and pinpoint accuracy, it takes a world-class moron to miss while using a laser rifle.",
+  kind: ItemDefinitionKind::Weapon {
+    is_ranged: true,
+    ammo_type: Some(AmmoType::Cell),
+    clip_capacity: 40,
+    damage: (1, 7),
+    range: 8,
+    accuracy: 85,
+    knockback: 0,
+    fire_cost: ActionCost::RANGED_ATTACK,
+    reload_cost: ActionCost::STANDARD,
+  },
+};
+
+const MISSILE_LAUNCHER: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::MissileLauncher,
+  name: "Missile Launcher",
+  description: "The definitive upgrade to the rocket launcher.",
+  kind: ItemDefinitionKind::Weapon {
+    is_ranged: true,
+    ammo_type: Some(AmmoType::Rocket),
+    clip_capacity: 4,
+    damage: (6, 36),
+    range: 8,
+    accuracy: 75,
+    knockback: 0,
+    fire_cost: ActionCost::RANGED_ATTACK,
+    reload_cost: ActionCost::STANDARD,
+  },
+};
+
 const CHAINGUN: ItemDefinition = ItemDefinition {
   archetype: ItemArchetype::Chaingun,
   name: "Chaingun",
@@ -383,6 +434,9 @@ pub const fn definition_for_spawn_kind(kind: ItemSpawnKind) -> &'static ItemDefi
     ItemSpawnKind::Shotgun => &SHOTGUN,
     ItemSpawnKind::DoubleShotgun => &DOUBLE_SHOTGUN,
     ItemSpawnKind::CombatShotgun => &COMBAT_SHOTGUN,
+    ItemSpawnKind::Blaster => &BLASTER,
+    ItemSpawnKind::LaserRifle => &LASER_RIFLE,
+    ItemSpawnKind::MissileLauncher => &MISSILE_LAUNCHER,
     ItemSpawnKind::Chaingun => &CHAINGUN,
     ItemSpawnKind::PlasmaRifle => &PLASMA_RIFLE,
     ItemSpawnKind::RocketLauncher => &ROCKET_LAUNCHER,
@@ -424,6 +478,17 @@ mod tests {
         ItemSpawnKind::CombatShotgun,
         ItemArchetype::CombatShotgun,
         "Combat Shotgun",
+      ),
+      (ItemSpawnKind::Blaster, ItemArchetype::Blaster, "Blaster"),
+      (
+        ItemSpawnKind::LaserRifle,
+        ItemArchetype::LaserRifle,
+        "Laser Rifle",
+      ),
+      (
+        ItemSpawnKind::MissileLauncher,
+        ItemArchetype::MissileLauncher,
+        "Missile Launcher",
       ),
       (ItemSpawnKind::Chaingun, ItemArchetype::Chaingun, "Chaingun"),
       (
@@ -583,6 +648,49 @@ mod tests {
         range: 15,
         accuracy: 65,
         knockback: 1,
+        fire_cost: ActionCost::RANGED_ATTACK,
+        reload_cost: ActionCost::STANDARD,
+      }
+    );
+
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::Blaster).kind,
+      ItemDefinitionKind::Weapon {
+        is_ranged: true,
+        ammo_type: Some(AmmoType::Cell),
+        clip_capacity: 10,
+        damage: (2, 8),
+        range: 8,
+        accuracy: 70,
+        knockback: 0,
+        fire_cost: ActionCost::RANGED_ATTACK,
+        reload_cost: ActionCost::STANDARD,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::LaserRifle).kind,
+      ItemDefinitionKind::Weapon {
+        is_ranged: true,
+        ammo_type: Some(AmmoType::Cell),
+        clip_capacity: 40,
+        damage: (1, 7),
+        range: 8,
+        accuracy: 85,
+        knockback: 0,
+        fire_cost: ActionCost::RANGED_ATTACK,
+        reload_cost: ActionCost::STANDARD,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::MissileLauncher).kind,
+      ItemDefinitionKind::Weapon {
+        is_ranged: true,
+        ammo_type: Some(AmmoType::Rocket),
+        clip_capacity: 4,
+        damage: (6, 36),
+        range: 8,
+        accuracy: 75,
+        knockback: 0,
         fire_cost: ActionCost::RANGED_ATTACK,
         reload_cost: ActionCost::STANDARD,
       }

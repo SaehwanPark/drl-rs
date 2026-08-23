@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.78]
+
+- Added typed `Blaster`, `LaserRifle`, and `MissileLauncher` families from
+  pinned exotic records, preserving their descriptions, cell/cell/rocket
+  relations, clips, damage ranges, replay JSON kinds, and measured reuse of
+  pistol/plasma/bazooka atlas slots. Recharge, chainfire, rocket-jump,
+  explosion, and exact timing callbacks remain open.
+
 ## [0.2.77]
 
 - Added typed `DoubleShotgun` and `CombatShotgun` families with pinned shell
