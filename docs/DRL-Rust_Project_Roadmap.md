@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.49`
+Current project version: `0.2.50`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.49)
+## 3. Current Progress Summary (`VERSION` 0.2.50)
 
 ### Delivered Foundations
 
@@ -84,7 +84,11 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active Milestone Slice (M13)**: MCP `initialize` now validates object
+- **Active Milestone Slice (M13)**: MCP `tools/list` now truthfully publishes
+  accepted action, direction, slot, `command`, and `x`/`y` aliases with
+  deterministic enum domains and JSON-safe, `u32`, and signed `i32` bounds;
+  unknown properties remain tolerated and conditional action schemas remain
+  open. MCP `initialize` also validates object
   `capabilities` and string `clientInfo.name`/`version` fields while retaining
   identified lifecycle gating before discovery, tools, and resources; JSON-RPC
   request IDs now reject non-scalar values before dispatch, and stateful method
@@ -92,8 +96,8 @@ verification item uses explicit status semantics:
   arguments now reject wrong-typed optional integers before mutation, and
   `game_verify_replay` exposes deterministic in-memory replay verification
   without mutating sessions; `game_step_action` now rejects unsafe numeric
-  coordinates and item IDs before mutation. Full schema validation and
-  external-client compatibility remain open.
+  coordinates and item IDs before mutation. Full conditional schema validation
+  and external-client compatibility remain open.
 - **M9 Content Evidence**: Base, expansion, user-item, being, terrain-cell,
   and special-level evidence slices are delivered without runtime Lua or
   gameplay overclaims.
@@ -258,6 +262,9 @@ tooling.
   `game_get_metrics`, `game_save_replay`, `game_verify_replay`).
 - [x] `game_step_action` validates ranged coordinates and item IDs as exact
   bounded numbers before dispatch while preserving valid action aliases.
+- [x] `tools/list` publishes accepted action/direction/slot and field aliases
+  with JSON-safe, `u32`, and `i32` numeric bounds while retaining unknown-field
+  tolerance; conditional action schemas remain open.
 - [x] Strict information boundaries with explicit `dev_mode` flag for omniscient
   inspection.
 - [x] Stdio transport runner and CLI integration (`drl-rust --mcp`).

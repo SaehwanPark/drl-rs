@@ -10,6 +10,104 @@ use drl_core::ReplayEngine;
 use drl_protocol::ReplayLog;
 use std::collections::BTreeMap;
 
+const JSON_SAFE_INTEGER_MAX: f64 = 9_007_199_254_740_992.0;
+const U32_MAX: f64 = 4_294_967_295.0;
+const I32_MIN: f64 = -2_147_483_648.0;
+const I32_MAX: f64 = 2_147_483_647.0;
+
+const ACTION_ALIASES: &[&str] = &[
+  "move",
+  "wait",
+  "attack_melee",
+  "melee",
+  "attack_ranged",
+  "fire",
+  "shoot",
+  "reload",
+  "pickup",
+  "use",
+  "equip",
+  "unequip",
+  "drop",
+  "descend",
+];
+const DIRECTION_ALIASES: &[&str] = &[
+  "north",
+  "n",
+  "up",
+  "k",
+  "south",
+  "s",
+  "down",
+  "j",
+  "east",
+  "e",
+  "right",
+  "l",
+  "west",
+  "w",
+  "left",
+  "h",
+  "northeast",
+  "ne",
+  "u",
+  "northwest",
+  "nw",
+  "y",
+  "southeast",
+  "se",
+  "n_key",
+  "b",
+  "southwest",
+  "sw",
+  "m",
+  "none",
+  "wait",
+  ".",
+];
+const SLOT_ALIASES: &[&str] = &["weapon", "armor", "Weapon", "Armor"];
+
+#[derive(Debug, Clone, Copy)]
+struct SchemaField {
+  name: &'static str,
+  type_name: &'static str,
+  description: &'static str,
+  required: bool,
+  enum_values: Option<&'static [&'static str]>,
+  minimum: Option<f64>,
+  maximum: Option<f64>,
+}
+
+impl SchemaField {
+  const fn new(
+    name: &'static str,
+    type_name: &'static str,
+    description: &'static str,
+    required: bool,
+  ) -> Self {
+    Self {
+      name,
+      type_name,
+      description,
+      required,
+      enum_values: None,
+      minimum: None,
+      maximum: None,
+    }
+  }
+
+  const fn with_enum(mut self, values: &'static [&'static str]) -> Self {
+    self.enum_values = Some(values);
+    self
+  }
+
+  const fn with_range(mut self, minimum: f64, maximum: f64) -> Self {
+    self.minimum = Some(minimum);
+    self.maximum = Some(maximum);
+    self
+  }
+}
+
 /// Returns the complete registry of MCP tools exposed by DRL-Rust.
 #[must_use]
 pub fn get_all_tool_definitions() -> Vec<ToolDefinition> {
@@ -17,73 +115,124 @@ pub fn get_all_tool_definitions() -> Vec<ToolDefinition> {
     ToolDefinition {
       name: "game_start".to_string(),
       description: "Start a new seeded procedural dungeon game session.".to_string(),
-      input_schema: create_object_schema(
-        &[
-          ("seed", "integer", "RNG seed for procedural generation", false),
-          ("max_turns", "integer", "Maximum turn limit before episode cutoff", false),
-          ("width", "integer", "Map width in tiles (default: 40)", false),
-          ("height", "integer", "Map height in tiles (default: 20)", false),
-        ],
-      ),
+      input_schema: create_object_schema_with_fields(&[
+        SchemaField::new("seed", "integer", "RNG seed for procedural generation", false)
+          .with_range(0.0, JSON_SAFE_INTEGER_MAX),
+        SchemaField::new(
+          "max_turns",
+          "integer",
+          "Maximum turn limit before episode cutoff",
+          false,
+        )
+        .with_range(0.0, JSON_SAFE_INTEGER_MAX),
+        SchemaField::new("width", "integer", "Map width in tiles (default: 40)", false)
+          .with_range(0.0, U32_MAX),
+        SchemaField::new("height", "integer", "Map height in tiles (default: 20)", false)
+          .with_range(0.0, U32_MAX),
+      ]),
     },
     ToolDefinition {
       name: "game_load_scenario".to_string(),
       description: "Load an approved ASCII scenario fixture into the game session.".to_string(),
-      input_schema: create_object_schema(
-        &[
-          ("ascii_map", "string", "ASCII representation of the dungeon map and actors", true),
-          ("max_turns", "integer", "Maximum turn limit before episode cutoff", false),
-        ],
-      ),
+      input_schema: create_object_schema_with_fields(&[
+        SchemaField::new(
+          "ascii_map",
+          "string",
+          "ASCII representation of the dungeon map and actors",
+          true,
+        ),
+        SchemaField::new(
+          "max_turns",
+          "integer",
+          "Maximum turn limit before episode cutoff",
+          false,
+        )
+        .with_range(0.0, JSON_SAFE_INTEGER_MAX),
+      ]),
     },
     ToolDefinition {
       name: "game_get_observation".to_string(),
       description: "Retrieve the latest player-visible observation (grid, visible actors, inventory, equipment).".to_string(),
-      input_schema: create_object_schema(&[]),
+      input_schema: create_object_schema_with_fields(&[]),
     },
     ToolDefinition {
       name: "game_list_actions".to_string(),
       description: "List all currently legal semantic player actions available in this turn.".to_string(),
-      input_schema: create_object_schema(&[]),
+      input_schema: create_object_schema_with_fields(&[]),
     },
     ToolDefinition {
       name: "game_step_action".to_string(),
       description: "Execute a semantic player action (move, wait, fire, reload, pickup, use, equip, unequip, drop, descend).".to_string(),
-      input_schema: create_object_schema(
-        &[
-          ("action", "string", "Action category: move, wait, fire, reload, pickup, use, equip, unequip, drop, descend", true),
-          ("direction", "string", "Cardinal/diagonal direction (for move/attack_melee): North, South, East, West, etc.", false),
-          ("target_x", "integer", "Target X coordinate (for fire)", false),
-          ("target_y", "integer", "Target Y coordinate (for fire)", false),
-          ("item_id", "integer", "Item entity ID (for use, equip, drop)", false),
-          ("slot", "string", "Equipment slot name: Weapon or Armor (for equip, unequip)", false),
-        ],
-      ),
+      input_schema: create_object_schema_with_fields(&[
+        SchemaField::new(
+          "action",
+          "string",
+          "Action category; aliases are accepted case-insensitively",
+          true,
+        )
+        .with_enum(ACTION_ALIASES),
+        SchemaField::new(
+          "command",
+          "string",
+          "Runtime alias for action",
+          false,
+        )
+        .with_enum(ACTION_ALIASES),
+        SchemaField::new(
+          "direction",
+          "string",
+          "Cardinal/diagonal direction alias for move or attack_melee",
+          false,
+        )
+        .with_enum(DIRECTION_ALIASES),
+        SchemaField::new("target_x", "integer", "Target X coordinate (for fire)", false)
+          .with_range(I32_MIN, I32_MAX),
+        SchemaField::new("target_y", "integer", "Target Y coordinate (for fire)", false)
+          .with_range(I32_MIN, I32_MAX),
+        SchemaField::new("x", "integer", "Runtime alias for target_x", false)
+          .with_range(I32_MIN, I32_MAX),
+        SchemaField::new("y", "integer", "Runtime alias for target_y", false)
+          .with_range(I32_MIN, I32_MAX),
+        SchemaField::new(
+          "item_id",
+          "integer",
+          "Item entity ID (for use, equip, drop)",
+          false,
+        )
+        .with_range(0.0, JSON_SAFE_INTEGER_MAX),
+        SchemaField::new(
+          "slot",
+          "string",
+          "Equipment slot name (for unequip; accepted by equip for compatibility)",
+          false,
+        )
+        .with_enum(SLOT_ALIASES),
+      ]),
     },
     ToolDefinition {
       name: "game_reset".to_string(),
       description: "Reset the current game session back to its initial state.".to_string(),
-      input_schema: create_object_schema(&[]),
+      input_schema: create_object_schema_with_fields(&[]),
     },
     ToolDefinition {
       name: "game_get_metrics".to_string(),
       description: "Retrieve cumulative episode metrics (damage dealt/taken, kills, turns survived, outcome).".to_string(),
-      input_schema: create_object_schema(&[]),
+      input_schema: create_object_schema_with_fields(&[]),
     },
     ToolDefinition {
       name: "game_save_replay".to_string(),
       description: "Export the current session's deterministic replay log as JSON.".to_string(),
-      input_schema: create_object_schema(&[]),
+      input_schema: create_object_schema_with_fields(&[]),
     },
     ToolDefinition {
       name: "game_verify_replay".to_string(),
       description: "Verify the current session's replay is deterministic without changing game state.".to_string(),
-      input_schema: create_object_schema(&[]),
+      input_schema: create_object_schema_with_fields(&[]),
     },
     ToolDefinition {
       name: "game_get_dev_state".to_string(),
       description: "Developer-only omniscient world state inspection. Fails if dev_mode is not enabled.".to_string(),
-      input_schema: create_object_schema(&[]),
+      input_schema: create_object_schema_with_fields(&[]),
     },
   ]
 }
@@ -386,20 +535,35 @@ fn replay_to_json_value(replay: &ReplayLog) -> JsonValue {
   JsonValue::Object(map)
 }
 
-fn create_object_schema(fields: &[(&str, &str, &str, bool)]) -> JsonValue {
+fn create_object_schema_with_fields(fields: &[SchemaField]) -> JsonValue {
   let mut map = BTreeMap::new();
   map.insert("type".to_string(), JsonValue::from("object"));
 
   let mut props = BTreeMap::new();
   let mut required = Vec::new();
 
-  for &(name, type_str, desc, is_req) in fields {
+  for field in fields {
     let mut field_map = BTreeMap::new();
-    field_map.insert("type".to_string(), JsonValue::from(type_str));
-    field_map.insert("description".to_string(), JsonValue::from(desc));
-    props.insert(name.to_string(), JsonValue::Object(field_map));
-    if is_req {
-      required.push(JsonValue::from(name));
+    field_map.insert("type".to_string(), JsonValue::from(field.type_name));
+    field_map.insert(
+      "description".to_string(),
+      JsonValue::from(field.description),
+    );
+    if let Some(values) = field.enum_values {
+      field_map.insert(
+        "enum".to_string(),
+        JsonValue::Array(values.iter().map(|value| JsonValue::from(*value)).collect()),
+      );
+    }
+    if let Some(minimum) = field.minimum {
+      field_map.insert("minimum".to_string(), JsonValue::from(minimum));
+    }
+    if let Some(maximum) = field.maximum {
+      field_map.insert("maximum".to_string(), JsonValue::from(maximum));
+    }
+    props.insert(field.name.to_string(), JsonValue::Object(field_map));
+    if field.required {
+      required.push(JsonValue::from(field.name));
     }
   }
 

@@ -52,8 +52,28 @@ if not responses[0].get("result", {}).get("serverInfo", {}).get("name") == "drl-
     raise SystemExit("initialize response lacks server identity")
 if responses[0].get("result", {}).get("protocolVersion") != "2024-11-05":
     raise SystemExit("supported initialize did not echo protocol version")
-if not responses[2].get("result", {}).get("tools"):
+tools = responses[2].get("result", {}).get("tools")
+if not tools:
     raise SystemExit("tools/list returned no tools")
+tool_map = {tool.get("name"): tool for tool in tools}
+start_props = tool_map["game_start"]["inputSchema"]["properties"]
+if start_props["seed"]["maximum"] != 9007199254740992:
+    raise SystemExit("game_start seed schema lacks JSON-safe maximum")
+if start_props["width"]["maximum"] != 4294967295:
+    raise SystemExit("game_start width schema lacks u32 maximum")
+step_schema = tool_map["game_step_action"]["inputSchema"]
+if "action" not in step_schema.get("required", []):
+    raise SystemExit("game_step_action schema does not require action")
+if "fire" not in step_schema["properties"]["action"].get("enum", []):
+    raise SystemExit("game_step_action schema lacks fire action")
+if "command" not in step_schema["properties"] or "x" not in step_schema["properties"]:
+    raise SystemExit("game_step_action schema lacks accepted aliases")
+if step_schema["properties"]["target_x"]["minimum"] != -2147483648:
+    raise SystemExit("game_step_action coordinate schema lacks i32 minimum")
+if step_schema["properties"]["item_id"]["maximum"] != 9007199254740992:
+    raise SystemExit("game_step_action item_id schema lacks JSON-safe maximum")
+if step_schema.get("additionalProperties") is False:
+    raise SystemExit("game_step_action schema unexpectedly rejects unknown properties")
 if not responses[3].get("result", {}).get("resources"):
     raise SystemExit("resources/list returned no resources")
 if responses[4].get("result", {}).get("data", {}).get("status") != "GameStarted":

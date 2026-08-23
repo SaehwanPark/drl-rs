@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.49`
+Current project version: `0.2.50`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,18 +23,16 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M13 Typed `game_step_action` Numbers
+## 2. Active Implementation Slice: M13 Truthful MCP Tool Schemas
 
 ### 2.1 Scope & Objective
 
-Validate numeric arguments for the stateful `game_step_action` tool before
-dispatching to `session.step`. Ranged-attack coordinates (`target_x`/`x` and
-`target_y`/`y`) must be finite exact `i32` values; `item_id` for use/equip/drop
-must be a finite non-negative exact JSON-safe integer (`0..=2^53`). Wrong
-types, fractions, unsafe values, or numeric overflow return deterministic
-`-32602` without advancing the game. Preserve action aliases, valid gameplay,
-method-envelope, request-ID, notification, batch, initialize, and lifecycle
-contracts from predecessor slices.
+Make `tools/list` accurately describe the already-implemented MCP argument
+contracts. Publish accepted action, direction, slot, `command`, and `x`/`y`
+aliases; enum domains; and inclusive numeric bounds for JSON-safe integers,
+`u32` dimensions, and signed `i32` coordinates. Keep runtime dispatch,
+unknown-property tolerance, valid gameplay, malformed-input behavior, and all
+predecessor transport/lifecycle contracts unchanged.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
@@ -57,43 +55,48 @@ contracts from predecessor slices.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Coordinate validation**: Ranged-attack coordinates and their `x`/`y`
-  aliases accept exact `i32` boundaries and reject non-numeric, fractional,
-  unsafe, and out-of-range values.
-- [x] **Item-ID validation**: Use/equip/drop accept exact non-negative IDs in
-  the JSON-safe range and reject negative, fractional, unsafe, and wrong-typed
-  values.
-- [x] **State safety**: Invalid numeric action arguments return `-32602`
-  before `session.step`, leaving metrics, turn, and replay commands unchanged;
-  a following valid action still executes.
-- [x] **Transport repeatability**: The real `drl-app --mcp` fixture covers one
-  malformed numeric action followed by a valid action and remains byte-identical
-  across repeated subprocess runs.
-- [x] **Predecessor contracts retained**: Method-envelope/request-ID
-  validation, initialize/version fallback, lifecycle gating, notification
-  suppression, batch ordering, and game-reset separation remain covered.
-- [x] **No expansion of claims**: Full action-schema validation, replay
-  import/load, external serialized replay interchange, cross-version/legacy
-  parity, reconnect/resume, concurrency, HTTP, external clients, and
-  production deployment remain open.
+- [x] **Numeric ranges**: `game_start` and `game_load_scenario` publish
+  JSON-safe integer bounds and `u32` dimension bounds; `game_step_action`
+  publishes signed `i32` coordinate and JSON-safe item-ID bounds.
+- [x] **Enum domains and aliases**: Action, direction, and slot enums include
+  the aliases accepted by runtime dispatch; `command` and `x`/`y` properties
+  are published alongside canonical fields.
+- [x] **Schema shape**: Required fields and object/property types are present,
+  while `additionalProperties: false` is intentionally omitted.
+- [x] **Behavioral stability**: Valid workflows and malformed numeric action
+  behavior remain unchanged, including state-safety guarantees.
+- [x] **Transport repeatability**: Repeated real `drl-app --mcp` runs produce
+  byte-identical `tools/list` output and the fixture asserts representative
+  aliases and bounds.
+- [x] **No expansion of claims**: Conditional action schemas, unknown-field
+  rejection, replay import/load, external serialized replay interchange,
+  cross-version/legacy parity, reconnect/resume, concurrency, HTTP, external
+  clients, and production deployment remain open.
 
 ### 2.4 Pure Contract
 
-- **Input**: Object arguments for `game_step_action`; ranged attacks use
-  `target_x`/`target_y` (or `x`/`y`) and item actions use `item_id`.
-- **Output**: Valid values preserve current command semantics; malformed or
-  out-of-range numeric values emit `-32602` with no game-state mutation.
+- **Input**: `tools/list` emits object schemas describing existing tool
+  arguments, aliases, enum domains, and inclusive numeric ranges.
+- **Output**: Schema metadata is deterministic and advisory; runtime dispatch
+  and error behavior remain unchanged.
 - **Ownership Boundary**:
-  - `drl-mcp::json_to_command` owns exact numeric action validation;
-    `drl-mcp::execute_tool` maps parser failures to `-32602` before
-    `session.step`.
-  - `McpServer` owns method-envelope validation; `JsonRpcRequest::parse` and
-    `run_stdio` preserve request-ID, batch framing, and notification contracts.
-  - Game reset remains a session operation and does not alter protocol phase.
+  - `drl-mcp::get_all_tool_definitions` owns truthful schema metadata;
+    `create_object_schema_with_fields` serializes ranges and enums.
+  - Existing dispatch validators and `McpServer` method-envelope handling
+    remain authoritative for execution and protocol errors.
+  - Unknown properties remain tolerated; conditional one-of schemas are a
+    future compatibility-sensitive slice.
 
 ---
 
 ## 3. Recent Delivered Slices
+
+### M13 — Truthful MCP Tool Schemas (`VERSION` 0.2.50)
+
+- [x] `tools/list` publishes action, direction, slot, `command`, and `x`/`y`
+  aliases with enum domains and exact numeric bounds for stateful arguments.
+- [x] Unknown properties remain tolerated; conditional action schemas,
+  gameplay changes, and external-client certification remain open.
 
 ### M13 — Typed `game_step_action` Numbers (`VERSION` 0.2.49)
 

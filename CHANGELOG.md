@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.50]
+
+- Made MCP `tools/list` schemas truthful for existing dispatch contracts:
+  action, direction, slot, `command`, and `x`/`y` aliases now publish enum
+  domains and exact JSON-safe, `u32`, or signed `i32` bounds.
+- Preserved unknown-property tolerance, valid gameplay, malformed-input
+  behavior, and deterministic repeated stdio output; conditional action
+  schemas and external-client certification remain open.
+
 ## [0.2.49]
 
 - Added exact bounded numeric validation for MCP `game_step_action` ranged

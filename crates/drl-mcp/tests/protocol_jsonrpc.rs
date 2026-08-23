@@ -158,6 +158,133 @@ fn test_jsonrpc_tools_list() {
 }
 
 #[test]
+fn test_jsonrpc_tools_list_publishes_truthful_input_schemas() {
+  let mut server = ready_server();
+  let response =
+    JsonValue::parse(&server.handle_request(r#"{"jsonrpc":"2.0","id":90,"method":"tools/list"}"#))
+      .unwrap();
+  let tools = response
+    .get("result")
+    .and_then(|result| result.get("tools"))
+    .and_then(JsonValue::as_array)
+    .expect("tools array");
+  let schema_for = |name: &str| {
+    tools
+      .iter()
+      .find(|tool| tool.get("name").and_then(JsonValue::as_str) == Some(name))
+      .and_then(|tool| tool.get("inputSchema"))
+      .expect("tool input schema")
+  };
+
+  let start = schema_for("game_start");
+  let start_props = start.get("properties").expect("game_start properties");
+  assert_eq!(
+    start_props
+      .get("seed")
+      .and_then(|field| field.get("minimum"))
+      .and_then(JsonValue::as_u64),
+    Some(0)
+  );
+  assert_eq!(
+    start_props
+      .get("seed")
+      .and_then(|field| field.get("maximum"))
+      .and_then(JsonValue::as_u64),
+    Some(9_007_199_254_740_992)
+  );
+  assert_eq!(
+    start_props
+      .get("width")
+      .and_then(|field| field.get("maximum"))
+      .and_then(JsonValue::as_u64),
+    Some(u32::MAX as u64)
+  );
+
+  let load = schema_for("game_load_scenario");
+  assert_eq!(
+    load
+      .get("required")
+      .and_then(JsonValue::as_array)
+      .map(|required| required
+        .iter()
+        .any(|value| value.as_str() == Some("ascii_map"))),
+    Some(true)
+  );
+
+  let step = schema_for("game_step_action");
+  let required = step
+    .get("required")
+    .and_then(JsonValue::as_array)
+    .expect("game_step_action required fields");
+  assert!(
+    required
+      .iter()
+      .any(|value| value.as_str() == Some("action"))
+  );
+  assert!(step.get("additionalProperties").is_none());
+  let step_props = step.get("properties").expect("game_step_action properties");
+  let action_enum = step_props
+    .get("action")
+    .and_then(|field| field.get("enum"))
+    .and_then(JsonValue::as_array)
+    .expect("action enum");
+  for alias in ["move", "attack_melee", "melee", "fire", "shoot", "wait"] {
+    assert!(
+      action_enum
+        .iter()
+        .any(|value| value.as_str() == Some(alias))
+    );
+  }
+  let direction_enum = step_props
+    .get("direction")
+    .and_then(|field| field.get("enum"))
+    .and_then(JsonValue::as_array)
+    .expect("direction enum");
+  for alias in ["north", "n", "up", "k", "n_key", "."] {
+    assert!(
+      direction_enum
+        .iter()
+        .any(|value| value.as_str() == Some(alias))
+    );
+  }
+  let slot_enum = step_props
+    .get("slot")
+    .and_then(|field| field.get("enum"))
+    .and_then(JsonValue::as_array)
+    .expect("slot enum");
+  assert!(
+    slot_enum
+      .iter()
+      .any(|value| value.as_str() == Some("weapon"))
+  );
+  assert!(
+    slot_enum
+      .iter()
+      .any(|value| value.as_str() == Some("Armor"))
+  );
+  for alias in ["command", "x", "y"] {
+    assert!(step_props.get(alias).is_some(), "missing alias {alias}");
+  }
+  for coordinate in ["target_x", "target_y", "x", "y"] {
+    let field = step_props.get(coordinate).expect("coordinate field");
+    assert_eq!(
+      field.get("minimum").and_then(JsonValue::as_i64),
+      Some(i32::MIN as i64)
+    );
+    assert_eq!(
+      field.get("maximum").and_then(JsonValue::as_i64),
+      Some(i32::MAX as i64)
+    );
+  }
+  let item_id = step_props.get("item_id").expect("item_id field");
+  assert_eq!(item_id.get("minimum").and_then(JsonValue::as_u64), Some(0));
+  assert_eq!(
+    item_id.get("maximum").and_then(JsonValue::as_u64),
+    Some(9_007_199_254_740_992)
+  );
+}
+
+#[test]
 fn test_jsonrpc_verify_replay_is_deterministic_and_state_safe() {
   let mut server = ready_server();
 

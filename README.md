@@ -36,7 +36,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.49`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.50`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:
@@ -123,8 +123,10 @@ The MCP semantic tool suite includes deterministic replay verification through
 `game_verify_replay`; replay import/load and external replay interchange remain
 open.
 Numeric `game_step_action` coordinates and item IDs are validated as exact
-bounded values before simulation dispatch; complete action-schema validation
-remains open.
+bounded values before simulation dispatch, and `tools/list` publishes the
+accepted aliases, enum domains, and numeric ranges without rejecting unknown
+fields; conditional action schemas and external-client certification remain
+open.
 
 ### Browser slice
 

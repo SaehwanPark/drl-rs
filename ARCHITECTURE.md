@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.49`
+Current project version: `0.2.50`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -196,6 +196,9 @@ Presentation Boundary
   - `game_step_action` validates ranged coordinates as exact `i32` values and
     use/equip/drop item IDs as exact non-negative JSON-safe integers before
     dispatching to the simulation.
+  - `tools/list` publishes accepted action, direction, slot, and field aliases
+    with enum domains and exact numeric bounds; unknown properties stay
+    tolerated while conditional action schemas remain out of scope.
   - A private `Uninitialized → AwaitingInitialized → Ready` phase gate requires
     an identified initialize request followed by `notifications/initialized`
     before tools and resources are available; premature/duplicate transitions
