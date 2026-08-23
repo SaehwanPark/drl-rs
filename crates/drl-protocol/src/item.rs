@@ -85,6 +85,7 @@ pub enum ItemArchetype {
   SmallMedPack,
   LargeMedPack,
   GreenArmor,
+  BlueArmor,
   PhaseDevice,
 }
 
@@ -106,6 +107,7 @@ impl fmt::Display for ItemArchetype {
       Self::SmallMedPack => "small_medpack",
       Self::LargeMedPack => "large_medpack",
       Self::GreenArmor => "green_armor",
+      Self::BlueArmor => "blue_armor",
       Self::PhaseDevice => "phase_device",
     };
     write!(f, "{value}")
@@ -174,6 +176,7 @@ mod tests {
       ItemArchetype::AmmoPackShells.to_string(),
       "ammo_pack_shells"
     );
+    assert_eq!(ItemArchetype::BlueArmor.to_string(), "blue_armor");
   }
 
   #[test]

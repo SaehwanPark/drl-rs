@@ -36,7 +36,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.68`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.69`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:
@@ -90,10 +90,10 @@ replays, and regression testing.
     Clear Save now requires an explicit accessible confirmation with a tested
     cancel path. Destructive confirmation remains an action-time acceptance
     step.
-  - M9 now includes definition-backed rocket and power-cell ammo spawn families
-    with pinned scalar provenance, initial stack metadata, stack policies,
-    replay JSON names, atlas slots, and typed base/rocket/power-battery
-    ammo-pack boundaries; prepared-slot consumption and broader legacy
+  - M9 now includes definition-backed rocket and power-cell ammo families,
+    base/rocket/power-battery ammo packs, and blue armor with pinned scalar
+    provenance, replay JSON names, atlas slots, and presentation tint;
+    resistance, movement, prepared-slot consumption, and broader legacy
     weapon/item behavior remain staged.
   - The service worker reads only the current generated release cache, so stale
     or unrelated Cache Storage namespaces cannot satisfy offline requests;

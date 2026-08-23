@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.68`
+Current project version: `0.2.69`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,14 +23,14 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 Rocket and Power-Cell Ammo Families
+## 2. Active Implementation Slice: M9 Typed Armor and Ammo Families
 
 ### 2.1 Scope & Objective
 
-Migrate the pinned legacy `rocket` and `cell` ammunition records into typed,
+Migrate the pinned legacy `rocket`, `cell`, and `barmor` records into typed,
 immutable Rust definitions and replay-compatible spawn contracts. Preserve
-source-backed names/descriptions, initial stack amounts, maximum stack limits,
-and measured atlas slots without importing Lua callbacks or weapon behavior.
+source-backed scalar fields, measured atlas slots, and the verified blue armor
+presentation tint without importing Lua callbacks or unverified combat rules.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
@@ -65,6 +65,10 @@ and measured atlas slots without importing Lua callbacks or weapon behavior.
 - [x] **Base ammo-pack boundary**: typed `AmmoPack9mm` and `AmmoPackShells`
   preserve pinned amounts/capacities (`250`/`250`, `100`/`100`), descriptions,
   replay kinds, and `SPRITE_PAMMO`/`SPRITE_PSHELL` slots.
+- [x] **Blue armor boundary**: typed `BlueArmor` preserves pinned protection
+  (`2`), description, `SPRITE_ARMOR` slot, replay kind, and pure blue
+  presentation tint; legacy plasma resistance and movement modifiers remain
+  explicit gaps.
 - [ ] **Full migration**: rocket/plasma weapon behavior, dynamic callbacks,
   balance/fairness, and remaining legacy item families remain open.
 - [x] **Explicit non-goals**: no gameplay/core rule, observation schema,
@@ -84,6 +88,9 @@ and measured atlas slots without importing Lua callbacks or weapon behavior.
 - `AmmoPackCells` follows the same fixed replay/view contract with
   `ammo_pack_cells`; its two-frame duration remains the existing bounded Rust
   presentation policy.
+- `BlueArmor` is a definition-backed armor item with protection `2`, the pinned
+  description, `blue_armor` replay kind, shared `SPRITE_ARMOR` geometry, and a
+  pure blue tint. Resistance, movement, and durability parity are not claimed.
 - **Ownership Boundary**: Rust typed definitions own runtime item semantics;
   pinned Lua evidence informs only the migrated scalar fields and provenance.
 

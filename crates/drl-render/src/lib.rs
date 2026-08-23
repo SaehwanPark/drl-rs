@@ -34,6 +34,7 @@ const NEUTRAL_COLORIZATION_TINT: [u8; 4] = [0, 0, 0, 0];
 pub const fn item_colorization_tint(archetype: ItemArchetype) -> [u8; 4] {
   match archetype {
     ItemArchetype::GreenArmor => [0, 255, 0, 255],
+    ItemArchetype::BlueArmor => [0, 0, 255, 255],
     ItemArchetype::PhaseDevice => [0, 0, 179, 255],
     _ => NEUTRAL_COLORIZATION_TINT,
   }
@@ -1808,10 +1809,14 @@ mod tests {
   }
 
   #[test]
-  fn item_colorization_tint_maps_only_verified_green_armor() {
+  fn item_colorization_tint_maps_verified_armor_and_phase_items() {
     assert_eq!(
       item_colorization_tint(ItemArchetype::GreenArmor),
       [0, 255, 0, 255]
+    );
+    assert_eq!(
+      item_colorization_tint(ItemArchetype::BlueArmor),
+      [0, 0, 255, 255]
     );
     assert_eq!(
       item_colorization_tint(ItemArchetype::PhaseDevice),

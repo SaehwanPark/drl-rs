@@ -86,6 +86,7 @@ pub fn validate_current_content() -> Result<(), ContentValidationError> {
     ItemSpawnKind::SmallMedPack,
     ItemSpawnKind::LargeMedPack,
     ItemSpawnKind::GreenArmor,
+    ItemSpawnKind::BlueArmor,
     ItemSpawnKind::PhaseDevice,
   ] {
     validate_item_definition(definition_for_spawn_kind(kind))?;
