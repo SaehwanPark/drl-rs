@@ -346,6 +346,7 @@ Lua behavior or assert gameplay parity.
 
 ### Verified Baseline (`VERSION` 0.2.30)
 
+6aade20 feat(content): synchronize special-level scalar evidence (#121)
 3c8d618 docs(spec): record catalog sync baseline
 872914c feat(content): synchronize special-level evidence (#120)
 4263241 docs(spec): record merged evidence baseline
