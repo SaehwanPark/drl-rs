@@ -35,6 +35,8 @@ sh scripts/test-legacy-content-bundle.sh
 sh scripts/test-legacy-level-index.sh
 sh scripts/test-content-evidence.sh
 sh scripts/check-content-evidence.sh
+sh scripts/check-release-rights.sh
+sh scripts/test-release-rights.sh
 sh scripts/test-release-signing.sh
 sh scripts/test-mcp-stdio.sh
 sh scripts/test-mcp-notifications.sh

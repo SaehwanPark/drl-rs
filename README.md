@@ -36,7 +36,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.52`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.53`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:
@@ -103,6 +103,10 @@ replays, and regression testing.
     CI smoke coverage plus local release-tree/symlink/permission hygiene, while
     production key custody, OS-level PWA installation, and cross-browser
     acceptance remain open.
+  - `docs/release-rights.md` and `scripts/check-release-rights.sh` keep the
+    bundled graphics evidence and excluded legacy code/audio/music/font/WAD
+    boundary explicit; missing bundle builds are `NOT_RUN`, not inferred
+    releases or legal clearance.
   - Placeholder M7 atlas rectangles are not a fidelity claim.
 
 ## Quick start
@@ -248,7 +252,8 @@ legacy Git revision recorded in `MANIFEST.txt` and `SHA256SUMS`, with the
 upstream CC BY-SA 4.0 license and attribution. The repository's MIT license
 does not relicense them. Legacy code is GPL; audio, music, and fonts are not
 bundled until their separate redistribution rights are recorded. See
-`docs/legacy-behavior/asset-provenance.md` and
+`docs/legacy-behavior/asset-provenance.md`, `docs/release-rights.md` for the
+machine-checkable inventory and bundle gate, and
 `docs/reference-captures/manifest.md`, which records checkout dirty-state and
 evidence classification, rights, and media hashes while keeping capture
 promotion gated on a clean controlled checkout with directly observed evidence.

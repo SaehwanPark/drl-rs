@@ -3,7 +3,7 @@
 set -eu
 
 repo_root=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)
-asset_dir="$repo_root/assets/legacy/drl/graphics"
+asset_dir=${DRL_GRAPHICS_DIR:-$repo_root/assets/legacy/drl/graphics}
 manifest="$asset_dir/SHA256SUMS"
 expected_revision=17d9be1204751899b2d69d8d3a2dde247bd0cc5c
 
@@ -23,9 +23,10 @@ expected_files=$(mktemp)
 actual_files=$(mktemp)
 trap 'rm -f "$expected_files" "$actual_files"' EXIT HUP INT TERM
 awk '{ print $2 }' "$manifest" | LC_ALL=C sort > "$expected_files"
-find "$asset_dir" -maxdepth 1 -type f \
-  ! -name MANIFEST.txt ! -name SHA256SUMS -exec basename {} \; \
-  | LC_ALL=C sort > "$actual_files"
+find "$asset_dir" -type f ! -name MANIFEST.txt ! -name SHA256SUMS -print |
+  while IFS= read -r path; do
+    printf '%s\n' "${path#"$asset_dir"/}"
+  done | LC_ALL=C sort > "$actual_files"
 if ! diff -u "$expected_files" "$actual_files"; then
   printf '%s\n' 'Asset directory contains missing or unrecorded files.' >&2
   exit 1

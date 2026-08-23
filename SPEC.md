@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.52`
+Current project version: `0.2.53`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,68 +23,74 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M13 Conditional `game_step_action` Schema
+## 2. Active Implementation Slice: M13 Public Release-Rights Inventory
 
 ### 2.1 Scope & Objective
 
-Describe the action-specific requirements already enforced by
-`json_to_command` in the published `game_step_action` schema. Add a top-level
-action-or-command discriminator and deterministic conditional branches:
-move/melee require `direction`; ranged aliases require one accepted X alias
-(`target_x` or `x`) and one accepted Y alias (`target_y` or `y`); use/equip/drop
-require `item_id`; and unequip requires `slot`. Wait/pickup/reload/descend add
-no named requirements. When both action fields are present, the schema follows
-runtime precedence: `action` determines the conditional branch.
-Keep unknown properties tolerated and do not change runtime dispatch.
+Make release-rights scope explicit and machine-checkable at the source and
+static-bundle boundaries. Record project-authored MIT material, the bundled
+legacy graphics import (pinned revision, CC BY-SA 4.0 attribution, license,
+manifest, and checksums), excluded legacy code/audio/music/fonts, and
+capture/media categories whose rights evidence is unavailable. Add a gate that
+validates the inventory, graphics provenance, declared manifest rights, and
+the absence of excluded paths or media extensions in an available bundle.
+Keep legal adjudication, media additions, and release-manifest schema changes
+outside this slice.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
-1. **MCP semantic server**:
-   - In-process JSON-RPC routing already covers lifecycle, tools, resources,
-     gameplay, replay/metrics, reset, and fairness boundaries.
-2. **Notification-correct stdio**:
-   - The transport already suppresses omitted-ID notifications while preserving
-   identified, null-ID, and malformed-request response boundaries.
-3. **Batch stdio transport**:
-   - Nonempty JSON-RPC batches preserve response order, omit notification
-     members, retain explicit `id: null`, and reject empty batches.
-4. **Version-aware initialize negotiation and lifecycle gate**:
-   - Supported `2024-11-05` is echoed, unsupported strings receive the
-     deterministic supported fallback, missing/non-string versions return
-     `-32602`, and tools/resources remain gated until initialized.
-5. **Identified lifecycle state**:
-   - Successful identified initialize followed by `notifications/initialized`
-     reaches `Ready`; pre-ready operations return `-32003`.
+1. **Graphics provenance**:
+   - `assets/legacy/drl/graphics/` is pinned to revision
+     `17d9be1204751899b2d69d8d3a2dde247bd0cc5c` with copied CC BY-SA 4.0
+     license, source manifest, and SHA-256 checksums.
+2. **Asset boundary**:
+   - `assets/README.md` and `docs/legacy-behavior/asset-provenance.md` keep
+     legacy code, audio/music, and fonts out of the browser bundle pending
+     separate rights evidence.
+3. **Release packaging**:
+   - `build-web.sh` copies only the cleared graphics tree into `dist/` and
+     emits a release manifest whose rights declaration names the graphics
+     license; full artifact and service-worker validation remains separate.
+4. **Evidence vocabulary**:
+   - Rights and capture uncertainty are recorded as `NOT_RUN`, `INCONCLUSIVE`,
+     or `NOT_CLEARED`, never inferred from repository presence alone.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Discriminator**: The schema requires either canonical `action` or the
-  accepted `command` alias and preserves all published action aliases.
-- [x] **Conditional requirements**: Generated `allOf`/`if`/`then` branches
-  expose direction, ranged coordinate-alias-pair, item-ID, and slot requirements;
-  no-argument actions add no named requirements.
-- [x] **Compatibility**: Unknown properties remain tolerated, existing
-  canonical/alias calls and malformed runtime errors remain unchanged, and
-  terminal lifecycle behavior from the predecessor slice remains covered.
-- [x] **Transport repeatability**: Repeated real `drl-app --mcp` runs assert
-  conditional branch shape and remain byte-identical.
-- [x] **No expansion of claims**: Legal-action/turn-state validation,
-  unknown-field rejection, output schemas, replay import/load, transport or
-  lifecycle changes, external clients, and gameplay/core changes remain open.
+- [x] **Inventory**: `docs/release-rights.md` records all required categories,
+  statuses, licenses, source paths, and evidence boundaries without claiming
+  unresolved clearance.
+- [x] **Source gate**: The pinned graphics license, provenance manifest, and
+  checksums pass the existing asset validator; excluded legacy source paths
+  remain outside the bundle boundary.
+- [x] **Bundle gate**: An available `dist` or `RELEASE_DIST` contains the
+  declared graphics rights material, has the exact release-manifest rights
+  declaration, and contains no legacy code, audio/music, font, WAD, or other
+  excluded media paths.
+- [x] **Negative fixtures**: Focused tests reject missing license evidence and
+  injected legacy-code, audio/music, and font files in temporary bundles.
+- [x] **Repository integration**: The source gate runs from
+  `scripts/check-repository.sh`; absent bundles are reported `NOT_RUN`, not
+  treated as a false pass.
+- [x] **No expansion of claims**: No legal clearance, new media, audiovisual
+  parity, capture approval, deployment, PWA work, manifest schema change,
+  gameplay/core change, or MCP behavior change is claimed.
 
 ### 2.4 Pure Contract
 
-- **Input**: Object arguments described by the conditional
-  `game_step_action` schema.
-- **Output**: Schema metadata is deterministic and advisory; runtime parser
-  behavior and terminal action semantics remain authoritative and unchanged.
+- **Input**: Tracked source assets, rights inventory, and an optional static
+  bundle directory.
+- **Output**: Deterministic `PASS`/`FAIL` source validation; bundle validation
+  is `PASS` when an available bundle satisfies the declared boundary and
+  `NOT_RUN` when no bundle is present.
 - **Ownership Boundary**:
-  - `drl-mcp::tools_schema` owns generated fields, discriminator, and
-    action-specific conditional requirements.
-  - `drl-mcp::json_to_command` remains authoritative for runtime validation;
-    `drl-mcp::execute_tool` and `McpSession` behavior are unchanged.
-  - Unknown properties remain tolerated; no legal-action or output schema is
-    claimed.
+  - `docs/release-rights.md` owns the human-readable inventory and evidence
+    status; it does not grant or adjudicate rights.
+  - `scripts/check-release-rights.sh` owns deterministic source and optional
+    bundle boundary checks; `scripts/check-assets.sh` remains the graphics
+    provenance authority.
+  - `scripts/check-release-manifest.sh` remains responsible for full artifact
+    hashes and cache/signature consistency; this slice does not redesign it.
 
 ---
 
@@ -93,9 +99,10 @@ Keep unknown properties tolerated and do not change runtime dispatch.
 ### M13 — Conditional `game_step_action` Schema (`VERSION` 0.2.52)
 
 - [x] Added deterministic action/command discriminator and conditional
-  direction, ranged-coordinate, item-ID, slot, and no-argument branches.
+  direction, ranged-coordinate-alias, item-ID, slot, and no-argument branches.
 - [x] Preserved runtime aliases, malformed-input behavior, unknown-property
-  tolerance, and repeated stdio output; legal-action validation remains open.
+  tolerance, action precedence, mixed coordinate aliases, and repeated stdio
+  output; legal-action validation remains open.
 
 ### M13 — MCP Terminal-Outcome Gate (`VERSION` 0.2.51)
 
