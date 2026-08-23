@@ -369,6 +369,7 @@ production custody, rotation, or trust-root implementation.
 
 ### Verified Baseline (`VERSION` 0.2.38)
 
+fbd7eee feat(release): harden signing key inputs (#129)
 a127868 test(mcp): cover stdio lifecycle (#128)
 cf597d3 feat(web): report fresh service-worker updates (#127)
 47f3526 feat(web): classify unsupported browser environments (#126)
