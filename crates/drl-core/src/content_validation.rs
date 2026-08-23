@@ -77,6 +77,7 @@ pub fn validate_current_content() -> Result<(), ContentValidationError> {
     ItemSpawnKind::Chaingun,
     ItemSpawnKind::PlasmaRifle,
     ItemSpawnKind::RocketLauncher,
+    ItemSpawnKind::Chainsaw,
     ItemSpawnKind::CombatKnife,
     ItemSpawnKind::Ammo9mm(0),
     ItemSpawnKind::AmmoShells(0),

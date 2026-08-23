@@ -148,6 +148,23 @@ const ROCKET_LAUNCHER: ItemDefinition = ItemDefinition {
   },
 };
 
+const CHAINSAW: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::Chainsaw,
+  name: "Chainsaw",
+  description: "Chainsaw -- cuts through flesh like a hot knife through butter.",
+  kind: ItemDefinitionKind::Weapon {
+    is_ranged: false,
+    ammo_type: None,
+    clip_capacity: 0,
+    damage: (4, 24),
+    range: 1,
+    accuracy: 85,
+    knockback: 0,
+    fire_cost: ActionCost::MELEE_ATTACK,
+    reload_cost: ActionCost::new(0),
+  },
+};
+
 const COMBAT_KNIFE: ItemDefinition = ItemDefinition {
   archetype: ItemArchetype::CombatKnife,
   name: "Combat Knife",
@@ -316,6 +333,7 @@ pub const fn definition_for_spawn_kind(kind: ItemSpawnKind) -> &'static ItemDefi
     ItemSpawnKind::Chaingun => &CHAINGUN,
     ItemSpawnKind::PlasmaRifle => &PLASMA_RIFLE,
     ItemSpawnKind::RocketLauncher => &ROCKET_LAUNCHER,
+    ItemSpawnKind::Chainsaw => &CHAINSAW,
     ItemSpawnKind::CombatKnife => &COMBAT_KNIFE,
     ItemSpawnKind::Ammo9mm(_) => &AMMO_9MM,
     ItemSpawnKind::AmmoShells(_) => &AMMO_SHELLS,
@@ -354,6 +372,7 @@ mod tests {
         ItemArchetype::RocketLauncher,
         "Rocket Launcher",
       ),
+      (ItemSpawnKind::Chainsaw, ItemArchetype::Chainsaw, "Chainsaw"),
       (
         ItemSpawnKind::CombatKnife,
         ItemArchetype::CombatKnife,
@@ -577,6 +596,21 @@ mod tests {
         knockback: 0,
         fire_cost: ActionCost::RANGED_ATTACK,
         reload_cost: ActionCost::STANDARD,
+      }
+    );
+
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::Chainsaw).kind,
+      ItemDefinitionKind::Weapon {
+        is_ranged: false,
+        ammo_type: None,
+        clip_capacity: 0,
+        damage: (4, 24),
+        range: 1,
+        accuracy: 85,
+        knockback: 0,
+        fire_cost: ActionCost::MELEE_ATTACK,
+        reload_cost: ActionCost::new(0),
       }
     );
   }

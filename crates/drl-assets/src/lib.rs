@@ -408,6 +408,12 @@ pub const fn item_sprite(archetype: ItemArchetype) -> SpriteDescriptor {
       layers: ITEM_LAYERS,
       animation: STATIC_ANIMATION,
     },
+    ItemArchetype::Chainsaw => SpriteDescriptor {
+      atlas: AtlasId::GunsAndPickups,
+      rect: legacy_slot(3),
+      layers: ITEM_LAYERS,
+      animation: STATIC_ANIMATION,
+    },
     ItemArchetype::Pistol => SpriteDescriptor {
       atlas: AtlasId::GunsAndPickups,
       rect: legacy_slot(4),
@@ -595,6 +601,7 @@ mod tests {
       ItemArchetype::Chaingun,
       ItemArchetype::RocketLauncher,
       ItemArchetype::PlasmaRifle,
+      ItemArchetype::Chainsaw,
       ItemArchetype::CombatKnife,
       ItemArchetype::Ammo9mm,
       ItemArchetype::AmmoShells,
@@ -652,6 +659,7 @@ mod tests {
     let expected = [
       (ItemArchetype::Unknown, AtlasId::Fx, (0, 0)),
       (ItemArchetype::CombatKnife, AtlasId::GunsAndPickups, (32, 0)),
+      (ItemArchetype::Chainsaw, AtlasId::GunsAndPickups, (64, 0)),
       (ItemArchetype::Pistol, AtlasId::GunsAndPickups, (96, 0)),
       (ItemArchetype::Shotgun, AtlasId::GunsAndPickups, (128, 0)),
       (ItemArchetype::Chaingun, AtlasId::GunsAndPickups, (224, 0)),
@@ -805,6 +813,7 @@ mod tests {
       ItemArchetype::Chaingun,
       ItemArchetype::RocketLauncher,
       ItemArchetype::PlasmaRifle,
+      ItemArchetype::Chainsaw,
       ItemArchetype::GreenArmor,
       ItemArchetype::BlueArmor,
       ItemArchetype::RedArmor,
