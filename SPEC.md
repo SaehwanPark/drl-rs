@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.51`
+Current project version: `0.2.52`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,17 +23,19 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M13 MCP Terminal-Outcome Gate
+## 2. Active Implementation Slice: M13 Conditional `game_step_action` Schema
 
 ### 2.1 Scope & Objective
 
-Make terminal MCP sessions behaviorally consistent: once an episode reports
-`Victory`, `Death`, `TurnLimitReached`, or `Stalled`, reject later
-`game_step_action` calls before simulation with deterministic `-32001`. A
-successful level transition to level 2+ reports `Victory`; death retains
-precedence, and turn limits apply only while the episode remains active. Keep
-`game_reset`, metrics, replay export, and replay verification available after
-termination without changing `drl-core::Game`.
+Describe the action-specific requirements already enforced by
+`json_to_command` in the published `game_step_action` schema. Add a top-level
+action-or-command discriminator and deterministic conditional branches:
+move/melee require `direction`; ranged aliases require one accepted X alias
+(`target_x` or `x`) and one accepted Y alias (`target_y` or `y`); use/equip/drop
+require `item_id`; and unequip requires `slot`. Wait/pickup/reload/descend add
+no named requirements. When both action fields are present, the schema follows
+runtime precedence: `action` determines the conditional branch.
+Keep unknown properties tolerated and do not change runtime dispatch.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
@@ -56,47 +58,44 @@ termination without changing `drl-core::Game`.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Turn-limit gate**: A terminal turn-limit response returns `game_over`
-  and a later action returns `-32001` without changing metrics or replay;
-  reset permits a new action.
-- [x] **Victory gate**: Descending from a scenario stairs tile reports
-  `Victory`/`game_over: true`; later actions are rejected while metrics and
-  replay remain readable.
-- [x] **Death gate**: Existing death detection remains intact; a post-death
-  action is rejected without appending a replay command or changing metrics.
-- [x] **Replay determinism**: Terminal replays remain verifiable through
-  `game_verify_replay` after the episode ends.
-- [x] **Transport repeatability**: The real `drl-app --mcp` fixture covers a
-  terminal scenario action followed by a rejected action and remains
-  byte-identical across repeated subprocess runs.
-- [x] **No expansion of claims**: No core outcome changes, replay import/load,
-  format changes, conditional schema validation, unknown-field rejection,
-  cross-version/legacy parity, reconnect/resume, concurrency, HTTP, external
-  clients, production deployment, or balance work is claimed.
+- [x] **Discriminator**: The schema requires either canonical `action` or the
+  accepted `command` alias and preserves all published action aliases.
+- [x] **Conditional requirements**: Generated `allOf`/`if`/`then` branches
+  expose direction, ranged coordinate-alias-pair, item-ID, and slot requirements;
+  no-argument actions add no named requirements.
+- [x] **Compatibility**: Unknown properties remain tolerated, existing
+  canonical/alias calls and malformed runtime errors remain unchanged, and
+  terminal lifecycle behavior from the predecessor slice remains covered.
+- [x] **Transport repeatability**: Repeated real `drl-app --mcp` runs assert
+  conditional branch shape and remain byte-identical.
+- [x] **No expansion of claims**: Legal-action/turn-state validation,
+  unknown-field rejection, output schemas, replay import/load, transport or
+  lifecycle changes, external clients, and gameplay/core changes remain open.
 
 ### 2.4 Pure Contract
 
-- **Input**: A `game_step_action` command submitted to an active MCP session.
-- **Output**: Active sessions preserve existing command results; terminal
-  sessions return `-32001` before simulation, while successful stair
-  transitions return `Victory` and `game_over: true`.
+- **Input**: Object arguments described by the conditional
+  `game_step_action` schema.
+- **Output**: Schema metadata is deterministic and advisory; runtime parser
+  behavior and terminal action semantics remain authoritative and unchanged.
 - **Ownership Boundary**:
-  - `McpSession::step` owns terminal gating and outcome classification;
-    `drl-mcp::execute_tool` maps session failures to `INVALID_ACTION`.
-  - `drl-core::Game` remains the simulation authority and is not modified.
-  - `game_reset`, metrics, replay export, and replay verification remain
-    available after termination; protocol lifecycle remains separate.
+  - `drl-mcp::tools_schema` owns generated fields, discriminator, and
+    action-specific conditional requirements.
+  - `drl-mcp::json_to_command` remains authoritative for runtime validation;
+    `drl-mcp::execute_tool` and `McpSession` behavior are unchanged.
+  - Unknown properties remain tolerated; no legal-action or output schema is
+    claimed.
 
 ---
 
 ## 3. Recent Delivered Slices
 
-### M13 — Truthful MCP Tool Schemas (`VERSION` 0.2.50)
+### M13 — Conditional `game_step_action` Schema (`VERSION` 0.2.52)
 
-- [x] `tools/list` publishes action, direction, slot, `command`, and `x`/`y`
-  aliases with enum domains and exact numeric bounds for stateful arguments.
-- [x] Unknown properties remain tolerated; conditional action schemas,
-  gameplay changes, and external-client certification remain open.
+- [x] Added deterministic action/command discriminator and conditional
+  direction, ranged-coordinate, item-ID, slot, and no-argument branches.
+- [x] Preserved runtime aliases, malformed-input behavior, unknown-property
+  tolerance, and repeated stdio output; legal-action validation remains open.
 
 ### M13 — MCP Terminal-Outcome Gate (`VERSION` 0.2.51)
 
@@ -106,6 +105,14 @@ termination without changing `drl-core::Game`.
 - [x] Stair transitions report `Victory`, and terminal replays remain
   deterministic; core gameplay, replay format, and external compatibility
   claims remain unchanged.
+
+### M13 — Truthful MCP Tool Schemas (`VERSION` 0.2.50)
+
+- [x] `tools/list` publishes action, direction, slot, `command`, and `x`/`y`
+  aliases with enum domains and exact numeric bounds for stateful arguments.
+- [x] Unknown properties remained tolerated; conditional action schemas,
+  gameplay changes, and external-client certification remained open at that
+  slice.
 
 ### M13 — Typed `game_step_action` Numbers (`VERSION` 0.2.49)
 

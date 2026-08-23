@@ -66,8 +66,9 @@ if start_props["seed"]["maximum"] != 9007199254740992:
 if start_props["width"]["maximum"] != 4294967295:
     raise SystemExit("game_start width schema lacks u32 maximum")
 step_schema = tool_map["game_step_action"]["inputSchema"]
-if "action" not in step_schema.get("required", []):
-    raise SystemExit("game_step_action schema does not require action")
+discriminator = step_schema.get("anyOf", [])
+if len(discriminator) != 2 or {field for branch in discriminator for field in branch.get("required", [])} != {"action", "command"}:
+    raise SystemExit("game_step_action schema lacks action-or-command discriminator")
 if "fire" not in step_schema["properties"]["action"].get("enum", []):
     raise SystemExit("game_step_action schema lacks fire action")
 if "command" not in step_schema["properties"] or "x" not in step_schema["properties"]:
@@ -76,6 +77,20 @@ if step_schema["properties"]["target_x"]["minimum"] != -2147483648:
     raise SystemExit("game_step_action coordinate schema lacks i32 minimum")
 if step_schema["properties"]["item_id"]["maximum"] != 9007199254740992:
     raise SystemExit("game_step_action item_id schema lacks JSON-safe maximum")
+conditions = step_schema.get("allOf", [])
+if len(conditions) != 5:
+    raise SystemExit("game_step_action schema lacks action-specific conditions")
+if conditions[0].get("then", {}).get("required") != ["direction"]:
+    raise SystemExit("move/melee condition lacks direction requirement")
+if conditions[2].get("then", {}).get("required") != ["item_id"]:
+    raise SystemExit("item condition lacks item_id requirement")
+if conditions[3].get("then", {}).get("required") != ["slot"]:
+    raise SystemExit("unequip condition lacks slot requirement")
+if conditions[0].get("if", {}).get("anyOf", [])[1].get("not", {}).get("required") != ["action"]:
+    raise SystemExit("command condition does not defer to action precedence")
+ranged = conditions[1].get("then", {}).get("anyOf", [])
+if [branch.get("required") for branch in ranged] != [["target_x", "target_y"], ["target_x", "y"], ["x", "target_y"], ["x", "y"]]:
+    raise SystemExit("ranged condition lacks coordinate alternatives")
 if step_schema.get("additionalProperties") is False:
     raise SystemExit("game_step_action schema unexpectedly rejects unknown properties")
 if not responses[3].get("result", {}).get("resources"):

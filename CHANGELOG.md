@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.52]
+
+- Added conditional MCP `game_step_action` input schemas with an
+  action-or-command discriminator and generated requirements for directions,
+  ranged coordinate pairs, item IDs, equipment slots, and no-argument actions.
+- Preserved runtime parsing, aliases, unknown-property tolerance, malformed
+  errors, terminal lifecycle behavior, and deterministic repeated stdio output;
+  legal-action validation and external-client certification remain open.
+
 ## [0.2.51]
 
 - Added an MCP terminal-outcome gate: actions after `Victory`, `Death`,

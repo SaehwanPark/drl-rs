@@ -1094,6 +1094,9 @@ mod tests {
       Command::AttackRanged(Position::new(-3, 4))
     );
 
+    let command_alias = JsonValue::parse(r#"{"command":"wait"}"#).unwrap();
+    assert_eq!(json_to_command(&command_alias).unwrap(), Command::Wait);
+
     let boundary =
       JsonValue::parse(r#"{"action":"fire","target_x":-2147483648,"target_y":2147483647}"#)
         .unwrap();

@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.51`
+Current project version: `0.2.52`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.51)
+## 3. Current Progress Summary (`VERSION` 0.2.52)
 
 ### Delivered Foundations
 
@@ -84,15 +84,13 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active Milestone Slice (M13)**: MCP sessions now reject
-  `game_step_action` after terminal victory, death, turn-limit, or stalled
-  outcomes with deterministic `-32001`; stair transitions report `Victory`,
-  reset/replay/metrics inspection remain available, and `drl-core::Game` is
-  unchanged. MCP `tools/list` truthfully publishes canonical action,
-  direction, slot, `command`, and `x`/`y` alias spellings with deterministic
-  enum domains and JSON-safe, `u32`, and signed `i32` bounds; unknown
-  properties remain tolerated and conditional action schemas remain open. MCP
-  `initialize` also validates object
+- **Active Milestone Slice (M13)**: MCP `tools/list` now adds a deterministic
+  action-or-command discriminator and conditional `allOf`/`if`/`then` branches
+  for move/melee directions, ranged coordinate aliases, item IDs, unequip slots,
+  and no-argument actions; unknown properties remain tolerated and runtime
+  dispatch is unchanged. Terminal sessions reject post-outcome actions with
+  `-32001`, stair transitions report `Victory`, and reset/replay/metrics
+  inspection remain available. MCP `initialize` also validates object
   `capabilities` and string `clientInfo.name`/`version` fields while retaining
   identified lifecycle gating before discovery, tools, and resources; JSON-RPC
   request IDs now reject non-scalar values before dispatch, and stateful method
@@ -100,8 +98,8 @@ verification item uses explicit status semantics:
   arguments now reject wrong-typed optional integers before mutation, and
   `game_verify_replay` exposes deterministic in-memory replay verification
   without mutating sessions; `game_step_action` now rejects unsafe numeric
-  coordinates and item IDs before mutation. Full conditional schema validation
-  and external-client compatibility remain open.
+  coordinates and item IDs before mutation. Legal-action validation and
+  external-client compatibility remain open.
 - **M9 Content Evidence**: Base, expansion, user-item, being, terrain-cell,
   and special-level evidence slices are delivered without runtime Lua or
   gameplay overclaims.
@@ -267,13 +265,16 @@ tooling.
 - [x] `game_step_action` validates ranged coordinates and item IDs as exact
   bounded numbers before dispatch while preserving valid action aliases.
 - [x] `tools/list` publishes accepted action/direction/slot and field aliases
-  with JSON-safe, `u32`, and `i32` numeric bounds while retaining unknown-field
-  tolerance; conditional action schemas remain open.
+  with JSON-safe, `u32`, and `i32` numeric bounds, plus conditional action
+  requirements, while retaining unknown-field tolerance.
 - [x] `game_verify_replay` verifies complete in-memory procedural and scenario
   replays without mutating sessions.
 - [x] Terminal `game_step_action` calls are rejected after victory, death,
   turn-limit, or stalled outcomes; stair transitions report victory while
   reset and replay/metrics inspection remain available.
+- [x] Conditional `game_step_action` schema branches publish the
+  action/command discriminator and action-specific required fields without
+  rejecting unknown properties or changing runtime dispatch.
 - [x] Strict information boundaries with explicit `dev_mode` flag for omniscient
   inspection.
 - [x] Stdio transport runner and CLI integration (`drl-rust --mcp`).

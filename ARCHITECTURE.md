@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.51`
+Current project version: `0.2.52`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -198,8 +198,11 @@ Presentation Boundary
     dispatching to the simulation.
   - `tools/list` publishes canonical action, direction, slot, and field alias
     spellings with enum domains and exact numeric bounds; unknown properties
-    stay tolerated, and the runtime-only command-without-action compatibility
-    form remains outside this phase's conditional schemas.
+    stay tolerated, and the action-or-command discriminator preserves the
+    runtime compatibility alias.
+  - The `game_step_action` schema adds deterministic action/command conditions
+    for direction, ranged coordinate aliases, item IDs, and equipment slots;
+    unknown properties remain tolerated and runtime parsing stays authoritative.
   - `McpSession` gates actions after terminal outcomes, reports level
     transitions as victories, and leaves reset/replay/metrics inspection
     available after termination without modifying `drl-core::Game`.
