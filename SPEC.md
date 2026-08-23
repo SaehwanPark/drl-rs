@@ -363,6 +363,7 @@ not import runtime Lua behavior or assert gameplay parity.
 
 ### Verified Baseline (`VERSION` 0.2.34)
 
+d9d78ea feat(content): version evidence crosswalk schema (#125)
 a8cda3e feat(content): validate evidence record shape (#124)
 e3583de feat(content): pin complete evidence ID catalogs (#123)
 75888b4 feat(content): lock pinned evidence source digests (#122)
