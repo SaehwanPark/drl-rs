@@ -303,7 +303,7 @@ def main() -> int:
   args = parse_args()
   config = load_json(args.config)
   require(isinstance(config, dict), "crosswalk is not an object")
-  require(config.get("schema_version") == 1, "crosswalk schema version is not 1")
+  require(config.get("schema_version") == 2, "crosswalk schema version is not 2")
   revision = config.get("revision")
   require(isinstance(revision, str) and revision, "crosswalk revision is missing")
   bundles = config.get("bundles")

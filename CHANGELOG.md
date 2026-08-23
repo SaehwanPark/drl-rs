@@ -3,6 +3,12 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.34]
+
+- Versioned the expanded exact-digest and complete-ID evidence crosswalk as
+  schema 2; obsolete schema versions now fail closed.
+- Kept the gate descriptive-only; no runtime Lua or gameplay behavior changed.
+
 ## [0.2.33]
 
 - Enforced scalar-only evidence fields, structured migration gaps, and positive
