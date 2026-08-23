@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.66]
+
+- Added a distinct definition-backed `AmmoPackRockets` family for the pinned
+  `procket` rocket box, preserving its amount/capacity (`25`/`25`), description,
+  replay JSON kind, and atlas slot. Prepared-slot consumption and weapon
+  behavior remain explicitly open.
+
 ## [0.2.65]
 
 - Promoted the pinned rocket (`3`) and power-cell (`20`) pickup amounts into

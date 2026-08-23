@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.65`
+Current project version: `0.2.66`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -94,7 +94,7 @@ Presentation Boundary
     Rocket and power-cell ammo families are typed definition-backed spawns;
     pinned initial pickup amounts are immutable definition metadata, while
     replay/scenario counts remain caller-owned; broader legacy weapons and item
-    families remain staged.
+    families and prepared-slot ammo-pack consumption remain staged.
   - Level Generation: `generator` (BFS reachability, room connectivity).
   - Content Definitions: `item_definition`, `loot_definition`,
     `monster_roll_definition`, `level_definition`, and descriptive

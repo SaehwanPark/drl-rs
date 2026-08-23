@@ -450,6 +450,12 @@ pub const fn item_sprite(archetype: ItemArchetype) -> SpriteDescriptor {
       layers: ITEM_LAYERS,
       animation: TWO_FRAME_ANIMATION,
     },
+    ItemArchetype::AmmoPackRockets => SpriteDescriptor {
+      atlas: AtlasId::GunsAndPickups,
+      rect: legacy_slot(SPRITE_COLUMNS + 12),
+      layers: ITEM_LAYERS,
+      animation: STATIC_ANIMATION,
+    },
     ItemArchetype::SmallMedPack => SpriteDescriptor {
       atlas: AtlasId::GunsAndPickups,
       rect: legacy_slot(3 * SPRITE_COLUMNS + 9),
@@ -543,6 +549,7 @@ mod tests {
       ItemArchetype::AmmoShells,
       ItemArchetype::AmmoRockets,
       ItemArchetype::AmmoCells,
+      ItemArchetype::AmmoPackRockets,
       ItemArchetype::SmallMedPack,
       ItemArchetype::LargeMedPack,
       ItemArchetype::GreenArmor,
@@ -604,6 +611,11 @@ mod tests {
         (320, 32),
       ),
       (ItemArchetype::AmmoCells, AtlasId::GunsAndPickups, (384, 32)),
+      (
+        ItemArchetype::AmmoPackRockets,
+        AtlasId::GunsAndPickups,
+        (352, 32),
+      ),
       (
         ItemArchetype::SmallMedPack,
         AtlasId::GunsAndPickups,
@@ -710,6 +722,7 @@ mod tests {
       ItemArchetype::Ammo9mm,
       ItemArchetype::AmmoShells,
       ItemArchetype::AmmoRockets,
+      ItemArchetype::AmmoPackRockets,
       ItemArchetype::SmallMedPack,
       ItemArchetype::LargeMedPack,
     ] {

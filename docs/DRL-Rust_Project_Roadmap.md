@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.65`
+Current project version: `0.2.66`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.65)
+## 3. Current Progress Summary (`VERSION` 0.2.66)
 
 ### Delivered Foundations
 
@@ -458,6 +458,8 @@ scripting.
 - [x] Typed rocket and power-cell ammo families preserve pinned scalar fields,
   immutable initial amounts, stack policies, replay JSON names, and atlas slots
   without Lua runtime code.
+- [x] Typed rocket-box ammo-pack boundary preserves pinned amount/capacity,
+  replay kind, and atlas slot without implementing prepared-slot consumption.
 - [ ] Full migration of legacy monsters, weapons, armor, mods, and consumable
   items.
 - [ ] Full migration of special levels, vaults, and dungeon branches.

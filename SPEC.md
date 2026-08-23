@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.65`
+Current project version: `0.2.66`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -56,6 +56,9 @@ and measured atlas slots without importing Lua callbacks or weapon behavior.
   families while existing replay variants remain unchanged.
 - [x] **Asset coverage**: atlas descriptors are bounded and checked against
   pinned slot coordinates; no working-tree legacy assets are imported.
+- [x] **Rocket-box pack boundary**: typed `AmmoPackRockets` preserves the
+  observed amount `25`, capacity `25`, rocket relation, description, and
+  `SPRITE_PROCKET` slot without pretending prepared-slot use is implemented.
 - [ ] **Full migration**: rocket/plasma weapon behavior, dynamic callbacks,
   balance/fairness, and remaining legacy item families remain open.
 - [x] **Explicit non-goals**: no gameplay/core rule, observation schema,
@@ -69,6 +72,9 @@ and measured atlas slots without importing Lua callbacks or weapon behavior.
   count, maximum stack, description, and atlas archetype; the definitions also
   expose pinned initial counts (`3`/`20`) while MCP JSON uses
   `ammo_rockets`/`ammo_cells` plus caller-owned `count`.
+- **Pack output**: `AmmoPackRockets` is a distinct bounded item view with fixed
+  amount/capacity metadata; MCP JSON uses `ammo_pack_rockets` without a caller
+  count. Prepared-slot consumption remains open.
 - **Ownership Boundary**: Rust typed definitions own runtime item semantics;
   pinned Lua evidence informs only the migrated scalar fields and provenance.
 

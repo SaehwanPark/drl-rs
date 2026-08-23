@@ -24,6 +24,12 @@ pub enum ItemDefinitionKind {
     /// Source-backed amount for a canonical loose-ammo pickup, when known.
     initial_amount: Option<u32>,
   },
+  /// A prepared-slot ammunition pack; consumption remains a future slice.
+  AmmoPack {
+    ammo_type: AmmoType,
+    amount: u32,
+    max_amount: u32,
+  },
   /// A medical consumable with a fixed healing amount.
   MedPack { heal_amount: u32 },
   /// Wearable armor with its baseline durability.
@@ -152,6 +158,17 @@ const AMMO_CELLS: ItemDefinition = ItemDefinition {
   },
 };
 
+const AMMO_PACK_ROCKETS: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::AmmoPackRockets,
+  name: "Rocket Box",
+  description: "Now this is the REAL 'boombox'! Might be useful in the prepared slot.",
+  kind: ItemDefinitionKind::AmmoPack {
+    ammo_type: AmmoType::Rocket,
+    amount: 25,
+    max_amount: 25,
+  },
+};
+
 const SMALL_MEDPACK: ItemDefinition = ItemDefinition {
   archetype: ItemArchetype::SmallMedPack,
   name: "Small MedPack",
@@ -195,6 +212,7 @@ pub const fn definition_for_spawn_kind(kind: ItemSpawnKind) -> &'static ItemDefi
     ItemSpawnKind::AmmoShells(_) => &AMMO_SHELLS,
     ItemSpawnKind::AmmoRockets(_) => &AMMO_ROCKETS,
     ItemSpawnKind::AmmoCells(_) => &AMMO_CELLS,
+    ItemSpawnKind::AmmoPackRockets => &AMMO_PACK_ROCKETS,
     ItemSpawnKind::SmallMedPack => &SMALL_MEDPACK,
     ItemSpawnKind::LargeMedPack => &LARGE_MEDPACK,
     ItemSpawnKind::GreenArmor => &GREEN_ARMOR,
@@ -235,6 +253,11 @@ mod tests {
         ItemSpawnKind::AmmoCells(0),
         ItemArchetype::AmmoCells,
         "Power Cell",
+      ),
+      (
+        ItemSpawnKind::AmmoPackRockets,
+        ItemArchetype::AmmoPackRockets,
+        "Rocket Box",
       ),
       (
         ItemSpawnKind::SmallMedPack,
@@ -390,6 +413,14 @@ mod tests {
     assert_eq!(
       definition_for_spawn_kind(ItemSpawnKind::Pistol).initial_stack_count(),
       None
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::AmmoPackRockets).kind,
+      ItemDefinitionKind::AmmoPack {
+        ammo_type: AmmoType::Rocket,
+        amount: 25,
+        max_amount: 25,
+      }
     );
   }
 }
