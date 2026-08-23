@@ -50,4 +50,3 @@ not claim WCAG 2.1 AA conformance, screen-reader or other assistive-technology
 compatibility, contrast certification, keyboard traversal completeness,
 human-usability results, other browsers/backends, mobile/touch behavior,
 audible output, or audiovisual parity.
-
