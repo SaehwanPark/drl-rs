@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.55`
+Current project version: `0.2.56`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -175,6 +175,11 @@ Presentation Boundary
   - `game_verify_replay` exports and verifies the complete in-memory replay
     without mutating session state, including the recorded procedural
     generator parameters; replay import/load remains outside this boundary.
+  - `game_save_replay` projects every V1 `ReplayLog` field through the
+    deterministic `replay_json` envelope (`drl-rust-replay-v1`) with structured
+    semantic command objects, complete initial-state containers, and explicit
+    nulls for absent optional values; this boundary does not parse, validate,
+    import, or claim external replay interchange.
   - Strict observation boundaries with explicit `dev_mode` flag for omniscient
     inspection.
   - `initialize` validates a string `protocolVersion`, echoes supported

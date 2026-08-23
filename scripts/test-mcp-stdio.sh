@@ -108,6 +108,11 @@ if responses[9].get("result", {}).get("data", {}).get("turns_survived") is None:
     raise SystemExit("game_get_metrics returned no turns_survived field")
 if not responses[10].get("result", {}).get("data", {}).get("commands"):
     raise SystemExit("game_save_replay returned no commands")
+replay_data = responses[10]["result"]["data"]
+if replay_data.get("format") != "drl-rust-replay-v1" or replay_data.get("schema_version") != 1:
+    raise SystemExit("game_save_replay returned the wrong export schema")
+if replay_data["commands"][0].get("action") != "wait":
+    raise SystemExit("game_save_replay did not export typed commands")
 if responses[11].get("result", {}).get("data", {}).get("deterministic") is not True:
     raise SystemExit("game_verify_replay did not report deterministic replay")
 if responses[11].get("result", {}).get("data", {}).get("command_count") != 1:

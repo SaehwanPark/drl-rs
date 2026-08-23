@@ -3,6 +3,16 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.56]
+
+- Replaced the lossy MCP replay projection with a complete deterministic V1
+  JSON envelope containing metadata, optional player/procedural configuration,
+  initial stairs, monsters, items, custom tiles, and structured semantic
+  commands for every replay command variant.
+- Added the `drl-rust-replay-v1` / schema version 1 marker and preserved
+  state-safe replay saving and in-memory deterministic verification; import,
+  validation, external interchange, and cross-version migration remain open.
+
 ## [0.2.55]
 
 - Made MCP legal-action enumeration exact within the fair observation boundary:

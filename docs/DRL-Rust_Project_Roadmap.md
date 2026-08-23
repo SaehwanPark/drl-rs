@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.55`
+Current project version: `0.2.56`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.55)
+## 3. Current Progress Summary (`VERSION` 0.2.56)
 
 ### Delivered Foundations
 
@@ -84,15 +84,17 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active Milestone Slice (M13)**: The MCP legal-action catalog derives fair
-  candidates from `PlayerObservation`, probes each candidate on a cloned
-  `drl_core::Game`, and retains only commands accepted by the existing core.
-  The filtered catalog drives `game_list_actions`, tool response payloads, and
-  pre-dispatch admission without mutating live state or exposing hidden search.
-  Unknown/malformed action inputs remain `-32602`, recognized commands omitted
-  from the filtered catalog return `-32001`, and the core remains authoritative
-  for geometry, LOS, range, and other rules. Unbounded candidate generation,
-  hidden-state enumeration, and external-client compatibility remain open. The delivered
+- **Active Milestone Slice (M13)**: `game_save_replay` now emits a complete
+  deterministic `drl-rust-replay-v1` JSON envelope for every in-memory V1
+  `ReplayLog` field, including initial-state containers and typed semantic
+  commands. The export is state-safe and parseable with byte-identical repeats;
+  replay import/load, validation, external interchange, and migration remain
+  open. The preceding fair legal-action catalog derives candidates from
+  `PlayerObservation`, probes each candidate on a cloned `drl_core::Game`, and
+  uses the filtered set for listing, response payloads, and pre-dispatch
+  admission without mutating live state or exposing hidden search. Unknown/
+  malformed action inputs remain `-32602`, recognized commands omitted from the
+  filtered catalog return `-32001`, and the core remains authoritative. The delivered
   release-rights inventory and source/optional-bundle gate make the pinned
   CC BY-SA 4.0 graphics import, excluded legacy code/audio/music/fonts/WADs,
   and unavailable capture/media evidence explicit without claiming legal
@@ -281,6 +283,9 @@ tooling.
   requirements, while retaining unknown-field tolerance.
 - [x] `game_verify_replay` verifies complete in-memory procedural and scenario
   replays without mutating sessions.
+- [x] `game_save_replay` exports complete V1 replay metadata, initial-state
+  containers, and typed command variants through a deterministic JSON envelope;
+  replay import/load and external interchange remain open.
 - [x] Terminal `game_step_action` calls are rejected after victory, death,
   turn-limit, or stalled outcomes; stair transitions report victory while
   reset and replay/metrics inspection remain available.
@@ -558,6 +563,10 @@ Final release readiness, documentation, and static distribution.
   payloads, and pre-dispatch admission; recognized omitted commands return
   `-32001` without mutating turn, metrics, recent events, replay, or
   observation, while malformed input remains `-32602`.
+- [x] `game_save_replay` exports every in-memory V1 `ReplayLog` field through a
+  deterministic `drl-rust-replay-v1` envelope with complete initial-state
+  containers and typed semantic command objects; import/load, validation,
+  migration, and external replay interchange remain open.
 - [ ] Complete deterministic headless/MCP agent tooling suite and external
   client compatibility.
 - [x] Comprehensive public rights inventory and release documentation is
