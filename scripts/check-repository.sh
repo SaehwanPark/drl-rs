@@ -38,6 +38,7 @@ sh scripts/check-content-evidence.sh
 sh scripts/test-release-signing.sh
 sh scripts/test-mcp-stdio.sh
 sh scripts/test-mcp-notifications.sh
+sh scripts/test-mcp-batches.sh
 cargo fmt --all -- --check
 cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
 cargo test --locked --workspace

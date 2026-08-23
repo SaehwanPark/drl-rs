@@ -164,6 +164,16 @@ impl McpServer {
     while reader.read_line(&mut line)? > 0 {
       let trimmed = line.trim();
       if !trimmed.is_empty() {
+        if let Ok(JsonValue::Array(batch)) = JsonValue::parse(trimmed) {
+          let response = self.handle_batch(batch);
+          if let Some(response) = response {
+            writer.write_all(response.as_bytes())?;
+            writer.write_all(b"\n")?;
+            writer.flush()?;
+          }
+          line.clear();
+          continue;
+        }
         // Parse once at the transport boundary so valid notifications can
         // mutate the session without producing a JSON-RPC response. An
         // explicit `id: null` is a request and still receives a response;
@@ -181,6 +191,29 @@ impl McpServer {
       line.clear();
     }
     Ok(())
+  }
+
+  fn handle_batch(&mut self, batch: Vec<JsonValue>) -> Option<String> {
+    if batch.is_empty() {
+      return Some(self.handle_request("[]"));
+    }
+
+    let mut responses = Vec::new();
+    for request in batch {
+      let raw = request.to_compact_string();
+      let is_notification = JsonRpcRequest::parse(&raw)
+        .map(|request| request.id.is_none())
+        .unwrap_or(false);
+      let response = self.handle_request(&raw);
+      if !is_notification && let Ok(value) = JsonValue::parse(&response) {
+        responses.push(value);
+      }
+    }
+    if responses.is_empty() {
+      None
+    } else {
+      Some(JsonValue::Array(responses).to_compact_string())
+    }
   }
 }
 
@@ -269,5 +302,48 @@ mod tests {
     );
     assert!(responses[2].get("id").is_some_and(JsonValue::is_null));
     assert!(responses[2].get("result").is_some());
+  }
+
+  #[test]
+  fn stdio_batches_preserve_order_and_omit_notifications() {
+    let requests = concat!(
+      "[{\"jsonrpc\":\"2.0\",\"method\":\"tools/call\",\"params\":{\"name\":\"game_start\",\"arguments\":{\"seed\":9}}},",
+      "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":\"game_get_metrics\"}},",
+      "{\"jsonrpc\":\"2.0\",\"id\":null,\"method\":\"ping\"}]\n",
+    );
+    let mut server = McpServer::new();
+    let mut output = Vec::new();
+
+    server
+      .run_stdio(std::io::Cursor::new(requests), &mut output)
+      .expect("batch request stream succeeds");
+
+    let response =
+      JsonValue::parse(String::from_utf8(output).unwrap().trim()).expect("batch response is JSON");
+    let responses = response.as_array().expect("batch response is an array");
+    assert_eq!(responses.len(), 2);
+    assert_eq!(responses[0].get("id").and_then(JsonValue::as_u64), Some(1));
+    assert!(responses[0].get("result").is_some());
+    assert!(responses[1].get("id").is_some_and(JsonValue::is_null));
+  }
+
+  #[test]
+  fn empty_batch_returns_invalid_request_object() {
+    let mut server = McpServer::new();
+    let mut output = Vec::new();
+
+    server
+      .run_stdio(std::io::Cursor::new("[]\n"), &mut output)
+      .expect("empty batch stream succeeds");
+
+    let response = JsonValue::parse(String::from_utf8(output).unwrap().trim())
+      .expect("invalid-request response is JSON");
+    assert_eq!(
+      response
+        .get("error")
+        .and_then(|error| error.get("code"))
+        .and_then(JsonValue::as_i64),
+      Some(error_codes::INVALID_REQUEST as i64)
+    );
   }
 }

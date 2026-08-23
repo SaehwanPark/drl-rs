@@ -3,13 +3,20 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.41]
+
+- Added deterministic JSON-RPC batch responses over stdio, preserving request
+  order while omitting notification members and rejecting empty batches.
+- Kept full external-client compatibility and production deployment acceptance
+  explicitly open.
+
 ## [0.2.40]
 
 - Made the stdio transport process JSON-RPC notifications for side effects
   without emitting responses; explicit `id: null` requests still respond.
 - Added deterministic coverage for notification suppression, malformed-input
   parse errors, and session mutation; batch and external-client compatibility
-  remain open.
+  remained open.
 
 ## [0.2.39]
 

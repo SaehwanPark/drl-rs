@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.40`
+Current project version: `0.2.41`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,57 +23,64 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M13 JSON-RPC Notification-Correct Stdio
+## 2. Active Implementation Slice: M13 JSON-RPC Batch Stdio Transport
 
 ### 2.1 Scope & Objective
 
-Make the line-oriented MCP stdio boundary process valid JSON-RPC notifications
-for their side effects without writing responses. Identified requests continue
-to receive one response, explicit `id: null` remains a request, and malformed
-input still receives a parse-error response. This is notification behavior
-only, not full MCP/client compatibility.
+Make the line-oriented MCP stdio boundary accept JSON-RPC batch arrays and emit
+one ordered response array. Notification members still apply side effects
+without response entries, identified and explicit `id: null` members retain
+responses, and empty batches fail as invalid requests. This is batch transport
+coverage only, not full MCP/client compatibility.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
 1. **MCP semantic server**:
    - In-process JSON-RPC routing already covers lifecycle, tools, resources,
      gameplay, replay/metrics, reset, and fairness boundaries.
-2. **Stdio lifecycle contract**:
-   - The fixed subprocess fixture already proves repeatable identified-request
-     behavior; this slice adds the missing notification response boundary.
+2. **Notification-correct stdio**:
+   - The transport already suppresses omitted-ID notifications while preserving
+     identified, null-ID, and malformed-request response boundaries.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Notification suppression**: Valid requests without an `id` are applied
-  for side effects but produce no stdio response.
-- [x] **Response boundaries**: Identified requests and explicit `id: null`
-  requests receive one response; malformed input still returns parse error.
-- [x] **Repeatable fixture**: Subprocess tests cover session mutation,
-  suppression, parse errors, null IDs, and deterministic output.
-- [x] **No expansion of claims**: JSON-RPC batch requests, full MCP compliance,
-  external clients, and production deployment remain open.
+- [x] **Batch response**: A nonempty JSON-RPC array emits one ordered response
+  array containing only identified, explicit-null, or invalid-request entries.
+- [x] **Notification members**: Omitted-ID members still apply side effects but
+  contribute no response entry.
+- [x] **Empty-batch rejection**: `[]` returns one invalid-request response;
+  malformed input retains the existing parse-error response.
+- [x] **No expansion of claims**: Full MCP compliance, external clients, and
+  production deployment remain open.
 
 ### 2.4 Pure Contract
 
-- **Input**: One JSON-RPC JSON-lines request at a time.
-- **Output**: `run_stdio` emits a response only for identified requests,
-  explicit `id: null`, or malformed input.
+- **Input**: One JSON-RPC JSON-lines object or nonempty batch array at a time.
+- **Output**: `run_stdio` emits one ordered response array for a batch, omitting
+  notification members; empty batches and malformed input emit error objects.
 - **Ownership Boundary**:
-  - `drl-mcp::McpServer::run_stdio` owns response suppression at the transport
-    boundary.
+  - `drl-mcp::McpServer::run_stdio` owns batch framing and notification
+    suppression at the transport boundary.
   - `handle_request` retains its existing direct-call response API.
-  - No batch parser, external client adapter, or deployment policy is added.
+  - No external client adapter or deployment policy is added.
 
 ---
 
 ## 3. Recent Delivered Slices
 
+### M13 — JSON-RPC Batch Stdio Transport (`VERSION` 0.2.41)
+
+- [x] Batch arrays preserve response order, omit notification members, and
+  reject empty batches.
+- [x] Existing notification, null-ID, malformed-input, and identified-request
+  contracts remain covered; full external-client compatibility remains open.
+
 ### M13 — JSON-RPC Notification-Correct Stdio (`VERSION` 0.2.40)
 
-- [x] Valid omitted-ID requests now mutate session state without emitting a
-  response from the stdio transport.
+- [x] Valid omitted-ID requests mutate session state without emitting a response
+  from the stdio transport.
 - [x] Identified requests, explicit `id: null`, and malformed-input parse errors
-  retain one response each; batch and external-client compatibility remain open.
+  retain one response each.
 
 ### M9 — Rust-Owned Content Invariant Validation (`VERSION` 0.2.39)
 
@@ -383,7 +390,7 @@ only, not full MCP/client compatibility.
 
 ## 6. Verification Gates
 
-### Verified Baseline (`VERSION` 0.2.40)
+### Verified Baseline (`VERSION` 0.2.41)
 
 eeb246d feat(mcp): handle stdio notifications correctly (#131)
 1441667 feat(content): validate typed definition invariants (#130)
