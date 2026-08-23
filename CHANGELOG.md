@@ -3,6 +3,16 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.44]
+
+- Added bounded MCP initialize-envelope validation for object `capabilities`
+  and `clientInfo.name`/`clientInfo.version` strings; malformed required fields
+  return JSON-RPC `-32602` without advancing the lifecycle gate.
+- Kept unknown nested fields, version fallback, identified lifecycle phases,
+  ping, batch ordering, notification suppression, and game-reset separation
+  within their existing contracts; full schema/client compatibility remains
+  open.
+
 ## [0.2.43]
 
 - Added a deterministic MCP lifecycle gate: identified `initialize` advances to

@@ -7,7 +7,7 @@ use drl_mcp::protocol::error_codes;
 fn ready_server() -> McpServer {
   let mut server = McpServer::new();
   let _ = server.handle_request(
-    r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05"}}"#,
+    r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"drl-test","version":"1"}}}"#,
   );
   let _ = server.handle_request(r#"{"jsonrpc":"2.0","method":"notifications/initialized"}"#);
   server
@@ -23,8 +23,12 @@ fn test_jsonrpc_initialize_handshake() {
     "method": "initialize",
     "params": {
       "protocolVersion": "2024-11-05",
-      "capabilities": {},
-      "clientInfo": { "name": "test-agent", "version": "1.0.0" }
+      "capabilities": { "experimental": { "feature": true } },
+      "clientInfo": {
+        "name": "test-agent",
+        "version": "1.0.0",
+        "metadata": { "tier": "test" }
+      }
     }
   }"#;
 
@@ -53,8 +57,7 @@ fn test_jsonrpc_initialize_handshake() {
 #[test]
 fn test_jsonrpc_initialize_falls_back_for_unsupported_version() {
   let mut server = McpServer::new();
-  let request =
-    r#"{"jsonrpc":"2.0","id":7,"method":"initialize","params":{"protocolVersion":"2099-01-01"}}"#;
+  let request = r#"{"jsonrpc":"2.0","id":7,"method":"initialize","params":{"protocolVersion":"2099-01-01","capabilities":{},"clientInfo":{"name":"future-client","version":"1"}}}"#;
   let response = JsonValue::parse(&server.handle_request(request)).unwrap();
 
   assert_eq!(
@@ -72,7 +75,8 @@ fn test_jsonrpc_initialize_requires_protocol_version_string() {
   for request in [
     r#"{"jsonrpc":"2.0","id":8,"method":"initialize"}"#,
     r#"{"jsonrpc":"2.0","id":9,"method":"initialize","params":{}}"#,
-    r#"{"jsonrpc":"2.0","id":10,"method":"initialize","params":{"protocolVersion":null}}"#,
+    r#"{"jsonrpc":"2.0","id":10,"method":"initialize","params":{"protocolVersion":null,"capabilities":{},"clientInfo":{"name":"test","version":"1"}}}"#,
+    r#"{"jsonrpc":"2.0","id":11,"method":"initialize","params":{"protocolVersion":2024,"capabilities":{},"clientInfo":{"name":"test","version":"1"}}}"#,
   ] {
     let response = JsonValue::parse(&server.handle_request(request)).unwrap();
     assert_eq!(
@@ -82,6 +86,30 @@ fn test_jsonrpc_initialize_requires_protocol_version_string() {
         .and_then(|code| code.as_i64()),
       Some(error_codes::INVALID_PARAMS as i64)
     );
+  }
+}
+
+#[test]
+fn test_jsonrpc_initialize_requires_client_envelope_fields() {
+  let mut server = McpServer::new();
+  for request in [
+    r#"{"jsonrpc":"2.0","id":20,"method":"initialize","params":null}"#,
+    r#"{"jsonrpc":"2.0","id":21,"method":"initialize","params":[]}"#,
+    r#"{"jsonrpc":"2.0","id":22,"method":"initialize","params":{"protocolVersion":"2024-11-05","clientInfo":{"name":"test","version":"1"}}}"#,
+    r#"{"jsonrpc":"2.0","id":23,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":[],"clientInfo":{"name":"test","version":"1"}}}"#,
+    r#"{"jsonrpc":"2.0","id":24,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{}}}"#,
+    r#"{"jsonrpc":"2.0","id":25,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":1,"version":"1"}}}"#,
+    r#"{"jsonrpc":"2.0","id":26,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":false}}}"#,
+  ] {
+    let response = JsonValue::parse(&server.handle_request(request)).unwrap();
+    assert_eq!(
+      response
+        .get("error")
+        .and_then(|error| error.get("code"))
+        .and_then(|code| code.as_i64()),
+      Some(error_codes::INVALID_PARAMS as i64)
+    );
+    assert!(!server.session().is_active());
   }
 }
 

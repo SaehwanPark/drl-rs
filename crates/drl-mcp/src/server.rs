@@ -106,10 +106,10 @@ impl McpServer {
       ));
     }
 
-    let params = params.ok_or_else(|| {
+    let params = params.and_then(JsonValue::as_object).ok_or_else(|| {
       JsonRpcError::new(
         error_codes::INVALID_PARAMS,
-        "Missing parameters for 'initialize'",
+        "'initialize' params must be an object",
       )
     })?;
     let protocol_version = params
@@ -127,6 +127,32 @@ impl McpServer {
           "'protocolVersion' in 'initialize' params must be a string",
         )
       })?;
+    params
+      .get("capabilities")
+      .and_then(JsonValue::as_object)
+      .ok_or_else(|| {
+        JsonRpcError::new(
+          error_codes::INVALID_PARAMS,
+          "Missing or invalid 'capabilities' object in 'initialize' params",
+        )
+      })?;
+    let client_info = params
+      .get("clientInfo")
+      .and_then(JsonValue::as_object)
+      .ok_or_else(|| {
+        JsonRpcError::new(
+          error_codes::INVALID_PARAMS,
+          "Missing or invalid 'clientInfo' object in 'initialize' params",
+        )
+      })?;
+    for field in ["name", "version"] {
+      if client_info.get(field).and_then(JsonValue::as_str).is_none() {
+        return Err(JsonRpcError::new(
+          error_codes::INVALID_PARAMS,
+          format!("Missing or invalid 'clientInfo.{field}' string in 'initialize' params"),
+        ));
+      }
+    }
     let negotiated_version = if protocol_version == MCP_PROTOCOL_VERSION {
       protocol_version
     } else {
@@ -309,8 +335,7 @@ mod tests {
   #[test]
   fn test_server_initialize_and_ping() {
     let mut server = McpServer::new();
-    let init_req =
-      r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05"}}"#;
+    let init_req = r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"drl-test","version":"1"}}}"#;
     let resp = server.handle_request(init_req);
     let val = JsonValue::parse(&resp).unwrap();
     assert_eq!(val.get("id").unwrap().as_u64().unwrap(), 1);
@@ -345,11 +370,11 @@ mod tests {
   fn initialize_negotiates_supported_and_falls_back_for_unknown_versions() {
     let mut server = McpServer::new();
     let supported = server.handle_request(
-      r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05"}}"#,
+      r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"drl-test","version":"1"}}}"#,
     );
     let mut future_server = McpServer::new();
     let future = future_server.handle_request(
-      r#"{"jsonrpc":"2.0","id":2,"method":"initialize","params":{"protocolVersion":"2099-01-01"}}"#,
+      r#"{"jsonrpc":"2.0","id":2,"method":"initialize","params":{"protocolVersion":"2099-01-01","capabilities":{},"clientInfo":{"name":"future-client","version":"1"}}}"#,
     );
 
     for response in [supported, future] {
@@ -407,7 +432,7 @@ mod tests {
   #[test]
   fn stdio_processes_notifications_without_responses() {
     let requests = concat!(
-      "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\"}}\n",
+      "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{},\"clientInfo\":{\"name\":\"drl-test\",\"version\":\"1\"}}}\n",
       "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}\n",
       "{\"jsonrpc\":\"2.0\",\"method\":\"tools/call\",\"params\":{\"name\":\"game_start\",\"arguments\":{\"seed\":7}}}\n",
       "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/call\",\"params\":{\"name\":\"game_get_metrics\"}}\n",
@@ -446,7 +471,7 @@ mod tests {
   #[test]
   fn stdio_batches_preserve_order_and_omit_notifications() {
     let requests = concat!(
-      "[{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\"}},",
+      "[{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{},\"clientInfo\":{\"name\":\"drl-test\",\"version\":\"1\"}}},",
       "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"},",
       "{\"jsonrpc\":\"2.0\",\"method\":\"tools/call\",\"params\":{\"name\":\"game_start\",\"arguments\":{\"seed\":9}}},",
       "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/call\",\"params\":{\"name\":\"game_get_metrics\"}},",
@@ -473,7 +498,7 @@ mod tests {
   fn ready_server() -> McpServer {
     let mut server = McpServer::new();
     let _ = server.handle_request(
-      r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05"}}"#,
+      r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"drl-test","version":"1"}}}"#,
     );
     let _ = server.handle_request(r#"{"jsonrpc":"2.0","method":"notifications/initialized"}"#);
     server
@@ -499,7 +524,7 @@ mod tests {
     assert!(!server.session().is_active());
 
     let initialize = JsonValue::parse(&server.handle_request(
-      r#"{"jsonrpc":"2.0","id":4,"method":"initialize","params":{"protocolVersion":"2024-11-05"}}"#,
+      r#"{"jsonrpc":"2.0","id":4,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"drl-test","version":"1"}}}"#,
     ))
     .unwrap();
     assert!(initialize.get("result").is_some());
@@ -557,7 +582,7 @@ mod tests {
     );
 
     let omitted_initialize = server.handle_request(
-      r#"{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05"}}"#,
+      r#"{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"drl-test","version":"1"}}}"#,
     );
     let omitted_value = JsonValue::parse(&omitted_initialize).unwrap();
     assert!(omitted_value.get("error").is_some());
@@ -575,7 +600,7 @@ mod tests {
     );
 
     let initialize = server.handle_request(
-      r#"{"jsonrpc":"2.0","id":3,"method":"initialize","params":{"protocolVersion":"2024-11-05"}}"#,
+      r#"{"jsonrpc":"2.0","id":3,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"drl-test","version":"1"}}}"#,
     );
     assert!(
       JsonValue::parse(&initialize)
@@ -584,7 +609,7 @@ mod tests {
         .is_some()
     );
     let duplicate = JsonValue::parse(&server.handle_request(
-      r#"{"jsonrpc":"2.0","id":4,"method":"initialize","params":{"protocolVersion":"2024-11-05"}}"#,
+      r#"{"jsonrpc":"2.0","id":4,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"drl-test","version":"1"}}}"#,
     ))
     .unwrap();
     assert_eq!(
