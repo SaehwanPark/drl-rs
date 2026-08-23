@@ -49,6 +49,11 @@ for kind in ("being", "item", "cell", "level"):
   + "\n",
   encoding="utf-8",
 )
+(root / "catalog.rs").write_text(
+  "\n".join(f'  id: "{record_id}",' for record_id in bundles["level"]["record_ids"])
+  + "\n",
+  encoding="utf-8",
+)
 PY
 
 python3 scripts/check-content-evidence.py \
@@ -56,7 +61,25 @@ python3 scripts/check-content-evidence.py \
   --bundle "being=$temp_dir/being.json" \
   --bundle "item=$temp_dir/item.json" \
   --bundle "cell=$temp_dir/cell.json" \
-  --bundle "level=$temp_dir/level.json" >/dev/null
+  --bundle "level=$temp_dir/level.json" \
+  --rust-catalog "$temp_dir/catalog.rs" >/dev/null
+
+python3 - "$temp_dir/catalog.rs" "$temp_dir/catalog-mismatch.rs" <<'PY'
+import pathlib
+import sys
+
+source = pathlib.Path(sys.argv[1]).read_text(encoding="utf-8")
+pathlib.Path(sys.argv[2]).write_text(source.replace('id: "alpha",', 'id: "gamma",', 1), encoding="utf-8")
+PY
+if python3 scripts/check-content-evidence.py --config "$temp_dir/config.json" \
+  --bundle "being=$temp_dir/being.json" \
+  --bundle "item=$temp_dir/item.json" \
+  --bundle "cell=$temp_dir/cell.json" \
+  --bundle "level=$temp_dir/level.json" \
+  --rust-catalog "$temp_dir/catalog-mismatch.rs" >/dev/null 2>&1; then
+  printf '%s\n' 'Rust special-level catalog drift must be rejected' >&2
+  exit 1
+fi
 
 python3 - "$temp_dir/being.json" "$temp_dir/duplicate.json" <<'PY'
 import json

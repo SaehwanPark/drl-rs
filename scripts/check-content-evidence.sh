@@ -39,4 +39,5 @@ python3 scripts/check-content-evidence.py \
   --bundle "being=$temp_dir/being.json" \
   --bundle "item=$temp_dir/item.json" \
   --bundle "cell=$temp_dir/cell.json" \
-  --bundle "level=$temp_dir/level.json"
+  --bundle "level=$temp_dir/level.json" \
+  --rust-catalog crates/drl-core/src/special_level_definition.rs
