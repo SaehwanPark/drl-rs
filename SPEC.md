@@ -363,6 +363,7 @@ browser deployment, or production operations.
 
 ### Verified Baseline (`VERSION` 0.2.37)
 
+a127868 test(mcp): cover stdio lifecycle (#128)
 cf597d3 feat(web): report fresh service-worker updates (#127)
 47f3526 feat(web): classify unsupported browser environments (#126)
 d9d78ea feat(content): version evidence crosswalk schema (#125)
