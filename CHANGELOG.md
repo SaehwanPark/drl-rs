@@ -3,6 +3,12 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.25]
+
+- Added validated, deterministic cohort depth buckets and per-level sample
+  rates to reports and the single-policy/matrix CLI output.
+- Canonical difficulty targets and progression interpretation remain open.
+
 ## [0.2.24]
 
 - Added strict V2 browser-save tokens with a declared command count while

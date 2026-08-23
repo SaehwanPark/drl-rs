@@ -156,6 +156,9 @@ fn format_cohort_report(report: &CohortReport) -> Result<String, String> {
   let telemetry = report
     .telemetry_distribution()
     .map_err(|error| format!("invalid cohort report: {error}"))?;
+  let depth = report
+    .depth_distribution()
+    .map_err(|error| format!("invalid cohort report: {error}"))?;
   let last_seed = report
     .config
     .start_seed
@@ -193,6 +196,23 @@ fn format_cohort_report(report: &CohortReport) -> Result<String, String> {
   )
   .unwrap();
   writeln!(output, "outcome.death_rate={:.6}", outcomes.death_rate()).unwrap();
+  writeln!(output, "depth.total={}", depth.total_episodes).unwrap();
+  for bucket in &depth.buckets {
+    writeln!(
+      output,
+      "depth.deepest_level.{}.episodes={}",
+      bucket.level.as_u32(),
+      bucket.episodes
+    )
+    .unwrap();
+    writeln!(
+      output,
+      "depth.deepest_level.{}.rate={:.6}",
+      bucket.level.as_u32(),
+      depth.rate_at_deepest_level(bucket.level)
+    )
+    .unwrap();
+  }
   writeln!(
     output,
     "telemetry.total_shots_fired={}",
@@ -293,6 +313,9 @@ mod tests {
     assert!(first.contains("cohort.seed_start=12\n"));
     assert!(first.contains("cohort.seed_end=13\n"));
     assert!(first.contains("cohort.episodes=2\n"));
+    assert!(first.contains("depth.total=2\n"));
+    assert!(first.contains("depth.deepest_level.1.episodes="));
+    assert!(first.contains("depth.deepest_level.1.rate="));
     assert!(first.contains("telemetry.total_damage_dealt="));
   }
 
@@ -317,5 +340,8 @@ mod tests {
     assert!(first.contains("matrix.1.bot=random\n"));
     assert!(first.contains("matrix.2.bot=explorer\n"));
     assert!(first.contains("matrix.2.cohort.policy=ExplorerBot\n"));
+    assert!(first.contains("matrix.0.depth.total=1\n"));
+    assert!(first.contains("matrix.1.depth.deepest_level.1.rate="));
+    assert!(first.contains("matrix.2.depth.deepest_level.1.episodes="));
   }
 }

@@ -4,7 +4,8 @@ use crate::agent::AgentPolicy;
 use crate::game::Game;
 use crate::generator::LevelGeneratorConfig;
 use crate::scenario::{Scenario, ScenarioRunner};
-use drl_protocol::{BatchSummary, CommandError, EpisodeMetrics, ReplayLog, RunOutcome};
+use drl_protocol::{BatchSummary, CommandError, EpisodeMetrics, LevelId, ReplayLog, RunOutcome};
+use std::collections::BTreeMap;
 
 /// Fixed-seed sample definition for a reproducible evaluation cohort.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -73,6 +74,64 @@ pub struct CohortOutcomeDistribution {
   pub stalled: usize,
   /// Number of records that remain in progress.
   pub in_progress: usize,
+}
+
+/// Count of episodes whose deepest observed level is the given level.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct CohortDepthBucket {
+  /// Deepest dungeon level represented by this bucket.
+  pub level: LevelId,
+  /// Number of episodes represented by this bucket.
+  pub episodes: usize,
+}
+
+/// Deterministic, descriptive distribution of deepest levels reached by a cohort.
+#[derive(Debug, Clone, PartialEq)]
+pub struct CohortDepthDistribution {
+  /// Number of records represented by this distribution.
+  pub total_episodes: usize,
+  /// Buckets sorted by ascending level identifier.
+  pub buckets: Vec<CohortDepthBucket>,
+}
+
+impl CohortDepthDistribution {
+  fn from_records(records: &[EpisodeRecord]) -> Self {
+    let mut counts = BTreeMap::<LevelId, usize>::new();
+    for record in records {
+      *counts.entry(record.metrics.level_reached).or_default() += 1;
+    }
+    Self {
+      total_episodes: records.len(),
+      buckets: counts
+        .into_iter()
+        .map(|(level, episodes)| CohortDepthBucket { level, episodes })
+        .collect(),
+    }
+  }
+
+  fn rate(count: usize, total: usize) -> f64 {
+    if total == 0 {
+      0.0
+    } else {
+      count as f64 / total as f64
+    }
+  }
+
+  /// Returns the descriptive sample rate for episodes in `level`'s bucket.
+  ///
+  /// A level absent from the validated cohort, or an empty cohort, has rate
+  /// zero. This is a sample projection and does not infer difficulty or a
+  /// canonical progression target.
+  #[must_use]
+  pub fn rate_at_deepest_level(&self, level: LevelId) -> f64 {
+    self
+      .buckets
+      .iter()
+      .find(|bucket| bucket.level == level)
+      .map_or(0.0, |bucket| {
+        Self::rate(bucket.episodes, self.total_episodes)
+      })
+  }
 }
 
 impl CohortOutcomeDistribution {
@@ -520,6 +579,15 @@ impl CohortReport {
   pub fn telemetry_distribution(&self) -> Result<CohortTelemetryDistribution, CohortReportError> {
     self.validate()?;
     Ok(CohortTelemetryDistribution::from_records(&self.records))
+  }
+
+  /// Projects sorted deepest-level buckets from an integrity-checked cohort.
+  ///
+  /// The result is descriptive evidence only: it does not establish a
+  /// canonical difficulty curve, balance target, or statistical conclusion.
+  pub fn depth_distribution(&self) -> Result<CohortDepthDistribution, CohortReportError> {
+    self.validate()?;
+    Ok(CohortDepthDistribution::from_records(&self.records))
   }
 
   /// Compares descriptive telemetry for compatible, integrity-checked reports.

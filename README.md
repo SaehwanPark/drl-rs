@@ -30,8 +30,10 @@ replays, and regression testing.
   - Cohort telemetry projections and compatible comparisons expose validated
     shot accuracy, damage, kill, pickup, and item-use totals/rates without
     inferring balance conclusions.
+  - Cohort depth projections group validated deepest-level metrics into sorted
+    sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.24`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.25`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:
@@ -81,9 +83,9 @@ cargo run -p drl-app -- --mcp
 cargo run -p drl-app -- cohort --seed 12 --episodes 1000 --max-turns 200 --bot greedy
 ```
 
-The `cohort` command emits stable line-oriented outcome and telemetry fields
-for reproducible descriptive studies; it does not claim balance or statistical
-significance.
+The `cohort` command emits stable line-oriented outcome, telemetry, and
+deepest-level fields for reproducible descriptive studies; it does not claim
+balance, a canonical difficulty curve, or statistical significance.
 
 ### Browser slice
 
