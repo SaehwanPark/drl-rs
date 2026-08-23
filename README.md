@@ -124,9 +124,9 @@ The MCP semantic tool suite includes deterministic replay verification through
 open.
 Numeric `game_step_action` coordinates and item IDs are validated as exact
 bounded values before simulation dispatch, and `tools/list` publishes the
-accepted aliases, enum domains, and numeric ranges without rejecting unknown
-fields; conditional action schemas and external-client certification remain
-open.
+canonical alias spellings, enum domains, and numeric ranges without rejecting
+unknown fields; the runtime-only `command`-without-`action` compatibility form,
+conditional action schemas, and external-client certification remain open.
 
 ### Browser slice
 

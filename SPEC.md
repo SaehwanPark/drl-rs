@@ -59,8 +59,11 @@ predecessor transport/lifecycle contracts unchanged.
   JSON-safe integer bounds and `u32` dimension bounds; `game_step_action`
   publishes signed `i32` coordinate and JSON-safe item-ID bounds.
 - [x] **Enum domains and aliases**: Action, direction, and slot enums include
-  the aliases accepted by runtime dispatch; `command` and `x`/`y` properties
-  are published alongside canonical fields.
+  canonical spellings for the aliases accepted by runtime dispatch;
+  `command` and `x`/`y` properties are published alongside canonical fields.
+  The canonical schema requires `action`; the `command`-without-`action`
+  compatibility form remains runtime-supported but is intentionally not
+  represented by a conditional schema in this slice.
 - [x] **Schema shape**: Required fields and object/property types are present,
   while `additionalProperties: false` is intentionally omitted.
 - [x] **Behavioral stability**: Valid workflows and malformed numeric action

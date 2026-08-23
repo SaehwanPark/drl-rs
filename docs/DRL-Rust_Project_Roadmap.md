@@ -85,7 +85,7 @@ verification item uses explicit status semantics:
 ### Active & Open Work
 
 - **Active Milestone Slice (M13)**: MCP `tools/list` now truthfully publishes
-  accepted action, direction, slot, `command`, and `x`/`y` aliases with
+  canonical action, direction, slot, `command`, and `x`/`y` alias spellings with
   deterministic enum domains and JSON-safe, `u32`, and signed `i32` bounds;
   unknown properties remain tolerated and conditional action schemas remain
   open. MCP `initialize` also validates object

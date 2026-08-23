@@ -167,14 +167,14 @@ pub fn get_all_tool_definitions() -> Vec<ToolDefinition> {
         SchemaField::new(
           "action",
           "string",
-          "Action category; aliases are accepted case-insensitively",
+          "Canonical action category spelling; runtime also accepts case variants",
           true,
         )
         .with_enum(ACTION_ALIASES),
         SchemaField::new(
           "command",
           "string",
-          "Runtime alias for action",
+          "Runtime compatibility alias for action; canonical schemas require action",
           false,
         )
         .with_enum(ACTION_ALIASES),
