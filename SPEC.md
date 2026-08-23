@@ -87,6 +87,15 @@ coverage only, not full MCP/client compatibility.
   HTTPS deployment, other browsers/backends, WCAG/screen-reader behavior,
   audible output, and capture-backed parity remain open.
 
+### M12 — Supported-Chromium Dynamic DOM Acceptance (evidence baseline)
+
+- [x] Runtime evidence covers supported-start focus transfer to the canvas,
+  authored focus styling, live status updates after keyboard input, static
+  keyboard help, and item-qualified inventory action names. See
+  [`docs/acceptance/browser-dynamic-dom-2026-08-23.md`](docs/acceptance/browser-dynamic-dom-2026-08-23.md).
+- [ ] WCAG 2.1 AA, screen-reader/assistive-technology, contrast, complete
+  keyboard traversal, and broad-browser acceptance remain `NOT_RUN`.
+
 ### M13 — JSON-RPC Notification-Correct Stdio (`VERSION` 0.2.40)
 
 - [x] Valid omitted-ID requests mutate session state without emitting a response

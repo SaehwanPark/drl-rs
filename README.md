@@ -88,8 +88,10 @@ replays, and regression testing.
     is verified on the supported local Chromium target.
   - Dynamic browser interaction semantics qualify generated inventory actions,
     keep status announcements in one live region, associate canvas help, and
-    provide visible focus/recovery behavior; WCAG AA and screen-reader
-    acceptance remain open.
+    provide visible focus/recovery behavior; supported-Chromium runtime DOM
+    evidence is recorded in
+    [`docs/acceptance/browser-dynamic-dom-2026-08-23.md`](docs/acceptance/browser-dynamic-dom-2026-08-23.md),
+    while WCAG AA and screen-reader acceptance remain open.
   - Browser startup classifies insecure contexts and missing WebGPU before
     initialization, with stable recovery guidance; other browsers/backends
     remain explicitly unclaimed.
