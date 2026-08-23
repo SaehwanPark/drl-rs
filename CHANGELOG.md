@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.23]
+
+- Added an immutable `drl-core` catalog for 26 pinned special-level IDs with
+  verified scalar names, entry text, welcome text, and optional legacy depth.
+- Kept dynamic map, callback, asset, branch, and gameplay migration explicitly
+  open; no level selection or runtime Lua behavior was added.
+
 ## [0.2.22]
 
 - Added a pinned special-level evidence index over 24 legacy Lua files and 26
