@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.22]
+
+- Added a pinned special-level evidence index over 24 legacy Lua files and 26
+  active level records, including long-bracket map strings and comment-aware
+  record detection.
+- Nested level creation, registration, and map behavior remains explicit gaps;
+  no special-level runtime or gameplay semantics were imported.
+
 ## [0.2.21]
 
 - Added a multi-source legacy item-family evidence bundle covering base,
