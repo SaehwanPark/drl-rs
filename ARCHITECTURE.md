@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.39`
+Current project version: `0.2.40`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -174,6 +174,9 @@ Presentation Boundary
     replays.
   - Strict observation boundaries with explicit `dev_mode` flag for omniscient
     inspection.
+  - Stdio transport suppresses responses for omitted-ID notifications while
+    preserving identified, explicit-null, and malformed-request response
+    boundaries; batch and external-client support remain open.
 - **Dependencies**: Pure `std` + `drl-protocol` + `drl-core`.
 
 ### `drl-app` — Headless CLI & MCP Runner
