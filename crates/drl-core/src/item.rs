@@ -442,6 +442,12 @@ impl Item {
     Self::from_spawn_kind(id, ItemSpawnKind::BlueArmor)
   }
 
+  /// Factory: red armor (+4 armor protection, 100 durability).
+  #[must_use]
+  pub fn red_armor(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::RedArmor)
+  }
+
   /// Factory: Phase Device (emergency teleportation consumable).
   #[must_use]
   pub fn phase_device(id: ItemId) -> Self {
@@ -678,9 +684,10 @@ mod tests {
         Item::green_armor(ItemId::new(15)),
       ),
       (ItemSpawnKind::BlueArmor, Item::blue_armor(ItemId::new(16))),
+      (ItemSpawnKind::RedArmor, Item::red_armor(ItemId::new(17))),
       (
         ItemSpawnKind::PhaseDevice,
-        Item::phase_device(ItemId::new(17)),
+        Item::phase_device(ItemId::new(18)),
       ),
     ];
     for (kind, factory_item) in cases {
@@ -735,6 +742,7 @@ mod tests {
       ItemSpawnKind::LargeMedPack,
       ItemSpawnKind::GreenArmor,
       ItemSpawnKind::BlueArmor,
+      ItemSpawnKind::RedArmor,
       ItemSpawnKind::PhaseDevice,
     ];
     for kind in kinds {

@@ -238,6 +238,17 @@ const BLUE_ARMOR: ItemDefinition = ItemDefinition {
   },
 };
 
+const RED_ARMOR: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::RedArmor,
+  name: "Red Armor",
+  description: "Nice, red and shiny. Look out for it, because if it's gone, you're gone too.",
+  kind: ItemDefinitionKind::Armor {
+    protection: 4,
+    durability: 100,
+    max_durability: 100,
+  },
+};
+
 const PHASE_DEVICE: ItemDefinition = ItemDefinition {
   archetype: ItemArchetype::PhaseDevice,
   name: "Phase Device",
@@ -264,6 +275,7 @@ pub const fn definition_for_spawn_kind(kind: ItemSpawnKind) -> &'static ItemDefi
     ItemSpawnKind::LargeMedPack => &LARGE_MEDPACK,
     ItemSpawnKind::GreenArmor => &GREEN_ARMOR,
     ItemSpawnKind::BlueArmor => &BLUE_ARMOR,
+    ItemSpawnKind::RedArmor => &RED_ARMOR,
     ItemSpawnKind::PhaseDevice => &PHASE_DEVICE,
   }
 }
@@ -341,6 +353,11 @@ mod tests {
         ItemSpawnKind::BlueArmor,
         ItemArchetype::BlueArmor,
         "Blue Armor",
+      ),
+      (
+        ItemSpawnKind::RedArmor,
+        ItemArchetype::RedArmor,
+        "Red Armor",
       ),
       (
         ItemSpawnKind::PhaseDevice,
@@ -434,6 +451,14 @@ mod tests {
       definition_for_spawn_kind(ItemSpawnKind::BlueArmor).kind,
       ItemDefinitionKind::Armor {
         protection: 2,
+        durability: 100,
+        max_durability: 100,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::RedArmor).kind,
+      ItemDefinitionKind::Armor {
+        protection: 4,
         durability: 100,
         max_durability: 100,
       }

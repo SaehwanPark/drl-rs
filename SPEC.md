@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.69`
+Current project version: `0.2.70`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -27,10 +27,11 @@ criteria, and verification boundaries.
 
 ### 2.1 Scope & Objective
 
-Migrate the pinned legacy `rocket`, `cell`, and `barmor` records into typed,
+Migrate the pinned legacy `rocket`, `cell`, `barmor`, and `rarmor` records into
+typed,
 immutable Rust definitions and replay-compatible spawn contracts. Preserve
-source-backed scalar fields, measured atlas slots, and the verified blue armor
-presentation tint without importing Lua callbacks or unverified combat rules.
+source-backed scalar fields, measured atlas slots, and verified armor
+presentation tints without importing Lua callbacks or unverified combat rules.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
@@ -69,6 +70,10 @@ presentation tint without importing Lua callbacks or unverified combat rules.
   (`2`), description, `SPRITE_ARMOR` slot, replay kind, and pure blue
   presentation tint; legacy plasma resistance and movement modifiers remain
   explicit gaps.
+- [x] **Red armor boundary**: typed `RedArmor` preserves pinned protection
+  (`4`), description, `SPRITE_ARMOR` slot, replay kind, and pure red
+  presentation tint; legacy fire resistance and movement modifiers remain
+  explicit gaps.
 - [ ] **Full migration**: rocket/plasma weapon behavior, dynamic callbacks,
   balance/fairness, and remaining legacy item families remain open.
 - [x] **Explicit non-goals**: no gameplay/core rule, observation schema,
@@ -91,6 +96,9 @@ presentation tint without importing Lua callbacks or unverified combat rules.
 - `BlueArmor` is a definition-backed armor item with protection `2`, the pinned
   description, `blue_armor` replay kind, shared `SPRITE_ARMOR` geometry, and a
   pure blue tint. Resistance, movement, and durability parity are not claimed.
+- `RedArmor` is a definition-backed armor item with protection `4`, the pinned
+  description, `red_armor` replay kind, shared `SPRITE_ARMOR` geometry, and a
+  pure red tint. Resistance, movement, and durability parity are not claimed.
 - **Ownership Boundary**: Rust typed definitions own runtime item semantics;
   pinned Lua evidence informs only the migrated scalar fields and provenance.
 
