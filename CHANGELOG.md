@@ -3,6 +3,18 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.48]
+
+- Added zero-argument MCP `game_verify_replay`, which verifies the complete
+  in-memory replay through `ReplayEngine::verify_determinism` and returns
+  deterministic status, command count, and replay version without mutating the
+  session.
+- Preserved procedural generator parameters in MCP replay records so
+  verification reconstructs the same generated layout as the live session.
+- Added procedural/custom-scenario, inactive-session, repeated-response, and
+  real stdio repeatability coverage; replay import/load and external replay
+  interchange remain open.
+
 ## [0.2.47]
 
 - Added typed validation for optional integer arguments on `game_start` and

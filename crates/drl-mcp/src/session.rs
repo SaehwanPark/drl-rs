@@ -3,10 +3,12 @@
 use crate::json::JsonValue;
 use drl_core::Game;
 use drl_core::generator::LevelGeneratorConfig;
+use drl_core::grid::Tile;
 use drl_core::scenario::Scenario;
 use drl_protocol::{
   Command, Direction, EpisodeMetrics, EquipmentSlot, GameEvent, ItemCategory, ItemId, ItemView,
-  OmniscientObservation, PlayerObservation, Position, ReplayLog, RunOutcome, TileKind,
+  OmniscientObservation, PlayerObservation, Position, ProceduralGenerationConfig, ReplayLog,
+  RunOutcome, TileKind,
 };
 use std::collections::BTreeMap;
 
@@ -805,12 +807,19 @@ impl McpSession {
       max_monsters_per_room: 2,
       max_items_per_room: 2,
     };
+    let replay_config = ProceduralGenerationConfig {
+      max_rooms: config.max_rooms,
+      min_room_size: config.min_room_size,
+      max_room_size: config.max_room_size,
+      max_monsters_per_room: config.max_monsters_per_room,
+      max_items_per_room: config.max_items_per_room,
+    };
 
     let game = Game::new_procedural(seed, config)
       .map_err(|e| format!("Failed to generate procedural game: {e}"))?;
 
     let p_pos = game.observe_player().player_position;
-    let replay = ReplayLog::new(seed, w, h, p_pos);
+    let replay = ReplayLog::new(seed, w, h, p_pos).with_procedural_config(replay_config);
 
     self.config = Some(SessionConfig {
       seed,
@@ -843,10 +852,9 @@ impl McpSession {
       .instantiate()
       .map_err(|e| format!("Failed to instantiate scenario: {e}"))?;
 
-    let p_pos = game.observe_player().player_position;
     let w = game.world().map().width();
     let h = game.world().map().height();
-    let replay = ReplayLog::new(0, w, h, p_pos);
+    let replay = replay_log_for_scenario(&scenario);
 
     self.config = Some(SessionConfig {
       seed: 0,
@@ -977,6 +985,38 @@ impl McpSession {
   pub fn recent_events(&self) -> &[GameEvent] {
     &self.recent_events
   }
+}
+
+fn replay_log_for_scenario(scenario: &Scenario) -> ReplayLog {
+  let mut replay = ReplayLog::new(
+    scenario.seed,
+    scenario.width,
+    scenario.height,
+    scenario.player_start,
+  );
+  if let Some(stairs) = scenario.stairs {
+    replay.record_stairs(stairs);
+  }
+  for (&position, &tile) in &scenario.tiles {
+    let kind = match tile {
+      Tile::Wall => TileKind::Wall,
+      Tile::Floor => TileKind::Floor,
+      Tile::StairsDown => TileKind::StairsDown,
+      Tile::DoorClosed => TileKind::DoorClosed,
+      Tile::DoorOpen => TileKind::DoorOpen,
+    };
+    replay.record_tile(position, kind);
+  }
+  for monster in &scenario.monsters {
+    replay.record_monster(monster.clone());
+  }
+  for item in &scenario.items {
+    replay.record_item(item.clone());
+  }
+  if let Some(config) = &scenario.player_config {
+    replay = replay.with_player_config(config.clone());
+  }
+  replay
 }
 
 #[cfg(test)]

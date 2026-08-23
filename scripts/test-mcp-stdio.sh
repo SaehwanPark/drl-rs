@@ -19,11 +19,12 @@ cat >"$requests" <<'EOF'
 {"jsonrpc":"2.0","id":8,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"wait"}}}
 {"jsonrpc":"2.0","id":9,"method":"tools/call","params":{"name":"game_get_metrics","arguments":{}}}
 {"jsonrpc":"2.0","id":10,"method":"tools/call","params":{"name":"game_save_replay","arguments":{}}}
-{"jsonrpc":"2.0","id":11,"method":"tools/call","params":{"name":"game_get_dev_state","arguments":{}}}
-{"jsonrpc":"2.0","id":12,"method":"tools/call","params":{"name":"game_reset","arguments":{}}}
-{"jsonrpc":"2.0","id":13,"method":"tools/call","params":{"name":"game_load_scenario","arguments":{"ascii_map":"#####\n#@.>#\n#####","max_turns":4}}}
-{"jsonrpc":"2.0","id":14,"method":"resources/read","params":{"uri":"drl://rules/actions"}}
-{"jsonrpc":"2.0","id":15,"method":"resources/read","params":{"uri":"drl://session/metrics"}}
+{"jsonrpc":"2.0","id":11,"method":"tools/call","params":{"name":"game_verify_replay","arguments":{}}}
+{"jsonrpc":"2.0","id":12,"method":"tools/call","params":{"name":"game_get_dev_state","arguments":{}}}
+{"jsonrpc":"2.0","id":13,"method":"tools/call","params":{"name":"game_reset","arguments":{}}}
+{"jsonrpc":"2.0","id":14,"method":"tools/call","params":{"name":"game_load_scenario","arguments":{"ascii_map":"#####\n#@.>#\n#####","max_turns":4}}}
+{"jsonrpc":"2.0","id":15,"method":"resources/read","params":{"uri":"drl://rules/actions"}}
+{"jsonrpc":"2.0","id":16,"method":"resources/read","params":{"uri":"drl://session/metrics"}}
 EOF
 
 fallback_requests="$temp_dir/fallback-requests.jsonl"
@@ -41,10 +42,10 @@ import json
 import sys
 
 lines = [line for line in open(sys.argv[1], encoding="utf-8") if line.strip()]
-if len(lines) != 15:
-    raise SystemExit(f"expected 15 JSON-RPC responses, found {len(lines)}")
+if len(lines) != 16:
+    raise SystemExit(f"expected 16 JSON-RPC responses, found {len(lines)}")
 responses = [json.loads(line) for line in lines]
-if [response.get("id") for response in responses] != list(range(1, 16)):
+if [response.get("id") for response in responses] != list(range(1, 17)):
     raise SystemExit("stdio response IDs are not in request order")
 if not responses[0].get("result", {}).get("serverInfo", {}).get("name") == "drl-mcp":
     raise SystemExit("initialize response lacks server identity")
@@ -62,15 +63,19 @@ if responses[8].get("result", {}).get("data", {}).get("turns_survived") is None:
     raise SystemExit("game_get_metrics returned no turns_survived field")
 if not responses[9].get("result", {}).get("data", {}).get("commands"):
     raise SystemExit("game_save_replay returned no commands")
-if responses[10].get("error", {}).get("code") != -32002:
+if responses[10].get("result", {}).get("data", {}).get("deterministic") is not True:
+    raise SystemExit("game_verify_replay did not report deterministic replay")
+if responses[10].get("result", {}).get("data", {}).get("command_count") != 1:
+    raise SystemExit("game_verify_replay reported the wrong command count")
+if responses[11].get("error", {}).get("code") != -32002:
     raise SystemExit("dev-state request did not preserve permission denial")
-if responses[11].get("result", {}).get("data", {}).get("status") != "SessionReset":
+if responses[12].get("result", {}).get("data", {}).get("status") != "SessionReset":
     raise SystemExit("game_reset did not report SessionReset")
-if responses[12].get("result", {}).get("data", {}).get("status") != "ScenarioLoaded":
+if responses[13].get("result", {}).get("data", {}).get("status") != "ScenarioLoaded":
     raise SystemExit("game_load_scenario did not report ScenarioLoaded")
-if not responses[13].get("result", {}).get("contents"):
-    raise SystemExit("rules resource read returned no contents")
 if not responses[14].get("result", {}).get("contents"):
+    raise SystemExit("rules resource read returned no contents")
+if not responses[15].get("result", {}).get("contents"):
     raise SystemExit("metrics resource read returned no contents")
 PY
 

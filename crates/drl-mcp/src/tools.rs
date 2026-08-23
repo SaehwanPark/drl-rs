@@ -6,6 +6,7 @@ use crate::session::{
   McpSession, compute_legal_actions, episode_metrics_to_json, json_to_command,
   omniscient_observation_to_json, player_observation_to_json,
 };
+use drl_core::ReplayEngine;
 use drl_protocol::ReplayLog;
 use std::collections::BTreeMap;
 
@@ -72,6 +73,11 @@ pub fn get_all_tool_definitions() -> Vec<ToolDefinition> {
     ToolDefinition {
       name: "game_save_replay".to_string(),
       description: "Export the current session's deterministic replay log as JSON.".to_string(),
+      input_schema: create_object_schema(&[]),
+    },
+    ToolDefinition {
+      name: "game_verify_replay".to_string(),
+      description: "Verify the current session's replay is deterministic without changing game state.".to_string(),
       input_schema: create_object_schema(&[]),
     },
     ToolDefinition {
@@ -256,6 +262,29 @@ pub fn execute_tool(
         .map_err(|e| JsonRpcError::new(error_codes::SESSION_NOT_ACTIVE, e))?;
       let res = replay_to_json_value(replay);
       Ok(wrap_mcp_tool_result(res))
+    }
+
+    "game_verify_replay" => {
+      let replay = session
+        .export_replay()
+        .map_err(|e| JsonRpcError::new(error_codes::SESSION_NOT_ACTIVE, e))?;
+      let deterministic = ReplayEngine::verify_determinism(replay).map_err(|e| {
+        JsonRpcError::new(
+          error_codes::INTERNAL_ERROR,
+          format!("Replay verification failed: {e}"),
+        )
+      })?;
+      let mut res = BTreeMap::new();
+      res.insert("deterministic".to_string(), JsonValue::Bool(deterministic));
+      res.insert(
+        "command_count".to_string(),
+        JsonValue::from(replay.commands.len() as u64),
+      );
+      res.insert(
+        "version".to_string(),
+        JsonValue::from(replay.version as u32),
+      );
+      Ok(wrap_mcp_tool_result(JsonValue::Object(res)))
     }
 
     "game_get_dev_state" => {

@@ -153,7 +153,113 @@ fn test_jsonrpc_tools_list() {
   assert!(tool_names.contains(&"game_reset"));
   assert!(tool_names.contains(&"game_get_metrics"));
   assert!(tool_names.contains(&"game_save_replay"));
+  assert!(tool_names.contains(&"game_verify_replay"));
   assert!(tool_names.contains(&"game_get_dev_state"));
+}
+
+#[test]
+fn test_jsonrpc_verify_replay_is_deterministic_and_state_safe() {
+  let mut server = ready_server();
+
+  let inactive = JsonValue::parse(&server.handle_request(
+    r#"{"jsonrpc":"2.0","id":10,"method":"tools/call","params":{"name":"game_verify_replay","arguments":{}}}"#,
+  ))
+  .unwrap();
+  assert_eq!(
+    inactive
+      .get("error")
+      .and_then(|error| error.get("code"))
+      .and_then(|code| code.as_i64()),
+    Some(error_codes::SESSION_NOT_ACTIVE as i64)
+  );
+
+  let _ = server.handle_request(
+    r#"{"jsonrpc":"2.0","id":11,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":91,"width":20,"height":10}}}"#,
+  );
+  let _ = server.handle_request(
+    r#"{"jsonrpc":"2.0","id":12,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"wait"}}}"#,
+  );
+
+  let metrics_before = server.handle_request(
+    r#"{"jsonrpc":"2.0","id":13,"method":"tools/call","params":{"name":"game_get_metrics","arguments":{}}}"#,
+  );
+  let replay_before = server.handle_request(
+    r#"{"jsonrpc":"2.0","id":14,"method":"tools/call","params":{"name":"game_save_replay","arguments":{}}}"#,
+  );
+  let verify_request = r#"{"jsonrpc":"2.0","id":15,"method":"tools/call","params":{"name":"game_verify_replay","arguments":{}}}"#;
+  let verify_one = server.handle_request(verify_request);
+  let verify_two = server.handle_request(verify_request);
+  assert_eq!(verify_one, verify_two);
+
+  let verify = JsonValue::parse(&verify_one).unwrap();
+  let data = verify.get("result").and_then(|result| result.get("data"));
+  assert_eq!(
+    data
+      .and_then(|data| data.get("deterministic"))
+      .and_then(|value| value.as_bool()),
+    Some(true)
+  );
+  assert_eq!(
+    data
+      .and_then(|data| data.get("command_count"))
+      .and_then(|value| value.as_u64()),
+    Some(1)
+  );
+  assert_eq!(
+    data
+      .and_then(|data| data.get("version"))
+      .and_then(|value| value.as_u64()),
+    Some(1)
+  );
+  assert_eq!(
+    metrics_before,
+    server.handle_request(
+      r#"{"jsonrpc":"2.0","id":13,"method":"tools/call","params":{"name":"game_get_metrics","arguments":{}}}"#,
+    )
+  );
+  assert_eq!(
+    replay_before,
+    server.handle_request(
+      r#"{"jsonrpc":"2.0","id":14,"method":"tools/call","params":{"name":"game_save_replay","arguments":{}}}"#,
+    )
+  );
+}
+
+#[test]
+fn test_jsonrpc_verify_replay_reconstructs_procedural_layout() {
+  let mut server = ready_server();
+  let _ = server.handle_request(
+    r#"{"jsonrpc":"2.0","id":20,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":16,"width":40,"height":20}}}"#,
+  );
+
+  for id in 21..=37 {
+    let response = JsonValue::parse(&server.handle_request(&format!(
+      r#"{{"jsonrpc":"2.0","id":{id},"method":"tools/call","params":{{"name":"game_step_action","arguments":{{"action":"move","direction":"North"}}}}}}"#
+    )))
+    .unwrap();
+    assert!(
+      response.get("error").is_none(),
+      "unexpected step error: {response:?}"
+    );
+  }
+
+  let verify = JsonValue::parse(&server.handle_request(
+    r#"{"jsonrpc":"2.0","id":38,"method":"tools/call","params":{"name":"game_verify_replay","arguments":{}}}"#,
+  ))
+  .unwrap();
+  let data = verify.get("result").and_then(|result| result.get("data"));
+  assert_eq!(
+    data
+      .and_then(|data| data.get("deterministic"))
+      .and_then(|value| value.as_bool()),
+    Some(true)
+  );
+  assert_eq!(
+    data
+      .and_then(|data| data.get("command_count"))
+      .and_then(|value| value.as_u64()),
+    Some(17)
+  );
 }
 
 #[test]
@@ -278,6 +384,7 @@ fn test_jsonrpc_rejects_invalid_numeric_tool_arguments_without_execution() {
     r#"{"jsonrpc":"2.0","id":46,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":1.0000000000000001}}}"#,
     r#"{"jsonrpc":"2.0","id":47,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":9007199254740991.5}}}"#,
     r#"{"jsonrpc":"2.0","id":48,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":1e-100000000000}}}"#,
+    r#"{"jsonrpc":"2.0","id":49,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":1e9223372036854775807}}}"#,
   ] {
     let response = JsonValue::parse(&server.handle_request(request)).unwrap();
     assert_eq!(
@@ -295,7 +402,7 @@ fn test_jsonrpc_rejects_invalid_numeric_tool_arguments_without_execution() {
 fn test_jsonrpc_accepts_maximum_exact_json_integer() {
   let mut server = ready_server();
   let response = JsonValue::parse(&server.handle_request(
-    r#"{"jsonrpc":"2.0","id":49,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":9007199254740992}}}"#,
+    r#"{"jsonrpc":"2.0","id":50,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":9007199254740992}}}"#,
   ))
   .unwrap();
   assert!(response.get("error").is_none());

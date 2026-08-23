@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.47`
+Current project version: `0.2.48`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,19 +23,18 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M13 Tool-Argument Type Validation
+## 2. Active Implementation Slice: M13 MCP Replay Verification
 
 ### 2.1 Scope & Objective
 
-Validate optional integer arguments for the stateful `game_start` and
-`game_load_scenario` tools without changing valid gameplay. Present `seed` and
-`max_turns` values must be finite, non-negative integers in the JSON parser's
-exact safe-integer range (`0..=2^53`); `width` and `height` must be finite,
-non-negative integers in that range and representable as `u32`. Wrong types or
-values outside those accepted ranges return deterministic `-32602` errors
-before session mutation. Preserve method-envelope, request-ID,
-notification, batch, initialize, and lifecycle contracts from predecessor
-slices.
+Expose deterministic verification of the complete in-memory replay through the
+zero-argument `game_verify_replay` MCP tool without mutating the game session.
+The tool exports the current replay log, runs
+`ReplayEngine::verify_determinism`, and returns wrapped
+`{deterministic, command_count, version}` data. An inactive session returns
+`-32000`; replay execution failures return deterministic `-32603`. Preserve
+method-envelope, request-ID, notification, batch, initialize, lifecycle, and
+valid gameplay contracts from predecessor slices.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
@@ -58,28 +57,34 @@ slices.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Optional integer fields**: `game_start` validates `seed`, `max_turns`,
-  `width`, and `height`; `game_load_scenario` validates `max_turns` when
-  present, returning `-32602` for wrong types or values outside the accepted
-  JSON-safe unsigned integer range (`0..=2^53`), with dimensions also bounded
-  by `u32`.
-- [x] **State safety**: Malformed numeric arguments never start, reset, or
-  mutate a game session; valid omitted fields retain existing defaults.
+- [x] **Tool registration and dispatch**: `tools/list` advertises the
+  zero-argument `game_verify_replay` tool and `tools/call` returns wrapped
+  deterministic metadata.
+- [x] **Replay coverage**: Procedural and custom ASCII scenario sessions verify
+  successfully because procedural generator parameters are retained in the
+  in-memory replay, while replay execution failures return `-32603`.
+- [x] **State safety and repeatability**: Repeated verification responses are
+  byte-identical and do not change metrics, turn, or exported replay state.
+- [x] **Session boundary**: An inactive session returns `SESSION_NOT_ACTIVE`
+  (`-32000`) without invoking replay execution.
+- [x] **Real transport**: The `drl-app --mcp` stdio fixture verifies replay and
+  remains byte-identical across repeated subprocess runs.
 - [x] **Predecessor contracts retained**: Method-envelope/request-ID
   validation, initialize/version fallback, lifecycle gating, notification
   suppression, batch ordering, and game-reset separation remain covered.
-- [x] **No expansion of claims**: Full initialize-schema validation, reconnect/
-  resume, concurrency, HTTP, external clients, and production deployment
-  remain open.
+- [x] **No expansion of claims**: Replay import/load, external serialized replay
+  interchange, cross-version/legacy parity, a new replay algorithm, full
+  initialize-schema validation, reconnect/resume, concurrency, HTTP, external
+  clients, and production deployment remain open.
 
 ### 2.4 Pure Contract
 
-- **Input**: Object arguments for `game_start` or `game_load_scenario` with
-  optional integer fields.
-- **Output**: Valid numeric fields preserve current defaults and gameplay;
-  malformed or out-of-range fields emit `-32602` with no game-state mutation.
+- **Input**: An empty object for `game_verify_replay` on an active session.
+- **Output**: A wrapped `{deterministic, command_count, version}` result, or a
+  documented `-32000`/`-32603` error.
 - **Ownership Boundary**:
-  - `drl-mcp::execute_tool` owns tool-specific numeric argument validation.
+  - `drl-mcp::execute_tool` owns session export, error mapping, and the MCP
+    result envelope; `ReplayEngine` owns deterministic replay execution.
   - `McpServer` owns method-envelope validation; `JsonRpcRequest::parse` and
     `run_stdio` preserve request-ID, batch framing, and notification contracts.
   - Game reset remains a session operation and does not alter protocol phase.
@@ -87,6 +92,14 @@ slices.
 ---
 
 ## 3. Recent Delivered Slices
+
+### M13 — MCP Replay Verification (`VERSION` 0.2.48)
+
+- [x] Added `game_verify_replay` for state-safe deterministic verification of
+  procedural and custom-scenario in-memory replays with command-count/version
+  metadata.
+- [x] Added inactive-session, repeated-response, virtual-player, and repeated
+  real-stdio coverage; replay import/load and external interchange remain open.
 
 ### M13 — Tool-Argument Type Validation (`VERSION` 0.2.47)
 

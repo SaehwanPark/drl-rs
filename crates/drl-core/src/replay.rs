@@ -1,6 +1,7 @@
 //! Deterministic replay execution engine and diagnostics.
 
 use crate::game::Game;
+use crate::generator::LevelGeneratorConfig;
 use crate::item::Item;
 use crate::scheduler::ACTION_THRESHOLD;
 use drl_protocol::{
@@ -70,12 +71,27 @@ impl ReplayEngine {
       error: CommandError::InvalidCommand(msg),
     })?;
 
-    let mut game = Game::new(
-      replay.seed,
-      replay.width,
-      replay.height,
-      replay.player_start,
-    )
+    let mut game = if let Some(config) = &replay.procedural_config {
+      Game::new_procedural(
+        replay.seed,
+        LevelGeneratorConfig {
+          width: replay.width,
+          height: replay.height,
+          max_rooms: config.max_rooms,
+          min_room_size: config.min_room_size,
+          max_room_size: config.max_room_size,
+          max_monsters_per_room: config.max_monsters_per_room,
+          max_items_per_room: config.max_items_per_room,
+        },
+      )
+    } else {
+      Game::new(
+        replay.seed,
+        replay.width,
+        replay.height,
+        replay.player_start,
+      )
+    }
     .map_err(|err| ReplayExecutionError {
       turn: Turn::zero(),
       command_index: 0,

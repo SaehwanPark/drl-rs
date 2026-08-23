@@ -21,8 +21,8 @@ pub use observation::{
   TileView,
 };
 pub use replay::{
-  ItemSpawnKind, ItemSpawnSpec, MonsterSpawnSpec, PlayerSpawnConfig, ReplayExecutionError,
-  ReplayLog, ReplayMetadata, ReplayVersion,
+  ItemSpawnKind, ItemSpawnSpec, MonsterSpawnSpec, PlayerSpawnConfig, ProceduralGenerationConfig,
+  ReplayExecutionError, ReplayLog, ReplayMetadata, ReplayVersion,
 };
 pub use scenario::{ScenarioFixture, ScenarioMap};
 pub use types::{
