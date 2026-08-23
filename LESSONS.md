@@ -99,6 +99,20 @@ truth.
   revisions, local and hosted results, explicit NOT_RUN surfaces, and a clean
   branch check before measuring usage or selecting more work.
 
+## Commit replay sessions only after temporary execution
+
+- **Context:** A canonical replay can be syntactically valid but fail during
+  simulation, and a caller may already have an active session.
+- **Symptom:** Replacing session fields while decoding or replaying can leave
+  a partially restored game after a rejected load.
+- **Resolution:** Decode and run the replay in temporary core state first;
+  commit the game, metrics, events, and imported log only after the complete
+  run succeeds. Retain the original imported log as the explicit reset source
+  so appended commands have deterministic, documented reset behavior.
+- **Prevention:** Test malformed input, simulation failure, active-session
+  rollback, append-after-load, terminal loads, session wrapper metadata such as
+  turn limits, and repeated reset reruns as separate acceptance cases.
+
 ## Make bounded presentation storage fail explicitly
 
 - **Context:** Legacy particle callbacks append accepted decal requests, while

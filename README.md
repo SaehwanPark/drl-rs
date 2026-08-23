@@ -36,7 +36,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.59`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.60`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:
@@ -126,10 +126,12 @@ balance, a canonical difficulty curve, or statistical significance.
 The MCP semantic tool suite exports a complete deterministic in-memory V1
 replay envelope through `game_save_replay`, including initial-state metadata
 and typed semantic commands. `game_verify_replay` verifies either the active
-session replay or a supplied canonical envelope read-only. MCP-created
-envelopes use bounded session dimensions and generator parameters enforced at
-`game_start`; session loading, replay-file IO, migration, and external replay
-interchange remain open.
+session replay or a supplied canonical envelope read-only, while
+`game_load_replay` transactionally restores that exact V1 envelope into a
+session, retains it for appended commands, and reruns it deterministically on
+reset. MCP-created envelopes use bounded session dimensions and generator
+parameters enforced at `game_start`; replay-file IO, migrations, cross-version
+schemas, and external replay interchange remain open.
 Numeric `game_step_action` coordinates and item IDs are validated as exact
 bounded values before simulation dispatch, and `tools/list` publishes the
 canonical alias spellings, enum domains, numeric ranges, and conditional

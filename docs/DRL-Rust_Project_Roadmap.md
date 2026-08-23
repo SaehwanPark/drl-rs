@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.59`
+Current project version: `0.2.60`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.59)
+## 3. Current Progress Summary (`VERSION` 0.2.60)
 
 ### Delivered Foundations
 
@@ -84,16 +84,17 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active Milestone Slice (M6/M13)**: recognized `tools/call` runtime failures
-  now return successful MCP results with `isError: true`, deterministic text,
-  and numeric `data.code`/`data.message` details. Malformed JSON-RPC/params,
-  unsafe arguments, malformed supplied replay input, and unknown methods/tools
-  remain JSON-RPC errors; state, metrics, replay, notifications, and batch
-  ordering remain deterministic and state-safe. The preceding `tools/list` and
-  `resources/list` fixed pages (4 tools, 2 resources) use method-scoped opaque
-  cursors and remain delivered. External-client/schema certification,
-  reconnect/resume, replay import/load, and broader MCP compatibility remain
-  open.
+- **Latest Delivered Milestone Slice (M5/M6/M13)**: `game_load_replay` transactionally
+  restores the exact canonical V1 replay envelope by executing it in temporary
+  core state before replacing the session. The imported replay remains the
+  reset source, optional turn limits preserve terminal outcomes, subsequent
+  valid actions append to its log, and terminal loads expose no legal actions.
+  Malformed input remains `-32602`; simulation failure uses the delivered
+  `tools/call` runtime-result boundary, and active sessions remain byte-
+  identical on rejected loads. The preceding `tools/list`/
+  `resources/list` pagination and tool-execution error-result contracts remain
+  delivered. Replay-file IO, migrations, cross-version/external schemas,
+  reconnect/resume, and broader MCP compatibility remain open.
   `game_verify_replay` accepts an exact `drl-rust-replay-v1` JSON envelope and
   verifies it read-only, including without an active session. The preceding
   0.2.56 export emits every in-memory V1 `ReplayLog` field with deterministic
@@ -284,7 +285,8 @@ tooling.
   `tools/call`, `resources/list`, `resources/read`).
 - [x] Complete semantic tool suite (`game_start`, `game_load_scenario`,
   `game_get_observation`, `game_list_actions`, `game_step_action`, `game_reset`,
-  `game_get_metrics`, `game_save_replay`, `game_verify_replay`).
+  `game_get_metrics`, `game_save_replay`, `game_verify_replay`,
+  `game_load_replay`).
 - [x] `game_step_action` validates ranged coordinates and item IDs as exact
   bounded numbers before dispatch while preserving valid action aliases.
 - [x] `tools/list` publishes accepted action/direction/slot and field aliases
@@ -294,12 +296,13 @@ tooling.
   replays without mutating sessions.
 - [x] `game_save_replay` exports complete V1 replay metadata, initial-state
   containers, and typed command variants through a deterministic JSON envelope;
-  replay import/load and external interchange remain open.
+  replay-file IO, migration, and external interchange remain open.
 - [x] `game_verify_replay` decodes and verifies a supplied canonical V1 replay
   read-only, including inactive-session verification and fail-closed malformed
   input handling. MCP session creation enforces bounded dimensions and
-  procedural parameters before export; session activation/load and replay-file
-  IO remain open.
+  procedural parameters before export; same-version object loading is
+  delivered while replay-file IO, migration, and external interchange remain
+  open.
 - [x] `tools/list` and `resources/list` provide deterministic fixed-size pages
   with method-scoped cursors, stable reconstruction, final-page omission, and
   fail-closed invalid-cursor handling; broader MCP compatibility remains open.
@@ -308,6 +311,12 @@ tooling.
   malformed envelopes/arguments, malformed supplied replay input, and unknown
   methods/tools retain JSON-RPC errors; notifications, batches, and state safety
   remain deterministic.
+- [x] `game_load_replay` restores a required canonical V1 replay object only
+  after bounded decode and complete `ReplayEngine` execution succeed; it
+  exposes `ReplayLoaded`, preserves the imported log and optional turn limit
+  for appended commands/reset, restores turn-limit terminal state, and leaves
+  prior active sessions unchanged on malformed or simulation-invalid input.
+  Replay-file IO and migrations remain open.
 - [x] Terminal `game_step_action` calls are rejected after victory, death,
   turn-limit, or stalled outcomes; stair transitions report victory while
   reset and replay/metrics inspection remain available.

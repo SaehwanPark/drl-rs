@@ -161,6 +161,37 @@ pub fn game_load_scenario_schema() -> JsonValue {
   ])
 }
 
+/// Schema for transactional canonical V1 replay restoration.
+#[must_use]
+pub fn game_load_replay_schema() -> JsonValue {
+  let mut schema = BTreeMap::new();
+  schema.insert("type".to_string(), JsonValue::from("object"));
+  schema.insert(
+    "description".to_string(),
+    JsonValue::from(
+      "Replace the session transactionally with a canonical drl-rust-replay-v1 envelope",
+    ),
+  );
+  let mut replay = BTreeMap::new();
+  replay.insert("type".to_string(), JsonValue::from("object"));
+  replay.insert(
+    "description".to_string(),
+    JsonValue::from("Canonical drl-rust-replay-v1 schema_version 1 envelope"),
+  );
+  schema.insert(
+    "properties".to_string(),
+    JsonValue::Object(BTreeMap::from([(
+      "replay".to_string(),
+      JsonValue::Object(replay),
+    )])),
+  );
+  schema.insert(
+    "required".to_string(),
+    JsonValue::Array(vec![JsonValue::from("replay")]),
+  );
+  JsonValue::Object(schema)
+}
+
 /// Schema for optional supplied replay verification.
 #[must_use]
 pub fn game_verify_replay_schema() -> JsonValue {
