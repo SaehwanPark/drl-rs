@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.45`
+Current project version: `0.2.46`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -183,6 +183,9 @@ Presentation Boundary
   - JSON-RPC request IDs are limited to strings, numbers, or explicit `null`;
     boolean, array, and object IDs return `-32600` before dispatch, while
     omitted IDs remain notifications.
+  - Stateful `tools/call` and `resources/read` methods require object params;
+    `tools/call.arguments` must be an object when present, with malformed
+    envelopes returning `-32602` before session or resource execution.
   - A private `Uninitialized → AwaitingInitialized → Ready` phase gate requires
     an identified initialize request followed by `notifications/initialized`
     before tools and resources are available; premature/duplicate transitions

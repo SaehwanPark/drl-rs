@@ -219,20 +219,28 @@ impl McpServer {
   }
 
   fn handle_tools_call(&mut self, params: Option<&JsonValue>) -> Result<JsonValue, JsonRpcError> {
-    let p = params.ok_or_else(|| {
+    let p = params.and_then(JsonValue::as_object).ok_or_else(|| {
       JsonRpcError::new(
         error_codes::INVALID_PARAMS,
-        "Missing parameters for 'tools/call'",
+        "'tools/call' params must be an object",
       )
     })?;
 
-    let name = p.get("name").and_then(|v| v.as_str()).ok_or_else(|| {
+    let name = p.get("name").and_then(JsonValue::as_str).ok_or_else(|| {
       JsonRpcError::new(
         error_codes::INVALID_PARAMS,
         "Missing 'name' field in 'tools/call' params",
       )
     })?;
 
+    if let Some(arguments) = p.get("arguments")
+      && arguments.as_object().is_none()
+    {
+      return Err(JsonRpcError::new(
+        error_codes::INVALID_PARAMS,
+        "'arguments' in 'tools/call' params must be an object",
+      ));
+    }
     let default_args = JsonValue::Object(BTreeMap::new());
     let args = p.get("arguments").unwrap_or(&default_args);
 
@@ -252,14 +260,14 @@ impl McpServer {
   }
 
   fn handle_resources_read(&self, params: Option<&JsonValue>) -> Result<JsonValue, JsonRpcError> {
-    let p = params.ok_or_else(|| {
+    let p = params.and_then(JsonValue::as_object).ok_or_else(|| {
       JsonRpcError::new(
         error_codes::INVALID_PARAMS,
-        "Missing parameters for 'resources/read'",
+        "'resources/read' params must be an object",
       )
     })?;
 
-    let uri = p.get("uri").and_then(|v| v.as_str()).ok_or_else(|| {
+    let uri = p.get("uri").and_then(JsonValue::as_str).ok_or_else(|| {
       JsonRpcError::new(
         error_codes::INVALID_PARAMS,
         "Missing 'uri' field in 'resources/read' params",

@@ -243,3 +243,24 @@ fn test_jsonrpc_rejects_non_scalar_request_ids() {
     );
   }
 }
+
+#[test]
+fn test_jsonrpc_rejects_non_object_method_params_without_execution() {
+  let mut server = ready_server();
+  for request in [
+    r#"{"jsonrpc":"2.0","id":30,"method":"tools/call","params":[]}"#,
+    r#"{"jsonrpc":"2.0","id":31,"method":"tools/call","params":{"name":"game_start","arguments":[]}}"#,
+    r#"{"jsonrpc":"2.0","id":32,"method":"tools/call","params":{"name":"game_start","arguments":null}}"#,
+    r#"{"jsonrpc":"2.0","id":33,"method":"resources/read","params":[]}"#,
+  ] {
+    let response = JsonValue::parse(&server.handle_request(request)).unwrap();
+    assert_eq!(
+      response
+        .get("error")
+        .and_then(|error| error.get("code"))
+        .and_then(|code| code.as_i64()),
+      Some(error_codes::INVALID_PARAMS as i64)
+    );
+  }
+  assert!(!server.session().is_active());
+}
