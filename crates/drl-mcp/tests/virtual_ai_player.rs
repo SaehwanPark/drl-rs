@@ -12,6 +12,9 @@ fn test_virtual_ai_agent_playing_scenario_via_mcp() {
     r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05"}}"#;
   let init_res = server.handle_request(init_req);
   assert!(init_res.contains("\"name\":\"drl-mcp\""));
+  let initialized =
+    server.handle_request(r#"{"jsonrpc":"2.0","method":"notifications/initialized"}"#);
+  assert!(initialized.contains("\"result\":{}"));
 
   // 2. Load combat scenario fixture
   // Layout: Player '@' at (1,1), ammo 'a', former human 'h' at (1,3), stairs down '>' at (1,4)

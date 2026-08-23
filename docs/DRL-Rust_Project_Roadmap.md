@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.42`
+Current project version: `0.2.43`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.42)
+## 3. Current Progress Summary (`VERSION` 0.2.43)
 
 ### Delivered Foundations
 
@@ -84,10 +84,11 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active Milestone Slice (M13)**: MCP `initialize` now validates the required
-  protocol-version string, echoes the supported `2024-11-05` version, and
-  returns that version as a deterministic fallback for unsupported strings.
-  Full lifecycle enforcement and external-client compatibility remain open.
+- **Active Milestone Slice (M13)**: MCP lifecycle state now advances through
+  identified `initialize` and `notifications/initialized` phases before gating
+  discovery, tools, and resources. Premature/duplicate transitions return a
+  deterministic protocol error; full external-client compatibility remains
+  open.
 - **M9 Content Evidence**: Base, expansion, user-item, being, terrain-cell,
   and special-level evidence slices are delivered without runtime Lua or
   gameplay overclaims.
@@ -96,9 +97,9 @@ verification item uses explicit status semantics:
   remain open.
 - **M13 Tooling**: The actual `drl-app --mcp` stdio transport now has a fixed,
   repeatable JSON-RPC contract with version-aware initialize negotiation,
-  notification side effects, ordered batch responses, explicit null-ID
-  responses, and malformed-input errors; full external-client compatibility
-  remains open.
+  identified lifecycle gating, notification side effects, ordered batch
+  responses, explicit null-ID responses, and malformed-input errors; reconnect,
+  full external-client compatibility, and deployment remain open.
 - **M12 Accessibility**: Static and native contracts cover generated names,
   escaping, live-channel boundaries, help association, focus styling, and
   diagnostic recovery; startup now classifies insecure contexts and missing
@@ -499,6 +500,9 @@ Final release readiness, documentation, and static distribution.
 - [x] `initialize` echoes supported `2024-11-05`, falls back deterministically
   for unsupported strings, and rejects missing/non-string versions with
   `-32602`; full lifecycle and external-client compatibility remain open.
+- [x] Lifecycle phase gate requires identified `initialize` followed by
+  `notifications/initialized` before discovery, tools, or resources; premature
+  and duplicate transitions return `-32003` without resetting game state.
 - [ ] Complete deterministic headless/MCP agent tooling suite and external
   client compatibility.
 - [ ] Comprehensive public rights inventory and release documentation.

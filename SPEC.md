@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.42`
+Current project version: `0.2.43`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,15 +23,16 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M13 Version-Aware JSON-RPC Initialize
+## 2. Active Implementation Slice: M13 MCP Lifecycle State Gate (Phase 1)
 
 ### 2.1 Scope & Objective
 
-Make the MCP `initialize` method validate the required string
-`params.protocolVersion`, echo the supported `2024-11-05` version, and return
-that same version as a deterministic fallback for unsupported version strings.
-This is protocol-version negotiation only, not full MCP lifecycle or client
-compatibility.
+Enforce the first MCP lifecycle boundary with a private deterministic phase:
+`Uninitialized → AwaitingInitialized → Ready`. A successful identified
+`initialize` request enters the waiting phase; the `notifications/initialized`
+notification (or retained `initialized` alias) enters `Ready`. Discovery, tool,
+and resource methods are available only in `Ready`; `ping` remains available in
+all phases.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
@@ -44,36 +45,55 @@ compatibility.
 3. **Batch stdio transport**:
    - Nonempty JSON-RPC batches preserve response order, omit notification
      members, retain explicit `id: null`, and reject empty batches.
+4. **Version-aware initialize negotiation**:
+   - Supported `2024-11-05` is echoed, unsupported strings receive the
+     deterministic supported fallback, and missing/non-string versions return
+     `-32602`.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Supported version echo**: A request with
-  `protocolVersion: "2024-11-05"` receives that version in the result.
-- [x] **Unsupported version fallback**: Any other string receives the
-  deterministic supported version `2024-11-05`.
-- [x] **Required field validation**: Missing parameters, missing
-  `protocolVersion`, and non-string values return JSON-RPC `-32602`.
-- [x] **Deterministic stdio coverage**: Repeated real `drl-app --mcp` runs
-  verify supported echo and unsupported fallback byte-for-byte.
-- [x] **No expansion of claims**: Lifecycle state enforcement, full MCP
-  initialize-schema validation, external clients, and production deployment
-  remain open.
+- [x] **Pre-ready gate**: Fresh servers reject `tools/*` and `resources/*`
+  with implementation-defined `-32003` and do not mutate the game session.
+- [x] **Two-phase transition**: A successful identified initialize enters
+  `AwaitingInitialized`; only `notifications/initialized` or the retained
+  `initialized` alias enters `Ready`.
+- [x] **Ordering and rejection**: Premature notifications, omitted-ID
+  initialize requests, invalid initialize parameters, and duplicate lifecycle
+  transitions do not unlock or reset state; `ping` remains available.
+- [x] **Batch and stdio coverage**: Mixed initialize → notification → tool
+  sequences preserve response order and notification omission; repeated real
+  `drl-app --mcp` runs are byte-identical.
+- [x] **Session separation**: `game_reset` resets game state without resetting
+  the protocol lifecycle phase.
+- [x] **No expansion of claims**: Reconnect/resume, concurrency, HTTP,
+  external clients, full initialize-schema validation, and production
+  deployment remain open.
 
 ### 2.4 Pure Contract
 
-- **Input**: An `initialize` JSON-RPC request with an object containing a
-  string `protocolVersion`.
-- **Output**: The initialize result echoes the supported version or returns the
-  supported fallback; missing or non-string versions emit `-32602`.
+- **Input**: JSON-RPC lifecycle requests and notifications, with initialize
+  requests carrying the version-negotiation fields from the predecessor slice.
+- **Output**: The protocol phase advances only on successful identified
+  initialize followed by initialized notification; pre-ready discovery/tools/
+  resources emit `-32003`.
 - **Ownership Boundary**:
-  - `drl-mcp::McpServer::handle_initialize` owns version negotiation and field
-    validation.
-  - `run_stdio` retains batch framing and notification suppression unchanged.
-  - No lifecycle state, external client adapter, or deployment policy is added.
+  - `drl-mcp::McpServer` owns lifecycle phase transitions and readiness gating.
+  - `run_stdio` retains batch framing and notification suppression while applying
+    members in input order.
+  - Game reset remains a session operation and does not alter protocol phase.
 
 ---
 
 ## 3. Recent Delivered Slices
+
+### M13 — MCP Lifecycle State Gate (Phase 1) (`VERSION` 0.2.43)
+
+- [x] Identified initialize → initialized transitions gate tools and resources
+  behind `Ready`, with deterministic `-32003` pre-ready errors.
+- [x] Premature/duplicate/omitted-ID transitions do not advance state; ping,
+  malformed input, batch order, and notification suppression remain bounded.
+- [x] Game reset remains separate from protocol lifecycle; full external-client
+  compatibility and reconnect/resume remain open.
 
 ### M13 — Version-Aware JSON-RPC Initialize (`VERSION` 0.2.42)
 
@@ -432,7 +452,7 @@ compatibility.
 
 ## 6. Verification Gates
 
-### Verified Baseline (`VERSION` 0.2.42)
+### Verified Baseline (`VERSION` 0.2.43)
 
 9c0eccf feat(mcp): support deterministic stdio batches (#132)
 eeb246d feat(mcp): handle stdio notifications correctly (#131)

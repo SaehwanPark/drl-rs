@@ -3,6 +3,18 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.43]
+
+- Added a deterministic MCP lifecycle gate: identified `initialize` advances to
+  an awaiting phase, `notifications/initialized` unlocks tools and resources,
+  and pre-ready or duplicate transitions return `-32003` without resetting the
+  game session.
+- Migrated direct MCP fixtures and repeated stdio/batch contracts to exercise
+  the two-phase handshake; ping, malformed input, notification suppression,
+  and game-reset semantics remain bounded.
+- Kept reconnect/resume, full initialize-schema validation, external clients,
+  and production deployment explicitly open.
+
 ## [0.2.42]
 
 - Added version-aware MCP `initialize` negotiation: supported

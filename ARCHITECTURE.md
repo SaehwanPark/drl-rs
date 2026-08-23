@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.42`
+Current project version: `0.2.43`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -177,6 +177,10 @@ Presentation Boundary
   - `initialize` validates a string `protocolVersion`, echoes supported
     `2024-11-05`, and returns that version as a deterministic fallback for
     unsupported strings; missing/non-string values return `-32602`.
+  - A private `Uninitialized → AwaitingInitialized → Ready` phase gate requires
+    an identified initialize request followed by `notifications/initialized`
+    before tools and resources are available; premature/duplicate transitions
+    return `-32003` without changing game state.
   - Stdio transport suppresses responses for omitted-ID notifications and emits
     ordered response arrays for nonempty batches while preserving identified,
     explicit-null, malformed-request, and empty-batch boundaries; lifecycle

@@ -4,6 +4,15 @@ use drl_mcp::McpServer;
 use drl_mcp::json::JsonValue;
 use drl_mcp::protocol::error_codes;
 
+fn ready_server() -> McpServer {
+  let mut server = McpServer::new();
+  let _ = server.handle_request(
+    r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05"}}"#,
+  );
+  let _ = server.handle_request(r#"{"jsonrpc":"2.0","method":"notifications/initialized"}"#);
+  server
+}
+
 #[test]
 fn test_jsonrpc_initialize_handshake() {
   let mut server = McpServer::new();
@@ -90,7 +99,7 @@ fn test_jsonrpc_ping() {
 
 #[test]
 fn test_jsonrpc_tools_list() {
-  let mut server = McpServer::new();
+  let mut server = ready_server();
   let list_req = r#"{"jsonrpc":"2.0","id":"tools-1","method":"tools/list"}"#;
   let resp_str = server.handle_request(list_req);
   let resp = JsonValue::parse(&resp_str).expect("Valid JSON response");
@@ -121,7 +130,7 @@ fn test_jsonrpc_tools_list() {
 
 #[test]
 fn test_jsonrpc_resources_list_and_read() {
-  let mut server = McpServer::new();
+  let mut server = ready_server();
 
   let list_req = r#"{"jsonrpc":"2.0","id":2,"method":"resources/list"}"#;
   let resp_str = server.handle_request(list_req);
@@ -153,7 +162,7 @@ fn test_jsonrpc_resources_list_and_read() {
 
 #[test]
 fn test_jsonrpc_error_handling() {
-  let mut server = McpServer::new();
+  let mut server = ready_server();
 
   // 1. Malformed JSON
   let malformed = "NOT A JSON OBJECT";

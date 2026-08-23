@@ -7,9 +7,10 @@ temp_dir=$(mktemp -d "${TMPDIR:-/tmp}/drl-mcp-notifications.XXXXXX")
 trap 'rm -rf "$temp_dir"' EXIT HUP INT TERM
 
 cat >"$temp_dir/requests.jsonl" <<'EOF'
+{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"drl-notifications","version":"1"}}}
 {"jsonrpc":"2.0","method":"notifications/initialized"}
 {"jsonrpc":"2.0","method":"tools/call","params":{"name":"game_start","arguments":{"seed":7}}}
-{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"game_get_metrics"}}
+{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"game_get_metrics"}}
 not-json
 {"jsonrpc":"2.0","id":null,"method":"ping"}
 EOF
@@ -21,16 +22,18 @@ import json
 import sys
 
 lines = [line for line in open(sys.argv[1], encoding="utf-8") if line.strip()]
-if len(lines) != 3:
-    raise SystemExit(f"expected 3 responses for 5 requests, found {len(lines)}")
+if len(lines) != 4:
+    raise SystemExit(f"expected 4 responses for 6 requests, found {len(lines)}")
 responses = [json.loads(line) for line in lines]
 if responses[0].get("id") != 1 or "result" not in responses[0]:
+    raise SystemExit("initialize request did not return a response")
+if responses[1].get("id") != 2 or "result" not in responses[1]:
     raise SystemExit("identified metrics request did not observe notification-started session")
-if responses[0]["result"]["data"].get("turns_survived") is None:
+if responses[1]["result"]["data"].get("turns_survived") is None:
     raise SystemExit("metrics response lacks turns_survived")
-if responses[1].get("error", {}).get("code") != -32700:
+if responses[2].get("error", {}).get("code") != -32700:
     raise SystemExit("malformed input did not return a parse error")
-if responses[2].get("id") is not None or "result" not in responses[2]:
+if responses[3].get("id") is not None or "result" not in responses[3]:
     raise SystemExit("explicit id:null request was incorrectly suppressed")
 PY
 
