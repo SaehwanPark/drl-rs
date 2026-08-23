@@ -31,7 +31,7 @@ replays, and regression testing.
     shot accuracy, damage, kill, pickup, and item-use totals/rates without
     inferring balance conclusions.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.17`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.18`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:
@@ -60,9 +60,9 @@ replays, and regression testing.
     pinned-source provenance and explicit nested/function migration gaps; it
     never ships a Lua runtime or silently infers behavior.
   - Release builds emit a hashed static-bundle manifest with graphics rights
-    metadata; optional detached manifest signing and bootstrap-independent
-    offline-cache registration are supported, while key custody and
-    offline/cross-browser acceptance remain open.
+    metadata; optional detached manifest signing now has ephemeral-key hosted
+    CI smoke coverage, while key custody and offline/cross-browser acceptance
+    remain open.
   - Placeholder M7 atlas rectangles are not a fidelity claim.
 
 ## Quick start

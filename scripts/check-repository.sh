@@ -31,6 +31,7 @@ sh scripts/check-agent-harness.sh
 scripts/check-reference-capture.sh
 sh scripts/test-cohort-study.sh
 sh scripts/test-legacy-content-converter.sh
+sh scripts/test-release-signing.sh
 cargo fmt --all -- --check
 cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
 cargo test --locked --workspace

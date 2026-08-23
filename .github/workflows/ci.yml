@@ -50,3 +50,15 @@ jobs:
         run: sh scripts/build-web.sh
       - name: Verify release manifest
         run: sh scripts/check-release-manifest.sh
+      - name: Verify signed release manifest with ephemeral CI key
+        env:
+          RELEASE_SIGNING_KEY: ${{ runner.temp }}/drl-release-signing-key.pem
+        run: |
+          openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 \
+            -out "$RELEASE_SIGNING_KEY"
+          RELEASE_SIGNING_KEY="$RELEASE_SIGNING_KEY" sh scripts/build-web.sh
+          test -s dist/release-manifest.sig
+          test -s dist/release-manifest.pub
+          test ! -e "dist/$(basename "$RELEASE_SIGNING_KEY")"
+          RELEASE_VERIFY_KEY="$PWD/dist/release-manifest.pub" \
+            sh scripts/check-release-manifest.sh
