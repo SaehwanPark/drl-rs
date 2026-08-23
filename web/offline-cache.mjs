@@ -3,6 +3,16 @@
  * graphics. The injected browser capability and diagnostic sink keep this
  * boundary deterministic and easy to exercise outside a browser.
  */
+export function offlineRegistrationStatus(registration) {
+  if (registration.waiting) {
+    return " Offline cache update is ready; reload when convenient.";
+  }
+  if (registration.active) {
+    return " Offline cache ready for the next reload.";
+  }
+  return " Offline cache installation started for the next reload.";
+}
+
 export async function registerOfflineCache(browserNavigator, writeDiagnostic) {
   if (!("serviceWorker" in browserNavigator)) {
     writeDiagnostic(
@@ -15,11 +25,9 @@ export async function registerOfflineCache(browserNavigator, writeDiagnostic) {
   try {
     const registration = await browserNavigator.serviceWorker.register(
       "./service-worker.js",
-      { scope: "./" },
+      { scope: "./", updateViaCache: "none" },
     );
-    return registration.active
-      ? " Offline cache ready for the next reload."
-      : " Offline cache installation started for the next reload.";
+    return offlineRegistrationStatus(registration);
   } catch (error) {
     writeDiagnostic(
       "Offline cache unavailable",

@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.35`
+Current project version: `0.2.36`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,51 +23,59 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M12 Browser-Environment Diagnostics
+## 2. Active Implementation Slice: M10 PWA Update Freshness
 
 ### 2.1 Scope & Objective
 
-Make unsupported or untested browser environments fail with a clear, local
-recovery diagnostic before WebGPU startup. The contract distinguishes an
-insecure context from an unavailable WebGPU API and keeps the existing
-service-worker/audio diagnostics explicit. It is a browser-boundary contract;
-it does not claim support for another browser, backend, or real deployment.
+Make service-worker update checks bypass the browser HTTP cache and report a
+waiting update without forcing takeover of an active game shell. This keeps
+static-hosting releases discoverable while avoiding mixed-version page/cache
+state. It is a registration contract; it does not claim real browser offline
+installation, update activation, or cross-browser support.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
-1. **Browser diagnostics shell (v0.2.14–v0.2.27)**:
-   - The page already exposes an accessible diagnostic alert, offline-cache
-     registration status, and recoverable audio/WebGPU messages.
-2. **Static support contract**:
-   - The local web checks already assert that diagnostics are same-origin,
-     non-telemetric, and focused for recovery.
+1. **Versioned service-worker cache (v0.2.27)**:
+   - Install precaches the generated release and activate removes stale
+     project namespaces without reading unrelated caches.
+2. **Bootstrap registration contract**:
+   - Registration already begins before WebGPU startup and reports capability,
+     installing, ready, and failure states through the existing status path.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Pure environment classifier**: A small JavaScript module maps secure
-  context and WebGPU availability to stable title/detail/action/status text.
-- [x] **Startup guard**: The Start handler uses the classifier before WASM
-  initialization and routes the resulting message through the existing
-  focused diagnostic panel.
-- [x] **Contract tests**: Node tests cover secure-context failure, WebGPU
-  absence, supported startup, and stable recovery text.
-- [x] **No expansion of claims**: Unsupported browser/backends, offline
-  installation, WCAG conformance, and screen-reader acceptance remain open.
+- [x] **Freshness registration**: `serviceWorker.register` passes
+  `updateViaCache: "none"` alongside the existing scope.
+- [x] **Waiting-update status**: A waiting registration reports that an update
+  is ready and suggests a reload; active-only and installing states retain
+  their existing messages.
+- [x] **Contract tests**: Node fixtures cover registration options, waiting
+  priority, capability failure, and registration failure.
+- [x] **No expansion of claims**: Real offline installation/control/reload,
+  forced activation, cross-browser support, and production deployment remain
+  open.
 
 ### 2.4 Pure Contract
 
-- **Input**: Browser environment capabilities at the Start-button boundary.
-- **Output**: A stable diagnostic object or `null`; no WASM initialization or
-  gameplay command is attempted when the environment is unsupported.
+- **Input**: Browser service-worker registration state.
+- **Output**: Registration uses a no-HTTP-cache update policy and returns a
+  stable status string; no active worker is forcibly replaced.
 - **Ownership Boundary**:
-  - `web/browser-support.mjs` owns the pure environment classification.
-  - `web/bootstrap.js` owns DOM integration and diagnostic focus.
-  - `scripts/test-browser-support.mjs` owns deterministic contract fixtures.
-  - No simulation, content migration, telemetry, or network behavior changes.
+  - `web/offline-cache.mjs` owns registration options and status projection.
+  - `scripts/test-offline-cache.mjs` owns deterministic registration fixtures.
+  - No service-worker cache algorithm, simulation, telemetry, or gameplay
+    changes.
 
 ---
 
 ## 3. Recent Delivered Slices
+
+### M10 — PWA Update Freshness (`VERSION` 0.2.36)
+
+- [x] Registration freshness and waiting-update status are implemented and
+  covered by deterministic Node fixtures.
+- [ ] Real browser update activation, offline installation, and reload
+  acceptance remain open.
 
 ### M12 — Browser-Environment Diagnostics (`VERSION` 0.2.35)
 
@@ -343,7 +351,7 @@ it does not claim support for another browser, backend, or real deployment.
 
 ## 6. Verification Gates
 
-### Verified Baseline (`VERSION` 0.2.35)
+### Verified Baseline (`VERSION` 0.2.36)
 
 47f3526 feat(web): classify unsupported browser environments (#126)
 d9d78ea feat(content): version evidence crosswalk schema (#125)

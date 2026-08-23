@@ -33,7 +33,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.35`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.36`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:
@@ -71,7 +71,9 @@ replays, and regression testing.
     real offline lifecycle acceptance remains open.
   - The service worker reads only the current generated release cache, so stale
     or unrelated Cache Storage namespaces cannot satisfy offline requests;
-    real install/control/reload acceptance remains open.
+    registration bypasses browser HTTP caching for worker updates and reports
+    waiting updates without forcing takeover; real install/control/reload
+    acceptance remains open.
   - Dynamic browser interaction semantics qualify generated inventory actions,
     keep status announcements in one live region, associate canvas help, and
     provide visible focus/recovery behavior; WCAG AA and screen-reader

@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.36]
+
+- Configured service-worker registration to bypass browser HTTP caching for
+  worker updates and report waiting updates without forcing takeover.
+- Added deterministic registration-state fixtures; real offline/update/reload
+  browser acceptance remains open.
+
 ## [0.2.35]
 
 - Added a pure browser-environment classifier for insecure contexts and missing

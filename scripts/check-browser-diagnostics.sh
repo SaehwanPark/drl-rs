@@ -23,6 +23,8 @@ grep -F 'navigator.gpu' "$bootstrap" >/dev/null
 grep -F 'browserSupportDiagnostic' "$bootstrap" "$browser_support" >/dev/null
 grep -F 'window.isSecureContext' "$bootstrap" >/dev/null
 grep -F 'Offline cache unavailable' "$offline_cache" >/dev/null
+grep -F 'updateViaCache: "none"' "$offline_cache" >/dev/null
+grep -F 'Offline cache update is ready' "$offline_cache" >/dev/null
 grep -F 'Audio unavailable' "$bootstrap" >/dev/null
 grep -F 'fn set_diagnostic' "$wasm" >/dev/null
 grep -F 'WebGPU presentation unavailable' "$wasm" >/dev/null
