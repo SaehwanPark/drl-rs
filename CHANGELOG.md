@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.24]
+
+- Added strict V2 browser-save tokens with a declared command count while
+  retaining compatibility with the shipped V1 fixed-session format.
+- Successful V1 restores migrate in place after transactional replay; failed
+  migrations keep the playable session and report a retry warning.
+
 ## [0.2.23]
 
 - Added an immutable `drl-core` catalog for 26 pinned special-level IDs with

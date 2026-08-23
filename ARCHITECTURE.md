@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.23`
+Current project version: `0.2.24`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -280,8 +280,10 @@ Presentation Boundary
   caller-owned tolerances.
 
 ### 4.8 Persistence & Release Packaging
-- **Session Snapshots**: `SessionSnapshot` encodes complete command histories
-  with version headers, checksums, and strict corruption handling.
+- **Session Snapshots**: `drl-web::persistence` encodes complete command
+  histories as strict V2 command-count tokens, accepts only the shipped V1
+  token for transactional replay, and migrates successful V1 restores in the
+  existing storage slot.
 - **Service Worker Cache**: Versioned same-origin worker caches static bundles
   keyed by project version and commit hash.
 - **Release Manifests**: Build tooling generates `release-manifest.json` with

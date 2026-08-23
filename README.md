@@ -31,7 +31,7 @@ replays, and regression testing.
     shot accuracy, damage, kill, pickup, and item-use totals/rates without
     inferring balance conclusions.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.23`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.24`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:
@@ -62,6 +62,9 @@ replays, and regression testing.
     beings, item families, terrain cells, and special-level metadata; the
     special-level catalog remains descriptive and never ships a Lua runtime or
     silently infers behavior.
+  - Browser saves use a bounded V2 command-count token, accept the shipped V1
+    token for transactional replay, and migrate successful V1 restores in place;
+    real offline lifecycle acceptance remains open.
   - Release builds emit a hashed static-bundle manifest with graphics rights
     metadata; optional detached manifest signing now has ephemeral-key hosted
     CI smoke coverage, while key custody and offline/cross-browser acceptance
