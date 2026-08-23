@@ -37,6 +37,24 @@ truth.
   or runtime loading, and make custom caller configuration an explicit escape
   hatch rather than silently replacing it with a default profile.
 
+## Treat each new content archetype as an exhaustive fan-out
+
+- **Context:** Adding an item or armor family crosses the spawn enum, display
+  and JSON protocol, validation, factories, definition tables, and asset
+  descriptors.
+- **Symptom:** The new entry appears in one registry but compilation or asset
+  coverage checks fail elsewhere, often because an expected slot or animation
+  list was not updated.
+- **Cause:** These typed boundaries intentionally repeat the archetype in
+  exhaustive matches and coverage contracts; they are separate invariants, not
+  incidental duplication.
+- **Resolution:** Build an update matrix from the archetype name, then search
+  every exhaustive match and descriptor coverage list before reviewing the
+  slice.
+- **Prevention:** Treat a missing protocol, definition, or asset-coverage
+  case as an incomplete slice and keep the focused exhaustive tests alongside
+  the content change.
+
 ## Let the active scope supersede exploratory design
 
 - **Context:** Discovery can identify several related policies at once; Loop 56
@@ -98,6 +116,24 @@ truth.
 - **Prevention:** End every slice with a handoff containing source/merge
   revisions, local and hosted results, explicit NOT_RUN surfaces, and a clean
   branch check before measuring usage or selecting more work.
+
+When an aggregate PR check remains `pending`, inspect the workflow run's
+step-level state before treating it as stalled; merge only after each required
+repository and WASM job has reached a passing terminal state.
+
+## Clean generated Python caches after repository gates
+
+- **Context:** The repository gate invokes Python content tooling from the
+  tracked `scripts/` tree.
+- **Symptom:** A successful `sh scripts/check-repository.sh` can leave an
+  untracked `scripts/__pycache__/convert-legacy-content*.pyc` file, making a
+  merged branch look dirty.
+- **Cause:** Python bytecode caching is emitted beside the helper script and is
+  not part of the intended source change.
+- **Resolution:** Remove only that known cache artifact after the gate, then
+  re-check the worktree before handoff.
+- **Prevention:** Always inspect `git status --short` after repository checks;
+  distinguish generated caches from source edits before committing or merging.
 
 ## Commit replay sessions only after temporary execution
 
