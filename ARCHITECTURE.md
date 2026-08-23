@@ -152,6 +152,9 @@ Presentation Boundary
   - State Persistence: `SessionSnapshot` codec with localStorage save/load.
     Rejected values are quarantined in a bounded browser-owned slot before
     active storage cleanup; future version migration is explicit and gated.
+    The DOM shell requires an explicit accessible Clear Save confirmation before
+    calling the Rust-owned storage removal export; cancel and Escape do not
+    mutate the save or active simulation.
   - Release Packaging: Bootstrap-independent service worker registration,
     service worker caching with no-HTTP-cache update checks and waiting-update
     status, release manifest validation, digest sidecars, checkout-identity

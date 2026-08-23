@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.61]
+
+- Added an accessible Clear Save confirmation dialog in the browser shell.
+  Cancel and Escape preserve the saved session and active simulation; only the
+  explicit confirmation invokes the existing Rust-owned storage removal.
+- Added browser control contract coverage and recorded live supported-Chromium
+  cancel/save-preservation evidence. Destructive confirmation remains `NOT_RUN`
+  for this run.
+
 ## [0.2.60]
 
 - Added transactional `game_load_replay` for the exact canonical V1 replay

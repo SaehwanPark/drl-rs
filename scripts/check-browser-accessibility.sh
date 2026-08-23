@@ -107,6 +107,13 @@ require(attributes.get("aria-describedby") == "game-log", "game canvas is not as
 tag, attributes = by_id.get("inventory", (None, {}))
 require(tag is not None and attributes.get("role") == "region", "inventory region role is missing")
 require(attributes.get("aria-label"), "inventory region is unnamed")
+tag, attributes = by_id.get("clear-save-dialog", (None, {}))
+require(tag == "section" and attributes.get("role") == "dialog", "Clear Save dialog role is missing")
+require(attributes.get("aria-labelledby") == "clear-save-title", "Clear Save dialog title association is missing")
+require(attributes.get("aria-describedby") == "clear-save-detail", "Clear Save dialog detail association is missing")
+for button_id in ("cancel-clear-save", "confirm-clear-save"):
+    tag, attributes = by_id.get(button_id, (None, {}))
+    require(tag == "button" and attributes.get("type") == "button", f"{button_id} must be a button")
 require("button:focus-visible" in html, "focus-visible control styling is missing")
 require("clearDiagnostic();\n    const result = await boot();" in bootstrap, "startup must clear stale diagnostics before boot")
 require("if (diagnostics.hidden)" in bootstrap, "startup must preserve boot diagnostics and focus")
