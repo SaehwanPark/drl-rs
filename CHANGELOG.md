@@ -3,6 +3,16 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.54]
+
+- Made the MCP legal-action catalog coherent by advertising explicit
+  `unequip` and adjacent `attack_melee` commands and adding a pre-dispatch gate
+  for recognized commands that are not currently advertised.
+- Preserved `-32602` for unknown/malformed action input, `-32001` for rejected
+  recognized actions, core geometry/LOS/range validation, terminal precedence,
+  and state-safe deterministic replay/metrics behavior; full dynamic
+  legal-action enumeration and external-client compatibility remain open.
+
 ## [0.2.53]
 
 - Added a canonical public release-rights inventory and deterministic source /
@@ -19,7 +29,8 @@ documented in this file.
   ranged coordinate pairs, item IDs, equipment slots, and no-argument actions.
 - Preserved runtime parsing, aliases, unknown-property tolerance, malformed
   errors, terminal lifecycle behavior, and deterministic repeated stdio output;
-  legal-action validation and external-client certification remain open.
+  full dynamic legal-action enumeration and external-client certification remain
+  open.
 
 ## [0.2.51]
 

@@ -36,7 +36,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.53`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.54`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:
@@ -136,8 +136,11 @@ After a terminal victory, death, turn limit, or stall, further actions are
 rejected without changing metrics or replay; reset remains available.
 The published `game_step_action` schema now conditionally describes its
 direction, coordinate-alias, item, and slot requirements while retaining
-unknown property tolerance; legal-action validation and external-client
-certification remain open.
+unknown property tolerance. `game_list_actions` also advertises explicit
+unequip and adjacent melee commands, and recognized commands not currently
+advertised are rejected before live simulation with `-32001`; the core still
+owns geometry/LOS/range validation and full legal-action enumeration remains
+open.
 
 ### Browser slice
 

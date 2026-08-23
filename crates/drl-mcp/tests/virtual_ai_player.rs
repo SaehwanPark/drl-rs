@@ -72,7 +72,24 @@ fn test_virtual_ai_agent_playing_scenario_via_mcp() {
       let h_pos = hostile.get("position").unwrap();
       let hx = h_pos.get("x").unwrap().as_i64().unwrap();
       let hy = h_pos.get("y").unwrap().as_i64().unwrap();
-      format!(r#"{{"action":"fire","target_x":{hx},"target_y":{hy}}}"#)
+      let fire_is_advertised = legal_actions.iter().any(|action| {
+        action.get("action").and_then(|value| value.as_str()) == Some("Fire")
+          && action
+            .get("params")
+            .and_then(|params| params.get("target_x"))
+            .and_then(|value| value.as_i64())
+            == Some(hx)
+          && action
+            .get("params")
+            .and_then(|params| params.get("target_y"))
+            .and_then(|value| value.as_i64())
+            == Some(hy)
+      });
+      if fire_is_advertised {
+        format!(r#"{{"action":"fire","target_x":{hx},"target_y":{hy}}}"#)
+      } else {
+        r#"{"action":"wait"}"#.to_string()
+      }
     } else if legal_actions
       .iter()
       .any(|a| a.get("action").and_then(|v| v.as_str()) == Some("Descend"))

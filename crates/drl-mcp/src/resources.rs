@@ -63,23 +63,25 @@ DRL-Rust is a deterministic, headless, turn-based roguelike simulation of Doom t
 
 1. `move` (`direction`: North, South, East, West, NorthEast, NorthWest, SouthEast, SouthWest)
    - Step into an adjacent walkable tile or bump-attack an adjacent enemy.
-2. `wait`
+2. `attack_melee` (`direction`: North, South, East, West, NorthEast, NorthWest, SouthEast, SouthWest)
+   - Directly attack a visible adjacent enemy without moving.
+3. `wait`
    - Wait in place for 1 turn (costs 100 energy).
-3. `fire` (`target_x`: int, `target_y`: int)
+4. `fire` (`target_x`: int, `target_y`: int)
    - Fire equipped ranged weapon at target grid coordinates.
-4. `reload`
+5. `reload`
    - Reload equipped ranged weapon from inventory ammunition.
-5. `pickup`
+6. `pickup`
    - Pick up an item lying on the current ground tile into backpack.
-6. `use` (`item_id`: int)
+7. `use` (`item_id`: int)
    - Consume or activate an inventory item (e.g. MedPack or Phase Device).
-7. `equip` (`item_id`: int, `slot`: "Weapon" | "Armor")
+8. `equip` (`item_id`: int, `slot`: "Weapon" | "Armor")
    - Equip an item from backpack into active gear slot.
-8. `unequip` (`slot`: "Weapon" | "Armor")
+9. `unequip` (`slot`: "Weapon" | "Armor")
    - Unequip gear back into backpack inventory.
-9. `drop` (`item_id`: int)
+10. `drop` (`item_id`: int)
    - Drop an inventory item onto the current floor tile.
-10. `descend`
+11. `descend`
    - Descend down-stairs to enter the next dungeon depth.
 "#;
       Ok(wrap_resource_content(uri, "text/markdown", text))

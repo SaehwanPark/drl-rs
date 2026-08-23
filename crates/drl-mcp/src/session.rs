@@ -40,7 +40,10 @@ impl LegalAction {
   }
 }
 
-/// Computes the set of valid legal actions from the current player observation.
+/// Computes the fair, currently advertised actions from player observation.
+///
+/// This catalog intentionally leaves hidden geometry and dynamic core checks to
+/// `drl_core::Game::step` rather than claiming to be an exhaustive rules engine.
 #[must_use]
 pub fn compute_legal_actions(obs: &PlayerObservation) -> Vec<LegalAction> {
   let mut actions = Vec::new();
@@ -97,6 +100,18 @@ pub fn compute_legal_actions(obs: &PlayerObservation) -> Vec<LegalAction> {
         command: Command::Move(dir),
         params: JsonValue::Object(p),
       });
+
+      if let Some(monster) = monster_at_pos {
+        let mut melee_params = BTreeMap::new();
+        melee_params.insert("action".to_string(), JsonValue::from("attack_melee"));
+        melee_params.insert("direction".to_string(), JsonValue::from(dir_name));
+        actions.push(LegalAction {
+          action: "AttackMelee".to_string(),
+          description: format!("Direct melee attack {} to the {dir_name}", monster.name),
+          command: Command::AttackMelee(dir),
+          params: JsonValue::Object(melee_params),
+        });
+      }
     }
   }
 
@@ -207,7 +222,30 @@ pub fn compute_legal_actions(obs: &PlayerObservation) -> Vec<LegalAction> {
     }
   }
 
-  // 8. Drop items from inventory
+  // 8. Unequip currently equipped weapon and armor.
+  for (slot, label, item) in [
+    (
+      EquipmentSlot::Weapon,
+      "Weapon",
+      obs.equipped_weapon.as_ref(),
+    ),
+    (EquipmentSlot::Armor, "Armor", obs.equipped_armor.as_ref()),
+  ] {
+    let Some(item) = item else {
+      continue;
+    };
+    let mut p = BTreeMap::new();
+    p.insert("action".to_string(), JsonValue::from("unequip"));
+    p.insert("slot".to_string(), JsonValue::from(label));
+    actions.push(LegalAction {
+      action: "Unequip".to_string(),
+      description: format!("Unequip {} from the {label} slot", item.name),
+      command: Command::Unequip(slot),
+      params: JsonValue::Object(p),
+    });
+  }
+
+  // 9. Drop items from inventory
   for item in &obs.inventory {
     let mut p = BTreeMap::new();
     p.insert("action".to_string(), JsonValue::from("drop"));
@@ -221,7 +259,7 @@ pub fn compute_legal_actions(obs: &PlayerObservation) -> Vec<LegalAction> {
     });
   }
 
-  // 9. Descend stairs (if standing on StairsDown)
+  // 10. Descend stairs (if standing on StairsDown)
   let on_stairs = obs
     .visible_tiles
     .iter()
@@ -278,7 +316,11 @@ pub fn json_to_command(val: &JsonValue) -> Result<Command, String> {
         .ok_or_else(|| "Missing 'direction' parameter for move action".to_string())?;
       let dir =
         parse_direction(dir_str).ok_or_else(|| format!("Invalid direction value: '{dir_str}'"))?;
-      Ok(Command::Move(dir))
+      if dir == Direction::None {
+        Ok(Command::Wait)
+      } else {
+        Ok(Command::Move(dir))
+      }
     }
     "attack_melee" | "melee" => {
       let dir_str = obj
@@ -937,7 +979,10 @@ impl McpSession {
     Ok(game.observe_omniscient())
   }
 
-  /// Executes a single semantic command in the simulation.
+  /// Executes a single currently advertised semantic command in the simulation.
+  ///
+  /// The fair legal-action catalog is checked before dispatch; the core remains
+  /// authoritative for constraints that the observation cannot prove.
   pub fn step(
     &mut self,
     command: Command,
@@ -953,6 +998,14 @@ impl McpSession {
       .game
       .as_mut()
       .ok_or_else(|| "No active game session".to_string())?;
+
+    let observation = game.observe_player();
+    if !compute_legal_actions(&observation)
+      .iter()
+      .any(|legal_action| legal_action.command == command)
+    {
+      return Err("Command is not currently advertised as legal".to_string());
+    }
 
     let player_id = game
       .world()
@@ -1077,6 +1130,76 @@ mod tests {
   }
 
   #[test]
+  fn test_legal_action_catalog_includes_explicit_melee_and_unequip() {
+    let mut session = McpSession::new();
+    let obs = session
+      .load_scenario("\n#####\n#@h.#\n#####\n", None)
+      .unwrap();
+    let actions = compute_legal_actions(&obs);
+    assert!(actions.iter().any(|action| {
+      action.action == "AttackMelee" && action.command == Command::AttackMelee(Direction::East)
+    }));
+
+    session
+      .load_scenario("\n######\n#@p..#\n######\n", None)
+      .unwrap();
+    let (_, obs, _) = session.step(Command::Move(Direction::East)).unwrap();
+    assert!(
+      obs
+        .ground_items
+        .iter()
+        .any(|item| item.position == obs.player_position)
+    );
+    let (_, obs, _) = session.step(Command::Pickup).unwrap();
+    let pistol_id = obs
+      .inventory
+      .iter()
+      .find(|item| item.category == ItemCategory::Weapon)
+      .expect("scenario pistol in inventory")
+      .id;
+    let (_, obs, _) = session.step(Command::Equip(pistol_id)).unwrap();
+    assert!(compute_legal_actions(&obs).iter().any(|action| {
+      action.action == "Unequip" && action.command == Command::Unequip(EquipmentSlot::Weapon)
+    }));
+  }
+
+  #[test]
+  fn test_unadvertised_commands_are_rejected_without_mutation() {
+    let mut session = McpSession::new();
+    session
+      .load_scenario("\n#####\n#@..#\n#####\n", None)
+      .unwrap();
+
+    let rejected = [
+      Command::Move(Direction::North),
+      Command::AttackMelee(Direction::East),
+      Command::Drop(ItemId::new(999)),
+      Command::Use(ItemId::new(999)),
+      Command::Unequip(EquipmentSlot::Armor),
+      Command::Descend,
+    ];
+    for command in rejected {
+      let observation_before = session.get_observation().unwrap();
+      let metrics_before = session.get_metrics().clone();
+      let replay_before = session.export_replay().unwrap().clone();
+      let events_before = session.recent_events().to_vec();
+
+      assert_eq!(
+        session.step(command).unwrap_err(),
+        "Command is not currently advertised as legal"
+      );
+      assert_eq!(session.get_observation().unwrap(), observation_before);
+      assert_eq!(session.get_metrics(), &metrics_before);
+      assert_eq!(session.export_replay().unwrap(), &replay_before);
+      assert_eq!(session.recent_events(), events_before.as_slice());
+    }
+
+    let (_, observation, _) = session.step(Command::Wait).unwrap();
+    assert_eq!(observation.turn.count, 1);
+    assert_eq!(session.export_replay().unwrap().commands.len(), 1);
+  }
+
+  #[test]
   fn test_json_to_command_parsing() {
     let raw = r#"{"action":"move","direction":"North"}"#;
     let val = JsonValue::parse(raw).unwrap();
@@ -1110,6 +1233,12 @@ mod tests {
       json_to_command(&item_boundary).unwrap(),
       Command::Use(ItemId::new(9_007_199_254_740_992))
     );
+
+    for alias in ["none", "wait", "."] {
+      let value =
+        JsonValue::parse(&format!(r#"{{"action":"move","direction":"{alias}"}}"#)).unwrap();
+      assert_eq!(json_to_command(&value).unwrap(), Command::Wait);
+    }
   }
 
   #[test]
