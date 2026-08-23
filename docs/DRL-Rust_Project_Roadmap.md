@@ -396,7 +396,11 @@ Implement robust client-side save state and offline browser capabilities.
   waiting updates without forcing active-client takeover.
 - [x] Service-worker navigation and asset reads are isolated to the current
   generated release cache; stale/unrelated cache namespaces fail closed.
-- [ ] Full offline-after-first-load PWA lifecycle acceptance.
+- [ ] Full offline-after-first-load PWA lifecycle acceptance remains open while
+  the test-plan-required Clear Save action awaits confirmation; offline
+  navigation/startup and Save/Load are evidenced on the local desktop
+  Chromium target in
+  [`docs/acceptance/browser-offline-2026-08-23.md`](acceptance/browser-offline-2026-08-23.md).
 - [x] Corruption recovery policy: fail-closed restore, bounded quarantine, and
   playable boot/load when storage cleanup is unavailable.
 - [x] Replay-compatible save migration for the shipped V1 token into strict V2
@@ -466,7 +470,9 @@ diagnostics.
 - [ ] Production key custody, secret provisioning, rotation, and trust-root
   policy.
 - [ ] Dynamic WCAG 2.1 AA and screen-reader accessibility acceptance.
-- [ ] Real-world browser offline installation acceptance tests.
+- [x] Real-world browser service-worker installation, offline navigation, and
+  reload acceptance on the local desktop Chromium target; OS-level install
+  prompts and production HTTPS deployment remain M13 scope.
 - [x] Graceful fallback and diagnostics for known unsupported startup
   environments; untested browsers and backends remain unclaimed.
 
