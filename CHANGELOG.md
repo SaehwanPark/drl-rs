@@ -3,6 +3,12 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.68]
+
+- Added typed `AmmoPack9mm` and `AmmoPackShells` families for pinned `pammo`
+  and `pshell` records, preserving fixed payloads, descriptions, replay JSON
+  kinds, and atlas slots. Prepared-slot consumption remains open.
+
 ## [0.2.67]
 
 - Added the pinned `pcell` power-battery `AmmoPackCells` family with fixed

@@ -80,6 +80,8 @@ pub enum ItemArchetype {
   AmmoCells,
   AmmoPackRockets,
   AmmoPackCells,
+  AmmoPack9mm,
+  AmmoPackShells,
   SmallMedPack,
   LargeMedPack,
   GreenArmor,
@@ -99,6 +101,8 @@ impl fmt::Display for ItemArchetype {
       Self::AmmoCells => "ammo_cells",
       Self::AmmoPackRockets => "ammo_pack_rockets",
       Self::AmmoPackCells => "ammo_pack_cells",
+      Self::AmmoPack9mm => "ammo_pack_9mm",
+      Self::AmmoPackShells => "ammo_pack_shells",
       Self::SmallMedPack => "small_medpack",
       Self::LargeMedPack => "large_medpack",
       Self::GreenArmor => "green_armor",
@@ -165,6 +169,11 @@ mod tests {
       "ammo_pack_rockets"
     );
     assert_eq!(ItemArchetype::AmmoPackCells.to_string(), "ammo_pack_cells");
+    assert_eq!(ItemArchetype::AmmoPack9mm.to_string(), "ammo_pack_9mm");
+    assert_eq!(
+      ItemArchetype::AmmoPackShells.to_string(),
+      "ammo_pack_shells"
+    );
   }
 
   #[test]

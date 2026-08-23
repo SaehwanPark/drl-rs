@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.67`
+Current project version: `0.2.68`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.67)
+## 3. Current Progress Summary (`VERSION` 0.2.68)
 
 ### Delivered Foundations
 
@@ -462,6 +462,8 @@ scripting.
   replay kind, and atlas slot without implementing prepared-slot consumption.
 - [x] Typed power-battery ammo-pack boundary preserves pinned amount/capacity,
   replay kind, two-frame marker, and atlas slot without prepared-slot use.
+- [x] Typed base 10mm-chain and shell-box ammo-pack boundaries preserve pinned
+  amount/capacity, replay kinds, descriptions, and atlas slots.
 - [ ] Full migration of legacy monsters, weapons, armor, mods, and consumable
   items.
 - [ ] Full migration of special levels, vaults, and dungeon branches.

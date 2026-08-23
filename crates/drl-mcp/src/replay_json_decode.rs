@@ -291,6 +291,8 @@ fn item_kind(value: &JsonValue, context: &str) -> Result<ItemSpawnKind, String> 
     )?)),
     "ammo_pack_rockets" => Ok(ItemSpawnKind::AmmoPackRockets),
     "ammo_pack_cells" => Ok(ItemSpawnKind::AmmoPackCells),
+    "ammo_pack_9mm" => Ok(ItemSpawnKind::AmmoPack9mm),
+    "ammo_pack_shells" => Ok(ItemSpawnKind::AmmoPackShells),
     "small_medpack" => Ok(ItemSpawnKind::SmallMedPack),
     "large_medpack" => Ok(ItemSpawnKind::LargeMedPack),
     "green_armor" => Ok(ItemSpawnKind::GreenArmor),

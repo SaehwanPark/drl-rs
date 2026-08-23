@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.67`
+Current project version: `0.2.68`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -62,6 +62,9 @@ and measured atlas slots without importing Lua callbacks or weapon behavior.
 - [x] **Power-battery pack boundary**: typed `AmmoPackCells` preserves the
   observed amount/capacity `120`, cell relation, description, two-frame marker,
   and `SPRITE_PCELL` slot without prepared-slot use.
+- [x] **Base ammo-pack boundary**: typed `AmmoPack9mm` and `AmmoPackShells`
+  preserve pinned amounts/capacities (`250`/`250`, `100`/`100`), descriptions,
+  replay kinds, and `SPRITE_PAMMO`/`SPRITE_PSHELL` slots.
 - [ ] **Full migration**: rocket/plasma weapon behavior, dynamic callbacks,
   balance/fairness, and remaining legacy item families remain open.
 - [x] **Explicit non-goals**: no gameplay/core rule, observation schema,

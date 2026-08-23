@@ -180,6 +180,28 @@ const AMMO_PACK_CELLS: ItemDefinition = ItemDefinition {
   },
 };
 
+const AMMO_PACK_9MM: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::AmmoPack9mm,
+  name: "10mm Ammo Chain",
+  description: "That reminds you about action films you've seen long ago. Might be useful in the prepared slot.",
+  kind: ItemDefinitionKind::AmmoPack {
+    ammo_type: AmmoType::Ammo9mm,
+    amount: 250,
+    max_amount: 250,
+  },
+};
+
+const AMMO_PACK_SHELLS: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::AmmoPackShells,
+  name: "Shell Box",
+  description: "Packed shells, like sardines! Might be useful in the prepared slot.",
+  kind: ItemDefinitionKind::AmmoPack {
+    ammo_type: AmmoType::Shells,
+    amount: 100,
+    max_amount: 100,
+  },
+};
+
 const SMALL_MEDPACK: ItemDefinition = ItemDefinition {
   archetype: ItemArchetype::SmallMedPack,
   name: "Small MedPack",
@@ -225,6 +247,8 @@ pub const fn definition_for_spawn_kind(kind: ItemSpawnKind) -> &'static ItemDefi
     ItemSpawnKind::AmmoCells(_) => &AMMO_CELLS,
     ItemSpawnKind::AmmoPackRockets => &AMMO_PACK_ROCKETS,
     ItemSpawnKind::AmmoPackCells => &AMMO_PACK_CELLS,
+    ItemSpawnKind::AmmoPack9mm => &AMMO_PACK_9MM,
+    ItemSpawnKind::AmmoPackShells => &AMMO_PACK_SHELLS,
     ItemSpawnKind::SmallMedPack => &SMALL_MEDPACK,
     ItemSpawnKind::LargeMedPack => &LARGE_MEDPACK,
     ItemSpawnKind::GreenArmor => &GREEN_ARMOR,
@@ -275,6 +299,16 @@ mod tests {
         ItemSpawnKind::AmmoPackCells,
         ItemArchetype::AmmoPackCells,
         "Power Battery",
+      ),
+      (
+        ItemSpawnKind::AmmoPack9mm,
+        ItemArchetype::AmmoPack9mm,
+        "10mm Ammo Chain",
+      ),
+      (
+        ItemSpawnKind::AmmoPackShells,
+        ItemArchetype::AmmoPackShells,
+        "Shell Box",
       ),
       (
         ItemSpawnKind::SmallMedPack,
@@ -445,6 +479,22 @@ mod tests {
         ammo_type: AmmoType::Cell,
         amount: 120,
         max_amount: 120,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::AmmoPack9mm).kind,
+      ItemDefinitionKind::AmmoPack {
+        ammo_type: AmmoType::Ammo9mm,
+        amount: 250,
+        max_amount: 250,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::AmmoPackShells).kind,
+      ItemDefinitionKind::AmmoPack {
+        ammo_type: AmmoType::Shells,
+        amount: 100,
+        max_amount: 100,
       }
     );
   }
