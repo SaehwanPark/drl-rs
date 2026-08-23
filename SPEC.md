@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.16`
+Current project version: `0.2.17`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,55 +23,60 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M11 Cohort Study CLI
+## 2. Active Implementation Slice: M9 Legacy Content Evidence Converter
 
 ### 2.1 Scope & Objective
 
-Provide a bounded native command for reproducible procedural cohort studies.
-The command selects one observation-only bot, runs a fixed contiguous seed
-range, validates the retained report, and emits stable line-oriented outcome
-and telemetry fields for CI or artifact capture. Output is descriptive and
-does not infer balance, difficulty, or statistical significance.
+Provide a build-time, dependency-light extractor for the shallow declarative
+fields in pinned legacy Lua content records. The converter emits a provenance-
+bearing JSON table and records nested tables/functions as explicit migration
+gaps. It is not a Lua interpreter and does not infer behavior.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
-1. **Fixed-seed cohort reports (v0.1.1–v0.2.13)**:
-   - `CohortConfig` and `CohortReport` retain contiguous seeds, policy identity,
-     aggregate summaries, telemetry, and per-seed replay evidence.
-2. **Integrity and descriptive projections (v0.2.13)**:
-   - Reports reject impossible telemetry before outcome or telemetry projection;
-     comparisons never infer balance or statistical significance.
+1. **Typed Rust content (v0.2.4–v0.2.13)**:
+   - Current monster, item, tile, loot, and level definitions are owned by
+     Rust and tested independently of legacy runtime code.
+2. **Build-time boundary (ADR 0008)**:
+   - Legacy files are pinned research inputs; the browser ships no Lua VM or
+     legacy object model, and unknown behavior remains an explicit gap.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Bounded CLI**: `drl-rust cohort` accepts fixed seed, episode count,
-  turn budget, and `greedy`, `random`, or `explorer` policy selection.
-- [x] **Stable report**: Emit schema, policy, seed range, sample definition,
-  terminal outcome counts/rates, and validated descriptive telemetry fields in
-  deterministic line-oriented form.
-- [x] **Safety limits**: Reject zero or overlarge episode/turn values and
-  unknown options before running a study.
-- [x] **Repeatability tests**: Repeat a bounded study and require byte-identical
-  output; retain native contract coverage in repository checks.
-- [ ] **Difficulty targets**: Canonical target metrics and statistical study
-  interpretation remain open.
+- [x] **Pinned source**: Read a specified legacy Git revision (defaulting to the
+  recorded DRL revision) and include path, revision, and SHA-256 provenance.
+- [x] **Declarative extraction**: Extract scalar fields from shallow
+  `register_being` and `register_item` records in deterministic ID order.
+- [x] **Explicit gaps**: Preserve nested tables and function-valued fields as
+  named migration gaps instead of dropping or guessing them.
+- [x] **Fixture coverage**: Verify being/item records, scalar types,
+  provenance, deterministic ordering, and gap retention without a Lua runtime.
+- [ ] **Full content migration**: Expand typed coverage and validate behavior,
+  assets, and fairness for all legacy content families.
 
 ### 2.4 Pure Contract
 
-- **Input**: Fixed seed, contiguous episode count, maximum turns, and one
-  observation-only policy.
-- **Output**: A validated report rendered as stable `key=value` lines; no replay
-  evidence or hidden observations are emitted by the CLI.
+- **Input**: A pinned legacy Git revision and one Lua source path, or an explicit
+  fixture input for conversion tests.
+- **Output**: JSON with schema version, source provenance, sorted scalar fields,
+  and explicit migration-gap entries.
 - **Ownership Boundary**:
-  - `drl-core` owns deterministic cohort execution, integrity validation, and
-    descriptive projections.
-  - `drl-app` owns argument parsing and stable report formatting.
-  - Policy outputs remain observation-only; no hidden world state enters the
-    report.
+  - `scripts/convert-legacy-content.py` owns build-time extraction only.
+  - `drl-core` remains the gameplay authority; conversion output is reviewed
+    input, not a runtime dependency.
+  - The browser bundle receives no Lua source, interpreter, or legacy object
+    model.
 
 ---
 
 ## 3. Recent Delivered Slices
+
+### M9 — Legacy Content Evidence Converter (`VERSION` 0.2.17)
+
+- [x] Added pinned-source extraction for shallow being/item scalar records.
+- [x] Added provenance fields and explicit nested/function migration gaps.
+- [x] Added deterministic fixture coverage without a Lua runtime.
+- [ ] Full content migration and behavior validation remain open.
 
 ### M11 — Cohort Study CLI (`VERSION` 0.2.16)
 
@@ -234,8 +239,9 @@ does not infer balance, difficulty, or statistical significance.
 
 ## 6. Verification Gates
 
-### Verified Baseline (`VERSION` 0.2.16)
+### Verified Baseline (`VERSION` 0.2.17)
 
+f305503 feat(eval): add deterministic cohort study CLI (#107)
 22e0e8b feat(web): start offline cache registration at bootstrap (#106)
 af0fcf8 feat(release): add optional manifest signing (#105)
 - [x] `sh scripts/check-repository.sh` — Full repository test suite, formatting,

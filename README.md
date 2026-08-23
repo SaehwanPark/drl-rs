@@ -31,7 +31,7 @@ replays, and regression testing.
     shot accuracy, damage, kill, pickup, and item-use totals/rates without
     inferring balance conclusions.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.16`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.17`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:
@@ -56,6 +56,9 @@ replays, and regression testing.
   - Cohort projections reject impossible telemetry and never carry player
     observations; `drl-rust cohort` now emits bounded deterministic,
     machine-readable study reports, while balance interpretation remains open.
+  - Build-time legacy-content conversion extracts shallow scalar fields with
+    pinned-source provenance and explicit nested/function migration gaps; it
+    never ships a Lua runtime or silently infers behavior.
   - Release builds emit a hashed static-bundle manifest with graphics rights
     metadata; optional detached manifest signing and bootstrap-independent
     offline-cache registration are supported, while key custody and

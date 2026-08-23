@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.17]
+
+- Added a pinned-source build-time Lua content evidence converter for shallow
+  `register_being` and `register_item` records.
+- Scalar fields retain source provenance while nested tables and functions are
+  emitted as explicit migration gaps; no runtime Lua or inferred behavior is
+  introduced.
+
 ## [0.2.16]
 
 - Added `drl-rust cohort`, a bounded deterministic procedural cohort-study CLI
