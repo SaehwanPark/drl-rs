@@ -110,6 +110,7 @@ pub enum ItemSpawnKind {
   Chaingun,
   RocketLauncher,
   PlasmaRifle,
+  Bfg9000,
   Chainsaw,
   CombatKnife,
   Ammo9mm(u32),

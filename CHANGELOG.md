@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.76]
+
+- Added typed `Bfg9000` content with pinned description, cell-ammo relation,
+  100-cell clip, `10d6` damage range, replay JSON kind, and measured
+  `SPRITE_BFG9000` atlas slot. Exact-hit/shot-cost and explosion callbacks
+  remain open.
+
 ## [0.2.75]
 
 - Added typed `Chainsaw` content with pinned description, melee shape, `4d6`

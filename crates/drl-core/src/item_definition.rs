@@ -165,6 +165,23 @@ const CHAINSAW: ItemDefinition = ItemDefinition {
   },
 };
 
+const BFG_9000: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::Bfg9000,
+  name: "BFG 9000",
+  description: "The Big Fucking Gun. Hell wouldn't be fun without it.",
+  kind: ItemDefinitionKind::Weapon {
+    is_ranged: true,
+    ammo_type: Some(AmmoType::Cell),
+    clip_capacity: 100,
+    damage: (10, 60),
+    range: 8,
+    accuracy: 70,
+    knockback: 0,
+    fire_cost: ActionCost::RANGED_ATTACK,
+    reload_cost: ActionCost::STANDARD,
+  },
+};
+
 const COMBAT_KNIFE: ItemDefinition = ItemDefinition {
   archetype: ItemArchetype::CombatKnife,
   name: "Combat Knife",
@@ -333,6 +350,7 @@ pub const fn definition_for_spawn_kind(kind: ItemSpawnKind) -> &'static ItemDefi
     ItemSpawnKind::Chaingun => &CHAINGUN,
     ItemSpawnKind::PlasmaRifle => &PLASMA_RIFLE,
     ItemSpawnKind::RocketLauncher => &ROCKET_LAUNCHER,
+    ItemSpawnKind::Bfg9000 => &BFG_9000,
     ItemSpawnKind::Chainsaw => &CHAINSAW,
     ItemSpawnKind::CombatKnife => &COMBAT_KNIFE,
     ItemSpawnKind::Ammo9mm(_) => &AMMO_9MM,
@@ -373,6 +391,7 @@ mod tests {
         "Rocket Launcher",
       ),
       (ItemSpawnKind::Chainsaw, ItemArchetype::Chainsaw, "Chainsaw"),
+      (ItemSpawnKind::Bfg9000, ItemArchetype::Bfg9000, "BFG 9000"),
       (
         ItemSpawnKind::CombatKnife,
         ItemArchetype::CombatKnife,
@@ -611,6 +630,20 @@ mod tests {
         knockback: 0,
         fire_cost: ActionCost::MELEE_ATTACK,
         reload_cost: ActionCost::new(0),
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::Bfg9000).kind,
+      ItemDefinitionKind::Weapon {
+        is_ranged: true,
+        ammo_type: Some(AmmoType::Cell),
+        clip_capacity: 100,
+        damage: (10, 60),
+        range: 8,
+        accuracy: 70,
+        knockback: 0,
+        fire_cost: ActionCost::RANGED_ATTACK,
+        reload_cost: ActionCost::STANDARD,
       }
     );
   }
