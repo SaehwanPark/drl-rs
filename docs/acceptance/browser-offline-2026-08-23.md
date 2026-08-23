@@ -26,8 +26,11 @@ confirmation guard: fresh origin `http://127.0.0.1:8769/index.html`
 - Fresh profile: `NOT_RUN`; the second pass used a fresh loopback origin
   (`http://127.0.0.1:8766/`) in the existing Codex browser profile.
 - Durable runtime state: service worker `activated` and controlling the page;
-  Cache Storage contained exactly `drl-rust-m10-v1-0.2.41-729f5c692175`;
-  `localStorage` availability was `true`.
+  the predecessor offline run's Cache Storage contained exactly
+  `drl-rust-m10-v1-0.2.41-729f5c692175` (historical evidence), while the
+  current `0.2.61` bundle generated
+  `drl-rust-m10-v1-0.2.61-56155fbdc381`; `localStorage` availability was
+  `true`.
 
 ## Procedure and result
 
