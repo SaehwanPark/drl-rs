@@ -4,9 +4,11 @@ Run identifier: `m10-offline-2026-08-23-r2`
 Run date: 2026-08-23
 Owner/role: `/root`, milestone owner
 Predecessor: `_workspace/drl/m10-offline/02-test-plan.md`
+Predecessor revision: `729f5c6` (generated web bundle baseline)
 Input revision: `729f5c69217539a46da9715b64bb5567aa856406`
-Output revision: `1a07482` evidence publication; review corrections are the
-follow-up commit on this branch
+Output revision: `cbc25a2` (reviewed evidence revision)
+Overall status: `PARTIAL PASS` — offline navigation/startup and Save/Load pass;
+Clear Save remains `NOT_RUN` pending action-time confirmation
 Build: `0.2.41`, generated from the input revision
 Targets: `http://127.0.0.1:8765/index.html` initial smoke and fresh-origin
 `http://127.0.0.1:8766/index.html`, generated with `sh scripts/build-web.sh`
