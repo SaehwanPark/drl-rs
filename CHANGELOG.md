@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.20]
+
+- Added `drl-rust cohort --bot all`, a deterministic matrix report covering
+  greedy, random, and explorer policies with stable prefixed fields.
+- Added repeatability and policy-coverage contract checks without adding
+  balance or statistical-significance claims.
+
 ## [0.2.19]
 
 - Extended the build-time legacy content evidence converter to terrain-cell

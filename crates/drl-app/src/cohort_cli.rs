@@ -2,14 +2,14 @@ use drl_core::LevelGeneratorConfig;
 use drl_core::agent::{ExplorerBot, GreedyCombatBot, RandomBot};
 use drl_core::batch::{BatchRunner, CohortConfig, CohortReport};
 
-const COHORT_USAGE: &str =
-  "usage: drl-rust cohort [--seed N] [--episodes N] [--max-turns N] [--bot greedy|random|explorer]";
+const COHORT_USAGE: &str = "usage: drl-rust cohort [--seed N] [--episodes N] [--max-turns N] [--bot greedy|random|explorer|all]";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum CohortBot {
   Greedy,
   Random,
   Explorer,
+  All,
 }
 
 impl CohortBot {
@@ -18,8 +18,9 @@ impl CohortBot {
       "greedy" => Ok(Self::Greedy),
       "random" => Ok(Self::Random),
       "explorer" => Ok(Self::Explorer),
+      "all" => Ok(Self::All),
       _ => Err(format!(
-        "unknown bot {value:?}; expected greedy, random, or explorer"
+        "unknown bot {value:?}; expected greedy, random, explorer, or all"
       )),
     }
   }
@@ -90,9 +91,16 @@ fn parse_cohort_args(args: &[String]) -> Result<CohortCliConfig, String> {
 
 pub(crate) fn run_cohort_command(args: &[String]) -> Result<String, String> {
   let config = parse_cohort_args(args)?;
+  if config.bot == CohortBot::All {
+    return format_cohort_matrix(&config);
+  }
+  run_single_cohort(&config, config.bot)
+}
+
+fn run_single_cohort(config: &CohortCliConfig, bot: CohortBot) -> Result<String, String> {
   let cohort = CohortConfig::new(config.seed, config.episodes, config.max_turns);
   let generator = LevelGeneratorConfig::default();
-  let report = match config.bot {
+  let report = match bot {
     CohortBot::Greedy => BatchRunner::run_procedural_cohort(
       cohort,
       &generator,
@@ -107,9 +115,38 @@ pub(crate) fn run_cohort_command(args: &[String]) -> Result<String, String> {
     CohortBot::Explorer => {
       BatchRunner::run_procedural_cohort(cohort, &generator, "ExplorerBot", ExplorerBot::new)
     }
+    CohortBot::All => unreachable!("matrix dispatch handles all bots before single execution"),
   }
   .map_err(|error| format!("study failed: {error}"))?;
   format_cohort_report(&report)
+}
+
+fn format_cohort_matrix(config: &CohortCliConfig) -> Result<String, String> {
+  let bots = [CohortBot::Greedy, CohortBot::Random, CohortBot::Explorer];
+  let mut output = String::new();
+  use std::fmt::Write;
+  writeln!(output, "matrix.schema_version=1").unwrap();
+  writeln!(output, "matrix.bots=greedy,random,explorer").unwrap();
+  writeln!(output, "matrix.count={}", bots.len()).unwrap();
+  for (index, bot) in bots.into_iter().enumerate() {
+    writeln!(output, "matrix.{index}.bot={}", bot.cli_name()).unwrap();
+    let report = run_single_cohort(config, bot)?;
+    for line in report.lines() {
+      writeln!(output, "matrix.{index}.{line}").unwrap();
+    }
+  }
+  Ok(output)
+}
+
+impl CohortBot {
+  fn cli_name(self) -> &'static str {
+    match self {
+      Self::Greedy => "greedy",
+      Self::Random => "random",
+      Self::Explorer => "explorer",
+      Self::All => "all",
+    }
+  }
 }
 
 fn format_cohort_report(report: &CohortReport) -> Result<String, String> {
@@ -223,6 +260,7 @@ mod tests {
     assert_eq!(config.episodes, 100);
     assert_eq!(config.max_turns, 200);
     assert_eq!(config.bot, CohortBot::Greedy);
+    assert_eq!(CohortBot::parse("all"), Ok(CohortBot::All));
   }
 
   #[test]
@@ -256,5 +294,28 @@ mod tests {
     assert!(first.contains("cohort.seed_end=13\n"));
     assert!(first.contains("cohort.episodes=2\n"));
     assert!(first.contains("telemetry.total_damage_dealt="));
+  }
+
+  #[test]
+  fn cohort_matrix_is_reproducible_and_covers_each_declared_bot() {
+    let args = [
+      "--seed".to_string(),
+      "4".to_string(),
+      "--episodes".to_string(),
+      "1".to_string(),
+      "--max-turns".to_string(),
+      "8".to_string(),
+      "--bot".to_string(),
+      "all".to_string(),
+    ];
+    let first = run_cohort_command(&args).expect("cohort matrix");
+    let second = run_cohort_command(&args).expect("repeat cohort matrix");
+    assert_eq!(first, second);
+    assert!(first.contains("matrix.schema_version=1\n"));
+    assert!(first.contains("matrix.bots=greedy,random,explorer\n"));
+    assert!(first.contains("matrix.0.bot=greedy\n"));
+    assert!(first.contains("matrix.1.bot=random\n"));
+    assert!(first.contains("matrix.2.bot=explorer\n"));
+    assert!(first.contains("matrix.2.cohort.policy=ExplorerBot\n"));
   }
 }

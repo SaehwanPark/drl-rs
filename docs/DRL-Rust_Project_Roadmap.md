@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.19`
+Current project version: `0.2.20`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.19)
+## 3. Current Progress Summary (`VERSION` 0.2.20)
 
 ### Delivered Foundations
 
@@ -84,8 +84,10 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active Milestone Slice (M9)**: Pinned-source legacy Lua evidence conversion
-  now covers shallow being/item and terrain-cell scalar records; full typed
+- **Active Milestone Slice (M11)**: Deterministic cohort reports now support a
+  three-policy matrix; canonical difficulty targets remain open.
+- **M9 Typed Content Migration**: Pinned-source legacy Lua evidence conversion
+  covers shallow being/item and terrain-cell scalar records; full typed
   terrain/content migration remains open.
 - **M12 Release Hardening**: Optional detached release-manifest signing has
   repository and hosted ephemeral-key CI smoke coverage; production key
@@ -375,6 +377,8 @@ balance.
 - [x] Bounded deterministic `drl-rust cohort` study command emits stable
   machine-readable outcome and telemetry reports for greedy, random, and
   explorer policies.
+- [x] Deterministic `drl-rust cohort --bot all` matrix output runs the declared
+  greedy, random, and explorer policies over shared cohort configuration.
 - [ ] Difficulty curve validation against canonical target metrics.
 - [x] Strict isolation between player observations and evaluation telemetry is
   enforced by the observation-free `EpisodeRecord` boundary.
