@@ -3,8 +3,8 @@
 use crate::json::JsonValue;
 use crate::protocol::{JsonRpcError, ToolDefinition, error_codes};
 use crate::session::{
-  McpSession, compute_legal_actions, episode_metrics_to_json, json_to_command,
-  omniscient_observation_to_json, player_observation_to_json,
+  McpSession, episode_metrics_to_json, json_to_command, omniscient_observation_to_json,
+  player_observation_to_json,
 };
 use crate::tools_schema::{
   empty_object_schema, game_load_scenario_schema, game_start_schema, game_step_action_schema,
@@ -87,7 +87,9 @@ pub fn execute_tool(
         .start_game(seed, max_turns, width, height)
         .map_err(|e| JsonRpcError::new(error_codes::INVALID_ACTION, e))?;
 
-      let legal_actions = compute_legal_actions(&obs);
+      let legal_actions = session
+        .legal_actions()
+        .map_err(|e| JsonRpcError::new(error_codes::SESSION_NOT_ACTIVE, e))?;
       let mut res = BTreeMap::new();
       res.insert("status".to_string(), JsonValue::from("GameStarted"));
       res.insert("seed".to_string(), JsonValue::from(seed));
@@ -117,7 +119,9 @@ pub fn execute_tool(
         .load_scenario(ascii, max_turns)
         .map_err(|e| JsonRpcError::new(error_codes::INVALID_ACTION, e))?;
 
-      let legal_actions = compute_legal_actions(&obs);
+      let legal_actions = session
+        .legal_actions()
+        .map_err(|e| JsonRpcError::new(error_codes::SESSION_NOT_ACTIVE, e))?;
       let mut res = BTreeMap::new();
       res.insert("status".to_string(), JsonValue::from("ScenarioLoaded"));
       res.insert("observation".to_string(), player_observation_to_json(&obs));
@@ -137,7 +141,9 @@ pub fn execute_tool(
       let obs = session
         .get_observation()
         .map_err(|e| JsonRpcError::new(error_codes::SESSION_NOT_ACTIVE, e))?;
-      let legal_actions = compute_legal_actions(&obs);
+      let legal_actions = session
+        .legal_actions()
+        .map_err(|e| JsonRpcError::new(error_codes::SESSION_NOT_ACTIVE, e))?;
 
       let mut res = BTreeMap::new();
       res.insert("observation".to_string(), player_observation_to_json(&obs));
@@ -154,10 +160,9 @@ pub fn execute_tool(
     }
 
     "game_list_actions" => {
-      let obs = session
-        .get_observation()
+      let legal_actions = session
+        .legal_actions()
         .map_err(|e| JsonRpcError::new(error_codes::SESSION_NOT_ACTIVE, e))?;
-      let legal_actions = compute_legal_actions(&obs);
 
       let mut res = BTreeMap::new();
       res.insert(
@@ -180,7 +185,9 @@ pub fn execute_tool(
         .step(cmd)
         .map_err(|e| JsonRpcError::new(error_codes::INVALID_ACTION, e))?;
 
-      let legal_actions = compute_legal_actions(&obs);
+      let legal_actions = session
+        .legal_actions()
+        .map_err(|e| JsonRpcError::new(error_codes::SESSION_NOT_ACTIVE, e))?;
 
       let mut res = BTreeMap::new();
       res.insert(
@@ -215,7 +222,9 @@ pub fn execute_tool(
       let obs = session
         .reset()
         .map_err(|e| JsonRpcError::new(error_codes::SESSION_NOT_ACTIVE, e))?;
-      let legal_actions = compute_legal_actions(&obs);
+      let legal_actions = session
+        .legal_actions()
+        .map_err(|e| JsonRpcError::new(error_codes::SESSION_NOT_ACTIVE, e))?;
 
       let mut res = BTreeMap::new();
       res.insert("status".to_string(), JsonValue::from("SessionReset"));

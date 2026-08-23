@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.54`
+Current project version: `0.2.55`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -203,11 +203,14 @@ Presentation Boundary
   - The `game_step_action` schema adds deterministic action/command conditions
     for direction, ranged coordinate aliases, item IDs, and equipment slots;
     unknown properties remain tolerated and runtime parsing stays authoritative.
-  - `McpSession` keeps `game_list_actions` coherent with supported semantic
-    commands and rejects recognized commands not currently advertised before
-    calling the live core; unknown/malformed input remains parser-owned
-    `-32602`, while the core retains geometry/LOS/range authority. It gates
-    actions after terminal outcomes, reports level
+  - `McpSession` derives fair legal-action candidates from
+    `PlayerObservation`, probes each candidate on a cloned `drl_core::Game`,
+    and uses the filtered catalog for `game_list_actions`, tool response
+    payloads, and pre-dispatch admission. The live core remains authoritative;
+    hidden-state search and unbounded candidate generation are not exposed.
+    Unknown/malformed input remains parser-owned `-32602`, while recognized
+    commands not in the filtered catalog return `-32001`. It gates actions
+    after terminal outcomes, reports level
     transitions as victories, and leaves reset/replay/metrics inspection
     available after termination without modifying `drl-core::Game`.
   - A private `Uninitialized → AwaitingInitialized → Ready` phase gate requires

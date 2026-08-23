@@ -3,6 +3,16 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.55]
+
+- Made MCP legal-action enumeration exact within the fair observation boundary:
+  candidates are generated from `PlayerObservation` and retained only when a
+  cloned `drl_core::Game::step` succeeds.
+- Reused the filtered catalog for `game_list_actions`, tool response payloads,
+  and pre-dispatch admission without mutating the live session or duplicating
+  core rules; hidden-state search and unbounded candidate generation remain
+  open.
+
 ## [0.2.54]
 
 - Made the MCP legal-action catalog coherent by advertising explicit
