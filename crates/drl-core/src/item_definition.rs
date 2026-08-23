@@ -205,14 +205,14 @@ const AMMO_PACK_SHELLS: ItemDefinition = ItemDefinition {
 const SMALL_MEDPACK: ItemDefinition = ItemDefinition {
   archetype: ItemArchetype::SmallMedPack,
   name: "Small MedPack",
-  description: "Compact medical kit providing rapid first aid (+10 HP).",
+  description: "Great to treat a few burns; for major injuries, better find its larger cousin.",
   kind: ItemDefinitionKind::MedPack { heal_amount: 10 },
 };
 
 const LARGE_MEDPACK: ItemDefinition = ItemDefinition {
   archetype: ItemArchetype::LargeMedPack,
   name: "Large MedPack",
-  description: "Comprehensive field surgery kit (+25 HP).",
+  description: "Your savior in times of need.",
   kind: ItemDefinitionKind::MedPack { heal_amount: 25 },
 };
 
@@ -432,8 +432,16 @@ mod tests {
       ItemDefinitionKind::MedPack { heal_amount: 10 }
     );
     assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::SmallMedPack).description,
+      "Great to treat a few burns; for major injuries, better find its larger cousin."
+    );
+    assert_eq!(
       definition_for_spawn_kind(ItemSpawnKind::LargeMedPack).kind,
       ItemDefinitionKind::MedPack { heal_amount: 25 }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::LargeMedPack).description,
+      "Your savior in times of need."
     );
     assert_eq!(
       definition_for_spawn_kind(ItemSpawnKind::GreenArmor).kind,
