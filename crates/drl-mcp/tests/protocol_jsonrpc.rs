@@ -275,6 +275,9 @@ fn test_jsonrpc_rejects_invalid_numeric_tool_arguments_without_execution() {
     r#"{"jsonrpc":"2.0","id":43,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":9007199254740993}}}"#,
     r#"{"jsonrpc":"2.0","id":44,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":18446744073709551616}}}"#,
     r#"{"jsonrpc":"2.0","id":45,"method":"tools/call","params":{"name":"game_start","arguments":{"max_turns":18446744073709551616}}}"#,
+    r#"{"jsonrpc":"2.0","id":46,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":1.0000000000000001}}}"#,
+    r#"{"jsonrpc":"2.0","id":47,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":9007199254740991.5}}}"#,
+    r#"{"jsonrpc":"2.0","id":48,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":1e-100000000000}}}"#,
   ] {
     let response = JsonValue::parse(&server.handle_request(request)).unwrap();
     assert_eq!(
@@ -292,7 +295,7 @@ fn test_jsonrpc_rejects_invalid_numeric_tool_arguments_without_execution() {
 fn test_jsonrpc_accepts_maximum_exact_json_integer() {
   let mut server = ready_server();
   let response = JsonValue::parse(&server.handle_request(
-    r#"{"jsonrpc":"2.0","id":46,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":9007199254740992}}}"#,
+    r#"{"jsonrpc":"2.0","id":49,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":9007199254740992}}}"#,
   ))
   .unwrap();
   assert!(response.get("error").is_none());

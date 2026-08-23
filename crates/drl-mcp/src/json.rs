@@ -315,6 +315,34 @@ fn number_exceeds_exact_integer_range(raw: &str) -> bool {
   padded.as_str() > SAFE_INTEGER_MAX
 }
 
+/// Returns whether a JSON numeric literal has an exact integral decimal value.
+fn number_literal_is_integer(raw: &str) -> bool {
+  let unsigned = raw.strip_prefix('-').unwrap_or(raw);
+  let (mantissa, exponent) = match unsigned.split_once(['e', 'E']) {
+    Some((mantissa, exponent)) => {
+      let Ok(exponent) = exponent.parse::<i64>() else {
+        return false;
+      };
+      (mantissa, exponent)
+    }
+    None => (unsigned, 0),
+  };
+  let (whole, fraction) = mantissa.split_once('.').unwrap_or((mantissa, ""));
+  let digits = format!("{whole}{fraction}");
+  let decimal_index = whole.len() as i64 + exponent;
+  if decimal_index <= 0 {
+    return digits.bytes().all(|digit| digit == b'0');
+  }
+
+  let digit_count = digits.len() as i64;
+  if decimal_index >= digit_count {
+    return true;
+  }
+  digits[decimal_index as usize..]
+    .bytes()
+    .all(|digit| digit == b'0')
+}
+
 struct JsonParser<'a> {
   chars: Vec<char>,
   pos: usize,
@@ -494,7 +522,7 @@ impl<'a> JsonParser<'a> {
     let num: f64 = raw
       .parse()
       .map_err(|e| format!("Failed to parse number '{raw}': {e}"))?;
-    if number_exceeds_exact_integer_range(&raw) {
+    if !number_literal_is_integer(&raw) || number_exceeds_exact_integer_range(&raw) {
       return Ok(JsonValue::RawNumber(raw));
     }
     Ok(JsonValue::Number(num))
@@ -587,7 +615,10 @@ mod tests {
     assert_eq!(JsonValue::parse("true").unwrap(), JsonValue::Bool(true));
     assert_eq!(JsonValue::parse("false").unwrap(), JsonValue::Bool(false));
     assert_eq!(JsonValue::parse("123").unwrap(), JsonValue::Number(123.0));
-    assert_eq!(JsonValue::parse("-45.5").unwrap(), JsonValue::Number(-45.5));
+    assert_eq!(
+      JsonValue::parse("-45.5").unwrap(),
+      JsonValue::RawNumber("-45.5".to_string())
+    );
     assert_eq!(
       JsonValue::parse("9007199254740993").unwrap(),
       JsonValue::RawNumber("9007199254740993".to_string())
@@ -600,6 +631,16 @@ mod tests {
       JsonValue::parse("9007199254740993.0").unwrap(),
       JsonValue::RawNumber("9007199254740993.0".to_string())
     );
+    for raw in [
+      "1.0000000000000001",
+      "9007199254740991.5",
+      "1e-100000000000",
+    ] {
+      assert_eq!(
+        JsonValue::parse(raw).unwrap(),
+        JsonValue::RawNumber(raw.to_string())
+      );
+    }
     assert_eq!(
       JsonValue::parse("\"hello\\nworld\"").unwrap(),
       JsonValue::String("hello\nworld".to_string())
