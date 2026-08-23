@@ -3,6 +3,12 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.69]
+
+- Added the pinned `barmor` Blue Armor family with definition-backed protection
+  and description, replay JSON kind, shared armor atlas slot, and pure blue
+  presentation tint. Legacy resistance and movement modifiers remain open.
+
 ## [0.2.68]
 
 - Added typed `AmmoPack9mm` and `AmmoPackShells` families for pinned `pammo`
