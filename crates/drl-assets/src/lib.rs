@@ -660,6 +660,24 @@ pub const fn item_sprite(archetype: ItemArchetype) -> SpriteDescriptor {
       layers: ITEM_LAYERS,
       animation: STATIC_ANIMATION,
     },
+    ItemArchetype::MedicalPowerarmor => SpriteDescriptor {
+      atlas: AtlasId::GunsAndPickups,
+      rect: legacy_slot(SPRITE_COLUMNS + 1),
+      layers: ITEM_LAYERS,
+      animation: STATIC_ANIMATION,
+    },
+    ItemArchetype::LavaArmor => SpriteDescriptor {
+      atlas: AtlasId::GunsAndPickups,
+      rect: legacy_slot(SPRITE_COLUMNS + 1),
+      layers: ITEM_LAYERS,
+      animation: STATIC_ANIMATION,
+    },
+    ItemArchetype::ShieldedArmor => SpriteDescriptor {
+      atlas: AtlasId::GunsAndPickups,
+      rect: legacy_slot(SPRITE_COLUMNS + 1),
+      layers: ITEM_LAYERS,
+      animation: STATIC_ANIMATION,
+    },
     ItemArchetype::Ammo9mm => SpriteDescriptor {
       atlas: AtlasId::GunsAndPickups,
       rect: legacy_slot(SPRITE_COLUMNS + 7),
@@ -847,6 +865,9 @@ mod tests {
       ItemArchetype::MaleksArmor,
       ItemArchetype::CyberneticArmor,
       ItemArchetype::Necroarmor,
+      ItemArchetype::MedicalPowerarmor,
+      ItemArchetype::LavaArmor,
+      ItemArchetype::ShieldedArmor,
       ItemArchetype::PhaseDevice,
     ] {
       let descriptor = item_sprite(archetype);
@@ -1012,6 +1033,17 @@ mod tests {
         (0, 32),
       ),
       (ItemArchetype::Necroarmor, AtlasId::GunsAndPickups, (0, 32)),
+      (
+        ItemArchetype::MedicalPowerarmor,
+        AtlasId::GunsAndPickups,
+        (0, 32),
+      ),
+      (ItemArchetype::LavaArmor, AtlasId::GunsAndPickups, (0, 32)),
+      (
+        ItemArchetype::ShieldedArmor,
+        AtlasId::GunsAndPickups,
+        (0, 32),
+      ),
       (ItemArchetype::Ammo9mm, AtlasId::GunsAndPickups, (192, 32)),
       (
         ItemArchetype::AmmoShells,
@@ -1186,6 +1218,9 @@ mod tests {
       ItemArchetype::MaleksArmor,
       ItemArchetype::CyberneticArmor,
       ItemArchetype::Necroarmor,
+      ItemArchetype::MedicalPowerarmor,
+      ItemArchetype::LavaArmor,
+      ItemArchetype::ShieldedArmor,
       ItemArchetype::Ammo9mm,
       ItemArchetype::AmmoShells,
       ItemArchetype::AmmoRockets,

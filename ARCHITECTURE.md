@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.87`
+Current project version: `0.2.88`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -99,7 +99,7 @@ Presentation Boundary
     Blaster, Laser Rifle, Missile Launcher, Butcher's Cleaver, Mjollnir,
     Subtle Knife, Trigun, Anti-Freak Jackal, Minigun, Onyx Armor,
     Phaseshift Armor, Gothic Armor, Malek's Armor, Cybernetic Armor,
-    Necroarmor,
+    Necroarmor, Medical Powerarmor, Lava Armor, Shielded Armor,
     Nuclear Plasma Rifle, Nuclear BFG 9000, BFG 10K,
     BFG 9000, Mega Buster, Grammaton Beretta, Frag Shotgun, Chaingun, Plasma
     Rifle, Rocket Launcher, Revenant's Launcher, Railgun, and Acid Spitter are

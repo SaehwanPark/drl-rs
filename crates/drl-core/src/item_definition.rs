@@ -842,6 +842,39 @@ const NECROARMOR: ItemDefinition = ItemDefinition {
   },
 };
 
+const MEDICAL_POWERARMOR: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::MedicalPowerarmor,
+  name: "Medical Powerarmor",
+  description: "Very handy stuff on the battlefield! Why don't they mass-produce it?",
+  kind: ItemDefinitionKind::Armor {
+    protection: 6,
+    durability: 100,
+    max_durability: 100,
+  },
+};
+
+const LAVA_ARMOR: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::LavaArmor,
+  name: "Lava Armor",
+  description: "This armor glows!",
+  kind: ItemDefinitionKind::Armor {
+    protection: 4,
+    durability: 100,
+    max_durability: 100,
+  },
+};
+
+const SHIELDED_ARMOR: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::ShieldedArmor,
+  name: "Shielded Armor",
+  description: "So massive, you no longer fear the little ones!",
+  kind: ItemDefinitionKind::Armor {
+    protection: 2,
+    durability: 100,
+    max_durability: 100,
+  },
+};
+
 const PHASE_DEVICE: ItemDefinition = ItemDefinition {
   archetype: ItemArchetype::PhaseDevice,
   name: "Phase Device",
@@ -906,6 +939,9 @@ pub const fn definition_for_spawn_kind(kind: ItemSpawnKind) -> &'static ItemDefi
     ItemSpawnKind::MaleksArmor => &MALEKS_ARMOR,
     ItemSpawnKind::CyberneticArmor => &CYBERNETIC_ARMOR,
     ItemSpawnKind::Necroarmor => &NECROARMOR,
+    ItemSpawnKind::MedicalPowerarmor => &MEDICAL_POWERARMOR,
+    ItemSpawnKind::LavaArmor => &LAVA_ARMOR,
+    ItemSpawnKind::ShieldedArmor => &SHIELDED_ARMOR,
     ItemSpawnKind::PhaseDevice => &PHASE_DEVICE,
   }
 }
@@ -1137,6 +1173,21 @@ mod tests {
         ItemSpawnKind::Necroarmor,
         ItemArchetype::Necroarmor,
         "Necroarmor",
+      ),
+      (
+        ItemSpawnKind::MedicalPowerarmor,
+        ItemArchetype::MedicalPowerarmor,
+        "Medical Powerarmor",
+      ),
+      (
+        ItemSpawnKind::LavaArmor,
+        ItemArchetype::LavaArmor,
+        "Lava Armor",
+      ),
+      (
+        ItemSpawnKind::ShieldedArmor,
+        ItemArchetype::ShieldedArmor,
+        "Shielded Armor",
       ),
       (
         ItemSpawnKind::PhaseDevice,
@@ -1675,6 +1726,30 @@ mod tests {
       definition_for_spawn_kind(ItemSpawnKind::Necroarmor).kind,
       ItemDefinitionKind::Armor {
         protection: 6,
+        durability: 100,
+        max_durability: 100,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::MedicalPowerarmor).kind,
+      ItemDefinitionKind::Armor {
+        protection: 6,
+        durability: 100,
+        max_durability: 100,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::LavaArmor).kind,
+      ItemDefinitionKind::Armor {
+        protection: 4,
+        durability: 100,
+        max_durability: 100,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::ShieldedArmor).kind,
+      ItemDefinitionKind::Armor {
+        protection: 2,
         durability: 100,
         max_durability: 100,
       }

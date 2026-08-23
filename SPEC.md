@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.87`
+Current project version: `0.2.88`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -33,7 +33,8 @@ Migrate the pinned legacy `rocket`, `cell`, `barmor`, `rarmor`, `smed`,
 `ubfg10k`, `umega`, `uberetta`, `ufshotgun`, `urbazooka`, `urailgun`, `uacid`,
 `ucpistol`, `uashotgun`, `upshotgun`, `usjack`, `udshotgun`, `utrigun`,
 `ubutcher`, `umjoll`, `usubtle`, `utrigun`, `ujackal`, `uminigun`, `uoarmor`,
-`uparmor`, `ugarmor`, `umarmor`, `ucarmor`, and `unarmor` records
+`uparmor`, `ugarmor`, `umarmor`, `ucarmor`, `unarmor`, `umedparmor`,
+`ulavaarmor`, and `ushieldarmor` records
 into
 typed immutable Rust definitions and replay-compatible spawn contracts.
 Preserve
@@ -167,6 +168,11 @@ presentation tints without importing Lua callbacks or unverified combat rules.
   replay kinds, and shared `SPRITE_ARMOR` geometry; resistance,
   movement/knockback, no-destroy, item-set, recharge/cursed/necro callbacks,
   and exact tint remain explicit gaps.
+- [x] **Specialized-armor boundary**: typed `MedicalPowerarmor`, `LavaArmor`,
+  and `ShieldedArmor` preserve pinned descriptions, armor values (`6`/`4`/`2`),
+  replay kinds, and shared `SPRITE_ARMOR` geometry; resistance,
+  movement/knockback, no-durability, recharge/healing callbacks, and exact tint
+  remain explicit gaps.
 - [ ] **Full migration**: shotgun/BFG/chainsaw/chaingun/rocket/plasma/exotic
   weapon behavior, dynamic callbacks,
   balance/fairness, and remaining legacy item families remain open.
@@ -181,7 +187,9 @@ presentation tints without importing Lua callbacks or unverified combat rules.
   `ButchersCleaver`, `Mjollnir`, or `SubtleKnife`, plus the existing ammo
   families, plus `Trigun`, `AntiFreakJackal`, or `Minigun`.
   Exotic armor also includes `OnyxArmor`, `PhaseshiftArmor`, or `GothicArmor`;
-  unique armor includes `MaleksArmor`, `CyberneticArmor`, or `Necroarmor`.
+  unique armor includes `MaleksArmor`, `CyberneticArmor`, or `Necroarmor`;
+  specialized armor includes `MedicalPowerarmor`, `LavaArmor`, or
+  `ShieldedArmor`.
 - **Output**: a definition-backed stackable `Item` with the observed ammo type,
   count, maximum stack, description, and atlas archetype; the definitions also
   expose pinned initial counts (`3`/`20`) while MCP JSON uses
@@ -270,6 +278,10 @@ presentation tints without importing Lua callbacks or unverified combat rules.
   shared armor atlas geometry. Resistance, movement/knockback, no-destroy,
   item-set, recharge/cursed/necro callbacks, and exact tint are not claimed as
   parity.
+- `MedicalPowerarmor`, `LavaArmor`, and `ShieldedArmor` are definition-backed
+  armor items preserving pinned descriptions, protection, replay kinds, and
+  shared armor atlas geometry. Resistance, movement/knockback, no-durability,
+  recharge/healing callbacks, and exact tint are not claimed as parity.
 - **Ownership Boundary**: Rust typed definitions own runtime item semantics;
   pinned Lua evidence informs only the migrated scalar fields and provenance.
 

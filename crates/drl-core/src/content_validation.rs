@@ -125,6 +125,9 @@ pub fn validate_current_content() -> Result<(), ContentValidationError> {
     ItemSpawnKind::MaleksArmor,
     ItemSpawnKind::CyberneticArmor,
     ItemSpawnKind::Necroarmor,
+    ItemSpawnKind::MedicalPowerarmor,
+    ItemSpawnKind::LavaArmor,
+    ItemSpawnKind::ShieldedArmor,
     ItemSpawnKind::PhaseDevice,
   ] {
     validate_item_definition(definition_for_spawn_kind(kind))?;

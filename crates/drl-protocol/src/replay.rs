@@ -158,6 +158,9 @@ pub enum ItemSpawnKind {
   MaleksArmor,
   CyberneticArmor,
   Necroarmor,
+  MedicalPowerarmor,
+  LavaArmor,
+  ShieldedArmor,
   PhaseDevice,
 }
 
