@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.86]
+
+- Added typed `OnyxArmor`, `PhaseshiftArmor`, and `GothicArmor` families from
+  pinned exotic-item records, preserving descriptions, armor values, Gothic
+  durability, replay JSON kinds, and measured shared armor atlas geometry.
+  Resistance, movement/knockback, no-durability, set effects, callbacks, and
+  exact tint remain open.
+
 ## [0.2.85]
 
 - Added typed `Trigun`, `Anti-Freak Jackal`, and `Minigun` families from

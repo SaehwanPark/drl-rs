@@ -776,6 +776,39 @@ const RED_ARMOR: ItemDefinition = ItemDefinition {
   },
 };
 
+const ONYX_ARMOR: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::OnyxArmor,
+  name: "onyx armor",
+  description: "This thing looks absurdly resistant.",
+  kind: ItemDefinitionKind::Armor {
+    protection: 2,
+    durability: 100,
+    max_durability: 100,
+  },
+};
+
+const PHASESHIFT_ARMOR: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::PhaseshiftArmor,
+  name: "phaseshift armor",
+  description: "Shiny and high-tech, feels like it almost floats by itself.",
+  kind: ItemDefinitionKind::Armor {
+    protection: 2,
+    durability: 100,
+    max_durability: 100,
+  },
+};
+
+const GOTHIC_ARMOR: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::GothicArmor,
+  name: "gothic armor",
+  description: "It's surprising that one can actually still move in this monolithic thing.",
+  kind: ItemDefinitionKind::Armor {
+    protection: 6,
+    durability: 200,
+    max_durability: 200,
+  },
+};
+
 const PHASE_DEVICE: ItemDefinition = ItemDefinition {
   archetype: ItemArchetype::PhaseDevice,
   name: "Phase Device",
@@ -834,6 +867,9 @@ pub const fn definition_for_spawn_kind(kind: ItemSpawnKind) -> &'static ItemDefi
     ItemSpawnKind::GreenArmor => &GREEN_ARMOR,
     ItemSpawnKind::BlueArmor => &BLUE_ARMOR,
     ItemSpawnKind::RedArmor => &RED_ARMOR,
+    ItemSpawnKind::OnyxArmor => &ONYX_ARMOR,
+    ItemSpawnKind::PhaseshiftArmor => &PHASESHIFT_ARMOR,
+    ItemSpawnKind::GothicArmor => &GOTHIC_ARMOR,
     ItemSpawnKind::PhaseDevice => &PHASE_DEVICE,
   }
 }
@@ -1035,6 +1071,21 @@ mod tests {
         ItemSpawnKind::RedArmor,
         ItemArchetype::RedArmor,
         "Red Armor",
+      ),
+      (
+        ItemSpawnKind::OnyxArmor,
+        ItemArchetype::OnyxArmor,
+        "onyx armor",
+      ),
+      (
+        ItemSpawnKind::PhaseshiftArmor,
+        ItemArchetype::PhaseshiftArmor,
+        "phaseshift armor",
+      ),
+      (
+        ItemSpawnKind::GothicArmor,
+        ItemArchetype::GothicArmor,
+        "gothic armor",
       ),
       (
         ItemSpawnKind::PhaseDevice,
@@ -1527,6 +1578,30 @@ mod tests {
         protection: 4,
         durability: 100,
         max_durability: 100,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::OnyxArmor).kind,
+      ItemDefinitionKind::Armor {
+        protection: 2,
+        durability: 100,
+        max_durability: 100,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::PhaseshiftArmor).kind,
+      ItemDefinitionKind::Armor {
+        protection: 2,
+        durability: 100,
+        max_durability: 100,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::GothicArmor).kind,
+      ItemDefinitionKind::Armor {
+        protection: 6,
+        durability: 200,
+        max_durability: 200,
       }
     );
     assert_eq!(

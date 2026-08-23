@@ -118,6 +118,9 @@ pub enum ItemArchetype {
   GreenArmor,
   BlueArmor,
   RedArmor,
+  OnyxArmor,
+  PhaseshiftArmor,
+  GothicArmor,
   PhaseDevice,
 }
 
@@ -172,6 +175,9 @@ impl fmt::Display for ItemArchetype {
       Self::GreenArmor => "green_armor",
       Self::BlueArmor => "blue_armor",
       Self::RedArmor => "red_armor",
+      Self::OnyxArmor => "onyx_armor",
+      Self::PhaseshiftArmor => "phaseshift_armor",
+      Self::GothicArmor => "gothic_armor",
       Self::PhaseDevice => "phase_device",
     };
     write!(f, "{value}")

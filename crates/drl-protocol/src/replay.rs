@@ -152,6 +152,9 @@ pub enum ItemSpawnKind {
   GreenArmor,
   BlueArmor,
   RedArmor,
+  OnyxArmor,
+  PhaseshiftArmor,
+  GothicArmor,
   PhaseDevice,
 }
 

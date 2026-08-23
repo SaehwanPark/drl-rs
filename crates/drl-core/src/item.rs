@@ -634,6 +634,24 @@ impl Item {
     Self::from_spawn_kind(id, ItemSpawnKind::RedArmor)
   }
 
+  /// Factory: onyx armor (2 armor protection policy).
+  #[must_use]
+  pub fn onyx_armor(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::OnyxArmor)
+  }
+
+  /// Factory: phaseshift armor (2 armor protection policy).
+  #[must_use]
+  pub fn phaseshift_armor(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::PhaseshiftArmor)
+  }
+
+  /// Factory: gothic armor (6 armor protection, 200 durability policy).
+  #[must_use]
+  pub fn gothic_armor(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::GothicArmor)
+  }
+
   /// Factory: Phase Device (emergency teleportation consumable).
   #[must_use]
   pub fn phase_device(id: ItemId) -> Self {
@@ -900,6 +918,15 @@ mod tests {
         Item::anti_freak_jackal(ItemId::new(48)),
       ),
       (ItemSpawnKind::Minigun, Item::minigun(ItemId::new(49))),
+      (ItemSpawnKind::OnyxArmor, Item::onyx_armor(ItemId::new(50))),
+      (
+        ItemSpawnKind::PhaseshiftArmor,
+        Item::phaseshift_armor(ItemId::new(51)),
+      ),
+      (
+        ItemSpawnKind::GothicArmor,
+        Item::gothic_armor(ItemId::new(52)),
+      ),
       (ItemSpawnKind::Chaingun, Item::chaingun(ItemId::new(11))),
       (
         ItemSpawnKind::PlasmaRifle,

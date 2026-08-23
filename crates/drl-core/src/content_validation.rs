@@ -119,6 +119,9 @@ pub fn validate_current_content() -> Result<(), ContentValidationError> {
     ItemSpawnKind::GreenArmor,
     ItemSpawnKind::BlueArmor,
     ItemSpawnKind::RedArmor,
+    ItemSpawnKind::OnyxArmor,
+    ItemSpawnKind::PhaseshiftArmor,
+    ItemSpawnKind::GothicArmor,
     ItemSpawnKind::PhaseDevice,
   ] {
     validate_item_definition(definition_for_spawn_kind(kind))?;
