@@ -353,6 +353,7 @@ not import runtime Lua behavior or assert gameplay parity.
 
 ### Verified Baseline (`VERSION` 0.2.32)
 
+e3583de feat(content): pin complete evidence ID catalogs (#123)
 75888b4 feat(content): lock pinned evidence source digests (#122)
 6aade20 feat(content): synchronize special-level scalar evidence (#121)
 3c8d618 docs(spec): record catalog sync baseline
