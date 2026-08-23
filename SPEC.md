@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.41`
+Current project version: `0.2.42`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,15 +23,15 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M13 JSON-RPC Batch Stdio Transport
+## 2. Active Implementation Slice: M13 Version-Aware JSON-RPC Initialize
 
 ### 2.1 Scope & Objective
 
-Make the line-oriented MCP stdio boundary accept JSON-RPC batch arrays and emit
-one ordered response array. Notification members still apply side effects
-without response entries, identified and explicit `id: null` members retain
-responses, and empty batches fail as invalid requests. This is batch transport
-coverage only, not full MCP/client compatibility.
+Make the MCP `initialize` method validate the required string
+`params.protocolVersion`, echo the supported `2024-11-05` version, and return
+that same version as a deterministic fallback for unsupported version strings.
+This is protocol-version negotiation only, not full MCP lifecycle or client
+compatibility.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
@@ -40,33 +40,50 @@ coverage only, not full MCP/client compatibility.
      gameplay, replay/metrics, reset, and fairness boundaries.
 2. **Notification-correct stdio**:
    - The transport already suppresses omitted-ID notifications while preserving
-     identified, null-ID, and malformed-request response boundaries.
+   identified, null-ID, and malformed-request response boundaries.
+3. **Batch stdio transport**:
+   - Nonempty JSON-RPC batches preserve response order, omit notification
+     members, retain explicit `id: null`, and reject empty batches.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Batch response**: A nonempty JSON-RPC array emits one ordered response
-  array containing only identified, explicit-null, or invalid-request entries.
-- [x] **Notification members**: Omitted-ID members still apply side effects but
-  contribute no response entry.
-- [x] **Empty-batch rejection**: `[]` returns one invalid-request response;
-  malformed input retains the existing parse-error response.
-- [x] **No expansion of claims**: Full MCP compliance, external clients, and
-  production deployment remain open.
+- [x] **Supported version echo**: A request with
+  `protocolVersion: "2024-11-05"` receives that version in the result.
+- [x] **Unsupported version fallback**: Any other string receives the
+  deterministic supported version `2024-11-05`.
+- [x] **Required field validation**: Missing parameters, missing
+  `protocolVersion`, and non-string values return JSON-RPC `-32602`.
+- [x] **Deterministic stdio coverage**: Repeated real `drl-app --mcp` runs
+  verify supported echo and unsupported fallback byte-for-byte.
+- [x] **No expansion of claims**: Lifecycle state enforcement, full MCP
+  initialize-schema validation, external clients, and production deployment
+  remain open.
 
 ### 2.4 Pure Contract
 
-- **Input**: One JSON-RPC JSON-lines object or nonempty batch array at a time.
-- **Output**: `run_stdio` emits one ordered response array for a batch, omitting
-  notification members; empty batches and malformed input emit error objects.
+- **Input**: An `initialize` JSON-RPC request with an object containing a
+  string `protocolVersion`.
+- **Output**: The initialize result echoes the supported version or returns the
+  supported fallback; missing or non-string versions emit `-32602`.
 - **Ownership Boundary**:
-  - `drl-mcp::McpServer::run_stdio` owns batch framing and notification
-    suppression at the transport boundary.
-  - `handle_request` retains its existing direct-call response API.
-  - No external client adapter or deployment policy is added.
+  - `drl-mcp::McpServer::handle_initialize` owns version negotiation and field
+    validation.
+  - `run_stdio` retains batch framing and notification suppression unchanged.
+  - No lifecycle state, external client adapter, or deployment policy is added.
 
 ---
 
 ## 3. Recent Delivered Slices
+
+### M13 — Version-Aware JSON-RPC Initialize (`VERSION` 0.2.42)
+
+- [x] Supported `2024-11-05` requests echo the requested version.
+- [x] Unsupported strings receive the deterministic supported fallback;
+  missing/non-string versions return `-32602`.
+- [x] Existing capabilities, server metadata, stdio framing, batch ordering,
+  notifications, and tool semantics remain unchanged.
+- [ ] Full MCP lifecycle enforcement, external-client compatibility, and
+  production deployment remain open.
 
 ### M13 — JSON-RPC Batch Stdio Transport (`VERSION` 0.2.41)
 
@@ -415,7 +432,7 @@ coverage only, not full MCP/client compatibility.
 
 ## 6. Verification Gates
 
-### Verified Baseline (`VERSION` 0.2.41)
+### Verified Baseline (`VERSION` 0.2.42)
 
 9c0eccf feat(mcp): support deterministic stdio batches (#132)
 eeb246d feat(mcp): handle stdio notifications correctly (#131)

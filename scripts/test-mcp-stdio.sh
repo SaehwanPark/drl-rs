@@ -9,20 +9,21 @@ trap 'rm -rf "$temp_dir"' EXIT HUP INT TERM
 requests="$temp_dir/requests.jsonl"
 cat >"$requests" <<'EOF'
 {"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"drl-contract","version":"1"}}}
-{"jsonrpc":"2.0","id":2,"method":"ping"}
-{"jsonrpc":"2.0","id":3,"method":"tools/list"}
-{"jsonrpc":"2.0","id":4,"method":"resources/list"}
-{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":777,"width":20,"height":10,"max_turns":5}}}
-{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"game_get_observation","arguments":{}}}
-{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"game_list_actions","arguments":{}}}
-{"jsonrpc":"2.0","id":8,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"wait"}}}
-{"jsonrpc":"2.0","id":9,"method":"tools/call","params":{"name":"game_get_metrics","arguments":{}}}
-{"jsonrpc":"2.0","id":10,"method":"tools/call","params":{"name":"game_save_replay","arguments":{}}}
-{"jsonrpc":"2.0","id":11,"method":"tools/call","params":{"name":"game_get_dev_state","arguments":{}}}
-{"jsonrpc":"2.0","id":12,"method":"tools/call","params":{"name":"game_reset","arguments":{}}}
-{"jsonrpc":"2.0","id":13,"method":"tools/call","params":{"name":"game_load_scenario","arguments":{"ascii_map":"#####\n#@.>#\n#####","max_turns":4}}}
-{"jsonrpc":"2.0","id":14,"method":"resources/read","params":{"uri":"drl://rules/actions"}}
-{"jsonrpc":"2.0","id":15,"method":"resources/read","params":{"uri":"drl://session/metrics"}}
+{"jsonrpc":"2.0","id":2,"method":"initialize","params":{"protocolVersion":"2099-01-01","capabilities":{},"clientInfo":{"name":"future-client","version":"1"}}}
+{"jsonrpc":"2.0","id":3,"method":"ping"}
+{"jsonrpc":"2.0","id":4,"method":"tools/list"}
+{"jsonrpc":"2.0","id":5,"method":"resources/list"}
+{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":777,"width":20,"height":10,"max_turns":5}}}
+{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"game_get_observation","arguments":{}}}
+{"jsonrpc":"2.0","id":8,"method":"tools/call","params":{"name":"game_list_actions","arguments":{}}}
+{"jsonrpc":"2.0","id":9,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"wait"}}}
+{"jsonrpc":"2.0","id":10,"method":"tools/call","params":{"name":"game_get_metrics","arguments":{}}}
+{"jsonrpc":"2.0","id":11,"method":"tools/call","params":{"name":"game_save_replay","arguments":{}}}
+{"jsonrpc":"2.0","id":12,"method":"tools/call","params":{"name":"game_get_dev_state","arguments":{}}}
+{"jsonrpc":"2.0","id":13,"method":"tools/call","params":{"name":"game_reset","arguments":{}}}
+{"jsonrpc":"2.0","id":14,"method":"tools/call","params":{"name":"game_load_scenario","arguments":{"ascii_map":"#####\n#@.>#\n#####","max_turns":4}}}
+{"jsonrpc":"2.0","id":15,"method":"resources/read","params":{"uri":"drl://rules/actions"}}
+{"jsonrpc":"2.0","id":16,"method":"resources/read","params":{"uri":"drl://session/metrics"}}
 EOF
 
 for run in 1 2; do
@@ -35,34 +36,38 @@ import json
 import sys
 
 lines = [line for line in open(sys.argv[1], encoding="utf-8") if line.strip()]
-if len(lines) != 15:
-    raise SystemExit(f"expected 15 JSON-RPC responses, found {len(lines)}")
+if len(lines) != 16:
+    raise SystemExit(f"expected 16 JSON-RPC responses, found {len(lines)}")
 responses = [json.loads(line) for line in lines]
-if [response.get("id") for response in responses] != list(range(1, 16)):
+if [response.get("id") for response in responses] != list(range(1, 17)):
     raise SystemExit("stdio response IDs are not in request order")
 if not responses[0].get("result", {}).get("serverInfo", {}).get("name") == "drl-mcp":
     raise SystemExit("initialize response lacks server identity")
-if not responses[2].get("result", {}).get("tools"):
+if responses[0].get("result", {}).get("protocolVersion") != "2024-11-05":
+    raise SystemExit("supported initialize did not echo protocol version")
+if responses[1].get("result", {}).get("protocolVersion") != "2024-11-05":
+    raise SystemExit("unsupported initialize did not return supported fallback")
+if not responses[3].get("result", {}).get("tools"):
     raise SystemExit("tools/list returned no tools")
-if not responses[3].get("result", {}).get("resources"):
+if not responses[4].get("result", {}).get("resources"):
     raise SystemExit("resources/list returned no resources")
-if responses[4].get("result", {}).get("data", {}).get("status") != "GameStarted":
+if responses[5].get("result", {}).get("data", {}).get("status") != "GameStarted":
     raise SystemExit("game_start did not report GameStarted")
-if not responses[6].get("result", {}).get("data", {}).get("legal_actions"):
+if not responses[7].get("result", {}).get("data", {}).get("legal_actions"):
     raise SystemExit("game_list_actions returned no legal actions")
-if responses[8].get("result", {}).get("data", {}).get("turns_survived") is None:
+if responses[9].get("result", {}).get("data", {}).get("turns_survived") is None:
     raise SystemExit("game_get_metrics returned no turns_survived field")
-if not responses[9].get("result", {}).get("data", {}).get("commands"):
+if not responses[10].get("result", {}).get("data", {}).get("commands"):
     raise SystemExit("game_save_replay returned no commands")
-if responses[10].get("error", {}).get("code") != -32002:
+if responses[11].get("error", {}).get("code") != -32002:
     raise SystemExit("dev-state request did not preserve permission denial")
-if responses[11].get("result", {}).get("data", {}).get("status") != "SessionReset":
+if responses[12].get("result", {}).get("data", {}).get("status") != "SessionReset":
     raise SystemExit("game_reset did not report SessionReset")
-if responses[12].get("result", {}).get("data", {}).get("status") != "ScenarioLoaded":
+if responses[13].get("result", {}).get("data", {}).get("status") != "ScenarioLoaded":
     raise SystemExit("game_load_scenario did not report ScenarioLoaded")
-if not responses[13].get("result", {}).get("contents"):
-    raise SystemExit("rules resource read returned no contents")
 if not responses[14].get("result", {}).get("contents"):
+    raise SystemExit("rules resource read returned no contents")
+if not responses[15].get("result", {}).get("contents"):
     raise SystemExit("metrics resource read returned no contents")
 PY
 

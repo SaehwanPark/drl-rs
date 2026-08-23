@@ -78,11 +78,38 @@ impl McpServer {
     response.to_json_string()
   }
 
-  fn handle_initialize(&self, _params: Option<&JsonValue>) -> Result<JsonValue, JsonRpcError> {
+  fn handle_initialize(&self, params: Option<&JsonValue>) -> Result<JsonValue, JsonRpcError> {
+    let params = params.ok_or_else(|| {
+      JsonRpcError::new(
+        error_codes::INVALID_PARAMS,
+        "Missing parameters for 'initialize'",
+      )
+    })?;
+    let protocol_version = params
+      .get("protocolVersion")
+      .ok_or_else(|| {
+        JsonRpcError::new(
+          error_codes::INVALID_PARAMS,
+          "Missing 'protocolVersion' field in 'initialize' params",
+        )
+      })?
+      .as_str()
+      .ok_or_else(|| {
+        JsonRpcError::new(
+          error_codes::INVALID_PARAMS,
+          "'protocolVersion' in 'initialize' params must be a string",
+        )
+      })?;
+    let negotiated_version = if protocol_version == MCP_PROTOCOL_VERSION {
+      protocol_version
+    } else {
+      MCP_PROTOCOL_VERSION
+    };
+
     let mut map = BTreeMap::new();
     map.insert(
       "protocolVersion".to_string(),
-      JsonValue::from(MCP_PROTOCOL_VERSION),
+      JsonValue::from(negotiated_version),
     );
 
     let mut caps = BTreeMap::new();
@@ -224,7 +251,8 @@ mod tests {
   #[test]
   fn test_server_initialize_and_ping() {
     let mut server = McpServer::new();
-    let init_req = r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}"#;
+    let init_req =
+      r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05"}}"#;
     let resp = server.handle_request(init_req);
     let val = JsonValue::parse(&resp).unwrap();
     assert_eq!(val.get("id").unwrap().as_u64().unwrap(), 1);
@@ -240,11 +268,60 @@ mod tests {
         .unwrap(),
       "drl-mcp"
     );
+    assert_eq!(
+      val
+        .get("result")
+        .unwrap()
+        .get("protocolVersion")
+        .and_then(JsonValue::as_str),
+      Some(MCP_PROTOCOL_VERSION)
+    );
 
     let ping_req = r#"{"jsonrpc":"2.0","id":2,"method":"ping"}"#;
     let ping_resp = server.handle_request(ping_req);
     let ping_val = JsonValue::parse(&ping_resp).unwrap();
     assert!(ping_val.get("result").is_some());
+  }
+
+  #[test]
+  fn initialize_negotiates_supported_and_falls_back_for_unknown_versions() {
+    let mut server = McpServer::new();
+    let supported = server.handle_request(
+      r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05"}}"#,
+    );
+    let future = server.handle_request(
+      r#"{"jsonrpc":"2.0","id":2,"method":"initialize","params":{"protocolVersion":"2099-01-01"}}"#,
+    );
+
+    for response in [supported, future] {
+      let value = JsonValue::parse(&response).unwrap();
+      assert_eq!(
+        value
+          .get("result")
+          .and_then(|result| result.get("protocolVersion"))
+          .and_then(JsonValue::as_str),
+        Some(MCP_PROTOCOL_VERSION)
+      );
+    }
+  }
+
+  #[test]
+  fn initialize_rejects_missing_or_non_string_protocol_versions() {
+    let mut server = McpServer::new();
+    for request in [
+      r#"{"jsonrpc":"2.0","id":1,"method":"initialize"}"#,
+      r#"{"jsonrpc":"2.0","id":2,"method":"initialize","params":{}}"#,
+      r#"{"jsonrpc":"2.0","id":3,"method":"initialize","params":{"protocolVersion":2024}}"#,
+    ] {
+      let response = JsonValue::parse(&server.handle_request(request)).unwrap();
+      assert_eq!(
+        response
+          .get("error")
+          .and_then(|error| error.get("code"))
+          .and_then(JsonValue::as_i64),
+        Some(error_codes::INVALID_PARAMS as i64)
+      );
+    }
   }
 
   #[test]
