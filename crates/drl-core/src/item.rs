@@ -426,6 +426,7 @@ impl Item {
       ItemDefinitionKind::Ammo {
         ammo_type,
         max_stack,
+        ..
       } => ItemKind::Ammo {
         ammo_type,
         count,

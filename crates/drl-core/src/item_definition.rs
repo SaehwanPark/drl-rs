@@ -18,7 +18,12 @@ pub enum ItemDefinitionKind {
     reload_cost: ActionCost,
   },
   /// A stackable ammunition family; the instance count remains caller-owned.
-  Ammo { ammo_type: AmmoType, max_stack: u32 },
+  Ammo {
+    ammo_type: AmmoType,
+    max_stack: u32,
+    /// Source-backed amount for a canonical loose-ammo pickup, when known.
+    initial_amount: Option<u32>,
+  },
   /// A medical consumable with a fixed healing amount.
   MedPack { heal_amount: u32 },
   /// Wearable armor with its baseline durability.
@@ -38,6 +43,18 @@ pub struct ItemDefinition {
   pub name: &'static str,
   pub description: &'static str,
   pub kind: ItemDefinitionKind,
+}
+
+impl ItemDefinition {
+  /// Returns the pinned initial amount for a canonical ammo pickup, when
+  /// available. Replay and scenario callers still own explicit spawn counts.
+  #[must_use]
+  pub const fn initial_stack_count(self) -> Option<u32> {
+    match self.kind {
+      ItemDefinitionKind::Ammo { initial_amount, .. } => initial_amount,
+      _ => None,
+    }
+  }
 }
 
 const PISTOL: ItemDefinition = ItemDefinition {
@@ -98,6 +115,7 @@ const AMMO_9MM: ItemDefinition = ItemDefinition {
   kind: ItemDefinitionKind::Ammo {
     ammo_type: AmmoType::Ammo9mm,
     max_stack: 100,
+    initial_amount: None,
   },
 };
 
@@ -108,6 +126,7 @@ const AMMO_SHELLS: ItemDefinition = ItemDefinition {
   kind: ItemDefinitionKind::Ammo {
     ammo_type: AmmoType::Shells,
     max_stack: 50,
+    initial_amount: None,
   },
 };
 
@@ -118,6 +137,7 @@ const AMMO_ROCKETS: ItemDefinition = ItemDefinition {
   kind: ItemDefinitionKind::Ammo {
     ammo_type: AmmoType::Rocket,
     max_stack: 10,
+    initial_amount: Some(3),
   },
 };
 
@@ -128,6 +148,7 @@ const AMMO_CELLS: ItemDefinition = ItemDefinition {
   kind: ItemDefinitionKind::Ammo {
     ammo_type: AmmoType::Cell,
     max_stack: 50,
+    initial_amount: Some(20),
   },
 };
 
@@ -327,6 +348,7 @@ mod tests {
       ItemDefinitionKind::Ammo {
         ammo_type: AmmoType::Ammo9mm,
         max_stack: 100,
+        initial_amount: None,
       }
     );
     assert_eq!(
@@ -334,6 +356,7 @@ mod tests {
       ItemDefinitionKind::Ammo {
         ammo_type: AmmoType::Shells,
         max_stack: 50,
+        initial_amount: None,
       }
     );
     assert_eq!(
@@ -341,6 +364,7 @@ mod tests {
       ItemDefinitionKind::Ammo {
         ammo_type: AmmoType::Rocket,
         max_stack: 10,
+        initial_amount: Some(3),
       }
     );
     assert_eq!(
@@ -348,7 +372,24 @@ mod tests {
       ItemDefinitionKind::Ammo {
         ammo_type: AmmoType::Cell,
         max_stack: 50,
+        initial_amount: Some(20),
       }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::AmmoRockets(99)).initial_stack_count(),
+      Some(3)
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::AmmoCells(99)).initial_stack_count(),
+      Some(20)
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::Ammo9mm(99)).initial_stack_count(),
+      None
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::Pistol).initial_stack_count(),
+      None
     );
   }
 }
