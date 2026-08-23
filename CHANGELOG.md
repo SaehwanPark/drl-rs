@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.30]
+
+- Extended the M9 evidence gate to compare all 26 Rust special-level scalar
+  fields (name, optional depth, entry, and welcome text) with pinned evidence.
+- Added fixture drift coverage; the check remains descriptive and adds no
+  level behavior or runtime Lua.
+
 ## [0.2.29]
 
 - Synchronized the reviewed 26-level evidence catalog with the Rust

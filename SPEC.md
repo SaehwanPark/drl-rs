@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.29`
+Current project version: `0.2.30`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -31,8 +31,9 @@ Validate the existing pinned legacy-content converters with a reviewed
 crosswalk. The gate checks source provenance, SHA-256 shape, deterministic
 ordering/uniqueness, representative being/item/cell IDs, and complete coverage
 of all 26 indexed special-level IDs. It also synchronizes those IDs with the
-Rust descriptive catalog. It records evidence coverage only; it does not
-import runtime Lua behavior or assert gameplay parity.
+Rust descriptive catalog, including names, optional depths, entry strings, and
+welcome strings. It records evidence coverage only; it does not import runtime
+Lua behavior or assert gameplay parity.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
@@ -58,6 +59,8 @@ import runtime Lua behavior or assert gameplay parity.
   indexed special-level IDs.
 - [x] **Rust catalog synchronization**: The reviewed level IDs match the
   `SPECIAL_LEVEL_DEFINITIONS` source IDs exactly.
+- [x] **Scalar synchronization**: Each Rust special-level name, optional
+  depth, entry string, and welcome string matches the pinned evidence record.
 - [x] **Fixture rejection coverage**: Validator tests reject duplicate IDs,
   unsorted records, missing representatives, and wrong revisions.
 - [ ] **Full typed content migration and behavior validation**: Nested tables,
@@ -85,7 +88,7 @@ import runtime Lua behavior or assert gameplay parity.
 
 ## 3. Recent Delivered Slices
 
-### M9 — Representative Content-Evidence Coverage (`VERSION` 0.2.29)
+### M9 — Representative Content-Evidence Coverage (`VERSION` 0.2.30)
 
 - [x] Added a reviewed crosswalk and validator for pinned being, item-family,
   terrain-cell, and special-level evidence bundles.
@@ -93,6 +96,8 @@ import runtime Lua behavior or assert gameplay parity.
   and complete 26-level coverage checks plus fixture rejection cases.
 - [x] Synchronized the reviewed 26-level ID list with the Rust descriptive
   `SPECIAL_LEVEL_DEFINITIONS` catalog and rejected fixture drift.
+- [x] Compared all descriptive scalar fields against the pinned level evidence
+  records without importing maps, callbacks, or level behavior.
 - [ ] Full typed migration, assets, callbacks, and gameplay parity remain open.
 
 ### M10 — Same-Release Offline-Cache Isolation (`VERSION` 0.2.27)
@@ -339,8 +344,9 @@ import runtime Lua behavior or assert gameplay parity.
 
 ## 6. Verification Gates
 
-### Verified Baseline (`VERSION` 0.2.29)
+### Verified Baseline (`VERSION` 0.2.30)
 
+3c8d618 docs(spec): record catalog sync baseline
 872914c feat(content): synchronize special-level evidence (#120)
 4263241 docs(spec): record merged evidence baseline
 a3d8fd2 feat(content): add evidence coverage gate (#119)
