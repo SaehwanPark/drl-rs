@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.54`
+Current project version: `0.2.55`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,16 +23,16 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M13 Legal-Action Catalog Coherence
+## 2. Active Implementation Slice: M13 Exact Fair-Observation Legal-Action Enumeration
 
 ### 2.1 Scope & Objective
 
-Make the MCP legal-action catalog coherent with the commands that the runtime
-accepts. Advertise explicit `unequip` and `attack_melee` actions where the
-current fair observation can establish them, then reject recognized commands
-that are not currently advertised before calling the live simulation. Preserve
-the core as the authority for geometry, line-of-sight, range, and other rules
-that a fair observation cannot prove; do not build a second rules engine.
+Make the MCP legal-action catalog exact within the fair observation boundary.
+Generate candidates from `PlayerObservation`, then probe each candidate against
+a cloned `drl_core::Game` and retain only commands accepted by the existing
+simulation authority. Use this filtered catalog for action listing, response
+payloads, and pre-dispatch admission without exposing hidden state or adding a
+second rules engine.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
@@ -52,43 +52,45 @@ that a fair observation cannot prove; do not build a second rules engine.
    - Rights and capture uncertainty are recorded as `NOT_RUN`, `INCONCLUSIVE`,
      or `NOT_CLEARED`, never inferred from repository presence alone.
 5. **MCP semantic boundary**:
-   - `game_list_actions` already derives fair actions from
-     `PlayerObservation`; this slice makes that catalog executable as a
-     pre-dispatch admission check without moving simulation rules into MCP.
+   - `game_list_actions` derives fair candidates from `PlayerObservation`; the
+     0.2.54 slice made that catalog executable as a pre-dispatch admission
+     check without moving simulation rules into MCP.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Catalog coverage**: `game_list_actions` advertises valid `unequip`
-  commands for equipped slots and explicit adjacent `attack_melee` actions;
-  existing move/bump, ranged, pickup/use/equip/drop/reload, and descend
-  entries remain executable.
-- [x] **Pre-dispatch gate**: A recognized command that is not currently
-  advertised is rejected with existing `-32001` before `Game::step`; unknown
-  or malformed action input remains `-32602`.
-- [x] **State safety**: Rejected blocked movement, off-stairs descent,
-  absent-item use/drop, invalid unequip, and unsupported explicit actions leave
-  turn, metrics, recent events, replay, and observation unchanged.
-- [x] **Core boundary**: Advertised commands still reach the core for geometry,
-  line-of-sight, range, and other simulation validation; no duplicate rules
-  engine or gameplay change is added.
-- [x] **Determinism**: Reset, terminal precedence, virtual-player catalog use,
-  and repeated stdio malformed/valid action output remain deterministic.
-- [x] **No expansion of claims**: Full legal-action enumeration, balance,
-  legacy parity, replay import/load, transport/lifecycle, rights, browser/PWA,
-  deployment, and external-client certification remain outside this slice.
+- [x] **Candidate boundary**: Candidates remain derived only from the current
+  fair `PlayerObservation`; no hidden map search or omniscient enumeration is
+  added.
+- [x] **Core-probed catalog**: Each candidate is tested on a cloned
+  `drl_core::Game`; only commands for which `Game::step` succeeds are
+  advertised, including state-dependent inventory, target, and equipment
+  constraints.
+- [x] **Consistent consumers**: Filtered actions drive `game_list_actions`,
+  `legal_actions` response fields, and the pre-dispatch admission gate.
+- [x] **State safety and determinism**: Enumeration never mutates the live
+  session; repeated lists, reset/terminal precedence, virtual-player use, and
+  repeated stdio output remain deterministic.
+- [x] **Core boundary**: `drl_core::Game::step` remains the sole authority for
+  geometry, line-of-sight, range, combat, inventory, and other simulation
+  rules; MCP only probes clones.
+- [x] **No expansion of claims**: Hidden-state search, unbounded candidate
+  generation, gameplay changes, balance, legacy parity, replay import/load,
+  transport/lifecycle, rights, browser/PWA, deployment, and external-client
+  certification remain outside this slice.
 
 ### 2.4 Pure Contract
 
-- **Input**: A parsed semantic `Command` and the current fair
-  `PlayerObservation` from an active `McpSession`.
-- **Output**: The command is either admitted to the existing core step or
-  rejected with the existing invalid-action error before any live mutation.
+- **Input**: An active `McpSession` whose current fair `PlayerObservation`
+  supplies candidate semantic commands.
+- **Output**: A deterministic filtered `LegalAction` list; a parsed command is
+  either admitted to the existing live core step or rejected with the existing
+  invalid-action error before any live mutation.
 - **Ownership Boundary**:
-  - `compute_legal_actions` owns the fair, advertised command catalog and its
-    parameter projections; it does not infer hidden geometry or dynamic core
-    rules.
-  - `McpSession::step` owns the pre-dispatch catalog gate and must leave live
-    state untouched when a recognized command is not advertised.
+  - `compute_legal_actions` owns fair candidate generation and parameter
+    projections; it does not infer hidden geometry or dynamic core rules.
+  - `McpSession::legal_actions` owns clone-backed filtering and must leave live
+    state untouched while enumerating.
+  - `McpSession::step` uses the filtered catalog for pre-dispatch admission.
   - `drl_core::Game::step` remains authoritative for geometry, line of sight,
     range, combat, inventory, and other simulation validation; this slice does
     not duplicate or alter those rules.
@@ -96,6 +98,14 @@ that a fair observation cannot prove; do not build a second rules engine.
 ---
 
 ## 3. Recent Delivered Slices
+
+### M13 — Legal-Action Catalog Coherence (`VERSION` 0.2.54)
+
+- [x] Added explicit adjacent `attack_melee` and equipped-slot `unequip`
+  entries, then rejected recognized commands not currently advertised before
+  live simulation with `-32001`; unknown/malformed input remains `-32602`.
+- [x] Preserved state safety, terminal/reset precedence, core geometry/LOS/range
+  authority, virtual-player behavior, and deterministic stdio output.
 
 ### M13 — Public Release-Rights Inventory (`VERSION` 0.2.53)
 
@@ -112,9 +122,9 @@ that a fair observation cannot prove; do not build a second rules engine.
   direction, ranged-coordinate-alias, item-ID, slot, and no-argument branches.
 - [x] Preserved runtime aliases, malformed-input behavior, unknown-property
   tolerance, action precedence, mixed coordinate aliases, and repeated stdio
-  output; the catalog/pre-dispatch coherence contract is delivered in the
-  active 0.2.54 slice, while full dynamic legal-action enumeration remains
-  open.
+  output; the catalog/pre-dispatch coherence contract was delivered in 0.2.54,
+  while exact fair-observation filtering is delivered in the active 0.2.55
+  slice.
 
 ### M13 — MCP Terminal-Outcome Gate (`VERSION` 0.2.51)
 

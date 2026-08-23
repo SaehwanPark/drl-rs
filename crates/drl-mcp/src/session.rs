@@ -965,6 +965,36 @@ impl McpSession {
     Ok(game.observe_player())
   }
 
+  /// Returns the currently executable actions visible through the fair
+  /// observation boundary.
+  ///
+  /// Candidate generation remains observation-only. Each candidate is then
+  /// probed against a cloned core game so geometry, line of sight, range, and
+  /// inventory rules remain owned by `drl_core::Game::step`; the live game is
+  /// never mutated by enumeration.
+  pub fn legal_actions(&self) -> Result<Vec<LegalAction>, String> {
+    if !matches!(self.metrics.outcome, RunOutcome::InProgress) {
+      return Ok(Vec::new());
+    }
+
+    let game = self
+      .game
+      .as_ref()
+      .ok_or_else(|| "No active game session".to_string())?;
+    let observation = game.observe_player();
+    let candidates = compute_legal_actions(&observation);
+
+    Ok(
+      candidates
+        .into_iter()
+        .filter(|candidate| {
+          let mut probe = game.clone();
+          probe.step(candidate.command).is_ok()
+        })
+        .collect(),
+    )
+  }
+
   /// Retrieves the omniscient world state (developer mode required).
   pub fn get_dev_state(&self) -> Result<OmniscientObservation, String> {
     if !self.dev_mode {
@@ -994,18 +1024,22 @@ impl McpSession {
       ));
     }
 
-    let game = self
-      .game
-      .as_mut()
-      .ok_or_else(|| "No active game session".to_string())?;
+    if self.game.is_none() {
+      return Err("No active game session".to_string());
+    }
 
-    let observation = game.observe_player();
-    if !compute_legal_actions(&observation)
+    let legal_actions = self.legal_actions()?;
+    if !legal_actions
       .iter()
       .any(|legal_action| legal_action.command == command)
     {
       return Err("Command is not currently advertised as legal".to_string());
     }
+
+    let game = self
+      .game
+      .as_mut()
+      .ok_or_else(|| "No active game session".to_string())?;
 
     let player_id = game
       .world()
@@ -1121,12 +1155,72 @@ mod tests {
   #[test]
   fn test_legal_actions_synthesis() {
     let mut session = McpSession::new();
-    let obs = session
+    session
       .start_game(42, Some(100), Some(20), Some(15))
       .unwrap();
-    let actions = compute_legal_actions(&obs);
+    let actions = session.legal_actions().unwrap();
     assert!(!actions.is_empty());
     assert!(actions.iter().any(|a| a.action == "Wait"));
+    assert_eq!(actions, session.legal_actions().unwrap());
+
+    let game = session.game.as_ref().unwrap();
+    for action in &actions {
+      let mut probe = game.clone();
+      assert!(
+        probe.step(action.command).is_ok(),
+        "filtered action failed core probe: {:?}",
+        action.command
+      );
+    }
+  }
+
+  #[test]
+  fn test_legal_actions_filter_core_rejections_without_mutation() {
+    let mut session = McpSession::new();
+    session
+      .load_scenario("\n#######\n#@.h..#\n#######\n", None)
+      .unwrap();
+
+    let player_id = session.game.as_ref().unwrap().world().player_id().unwrap();
+    session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .get_actor_mut(player_id)
+      .unwrap()
+      .equipment_mut()
+      .equip(
+        EquipmentSlot::Weapon,
+        drl_core::item::Item::combat_knife(ItemId::new(100)),
+      )
+      .unwrap();
+
+    let observation = session.get_observation().unwrap();
+    assert!(compute_legal_actions(&observation).iter().any(|action| {
+      action.action == "Fire" && action.command == Command::AttackRanged(Position::new(3, 1))
+    }));
+
+    let observation_before = observation.clone();
+    let game_before = session.game.clone();
+    let metrics_before = session.get_metrics().clone();
+    let replay_before = session.export_replay().unwrap().clone();
+    let events_before = session.recent_events().to_vec();
+    let actions = session.legal_actions().unwrap();
+
+    assert!(!actions.iter().any(|action| action.action == "Fire"));
+    assert!(actions.iter().any(|action| action.action == "Wait"));
+    assert_eq!(
+      session
+        .step(Command::AttackRanged(Position::new(3, 1)))
+        .unwrap_err(),
+      "Command is not currently advertised as legal"
+    );
+    assert_eq!(session.get_observation().unwrap(), observation_before);
+    assert_eq!(session.game, game_before);
+    assert_eq!(session.get_metrics(), &metrics_before);
+    assert_eq!(session.export_replay().unwrap(), &replay_before);
+    assert_eq!(session.recent_events(), events_before.as_slice());
   }
 
   #[test]

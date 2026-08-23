@@ -64,7 +64,9 @@ fn test_mcp_procedural_gameplay_tools() {
     "method": "tools/call",
     "params": { "name": "game_list_actions", "arguments": {} }
   }"#;
-  let actions_resp = JsonValue::parse(&server.handle_request(actions_req)).unwrap();
+  let actions_json = server.handle_request(actions_req);
+  assert_eq!(actions_json, server.handle_request(actions_req));
+  let actions_resp = JsonValue::parse(&actions_json).unwrap();
   let legal_actions = actions_resp
     .get("result")
     .unwrap()
@@ -462,6 +464,13 @@ fn test_mcp_stairs_victory_and_terminal_gate() {
     data.get("outcome").and_then(JsonValue::as_str),
     Some("Victory")
   );
+  assert_eq!(
+    data
+      .get("legal_actions")
+      .and_then(JsonValue::as_array)
+      .map(Vec::len),
+    Some(0)
+  );
 
   let metrics_request = r#"{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"game_get_metrics","arguments":{}}}"#;
   let replay_request = r#"{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"game_save_replay","arguments":{}}}"#;
@@ -493,6 +502,19 @@ fn test_mcp_stairs_victory_and_terminal_gate() {
   );
   assert_eq!(metrics_before, server.handle_request(metrics_request));
   assert_eq!(replay_before, server.handle_request(replay_request));
+  let list_after = JsonValue::parse(&server.handle_request(
+    r#"{"jsonrpc":"2.0","id":8,"method":"tools/call","params":{"name":"game_list_actions","arguments":{}}}"#,
+  ))
+  .unwrap();
+  assert_eq!(
+    list_after
+      .get("result")
+      .and_then(|result| result.get("data"))
+      .and_then(|data| data.get("legal_actions"))
+      .and_then(JsonValue::as_array)
+      .map(Vec::len),
+    Some(0)
+  );
 }
 
 #[test]
@@ -529,6 +551,20 @@ fn test_mcp_death_terminal_gate_preserves_replay() {
   }
   assert!(death_seen, "adjacent hostile did not kill the player");
 
+  let terminal_observation = JsonValue::parse(&server.handle_request(
+    r#"{"jsonrpc":"2.0","id":100,"method":"tools/call","params":{"name":"game_get_observation","arguments":{}}}"#,
+  ))
+  .unwrap();
+  assert_eq!(
+    terminal_observation
+      .get("result")
+      .and_then(|result| result.get("data"))
+      .and_then(|data| data.get("legal_actions"))
+      .and_then(JsonValue::as_array)
+      .map(Vec::len),
+    Some(0)
+  );
+
   let metrics_request = r#"{"jsonrpc":"2.0","id":101,"method":"tools/call","params":{"name":"game_get_metrics","arguments":{}}}"#;
   let replay_request = r#"{"jsonrpc":"2.0","id":102,"method":"tools/call","params":{"name":"game_save_replay","arguments":{}}}"#;
   let metrics_before = server.handle_request(metrics_request);
@@ -546,4 +582,51 @@ fn test_mcp_death_terminal_gate_preserves_replay() {
   );
   assert_eq!(metrics_before, server.handle_request(metrics_request));
   assert_eq!(replay_before, server.handle_request(replay_request));
+}
+
+#[test]
+fn test_mcp_turn_limit_terminal_catalog_is_empty() {
+  let mut server = ready_server();
+  let ascii = "\n#####\n#@..#\n#####\n";
+  let load_request = format!(
+    r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"name":"game_load_scenario","arguments":{{"ascii_map":{},"max_turns":1}}}}}}"#,
+    JsonValue::from(ascii).to_compact_string()
+  );
+  assert!(
+    JsonValue::parse(&server.handle_request(&load_request))
+      .unwrap()
+      .get("result")
+      .is_some()
+  );
+
+  let wait = JsonValue::parse(&server.handle_request(
+    r#"{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"wait"}}}"#,
+  ))
+  .unwrap();
+  let data = wait.get("result").unwrap().get("data").unwrap();
+  assert_eq!(
+    data.get("outcome").and_then(JsonValue::as_str),
+    Some("TurnLimitReached")
+  );
+  assert_eq!(
+    data
+      .get("legal_actions")
+      .and_then(JsonValue::as_array)
+      .map(Vec::len),
+    Some(0)
+  );
+
+  let list = JsonValue::parse(&server.handle_request(
+    r#"{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"game_list_actions","arguments":{}}}"#,
+  ))
+  .unwrap();
+  assert_eq!(
+    list
+      .get("result")
+      .and_then(|result| result.get("data"))
+      .and_then(|data| data.get("legal_actions"))
+      .and_then(JsonValue::as_array)
+      .map(Vec::len),
+    Some(0)
+  );
 }
