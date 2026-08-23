@@ -341,6 +341,7 @@ import runtime Lua behavior or assert gameplay parity.
 
 ### Verified Baseline (`VERSION` 0.2.29)
 
+872914c feat(content): synchronize special-level evidence (#120)
 4263241 docs(spec): record merged evidence baseline
 a3d8fd2 feat(content): add evidence coverage gate (#119)
 0d919ec docs(spec): record merged cache isolation baseline
