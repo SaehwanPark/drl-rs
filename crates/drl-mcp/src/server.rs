@@ -7,7 +7,7 @@ use crate::protocol::{
 };
 use crate::resources::{get_all_resource_definitions, read_resource};
 use crate::session::McpSession;
-use crate::tools::{execute_tool, get_all_tool_definitions};
+use crate::tools::{execute_tool, get_all_tool_definitions, tool_error_result};
 use std::collections::BTreeMap;
 use std::io::{self, BufRead, Write};
 
@@ -260,7 +260,11 @@ impl McpServer {
     let default_args = JsonValue::Object(BTreeMap::new());
     let args = p.get("arguments").unwrap_or(&default_args);
 
-    execute_tool(&mut self.session, name, args)
+    match execute_tool(&mut self.session, name, args) {
+      Ok(result) => Ok(result),
+      Err(error) if is_tool_execution_error(error.code) => Ok(tool_error_result(&error)),
+      Err(error) => Err(error),
+    }
   }
 
   fn handle_resources_list(&self, params: Option<&JsonValue>) -> Result<JsonValue, JsonRpcError> {
@@ -358,6 +362,18 @@ impl McpServer {
       Some(JsonValue::Array(responses).to_compact_string())
     }
   }
+}
+
+/// Runtime failures from a recognized tool are MCP tool results rather than
+/// JSON-RPC envelope errors. Protocol/dispatch failures remain JSON-RPC errors.
+const fn is_tool_execution_error(code: i32) -> bool {
+  matches!(
+    code,
+    error_codes::SESSION_NOT_ACTIVE
+      | error_codes::INVALID_ACTION
+      | error_codes::PERMISSION_DENIED
+      | error_codes::INTERNAL_ERROR
+  )
 }
 
 fn list_offset(
@@ -505,6 +521,7 @@ mod tests {
       "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{},\"clientInfo\":{\"name\":\"drl-test\",\"version\":\"1\"}}}\n",
       "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}\n",
       "{\"jsonrpc\":\"2.0\",\"method\":\"tools/call\",\"params\":{\"name\":\"game_start\",\"arguments\":{\"seed\":7}}}\n",
+      "{\"jsonrpc\":\"2.0\",\"method\":\"tools/call\",\"params\":{\"name\":\"game_step_action\",\"arguments\":{\"action\":\"use\",\"item_id\":999}}}\n",
       "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/call\",\"params\":{\"name\":\"game_get_metrics\"}}\n",
       "not-json\n",
       "{\"jsonrpc\":\"2.0\",\"id\":null,\"method\":\"ping\"}\n",

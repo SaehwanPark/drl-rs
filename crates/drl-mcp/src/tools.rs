@@ -257,7 +257,6 @@ pub fn execute_tool(
     }
 
     "game_verify_replay" => {
-      let supplied = arguments.get("replay").is_some();
       let replay = if let Some(value) = arguments.get("replay") {
         replay_json::from_json_value(value)
           .map_err(|e| JsonRpcError::new(error_codes::INVALID_PARAMS, e))?
@@ -268,12 +267,10 @@ pub fn execute_tool(
           .clone()
       };
       let deterministic = ReplayEngine::verify_determinism(&replay).map_err(|e| {
-        let code = if supplied {
-          error_codes::INVALID_PARAMS
-        } else {
-          error_codes::INTERNAL_ERROR
-        };
-        JsonRpcError::new(code, format!("Replay verification failed: {e}"))
+        JsonRpcError::new(
+          error_codes::INTERNAL_ERROR,
+          format!("Replay verification failed: {e}"),
+        )
       })?;
       let mut res = BTreeMap::new();
       res.insert("deterministic".to_string(), JsonValue::Bool(deterministic));
@@ -317,6 +314,34 @@ fn wrap_mcp_tool_result(content_json: JsonValue) -> JsonValue {
   map.insert("isError".to_string(), JsonValue::Bool(false));
   map.insert("data".to_string(), content_json);
   JsonValue::Object(map)
+}
+
+/// Wraps a recognized tool's runtime failure in the MCP tool-result envelope.
+/// The numeric code and message remain available under `data` for agents that
+/// need deterministic machine-readable diagnostics.
+pub(crate) fn tool_error_result(error: &JsonRpcError) -> JsonValue {
+  let mut data = BTreeMap::new();
+  data.insert("code".to_string(), JsonValue::from(error.code));
+  data.insert(
+    "message".to_string(),
+    JsonValue::String(error.message.clone()),
+  );
+  if let Some(details) = &error.data {
+    data.insert("details".to_string(), details.clone());
+  }
+
+  let mut text_item = BTreeMap::new();
+  text_item.insert("type".to_string(), JsonValue::from("text"));
+  text_item.insert("text".to_string(), JsonValue::String(error.message.clone()));
+
+  let mut result = BTreeMap::new();
+  result.insert(
+    "content".to_string(),
+    JsonValue::Array(vec![JsonValue::Object(text_item)]),
+  );
+  result.insert("isError".to_string(), JsonValue::Bool(true));
+  result.insert("data".to_string(), JsonValue::Object(data));
+  JsonValue::Object(result)
 }
 
 fn optional_u64_argument(arguments: &JsonValue, name: &str) -> Result<Option<u64>, JsonRpcError> {

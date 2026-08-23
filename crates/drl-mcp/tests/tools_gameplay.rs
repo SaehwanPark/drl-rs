@@ -179,10 +179,19 @@ fn test_mcp_legal_action_pre_dispatch_gate_is_state_safe() {
       r#"{{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{{"name":"game_step_action","arguments":{action}}}}}"#
     );
     let response = JsonValue::parse(&server.handle_request(&request)).unwrap();
+    assert_eq!(response.get("error"), None);
     assert_eq!(
       response
-        .get("error")
-        .and_then(|error| error.get("code"))
+        .get("result")
+        .and_then(|result| result.get("isError"))
+        .and_then(JsonValue::as_bool),
+      Some(true)
+    );
+    assert_eq!(
+      response
+        .get("result")
+        .and_then(|result| result.get("data"))
+        .and_then(|data| data.get("code"))
         .and_then(JsonValue::as_i64),
       Some(drl_mcp::protocol::error_codes::INVALID_ACTION as i64)
     );
@@ -507,10 +516,19 @@ fn test_mcp_stairs_victory_and_terminal_gate() {
     r#"{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"wait"}}}"#,
   ))
   .unwrap();
+  assert_eq!(rejected.get("error"), None);
   assert_eq!(
     rejected
-      .get("error")
-      .and_then(|error| error.get("code"))
+      .get("result")
+      .and_then(|result| result.get("isError"))
+      .and_then(JsonValue::as_bool),
+    Some(true)
+  );
+  assert_eq!(
+    rejected
+      .get("result")
+      .and_then(|result| result.get("data"))
+      .and_then(|data| data.get("code"))
       .and_then(JsonValue::as_i64),
     Some(drl_mcp::protocol::error_codes::INVALID_ACTION as i64)
   );
@@ -587,10 +605,19 @@ fn test_mcp_death_terminal_gate_preserves_replay() {
     r#"{"jsonrpc":"2.0","id":103,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"wait"}}}"#,
   ))
   .unwrap();
+  assert_eq!(rejected.get("error"), None);
   assert_eq!(
     rejected
-      .get("error")
-      .and_then(|error| error.get("code"))
+      .get("result")
+      .and_then(|result| result.get("isError"))
+      .and_then(JsonValue::as_bool),
+    Some(true)
+  );
+  assert_eq!(
+    rejected
+      .get("result")
+      .and_then(|result| result.get("data"))
+      .and_then(|data| data.get("code"))
       .and_then(JsonValue::as_i64),
     Some(drl_mcp::protocol::error_codes::INVALID_ACTION as i64)
   );

@@ -36,7 +36,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.58`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.59`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:
@@ -138,6 +138,9 @@ action requirements without rejecting unknown fields; the
 while external-client certification remains open. `tools/list` and
 `resources/list` use deterministic fixed-size pages (4 tools, 2 resources)
 with method-scoped opaque cursors; invalid cursors return `-32602`.
+Recognized `tools/call` runtime failures use successful MCP results with
+`isError: true` and deterministic `data.code`/`data.message` details, while
+malformed envelopes/arguments and unknown methods/tools remain JSON-RPC errors.
 After a terminal victory, death, turn limit, or stall, further actions are
 rejected without changing metrics or replay; reset remains available.
 The published `game_step_action` schema now conditionally describes its
