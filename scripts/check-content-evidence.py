@@ -9,7 +9,10 @@ import re
 from pathlib import Path
 
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
-RUST_LEVEL_ID = re.compile(r'^\s+id:\s+"([^"]+)",\s*$', re.MULTILINE)
+RUST_LEVEL_BLOCK = re.compile(
+  r"^  SpecialLevelDefinition \{\n(.*?)^  \},$",
+  re.MULTILINE | re.DOTALL,
+)
 KINDS = ("being", "item", "cell", "level")
 
 
@@ -58,14 +61,152 @@ def require(condition: bool, message: str) -> None:
     raise SystemExit(f"content evidence coverage failed: {message}")
 
 
-def validate_rust_catalog(path: Path, expected_ids: object) -> None:
-  require(isinstance(expected_ids, list), "level crosswalk lacks a Rust catalog ID list")
+def decode_rust_string(encoded: str, field: str) -> str:
+  try:
+    return json.loads(f'"{encoded}"')
+  except json.JSONDecodeError as error:
+    raise SystemExit(f"invalid Rust string in special-level field {field}: {error}") from error
+
+
+def rust_required_string_field(block: str, field: str) -> str:
+  pattern = re.compile(
+    rf'^\s+{field}:\s*"((?:\\.|[^"\\])*)"\s*,',
+    re.MULTILINE,
+  )
+  match = pattern.search(block)
+  require(match is not None, f"Rust special-level field {field} is malformed")
+  return decode_rust_string(match.group(1), field)
+
+
+def rust_optional_string_field(block: str, field: str) -> str | None:
+  pattern = re.compile(
+    rf'^\s+{field}:\s*(None|Some\(\s*"((?:\\.|[^"\\])*)"\s*,?\s*\))\s*,',
+    re.MULTILINE,
+  )
+  match = pattern.search(block)
+  require(match is not None, f"Rust special-level field {field} is malformed")
+  if match.group(1) == "None":
+    return None
+  return decode_rust_string(match.group(2), field)
+
+
+def rust_optional_int_field(block: str, field: str) -> int | None:
+  pattern = re.compile(
+    rf"^\s+{field}:\s*(None|Some\(\s*(\d+)\s*,?\s*\))\s*,",
+    re.MULTILINE,
+  )
+  match = pattern.search(block)
+  require(match is not None, f"Rust special-level field {field} is malformed")
+  return None if match.group(1) == "None" else int(match.group(2))
+
+
+def require_rust_field(block: str, field: str) -> None:
+  require(
+    re.search(rf"^\s+{field}:\s+", block, re.MULTILINE) is not None,
+    f"Rust special-level field {field} is missing",
+  )
+
+
+def strip_rust_comments(source: str) -> str:
+  output: list[str] = []
+  state = "normal"
+  block_comment_depth = 0
+  index = 0
+  while index < len(source):
+    char = source[index]
+    next_char = source[index + 1] if index + 1 < len(source) else ""
+    if state == "normal":
+      if char == "/" and next_char == "/":
+        output.extend((" ", " "))
+        index += 2
+        state = "line-comment"
+        continue
+      if char == "/" and next_char == "*":
+        output.extend((" ", " "))
+        index += 2
+        state = "block-comment"
+        block_comment_depth = 1
+        continue
+      output.append(char)
+      if char == '"':
+        state = "string"
+      index += 1
+      continue
+    if state == "line-comment":
+      if char == "\n":
+        output.append(char)
+        state = "normal"
+      else:
+        output.append(" ")
+      index += 1
+      continue
+    if state == "block-comment":
+      if char == "/" and next_char == "*":
+        output.extend((" ", " "))
+        index += 2
+        block_comment_depth += 1
+        continue
+      if char == "*" and next_char == "/":
+        output.extend((" ", " "))
+        index += 2
+        block_comment_depth -= 1
+        if block_comment_depth == 0:
+          state = "normal"
+      else:
+        output.append("\n" if char == "\n" else " ")
+        index += 1
+      continue
+    output.append(char)
+    if char == "\\" and index + 1 < len(source):
+      output.append(source[index + 1])
+      index += 2
+      continue
+    if char == '"':
+      state = "normal"
+    index += 1
+  require(block_comment_depth == 0, "Rust catalog has an unterminated block comment")
+  return "".join(output)
+
+
+def parse_rust_catalog(path: Path) -> list[dict[str, object]]:
   try:
     source = path.read_text(encoding="utf-8")
   except OSError as error:
     raise SystemExit(f"unable to read Rust special-level catalog {path}: {error}") from error
-  ids = RUST_LEVEL_ID.findall(source)
-  require(ids == expected_ids, "Rust special-level IDs differ from the reviewed level catalog")
+  records: list[dict[str, object]] = []
+  source = strip_rust_comments(source)
+  for block in RUST_LEVEL_BLOCK.findall(source):
+    for field in ("id", "name", "legacy_depth", "entry", "welcome"):
+      require_rust_field(block, field)
+    identifier = rust_required_string_field(block, "id")
+    name = rust_required_string_field(block, "name")
+    records.append(
+      {
+        "id": identifier,
+        "name": name,
+        "level": rust_optional_int_field(block, "legacy_depth"),
+        "entry": rust_optional_string_field(block, "entry"),
+        "welcome": rust_optional_string_field(block, "welcome"),
+      }
+    )
+  return records
+
+
+def validate_rust_catalog(path: Path, expected_ids: object, level_records: list[dict[str, object]]) -> None:
+  require(isinstance(expected_ids, list), "level crosswalk lacks a Rust catalog ID list")
+  rust_records = parse_rust_catalog(path)
+  rust_ids = [record["id"] for record in rust_records]
+  require(rust_ids == expected_ids, "Rust special-level IDs differ from the reviewed level catalog")
+  legacy_by_id = {record["id"]: record for record in level_records}
+  for rust_record in rust_records:
+    identifier = rust_record["id"]
+    legacy_fields = legacy_by_id[identifier].get("fields", {})
+    require(isinstance(legacy_fields, dict), f"level {identifier} scalar fields are malformed")
+    for rust_field, legacy_field in (("name", "name"), ("level", "level"), ("entry", "entry"), ("welcome", "welcome")):
+      require(
+        rust_record[rust_field] == legacy_fields.get(legacy_field),
+        f"level {identifier} field {legacy_field} differs from the Rust catalog",
+      )
 
 
 def validate_bundle(kind: str, path: Path, expected: dict[str, object], revision: str) -> int:
@@ -138,7 +279,11 @@ def main() -> int:
     for kind in KINDS
   }
   if args.rust_catalog is not None:
-    validate_rust_catalog(args.rust_catalog, bundles["level"].get("record_ids"))
+    level_payload = load_json(paths["level"])
+    require(isinstance(level_payload, dict), "level bundle is not an object")
+    level_records = level_payload.get("records")
+    require(isinstance(level_records, list), "level bundle records are not a list")
+    validate_rust_catalog(args.rust_catalog, bundles["level"].get("record_ids"), level_records)
   print(
     "Content evidence coverage: PASS "
     f"(being={counts['being']}, item={counts['item']}, "

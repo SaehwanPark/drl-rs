@@ -30,8 +30,15 @@ import sys
 
 root = pathlib.Path(sys.argv[1])
 bundles = {}
+level_records = []
 for kind in ("being", "item", "cell", "level"):
   payload = json.loads((root / f"{kind}.json").read_text(encoding="utf-8"))
+  if kind == "level":
+    fields = payload["records"][0]["fields"]
+    fields["name"] = 'Alpha "level"'
+    fields["entry"] = 'On @1 he said "hello".\\nSecond line.'
+    fields["welcome"] = "Welcome\\path.\nSecond line."
+    (root / "level.json").write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
   ids = [record["id"] for record in payload["records"]]
   entry = {
     "sources": [source["path"] for source in payload["sources"]],
@@ -40,6 +47,7 @@ for kind in ("being", "item", "cell", "level"):
   }
   if kind == "level":
     entry["record_ids"] = ids
+    level_records = payload["records"]
   bundles[kind] = entry
 (root / "config.json").write_text(
   json.dumps(
@@ -49,11 +57,32 @@ for kind in ("being", "item", "cell", "level"):
   + "\n",
   encoding="utf-8",
 )
-(root / "catalog.rs").write_text(
-  "\n".join(f'  id: "{record_id}",' for record_id in bundles["level"]["record_ids"])
-  + "\n",
-  encoding="utf-8",
-)
+def optional(value, multiline=False):
+  if value is None:
+    return "None"
+  encoded = json.dumps(value)
+  if multiline:
+    return f"Some(\n      {encoded},\n    )"
+  return f"Some({encoded})"
+
+
+catalog = []
+for record in level_records:
+  fields = record["fields"]
+  catalog.append(
+    "\n".join(
+      [
+        "  SpecialLevelDefinition {",
+        f'    id: "{record["id"]}",',
+        f'    name: {json.dumps(fields["name"])},',
+        f'    legacy_depth: {optional(fields.get("level"))},',
+        f'    entry: {optional(fields.get("entry"))},',
+        f'    welcome: {optional(fields.get("welcome"), multiline=True)},',
+        "  },",
+      ]
+    )
+  )
+(root / "catalog.rs").write_text("\n".join(catalog) + "\n", encoding="utf-8")
 PY
 
 python3 scripts/check-content-evidence.py \
@@ -64,6 +93,61 @@ python3 scripts/check-content-evidence.py \
   --bundle "level=$temp_dir/level.json" \
   --rust-catalog "$temp_dir/catalog.rs" >/dev/null
 
+check_catalog_rejected() {
+  label=$1
+  catalog=$2
+  if python3 scripts/check-content-evidence.py --config "$temp_dir/config.json" \
+    --bundle "being=$temp_dir/being.json" \
+    --bundle "item=$temp_dir/item.json" \
+    --bundle "cell=$temp_dir/cell.json" \
+    --bundle "level=$temp_dir/level.json" \
+    --rust-catalog "$catalog" >/dev/null 2>&1; then
+    printf '%s\n' "$label must be rejected" >&2
+    exit 1
+  fi
+}
+
+python3 - "$temp_dir/catalog.rs" "$temp_dir/catalog-comments.rs" <<'PY'
+import pathlib
+import sys
+
+source = pathlib.Path(sys.argv[1]).read_text(encoding="utf-8")
+needle = '    name: "Alpha \\"level\\"",\n'
+shadow = '    /*\n    name: "Comment shadow",\n    */\n'
+if needle not in source:
+  raise SystemExit("fixture comment-shadow target missing")
+source = "const TYPE: &'static str = \"fixture\"; // lifetime must not suppress comment stripping\n" + source
+pathlib.Path(sys.argv[2]).write_text(source.replace(needle, shadow + needle, 1), encoding="utf-8")
+PY
+if ! python3 scripts/check-content-evidence.py --config "$temp_dir/config.json" \
+  --bundle "being=$temp_dir/being.json" \
+  --bundle "item=$temp_dir/item.json" \
+  --bundle "cell=$temp_dir/cell.json" \
+  --bundle "level=$temp_dir/level.json" \
+  --rust-catalog "$temp_dir/catalog-comments.rs" >/dev/null; then
+  printf '%s\n' 'comment-shadowed Rust fields must be ignored' >&2
+  exit 1
+fi
+
+python3 - "$temp_dir/catalog.rs" "$temp_dir/catalog-nested-comment-drift.rs" <<'PY'
+import pathlib
+import sys
+
+source = pathlib.Path(sys.argv[1]).read_text(encoding="utf-8")
+needle = '    name: "Alpha \\"level\\"",\n'
+nested = (
+  '    /*\n'
+  '      /* nested comment */\n'
+  '      name: "Alpha \\"level\\"",\n'
+  '    */\n'
+  '    name: "Wrong live value",\n'
+)
+if needle not in source:
+  raise SystemExit("fixture nested-comment target missing")
+pathlib.Path(sys.argv[2]).write_text(source.replace(needle, nested, 1), encoding="utf-8")
+PY
+check_catalog_rejected 'nested comment-shadowed live scalar drift' "$temp_dir/catalog-nested-comment-drift.rs"
+
 python3 - "$temp_dir/catalog.rs" "$temp_dir/catalog-mismatch.rs" <<'PY'
 import pathlib
 import sys
@@ -71,15 +155,29 @@ import sys
 source = pathlib.Path(sys.argv[1]).read_text(encoding="utf-8")
 pathlib.Path(sys.argv[2]).write_text(source.replace('id: "alpha",', 'id: "gamma",', 1), encoding="utf-8")
 PY
-if python3 scripts/check-content-evidence.py --config "$temp_dir/config.json" \
-  --bundle "being=$temp_dir/being.json" \
-  --bundle "item=$temp_dir/item.json" \
-  --bundle "cell=$temp_dir/cell.json" \
-  --bundle "level=$temp_dir/level.json" \
-  --rust-catalog "$temp_dir/catalog-mismatch.rs" >/dev/null 2>&1; then
-  printf '%s\n' 'Rust special-level catalog drift must be rejected' >&2
-  exit 1
-fi
+check_catalog_rejected 'Rust special-level ID drift' "$temp_dir/catalog-mismatch.rs"
+
+python3 - "$temp_dir/catalog.rs" "$temp_dir" <<'PY'
+import pathlib
+import sys
+
+source = pathlib.Path(sys.argv[1]).read_text(encoding="utf-8")
+root = pathlib.Path(sys.argv[2])
+mutations = {
+  "name": ('name: "Alpha \\"level\\"",', 'name: "Drifted level",'),
+  "depth": ('legacy_depth: Some(3),', 'legacy_depth: Some(4),'),
+  "entry-gap": ('entry: None,', 'entry: Some("drifted entry"),'),
+  "welcome-gap": ('welcome: None,', 'welcome: Some("drifted welcome"),'),
+}
+for label, (before, after) in mutations.items():
+  if before not in source:
+    raise SystemExit(f"fixture mutation target missing: {before}")
+  (root / f"catalog-{label}.rs").write_text(source.replace(before, after, 1), encoding="utf-8")
+PY
+check_catalog_rejected 'Rust special-level name drift' "$temp_dir/catalog-name.rs"
+check_catalog_rejected 'Rust special-level depth drift' "$temp_dir/catalog-depth.rs"
+check_catalog_rejected 'Rust special-level entry gap drift' "$temp_dir/catalog-entry-gap.rs"
+check_catalog_rejected 'Rust special-level welcome gap drift' "$temp_dir/catalog-welcome-gap.rs"
 
 python3 - "$temp_dir/being.json" "$temp_dir/duplicate.json" <<'PY'
 import json
