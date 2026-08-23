@@ -107,6 +107,8 @@ impl std::error::Error for ReplayExecutionError {}
 pub enum ItemSpawnKind {
   Pistol,
   Shotgun,
+  DoubleShotgun,
+  CombatShotgun,
   Chaingun,
   RocketLauncher,
   PlasmaRifle,

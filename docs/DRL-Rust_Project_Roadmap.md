@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.76`
+Current project version: `0.2.77`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.76)
+## 3. Current Progress Summary (`VERSION` 0.2.77)
 
 ### Delivered Foundations
 
@@ -77,7 +77,8 @@ verification item uses explicit status semantics:
 - **Typed Content & Persistence (M9, M10)**: Rust-owned definitions for current
   monsters, items, tiles, and levels, including pinned rocket, power-cell, and
   blue/red-armor families, pinned med-pack descriptions, and a typed plasma
-  rifle, rocket launcher, chaingun, chainsaw, and BFG 9000; versioned
+  rifle, rocket launcher, chaingun, chainsaw, BFG 9000, and shotgun variants;
+  versioned
   fixed-session snapshot codec with localStorage
   persistence, bounded rejected-save quarantine, and static service-worker
   cache.
@@ -489,6 +490,9 @@ scripting.
 - [x] Typed BFG 9000 preserves pinned cell relation, 100-cell clip, `10d6`
   damage range, description, replay kind, and `SPRITE_BFG9000` slot;
   exact-hit/shot-cost and explosion semantics remain open.
+- [x] Typed double/combat shotguns preserve pinned shell relation, clips,
+  damage/range scalars, descriptions, replay kinds, and `SPRITE_DSHOTGUN`/
+  `SPRITE_CSHOTGUN` slots; callbacks and spread/falloff remain open.
 - [ ] Full migration of legacy monsters, weapons, armor, mods, and consumable
   items.
 - [ ] Full migration of special levels, vaults, and dungeon branches.

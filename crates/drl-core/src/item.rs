@@ -364,6 +364,18 @@ impl Item {
     Self::from_spawn_kind(id, ItemSpawnKind::Shotgun)
   }
 
+  /// Factory: double shotgun (two-shell clip, 9d3 damage policy).
+  #[must_use]
+  pub fn double_shotgun(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::DoubleShotgun)
+  }
+
+  /// Factory: combat shotgun (five-shell clip, 7d3 damage policy).
+  #[must_use]
+  pub fn combat_shotgun(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::CombatShotgun)
+  }
+
   /// Factory: chaingun (40-round 9mm clip, 1d6 damage policy).
   #[must_use]
   pub fn chaingun(id: ItemId) -> Self {
@@ -664,71 +676,82 @@ mod tests {
     let cases = [
       (ItemSpawnKind::Pistol, Item::pistol(ItemId::new(1))),
       (ItemSpawnKind::Shotgun, Item::shotgun(ItemId::new(2))),
-      (ItemSpawnKind::Chaingun, Item::chaingun(ItemId::new(3))),
+      (
+        ItemSpawnKind::DoubleShotgun,
+        Item::double_shotgun(ItemId::new(3)),
+      ),
+      (
+        ItemSpawnKind::CombatShotgun,
+        Item::combat_shotgun(ItemId::new(4)),
+      ),
+      (ItemSpawnKind::Chaingun, Item::chaingun(ItemId::new(5))),
       (
         ItemSpawnKind::PlasmaRifle,
-        Item::plasma_rifle(ItemId::new(4)),
+        Item::plasma_rifle(ItemId::new(6)),
       ),
       (
         ItemSpawnKind::RocketLauncher,
-        Item::rocket_launcher(ItemId::new(5)),
+        Item::rocket_launcher(ItemId::new(7)),
       ),
-      (ItemSpawnKind::Chainsaw, Item::chainsaw(ItemId::new(6))),
-      (ItemSpawnKind::Bfg9000, Item::bfg9000(ItemId::new(7))),
+      (ItemSpawnKind::Chainsaw, Item::chainsaw(ItemId::new(8))),
+      (ItemSpawnKind::Bfg9000, Item::bfg9000(ItemId::new(9))),
       (
         ItemSpawnKind::CombatKnife,
-        Item::combat_knife(ItemId::new(8)),
+        Item::combat_knife(ItemId::new(10)),
       ),
-      (ItemSpawnKind::Ammo9mm(0), Item::ammo_9mm(ItemId::new(9), 0)),
+      (
+        ItemSpawnKind::Ammo9mm(0),
+        Item::ammo_9mm(ItemId::new(11), 0),
+      ),
       (
         ItemSpawnKind::Ammo9mm(107),
-        Item::ammo_9mm(ItemId::new(10), 107),
+        Item::ammo_9mm(ItemId::new(12), 107),
       ),
       (
         ItemSpawnKind::AmmoShells(7),
-        Item::ammo_shells(ItemId::new(11), 7),
+        Item::ammo_shells(ItemId::new(13), 7),
       ),
       (
         ItemSpawnKind::AmmoRockets(3),
-        Item::ammo_rockets(ItemId::new(12), 3),
+        Item::ammo_rockets(ItemId::new(14), 3),
       ),
       (
         ItemSpawnKind::AmmoCells(20),
-        Item::ammo_cells(ItemId::new(13), 20),
+        Item::ammo_cells(ItemId::new(15), 20),
       ),
       (
         ItemSpawnKind::AmmoPackRockets,
-        Item::ammo_pack_rockets(ItemId::new(14)),
+        Item::ammo_pack_rockets(ItemId::new(16)),
       ),
       (
         ItemSpawnKind::AmmoPackCells,
-        Item::ammo_pack_cells(ItemId::new(15)),
+        Item::ammo_pack_cells(ItemId::new(17)),
       ),
       (
         ItemSpawnKind::AmmoPack9mm,
-        Item::ammo_pack_9mm(ItemId::new(16)),
+        Item::ammo_pack_9mm(ItemId::new(18)),
       ),
       (
         ItemSpawnKind::AmmoPackShells,
-        Item::ammo_pack_shells(ItemId::new(17)),
+        Item::ammo_pack_shells(ItemId::new(19)),
       ),
       (
         ItemSpawnKind::SmallMedPack,
-        Item::small_medpack(ItemId::new(18)),
+        Item::small_medpack(ItemId::new(20)),
       ),
       (
         ItemSpawnKind::LargeMedPack,
-        Item::large_medpack(ItemId::new(19)),
+        Item::large_medpack(ItemId::new(21)),
       ),
       (
         ItemSpawnKind::GreenArmor,
-        Item::green_armor(ItemId::new(20)),
+        Item::green_armor(ItemId::new(22)),
       ),
-      (ItemSpawnKind::BlueArmor, Item::blue_armor(ItemId::new(21))),
-      (ItemSpawnKind::RedArmor, Item::red_armor(ItemId::new(22))),
+      (ItemSpawnKind::BlueArmor, Item::blue_armor(ItemId::new(23))),
+      (ItemSpawnKind::RedArmor, Item::red_armor(ItemId::new(24))),
       (
         ItemSpawnKind::PhaseDevice,
-        Item::phase_device(ItemId::new(23)),
+        Item::phase_device(ItemId::new(25)),
       ),
     ];
     for (kind, factory_item) in cases {
@@ -770,6 +793,8 @@ mod tests {
     let kinds = [
       ItemSpawnKind::Pistol,
       ItemSpawnKind::Shotgun,
+      ItemSpawnKind::DoubleShotgun,
+      ItemSpawnKind::CombatShotgun,
       ItemSpawnKind::Chaingun,
       ItemSpawnKind::PlasmaRifle,
       ItemSpawnKind::RocketLauncher,

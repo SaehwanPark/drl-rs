@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.77]
+
+- Added typed `DoubleShotgun` and `CombatShotgun` families with pinned shell
+  relations, clips, damage/range scalars, descriptions, replay JSON kinds, and
+  measured `SPRITE_DSHOTGUN`/`SPRITE_CSHOTGUN` atlas slots. Callbacks,
+  spread/falloff, and exact legacy timing remain open.
+
 ## [0.2.76]
 
 - Added typed `Bfg9000` content with pinned description, cell-ammo relation,
