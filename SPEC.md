@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.27`
+Current project version: `0.2.28`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,56 +23,70 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M10 Same-Release Offline-Cache Isolation
+## 2. Active Implementation Slice: M9 Representative Content-Evidence Coverage
 
 ### 2.1 Scope & Objective
 
-Constrain service-worker offline reads to the current generated release cache.
-Network-first navigation and cache-first static assets remain unchanged, but
-an unrelated or stale Cache Storage namespace must never satisfy a request.
-This hardens the cache identity boundary without claiming real browser install,
-activation, control, or reload acceptance.
+Validate the existing pinned legacy-content converters with a reviewed
+crosswalk. The gate checks source provenance, SHA-256 shape, deterministic
+ordering/uniqueness, representative being/item/cell IDs, and complete coverage
+of all 26 indexed special-level IDs. It records evidence coverage only; it
+does not import runtime Lua behavior or assert gameplay parity.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
-1. **Versioned service-worker cache (v0.2.15–v0.2.26)**:
-   - Release-specific cache names, generated precache URLs, activation cleanup,
-     and a deterministic Node worker harness already exist.
-2. **Offline boundary**:
-   - Cache Storage is shared per origin; global matching can cross release or
-     unrelated namespaces, so this slice isolates reads to `CACHE_NAME`.
+1. **Pinned content converters (v0.2.17–v0.2.23)**:
+   - Build-time converters already extract shallow scalar records for beings,
+     item families, terrain cells, and special levels with provenance and
+     explicit migration gaps.
+2. **Typed Rust content boundary**:
+   - Current Rust definitions and the descriptive special-level catalog remain
+     runtime-owned; this slice adds only a validation gate over evidence.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Current-cache-only reads**: Navigation fallback and static asset reads
-  open and match only the generated `CACHE_NAME`.
-- [x] **Fail-closed stale isolation**: Missing current-cache entries do not
-  fall through to unrelated namespaces; navigation returns `Response.error()`
-  and asset fetches retain their network failure.
-- [x] **Preserved routing policy**: Same-origin GET gating, network-first
-  navigation, cache-first assets, response caching, and activation cleanup stay
-  unchanged.
-- [x] **Deterministic worker coverage**: VM tests cover current-cache hits,
-  offline navigation fallback, stale unrelated shell/assets, old-cache purge,
-  and cross-origin/non-GET bypass.
-- [ ] **Real offline lifecycle acceptance**: Browser install, activation,
-  control, reload, and offline gameplay remain external/`NOT_RUN` evidence.
+- [x] **Reviewed crosswalk**: `docs/content/evidence-coverage.json` pins the
+  legacy revision, source paths, record counts, representative IDs, and the
+  complete 26-level ID catalog.
+- [x] **Provenance validation**: Every bundle source carries the pinned
+  revision and a non-empty 64-character SHA-256 digest.
+- [x] **Deterministic record validation**: Bundles are sorted and duplicate-free;
+  source indices remain within the declared provenance list.
+- [x] **Representative coverage**: Being, item-family, and terrain-cell bundles
+  cover the reviewed current representatives; the level bundle matches all 26
+  indexed special-level IDs.
+- [x] **Fixture rejection coverage**: Validator tests reject duplicate IDs,
+  unsorted records, missing representatives, and wrong revisions.
+- [ ] **Full typed content migration and behavior validation**: Nested tables,
+  callbacks, symbolic fields, assets, and gameplay semantics remain explicit
+  migration gaps.
 
 ### 2.4 Pure Contract
 
-- **Input**: Same-origin GET navigation or asset requests handled by the
-  versioned service worker.
-- **Output**: Responses from the current release cache only, or the existing
-  network/fail-closed result when the current cache has no entry.
+- **Input**: Four provenance-bearing JSON evidence bundles and the reviewed
+  crosswalk.
+- **Output**: PASS only when pinned sources, deterministic records, reviewed
+  representatives, and special-level coverage all match; otherwise a bounded
+  diagnostic failure.
 - **Ownership Boundary**:
-  - `web/service-worker.js` owns cache namespace reads and fetch routing.
-  - `scripts/test-service-worker.js` owns deterministic mocked evidence.
-  - No simulation, save format, browser UI, cache naming, or production key
-    policy changes.
+  - `scripts/convert-legacy-content-bundle.py` and
+    `scripts/convert-legacy-level-index.py` own extraction.
+  - `scripts/check-content-evidence.py` owns crosswalk validation.
+  - `docs/content/evidence-coverage.json` owns reviewed coverage scope.
+  - No simulation, browser runtime, Lua interpreter, or inferred gameplay
+    behavior changes.
 
 ---
 
 ## 3. Recent Delivered Slices
+
+### M9 — Representative Content-Evidence Coverage (`VERSION` 0.2.28)
+
+- [x] Added a reviewed crosswalk and validator for pinned being, item-family,
+  terrain-cell, and special-level evidence bundles.
+- [x] Added provenance, digest-shape, ordering, uniqueness, representative,
+  and complete 26-level coverage checks plus fixture rejection cases.
+- [ ] Full typed migration, assets, callbacks, and gameplay parity remain open.
 
 ### M10 — Same-Release Offline-Cache Isolation (`VERSION` 0.2.27)
 
@@ -318,8 +332,9 @@ activation, control, or reload acceptance.
 
 ## 6. Verification Gates
 
-### Verified Baseline (`VERSION` 0.2.27)
+### Verified Baseline (`VERSION` 0.2.28)
 
+0d919ec docs(spec): record merged cache isolation baseline
 9f0d601 feat(web): isolate service-worker cache reads (#118)
 afdc01f feat(web): harden dynamic accessibility semantics (#117)
 6024a15 feat(eval): add cohort depth distribution (#116)

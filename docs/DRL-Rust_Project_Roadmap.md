@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.27`
+Current project version: `0.2.28`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.27)
+## 3. Current Progress Summary (`VERSION` 0.2.28)
 
 ### Delivered Foundations
 
@@ -84,11 +84,12 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active Milestone Slice (M10)**: Service-worker offline reads now isolate the
-  current generated release cache; real install/control/reload acceptance
-  remains open.
-- **M9 Content Evidence**: Base, expansion, user-item, being, and terrain-cell
-  evidence slices are delivered without runtime Lua or gameplay overclaims.
+- **Active Milestone Slice (M9)**: A reviewed evidence-coverage gate validates
+  pinned provenance and representative being/item/cell records plus all 26
+  indexed special levels; runtime Lua and gameplay overclaims remain open.
+- **M9 Content Evidence**: Base, expansion, user-item, being, terrain-cell,
+  and special-level evidence slices are delivered without runtime Lua or
+  gameplay overclaims.
 - **M11 Evaluation**: Deterministic cohort reports support a three-policy
   matrix plus descriptive depth distributions; canonical difficulty targets
   remain open.
@@ -103,8 +104,8 @@ verification item uses explicit status semantics:
   equations from reference captures, HUD typography, and replacement audio.
 - **Controlled Reference Captures (M3, M7, M8)**: Runtime captures are `NOT_RUN`
   on macOS arm64; pending execution in a controlled Linux x86-64 environment.
-- **Content Breadth & Balance (M9, M11)**: Pinned-source conversion evidence,
-  expanded content tables, and canonical difficulty target studies.
+- **Content Breadth & Balance (M9, M11)**: Full typed migration, expanded
+  content tables, and canonical difficulty target studies.
 - **PWA & Release Hardening (M10, M12, M13)**: Bootstrap-independent offline
   cache registration, current-cache-only reads, and signed releases are
   delivered; full offline-after-first-load acceptance and 1.0 desktop
@@ -344,6 +345,10 @@ scripting.
   including long-bracket map strings and explicit dynamic gaps.
 - [x] Immutable Rust special-level metadata catalog for 26 active IDs, scalar
   names/text, optional depth, and deterministic lookup.
+- [x] Reviewed pinned evidence-coverage gate for representative beings,
+  item families, terrain cells, and all 26 indexed special-level IDs; source
+  provenance, SHA-256 shape, ordering, uniqueness, and dynamic gaps remain
+  explicit.
 - [ ] Full migration of legacy monsters, weapons, armor, mods, and consumable
   items.
 - [ ] Full migration of special levels, vaults, and dungeon branches.

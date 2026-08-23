@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.27`
+Current project version: `0.2.28`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -177,6 +177,7 @@ Presentation Boundary
 ### `drl-script` — Content Conversion Boundary
 - **Role**: Build-time conversion boundary for legacy content. The current
   extraction tool emits provenance-bearing scalar tables and explicit gaps;
+  `scripts/check-content-evidence.py` validates reviewed source coverage;
   runtime Lua remains prohibited.
 
 ---
