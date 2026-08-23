@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.57`
+Current project version: `0.2.58`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -183,6 +183,10 @@ Presentation Boundary
     nulls for absent optional values. `replay_json` also decodes this exact V1
     envelope for read-only verification; it does not activate sessions, migrate
     versions, perform file IO, or claim external replay interchange.
+  - `tools/list` and `resources/list` slice stable registries into fixed-size
+    pages with method-scoped opaque cursors; malformed or stale cursors fail
+    before session access, and list pagination does not alter tool/resource
+    definitions or lifecycle state.
   - Strict observation boundaries with explicit `dev_mode` flag for omniscient
     inspection.
   - `initialize` validates a string `protocolVersion`, echoes supported

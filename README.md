@@ -36,7 +36,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.57`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.58`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:
@@ -135,7 +135,9 @@ bounded values before simulation dispatch, and `tools/list` publishes the
 canonical alias spellings, enum domains, numeric ranges, and conditional
 action requirements without rejecting unknown fields; the
 `command`-without-`action` compatibility form is included in the discriminator,
-while external-client certification remains open.
+while external-client certification remains open. `tools/list` and
+`resources/list` use deterministic fixed-size pages (4 tools, 2 resources)
+with method-scoped opaque cursors; invalid cursors return `-32602`.
 After a terminal victory, death, turn limit, or stall, further actions are
 rejected without changing metrics or replay; reset remains available.
 The published `game_step_action` schema now conditionally describes its

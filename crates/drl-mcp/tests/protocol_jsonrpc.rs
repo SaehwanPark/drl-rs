@@ -1,8 +1,8 @@
 //! Integration tests for JSON-RPC 2.0 protocol handshake, routing, and error handling.
 
-use drl_mcp::McpServer;
 use drl_mcp::json::JsonValue;
 use drl_mcp::protocol::error_codes;
+use drl_mcp::{McpServer, get_all_resource_definitions, get_all_tool_definitions};
 
 fn ready_server() -> McpServer {
   let mut server = McpServer::new();
@@ -11,6 +11,37 @@ fn ready_server() -> McpServer {
   );
   let _ = server.handle_request(r#"{"jsonrpc":"2.0","method":"notifications/initialized"}"#);
   server
+}
+
+fn collect_list_pages(server: &mut McpServer, method: &str, key: &str) -> Vec<JsonValue> {
+  let mut cursor = None;
+  let mut items = Vec::new();
+  let mut request_id = 700;
+  loop {
+    let request = match cursor.as_deref() {
+      Some(cursor) => format!(
+        r#"{{"jsonrpc":"2.0","id":{},"method":"{}","params":{{"cursor":"{}"}}}}"#,
+        request_id, method, cursor
+      ),
+      None => format!(
+        r#"{{"jsonrpc":"2.0","id":{},"method":"{}"}}"#,
+        request_id, method
+      ),
+    };
+    let response = JsonValue::parse(&server.handle_request(&request)).unwrap();
+    assert!(response.get("error").is_none(), "list page should succeed");
+    let result = response.get("result").unwrap();
+    items.extend(result.get(key).unwrap().as_array().unwrap().iter().cloned());
+    cursor = result
+      .get("nextCursor")
+      .and_then(JsonValue::as_str)
+      .map(str::to_string);
+    request_id += 1;
+    if cursor.is_none() {
+      break;
+    }
+  }
+  items
 }
 
 #[test]
@@ -128,17 +159,7 @@ fn test_jsonrpc_ping() {
 #[test]
 fn test_jsonrpc_tools_list() {
   let mut server = ready_server();
-  let list_req = r#"{"jsonrpc":"2.0","id":"tools-1","method":"tools/list"}"#;
-  let resp_str = server.handle_request(list_req);
-  let resp = JsonValue::parse(&resp_str).expect("Valid JSON response");
-
-  assert_eq!(resp.get("id").and_then(|v| v.as_str()), Some("tools-1"));
-
-  let result = resp.get("result").expect("Tools list result");
-  let tools = result
-    .get("tools")
-    .and_then(|v| v.as_array())
-    .expect("Tools array");
+  let tools = collect_list_pages(&mut server, "tools/list", "tools");
 
   let tool_names: Vec<&str> = tools
     .iter()
@@ -160,14 +181,7 @@ fn test_jsonrpc_tools_list() {
 #[test]
 fn test_jsonrpc_tools_list_publishes_truthful_input_schemas() {
   let mut server = ready_server();
-  let response =
-    JsonValue::parse(&server.handle_request(r#"{"jsonrpc":"2.0","id":90,"method":"tools/list"}"#))
-      .unwrap();
-  let tools = response
-    .get("result")
-    .and_then(|result| result.get("tools"))
-    .and_then(JsonValue::as_array)
-    .expect("tools array");
+  let tools = collect_list_pages(&mut server, "tools/list", "tools");
   let schema_for = |name: &str| {
     tools
       .iter()
@@ -395,6 +409,146 @@ fn test_jsonrpc_tools_list_publishes_truthful_input_schemas() {
       .and_then(|replay| replay.get("type"))
       .and_then(JsonValue::as_str),
     Some("object")
+  );
+}
+
+#[test]
+fn test_jsonrpc_list_pagination_is_deterministic_and_state_safe() {
+  let mut server = ready_server();
+  let first_tools_request = r#"{"jsonrpc":"2.0","id":100,"method":"tools/list"}"#;
+  let first_tools = server.handle_request(first_tools_request);
+  assert_eq!(first_tools, server.handle_request(first_tools_request));
+  let first_tools_value = JsonValue::parse(&first_tools).unwrap();
+  assert_eq!(
+    first_tools_value
+      .get("result")
+      .and_then(|result| result.get("tools"))
+      .and_then(JsonValue::as_array)
+      .map(Vec::len),
+    Some(4)
+  );
+  assert_eq!(
+    first_tools_value
+      .get("result")
+      .and_then(|result| result.get("nextCursor"))
+      .and_then(JsonValue::as_str),
+    Some("tools-v1-4")
+  );
+
+  let first_resources = JsonValue::parse(
+    &server.handle_request(r#"{"jsonrpc":"2.0","id":101,"method":"resources/list"}"#),
+  )
+  .unwrap();
+  assert_eq!(
+    first_resources
+      .get("result")
+      .and_then(|result| result.get("resources"))
+      .and_then(JsonValue::as_array)
+      .map(Vec::len),
+    Some(2)
+  );
+  assert_eq!(
+    first_resources
+      .get("result")
+      .and_then(|result| result.get("nextCursor"))
+      .and_then(JsonValue::as_str),
+    Some("resources-v1-2")
+  );
+
+  let tools = collect_list_pages(&mut server, "tools/list", "tools");
+  let expected_tools = get_all_tool_definitions()
+    .into_iter()
+    .map(|tool| tool.to_json_value())
+    .collect::<Vec<_>>();
+  assert_eq!(tools, expected_tools);
+  let tool_names = tools
+    .iter()
+    .map(|tool| tool.get("name").and_then(JsonValue::as_str).unwrap())
+    .collect::<Vec<_>>();
+  let mut unique_names = tool_names.clone();
+  unique_names.sort_unstable();
+  unique_names.dedup();
+  assert_eq!(unique_names.len(), tool_names.len());
+
+  let resources = collect_list_pages(&mut server, "resources/list", "resources");
+  let expected_resources = get_all_resource_definitions()
+    .into_iter()
+    .map(|resource| resource.to_json_value())
+    .collect::<Vec<_>>();
+  assert_eq!(resources, expected_resources);
+
+  let started = server.handle_request(
+    r#"{"jsonrpc":"2.0","id":99,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":7,"width":20,"height":10}}}"#,
+  );
+  assert!(JsonValue::parse(&started).unwrap().get("result").is_some());
+  let before_metrics = server.handle_request(
+    r#"{"jsonrpc":"2.0","id":102,"method":"tools/call","params":{"name":"game_get_metrics","arguments":{}}}"#,
+  );
+  let invalid_requests = [
+    r#"{"jsonrpc":"2.0","id":103,"method":"tools/list","params":null}"#,
+    r#"{"jsonrpc":"2.0","id":104,"method":"tools/list","params":[]}"#,
+    r#"{"jsonrpc":"2.0","id":105,"method":"tools/list","params":{"cursor":4}}"#,
+    r#"{"jsonrpc":"2.0","id":106,"method":"tools/list","params":{"cursor":"resources-v1-2"}}"#,
+    r#"{"jsonrpc":"2.0","id":107,"method":"tools/list","params":{"cursor":"tools-v1-6"}}"#,
+    r#"{"jsonrpc":"2.0","id":108,"method":"tools/list","params":{"cursor":"tools-v1-12"}}"#,
+    r#"{"jsonrpc":"2.0","id":109,"method":"resources/list","params":{"cursor":"tools-v1-4"}}"#,
+    r#"{"jsonrpc":"2.0","id":110,"method":"resources/list","params":{"cursor":"resources-v1-4"}}"#,
+  ];
+  for request in invalid_requests {
+    let response = JsonValue::parse(&server.handle_request(request)).unwrap();
+    assert_eq!(
+      response
+        .get("error")
+        .and_then(|error| error.get("code"))
+        .and_then(JsonValue::as_i64),
+      Some(error_codes::INVALID_PARAMS as i64)
+    );
+  }
+  assert_eq!(
+    before_metrics,
+    server.handle_request(
+      r#"{"jsonrpc":"2.0","id":102,"method":"tools/call","params":{"name":"game_get_metrics","arguments":{}}}"#,
+    )
+  );
+}
+
+#[test]
+fn test_stdio_batch_list_pagination_preserves_order_and_notifications() {
+  let batch = concat!(
+    r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"batch-test","version":"1"}}},"#,
+    r#"{"jsonrpc":"2.0","method":"notifications/initialized"},"#,
+    r#"{"jsonrpc":"2.0","id":2,"method":"tools/list"},"#,
+    r#"{"jsonrpc":"2.0","method":"tools/list","params":{"cursor":"tools-v1-4"}},"#,
+    r#"{"jsonrpc":"2.0","id":3,"method":"resources/list"}"#,
+  );
+  let mut server = McpServer::new();
+  let mut output = Vec::new();
+  server
+    .run_stdio(std::io::Cursor::new(format!("[{batch}]\n")), &mut output)
+    .unwrap();
+  let response = JsonValue::parse(String::from_utf8(output).unwrap().trim()).unwrap();
+  let responses = response.as_array().expect("batch response array");
+  assert_eq!(responses.len(), 3);
+  assert_eq!(
+    responses
+      .iter()
+      .map(|response| response.get("id").and_then(JsonValue::as_u64))
+      .collect::<Vec<_>>(),
+    vec![Some(1), Some(2), Some(3)]
+  );
+  assert_eq!(
+    responses[1]
+      .get("result")
+      .and_then(|result| result.get("nextCursor"))
+      .and_then(JsonValue::as_str),
+    Some("tools-v1-4")
+  );
+  assert_eq!(
+    responses[2]
+      .get("result")
+      .and_then(|result| result.get("nextCursor"))
+      .and_then(JsonValue::as_str),
+    Some("resources-v1-2")
   );
 }
 
@@ -747,17 +901,8 @@ fn test_jsonrpc_supplied_custom_replay_verifies_without_session() {
 fn test_jsonrpc_resources_list_and_read() {
   let mut server = ready_server();
 
-  let list_req = r#"{"jsonrpc":"2.0","id":2,"method":"resources/list"}"#;
-  let resp_str = server.handle_request(list_req);
-  let resp = JsonValue::parse(&resp_str).unwrap();
-  let res_list = resp
-    .get("result")
-    .unwrap()
-    .get("resources")
-    .unwrap()
-    .as_array()
-    .unwrap();
-  assert!(res_list.len() >= 4);
+  let res_list = collect_list_pages(&mut server, "resources/list", "resources");
+  assert_eq!(res_list.len(), get_all_resource_definitions().len());
 
   let read_req =
     r#"{"jsonrpc":"2.0","id":3,"method":"resources/read","params":{"uri":"drl://rules/actions"}}"#;

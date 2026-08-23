@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.57`
+Current project version: `0.2.58`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.57)
+## 3. Current Progress Summary (`VERSION` 0.2.58)
 
 ### Delivered Foundations
 
@@ -84,15 +84,17 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active Milestone Slice (M13/M6)**: `game_verify_replay` now accepts an
-  exact `drl-rust-replay-v1` JSON envelope and verifies it read-only, including
-  without an active session. The decoder covers every V1 field, nested optional
-  value, enum, command variant, coordinate, and exact u64; malformed or
-  simulation-invalid supplied input returns `-32602`, while current-session
-  zero-argument verification remains unchanged. Session activation/load,
-  replay-file IO, migration, external interchange, and client certification
-  remain open. The preceding 0.2.56 export emits every in-memory V1 `ReplayLog`
-  field with deterministic typed commands and byte-identical repeats. The fair
+- **Active Milestone Slice (M13/M6)**: `tools/list` and `resources/list` now
+  expose deterministic fixed-size pages (4 tools, 2 resources) with
+  method-scoped opaque cursors and `-32602` rejection for malformed, stale,
+  cross-list, or out-of-range cursors. No-params requests remain first-page
+  requests; continuation reconstructs each stable registry without omissions or
+  duplicates, and batch/stdio ordering remains deterministic. External-client
+  certification, reconnect/resume, and broader MCP compatibility remain open.
+  `game_verify_replay` accepts an exact `drl-rust-replay-v1` JSON envelope and
+  verifies it read-only, including without an active session. The preceding
+  0.2.56 export emits every in-memory V1 `ReplayLog` field with deterministic
+  typed commands and byte-identical repeats. The fair
   legal-action catalog derives candidates from
   `PlayerObservation`, probes each candidate on a cloned `drl_core::Game`, and
   uses the filtered set for listing, response payloads, and pre-dispatch
@@ -295,6 +297,9 @@ tooling.
   input handling. MCP session creation enforces bounded dimensions and
   procedural parameters before export; session activation/load and replay-file
   IO remain open.
+- [x] `tools/list` and `resources/list` provide deterministic fixed-size pages
+  with method-scoped cursors, stable reconstruction, final-page omission, and
+  fail-closed invalid-cursor handling; broader MCP compatibility remains open.
 - [x] Terminal `game_step_action` calls are rejected after victory, death,
   turn-limit, or stalled outcomes; stair transitions report victory while
   reset and replay/metrics inspection remain available.

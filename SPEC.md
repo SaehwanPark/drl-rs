@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.57`
+Current project version: `0.2.58`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,18 +23,16 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M13/M6 Read-Only Canonical V1 Replay Verification
+## 2. Active Implementation Slice: M13/M6 Deterministic List Pagination
 
 ### 2.1 Scope & Objective
 
-Make `game_verify_replay` optionally verify the exact canonical V1 JSON emitted
-by `game_save_replay` without activating or mutating the current session. Decode
-every replay field, nested spawn/config value, and typed command, then run the
-existing deterministic replay authority. Keep session loading, file/network
-transport, migration, and external interchange outside this read-only boundary.
-MCP-created envelopes use bounded session dimensions (3..512 tiles per axis)
-and bounded procedural generation parameters; the producer and published
-`game_start` schema enforce those same limits before export.
+Add deterministic, local cursor pagination to `tools/list` and `resources/list`
+without changing registry content, tool calls, resource reads, lifecycle, or
+session behavior. Preserve no-params requests as the first page, expose stable
+server-owned page sizes (4 tools and 2 resources), and return method-scoped
+opaque cursors only when another page remains. This slice documents the local
+contract and does not claim complete external-client MCP compatibility.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
@@ -56,45 +54,50 @@ and bounded procedural generation parameters; the producer and published
 5. **MCP semantic boundary**:
    - `game_list_actions` derives fair candidates from `PlayerObservation`, and
      the 0.2.55 slice filters them through cloned core probes before listing or
-     dispatching; the preceding 0.2.56 slice owns complete replay export, while
-     this slice adds only read-only supplied-input verification.
+     dispatching; replay export and supplied verification remain separate
+     deterministic contracts.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Exact decoder**: `replay_json::from_json_value` accepts only the
-  `drl-rust-replay-v1` / `schema_version: 1` envelope and reconstructs every
-  V1 field, enum, optional value, command variant, coordinate, and exact u64.
-- [x] **Read-only verification**: An optional `replay` object runs through
-  `ReplayEngine::verify_determinism` without requiring or changing a session;
-  zero-argument current-session verification remains unchanged.
-- [x] **Fail-closed input boundary**: Missing, wrong-typed, unsupported, or
-  malformed replay values return `-32602`; simulation failure for supplied
-  input is also an input error, while deterministic false remains successful.
-- [x] **Round-trip and state safety**: Procedural and custom exports decode and
-  verify, repeated supplied verification is byte-identical, and active
-  observation/metrics/replay state remains unchanged.
-- [x] **Explicit non-goals**: No session activation/load/reset, replay-file
-  IO, migration, cross-version negotiation, external interchange, or client
-  certification is claimed.
+- [x] **Stable first pages**: No-params and empty-object requests return the
+  first bounded page deterministically; tools use four entries and resources
+  use two entries.
+- [x] **Cursor continuation**: Valid `tools-v1-N` and `resources-v1-N` cursors
+  reconstruct the complete stable registry without omissions, duplicates, or
+  order changes; final pages omit `nextCursor`.
+- [x] **Fail-closed cursors**: Missing, non-object, wrong-type, cross-list,
+  malformed, stale, unaligned, and out-of-range cursors return `-32602` before
+  any session mutation.
+- [x] **Transport determinism**: Repeated pages are byte-identical, and stdio
+  plus batch response IDs/order and notification suppression remain stable.
+- [x] **Explicit non-goals**: No registry/content changes, other MCP primitive
+  pagination, external-client certification, reconnect/resume, replay import,
+  gameplay, browser, or deployment changes are claimed.
 
 ### 2.4 Pure Contract
 
-- **Input**: Either an active `McpSession` for the existing zero-argument path,
-  or an exact canonical V1 replay JSON object supplied to `game_verify_replay`.
-- **Output**: A deterministic verification result containing `deterministic`,
-  `command_count`, and `version`.
+- **Input**: Optional object params for `tools/list` or `resources/list`, with an
+  optional string `cursor`; omitted params select the first page.
+- **Output**: The requested registry page and an optional `nextCursor` string.
 - **Ownership Boundary**:
-  - `ReplayLog` and `ReplayEngine` remain the core replay representation and
-    deterministic authority; neither is changed by this slice.
-  - `drl-mcp::replay_json` owns the stable projection and exact V1 decoder; it
-    does not activate sessions, perform file IO, migrate versions, or mutate
-    replay state.
-  - `game_save_replay` owns export; `game_verify_replay` owns read-only supplied
-    verification while preserving the current in-memory path.
+  - `McpServer` owns fixed page sizes, stable registry slicing, and
+    method-scoped cursor validation; cursors are opaque implementation tokens,
+    not a general interchange format.
+  - Tool calls, resource reads, session state, lifecycle transitions, replay
+    behavior, and registry definitions remain unchanged.
 
 ---
 
 ## 3. Recent Delivered Slices
+
+### M13/M6 — Read-Only Canonical V1 Replay Verification (`VERSION` 0.2.57)
+
+- [x] `game_verify_replay` decodes and verifies supplied canonical V1 replay
+  JSON without an active session or mutation; malformed, unsafe, out-of-bounds,
+  and simulation-invalid input returns `-32602`.
+- [x] MCP session dimensions and generator parameters are bounded before export;
+  session loading, replay-file IO, migration, and external interchange remain
+  open.
 
 ### M13 — Canonical Complete V1 MCP Replay Export (`VERSION` 0.2.56)
 

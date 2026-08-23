@@ -3,6 +3,16 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.58]
+
+- Added deterministic cursor pagination for `tools/list` and `resources/list`
+  with fixed 4-tool and 2-resource pages, stable method-scoped cursors, final
+  page omission, and exact registry reconstruction.
+- Invalid, malformed, cross-list, stale, unaligned, and out-of-range cursors
+  return `-32602` without session mutation; no-params requests remain first-page
+  requests and stdio/batch ordering stays deterministic. Broader external MCP
+  client compatibility remains open.
+
 ## [0.2.57]
 
 - Added read-only supplied replay verification to `game_verify_replay` using an
