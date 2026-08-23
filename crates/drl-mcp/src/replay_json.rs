@@ -196,6 +196,7 @@ fn item_kind_to_json(kind: ItemSpawnKind) -> JsonValue {
   let (name, count) = match kind {
     ItemSpawnKind::Pistol => ("pistol", None),
     ItemSpawnKind::Shotgun => ("shotgun", None),
+    ItemSpawnKind::Chaingun => ("chaingun", None),
     ItemSpawnKind::RocketLauncher => ("rocket_launcher", None),
     ItemSpawnKind::PlasmaRifle => ("plasma_rifle", None),
     ItemSpawnKind::CombatKnife => ("combat_knife", None),
@@ -369,6 +370,7 @@ mod tests {
       initial_items: vec![
         ItemSpawnKind::Pistol,
         ItemSpawnKind::Shotgun,
+        ItemSpawnKind::Chaingun,
         ItemSpawnKind::RocketLauncher,
         ItemSpawnKind::PlasmaRifle,
         ItemSpawnKind::CombatKnife,

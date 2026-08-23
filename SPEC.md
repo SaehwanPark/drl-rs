@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.73`
+Current project version: `0.2.74`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -27,9 +27,9 @@ criteria, and verification boundaries.
 
 ### 2.1 Scope & Objective
 
-Migrate the pinned legacy `rocket`, `cell`, `barmor`, `rarmor`, `smed`, and
-`lmed`, `plasma`, and `bazooka` records into typed immutable Rust definitions and
-replay-compatible spawn contracts. Preserve
+Migrate the pinned legacy `rocket`, `cell`, `barmor`, `rarmor`, `smed`,
+`lmed`, `chaingun`, `plasma`, and `bazooka` records into typed immutable Rust
+definitions and replay-compatible spawn contracts. Preserve
 source-backed scalar fields, measured atlas slots, and verified armor
 presentation tints without importing Lua callbacks or unverified combat rules.
 
@@ -85,15 +85,19 @@ presentation tints without importing Lua callbacks or unverified combat rules.
   pinned description, rocket-ammo relation, one-shot clip, `6d6` damage range,
   replay kind, and `SPRITE_BAZOOKA` slot. Blast radius, projectile/explosion,
   rocket-jump, accuracy, and timing semantics remain explicit gaps.
-- [ ] **Full migration**: rocket/plasma weapon behavior, dynamic callbacks,
+- [x] **Chaingun boundary**: typed `Chaingun` preserves the pinned description,
+  9mm-ammo relation, 40-round clip, `1d6` damage range, replay kind, and
+  `SPRITE_CHAINGUN` slot. Chainfire callbacks, burst semantics, effects,
+  accuracy, and timing remain explicit gaps.
+- [ ] **Full migration**: chaingun/rocket/plasma weapon behavior, dynamic callbacks,
   balance/fairness, and remaining legacy item families remain open.
 - [x] **Explicit non-goals**: no gameplay/core rule, observation schema,
   Lua runtime, dynamic item callback, or broad balance claim is added.
 
 ### 2.4 Pure Contract
 
-- **Input**: `ItemSpawnKind::AmmoRockets(count)` or
-  `ItemSpawnKind::AmmoCells(count)`.
+- **Input**: typed item spawn kinds, including `ItemSpawnKind::Chaingun`,
+  `RocketLauncher`, or `PlasmaRifle`, plus the existing ammo families.
 - **Output**: a definition-backed stackable `Item` with the observed ammo type,
   count, maximum stack, description, and atlas archetype; the definitions also
   expose pinned initial counts (`3`/`20`) while MCP JSON uses
@@ -121,6 +125,10 @@ presentation tints without importing Lua callbacks or unverified combat rules.
   `6d6` damage policy, `rocket_launcher` replay kind, and measured atlas
   geometry. Blast/effect callbacks and timing/accuracy semantics are not
   claimed as legacy parity.
+- `Chaingun` is a definition-backed 9mm-ammo weapon with a 40-round clip,
+  `1d6` damage policy, `chaingun` replay kind, and measured atlas geometry.
+  Chainfire/burst callbacks and timing/accuracy semantics are not claimed as
+  legacy parity.
 - **Ownership Boundary**: Rust typed definitions own runtime item semantics;
   pinned Lua evidence informs only the migrated scalar fields and provenance.
 

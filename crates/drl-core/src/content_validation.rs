@@ -74,6 +74,7 @@ pub fn validate_current_content() -> Result<(), ContentValidationError> {
   for kind in [
     ItemSpawnKind::Pistol,
     ItemSpawnKind::Shotgun,
+    ItemSpawnKind::Chaingun,
     ItemSpawnKind::PlasmaRifle,
     ItemSpawnKind::RocketLauncher,
     ItemSpawnKind::CombatKnife,

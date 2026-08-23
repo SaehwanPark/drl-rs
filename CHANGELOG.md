@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.74]
+
+- Added typed `Chaingun` content with pinned description, 9mm-ammo relation,
+  40-round clip, `1d6` damage range, replay JSON kind, and measured
+  `SPRITE_CHAINGUN` atlas slot. Chainfire/burst callbacks and exact timing or
+  accuracy parity remain open.
+
 ## [0.2.73]
 
 - Added typed `RocketLauncher` content with pinned description, rocket-ammo
