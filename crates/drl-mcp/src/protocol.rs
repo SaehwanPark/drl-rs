@@ -80,6 +80,17 @@ impl JsonRpcRequest {
       .to_string();
 
     let id = obj.get("id").cloned();
+    if let Some(id) = &id
+      && !matches!(
+        id,
+        JsonValue::Null | JsonValue::Number(_) | JsonValue::String(_)
+      )
+    {
+      return Err(JsonRpcError::new(
+        error_codes::INVALID_REQUEST,
+        "Field 'id' must be a string, number, or null",
+      ));
+    }
     let params = obj.get("params").cloned();
 
     Ok(Self { id, method, params })
@@ -257,6 +268,20 @@ mod tests {
     assert_eq!(req.id, Some(JsonValue::Number(1.0)));
     assert_eq!(req.method, "tools/call");
     assert!(req.params.is_some());
+  }
+
+  #[test]
+  fn test_parse_rejects_non_scalar_request_ids() {
+    for id in ["true", "[]", "{}"] {
+      let raw = format!(r#"{{"jsonrpc":"2.0","id":{id},"method":"ping"}}"#);
+      let error = JsonRpcRequest::parse(&raw).unwrap_err();
+      assert_eq!(error.code, error_codes::INVALID_REQUEST);
+    }
+
+    for id in ["null", "1", "\"request\""] {
+      let raw = format!(r#"{{"jsonrpc":"2.0","id":{id},"method":"ping"}}"#);
+      assert!(JsonRpcRequest::parse(&raw).is_ok());
+    }
   }
 
   #[test]
