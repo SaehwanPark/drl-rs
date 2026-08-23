@@ -420,6 +420,12 @@ pub const fn item_sprite(archetype: ItemArchetype) -> SpriteDescriptor {
       layers: ITEM_LAYERS,
       animation: STATIC_ANIMATION,
     },
+    ItemArchetype::RocketLauncher => SpriteDescriptor {
+      atlas: AtlasId::GunsAndPickups,
+      rect: legacy_slot(9),
+      layers: ITEM_LAYERS,
+      animation: STATIC_ANIMATION,
+    },
     ItemArchetype::PlasmaRifle => SpriteDescriptor {
       atlas: AtlasId::GunsAndPickups,
       rect: legacy_slot(10),
@@ -580,6 +586,7 @@ mod tests {
       ItemArchetype::Unknown,
       ItemArchetype::Pistol,
       ItemArchetype::Shotgun,
+      ItemArchetype::RocketLauncher,
       ItemArchetype::PlasmaRifle,
       ItemArchetype::CombatKnife,
       ItemArchetype::Ammo9mm,
@@ -640,6 +647,11 @@ mod tests {
       (ItemArchetype::CombatKnife, AtlasId::GunsAndPickups, (32, 0)),
       (ItemArchetype::Pistol, AtlasId::GunsAndPickups, (96, 0)),
       (ItemArchetype::Shotgun, AtlasId::GunsAndPickups, (128, 0)),
+      (
+        ItemArchetype::RocketLauncher,
+        AtlasId::GunsAndPickups,
+        (256, 0),
+      ),
       (
         ItemArchetype::PlasmaRifle,
         AtlasId::GunsAndPickups,
@@ -782,6 +794,7 @@ mod tests {
       ItemArchetype::CombatKnife,
       ItemArchetype::Pistol,
       ItemArchetype::Shotgun,
+      ItemArchetype::RocketLauncher,
       ItemArchetype::PlasmaRifle,
       ItemArchetype::GreenArmor,
       ItemArchetype::BlueArmor,

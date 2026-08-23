@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.72`
+Current project version: `0.2.73`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -28,7 +28,7 @@ criteria, and verification boundaries.
 ### 2.1 Scope & Objective
 
 Migrate the pinned legacy `rocket`, `cell`, `barmor`, `rarmor`, `smed`, and
-`lmed`, and `plasma` records into typed immutable Rust definitions and
+`lmed`, `plasma`, and `bazooka` records into typed immutable Rust definitions and
 replay-compatible spawn contracts. Preserve
 source-backed scalar fields, measured atlas slots, and verified armor
 presentation tints without importing Lua callbacks or unverified combat rules.
@@ -81,6 +81,10 @@ presentation tints without importing Lua callbacks or unverified combat rules.
   description, cell-ammo relation, six-shot clip, `1d7` damage range, replay
   kind, and `SPRITE_PLASMA` slot. Range/accuracy/timing policy and dynamic
   chainfire/overcharge callbacks remain explicit gaps.
+- [x] **Rocket launcher boundary**: typed `RocketLauncher` preserves the
+  pinned description, rocket-ammo relation, one-shot clip, `6d6` damage range,
+  replay kind, and `SPRITE_BAZOOKA` slot. Blast radius, projectile/explosion,
+  rocket-jump, accuracy, and timing semantics remain explicit gaps.
 - [ ] **Full migration**: rocket/plasma weapon behavior, dynamic callbacks,
   balance/fairness, and remaining legacy item families remain open.
 - [x] **Explicit non-goals**: no gameplay/core rule, observation schema,
@@ -113,6 +117,10 @@ presentation tints without importing Lua callbacks or unverified combat rules.
   `1d7` damage policy, `plasma_rifle` replay kind, and measured atlas geometry.
   Current range, accuracy, action costs, and callback behavior are not claimed
   as legacy parity.
+- `RocketLauncher` is a definition-backed rocket-ammo weapon with one-shot clip,
+  `6d6` damage policy, `rocket_launcher` replay kind, and measured atlas
+  geometry. Blast/effect callbacks and timing/accuracy semantics are not
+  claimed as legacy parity.
 - **Ownership Boundary**: Rust typed definitions own runtime item semantics;
   pinned Lua evidence informs only the migrated scalar fields and provenance.
 

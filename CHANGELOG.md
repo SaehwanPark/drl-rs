@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.73]
+
+- Added typed `RocketLauncher` content with pinned description, rocket-ammo
+  relation, one-shot clip, `6d6` damage range, replay JSON kind, and measured
+  `SPRITE_BAZOOKA` atlas slot. Blast/effect callbacks and exact timing/accuracy
+  parity remain open.
+
 ## [0.2.72]
 
 - Added typed `PlasmaRifle` content with pinned description, cell-ammo

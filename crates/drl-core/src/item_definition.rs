@@ -114,6 +114,23 @@ const PLASMA_RIFLE: ItemDefinition = ItemDefinition {
   },
 };
 
+const ROCKET_LAUNCHER: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::RocketLauncher,
+  name: "Rocket Launcher",
+  description: "The rocket launcher is the most standard way of blowing things up.",
+  kind: ItemDefinitionKind::Weapon {
+    is_ranged: true,
+    ammo_type: Some(AmmoType::Rocket),
+    clip_capacity: 1,
+    damage: (6, 36),
+    range: 8,
+    accuracy: 70,
+    knockback: 0,
+    fire_cost: ActionCost::RANGED_ATTACK,
+    reload_cost: ActionCost::STANDARD,
+  },
+};
+
 const COMBAT_KNIFE: ItemDefinition = ItemDefinition {
   archetype: ItemArchetype::CombatKnife,
   name: "Combat Knife",
@@ -280,6 +297,7 @@ pub const fn definition_for_spawn_kind(kind: ItemSpawnKind) -> &'static ItemDefi
     ItemSpawnKind::Pistol => &PISTOL,
     ItemSpawnKind::Shotgun => &SHOTGUN,
     ItemSpawnKind::PlasmaRifle => &PLASMA_RIFLE,
+    ItemSpawnKind::RocketLauncher => &ROCKET_LAUNCHER,
     ItemSpawnKind::CombatKnife => &COMBAT_KNIFE,
     ItemSpawnKind::Ammo9mm(_) => &AMMO_9MM,
     ItemSpawnKind::AmmoShells(_) => &AMMO_SHELLS,
@@ -311,6 +329,11 @@ mod tests {
         ItemSpawnKind::PlasmaRifle,
         ItemArchetype::PlasmaRifle,
         "Plasma Rifle",
+      ),
+      (
+        ItemSpawnKind::RocketLauncher,
+        ItemArchetype::RocketLauncher,
+        "Rocket Launcher",
       ),
       (
         ItemSpawnKind::CombatKnife,
@@ -501,6 +524,20 @@ mod tests {
         ammo_type: Some(AmmoType::Cell),
         clip_capacity: 6,
         damage: (1, 7),
+        range: 8,
+        accuracy: 70,
+        knockback: 0,
+        fire_cost: ActionCost::RANGED_ATTACK,
+        reload_cost: ActionCost::STANDARD,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::RocketLauncher).kind,
+      ItemDefinitionKind::Weapon {
+        is_ranged: true,
+        ammo_type: Some(AmmoType::Rocket),
+        clip_capacity: 1,
+        damage: (6, 36),
         range: 8,
         accuracy: 70,
         knockback: 0,

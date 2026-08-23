@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.72`
+Current project version: `0.2.73`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -94,13 +94,13 @@ Presentation Boundary
     Rocket and power-cell ammo families, their typed pack boundaries, and blue
     and red armor are definition-backed spawns; pinned pickup amounts are immutable
     definition metadata, while replay/scenario counts remain caller-owned.
-    Plasma Rifle is a typed cell-ammo weapon with a pinned six-shot clip and
-    damage range; current range, accuracy, and timing are explicit Rust policy.
+    Plasma Rifle and Rocket Launcher are typed ammo weapons with pinned clip
+    and damage ranges; current range, accuracy, and timing are Rust policy.
     Blue and red armor preserve protection, descriptions, the shared sprite
     slot, and their presentation tints; med-pack definitions preserve pinned
     descriptions while fixed healing remains Rust policy. Legacy resistance,
     movement, dynamic healing, prepared-slot consumption, and broader item
-    behavior remain explicit gaps, as do plasma weapon callbacks and exact
+    behavior remain explicit gaps, as do weapon callbacks/effects and exact
     legacy timing/accuracy semantics.
   - Level Generation: `generator` (BFS reachability, room connectivity).
   - Content Definitions: `item_definition`, `loot_definition`,

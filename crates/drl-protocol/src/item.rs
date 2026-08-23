@@ -73,6 +73,7 @@ pub enum ItemArchetype {
   Unknown,
   Pistol,
   Shotgun,
+  RocketLauncher,
   PlasmaRifle,
   CombatKnife,
   Ammo9mm,
@@ -97,6 +98,7 @@ impl fmt::Display for ItemArchetype {
       Self::Unknown => "unknown",
       Self::Pistol => "pistol",
       Self::Shotgun => "shotgun",
+      Self::RocketLauncher => "rocket_launcher",
       Self::PlasmaRifle => "plasma_rifle",
       Self::CombatKnife => "combat_knife",
       Self::Ammo9mm => "ammo_9mm",
@@ -183,6 +185,7 @@ mod tests {
     assert_eq!(ItemArchetype::BlueArmor.to_string(), "blue_armor");
     assert_eq!(ItemArchetype::RedArmor.to_string(), "red_armor");
     assert_eq!(ItemArchetype::PlasmaRifle.to_string(), "plasma_rifle");
+    assert_eq!(ItemArchetype::RocketLauncher.to_string(), "rocket_launcher");
   }
 
   #[test]
