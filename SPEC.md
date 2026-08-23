@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.18`
+Current project version: `0.2.19`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,53 +23,66 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M12 Signed-Release CI Smoke
+## 2. Active Implementation Slice: M9 Terrain-Cell Evidence Converter
 
 ### 2.1 Scope & Objective
 
-Protect the optional detached release-signing path with repository and hosted
-CI smoke coverage. CI generates an ephemeral RSA key outside the bundle,
-builds a signed static release, and verifies the manifest fail-closed. This
-slice does not establish production key custody, rotation, or trust-root
-governance.
+Extend the build-time legacy Lua evidence boundary to terrain-cell records.
+The converter reads pinned `cells.lua`, preserves scalar metadata and source
+provenance, decodes only documented simple Lua string escapes, and records
+nested tables, callbacks, and symbolic values as explicit migration gaps. It
+does not change `TileKind`, import legacy data into the bundle, or interpret
+gameplay behavior.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
-1. **Detached signing (v0.2.14)**:
-   - `build-web.sh` optionally emits a detached signature/public-key pair and
-     `check-release-manifest.sh` verifies present signature artifacts.
-2. **Release integrity (v0.2.1–v0.2.17)**:
-   - Manifests bind version, source revision, hashes, rights metadata, and
-     service-worker cache identity; signing remains externally keyed.
+1. **Being/item evidence (v0.2.17)**:
+   - Shallow `register_being` and `register_item` scalar fields are extracted
+     with pinned path/revision/SHA-256 provenance and explicit gaps.
+2. **Build-time boundary (ADR 0008)**:
+   - Legacy files remain pinned research inputs; the browser ships no Lua VM or
+     legacy object model, and unknown behavior remains an explicit gap.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Repository smoke**: Run ephemeral-key signing, verification, and
-  mutation-rejection coverage in `check-repository.sh`.
-- [x] **Hosted smoke**: Generate a runner-local RSA key in the WASM job, build
-  a signed bundle, verify the manifest, and assert the private key is outside
-  `dist`.
-- [x] **Fail-closed boundary**: Require `.sig` and `.pub` together whenever
-  signing artifacts or an explicit verification key are present.
-- [ ] **Production governance**: Key custody, CI secret provisioning,
-  rotation, and trust-root policy remain open.
+- [x] **Cell extraction**: Extract scalar fields from shallow `register_cell`
+  records in deterministic ID order with pinned path/revision/SHA-256
+  provenance.
+- [x] **Lua lexical boundary**: Decode simple quoted strings, including
+  decimal byte escapes and semicolon terminators; reject unsupported escapes.
+- [x] **Explicit gaps**: Preserve nested tables, function-valued fields, and
+  symbolic constants as named migration gaps instead of guessing terrain
+  semantics.
+- [x] **Fixture and pinned coverage**: Verify ordering, deterministic repeated
+  output, escaped strings, and the pinned `cells.lua` source when available.
+- [ ] **Full terrain migration**: Expand typed coverage, asset mapping, and
+  behavior/fairness validation for all legacy terrain variants.
 
 ### 2.4 Pure Contract
 
-- **Input**: A built static bundle plus an ephemeral or externally supplied
-  signing key; verification consumes the generated public key and manifest.
-- **Output**: A signed `release-manifest.json` with `.sig` and `.pub` artifacts,
-  plus a fail-closed verification result.
+- **Input**: A pinned legacy Git revision and one Lua source path, or an explicit
+  cell fixture for conversion tests.
+- **Output**: JSON with schema version, source provenance, sorted scalar fields,
+  and explicit migration-gap entries.
 - **Ownership Boundary**:
-  - `scripts/build-web.sh` and `scripts/sign-release-manifest.sh` own artifact
-    generation; `scripts/check-release-manifest.sh` owns verification.
-  - CI owns ephemeral smoke-key lifecycle for this test only; no production
-    private key is committed or copied into `dist`.
-  - Release governance and trust-root decisions remain outside this slice.
+  - `scripts/convert-legacy-content.py` owns build-time extraction only.
+  - `drl-core` remains the gameplay authority; conversion output is reviewed
+    input, not a runtime dependency.
+  - The browser bundle receives no Lua source, interpreter, or legacy object
+    model.
 
 ---
 
 ## 3. Recent Delivered Slices
+
+### M9 — Terrain-Cell Evidence Converter (`VERSION` 0.2.19)
+
+- [x] Added pinned-source extraction for shallow `register_cell` scalar data.
+- [x] Added deterministic byte/single-quoted string handling and explicit
+  nested/function/symbolic migration gaps.
+- [x] Added fixture repeatability and pinned `cells.lua` coverage.
+- [ ] Full typed terrain migration, asset mapping, and parity validation remain
+  open.
 
 ### M12 — Signed-Release CI Smoke (`VERSION` 0.2.18)
 
@@ -247,8 +260,9 @@ governance.
 
 ## 6. Verification Gates
 
-### Verified Baseline (`VERSION` 0.2.18)
+### Verified Baseline (`VERSION` 0.2.19)
 
+2a5e149 ci(release): smoke-test ephemeral manifest signing (#109)
 3cfe62e feat(content): add pinned legacy content evidence converter (#108)
 f305503 feat(eval): add deterministic cohort study CLI (#107)
 22e0e8b feat(web): start offline cache registration at bootstrap (#106)

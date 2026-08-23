@@ -42,6 +42,36 @@ assert payload["records"][0]["fields"]["armor"] == 1
 assert payload["records"][0]["migration_gaps"][0]["field"] == "resist"
 PY
 
+python3 scripts/convert-legacy-content.py \
+  --kind cell \
+  --input scripts/fixtures/legacy-content-cell-sample.lua \
+  --output "$temp_dir/cells.json" >/dev/null
+python3 scripts/convert-legacy-content.py \
+  --kind cell \
+  --input scripts/fixtures/legacy-content-cell-sample.lua \
+  --output "$temp_dir/cells-repeat.json" >/dev/null
+cmp "$temp_dir/cells.json" "$temp_dir/cells-repeat.json"
+python3 - "$temp_dir/cells.json" <<'PY'
+import json
+import sys
+
+payload = json.load(open(sys.argv[1], encoding="utf-8"))
+assert payload["record_kind"] == "cell"
+assert [record["id"] for record in payload["records"]] == ["floor", "wall"]
+floor = payload["records"][0]
+assert floor["fields"]["ascii"] == "\u00fa"
+assert floor["fields"]["bloodto"] == "bloodpool"
+wall = payload["records"][1]
+assert [gap["field"] for gap in wall["migration_gaps"]] == ["OnAct", "flags"]
+PY
+if python3 scripts/convert-legacy-content.py \
+  --kind cell \
+  --input scripts/fixtures/legacy-content-bad-escape.lua \
+  --output "$temp_dir/bad.json" >/dev/null 2>&1; then
+  printf '%s\n' 'unsupported Lua escapes must be rejected' >&2
+  exit 1
+fi
+
 legacy_repo=${DRL_LEGACY_REPO:-../doom-the-roughlike-original}
 if [ -d "$legacy_repo/.git" ]; then
   python3 scripts/convert-legacy-content.py \
@@ -61,8 +91,24 @@ assert payload["records"]
 assert payload["records"][0]["id"] == "ammo"
 assert "barmor" in {record["id"] for record in payload["records"]}
 PY
+  python3 scripts/convert-legacy-content.py \
+    --kind cell \
+    --legacy-repo "$legacy_repo" \
+    --revision 17d9be1204751899b2d69d8d3a2dde247bd0cc5c \
+    --output "$temp_dir/pinned-cells.json" >/dev/null
+  python3 - "$temp_dir/pinned-cells.json" <<'PY'
+import json
+import sys
+
+payload = json.load(open(sys.argv[1], encoding="utf-8"))
+assert payload["record_kind"] == "cell"
+assert payload["source"]["path"] == "bin/data/drl/cells.lua"
+assert payload["source"]["revision"] == "17d9be1204751899b2d69d8d3a2dde247bd0cc5c"
+assert payload["records"]
+assert payload["records"][0]["id"] == "acid"
+PY
 else
   printf '%s\n' 'Pinned legacy probe: NOT_RUN (legacy checkout unavailable).'
 fi
 
-printf '%s\n' 'Legacy content converter contract: PASS (scalar fields, provenance, and migration gaps).'
+printf '%s\n' 'Legacy content converter contract: PASS (being/item/cell scalars, provenance, and migration gaps).'

@@ -17,19 +17,55 @@ from pathlib import Path
 
 PINNED_REVISION = "17d9be1204751899b2d69d8d3a2dde247bd0cc5c"
 DEFAULT_LEGACY_REPO = Path(__file__).resolve().parents[1].parent / "doom-the-roughlike-original"
-RECORD_START = re.compile(r'^\s*register_(being|item)\s+"([^"]+)"\s*$')
+RECORD_START = re.compile(r'^\s*register_(being|item|cell)\s+"([^"]+)"\s*$')
 SCALAR = re.compile(
-    r'^\s*([A-Za-z_]\w*)\s*=\s*(?:"((?:\\.|[^"])*)"|(-?\d+)|(true|false))\s*,?\s*(?:--.*)?$'
+    r'^\s*(?P<field>[A-Za-z_]\w*)\s*=\s*'
+    r'(?:(?P<double>"(?:\\.|[^"])*")|(?P<single>\'(?:\\.|[^\'])*\')|'
+    r'(?P<int>-?\d+)|(?P<bool>true|false))\s*[,;]?\s*(?:--.*)?$'
 )
 FIELD = re.compile(r'^\s*([A-Za-z_]\w*)\s*=')
 
 
+def decode_lua_string(token: str) -> str:
+    content = token[1:-1]
+    decoded: list[str] = []
+    index = 0
+    escapes = {"n": "\n", "r": "\r", "t": "\t", "\\": "\\", '"': '"', "'": "'"}
+    while index < len(content):
+        char = content[index]
+        if char != "\\":
+            decoded.append(char)
+            index += 1
+            continue
+        index += 1
+        if index >= len(content):
+            raise ValueError("unterminated Lua string escape")
+        escaped = content[index]
+        if escaped.isdigit():
+            end = index
+            while end < len(content) and end < index + 3 and content[end].isdigit():
+                end += 1
+            value = int(content[index:end])
+            if value > 255:
+                raise ValueError(f"Lua byte escape is out of range: {value}")
+            decoded.append(chr(value))
+            index = end
+        elif escaped in escapes:
+            decoded.append(escapes[escaped])
+            index += 1
+        else:
+            raise ValueError(f"unsupported Lua string escape: \\{escaped}")
+    return "".join(decoded)
+
+
 def scalar_value(match: re.Match[str]) -> object:
-    if match.group(2) is not None:
-        return json.loads(f'"{match.group(2)}"')
-    if match.group(3) is not None:
-        return int(match.group(3))
-    return match.group(4) == "true"
+    if match.group("double") is not None:
+        return decode_lua_string(match.group("double"))
+    if match.group("single") is not None:
+        return decode_lua_string(match.group("single"))
+    if match.group("int") is not None:
+        return int(match.group("int"))
+    return match.group("bool") == "true"
 
 
 def brace_delta(line: str) -> int:
@@ -150,16 +186,21 @@ def read_source(args: argparse.Namespace) -> tuple[str, dict[str, str]]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--kind", choices=("being", "item"), required=True)
+    parser.add_argument("--kind", choices=("being", "item", "cell"), required=True)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--input", type=Path, help="unbound fixture/input file for tests")
     parser.add_argument("--legacy-repo", default=str(DEFAULT_LEGACY_REPO))
     parser.add_argument("--revision", default=PINNED_REVISION)
     parser.add_argument("--source", help="legacy Lua path (defaults by record kind)")
     args = parser.parse_args()
+    default_sources = {
+        "being": "bin/data/drl/beings.lua",
+        "item": "bin/data/drl/items/items.lua",
+        "cell": "bin/data/drl/cells.lua",
+    }
     if args.source is None:
-        args.source = "bin/data/drl/beings.lua" if args.kind == "being" else "bin/data/drl/items/items.lua"
-    if args.input and args.source != ("bin/data/drl/beings.lua" if args.kind == "being" else "bin/data/drl/items/items.lua"):
+        args.source = default_sources[args.kind]
+    if args.input and args.source != default_sources[args.kind]:
         parser.error("--input cannot be combined with --source")
     try:
         source, provenance = read_source(args)
