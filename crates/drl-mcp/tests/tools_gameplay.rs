@@ -245,3 +245,115 @@ fn test_mcp_scenario_combat_and_item_use() {
       .any(|e| e.get("type").and_then(|v| v.as_str()) == Some("ItemUsed"))
   );
 }
+
+#[test]
+fn test_mcp_stairs_victory_and_terminal_gate() {
+  let mut server = ready_server();
+  let ascii = "\n#####\n#@>.#\n#####\n";
+  let load_request = format!(
+    r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"name":"game_load_scenario","arguments":{{"ascii_map":{}}}}}}}"#,
+    JsonValue::from(ascii).to_compact_string()
+  );
+  let load = JsonValue::parse(&server.handle_request(&load_request)).unwrap();
+  assert!(load.get("result").is_some());
+
+  let move_east = r#"{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"move","direction":"East"}}}"#;
+  let moved = JsonValue::parse(&server.handle_request(move_east)).unwrap();
+  assert!(moved.get("result").is_some());
+
+  let descend = r#"{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"descend"}}}"#;
+  let descended = JsonValue::parse(&server.handle_request(descend)).unwrap();
+  let data = descended.get("result").unwrap().get("data").unwrap();
+  assert_eq!(
+    data.get("game_over").and_then(JsonValue::as_bool),
+    Some(true)
+  );
+  assert_eq!(
+    data.get("outcome").and_then(JsonValue::as_str),
+    Some("Victory")
+  );
+
+  let metrics_request = r#"{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"game_get_metrics","arguments":{}}}"#;
+  let replay_request = r#"{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"game_save_replay","arguments":{}}}"#;
+  let metrics_before = server.handle_request(metrics_request);
+  let replay_before = server.handle_request(replay_request);
+  let verify = JsonValue::parse(&server.handle_request(
+    r#"{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"game_verify_replay","arguments":{}}}"#,
+  ))
+  .unwrap();
+  assert_eq!(
+    verify
+      .get("result")
+      .and_then(|result| result.get("data"))
+      .and_then(|data| data.get("deterministic"))
+      .and_then(JsonValue::as_bool),
+    Some(true)
+  );
+
+  let rejected = JsonValue::parse(&server.handle_request(
+    r#"{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"wait"}}}"#,
+  ))
+  .unwrap();
+  assert_eq!(
+    rejected
+      .get("error")
+      .and_then(|error| error.get("code"))
+      .and_then(JsonValue::as_i64),
+    Some(drl_mcp::protocol::error_codes::INVALID_ACTION as i64)
+  );
+  assert_eq!(metrics_before, server.handle_request(metrics_request));
+  assert_eq!(replay_before, server.handle_request(replay_request));
+}
+
+#[test]
+fn test_mcp_death_terminal_gate_preserves_replay() {
+  let mut server = ready_server();
+  let ascii = "\n#####\n#@h.#\n#####\n";
+  let load_request = format!(
+    r#"{{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{{"name":"game_load_scenario","arguments":{{"ascii_map":{}}}}}}}"#,
+    JsonValue::from(ascii).to_compact_string()
+  );
+  let load = JsonValue::parse(&server.handle_request(&load_request)).unwrap();
+  assert!(load.get("result").is_some());
+
+  let mut death_seen = false;
+  for id in 2..=100 {
+    let request = r#"{"jsonrpc":"2.0","id":0,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"wait"}}}"#
+      .replace("\"id\":0", &format!("\"id\":{id}"));
+    let response = JsonValue::parse(&server.handle_request(&request)).unwrap();
+    let Some(data) = response.get("result").and_then(|result| result.get("data")) else {
+      panic!("unexpected pre-terminal step error: {response:?}");
+    };
+    if data.get("game_over").and_then(JsonValue::as_bool) == Some(true) {
+      let outcome = data
+        .get("outcome")
+        .and_then(JsonValue::as_str)
+        .unwrap_or_default();
+      assert!(
+        outcome.starts_with("Death"),
+        "unexpected outcome: {outcome}"
+      );
+      death_seen = true;
+      break;
+    }
+  }
+  assert!(death_seen, "adjacent hostile did not kill the player");
+
+  let metrics_request = r#"{"jsonrpc":"2.0","id":101,"method":"tools/call","params":{"name":"game_get_metrics","arguments":{}}}"#;
+  let replay_request = r#"{"jsonrpc":"2.0","id":102,"method":"tools/call","params":{"name":"game_save_replay","arguments":{}}}"#;
+  let metrics_before = server.handle_request(metrics_request);
+  let replay_before = server.handle_request(replay_request);
+  let rejected = JsonValue::parse(&server.handle_request(
+    r#"{"jsonrpc":"2.0","id":103,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"wait"}}}"#,
+  ))
+  .unwrap();
+  assert_eq!(
+    rejected
+      .get("error")
+      .and_then(|error| error.get("code"))
+      .and_then(JsonValue::as_i64),
+    Some(drl_mcp::protocol::error_codes::INVALID_ACTION as i64)
+  );
+  assert_eq!(metrics_before, server.handle_request(metrics_request));
+  assert_eq!(replay_before, server.handle_request(replay_request));
+}

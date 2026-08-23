@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.50`
+Current project version: `0.2.51`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,16 +23,17 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M13 Truthful MCP Tool Schemas
+## 2. Active Implementation Slice: M13 MCP Terminal-Outcome Gate
 
 ### 2.1 Scope & Objective
 
-Make `tools/list` accurately describe the already-implemented MCP argument
-contracts. Publish accepted action, direction, slot, `command`, and `x`/`y`
-aliases; enum domains; and inclusive numeric bounds for JSON-safe integers,
-`u32` dimensions, and signed `i32` coordinates. Keep runtime dispatch,
-unknown-property tolerance, valid gameplay, malformed-input behavior, and all
-predecessor transport/lifecycle contracts unchanged.
+Make terminal MCP sessions behaviorally consistent: once an episode reports
+`Victory`, `Death`, `TurnLimitReached`, or `Stalled`, reject later
+`game_step_action` calls before simulation with deterministic `-32001`. A
+successful level transition to level 2+ reports `Victory`; death retains
+precedence, and turn limits apply only while the episode remains active. Keep
+`game_reset`, metrics, replay export, and replay verification available after
+termination without changing `drl-core::Game`.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
@@ -55,40 +56,36 @@ predecessor transport/lifecycle contracts unchanged.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Numeric ranges**: `game_start` and `game_load_scenario` publish
-  JSON-safe integer bounds and `u32` dimension bounds; `game_step_action`
-  publishes signed `i32` coordinate and JSON-safe item-ID bounds.
-- [x] **Enum domains and aliases**: Action, direction, and slot enums include
-  canonical spellings for the aliases accepted by runtime dispatch;
-  `command` and `x`/`y` properties are published alongside canonical fields.
-  The canonical schema requires `action`; the `command`-without-`action`
-  compatibility form remains runtime-supported but is intentionally not
-  represented by a conditional schema in this slice.
-- [x] **Schema shape**: Required fields and object/property types are present,
-  while `additionalProperties: false` is intentionally omitted.
-- [x] **Behavioral stability**: Valid workflows and malformed numeric action
-  behavior remain unchanged, including state-safety guarantees.
-- [x] **Transport repeatability**: Repeated real `drl-app --mcp` runs produce
-  byte-identical `tools/list` output and the fixture asserts representative
-  aliases and bounds.
-- [x] **No expansion of claims**: Conditional action schemas, unknown-field
-  rejection, replay import/load, external serialized replay interchange,
+- [x] **Turn-limit gate**: A terminal turn-limit response returns `game_over`
+  and a later action returns `-32001` without changing metrics or replay;
+  reset permits a new action.
+- [x] **Victory gate**: Descending from a scenario stairs tile reports
+  `Victory`/`game_over: true`; later actions are rejected while metrics and
+  replay remain readable.
+- [x] **Death gate**: Existing death detection remains intact; a post-death
+  action is rejected without appending a replay command or changing metrics.
+- [x] **Replay determinism**: Terminal replays remain verifiable through
+  `game_verify_replay` after the episode ends.
+- [x] **Transport repeatability**: The real `drl-app --mcp` fixture covers a
+  terminal scenario action followed by a rejected action and remains
+  byte-identical across repeated subprocess runs.
+- [x] **No expansion of claims**: No core outcome changes, replay import/load,
+  format changes, conditional schema validation, unknown-field rejection,
   cross-version/legacy parity, reconnect/resume, concurrency, HTTP, external
-  clients, and production deployment remain open.
+  clients, production deployment, or balance work is claimed.
 
 ### 2.4 Pure Contract
 
-- **Input**: `tools/list` emits object schemas describing existing tool
-  arguments, aliases, enum domains, and inclusive numeric ranges.
-- **Output**: Schema metadata is deterministic and advisory; runtime dispatch
-  and error behavior remain unchanged.
+- **Input**: A `game_step_action` command submitted to an active MCP session.
+- **Output**: Active sessions preserve existing command results; terminal
+  sessions return `-32001` before simulation, while successful stair
+  transitions return `Victory` and `game_over: true`.
 - **Ownership Boundary**:
-  - `drl-mcp::get_all_tool_definitions` owns truthful schema metadata;
-    `create_object_schema_with_fields` serializes ranges and enums.
-  - Existing dispatch validators and `McpServer` method-envelope handling
-    remain authoritative for execution and protocol errors.
-  - Unknown properties remain tolerated; conditional one-of schemas are a
-    future compatibility-sensitive slice.
+  - `McpSession::step` owns terminal gating and outcome classification;
+    `drl-mcp::execute_tool` maps session failures to `INVALID_ACTION`.
+  - `drl-core::Game` remains the simulation authority and is not modified.
+  - `game_reset`, metrics, replay export, and replay verification remain
+    available after termination; protocol lifecycle remains separate.
 
 ---
 
@@ -100,6 +97,15 @@ predecessor transport/lifecycle contracts unchanged.
   aliases with enum domains and exact numeric bounds for stateful arguments.
 - [x] Unknown properties remain tolerated; conditional action schemas,
   gameplay changes, and external-client certification remain open.
+
+### M13 — MCP Terminal-Outcome Gate (`VERSION` 0.2.51)
+
+- [x] Terminal victory, death, turn-limit, and stalled sessions reject later
+  actions with `-32001` without mutating metrics or replay; reset remains
+  available.
+- [x] Stair transitions report `Victory`, and terminal replays remain
+  deterministic; core gameplay, replay format, and external compatibility
+  claims remain unchanged.
 
 ### M13 — Typed `game_step_action` Numbers (`VERSION` 0.2.49)
 

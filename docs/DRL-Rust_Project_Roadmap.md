@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.50`
+Current project version: `0.2.51`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.50)
+## 3. Current Progress Summary (`VERSION` 0.2.51)
 
 ### Delivered Foundations
 
@@ -84,11 +84,15 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active Milestone Slice (M13)**: MCP `tools/list` now truthfully publishes
-  canonical action, direction, slot, `command`, and `x`/`y` alias spellings with
-  deterministic enum domains and JSON-safe, `u32`, and signed `i32` bounds;
-  unknown properties remain tolerated and conditional action schemas remain
-  open. MCP `initialize` also validates object
+- **Active Milestone Slice (M13)**: MCP sessions now reject
+  `game_step_action` after terminal victory, death, turn-limit, or stalled
+  outcomes with deterministic `-32001`; stair transitions report `Victory`,
+  reset/replay/metrics inspection remain available, and `drl-core::Game` is
+  unchanged. MCP `tools/list` truthfully publishes canonical action,
+  direction, slot, `command`, and `x`/`y` alias spellings with deterministic
+  enum domains and JSON-safe, `u32`, and signed `i32` bounds; unknown
+  properties remain tolerated and conditional action schemas remain open. MCP
+  `initialize` also validates object
   `capabilities` and string `clientInfo.name`/`version` fields while retaining
   identified lifecycle gating before discovery, tools, and resources; JSON-RPC
   request IDs now reject non-scalar values before dispatch, and stateful method
@@ -265,6 +269,11 @@ tooling.
 - [x] `tools/list` publishes accepted action/direction/slot and field aliases
   with JSON-safe, `u32`, and `i32` numeric bounds while retaining unknown-field
   tolerance; conditional action schemas remain open.
+- [x] `game_verify_replay` verifies complete in-memory procedural and scenario
+  replays without mutating sessions.
+- [x] Terminal `game_step_action` calls are rejected after victory, death,
+  turn-limit, or stalled outcomes; stair transitions report victory while
+  reset and replay/metrics inspection remain available.
 - [x] Strict information boundaries with explicit `dev_mode` flag for omniscient
   inspection.
 - [x] Stdio transport runner and CLI integration (`drl-rust --mcp`).

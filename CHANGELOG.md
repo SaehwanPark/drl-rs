@@ -3,6 +3,16 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.51]
+
+- Added an MCP terminal-outcome gate: actions after `Victory`, `Death`,
+  `TurnLimitReached`, or `Stalled` return deterministic `-32001` without
+  mutating metrics or replay, while reset, metrics, and replay tools remain
+  available.
+- Classified successful stair transitions to level 2+ as `Victory` and added
+  turn-limit, stairs, death, replay-safety, and repeated stdio coverage;
+  `drl-core::Game` and the replay format remain unchanged.
+
 ## [0.2.50]
 
 - Made MCP `tools/list` schemas truthful for existing dispatch contracts:

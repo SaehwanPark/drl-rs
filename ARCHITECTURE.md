@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.50`
+Current project version: `0.2.51`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -200,6 +200,9 @@ Presentation Boundary
     spellings with enum domains and exact numeric bounds; unknown properties
     stay tolerated, and the runtime-only command-without-action compatibility
     form remains outside this phase's conditional schemas.
+  - `McpSession` gates actions after terminal outcomes, reports level
+    transitions as victories, and leaves reset/replay/metrics inspection
+    available after termination without modifying `drl-core::Game`.
   - A private `Uninitialized → AwaitingInitialized → Ready` phase gate requires
     an identified initialize request followed by `notifications/initialized`
     before tools and resources are available; premature/duplicate transitions

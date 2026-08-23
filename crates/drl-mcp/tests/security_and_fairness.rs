@@ -127,4 +127,34 @@ fn test_turn_limit_boundary_enforcement() {
     d3.get("outcome").and_then(|v| v.as_str()),
     Some("TurnLimitReached")
   );
+
+  let metrics_request = r#"{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"game_get_metrics","arguments":{}}}"#;
+  let replay_request = r#"{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"game_save_replay","arguments":{}}}"#;
+  let metrics_before = server.handle_request(metrics_request);
+  let replay_before = server.handle_request(replay_request);
+
+  let rejected = JsonValue::parse(&server.handle_request(
+    r#"{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"wait"}}}"#,
+  ))
+  .unwrap();
+  assert_eq!(
+    rejected
+      .get("error")
+      .and_then(|error| error.get("code"))
+      .and_then(|code| code.as_i64()),
+    Some(error_codes::INVALID_ACTION as i64)
+  );
+  assert_eq!(metrics_before, server.handle_request(metrics_request));
+  assert_eq!(replay_before, server.handle_request(replay_request));
+
+  let reset = JsonValue::parse(&server.handle_request(
+    r#"{"jsonrpc":"2.0","id":8,"method":"tools/call","params":{"name":"game_reset","arguments":{}}}"#,
+  ))
+  .unwrap();
+  assert!(reset.get("result").is_some());
+  let after_reset = JsonValue::parse(&server.handle_request(
+    r#"{"jsonrpc":"2.0","id":9,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"wait"}}}"#,
+  ))
+  .unwrap();
+  assert!(after_reset.get("result").is_some());
 }

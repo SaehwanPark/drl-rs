@@ -24,8 +24,12 @@ cat >"$requests" <<'EOF'
 {"jsonrpc":"2.0","id":13,"method":"tools/call","params":{"name":"game_get_dev_state","arguments":{}}}
 {"jsonrpc":"2.0","id":14,"method":"tools/call","params":{"name":"game_reset","arguments":{}}}
 {"jsonrpc":"2.0","id":15,"method":"tools/call","params":{"name":"game_load_scenario","arguments":{"ascii_map":"#####\n#@.>#\n#####","max_turns":4}}}
-{"jsonrpc":"2.0","id":16,"method":"resources/read","params":{"uri":"drl://rules/actions"}}
-{"jsonrpc":"2.0","id":17,"method":"resources/read","params":{"uri":"drl://session/metrics"}}
+{"jsonrpc":"2.0","id":16,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"move","direction":"East"}}}
+{"jsonrpc":"2.0","id":17,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"move","direction":"East"}}}
+{"jsonrpc":"2.0","id":18,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"descend"}}}
+{"jsonrpc":"2.0","id":19,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"wait"}}}
+{"jsonrpc":"2.0","id":20,"method":"resources/read","params":{"uri":"drl://rules/actions"}}
+{"jsonrpc":"2.0","id":21,"method":"resources/read","params":{"uri":"drl://session/metrics"}}
 EOF
 
 fallback_requests="$temp_dir/fallback-requests.jsonl"
@@ -43,10 +47,10 @@ import json
 import sys
 
 lines = [line for line in open(sys.argv[1], encoding="utf-8") if line.strip()]
-if len(lines) != 17:
-    raise SystemExit(f"expected 17 JSON-RPC responses, found {len(lines)}")
+if len(lines) != 21:
+    raise SystemExit(f"expected 21 JSON-RPC responses, found {len(lines)}")
 responses = [json.loads(line) for line in lines]
-if [response.get("id") for response in responses] != list(range(1, 18)):
+if [response.get("id") for response in responses] != list(range(1, 22)):
     raise SystemExit("stdio response IDs are not in request order")
 if not responses[0].get("result", {}).get("serverInfo", {}).get("name") == "drl-mcp":
     raise SystemExit("initialize response lacks server identity")
@@ -96,9 +100,13 @@ if responses[13].get("result", {}).get("data", {}).get("status") != "SessionRese
     raise SystemExit("game_reset did not report SessionReset")
 if responses[14].get("result", {}).get("data", {}).get("status") != "ScenarioLoaded":
     raise SystemExit("game_load_scenario did not report ScenarioLoaded")
-if not responses[15].get("result", {}).get("contents"):
+if responses[17].get("result", {}).get("data", {}).get("outcome") != "Victory":
+    raise SystemExit("scenario descend did not report Victory")
+if responses[18].get("error", {}).get("code") != -32001:
+    raise SystemExit("post-victory action was not rejected")
+if not responses[19].get("result", {}).get("contents"):
     raise SystemExit("rules resource read returned no contents")
-if not responses[16].get("result", {}).get("contents"):
+if not responses[20].get("result", {}).get("contents"):
     raise SystemExit("metrics resource read returned no contents")
 PY
 

@@ -942,6 +942,13 @@ impl McpSession {
     &mut self,
     command: Command,
   ) -> Result<(Vec<GameEvent>, PlayerObservation, Option<RunOutcome>), String> {
+    if !matches!(self.metrics.outcome, RunOutcome::InProgress) {
+      return Err(format!(
+        "Game session already ended with outcome {:?}",
+        self.metrics.outcome
+      ));
+    }
+
     let game = self
       .game
       .as_mut()
@@ -975,9 +982,18 @@ impl McpSession {
       .world()
       .get_actor(player_id)
       .is_some_and(|p| p.is_alive());
+    let reached_next_level = events.iter().any(|event| {
+      matches!(
+        event,
+        GameEvent::LevelTransitioned { to_level, .. } if to_level.0 > 1
+      )
+    });
     let outcome = if !player_alive {
       let death_outcome = self.metrics.outcome.clone();
       Some(death_outcome)
+    } else if reached_next_level {
+      self.metrics.outcome = RunOutcome::Victory;
+      Some(RunOutcome::Victory)
     } else if let Some(max_t) = self.max_turns {
       if self.turn_count >= max_t {
         self.metrics.outcome = RunOutcome::TurnLimitReached;
