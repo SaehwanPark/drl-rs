@@ -300,6 +300,7 @@ claims.
 
 ### Verified Baseline (`VERSION` 0.2.25)
 
+6024a15 feat(eval): add cohort depth distribution (#116)
 cae3b09 feat(web): migrate browser saves to v2 (#115)
 d7e5602 feat(content): add special-level metadata catalog (#114)
 1fd09d5 feat(content): add pinned special-level evidence index (#113)
