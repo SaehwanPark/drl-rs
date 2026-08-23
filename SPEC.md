@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.70`
+Current project version: `0.2.71`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -27,9 +27,9 @@ criteria, and verification boundaries.
 
 ### 2.1 Scope & Objective
 
-Migrate the pinned legacy `rocket`, `cell`, `barmor`, and `rarmor` records into
-typed,
-immutable Rust definitions and replay-compatible spawn contracts. Preserve
+Migrate the pinned legacy `rocket`, `cell`, `barmor`, `rarmor`, `smed`, and
+`lmed` records into typed immutable Rust definitions and replay-compatible
+spawn contracts. Preserve
 source-backed scalar fields, measured atlas slots, and verified armor
 presentation tints without importing Lua callbacks or unverified combat rules.
 
@@ -74,6 +74,9 @@ presentation tints without importing Lua callbacks or unverified combat rules.
   (`4`), description, `SPRITE_ARMOR` slot, replay kind, and pure red
   presentation tint; legacy fire resistance and movement modifiers remain
   explicit gaps.
+- [x] **Med-pack description boundary**: current `SmallMedPack` and
+  `LargeMedPack` definitions preserve pinned descriptions and existing med-pack
+  atlas slots; dynamic difficulty/perk healing formulas remain an explicit gap.
 - [ ] **Full migration**: rocket/plasma weapon behavior, dynamic callbacks,
   balance/fairness, and remaining legacy item families remain open.
 - [x] **Explicit non-goals**: no gameplay/core rule, observation schema,
@@ -99,6 +102,9 @@ presentation tints without importing Lua callbacks or unverified combat rules.
 - `RedArmor` is a definition-backed armor item with protection `4`, the pinned
   description, `red_armor` replay kind, shared `SPRITE_ARMOR` geometry, and a
   pure red tint. Resistance, movement, and durability parity are not claimed.
+- `SmallMedPack` and `LargeMedPack` retain pinned descriptions and their
+  measured med-pack atlas slots. Their fixed Rust heal amounts are policy, not
+  a claim of parity with legacy dynamic callbacks.
 - **Ownership Boundary**: Rust typed definitions own runtime item semantics;
   pinned Lua evidence informs only the migrated scalar fields and provenance.
 

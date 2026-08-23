@@ -3,6 +3,12 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.71]
+
+- Preserved pinned `smed` and `lmed` descriptions in the typed med-pack
+  definitions and documented their measured atlas slots. Dynamic legacy
+  healing formulas remain open; fixed Rust heal amounts are unchanged.
+
 ## [0.2.70]
 
 - Added the pinned `rarmor` Red Armor family with definition-backed protection
