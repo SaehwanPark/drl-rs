@@ -29,6 +29,8 @@ pub mod error_codes {
   pub const INVALID_ACTION: i32 = -32001;
   /// Permission denied (e.g. dev mode required).
   pub const PERMISSION_DENIED: i32 = -32002;
+  /// MCP protocol methods were called before the lifecycle reached Ready.
+  pub const MCP_NOT_INITIALIZED: i32 = -32003;
 }
 
 /// JSON-RPC 2.0 Request envelope.

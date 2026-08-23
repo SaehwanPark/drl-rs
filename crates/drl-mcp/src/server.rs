@@ -15,6 +15,14 @@ use std::io::{self, BufRead, Write};
 #[derive(Debug)]
 pub struct McpServer {
   session: McpSession,
+  lifecycle: LifecyclePhase,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum LifecyclePhase {
+  Uninitialized,
+  AwaitingInitialized,
+  Ready,
 }
 
 impl Default for McpServer {
@@ -29,6 +37,7 @@ impl McpServer {
   pub fn new() -> Self {
     Self {
       session: McpSession::new(),
+      lifecycle: LifecyclePhase::Uninitialized,
     }
   }
 
@@ -57,13 +66,24 @@ impl McpServer {
     let id = req.id.clone().unwrap_or(JsonValue::Null);
 
     let res = match req.method.as_str() {
-      "initialize" => self.handle_initialize(req.params.as_ref()),
-      "notifications/initialized" | "initialized" => Ok(JsonValue::Object(BTreeMap::new())),
+      "initialize" => {
+        if req.id.is_none() {
+          Err(JsonRpcError::new(
+            error_codes::MCP_NOT_INITIALIZED,
+            "'initialize' must be an identified request",
+          ))
+        } else {
+          self.handle_initialize(req.params.as_ref())
+        }
+      }
+      "notifications/initialized" | "initialized" => self.handle_initialized(),
       "ping" => Ok(JsonValue::Object(BTreeMap::new())),
-      "tools/list" => self.handle_tools_list(),
-      "tools/call" => self.handle_tools_call(req.params.as_ref()),
-      "resources/list" => self.handle_resources_list(),
-      "resources/read" => self.handle_resources_read(req.params.as_ref()),
+      "tools/list" => self.ready_then(|server| server.handle_tools_list()),
+      "tools/call" => self.ready_then(|server| server.handle_tools_call(req.params.as_ref())),
+      "resources/list" => self.ready_then(|server| server.handle_resources_list()),
+      "resources/read" => {
+        self.ready_then(|server| server.handle_resources_read(req.params.as_ref()))
+      }
       other => Err(JsonRpcError::new(
         error_codes::METHOD_NOT_FOUND,
         format!("Method not found: '{other}'"),
@@ -78,7 +98,14 @@ impl McpServer {
     response.to_json_string()
   }
 
-  fn handle_initialize(&self, params: Option<&JsonValue>) -> Result<JsonValue, JsonRpcError> {
+  fn handle_initialize(&mut self, params: Option<&JsonValue>) -> Result<JsonValue, JsonRpcError> {
+    if self.lifecycle != LifecyclePhase::Uninitialized {
+      return Err(JsonRpcError::new(
+        error_codes::MCP_NOT_INITIALIZED,
+        "MCP server has already received 'initialize'",
+      ));
+    }
+
     let params = params.ok_or_else(|| {
       JsonRpcError::new(
         error_codes::INVALID_PARAMS,
@@ -122,7 +149,38 @@ impl McpServer {
     info.insert("version".to_string(), JsonValue::from(DRL_MCP_VERSION));
     map.insert("serverInfo".to_string(), JsonValue::Object(info));
 
+    self.lifecycle = LifecyclePhase::AwaitingInitialized;
     Ok(JsonValue::Object(map))
+  }
+
+  fn handle_initialized(&mut self) -> Result<JsonValue, JsonRpcError> {
+    match self.lifecycle {
+      LifecyclePhase::Uninitialized => Err(JsonRpcError::new(
+        error_codes::MCP_NOT_INITIALIZED,
+        "Received 'initialized' before 'initialize'",
+      )),
+      LifecyclePhase::AwaitingInitialized => {
+        self.lifecycle = LifecyclePhase::Ready;
+        Ok(JsonValue::Object(BTreeMap::new()))
+      }
+      LifecyclePhase::Ready => Err(JsonRpcError::new(
+        error_codes::MCP_NOT_INITIALIZED,
+        "MCP server has already received 'initialized'",
+      )),
+    }
+  }
+
+  fn ready_then<T>(
+    &mut self,
+    operation: impl FnOnce(&mut Self) -> Result<T, JsonRpcError>,
+  ) -> Result<T, JsonRpcError> {
+    if self.lifecycle != LifecyclePhase::Ready {
+      return Err(JsonRpcError::new(
+        error_codes::MCP_NOT_INITIALIZED,
+        "MCP server is not ready; complete 'initialize' and 'initialized' first",
+      ));
+    }
+    operation(self)
   }
 
   fn handle_tools_list(&self) -> Result<JsonValue, JsonRpcError> {
@@ -289,7 +347,8 @@ mod tests {
     let supported = server.handle_request(
       r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05"}}"#,
     );
-    let future = server.handle_request(
+    let mut future_server = McpServer::new();
+    let future = future_server.handle_request(
       r#"{"jsonrpc":"2.0","id":2,"method":"initialize","params":{"protocolVersion":"2099-01-01"}}"#,
     );
 
@@ -326,7 +385,7 @@ mod tests {
 
   #[test]
   fn test_server_tools_list_and_call() {
-    let mut server = McpServer::new();
+    let mut server = ready_server();
     let list_req = r#"{"jsonrpc":"2.0","id":10,"method":"tools/list"}"#;
     let list_resp = server.handle_request(list_req);
     let list_val = JsonValue::parse(&list_resp).unwrap();
@@ -348,9 +407,10 @@ mod tests {
   #[test]
   fn stdio_processes_notifications_without_responses() {
     let requests = concat!(
+      "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\"}}\n",
       "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}\n",
       "{\"jsonrpc\":\"2.0\",\"method\":\"tools/call\",\"params\":{\"name\":\"game_start\",\"arguments\":{\"seed\":7}}}\n",
-      "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":\"game_get_metrics\"}}\n",
+      "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/call\",\"params\":{\"name\":\"game_get_metrics\"}}\n",
       "not-json\n",
       "{\"jsonrpc\":\"2.0\",\"id\":null,\"method\":\"ping\"}\n",
     );
@@ -367,25 +427,29 @@ mod tests {
       .map(JsonValue::parse)
       .collect::<Result<_, _>>()
       .expect("each emitted line is JSON");
-    assert_eq!(responses.len(), 3);
+    assert_eq!(responses.len(), 4);
     assert_eq!(responses[0].get("id").and_then(JsonValue::as_u64), Some(1));
     assert!(responses[0].get("result").is_some());
+    assert_eq!(responses[1].get("id").and_then(JsonValue::as_u64), Some(2));
+    assert!(responses[1].get("result").is_some());
     assert_eq!(
-      responses[1]
+      responses[2]
         .get("error")
         .and_then(|error| error.get("code"))
         .and_then(JsonValue::as_i64),
       Some(error_codes::PARSE_ERROR as i64)
     );
-    assert!(responses[2].get("id").is_some_and(JsonValue::is_null));
-    assert!(responses[2].get("result").is_some());
+    assert!(responses[3].get("id").is_some_and(JsonValue::is_null));
+    assert!(responses[3].get("result").is_some());
   }
 
   #[test]
   fn stdio_batches_preserve_order_and_omit_notifications() {
     let requests = concat!(
-      "[{\"jsonrpc\":\"2.0\",\"method\":\"tools/call\",\"params\":{\"name\":\"game_start\",\"arguments\":{\"seed\":9}}},",
-      "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/call\",\"params\":{\"name\":\"game_get_metrics\"}},",
+      "[{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\"}},",
+      "{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"},",
+      "{\"jsonrpc\":\"2.0\",\"method\":\"tools/call\",\"params\":{\"name\":\"game_start\",\"arguments\":{\"seed\":9}}},",
+      "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/call\",\"params\":{\"name\":\"game_get_metrics\"}},",
       "{\"jsonrpc\":\"2.0\",\"id\":null,\"method\":\"ping\"}]\n",
     );
     let mut server = McpServer::new();
@@ -398,10 +462,157 @@ mod tests {
     let response =
       JsonValue::parse(String::from_utf8(output).unwrap().trim()).expect("batch response is JSON");
     let responses = response.as_array().expect("batch response is an array");
-    assert_eq!(responses.len(), 2);
+    assert_eq!(responses.len(), 3);
     assert_eq!(responses[0].get("id").and_then(JsonValue::as_u64), Some(1));
     assert!(responses[0].get("result").is_some());
-    assert!(responses[1].get("id").is_some_and(JsonValue::is_null));
+    assert_eq!(responses[1].get("id").and_then(JsonValue::as_u64), Some(2));
+    assert!(responses[1].get("result").is_some());
+    assert!(responses[2].get("id").is_some_and(JsonValue::is_null));
+  }
+
+  fn ready_server() -> McpServer {
+    let mut server = McpServer::new();
+    let _ = server.handle_request(
+      r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05"}}"#,
+    );
+    let _ = server.handle_request(r#"{"jsonrpc":"2.0","method":"notifications/initialized"}"#);
+    server
+  }
+
+  #[test]
+  fn lifecycle_gate_requires_initialize_then_initialized() {
+    let mut server = McpServer::new();
+    for request in [
+      r#"{"jsonrpc":"2.0","id":1,"method":"tools/list"}"#,
+      r#"{"jsonrpc":"2.0","id":2,"method":"resources/list"}"#,
+      r#"{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":1}}}"#,
+    ] {
+      let response = JsonValue::parse(&server.handle_request(request)).unwrap();
+      assert_eq!(
+        response
+          .get("error")
+          .and_then(|error| error.get("code"))
+          .and_then(JsonValue::as_i64),
+        Some(error_codes::MCP_NOT_INITIALIZED as i64)
+      );
+    }
+    assert!(!server.session().is_active());
+
+    let initialize = JsonValue::parse(&server.handle_request(
+      r#"{"jsonrpc":"2.0","id":4,"method":"initialize","params":{"protocolVersion":"2024-11-05"}}"#,
+    ))
+    .unwrap();
+    assert!(initialize.get("result").is_some());
+
+    let still_waiting =
+      JsonValue::parse(&server.handle_request(r#"{"jsonrpc":"2.0","id":5,"method":"tools/list"}"#))
+        .unwrap();
+    assert_eq!(
+      still_waiting
+        .get("error")
+        .and_then(|error| error.get("code"))
+        .and_then(JsonValue::as_i64),
+      Some(error_codes::MCP_NOT_INITIALIZED as i64)
+    );
+
+    let initialized = JsonValue::parse(
+      &server.handle_request(r#"{"jsonrpc":"2.0","method":"notifications/initialized"}"#),
+    )
+    .unwrap();
+    assert!(initialized.get("result").is_some());
+    let ready = JsonValue::parse(
+      &server.handle_request(r#"{"jsonrpc":"2.0","id":6,"method":"resources/list"}"#),
+    )
+    .unwrap();
+    assert!(ready.get("result").is_some());
+    let start = JsonValue::parse(&server.handle_request(
+      r#"{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":1}}}"#,
+    ))
+    .unwrap();
+    assert!(start.get("result").is_some());
+    let reset = JsonValue::parse(&server.handle_request(
+      r#"{"jsonrpc":"2.0","id":8,"method":"tools/call","params":{"name":"game_reset","arguments":{}}}"#,
+    ))
+    .unwrap();
+    assert!(reset.get("result").is_some());
+    let after_reset =
+      JsonValue::parse(&server.handle_request(r#"{"jsonrpc":"2.0","id":9,"method":"tools/list"}"#))
+        .unwrap();
+    assert!(after_reset.get("result").is_some());
+  }
+
+  #[test]
+  fn lifecycle_gate_rejects_premature_omitted_and_duplicate_transitions() {
+    let mut server = McpServer::new();
+    let premature = JsonValue::parse(
+      &server.handle_request(r#"{"jsonrpc":"2.0","id":1,"method":"notifications/initialized"}"#),
+    )
+    .unwrap();
+    assert_eq!(
+      premature
+        .get("error")
+        .and_then(|error| error.get("code"))
+        .and_then(JsonValue::as_i64),
+      Some(error_codes::MCP_NOT_INITIALIZED as i64)
+    );
+
+    let omitted_initialize = server.handle_request(
+      r#"{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05"}}"#,
+    );
+    let omitted_value = JsonValue::parse(&omitted_initialize).unwrap();
+    assert!(omitted_value.get("error").is_some());
+
+    let malformed = JsonValue::parse(
+      &server.handle_request(r#"{"jsonrpc":"2.0","id":2,"method":"initialize","params":{}}"#),
+    )
+    .unwrap();
+    assert_eq!(
+      malformed
+        .get("error")
+        .and_then(|error| error.get("code"))
+        .and_then(JsonValue::as_i64),
+      Some(error_codes::INVALID_PARAMS as i64)
+    );
+
+    let initialize = server.handle_request(
+      r#"{"jsonrpc":"2.0","id":3,"method":"initialize","params":{"protocolVersion":"2024-11-05"}}"#,
+    );
+    assert!(
+      JsonValue::parse(&initialize)
+        .unwrap()
+        .get("result")
+        .is_some()
+    );
+    let duplicate = JsonValue::parse(&server.handle_request(
+      r#"{"jsonrpc":"2.0","id":4,"method":"initialize","params":{"protocolVersion":"2024-11-05"}}"#,
+    ))
+    .unwrap();
+    assert_eq!(
+      duplicate
+        .get("error")
+        .and_then(|error| error.get("code"))
+        .and_then(JsonValue::as_i64),
+      Some(error_codes::MCP_NOT_INITIALIZED as i64)
+    );
+
+    let initialized = server.handle_request(r#"{"jsonrpc":"2.0","id":5,"method":"initialized"}"#);
+    assert!(
+      JsonValue::parse(&initialized)
+        .unwrap()
+        .get("result")
+        .is_some()
+    );
+    let duplicate_notification = JsonValue::parse(
+      &server.handle_request(r#"{"jsonrpc":"2.0","id":6,"method":"notifications/initialized"}"#),
+    )
+    .unwrap();
+    assert_eq!(
+      duplicate_notification
+        .get("error")
+        .and_then(|error| error.get("code"))
+        .and_then(JsonValue::as_i64),
+      Some(error_codes::MCP_NOT_INITIALIZED as i64)
+    );
   }
 
   #[test]

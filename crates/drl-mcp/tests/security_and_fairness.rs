@@ -4,9 +4,18 @@ use drl_mcp::McpServer;
 use drl_mcp::json::JsonValue;
 use drl_mcp::protocol::error_codes;
 
+fn ready_server() -> McpServer {
+  let mut server = McpServer::new();
+  let _ = server.handle_request(
+    r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05"}}"#,
+  );
+  let _ = server.handle_request(r#"{"jsonrpc":"2.0","method":"notifications/initialized"}"#);
+  server
+}
+
 #[test]
 fn test_dev_mode_permission_boundary() {
-  let mut server = McpServer::new();
+  let mut server = ready_server();
 
   // Start game
   let start_req = r#"{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":1}}}"#;
@@ -33,7 +42,7 @@ fn test_dev_mode_permission_boundary() {
 
 #[test]
 fn test_observation_fairness_hides_distant_monsters() {
-  let mut server = McpServer::new();
+  let mut server = ready_server();
 
   // Wide map where monster is far away outside visibility
   let ascii = r#"
@@ -76,7 +85,7 @@ fn test_observation_fairness_hides_distant_monsters() {
 
 #[test]
 fn test_turn_limit_boundary_enforcement() {
-  let mut server = McpServer::new();
+  let mut server = ready_server();
 
   // Start game with max_turns = 3
   let start_req = r#"{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":55,"max_turns":3}}}"#;

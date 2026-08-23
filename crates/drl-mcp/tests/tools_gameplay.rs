@@ -3,9 +3,18 @@
 use drl_mcp::McpServer;
 use drl_mcp::json::JsonValue;
 
+fn ready_server() -> McpServer {
+  let mut server = McpServer::new();
+  let _ = server.handle_request(
+    r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05"}}"#,
+  );
+  let _ = server.handle_request(r#"{"jsonrpc":"2.0","method":"notifications/initialized"}"#);
+  server
+}
+
 #[test]
 fn test_mcp_procedural_gameplay_tools() {
-  let mut server = McpServer::new();
+  let mut server = ready_server();
 
   // 1. Start procedural game with seed
   let start_req = r#"{
@@ -123,7 +132,7 @@ fn test_mcp_procedural_gameplay_tools() {
 
 #[test]
 fn test_mcp_scenario_combat_and_item_use() {
-  let mut server = McpServer::new();
+  let mut server = ready_server();
 
   // ASCII map: Player @, Former Human h, 9mm Ammo a, MedPack m, Exit >
   let ascii = r#"

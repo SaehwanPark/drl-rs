@@ -299,6 +299,10 @@ fn run_mcp_interface_demo() {
   let init_resp = server.handle_request(init_req);
   println!("MCP Initialize Response: {init_resp}");
 
+  let initialized_req = r#"{"jsonrpc":"2.0","method":"notifications/initialized"}"#;
+  let initialized_resp = server.handle_request(initialized_req);
+  println!("MCP Initialized Notification Response: {initialized_resp}");
+
   // 2. Tools List
   let list_req = r#"{"jsonrpc":"2.0","id":2,"method":"tools/list"}"#;
   let list_resp = server.handle_request(list_req);
