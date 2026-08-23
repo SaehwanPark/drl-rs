@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.84`
+Current project version: `0.2.85`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.84)
+## 3. Current Progress Summary (`VERSION` 0.2.85)
 
 ### Delivered Foundations
 
@@ -82,7 +82,7 @@ verification item uses explicit status semantics:
   BFG 9000, BFG 10K, Mega Buster, Grammaton Beretta, Frag Shotgun, Revenant's
   Launcher, Railgun, Acid Spitter, Combat Pistol, Assault Shotgun, Plasma
   Shotgun, Jackhammer, Super Shotgun, Tristar Blaster, Butcher's Cleaver,
-  Mjollnir, and Subtle Knife variants;
+  Mjollnir, Subtle Knife, Trigun, Anti-Freak Jackal, and Minigun variants;
   versioned
   fixed-session snapshot codec with localStorage
   persistence, bounded rejected-save quarantine, and static service-worker
@@ -528,6 +528,10 @@ scripting.
   descriptions, damage/range scalars, replay kinds, and measured cleaver/knife
   atlas slots; blade/throw/alt-fire perks, callbacks, sound/UI, and exact
   timing remain open.
+- [x] Typed `utrigun`, `ujackal`, and `uminigun` preserve pinned user/eitems
+  descriptions, 9mm relations, clips/damage scalars, replay kinds, and measured
+  pistol/chaingun atlas slots; aimed/chainfire perks, fire-rate, explosions,
+  and callbacks remain open.
 - [ ] Full migration of legacy monsters, weapons, armor, mods, and consumable
   items.
 - [ ] Full migration of special levels, vaults, and dungeon branches.

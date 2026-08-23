@@ -502,6 +502,24 @@ impl Item {
     Self::from_spawn_kind(id, ItemSpawnKind::SubtleKnife)
   }
 
+  /// Factory: unique Trigun (3d6 damage policy).
+  #[must_use]
+  pub fn trigun(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::Trigun)
+  }
+
+  /// Factory: unique Anti-Freak Jackal (5d3 damage policy).
+  #[must_use]
+  pub fn anti_freak_jackal(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::AntiFreakJackal)
+  }
+
+  /// Factory: exotic Minigun (1d6 damage policy).
+  #[must_use]
+  pub fn minigun(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::Minigun)
+  }
+
   /// Factory: chaingun (40-round 9mm clip, 1d6 damage policy).
   #[must_use]
   pub fn chaingun(id: ItemId) -> Self {
@@ -876,6 +894,12 @@ mod tests {
         ItemSpawnKind::SubtleKnife,
         Item::subtle_knife(ItemId::new(46)),
       ),
+      (ItemSpawnKind::Trigun, Item::trigun(ItemId::new(47))),
+      (
+        ItemSpawnKind::AntiFreakJackal,
+        Item::anti_freak_jackal(ItemId::new(48)),
+      ),
+      (ItemSpawnKind::Minigun, Item::minigun(ItemId::new(49))),
       (ItemSpawnKind::Chaingun, Item::chaingun(ItemId::new(11))),
       (
         ItemSpawnKind::PlasmaRifle,

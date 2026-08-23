@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.85]
+
+- Added typed `Trigun`, `Anti-Freak Jackal`, and `Minigun` families from
+  pinned user/eitems records, preserving descriptions, 9mm relations, clips,
+  damage scalars, replay JSON kinds, and measured pistol/chaingun atlas-slot
+  reuse. Aimed/chainfire perks, fire-rate, explosions, callbacks, and exact
+  timing remain open.
+
 ## [0.2.84]
 
 - Added typed `ButchersCleaver`, `Mjollnir`, and `SubtleKnife` families from

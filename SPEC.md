@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.84`
+Current project version: `0.2.85`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -32,7 +32,8 @@ Migrate the pinned legacy `rocket`, `cell`, `barmor`, `rarmor`, `smed`,
 `bazooka`, `ublaster`, `ulaser`, `umbazooka`, `unplasma`, `unbfg9000`, and
 `ubfg10k`, `umega`, `uberetta`, `ufshotgun`, `urbazooka`, `urailgun`, `uacid`,
 `ucpistol`, `uashotgun`, `upshotgun`, `usjack`, `udshotgun`, `utrigun`,
-`ubutcher`, `umjoll`, and `usubtle` records into
+`ubutcher`, `umjoll`, `usubtle`, `utrigun`, `ujackal`, and `uminigun` records
+into
 typed immutable Rust definitions and replay-compatible spawn contracts.
 Preserve
 source-backed scalar fields, measured atlas slots, and verified armor
@@ -150,6 +151,11 @@ presentation tints without importing Lua callbacks or unverified combat rules.
   (`5d6`/`1d25`/`3d5`), observed Mjollnir range `5`, replay kinds, and measured
   cleaver/knife atlas-slot reuse; blade/throw/alt-fire perks, callbacks,
   sound/UI, accuracy, and timing remain explicit gaps.
+- [x] **User-firearms boundary**: typed `Trigun`, `AntiFreakJackal`, and
+  `Minigun` preserve pinned descriptions, 9mm relations, clips (`6`/`6`/`200`),
+  damage ranges (`3d6`/`5d3`/`1d6`), replay kinds, and measured
+  pistol/chaingun atlas-slot reuse; aimed/chainfire perks, fire-rate,
+  explosions, callbacks, accuracy, and timing remain explicit gaps.
 - [ ] **Full migration**: shotgun/BFG/chainsaw/chaingun/rocket/plasma/exotic
   weapon behavior, dynamic callbacks,
   balance/fairness, and remaining legacy item families remain open.
@@ -162,7 +168,7 @@ presentation tints without importing Lua callbacks or unverified combat rules.
   `RocketLauncher`, `PlasmaRifle`, `CombatPistol`, `AssaultShotgun`, or
   `PlasmaShotgun`, `Jackhammer`, `SuperShotgun`, `TristarBlaster`,
   `ButchersCleaver`, `Mjollnir`, or `SubtleKnife`, plus the existing ammo
-  families.
+  families, plus `Trigun`, `AntiFreakJackal`, or `Minigun`.
 - **Output**: a definition-backed stackable `Item` with the observed ammo type,
   count, maximum stack, description, and atlas archetype; the definitions also
   expose pinned initial counts (`3`/`20`) while MCP JSON uses
@@ -237,6 +243,10 @@ presentation tints without importing Lua callbacks or unverified combat rules.
   weapons preserving pinned descriptions, damage/range policies, replay kinds,
   and measured atlas-slot reuse. Blade/throw/alt-fire perks, callbacks,
   sound/UI, accuracy, and exact timing are not claimed as parity.
+- `Trigun`, `AntiFreakJackal`, and `Minigun` are definition-backed 9mm weapons
+  preserving pinned descriptions, clips, damage policies, replay kinds, and
+  measured pistol/chaingun atlas-slot reuse. Aimed/chainfire perks, fire-rate,
+  explosions, callbacks, accuracy, and exact timing are not claimed as parity.
 - **Ownership Boundary**: Rust typed definitions own runtime item semantics;
   pinned Lua evidence informs only the migrated scalar fields and provenance.
 

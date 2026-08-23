@@ -488,6 +488,57 @@ const SUBTLE_KNIFE: ItemDefinition = ItemDefinition {
   },
 };
 
+const TRIGUN: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::Trigun,
+  name: "Trigun",
+  description: "One of the deadliest weapons ever made. Nyooo >O.o<",
+  kind: ItemDefinitionKind::Weapon {
+    is_ranged: true,
+    ammo_type: Some(AmmoType::Ammo9mm),
+    clip_capacity: 6,
+    damage: (3, 18),
+    range: 8,
+    accuracy: 80,
+    knockback: 0,
+    fire_cost: ActionCost::RANGED_ATTACK,
+    reload_cost: ActionCost::STANDARD,
+  },
+};
+
+const ANTI_FREAK_JACKAL: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::AntiFreakJackal,
+  name: "Anti-Freak Jackal",
+  description: "In the name of God, impure souls of the living dead shall be banished into eternal damnation. Amen.",
+  kind: ItemDefinitionKind::Weapon {
+    is_ranged: true,
+    ammo_type: Some(AmmoType::Ammo9mm),
+    clip_capacity: 6,
+    damage: (5, 15),
+    range: 8,
+    accuracy: 75,
+    knockback: 0,
+    fire_cost: ActionCost::RANGED_ATTACK,
+    reload_cost: ActionCost::STANDARD,
+  },
+};
+
+const MINIGUN: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::Minigun,
+  name: "Minigun",
+  description: "Spits enough lead into the air to be considered an environmental hazard.",
+  kind: ItemDefinitionKind::Weapon {
+    is_ranged: true,
+    ammo_type: Some(AmmoType::Ammo9mm),
+    clip_capacity: 200,
+    damage: (1, 6),
+    range: 8,
+    accuracy: 70,
+    knockback: 0,
+    fire_cost: ActionCost::RANGED_ATTACK,
+    reload_cost: ActionCost::STANDARD,
+  },
+};
+
 const CHAINGUN: ItemDefinition = ItemDefinition {
   archetype: ItemArchetype::Chaingun,
   name: "Chaingun",
@@ -761,6 +812,9 @@ pub const fn definition_for_spawn_kind(kind: ItemSpawnKind) -> &'static ItemDefi
     ItemSpawnKind::ButchersCleaver => &BUTCHERS_CLEAVER,
     ItemSpawnKind::Mjollnir => &MJOLLNIR,
     ItemSpawnKind::SubtleKnife => &SUBTLE_KNIFE,
+    ItemSpawnKind::Trigun => &TRIGUN,
+    ItemSpawnKind::AntiFreakJackal => &ANTI_FREAK_JACKAL,
+    ItemSpawnKind::Minigun => &MINIGUN,
     ItemSpawnKind::Chaingun => &CHAINGUN,
     ItemSpawnKind::PlasmaRifle => &PLASMA_RIFLE,
     ItemSpawnKind::RocketLauncher => &ROCKET_LAUNCHER,
@@ -892,6 +946,13 @@ mod tests {
         ItemArchetype::SubtleKnife,
         "Subtle Knife",
       ),
+      (ItemSpawnKind::Trigun, ItemArchetype::Trigun, "Trigun"),
+      (
+        ItemSpawnKind::AntiFreakJackal,
+        ItemArchetype::AntiFreakJackal,
+        "Anti-Freak Jackal",
+      ),
+      (ItemSpawnKind::Minigun, ItemArchetype::Minigun, "Minigun"),
       (ItemSpawnKind::Chaingun, ItemArchetype::Chaingun, "Chaingun"),
       (
         ItemSpawnKind::PlasmaRifle,
@@ -1347,6 +1408,48 @@ mod tests {
         knockback: 0,
         fire_cost: ActionCost::MELEE_ATTACK,
         reload_cost: ActionCost::new(0),
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::Trigun).kind,
+      ItemDefinitionKind::Weapon {
+        is_ranged: true,
+        ammo_type: Some(AmmoType::Ammo9mm),
+        clip_capacity: 6,
+        damage: (3, 18),
+        range: 8,
+        accuracy: 80,
+        knockback: 0,
+        fire_cost: ActionCost::RANGED_ATTACK,
+        reload_cost: ActionCost::STANDARD,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::AntiFreakJackal).kind,
+      ItemDefinitionKind::Weapon {
+        is_ranged: true,
+        ammo_type: Some(AmmoType::Ammo9mm),
+        clip_capacity: 6,
+        damage: (5, 15),
+        range: 8,
+        accuracy: 75,
+        knockback: 0,
+        fire_cost: ActionCost::RANGED_ATTACK,
+        reload_cost: ActionCost::STANDARD,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::Minigun).kind,
+      ItemDefinitionKind::Weapon {
+        is_ranged: true,
+        ammo_type: Some(AmmoType::Ammo9mm),
+        clip_capacity: 200,
+        damage: (1, 6),
+        range: 8,
+        accuracy: 70,
+        knockback: 0,
+        fire_cost: ActionCost::RANGED_ATTACK,
+        reload_cost: ActionCost::STANDARD,
       }
     );
 
