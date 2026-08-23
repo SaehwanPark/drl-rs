@@ -12,7 +12,8 @@ documented in this file.
   use the delivered `tools/call` `isError: true` result boundary.
 - Loaded logs accept later valid commands, `game_verify_replay` remains
   deterministic, and `game_reset` reruns the retained imported source.
-  Terminal loads expose no legal actions. Replay files, migrations,
+  Optional MCP turn limits are carried in the envelope so turn-limit terminal
+  loads expose no legal actions. Replay files, migrations,
   cross-version schemas, reconnect/resume, and external-client certification
   remain open.
 

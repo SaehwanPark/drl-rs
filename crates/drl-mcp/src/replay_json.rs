@@ -48,6 +48,10 @@ pub fn to_json_value(replay: &ReplayLog) -> JsonValue {
       .as_ref()
       .map_or(JsonValue::Null, procedural_config_to_json),
   );
+  map.insert(
+    "max_turns".to_string(),
+    replay.max_turns.map_or(JsonValue::Null, uint64_to_json),
+  );
   map.insert("seed".to_string(), uint64_to_json(replay.seed));
   map.insert("width".to_string(), JsonValue::from(replay.width));
   map.insert("height".to_string(), JsonValue::from(replay.height));

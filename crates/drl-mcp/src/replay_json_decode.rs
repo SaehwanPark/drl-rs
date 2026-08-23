@@ -36,6 +36,7 @@ pub fn from_json_value(value: &JsonValue) -> Result<ReplayLog, String> {
   let metadata = parse_metadata(required(object, "metadata")?)?;
   let player_config = nullable(object, "player_config", parse_player_config)?;
   let procedural_config = nullable(object, "procedural_config", parse_procedural_config)?;
+  let max_turns = nullable(object, "max_turns", |value| u64_value(value, "max_turns"))?;
   let seed = u64_value(required(object, "seed")?, "seed")?;
   let width = u32_value(required(object, "width")?, "width")?;
   let height = u32_value(required(object, "height")?, "height")?;
@@ -81,6 +82,7 @@ pub fn from_json_value(value: &JsonValue) -> Result<ReplayLog, String> {
     metadata,
     player_config,
     procedural_config,
+    max_turns,
     seed,
     width,
     height,

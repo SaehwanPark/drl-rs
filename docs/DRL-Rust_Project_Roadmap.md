@@ -87,10 +87,11 @@ verification item uses explicit status semantics:
 - **Latest Delivered Milestone Slice (M5/M6/M13)**: `game_load_replay` transactionally
   restores the exact canonical V1 replay envelope by executing it in temporary
   core state before replacing the session. The imported replay remains the
-  reset source, subsequent valid actions append to its log, and terminal loads
-  expose no legal actions. Malformed input remains `-32602`; simulation failure
-  uses the delivered `tools/call` runtime-result boundary, and active sessions
-  remain byte-identical on rejected loads. The preceding `tools/list`/
+  reset source, optional turn limits preserve terminal outcomes, subsequent
+  valid actions append to its log, and terminal loads expose no legal actions.
+  Malformed input remains `-32602`; simulation failure uses the delivered
+  `tools/call` runtime-result boundary, and active sessions remain byte-
+  identical on rejected loads. The preceding `tools/list`/
   `resources/list` pagination and tool-execution error-result contracts remain
   delivered. Replay-file IO, migrations, cross-version/external schemas,
   reconnect/resume, and broader MCP compatibility remain open.
@@ -312,10 +313,10 @@ tooling.
   remain deterministic.
 - [x] `game_load_replay` restores a required canonical V1 replay object only
   after bounded decode and complete `ReplayEngine` execution succeed; it
-  exposes `ReplayLoaded`, preserves the imported log for appended commands,
-  reruns that source on reset, and leaves prior active sessions unchanged on
-  malformed or simulation-invalid input. Replay-file IO and migrations remain
-  open.
+  exposes `ReplayLoaded`, preserves the imported log and optional turn limit
+  for appended commands/reset, restores turn-limit terminal state, and leaves
+  prior active sessions unchanged on malformed or simulation-invalid input.
+  Replay-file IO and migrations remain open.
 - [x] Terminal `game_step_action` calls are rejected after victory, death,
   turn-limit, or stalled outcomes; stair transitions report victory while
   reset and replay/metrics inspection remain available.

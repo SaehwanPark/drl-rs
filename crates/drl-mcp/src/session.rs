@@ -891,7 +891,9 @@ impl McpSession {
       .map_err(|e| format!("Failed to generate procedural game: {e}"))?;
 
     let p_pos = game.observe_player().player_position;
-    let replay = ReplayLog::new(seed, w, h, p_pos).with_procedural_config(replay_config);
+    let replay = ReplayLog::new(seed, w, h, p_pos)
+      .with_procedural_config(replay_config)
+      .with_max_turns(max_turns);
 
     self.config = Some(SessionConfig {
       seed,
@@ -929,7 +931,7 @@ impl McpSession {
 
     let w = game.world().map().width();
     let h = game.world().map().height();
-    let replay = replay_log_for_scenario(&scenario);
+    let replay = replay_log_for_scenario(&scenario).with_max_turns(max_turns);
 
     self.config = Some(SessionConfig {
       seed: 0,
@@ -953,7 +955,7 @@ impl McpSession {
   /// Resets the current game session back to its starting configuration.
   pub fn reset(&mut self) -> Result<PlayerObservation, String> {
     if let Some(replay) = self.loaded_replay_source.clone() {
-      return self.restore_replay(replay, false);
+      return self.restore_replay(replay);
     }
 
     let cfg = self
@@ -975,21 +977,24 @@ impl McpSession {
   /// succeed, so malformed or simulation-invalid input cannot partially mutate
   /// an existing game.
   pub fn load_replay(&mut self, replay: ReplayLog) -> Result<PlayerObservation, String> {
-    self.restore_replay(replay, true)
+    self.restore_replay(replay)
   }
 
-  fn restore_replay(
-    &mut self,
-    replay: ReplayLog,
-    retain_as_reset_source: bool,
-  ) -> Result<PlayerObservation, String> {
-    let (game, events, metrics) =
+  fn restore_replay(&mut self, replay: ReplayLog) -> Result<PlayerObservation, String> {
+    let (game, events, mut metrics) =
       ReplayEngine::run_with_diagnostics(&replay).map_err(|error| error.to_string())?;
+    if matches!(metrics.outcome, RunOutcome::InProgress)
+      && replay
+        .max_turns
+        .is_some_and(|max_turns| max_turns > 0 && replay.commands.len() as u64 >= max_turns)
+    {
+      metrics.outcome = RunOutcome::TurnLimitReached;
+    }
     let observation = game.observe_player();
     let turn_count = metrics.turns_survived;
     let config = SessionConfig {
       seed: replay.seed,
-      max_turns: None,
+      max_turns: replay.max_turns,
       scenario_ascii: None,
       width: Some(replay.width),
       height: Some(replay.height),
@@ -997,12 +1002,15 @@ impl McpSession {
 
     self.game = Some(game);
     self.config = Some(config);
-    self.max_turns = None;
+    self.max_turns = replay.max_turns;
     self.turn_count = turn_count;
     self.replay_log = Some(replay.clone());
-    self.loaded_replay_source = retain_as_reset_source.then_some(replay);
+    self.loaded_replay_source = Some(replay);
     self.metrics = metrics;
-    self.recent_events = events;
+    self.recent_events = events
+      .iter()
+      .rposition(|event| matches!(event, GameEvent::TurnStarted { .. }))
+      .map_or_else(|| events.clone(), |index| events[index..].to_vec());
     Ok(observation)
   }
 

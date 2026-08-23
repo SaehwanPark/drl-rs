@@ -180,9 +180,11 @@ Presentation Boundary
     boundary.
   - `game_load_replay` decodes the exact canonical V1 envelope, executes it in
     a temporary `ReplayEngine` state, and commits the game/metrics/replay log
-    only after success. The imported log remains the reset source and accepts
-    later commands; filesystem/network replay IO and migrations remain outside
-    this boundary.
+    only after success. The imported log and optional MCP turn limit remain the
+    reset source and accept later commands when non-terminal. Existing
+    `ReplayEngine` terminal-prefix behavior remains authoritative for supplied
+    logs; filesystem or network replay IO and migrations remain outside this
+    boundary.
   - `game_save_replay` projects every V1 `ReplayLog` field through the
     deterministic `replay_json` envelope (`drl-rust-replay-v1`) with structured
     semantic command objects, complete initial-state containers, and explicit

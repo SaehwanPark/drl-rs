@@ -34,8 +34,10 @@ must decode the exact V1 envelope, execute it in temporary core state through
 events, and imported replay log only after successful validation and
 simulation. The imported log is retained as the deterministic reset source;
 later valid actions append to the active log, while reset reruns the original
-source and discards those later actions. This is a same-version in-memory
-restore contract, not a replay-file or external-interchange format.
+source and discards those later actions. The optional MCP turn limit is part
+of the emitted V1 envelope so `TurnLimitReached` terminal state survives a
+load. This is a same-version in-memory restore contract, not a replay-file or
+external-interchange format.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
@@ -71,11 +73,14 @@ restore contract, not a replay-file or external-interchange format.
   identical.
 - [x] **Loaded session contract**: Success returns `status: "ReplayLoaded"`,
   the deterministic final observation, legal actions, and metrics. The
-  imported V1 log is retained; subsequent valid actions append to it and
-  supplied/current replay verification remains deterministic.
+  imported V1 log and optional turn limit are retained; subsequent valid
+  actions append to it and supplied/current replay verification remains
+  deterministic.
 - [x] **Reset and terminal behavior**: Reset reruns the retained imported
   source, and terminal loaded replays expose no legal actions and reject later
-  steps state-safely.
+  steps state-safely. The existing replay-engine terminal-prefix behavior is
+  retained: any commands after a terminal transition remain in the imported
+  log but are not simulated.
 - [x] **Transport and predecessor safety**: Notifications, batches, list
   pagination, resources, lifecycle gates, and delivered tool-error result
   semantics remain deterministic and unchanged.

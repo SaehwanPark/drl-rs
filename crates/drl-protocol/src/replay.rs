@@ -196,6 +196,8 @@ pub struct ReplayLog {
   pub player_config: Option<PlayerSpawnConfig>,
   /// Optional procedural generator parameters; absent for arena/scenario logs.
   pub procedural_config: Option<ProceduralGenerationConfig>,
+  /// Optional MCP session turn limit captured for terminal-session restoration.
+  pub max_turns: Option<u64>,
   /// RNG seed used to initialize the simulation.
   pub seed: u64,
   /// Initial level map width.
@@ -225,6 +227,7 @@ impl ReplayLog {
       metadata: ReplayMetadata::default(),
       player_config: None,
       procedural_config: None,
+      max_turns: None,
       seed,
       width,
       height,
@@ -248,6 +251,13 @@ impl ReplayLog {
   #[must_use]
   pub fn with_procedural_config(mut self, config: ProceduralGenerationConfig) -> Self {
     self.procedural_config = Some(config);
+    self
+  }
+
+  /// Records the optional MCP session turn limit for deterministic restore.
+  #[must_use]
+  pub fn with_max_turns(mut self, max_turns: Option<u64>) -> Self {
+    self.max_turns = max_turns;
     self
   }
 

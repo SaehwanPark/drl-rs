@@ -1044,6 +1044,62 @@ fn test_jsonrpc_load_replay_round_trip_append_and_reset() {
     )),
     source_replay
   );
+  let _ = target.handle_request(
+    r#"{"jsonrpc":"2.0","id":84,"method":"tools/call","params":{"name":"game_reset","arguments":{}}}"#,
+  );
+  assert_eq!(
+    tool_data(&target.handle_request(
+      r#"{"jsonrpc":"2.0","id":85,"method":"tools/call","params":{"name":"game_save_replay","arguments":{}}}"#,
+    )),
+    source_replay
+  );
+}
+
+#[test]
+fn test_jsonrpc_load_replay_preserves_turn_limit_terminal() {
+  let mut source = ready_server();
+  let _ = source.handle_request(
+    r#"{"jsonrpc":"2.0","id":86,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":86,"width":20,"height":10,"max_turns":1}}}"#,
+  );
+  let _ = source.handle_request(
+    r#"{"jsonrpc":"2.0","id":87,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"wait"}}}"#,
+  );
+  let source_replay = tool_data(&source.handle_request(
+    r#"{"jsonrpc":"2.0","id":88,"method":"tools/call","params":{"name":"game_save_replay","arguments":{}}}"#,
+  ));
+  assert_eq!(
+    tool_data(&source.handle_request(
+      r#"{"jsonrpc":"2.0","id":89,"method":"tools/call","params":{"name":"game_get_metrics","arguments":{}}}"#,
+    ))
+    .get("outcome")
+    .and_then(JsonValue::as_str),
+    Some("TurnLimitReached")
+  );
+
+  let request = format!(
+    r#"{{"jsonrpc":"2.0","id":90,"method":"tools/call","params":{{"name":"game_load_replay","arguments":{{"replay":{}}}}}}}"#,
+    source_replay.to_compact_string()
+  );
+  let mut target = ready_server();
+  let loaded = tool_data(&target.handle_request(&request));
+  assert_eq!(
+    loaded
+      .get("metrics")
+      .and_then(|metrics| metrics.get("outcome")),
+    Some(&JsonValue::from("TurnLimitReached"))
+  );
+  assert_eq!(
+    loaded
+      .get("legal_actions")
+      .and_then(JsonValue::as_array)
+      .map(Vec::len),
+    Some(0)
+  );
+  let rejected = JsonValue::parse(&target.handle_request(
+    r#"{"jsonrpc":"2.0","id":91,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"wait"}}}"#,
+  ))
+  .unwrap();
+  assert_tool_error(&rejected, error_codes::INVALID_ACTION);
 }
 
 #[test]

@@ -110,8 +110,8 @@ truth.
   run succeeds. Retain the original imported log as the explicit reset source
   so appended commands have deterministic, documented reset behavior.
 - **Prevention:** Test malformed input, simulation failure, active-session
-  rollback, append-after-load, terminal loads, and reset reruns as separate
-  acceptance cases.
+  rollback, append-after-load, terminal loads, session wrapper metadata such as
+  turn limits, and repeated reset reruns as separate acceptance cases.
 
 ## Make bounded presentation storage fail explicitly
 
