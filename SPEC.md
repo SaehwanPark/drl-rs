@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.59`
+Current project version: `0.2.60`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,15 +23,19 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M6/M13 Tool-Execution Error Results
+## 2. Active Implementation Slice: M5/M6/M13 Transactional Canonical V1 Replay Session Restore
 
 ### 2.1 Scope & Objective
 
-Normalize runtime failures from recognized `tools/call` tools into successful
-MCP-shaped results with `isError: true`, while preserving JSON-RPC errors for
-malformed envelopes/parameters, unsafe arguments, unknown methods/tools, and
-malformed supplied replay JSON. This slice documents a deterministic local
-error boundary and does not claim complete external-client MCP compatibility.
+Restore a required canonical `drl-rust-replay-v1` object through
+`game_load_replay` without partially replacing an active session. The server
+must decode the exact V1 envelope, execute it in temporary core state through
+`ReplayEngine::run_with_diagnostics`, and commit the final game, metrics,
+events, and imported replay log only after successful validation and
+simulation. The imported log is retained as the deterministic reset source;
+later valid actions append to the active log, while reset reruns the original
+source and discards those later actions. This is a same-version in-memory
+restore contract, not a replay-file or external-interchange format.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
@@ -58,41 +62,53 @@ error boundary and does not claim complete external-client MCP compatibility.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Runtime result boundary**: Inactive-session, invalid recognized action,
-  terminal, permission, and replay execution failures return a successful
-  JSON-RPC result with `content[0].type = "text"`, `isError: true`, and
-  `data.code`/`data.message`.
-- [x] **Protocol error preservation**: Malformed JSON-RPC, malformed or
-  non-object `tools/call` params/arguments, unsafe numeric values, malformed
-  supplied replay JSON, and unknown methods/tools retain `-32700`, `-32602`,
-  or `-32601` JSON-RPC error responses as applicable.
-- [x] **State and transport safety**: Runtime failures do not mutate session,
-  metrics, or replay state; notifications suppress results, batches preserve
-  response order/IDs, and repeated stdio output is byte-identical.
-- [x] **Delivered predecessor retained**: Deterministic `tools/list` and
-  `resources/list` pagination remains stable with fixed 4/2 pages and
-  method-scoped cursors.
-- [x] **Explicit non-goals**: No new tools, gameplay, lifecycle, replay
-  import/load, transport, deployment, or external-client/schema certification
-  claims are made.
+- [x] **Exact input boundary**: `game_load_replay` requires an object-shaped
+  `replay` argument; malformed, wrong-type, unsafe, out-of-bounds, or
+  unsupported-version envelopes return `-32602` before session replacement.
+- [x] **Transactional simulation**: Valid input is executed in temporary core
+  state. Simulation-invalid input is reported through the recognized
+  `tools/call` runtime-result boundary and leaves an existing session byte
+  identical.
+- [x] **Loaded session contract**: Success returns `status: "ReplayLoaded"`,
+  the deterministic final observation, legal actions, and metrics. The
+  imported V1 log is retained; subsequent valid actions append to it and
+  supplied/current replay verification remains deterministic.
+- [x] **Reset and terminal behavior**: Reset reruns the retained imported
+  source, and terminal loaded replays expose no legal actions and reject later
+  steps state-safely.
+- [x] **Transport and predecessor safety**: Notifications, batches, list
+  pagination, resources, lifecycle gates, and delivered tool-error result
+  semantics remain deterministic and unchanged.
+- [x] **Explicit non-goals**: No replay file IO, stdin/network transport,
+  migration, cross-version schema, reconnect/resume, gameplay/core rule, or
+  external-client certification claim is made.
 
 ### 2.4 Pure Contract
 
-- **Input**: A validated `tools/call` envelope and object-shaped arguments.
-- **Output**: Successful tool execution retains `{content, isError: false,
-  data}`; recognized runtime failure returns `{content, isError: true, data}`
-  where `data` contains the numeric project error code and stable message.
+- **Input**: A validated `tools/call` envelope containing the exact canonical
+  V1 replay object emitted by `game_save_replay`.
+- **Output**: Successful restore returns `{content, isError: false, data}`
+  with `status: "ReplayLoaded"`; malformed input remains a JSON-RPC
+  `-32602`, and simulation failure is a successful `isError: true` result.
 - **Ownership Boundary**:
-  - `McpServer` classifies only runtime codes (`SESSION_NOT_ACTIVE`,
-    `INVALID_ACTION`, `PERMISSION_DENIED`, `INTERNAL_ERROR`) as MCP tool
-    results; `execute_tool` remains the semantic implementation boundary.
-  - Tool calls, resource reads, session state, lifecycle transitions, replay
-    behavior, registry definitions, and delivered list pagination remain
-    unchanged.
+  - `replay_json` owns exact V1 decoding; `ReplayEngine` remains the sole
+    replay execution authority; `McpSession` commits only after temporary
+    execution succeeds and retains the imported source for reset.
+  - `McpServer` preserves the delivered distinction between malformed
+    protocol/input errors and recognized runtime tool failures.
 
 ---
 
 ## 3. Recent Delivered Slices
+
+### M6/M13 — Tool-Execution Error Results (`VERSION` 0.2.59)
+
+- [x] Recognized runtime failures are successful MCP results with
+  `isError: true`, stable text, and numeric details; malformed envelopes,
+  unsafe arguments, malformed replay input, and unknown methods/tools retain
+  JSON-RPC errors.
+- [x] State safety, notification suppression, batch ordering, pagination, and
+  deterministic stdio output remain covered.
 
 ### M13/M6 — Deterministic List Pagination (`VERSION` 0.2.58)
 
@@ -109,16 +125,16 @@ error boundary and does not claim complete external-client MCP compatibility.
   and type-invalid input returns `-32602`, while replay execution failures use
   the recognized runtime-error result boundary.
 - [x] MCP session dimensions and generator parameters are bounded before export;
-  session loading, replay-file IO, migration, and external interchange remain
-  open.
+  canonical same-version loading is now delivered, while replay-file IO,
+  migration, and external interchange remain open.
 
 ### M13 — Canonical Complete V1 MCP Replay Export (`VERSION` 0.2.56)
 
 - [x] `game_save_replay` exports every in-memory V1 field and semantic command
   through the deterministic `drl-rust-replay-v1` envelope; supplied replay
-  verification now consumes this exact contract without loading a session.
-- [x] Import/load, replay-file IO, migration, and external interchange remain
-  explicitly open.
+  verification and same-version object loading consume this exact contract.
+- [x] Replay-file IO, migration, and external interchange remain explicitly
+  open.
 
 ### M13 — Exact Fair-Observation Legal-Action Enumeration (`VERSION` 0.2.55)
 

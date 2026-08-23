@@ -8,8 +8,8 @@ use crate::session::{
   player_observation_to_json,
 };
 use crate::tools_schema::{
-  empty_object_schema, game_load_scenario_schema, game_start_schema, game_step_action_schema,
-  game_verify_replay_schema,
+  empty_object_schema, game_load_replay_schema, game_load_scenario_schema, game_start_schema,
+  game_step_action_schema, game_verify_replay_schema,
 };
 use drl_core::ReplayEngine;
 use std::collections::BTreeMap;
@@ -27,6 +27,11 @@ pub fn get_all_tool_definitions() -> Vec<ToolDefinition> {
       name: "game_load_scenario".to_string(),
       description: "Load an approved ASCII scenario fixture into the game session.".to_string(),
       input_schema: game_load_scenario_schema(),
+    },
+    ToolDefinition {
+      name: "game_load_replay".to_string(),
+      description: "Restore a canonical V1 replay into the session transactionally.".to_string(),
+      input_schema: game_load_replay_schema(),
     },
     ToolDefinition {
       name: "game_get_observation".to_string(),
@@ -134,6 +139,39 @@ pub fn execute_tool(
             .map(crate::session::LegalAction::to_json_value)
             .collect(),
         ),
+      );
+      Ok(wrap_mcp_tool_result(JsonValue::Object(res)))
+    }
+
+    "game_load_replay" => {
+      let replay = arguments
+        .get("replay")
+        .ok_or_else(|| JsonRpcError::new(error_codes::INVALID_PARAMS, "Missing 'replay' parameter"))
+        .and_then(|value| {
+          replay_json::from_json_value(value)
+            .map_err(|e| JsonRpcError::new(error_codes::INVALID_PARAMS, e))
+        })?;
+      let obs = session
+        .load_replay(replay)
+        .map_err(|e| JsonRpcError::new(error_codes::INVALID_ACTION, e))?;
+      let legal_actions = session
+        .legal_actions()
+        .map_err(|e| JsonRpcError::new(error_codes::SESSION_NOT_ACTIVE, e))?;
+      let mut res = BTreeMap::new();
+      res.insert("status".to_string(), JsonValue::from("ReplayLoaded"));
+      res.insert("observation".to_string(), player_observation_to_json(&obs));
+      res.insert(
+        "legal_actions".to_string(),
+        JsonValue::Array(
+          legal_actions
+            .iter()
+            .map(crate::session::LegalAction::to_json_value)
+            .collect(),
+        ),
+      );
+      res.insert(
+        "metrics".to_string(),
+        episode_metrics_to_json(session.get_metrics()),
       );
       Ok(wrap_mcp_tool_result(JsonValue::Object(res)))
     }

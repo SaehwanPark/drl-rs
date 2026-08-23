@@ -121,6 +121,11 @@ if [branch.get("required") for branch in ranged] != [["target_x", "target_y"], [
     raise SystemExit("ranged condition lacks coordinate alternatives")
 if step_schema.get("additionalProperties") is False:
     raise SystemExit("game_step_action schema unexpectedly rejects unknown properties")
+load_replay_schema = tool_map["game_load_replay"]["inputSchema"]
+if load_replay_schema.get("required") != ["replay"]:
+    raise SystemExit("game_load_replay schema lacks required replay envelope")
+if load_replay_schema.get("properties", {}).get("replay", {}).get("type") != "object":
+    raise SystemExit("game_load_replay schema does not publish an object envelope")
 if not responses[3].get("result", {}).get("resources"):
     raise SystemExit("resources/list returned no resources")
 if responses[3].get("result", {}).get("nextCursor") != "resources-v1-2":

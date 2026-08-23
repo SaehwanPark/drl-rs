@@ -3,6 +3,19 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.60]
+
+- Added transactional `game_load_replay` for the exact canonical V1 replay
+  envelope. The server decodes and executes in temporary core state, then
+  commits the final observation, metrics, events, and imported replay log only
+  after success; malformed input remains `-32602`, while simulation failures
+  use the delivered `tools/call` `isError: true` result boundary.
+- Loaded logs accept later valid commands, `game_verify_replay` remains
+  deterministic, and `game_reset` reruns the retained imported source.
+  Terminal loads expose no legal actions. Replay files, migrations,
+  cross-version schemas, reconnect/resume, and external-client certification
+  remain open.
+
 ## [0.2.59]
 
 - Normalized recognized `tools/call` runtime failures into successful MCP

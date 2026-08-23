@@ -2,10 +2,10 @@
 
 use crate::json::JsonValue;
 use crate::replay_json::MAX_REPLAY_DIMENSION;
-use drl_core::Game;
 use drl_core::generator::LevelGeneratorConfig;
 use drl_core::grid::Tile;
 use drl_core::scenario::Scenario;
+use drl_core::{Game, ReplayEngine};
 use drl_protocol::{
   Command, Direction, EpisodeMetrics, EquipmentSlot, GameEvent, ItemCategory, ItemId, ItemView,
   OmniscientObservation, PlayerObservation, Position, ProceduralGenerationConfig, ReplayLog,
@@ -813,6 +813,7 @@ pub struct McpSession {
   max_turns: Option<u64>,
   turn_count: u64,
   replay_log: Option<ReplayLog>,
+  loaded_replay_source: Option<ReplayLog>,
   metrics: EpisodeMetrics,
   recent_events: Vec<GameEvent>,
 }
@@ -834,6 +835,7 @@ impl McpSession {
       max_turns: None,
       turn_count: 0,
       replay_log: None,
+      loaded_replay_source: None,
       metrics: EpisodeMetrics::new(),
       recent_events: Vec::new(),
     }
@@ -903,6 +905,7 @@ impl McpSession {
     self.metrics = EpisodeMetrics::new();
     self.recent_events.clear();
     self.replay_log = Some(replay);
+    self.loaded_replay_source = None;
 
     let obs = game.observe_player();
     self.game = Some(game);
@@ -940,6 +943,7 @@ impl McpSession {
     self.metrics = EpisodeMetrics::new();
     self.recent_events.clear();
     self.replay_log = Some(replay);
+    self.loaded_replay_source = None;
 
     let obs = game.observe_player();
     self.game = Some(game);
@@ -948,6 +952,10 @@ impl McpSession {
 
   /// Resets the current game session back to its starting configuration.
   pub fn reset(&mut self) -> Result<PlayerObservation, String> {
+    if let Some(replay) = self.loaded_replay_source.clone() {
+      return self.restore_replay(replay, false);
+    }
+
     let cfg = self
       .config
       .clone()
@@ -958,6 +966,44 @@ impl McpSession {
     } else {
       self.start_game(cfg.seed, cfg.max_turns, cfg.width, cfg.height)
     }
+  }
+
+  /// Restores a canonical V1 replay transactionally into the current session.
+  ///
+  /// Replay execution builds a temporary core game and metrics first. The live
+  /// session is replaced only after the decoder and complete command sequence
+  /// succeed, so malformed or simulation-invalid input cannot partially mutate
+  /// an existing game.
+  pub fn load_replay(&mut self, replay: ReplayLog) -> Result<PlayerObservation, String> {
+    self.restore_replay(replay, true)
+  }
+
+  fn restore_replay(
+    &mut self,
+    replay: ReplayLog,
+    retain_as_reset_source: bool,
+  ) -> Result<PlayerObservation, String> {
+    let (game, events, metrics) =
+      ReplayEngine::run_with_diagnostics(&replay).map_err(|error| error.to_string())?;
+    let observation = game.observe_player();
+    let turn_count = metrics.turns_survived;
+    let config = SessionConfig {
+      seed: replay.seed,
+      max_turns: None,
+      scenario_ascii: None,
+      width: Some(replay.width),
+      height: Some(replay.height),
+    };
+
+    self.game = Some(game);
+    self.config = Some(config);
+    self.max_turns = None;
+    self.turn_count = turn_count;
+    self.replay_log = Some(replay.clone());
+    self.loaded_replay_source = retain_as_reset_source.then_some(replay);
+    self.metrics = metrics;
+    self.recent_events = events;
+    Ok(observation)
   }
 
   /// Retrieves the current player observation.

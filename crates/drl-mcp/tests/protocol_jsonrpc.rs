@@ -72,6 +72,15 @@ fn assert_tool_error(response: &JsonValue, code: i32) {
   assert!(data.get("message").and_then(JsonValue::as_str).is_some());
 }
 
+fn tool_data(response: &str) -> JsonValue {
+  JsonValue::parse(response)
+    .unwrap()
+    .get("result")
+    .and_then(|result| result.get("data"))
+    .cloned()
+    .expect("successful tool data")
+}
+
 #[test]
 fn test_jsonrpc_initialize_handshake() {
   let mut server = McpServer::new();
@@ -196,6 +205,7 @@ fn test_jsonrpc_tools_list() {
 
   assert!(tool_names.contains(&"game_start"));
   assert!(tool_names.contains(&"game_load_scenario"));
+  assert!(tool_names.contains(&"game_load_replay"));
   assert!(tool_names.contains(&"game_get_observation"));
   assert!(tool_names.contains(&"game_list_actions"));
   assert!(tool_names.contains(&"game_step_action"));
@@ -240,6 +250,23 @@ fn test_jsonrpc_tools_list_publishes_truthful_input_schemas() {
       .and_then(|field| field.get("minimum"))
       .and_then(JsonValue::as_u64),
     Some(3)
+  );
+  let load_replay = schema_for("game_load_replay");
+  assert_eq!(
+    load_replay
+      .get("properties")
+      .and_then(|properties| properties.get("replay"))
+      .and_then(|replay| replay.get("type"))
+      .and_then(JsonValue::as_str),
+    Some("object")
+  );
+  assert_eq!(
+    load_replay
+      .get("required")
+      .and_then(JsonValue::as_array)
+      .and_then(|required| required.first())
+      .and_then(JsonValue::as_str),
+    Some("replay")
   );
   assert_eq!(
     start_props
@@ -916,6 +943,227 @@ fn test_jsonrpc_supplied_custom_replay_verifies_without_session() {
       .and_then(JsonValue::as_i64),
     Some(error_codes::INVALID_PARAMS as i64)
   );
+}
+
+#[test]
+fn test_jsonrpc_load_replay_round_trip_append_and_reset() {
+  let mut source = ready_server();
+  let _ = source.handle_request(
+    r#"{"jsonrpc":"2.0","id":70,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":71,"width":20,"height":10}}}"#,
+  );
+  let _ = source.handle_request(
+    r#"{"jsonrpc":"2.0","id":71,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"wait"}}}"#,
+  );
+  let source_observation = source.handle_request(
+    r#"{"jsonrpc":"2.0","id":72,"method":"tools/call","params":{"name":"game_get_observation","arguments":{}}}"#,
+  );
+  let source_metrics = source.handle_request(
+    r#"{"jsonrpc":"2.0","id":73,"method":"tools/call","params":{"name":"game_get_metrics","arguments":{}}}"#,
+  );
+  let source_replay = tool_data(&source.handle_request(
+    r#"{"jsonrpc":"2.0","id":74,"method":"tools/call","params":{"name":"game_save_replay","arguments":{}}}"#,
+  ));
+  let load_request = format!(
+    r#"{{"jsonrpc":"2.0","id":75,"method":"tools/call","params":{{"name":"game_load_replay","arguments":{{"replay":{}}}}}}}"#,
+    source_replay.to_compact_string()
+  );
+
+  let mut target = ready_server();
+  let loaded = JsonValue::parse(&target.handle_request(&load_request)).unwrap();
+  assert_eq!(
+    loaded
+      .get("result")
+      .and_then(|result| result.get("data"))
+      .and_then(|data| data.get("status"))
+      .and_then(JsonValue::as_str),
+    Some("ReplayLoaded")
+  );
+  assert_eq!(
+    tool_data(&target.handle_request(
+      r#"{"jsonrpc":"2.0","id":76,"method":"tools/call","params":{"name":"game_get_observation","arguments":{}}}"#,
+    )),
+    tool_data(&source_observation)
+  );
+  assert_eq!(
+    tool_data(&target.handle_request(
+      r#"{"jsonrpc":"2.0","id":77,"method":"tools/call","params":{"name":"game_get_metrics","arguments":{}}}"#,
+    )),
+    tool_data(&source_metrics)
+  );
+  assert_eq!(
+    tool_data(&target.handle_request(
+      r#"{"jsonrpc":"2.0","id":78,"method":"tools/call","params":{"name":"game_save_replay","arguments":{}}}"#,
+    )),
+    source_replay
+  );
+
+  let appended = JsonValue::parse(&target.handle_request(
+    r#"{"jsonrpc":"2.0","id":79,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"wait"}}}"#,
+  ))
+  .unwrap();
+  assert_eq!(
+    appended
+      .get("result")
+      .and_then(|result| result.get("isError"))
+      .and_then(JsonValue::as_bool),
+    Some(false)
+  );
+  let appended_replay = tool_data(&target.handle_request(
+    r#"{"jsonrpc":"2.0","id":80,"method":"tools/call","params":{"name":"game_save_replay","arguments":{}}}"#,
+  ));
+  assert_eq!(
+    appended_replay
+      .get("commands")
+      .and_then(JsonValue::as_array)
+      .map(Vec::len),
+    Some(2)
+  );
+  let verified = tool_data(&target.handle_request(
+    r#"{"jsonrpc":"2.0","id":81,"method":"tools/call","params":{"name":"game_verify_replay","arguments":{}}}"#,
+  ));
+  assert_eq!(
+    verified.get("deterministic").and_then(JsonValue::as_bool),
+    Some(true)
+  );
+
+  let reset = JsonValue::parse(&target.handle_request(
+    r#"{"jsonrpc":"2.0","id":82,"method":"tools/call","params":{"name":"game_reset","arguments":{}}}"#,
+  ))
+  .unwrap();
+  assert_eq!(
+    reset
+      .get("result")
+      .and_then(|result| result.get("data"))
+      .and_then(|data| data.get("status"))
+      .and_then(JsonValue::as_str),
+    Some("SessionReset")
+  );
+  assert_eq!(
+    tool_data(&target.handle_request(
+      r#"{"jsonrpc":"2.0","id":83,"method":"tools/call","params":{"name":"game_save_replay","arguments":{}}}"#,
+    )),
+    source_replay
+  );
+}
+
+#[test]
+fn test_jsonrpc_load_replay_custom_terminal_and_transactional_failure() {
+  let mut source = ready_server();
+  let load_scenario = format!(
+    r#"{{"jsonrpc":"2.0","id":90,"method":"tools/call","params":{{"name":"game_load_scenario","arguments":{{"ascii_map":{}}}}}}}"#,
+    JsonValue::from("#####\n#@>.#\n#####").to_compact_string()
+  );
+  let _ = source.handle_request(&load_scenario);
+  let _ = source.handle_request(
+    r#"{"jsonrpc":"2.0","id":91,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"move","direction":"East"}}}"#,
+  );
+  let _ = source.handle_request(
+    r#"{"jsonrpc":"2.0","id":92,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"descend"}}}"#,
+  );
+  let replay = tool_data(&source.handle_request(
+    r#"{"jsonrpc":"2.0","id":93,"method":"tools/call","params":{"name":"game_save_replay","arguments":{}}}"#,
+  ));
+  let request = format!(
+    r#"{{"jsonrpc":"2.0","id":94,"method":"tools/call","params":{{"name":"game_load_replay","arguments":{{"replay":{}}}}}}}"#,
+    replay.to_compact_string()
+  );
+  let mut target = ready_server();
+  let loaded = JsonValue::parse(&target.handle_request(&request)).unwrap();
+  assert_eq!(
+    loaded
+      .get("result")
+      .and_then(|result| result.get("data"))
+      .and_then(|data| data.get("legal_actions"))
+      .and_then(JsonValue::as_array)
+      .map(Vec::len),
+    Some(0)
+  );
+  let rejected = JsonValue::parse(&target.handle_request(
+    r#"{"jsonrpc":"2.0","id":95,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"wait"}}}"#,
+  ))
+  .unwrap();
+  assert_tool_error(&rejected, error_codes::INVALID_ACTION);
+  let replay_before = target.handle_request(
+    r#"{"jsonrpc":"2.0","id":96,"method":"tools/call","params":{"name":"game_save_replay","arguments":{}}}"#,
+  );
+  let reset = JsonValue::parse(&target.handle_request(
+    r#"{"jsonrpc":"2.0","id":97,"method":"tools/call","params":{"name":"game_reset","arguments":{}}}"#,
+  ))
+  .unwrap();
+  assert_eq!(
+    reset
+      .get("result")
+      .and_then(|result| result.get("data"))
+      .and_then(|data| data.get("legal_actions"))
+      .and_then(JsonValue::as_array)
+      .map(Vec::len),
+    Some(0)
+  );
+  assert_eq!(
+    replay_before,
+    target.handle_request(
+      r#"{"jsonrpc":"2.0","id":96,"method":"tools/call","params":{"name":"game_save_replay","arguments":{}}}"#,
+    )
+  );
+
+  let mut active = ready_server();
+  let _ = active.handle_request(
+    r#"{"jsonrpc":"2.0","id":98,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":98,"width":20,"height":10}}}"#,
+  );
+  let observation_before = active.handle_request(
+    r#"{"jsonrpc":"2.0","id":99,"method":"tools/call","params":{"name":"game_get_observation","arguments":{}}}"#,
+  );
+  let metrics_before = active.handle_request(
+    r#"{"jsonrpc":"2.0","id":100,"method":"tools/call","params":{"name":"game_get_metrics","arguments":{}}}"#,
+  );
+  let replay_before = active.handle_request(
+    r#"{"jsonrpc":"2.0","id":101,"method":"tools/call","params":{"name":"game_save_replay","arguments":{}}}"#,
+  );
+  let mut invalid = tool_data(&replay_before);
+  invalid
+    .as_object_mut()
+    .and_then(|object| object.get_mut("commands"))
+    .and_then(JsonValue::as_array_mut)
+    .unwrap()
+    .push(JsonValue::parse(r#"{"action":"descend"}"#).unwrap());
+  let invalid_request = format!(
+    r#"{{"jsonrpc":"2.0","id":102,"method":"tools/call","params":{{"name":"game_load_replay","arguments":{{"replay":{}}}}}}}"#,
+    invalid.to_compact_string()
+  );
+  let invalid_response = JsonValue::parse(&active.handle_request(&invalid_request)).unwrap();
+  assert_tool_error(&invalid_response, error_codes::INVALID_ACTION);
+  assert_eq!(
+    observation_before,
+    active.handle_request(
+      r#"{"jsonrpc":"2.0","id":99,"method":"tools/call","params":{"name":"game_get_observation","arguments":{}}}"#,
+    )
+  );
+  assert_eq!(
+    metrics_before,
+    active.handle_request(
+      r#"{"jsonrpc":"2.0","id":100,"method":"tools/call","params":{"name":"game_get_metrics","arguments":{}}}"#,
+    )
+  );
+  assert_eq!(
+    replay_before,
+    active.handle_request(
+      r#"{"jsonrpc":"2.0","id":101,"method":"tools/call","params":{"name":"game_save_replay","arguments":{}}}"#,
+    )
+  );
+
+  for arguments in ["{}", r#"{"replay":null}"#, r#"{"replay":[]}"#] {
+    let request = format!(
+      r#"{{"jsonrpc":"2.0","id":103,"method":"tools/call","params":{{"name":"game_load_replay","arguments":{arguments}}}}}"#
+    );
+    let response = JsonValue::parse(&active.handle_request(&request)).unwrap();
+    assert_eq!(
+      response
+        .get("error")
+        .and_then(|error| error.get("code"))
+        .and_then(JsonValue::as_i64),
+      Some(error_codes::INVALID_PARAMS as i64)
+    );
+  }
 }
 
 #[test]
