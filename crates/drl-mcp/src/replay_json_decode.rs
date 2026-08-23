@@ -272,6 +272,8 @@ fn item_kind(value: &JsonValue, context: &str) -> Result<ItemSpawnKind, String> 
   match kind {
     "pistol" => Ok(ItemSpawnKind::Pistol),
     "shotgun" => Ok(ItemSpawnKind::Shotgun),
+    "double_shotgun" => Ok(ItemSpawnKind::DoubleShotgun),
+    "combat_shotgun" => Ok(ItemSpawnKind::CombatShotgun),
     "chaingun" => Ok(ItemSpawnKind::Chaingun),
     "rocket_launcher" => Ok(ItemSpawnKind::RocketLauncher),
     "plasma_rifle" => Ok(ItemSpawnKind::PlasmaRifle),

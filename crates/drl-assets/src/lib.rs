@@ -426,6 +426,18 @@ pub const fn item_sprite(archetype: ItemArchetype) -> SpriteDescriptor {
       layers: ITEM_LAYERS,
       animation: STATIC_ANIMATION,
     },
+    ItemArchetype::CombatShotgun => SpriteDescriptor {
+      atlas: AtlasId::GunsAndPickups,
+      rect: legacy_slot(6),
+      layers: ITEM_LAYERS,
+      animation: STATIC_ANIMATION,
+    },
+    ItemArchetype::DoubleShotgun => SpriteDescriptor {
+      atlas: AtlasId::GunsAndPickups,
+      rect: legacy_slot(7),
+      layers: ITEM_LAYERS,
+      animation: STATIC_ANIMATION,
+    },
     ItemArchetype::Chaingun => SpriteDescriptor {
       atlas: AtlasId::GunsAndPickups,
       rect: legacy_slot(8),
@@ -604,6 +616,8 @@ mod tests {
       ItemArchetype::Unknown,
       ItemArchetype::Pistol,
       ItemArchetype::Shotgun,
+      ItemArchetype::DoubleShotgun,
+      ItemArchetype::CombatShotgun,
       ItemArchetype::Chaingun,
       ItemArchetype::RocketLauncher,
       ItemArchetype::PlasmaRifle,
@@ -669,6 +683,16 @@ mod tests {
       (ItemArchetype::Chainsaw, AtlasId::GunsAndPickups, (64, 0)),
       (ItemArchetype::Pistol, AtlasId::GunsAndPickups, (96, 0)),
       (ItemArchetype::Shotgun, AtlasId::GunsAndPickups, (128, 0)),
+      (
+        ItemArchetype::CombatShotgun,
+        AtlasId::GunsAndPickups,
+        (160, 0),
+      ),
+      (
+        ItemArchetype::DoubleShotgun,
+        AtlasId::GunsAndPickups,
+        (192, 0),
+      ),
       (ItemArchetype::Chaingun, AtlasId::GunsAndPickups, (224, 0)),
       (
         ItemArchetype::RocketLauncher,
@@ -818,6 +842,8 @@ mod tests {
       ItemArchetype::CombatKnife,
       ItemArchetype::Pistol,
       ItemArchetype::Shotgun,
+      ItemArchetype::DoubleShotgun,
+      ItemArchetype::CombatShotgun,
       ItemArchetype::Chaingun,
       ItemArchetype::RocketLauncher,
       ItemArchetype::PlasmaRifle,

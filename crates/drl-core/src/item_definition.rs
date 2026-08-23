@@ -97,6 +97,40 @@ const SHOTGUN: ItemDefinition = ItemDefinition {
   },
 };
 
+const DOUBLE_SHOTGUN: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::DoubleShotgun,
+  name: "Double Shotgun",
+  description: "Double barreled shotgun -- the perfect weapon for a desperado.",
+  kind: ItemDefinitionKind::Weapon {
+    is_ranged: true,
+    ammo_type: Some(AmmoType::Shells),
+    clip_capacity: 2,
+    damage: (9, 27),
+    range: 8,
+    accuracy: 65,
+    knockback: 1,
+    fire_cost: ActionCost::RANGED_ATTACK,
+    reload_cost: ActionCost::STANDARD,
+  },
+};
+
+const COMBAT_SHOTGUN: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::CombatShotgun,
+  name: "Combat Shotgun",
+  description: "Nothing beats the sound of pumping a combat shotgun.",
+  kind: ItemDefinitionKind::Weapon {
+    is_ranged: true,
+    ammo_type: Some(AmmoType::Shells),
+    clip_capacity: 5,
+    damage: (7, 21),
+    range: 15,
+    accuracy: 65,
+    knockback: 1,
+    fire_cost: ActionCost::RANGED_ATTACK,
+    reload_cost: ActionCost::STANDARD,
+  },
+};
+
 const CHAINGUN: ItemDefinition = ItemDefinition {
   archetype: ItemArchetype::Chaingun,
   name: "Chaingun",
@@ -347,6 +381,8 @@ pub const fn definition_for_spawn_kind(kind: ItemSpawnKind) -> &'static ItemDefi
   match kind {
     ItemSpawnKind::Pistol => &PISTOL,
     ItemSpawnKind::Shotgun => &SHOTGUN,
+    ItemSpawnKind::DoubleShotgun => &DOUBLE_SHOTGUN,
+    ItemSpawnKind::CombatShotgun => &COMBAT_SHOTGUN,
     ItemSpawnKind::Chaingun => &CHAINGUN,
     ItemSpawnKind::PlasmaRifle => &PLASMA_RIFLE,
     ItemSpawnKind::RocketLauncher => &ROCKET_LAUNCHER,
@@ -379,6 +415,16 @@ mod tests {
     let cases = [
       (ItemSpawnKind::Pistol, ItemArchetype::Pistol, "Pistol"),
       (ItemSpawnKind::Shotgun, ItemArchetype::Shotgun, "Shotgun"),
+      (
+        ItemSpawnKind::DoubleShotgun,
+        ItemArchetype::DoubleShotgun,
+        "Double Shotgun",
+      ),
+      (
+        ItemSpawnKind::CombatShotgun,
+        ItemArchetype::CombatShotgun,
+        "Combat Shotgun",
+      ),
       (ItemSpawnKind::Chaingun, ItemArchetype::Chaingun, "Chaingun"),
       (
         ItemSpawnKind::PlasmaRifle,
@@ -510,6 +556,35 @@ mod tests {
         knockback: 1,
         fire_cost: ActionCost::RANGED_ATTACK,
         reload_cost: ActionCost::new(1200),
+      }
+    );
+
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::DoubleShotgun).kind,
+      ItemDefinitionKind::Weapon {
+        is_ranged: true,
+        ammo_type: Some(AmmoType::Shells),
+        clip_capacity: 2,
+        damage: (9, 27),
+        range: 8,
+        accuracy: 65,
+        knockback: 1,
+        fire_cost: ActionCost::RANGED_ATTACK,
+        reload_cost: ActionCost::STANDARD,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::CombatShotgun).kind,
+      ItemDefinitionKind::Weapon {
+        is_ranged: true,
+        ammo_type: Some(AmmoType::Shells),
+        clip_capacity: 5,
+        damage: (7, 21),
+        range: 15,
+        accuracy: 65,
+        knockback: 1,
+        fire_cost: ActionCost::RANGED_ATTACK,
+        reload_cost: ActionCost::STANDARD,
       }
     );
 

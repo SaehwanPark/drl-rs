@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.76`
+Current project version: `0.2.77`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -28,7 +28,8 @@ criteria, and verification boundaries.
 ### 2.1 Scope & Objective
 
 Migrate the pinned legacy `rocket`, `cell`, `barmor`, `rarmor`, `smed`,
-`lmed`, `chainsaw`, `chaingun`, `bfg9000`, `plasma`, and `bazooka` records into
+`lmed`, `dshotgun`, `ashotgun`, `chainsaw`, `chaingun`, `bfg9000`, `plasma`, and
+`bazooka` records into
 typed immutable Rust definitions and replay-compatible spawn contracts.
 Preserve
 source-backed scalar fields, measured atlas slots, and verified armor
@@ -98,7 +99,12 @@ presentation tints without importing Lua callbacks or unverified combat rules.
   cell-ammo relation, 100-cell clip, `10d6` damage range, replay kind, and
   `SPRITE_BFG9000` slot. Exact-hit/shot-cost, radius/explosion, overcharge,
   callback, accuracy, and timing semantics remain explicit gaps.
-- [ ] **Full migration**: BFG/chainsaw/chaingun/rocket/plasma weapon behavior,
+- [x] **Shotgun variant boundary**: typed `DoubleShotgun` and `CombatShotgun`
+  preserve pinned descriptions, shell relation, clips (`2`/`5`), damage
+  ranges (`9d3`/`7d3`), ranges (`8`/`15`), replay kinds, and slots
+  `SPRITE_DSHOTGUN`/`SPRITE_CSHOTGUN`; callbacks, spread/falloff, exact timing,
+  and legacy knockback scale remain explicit gaps.
+- [ ] **Full migration**: shotgun/BFG/chainsaw/chaingun/rocket/plasma weapon behavior,
   dynamic callbacks,
   balance/fairness, and remaining legacy item families remain open.
 - [x] **Explicit non-goals**: no gameplay/core rule, observation schema,
@@ -146,6 +152,10 @@ presentation tints without importing Lua callbacks or unverified combat rules.
   `10d6` damage policy, `bfg9000` replay kind, and measured atlas geometry.
   Exact-hit/shot-cost, radius/explosion, callback, and timing semantics are
   not claimed as legacy parity.
+- `DoubleShotgun` and `CombatShotgun` are definition-backed shell-ammo weapons
+  preserving their pinned clips, damage/range policies, replay kinds, and
+  measured atlas geometry. Dual-shot/pump callbacks, spread/falloff, exact
+  timing, and legacy knockback scale are not claimed as parity.
 - **Ownership Boundary**: Rust typed definitions own runtime item semantics;
   pinned Lua evidence informs only the migrated scalar fields and provenance.
 
