@@ -9,6 +9,9 @@ documented in this file.
   order while omitting notification members and rejecting empty batches.
 - Kept full external-client compatibility and production deployment acceptance
   explicitly open.
+- Recorded a real desktop-Chromium offline-after-first-load acceptance run for
+  the generated service worker and WASM bundle; OS-level PWA installation,
+  other browsers, and audiovisual parity remain open.
 
 ## [0.2.40]
 

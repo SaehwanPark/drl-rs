@@ -56,8 +56,11 @@ replays, and regression testing.
     BrowserSession-to-WebGPU decal consumption without claiming full backend
     fidelity.
 - Staged work:
-  - Full audiovisual equivalence, broader content migration, offline PWA
-    acceptance, and support for other browsers remain roadmap work.
+  - Full audiovisual equivalence, broader content migration, OS-level PWA
+    installation, production deployment, and support for other browsers remain
+    roadmap work; local desktop-Chromium offline-after-first-load acceptance
+    is recorded in
+    [`docs/acceptance/browser-offline-2026-08-23.md`](docs/acceptance/browser-offline-2026-08-23.md).
   - Cohort projections reject impossible telemetry and never carry player
     observations; `drl-rust cohort` emits bounded deterministic,
     machine-readable single-policy reports or a three-policy matrix, while
@@ -76,12 +79,13 @@ replays, and regression testing.
     remains open.
   - Browser saves use a bounded V2 command-count token, accept the shipped V1
     token for transactional replay, and migrate successful V1 restores in place;
-    real offline lifecycle acceptance remains open.
+    the real offline lifecycle is verified on the supported local Chromium
+    target.
   - The service worker reads only the current generated release cache, so stale
     or unrelated Cache Storage namespaces cannot satisfy offline requests;
     registration bypasses browser HTTP caching for worker updates and reports
-    waiting updates without forcing takeover; real install/control/reload
-    acceptance remains open.
+    waiting updates without forcing takeover; install/control/reload acceptance
+    is verified on the supported local Chromium target.
   - Dynamic browser interaction semantics qualify generated inventory actions,
     keep status announcements in one live region, associate canvas help, and
     provide visible focus/recovery behavior; WCAG AA and screen-reader
@@ -92,7 +96,8 @@ replays, and regression testing.
   - Release builds emit a hashed static-bundle manifest with graphics rights
     metadata; optional detached manifest signing now has ephemeral-key hosted
     CI smoke coverage plus local release-tree/symlink/permission hygiene, while
-    production key custody and offline/cross-browser acceptance remain open.
+    production key custody, OS-level PWA installation, and cross-browser
+    acceptance remain open.
   - Placeholder M7 atlas rectangles are not a fidelity claim.
 
 ## Quick start

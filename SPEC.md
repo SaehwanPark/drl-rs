@@ -64,6 +64,17 @@ coverage only, not full MCP/client compatibility.
   - `handle_request` retains its existing direct-call response API.
   - No external client adapter or deployment policy is added.
 
+## 2.5 Browser Offline Lifecycle Acceptance (Evidence Baseline)
+
+- [x] A real desktop Chromium run installed the generated service worker,
+  reloaded from the current release cache with network requests disabled, and
+  started the cached WASM game successfully. The recorded environment and
+  boundary are in
+  [`docs/acceptance/browser-offline-2026-08-23.md`](docs/acceptance/browser-offline-2026-08-23.md).
+- [ ] OS-level PWA installation prompts, production HTTPS deployment, other
+  browsers/backends, WCAG/screen-reader behavior, audible output, and
+  capture-backed parity remain open.
+
 ---
 
 ## 3. Recent Delivered Slices
@@ -113,8 +124,8 @@ coverage only, not full MCP/client compatibility.
 
 - [x] Registration freshness and waiting-update status are implemented and
   covered by deterministic Node fixtures.
-- [ ] Real browser update activation, offline installation, and reload
-  acceptance remain open.
+- [x] Real browser offline installation and reload are covered by the later
+  evidence baseline; update activation remains open.
 
 ### M12 — Browser-Environment Diagnostics (`VERSION` 0.2.35)
 
@@ -123,8 +134,9 @@ coverage only, not full MCP/client compatibility.
   diagnostic panel before WASM initialization.
 - [x] Node tests cover both failure classes, supported startup, and stable
   recovery text.
-- [ ] Real browser support, offline installation, WCAG, and screen-reader
-  acceptance remain open.
+- [x] The supported desktop Chromium target and offline installation are
+  covered by the later evidence baseline; broader browser, WCAG, and
+  screen-reader acceptance remain open.
 
 ### M9 — Representative Content-Evidence Coverage (`VERSION` 0.2.34)
 
@@ -152,7 +164,8 @@ coverage only, not full MCP/client compatibility.
   stale/unrelated namespaces cannot satisfy offline requests.
 - [x] Node worker contracts cover current-cache hits and fail-closed stale
   isolation while preserving routing and activation behavior.
-- [ ] Real browser offline install/control/reload acceptance remains open.
+- [x] Real browser offline install/control/reload acceptance is recorded in
+  the later evidence baseline.
 
 ### M12 — Dynamic Interaction Accessibility Contract (`VERSION` 0.2.26)
 
@@ -176,7 +189,8 @@ coverage only, not full MCP/client compatibility.
 - [x] Added strict V2 command-count encoding and V1 decode compatibility.
 - [x] Migrated successful V1 restores in place while preserving fail-closed
   quarantine and transactional replay.
-- [ ] Real offline browser lifecycle acceptance remains open.
+- [x] Real offline browser lifecycle acceptance is recorded in the later
+  evidence baseline.
 
 ### M9 — Special-Level Identity Catalog (`VERSION` 0.2.23)
 
@@ -241,7 +255,8 @@ coverage only, not full MCP/client compatibility.
 - [x] Started service-worker registration independently of WebGPU startup.
 - [x] Added explicit unavailable/installing/ready/failure diagnostics.
 - [x] Added injected-capability tests and bootstrap ordering checks.
-- [ ] Real browser offline installation and reload acceptance remain open.
+- [x] Real browser offline installation and reload are recorded in the later
+  evidence baseline.
 
 ### M12 — Detached Release Signing (`VERSION` 0.2.14)
 
