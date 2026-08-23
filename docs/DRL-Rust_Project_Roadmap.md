@@ -102,8 +102,9 @@ verification item uses explicit status semantics:
 - **M12 Accessibility**: Static and native contracts cover generated names,
   escaping, live-channel boundaries, help association, focus styling, and
   diagnostic recovery; startup now classifies insecure contexts and missing
-  WebGPU before WASM initialization. Real assistive-technology and broad
-  browser acceptance remain open.
+  WebGPU before WASM initialization. Supported-Chromium runtime DOM evidence
+  now covers focus transfer, keyboard progression, and generated inventory
+  names; real assistive-technology and broad browser acceptance remain open.
 - **M12 Release Hardening**: Optional detached release-manifest signing has
   repository and hosted ephemeral-key CI smoke coverage plus local private-key
   path/permission hygiene; production key governance and trust-root policy
@@ -458,6 +459,9 @@ diagnostics.
   inventory actions, one live status channel, canvas help association,
   focus-visible styling, and diagnostic focus recovery.
 - [x] Local accessible browser-support and startup diagnostics panel.
+- [x] Supported-Chromium runtime DOM evidence covers canvas focus, live status,
+  keyboard turn progression, and item-qualified inventory names; see
+  [`docs/acceptance/browser-dynamic-dom-2026-08-23.md`](acceptance/browser-dynamic-dom-2026-08-23.md).
 - [x] Pure startup capability classification rejects insecure contexts and
   missing WebGPU with stable recovery guidance before WASM initialization.
 - [x] Optional detached cryptographic release signing and fail-closed manifest

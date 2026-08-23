@@ -13,6 +13,9 @@ documented in this file.
   evidence for the generated service worker and WASM bundle; Clear Save,
   OS-level PWA installation, other browsers, and audiovisual parity remain
   open.
+- Recorded supported-Chromium dynamic DOM evidence for canvas focus, live
+  status, keyboard turn progression, and item-qualified inventory actions;
+  WCAG and screen-reader acceptance remain open.
 
 ## [0.2.40]
 
