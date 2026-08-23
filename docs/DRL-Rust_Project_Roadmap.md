@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.18`
+Current project version: `0.2.19`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.18)
+## 3. Current Progress Summary (`VERSION` 0.2.19)
 
 ### Delivered Foundations
 
@@ -84,12 +84,12 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active Milestone Slice (M12)**: Optional detached release-manifest signing
-  now has repository and hosted ephemeral-key CI smoke coverage; key governance
-  and production trust-root policy remain open.
-- **M9 Typed Content Migration**: Pinned-source legacy Lua evidence conversion
-  for shallow being/item scalar records is delivered and verified; full typed
-  content migration remains open.
+- **Active Milestone Slice (M9)**: Pinned-source legacy Lua evidence conversion
+  now covers shallow being/item and terrain-cell scalar records; full typed
+  terrain/content migration remains open.
+- **M12 Release Hardening**: Optional detached release-manifest signing has
+  repository and hosted ephemeral-key CI smoke coverage; production key
+  governance and trust-root policy remain open.
 - **Open Audiovisual Parity (M8)**: Exact legacy outline/glow and lighting/LUT
   equations from reference captures, HUD typography, and replacement audio.
 - **Controlled Reference Captures (M3, M7, M8)**: Runtime captures are `NOT_RUN`
@@ -326,6 +326,8 @@ scripting.
 - [x] Rust-owned standard procedural level generation policy.
 - [x] Build-time conversion evidence tooling for pinned shallow `register_being`
   and `register_item` Lua records, with provenance and explicit migration gaps.
+- [x] Build-time conversion evidence for pinned shallow `register_cell` records,
+  including deterministic simple-string decoding and explicit migration gaps.
 - [ ] Full migration of legacy monsters, weapons, armor, mods, and consumable
   items.
 - [ ] Full migration of special levels, vaults, and dungeon branches.

@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.19]
+
+- Extended the build-time legacy content evidence converter to terrain-cell
+  records, including deterministic Lua byte/single-quoted string decoding.
+- Added pinned `cells.lua` coverage while retaining nested tables, callbacks,
+  and unsupported symbolic fields as explicit migration gaps.
+
 ## [0.2.18]
 
 - Added repository and hosted WASM CI coverage for detached release signing
