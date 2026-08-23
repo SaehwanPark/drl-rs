@@ -516,8 +516,9 @@ Final release readiness, documentation, and static distribution.
   `tools/call.arguments` rejects non-object values with `-32602` before stateful
   execution; full MCP schema compatibility remains open.
 - [x] `game_start` and `game_load_scenario` reject wrong-typed optional integer
-  arguments and dimensions outside the accepted 32-bit range with `-32602`
-  before session mutation; valid defaults remain unchanged.
+  arguments and values outside the accepted finite unsigned-integer ranges
+  (`u32` for dimensions) with `-32602` before session mutation; valid defaults
+  remain unchanged.
 - [ ] Complete deterministic headless/MCP agent tooling suite and external
   client compatibility.
 - [ ] Comprehensive public rights inventory and release documentation.

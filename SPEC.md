@@ -28,9 +28,10 @@ criteria, and verification boundaries.
 ### 2.1 Scope & Objective
 
 Validate optional integer arguments for the stateful `game_start` and
-`game_load_scenario` tools without changing valid gameplay. Present `seed`,
-`max_turns`, `width`, and `height` values must be non-negative integers; wrong
-types or values outside the accepted 32-bit dimension range return deterministic
+`game_load_scenario` tools without changing valid gameplay. Present `seed` and
+`max_turns` values must be finite, non-negative integers representable as `u64`;
+`width` and `height` must be finite, non-negative integers representable as
+`u32`. Wrong types or values outside those accepted ranges return deterministic
 `-32602` errors before session mutation. Preserve method-envelope, request-ID,
 notification, batch, initialize, and lifecycle contracts from predecessor
 slices.
@@ -58,8 +59,8 @@ slices.
 
 - [x] **Optional integer fields**: `game_start` validates `seed`, `max_turns`,
   `width`, and `height`; `game_load_scenario` validates `max_turns` when
-  present, returning `-32602` for wrong types or dimensions outside the
-  accepted 32-bit range.
+  present, returning `-32602` for wrong types or values outside the accepted
+  unsigned integer ranges.
 - [x] **State safety**: Malformed numeric arguments never start, reset, or
   mutate a game session; valid omitted fields retain existing defaults.
 - [x] **Predecessor contracts retained**: Method-envelope/request-ID

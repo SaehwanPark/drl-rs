@@ -6,9 +6,9 @@ documented in this file.
 ## [0.2.47]
 
 - Added typed validation for optional integer arguments on `game_start` and
-  `game_load_scenario`; wrong types and dimensions outside the accepted 32-bit
-  range return `-32602` before session mutation while omitted defaults remain
-  unchanged.
+  `game_load_scenario`; wrong types and values outside the accepted finite
+  unsigned-integer ranges return `-32602` before session mutation while omitted
+  defaults remain unchanged.
 - Preserved valid MCP tool/resource, request-ID, initialize, lifecycle,
   notification, and batch contracts; full MCP schema/client compatibility
   remains open.

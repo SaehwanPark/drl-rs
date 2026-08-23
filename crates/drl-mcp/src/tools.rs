@@ -292,7 +292,7 @@ fn wrap_mcp_tool_result(content_json: JsonValue) -> JsonValue {
 fn optional_u64_argument(arguments: &JsonValue, name: &str) -> Result<Option<u64>, JsonRpcError> {
   match arguments.get(name) {
     None => Ok(None),
-    Some(value) => value.as_u64().map(Some).ok_or_else(|| {
+    Some(value) => exact_u64(value).map(Some).ok_or_else(|| {
       JsonRpcError::new(
         error_codes::INVALID_PARAMS,
         format!("'{name}' argument must be a non-negative integer"),
@@ -304,8 +304,7 @@ fn optional_u64_argument(arguments: &JsonValue, name: &str) -> Result<Option<u64
 fn optional_u32_argument(arguments: &JsonValue, name: &str) -> Result<Option<u32>, JsonRpcError> {
   match arguments.get(name) {
     None => Ok(None),
-    Some(value) => value
-      .as_u64()
+    Some(value) => exact_u64(value)
       .and_then(|number| u32::try_from(number).ok())
       .map(Some)
       .ok_or_else(|| {
@@ -314,6 +313,20 @@ fn optional_u32_argument(arguments: &JsonValue, name: &str) -> Result<Option<u32
           format!("'{name}' argument must be a non-negative 32-bit integer"),
         )
       }),
+  }
+}
+
+fn exact_u64(value: &JsonValue) -> Option<u64> {
+  match value {
+    JsonValue::Number(number)
+      if number.is_finite()
+        && *number >= 0.0
+        && number.fract() == 0.0
+        && *number < 18_446_744_073_709_551_616.0 =>
+    {
+      Some(*number as u64)
+    }
+    _ => None,
   }
 }
 
