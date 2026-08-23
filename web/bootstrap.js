@@ -1,4 +1,5 @@
 import init, { boot, clear_save, dispatch_inventory, load, resize, restart as restart_game, save, set_muted, set_volume, unlock_audio } from "./pkg/drl_web.js";
+import { browserSupportDiagnostic } from "./browser-support.mjs";
 import { registerOfflineCache } from "./offline-cache.mjs";
 
 const status = document.querySelector("#game-status");
@@ -61,13 +62,19 @@ const offlineCacheReady = registerOfflineCache(navigator, writeDiagnostic);
 
 start.addEventListener("click", async () => {
   if (started) return;
-  if (!navigator.gpu) {
+  // Keep capability classification pure so unsupported environments cannot
+  // initialize WASM or accidentally submit a gameplay command.
+  const environmentDiagnostic = browserSupportDiagnostic({
+    secureContext: window.isSecureContext,
+    webgpu: Boolean(navigator.gpu),
+  });
+  if (environmentDiagnostic) {
     writeDiagnostic(
-      "WebGPU unavailable",
-      "This build requires the WebGPU browser API for graphics initialization.",
-      "Use a desktop Chromium browser with WebGPU enabled; other backends are not claimed."
+      environmentDiagnostic.title,
+      environmentDiagnostic.detail,
+      environmentDiagnostic.action,
     );
-    writeStatus("Browser graphics unavailable: WebGPU is not exposed.");
+    writeStatus(environmentDiagnostic.status);
     return;
   }
   try {

@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
-Last reviewed: 2026-08-22
-Current project version: `0.2.34`
+Last reviewed: 2026-08-23
+Current project version: `0.2.35`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.34)
+## 3. Current Progress Summary (`VERSION` 0.2.35)
 
 ### Delivered Foundations
 
@@ -97,8 +97,9 @@ verification item uses explicit status semantics:
   remain open.
 - **M12 Accessibility**: Static and native contracts cover generated names,
   escaping, live-channel boundaries, help association, focus styling, and
-  diagnostic recovery; real assistive-technology and broad browser acceptance
-  remain open.
+  diagnostic recovery; startup now classifies insecure contexts and missing
+  WebGPU before WASM initialization. Real assistive-technology and broad
+  browser acceptance remain open.
 - **M12 Release Hardening**: Optional detached release-manifest signing has
   repository and hosted ephemeral-key CI smoke coverage; production key
   governance and trust-root policy remain open.
@@ -442,6 +443,8 @@ diagnostics.
   inventory actions, one live status channel, canvas help association,
   focus-visible styling, and diagnostic focus recovery.
 - [x] Local accessible browser-support and startup diagnostics panel.
+- [x] Pure startup capability classification rejects insecure contexts and
+  missing WebGPU with stable recovery guidance before WASM initialization.
 - [x] Optional detached cryptographic release signing and fail-closed manifest
   verification using an externally supplied OpenSSL key.
 - [x] Repository and hosted CI smoke coverage signs with an ephemeral
@@ -451,7 +454,8 @@ diagnostics.
   policy.
 - [ ] Dynamic WCAG 2.1 AA and screen-reader accessibility acceptance.
 - [ ] Real-world browser offline installation acceptance tests.
-- [ ] Graceful fallback and diagnostics for untested browser environments.
+- [x] Graceful fallback and diagnostics for known unsupported startup
+  environments; untested browsers and backends remain unclaimed.
 
 ---
 

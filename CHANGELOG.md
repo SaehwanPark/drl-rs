@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.35]
+
+- Added a pure browser-environment classifier for insecure contexts and missing
+  WebGPU, with stable recovery guidance before WASM startup.
+- Added Node contract coverage for supported startup and both diagnostics;
+  untested browsers, backends, offline installation, and WCAG acceptance remain
+  open.
+- Included the classifier in generated web bundles and release-contract checks.
+
 ## [0.2.34]
 
 - Versioned the expanded exact-digest and complete-ID evidence crosswalk as

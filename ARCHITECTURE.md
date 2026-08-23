@@ -1,7 +1,7 @@
 # Architecture
 
-Last reviewed: 2026-08-22
-Current project version: `0.2.34`
+Last reviewed: 2026-08-23
+Current project version: `0.2.35`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -153,8 +153,10 @@ Presentation Boundary
     service worker caching, release manifest validation, digest sidecars,
     checkout-identity verification, and optional detached OpenSSL signature
     verification.
-  - Accessibility: Accessible DOM shell, keyboard/numpad navigation, and
-    diagnostics panel.
+  - Accessibility and Support: Accessible DOM shell, keyboard/numpad
+    navigation, focused diagnostics panel, and a pure browser-environment
+    classifier that rejects insecure contexts or missing WebGPU before WASM
+    startup.
 - **Dependencies**: Depends on `drl-protocol`, `drl-render`, `drl-assets`,
   `drl-audio`, and web-sys/wasm-bindgen.
 
