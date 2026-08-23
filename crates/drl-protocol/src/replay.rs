@@ -112,6 +112,7 @@ pub enum ItemSpawnKind {
   AmmoShells(u32),
   AmmoRockets(u32),
   AmmoCells(u32),
+  AmmoPackRockets,
   SmallMedPack,
   LargeMedPack,
   GreenArmor,

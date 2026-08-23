@@ -35,6 +35,14 @@ pub struct ConsumableProperties {
   pub heal_amount: u32,
 }
 
+/// Fixed payload for a prepared-slot ammunition pack.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AmmoPackProperties {
+  pub ammo_type: AmmoType,
+  pub amount: u32,
+  pub max_amount: u32,
+}
+
 /// Item classification and payload.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ItemKind {
@@ -48,6 +56,8 @@ pub enum ItemKind {
     count: u32,
     max_stack: u32,
   },
+  /// Prepared-slot ammunition pack; use behavior is intentionally deferred.
+  AmmoPack(AmmoPackProperties),
   /// Usable medical supply.
   MedPack(ConsumableProperties),
   /// Special consumable device (Phase Device).
@@ -125,6 +135,7 @@ impl Item {
       ItemKind::Weapon(_) => ItemCategory::Weapon,
       ItemKind::Armor(_) => ItemCategory::Armor,
       ItemKind::Ammo { .. } => ItemCategory::Ammo,
+      ItemKind::AmmoPack(_) => ItemCategory::AmmoPack,
       ItemKind::MedPack(_) => ItemCategory::MedPack,
       ItemKind::PhaseDevice => ItemCategory::PhaseDevice,
     }
@@ -146,6 +157,12 @@ impl Item {
   #[must_use]
   pub const fn is_ammo(&self) -> bool {
     matches!(&self.kind, ItemKind::Ammo { .. })
+  }
+
+  /// Returns true if this item is a prepared-slot ammunition pack.
+  #[must_use]
+  pub const fn is_ammo_pack(&self) -> bool {
+    matches!(&self.kind, ItemKind::AmmoPack(_))
   }
 
   /// Returns true if this item is consumable (MedPack or PhaseDevice).
@@ -214,11 +231,21 @@ impl Item {
     }
   }
 
+  /// Returns prepared-slot pack payload when this item is an ammo pack.
+  #[must_use]
+  pub const fn ammo_pack_properties(&self) -> Option<&AmmoPackProperties> {
+    match &self.kind {
+      ItemKind::AmmoPack(properties) => Some(properties),
+      _ => None,
+    }
+  }
+
   /// Returns the count / stack size.
   #[must_use]
   pub const fn count(&self) -> u32 {
     match &self.kind {
       ItemKind::Ammo { count, .. } => *count,
+      ItemKind::AmmoPack(properties) => properties.amount,
       _ => 1,
     }
   }
@@ -296,7 +323,9 @@ impl Item {
         },
       ),
       ItemKind::Armor(props) => (None, None, Some(props.protection), None, None),
-      ItemKind::Ammo { .. } | ItemKind::PhaseDevice => (None, None, None, None, None),
+      ItemKind::Ammo { .. } | ItemKind::AmmoPack(_) | ItemKind::PhaseDevice => {
+        (None, None, None, None, None)
+      }
       ItemKind::MedPack(props) => (None, None, None, Some(props.heal_amount), None),
     };
 
@@ -351,6 +380,12 @@ impl Item {
   #[must_use]
   pub fn ammo_shells(id: ItemId, count: u32) -> Self {
     Self::from_spawn_kind(id, ItemSpawnKind::AmmoShells(count))
+  }
+
+  /// Factory: rocket ammunition box for the prepared slot.
+  #[must_use]
+  pub fn ammo_pack_rockets(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::AmmoPackRockets)
   }
 
   /// Factory: rocket ammunition box.
@@ -432,6 +467,15 @@ impl Item {
         count,
         max_stack,
       },
+      ItemDefinitionKind::AmmoPack {
+        ammo_type,
+        amount,
+        max_amount,
+      } => ItemKind::AmmoPack(AmmoPackProperties {
+        ammo_type,
+        amount,
+        max_amount,
+      }),
       ItemDefinitionKind::MedPack { heal_amount } => {
         ItemKind::MedPack(ConsumableProperties { heal_amount })
       }
@@ -502,7 +546,20 @@ mod tests {
     assert_eq!(armor.equipment_slot(), Some(EquipmentSlot::Armor));
     assert_eq!(armor.to_view().armor_value, Some(5));
 
-    let device = Item::phase_device(ItemId::new(5));
+    let pack = Item::ammo_pack_rockets(ItemId::new(5));
+    assert!(pack.is_ammo_pack());
+    assert!(!pack.is_ammo());
+    assert_eq!(pack.category(), ItemCategory::AmmoPack);
+    assert_eq!(pack.count(), 25);
+    assert_eq!(
+      pack
+        .ammo_pack_properties()
+        .map(|props| (props.ammo_type, props.amount, props.max_amount)),
+      Some((AmmoType::Rocket, 25, 25))
+    );
+    assert_eq!(pack.ammo_type(), None);
+
+    let device = Item::phase_device(ItemId::new(6));
     assert!(device.is_consumable());
     assert!(device.is_phase_device());
     assert_eq!(device.category(), ItemCategory::PhaseDevice);
@@ -536,20 +593,24 @@ mod tests {
         Item::ammo_cells(ItemId::new(8), 20),
       ),
       (
+        ItemSpawnKind::AmmoPackRockets,
+        Item::ammo_pack_rockets(ItemId::new(9)),
+      ),
+      (
         ItemSpawnKind::SmallMedPack,
-        Item::small_medpack(ItemId::new(9)),
+        Item::small_medpack(ItemId::new(10)),
       ),
       (
         ItemSpawnKind::LargeMedPack,
-        Item::large_medpack(ItemId::new(10)),
+        Item::large_medpack(ItemId::new(11)),
       ),
       (
         ItemSpawnKind::GreenArmor,
-        Item::green_armor(ItemId::new(11)),
+        Item::green_armor(ItemId::new(12)),
       ),
       (
         ItemSpawnKind::PhaseDevice,
-        Item::phase_device(ItemId::new(12)),
+        Item::phase_device(ItemId::new(13)),
       ),
     ];
     for (kind, factory_item) in cases {
@@ -596,6 +657,7 @@ mod tests {
       ItemSpawnKind::AmmoShells(7),
       ItemSpawnKind::AmmoRockets(3),
       ItemSpawnKind::AmmoCells(20),
+      ItemSpawnKind::AmmoPackRockets,
       ItemSpawnKind::SmallMedPack,
       ItemSpawnKind::LargeMedPack,
       ItemSpawnKind::GreenArmor,

@@ -289,6 +289,7 @@ fn item_kind(value: &JsonValue, context: &str) -> Result<ItemSpawnKind, String> 
       required(object, "count")?,
       &format!("{context}.count"),
     )?)),
+    "ammo_pack_rockets" => Ok(ItemSpawnKind::AmmoPackRockets),
     "small_medpack" => Ok(ItemSpawnKind::SmallMedPack),
     "large_medpack" => Ok(ItemSpawnKind::LargeMedPack),
     "green_armor" => Ok(ItemSpawnKind::GreenArmor),

@@ -55,6 +55,8 @@ pub enum ItemCategory {
   Armor,
   /// Ammunition stack.
   Ammo,
+  /// Prepared-slot ammunition pack.
+  AmmoPack,
   /// Medical supply or consumable item.
   MedPack,
   /// Special consumable device (e.g. Phase Device).
@@ -76,6 +78,7 @@ pub enum ItemArchetype {
   AmmoShells,
   AmmoRockets,
   AmmoCells,
+  AmmoPackRockets,
   SmallMedPack,
   LargeMedPack,
   GreenArmor,
@@ -93,6 +96,7 @@ impl fmt::Display for ItemArchetype {
       Self::AmmoShells => "ammo_shells",
       Self::AmmoRockets => "ammo_rockets",
       Self::AmmoCells => "ammo_cells",
+      Self::AmmoPackRockets => "ammo_pack_rockets",
       Self::SmallMedPack => "small_medpack",
       Self::LargeMedPack => "large_medpack",
       Self::GreenArmor => "green_armor",
@@ -108,6 +112,7 @@ impl fmt::Display for ItemCategory {
       Self::Weapon => write!(f, "Weapon"),
       Self::Armor => write!(f, "Armor"),
       Self::Ammo => write!(f, "Ammo"),
+      Self::AmmoPack => write!(f, "AmmoPack"),
       Self::MedPack => write!(f, "MedPack"),
       Self::PhaseDevice => write!(f, "PhaseDevice"),
     }
@@ -153,6 +158,15 @@ mod tests {
   fn test_ammo_archetype_display() {
     assert_eq!(ItemArchetype::AmmoRockets.to_string(), "ammo_rockets");
     assert_eq!(ItemArchetype::AmmoCells.to_string(), "ammo_cells");
+    assert_eq!(
+      ItemArchetype::AmmoPackRockets.to_string(),
+      "ammo_pack_rockets"
+    );
+  }
+
+  #[test]
+  fn test_ammo_pack_category_display() {
+    assert_eq!(ItemCategory::AmmoPack.to_string(), "AmmoPack");
   }
 
   #[test]

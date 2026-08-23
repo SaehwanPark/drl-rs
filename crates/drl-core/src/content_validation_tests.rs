@@ -112,6 +112,30 @@ fn rejects_ammo_initial_amount_above_stack_limit() {
   );
 }
 
+#[test]
+fn rejects_ammo_pack_amount_above_capacity() {
+  let invalid = ItemDefinition {
+    kind: ItemDefinitionKind::AmmoPack {
+      ammo_type: drl_protocol::AmmoType::Rocket,
+      amount: 26,
+      max_amount: 25,
+    },
+    archetype: drl_protocol::ItemArchetype::AmmoPackRockets,
+    name: "test rocket box",
+    description: "test",
+  };
+  assert_eq!(
+    validate_item_definition(&invalid),
+    Err(ContentValidationError::InvalidRange {
+      table: "item",
+      key: "test rocket box",
+      field: "amount",
+      minimum: 26,
+      maximum: 25,
+    })
+  );
+}
+
 fn test_level() -> LevelDefinition {
   LevelDefinition {
     key: "test",

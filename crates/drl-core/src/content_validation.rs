@@ -79,6 +79,7 @@ pub fn validate_current_content() -> Result<(), ContentValidationError> {
     ItemSpawnKind::AmmoShells(0),
     ItemSpawnKind::AmmoRockets(0),
     ItemSpawnKind::AmmoCells(0),
+    ItemSpawnKind::AmmoPackRockets,
     ItemSpawnKind::SmallMedPack,
     ItemSpawnKind::LargeMedPack,
     ItemSpawnKind::GreenArmor,
@@ -173,6 +174,21 @@ fn validate_item_definition(definition: &ItemDefinition) -> Result<(), ContentVa
           field: "initial_amount",
           minimum: initial_amount,
           maximum: max_stack,
+        });
+      }
+    }
+    ItemDefinitionKind::AmmoPack {
+      amount, max_amount, ..
+    } => {
+      require_positive("item", key, "amount", amount)?;
+      require_positive("item", key, "max_amount", max_amount)?;
+      if amount > max_amount {
+        return Err(ContentValidationError::InvalidRange {
+          table: "item",
+          key,
+          field: "amount",
+          minimum: amount,
+          maximum: max_amount,
         });
       }
     }

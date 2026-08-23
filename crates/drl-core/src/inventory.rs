@@ -294,6 +294,18 @@ mod tests {
   }
 
   #[test]
+  fn test_ammo_pack_does_not_enter_loose_ammo_totals() {
+    let mut inv = Inventory::new(2);
+    inv
+      .add_item(Item::ammo_pack_rockets(ItemId::new(1)))
+      .unwrap();
+
+    assert_eq!(inv.len(), 1);
+    assert_eq!(inv.total_ammo(AmmoType::Rocket), 0);
+    assert!(!inv.has_ammo(AmmoType::Rocket, 1));
+  }
+
+  #[test]
   fn test_equipment_swap_and_unequip() {
     let mut eq = Equipment::new();
     assert!(eq.weapon().is_none());
