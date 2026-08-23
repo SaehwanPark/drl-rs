@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.46`
+Current project version: `0.2.47`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,16 +23,19 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M13 Method-Parameter Envelope Validation
+## 2. Active Implementation Slice: M13 Tool-Argument Type Validation
 
 ### 2.1 Scope & Objective
 
-Validate the MCP method-parameter envelopes that reach stateful discovery and
-resource operations without expanding lifecycle or client claims. Require
-object params for `tools/call` and `resources/read`, and require object
-`tools/call.arguments` when present. Malformed envelopes return deterministic
-`-32602` errors before execution. Preserve request-ID, notification, batch,
-initialize, and lifecycle contracts from predecessor slices.
+Validate optional integer arguments for the stateful `game_start` and
+`game_load_scenario` tools without changing valid gameplay. Present `seed` and
+`max_turns` values must be finite, non-negative integers in the JSON parser's
+exact safe-integer range (`0..=2^53`); `width` and `height` must be finite,
+non-negative integers in that range and representable as `u32`. Wrong types or
+values outside those accepted ranges return deterministic `-32602` errors
+before session mutation. Preserve method-envelope, request-ID,
+notification, batch, initialize, and lifecycle contracts from predecessor
+slices.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
@@ -55,33 +58,44 @@ initialize, and lifecycle contracts from predecessor slices.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Method params**: `tools/call` and `resources/read` require object
-  params; missing or non-object values return `-32602` before dispatch.
-- [x] **Tool arguments**: `tools/call.arguments`, when present, must be an
-  object; malformed arguments never start or mutate a game session.
-- [x] **Predecessor contracts retained**: Request-ID validation, initialize
-  envelope/version fallback, lifecycle gating, notification suppression, batch
-  ordering, and game-reset separation remain covered.
+- [x] **Optional integer fields**: `game_start` validates `seed`, `max_turns`,
+  `width`, and `height`; `game_load_scenario` validates `max_turns` when
+  present, returning `-32602` for wrong types or values outside the accepted
+  JSON-safe unsigned integer range (`0..=2^53`), with dimensions also bounded
+  by `u32`.
+- [x] **State safety**: Malformed numeric arguments never start, reset, or
+  mutate a game session; valid omitted fields retain existing defaults.
+- [x] **Predecessor contracts retained**: Method-envelope/request-ID
+  validation, initialize/version fallback, lifecycle gating, notification
+  suppression, batch ordering, and game-reset separation remain covered.
 - [x] **No expansion of claims**: Full initialize-schema validation, reconnect/
   resume, concurrency, HTTP, external clients, and production deployment
   remain open.
 
 ### 2.4 Pure Contract
 
-- **Input**: `tools/call` or `resources/read` requests with object params;
-  `tools/call` may include object `arguments`.
-- **Output**: Valid envelopes dispatch normally; malformed method params emit
-  `-32602` with no tool execution or game-state mutation.
+- **Input**: Object arguments for `game_start` or `game_load_scenario` with
+  optional integer fields.
+- **Output**: Valid numeric fields preserve current defaults and gameplay;
+  malformed or out-of-range fields emit `-32602` with no game-state mutation.
 - **Ownership Boundary**:
-  - `McpServer::handle_tools_call` and `handle_resources_read` own method-
-    parameter shape validation before session or resource dispatch.
-  - `JsonRpcRequest::parse` and `run_stdio` preserve request-ID, batch framing,
-    and notification suppression contracts.
+  - `drl-mcp::execute_tool` owns tool-specific numeric argument validation.
+  - `McpServer` owns method-envelope validation; `JsonRpcRequest::parse` and
+    `run_stdio` preserve request-ID, batch framing, and notification contracts.
   - Game reset remains a session operation and does not alter protocol phase.
 
 ---
 
 ## 3. Recent Delivered Slices
+
+### M13 — Tool-Argument Type Validation (`VERSION` 0.2.47)
+
+- [x] Optional integer fields for `game_start` and `game_load_scenario` reject
+  wrong types and dimensions outside the accepted 32-bit range with `-32602`
+  before state mutation.
+- [x] Valid defaults and predecessor method-envelope/request-ID/lifecycle
+  contracts remain deterministic; full MCP schema/client compatibility remains
+  open.
 
 ### M13 — Method-Parameter Envelope Validation (`VERSION` 0.2.46)
 

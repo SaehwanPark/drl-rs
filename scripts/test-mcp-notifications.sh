@@ -15,6 +15,10 @@ not-json
 {"jsonrpc":"2.0","id":null,"method":"ping"}
 {"jsonrpc":"2.0","id":{},"method":"ping"}
 {"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"game_start","arguments":[]}}
+{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":"7"}}}
+{"jsonrpc":"2.0","id":5,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":18446744073709551616}}}
+{"jsonrpc":"2.0","id":6,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":9007199254740993}}}
+{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":1.0000000000000001}}}
 EOF
 
 cargo run -q -p drl-app -- --mcp <"$temp_dir/requests.jsonl" >"$temp_dir/responses.jsonl"
@@ -24,8 +28,8 @@ import json
 import sys
 
 lines = [line for line in open(sys.argv[1], encoding="utf-8") if line.strip()]
-if len(lines) != 6:
-    raise SystemExit(f"expected 6 responses for 8 requests, found {len(lines)}")
+if len(lines) != 10:
+    raise SystemExit(f"expected 10 responses for 12 requests, found {len(lines)}")
 responses = [json.loads(line) for line in lines]
 if responses[0].get("id") != 1 or "result" not in responses[0]:
     raise SystemExit("initialize request did not return a response")
@@ -41,6 +45,14 @@ if responses[4].get("id") is not None or responses[4].get("error", {}).get("code
     raise SystemExit("non-scalar request id did not return invalid-request error")
 if responses[5].get("id") != 3 or responses[5].get("error", {}).get("code") != -32602:
     raise SystemExit("non-object tool arguments did not return invalid-params error")
+if responses[6].get("id") != 4 or responses[6].get("error", {}).get("code") != -32602:
+    raise SystemExit("wrong-typed game_start argument did not return invalid-params error")
+if responses[7].get("id") != 5 or responses[7].get("error", {}).get("code") != -32602:
+    raise SystemExit("out-of-range game_start argument did not return invalid-params error")
+if responses[8].get("id") != 6 or responses[8].get("error", {}).get("code") != -32602:
+    raise SystemExit("inexact game_start argument did not return invalid-params error")
+if responses[9].get("id") != 7 or responses[9].get("error", {}).get("code") != -32602:
+    raise SystemExit("non-integer game_start argument did not return invalid-params error")
 PY
 
 printf '%s\n' 'MCP notification transport contract: PASS (side effects, suppression, parse errors, null IDs)'

@@ -3,6 +3,16 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.47]
+
+- Added typed validation for optional integer arguments on `game_start` and
+  `game_load_scenario`; wrong types and values outside the accepted finite
+  JSON-safe integer range (`0..=2^53`, with `u32` dimensions) return `-32602`
+  before session mutation while omitted defaults remain unchanged.
+- Preserved valid MCP tool/resource, request-ID, initialize, lifecycle,
+  notification, and batch contracts; full MCP schema/client compatibility
+  remains open.
+
 ## [0.2.46]
 
 - Added bounded MCP method-parameter validation: `tools/call` and
