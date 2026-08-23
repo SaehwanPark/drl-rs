@@ -353,6 +353,7 @@ installation, update activation, or cross-browser support.
 
 ### Verified Baseline (`VERSION` 0.2.36)
 
+cf597d3 feat(web): report fresh service-worker updates (#127)
 47f3526 feat(web): classify unsupported browser environments (#126)
 d9d78ea feat(content): version evidence crosswalk schema (#125)
 a8cda3e feat(content): validate evidence record shape (#124)
