@@ -31,7 +31,7 @@ replays, and regression testing.
     shot accuracy, damage, kill, pickup, and item-use totals/rates without
     inferring balance conclusions.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.15`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.16`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:
@@ -54,7 +54,8 @@ replays, and regression testing.
   - Full audiovisual equivalence, broader content migration, offline PWA
     acceptance, and support for other browsers remain roadmap work.
   - Cohort projections reject impossible telemetry and never carry player
-    observations; large-scale balance interpretation remains open.
+    observations; `drl-rust cohort` now emits bounded deterministic,
+    machine-readable study reports, while balance interpretation remains open.
   - Release builds emit a hashed static-bundle manifest with graphics rights
     metadata; optional detached manifest signing and bootstrap-independent
     offline-cache registration are supported, while key custody and
@@ -68,7 +69,12 @@ replays, and regression testing.
 ```sh
 cargo run -p drl-app
 cargo run -p drl-app -- --mcp
+cargo run -p drl-app -- cohort --seed 12 --episodes 1000 --max-turns 200 --bot greedy
 ```
+
+The `cohort` command emits stable line-oriented outcome and telemetry fields
+for reproducible descriptive studies; it does not claim balance or statistical
+significance.
 
 ### Browser slice
 

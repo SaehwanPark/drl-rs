@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.16]
+
+- Added `drl-rust cohort`, a bounded deterministic procedural cohort-study CLI
+  with selectable greedy, random, and explorer policies.
+- Added stable line-oriented outcome and telemetry reports plus validation and
+  repeatability contract tests; reports remain descriptive and make no balance
+  or statistical-significance claims.
+
 ## [0.2.15]
 
 - Started service-worker registration during page bootstrap, independently of

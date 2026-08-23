@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -eu
+
+cd "$(dirname "$0")/.."
+
+first=$(cargo run -q -p drl-app -- cohort --seed 12 --episodes 2 --max-turns 20 --bot explorer)
+second=$(cargo run -q -p drl-app -- cohort --seed 12 --episodes 2 --max-turns 20 --bot explorer)
+test "$first" = "$second"
+printf '%s\n' "$first" | grep -F 'cohort.schema_version=1' >/dev/null
+printf '%s\n' "$first" | grep -F 'cohort.seed_end=13' >/dev/null
+printf '%s\n' "$first" | grep -F 'telemetry.total_damage_dealt=' >/dev/null
+
+printf '%s\n' 'Cohort study CLI contract: PASS (bounded deterministic report).'

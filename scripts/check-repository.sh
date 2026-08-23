@@ -29,6 +29,7 @@ fi
 git diff HEAD --check -- . ':(exclude)assets/legacy/drl/graphics/LICENSE'
 sh scripts/check-agent-harness.sh
 scripts/check-reference-capture.sh
+sh scripts/test-cohort-study.sh
 cargo fmt --all -- --check
 cargo clippy --locked --workspace --all-targets --all-features -- -D warnings
 cargo test --locked --workspace
