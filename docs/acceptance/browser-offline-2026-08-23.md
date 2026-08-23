@@ -6,7 +6,7 @@ Owner/role: `/root`, milestone owner
 Predecessor: `_workspace/drl/m10-offline/02-test-plan.md`
 Predecessor revision: `729f5c6` (generated web bundle baseline)
 Input revision: `56155fb` (transactional replay baseline)
-Output revision: `codex/m10-clear-save-acceptance` at `0.2.61` (working evidence)
+Output revision: `b9dba12` (`0.2.61` evidence revision)
 Overall status: `PARTIAL PASS` — offline navigation/startup and Save/Load pass;
 the Clear Save confirmation/cancel guard passes, while destructive confirmation
 remains `NOT_RUN`
