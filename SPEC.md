@@ -376,6 +376,7 @@ or content-parity claim.
 
 ### Verified Baseline (`VERSION` 0.2.39)
 
+1441667 feat(content): validate typed definition invariants (#130)
 fbd7eee feat(release): harden signing key inputs (#129)
 a127868 test(mcp): cover stdio lifecycle (#128)
 cf597d3 feat(web): report fresh service-worker updates (#127)
