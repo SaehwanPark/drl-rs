@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.37`
+Current project version: `0.2.38`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,53 +23,59 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M13 Stdio MCP Lifecycle
+## 2. Active Implementation Slice: M12 Signing-Key Boundary Hygiene
 
 ### 2.1 Scope & Objective
 
-Exercise the actual line-oriented `drl-app --mcp` transport with a fixed,
-deterministic JSON-RPC lifecycle. The contract covers initialization, tool and
-resource discovery, one game session, replay/metrics boundaries, reset and
-scenario loading, and the permission-denied dev-state path. It verifies the
-stdio boundary only; it does not claim full external-client compatibility,
-browser deployment, or production operations.
+Make the optional detached-release signing boundary reject unsafe private-key
+inputs before OpenSSL runs. Keys inside the generated `dist` tree, symlinks,
+and group/world-readable files are rejected; valid externally supplied keys
+continue to sign the manifest. This is local key-handling hygiene, not a
+production custody, rotation, or trust-root implementation.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
-1. **M6 MCP server (v0.2.1+)**:
-   - `drl-mcp` already implements deterministic JSON-RPC tools/resources and
-     in-process protocol, fairness, and replay tests.
-2. **Native runner boundary**:
-   - `drl-app --mcp` already exposes the stdio loop; this slice adds a fixed
-     subprocess contract over its real input/output lines.
+1. **Detached signing path (v0.2.14–v0.2.18)**:
+   - Release manifests can be signed with an externally supplied OpenSSL key,
+     and hosted CI exercises an ephemeral runner-local key.
+2. **Manifest verification boundary**:
+   - The verifier already checks detached signatures and keeps private keys
+     outside generated artifacts; this slice adds input hygiene before signing.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Fixed lifecycle**: A shell fixture sends initialize, ping, discovery,
-  game start/observation/actions/step, metrics, replay save, reset, scenario
-  load, and resource reads through the stdio process.
-- [x] **Fairness boundary**: The default dev-state request is denied and the
-  error remains part of the deterministic output.
-- [x] **Byte repeatability**: Running the same JSON-lines fixture twice produces
-  byte-identical output.
-- [x] **No expansion of claims**: Full M13 tooling, external MCP clients,
-  browser deployment, and production operations remain open.
+- [x] **Path boundary**: A signing key inside `dist` or a symlink is rejected
+  before any signature artifact is written.
+- [x] **Permission boundary**: Group/world-readable private keys are rejected;
+  owner-readable keys remain accepted.
+- [x] **Focused tests**: Release-signing fixtures cover valid signing and each
+  unsafe-key rejection without weakening mutation or detached verification.
+- [x] **No expansion of claims**: Production custody, secret provisioning,
+  rotation, trust roots, and hosted secret policy remain open.
 
 ### 2.4 Pure Contract
 
-- **Input**: A fixed JSON-lines JSON-RPC request sequence on stdin.
-- **Output**: Deterministic JSON-lines responses on stdout, including a
-  permission-denied dev-state response and no debug noise on the protocol
-  stream.
+- **Input**: An externally supplied private-key path and generated release
+  directory.
+- **Output**: Signing proceeds only for a regular, non-symlink, owner-readable
+  key outside the generated release tree.
 - **Ownership Boundary**:
-  - `crates/drl-app` owns process-level stdio transport.
-  - `crates/drl-mcp` owns JSON-RPC tool/resource semantics.
-  - `scripts/test-mcp-stdio.sh` owns the fixed subprocess fixture.
-  - No browser, release-signing, telemetry, or gameplay changes.
+  - `scripts/sign-release-manifest.sh` owns key-input validation and signing.
+  - `scripts/test-release-signing.sh` owns deterministic rejection fixtures.
+  - No simulation, browser, telemetry, or gameplay changes.
 
 ---
 
 ## 3. Recent Delivered Slices
+
+### M12 — Signing-Key Boundary Hygiene (`VERSION` 0.2.38)
+
+- [x] Signing rejects release-tree keys, symlinks, and group/world-readable
+  private keys before OpenSSL writes artifacts.
+- [x] Existing valid signing, detached verification, and mutation rejection
+  remain covered.
+- [ ] Production custody, provisioning, rotation, and trust-root governance
+  remain open.
 
 ### M13 — Stdio MCP Lifecycle (`VERSION` 0.2.37)
 
@@ -361,7 +367,7 @@ browser deployment, or production operations.
 
 ## 6. Verification Gates
 
-### Verified Baseline (`VERSION` 0.2.37)
+### Verified Baseline (`VERSION` 0.2.38)
 
 a127868 test(mcp): cover stdio lifecycle (#128)
 cf597d3 feat(web): report fresh service-worker updates (#127)

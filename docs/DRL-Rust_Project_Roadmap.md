@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.37`
+Current project version: `0.2.38`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.37)
+## 3. Current Progress Summary (`VERSION` 0.2.38)
 
 ### Delivered Foundations
 
@@ -104,8 +104,9 @@ verification item uses explicit status semantics:
   WebGPU before WASM initialization. Real assistive-technology and broad
   browser acceptance remain open.
 - **M12 Release Hardening**: Optional detached release-manifest signing has
-  repository and hosted ephemeral-key CI smoke coverage; production key
-  governance and trust-root policy remain open.
+  repository and hosted ephemeral-key CI smoke coverage plus local private-key
+  path/permission hygiene; production key governance and trust-root policy
+  remain open.
 - **Open Audiovisual Parity (M8)**: Exact legacy outline/glow and lighting/LUT
   equations from reference captures, HUD typography, and replacement audio.
 - **Controlled Reference Captures (M3, M7, M8)**: Runtime captures are `NOT_RUN`
@@ -456,6 +457,8 @@ diagnostics.
 - [x] Repository and hosted CI smoke coverage signs with an ephemeral
   runner-local key, verifies the manifest, and keeps the private key outside
   `dist`.
+- [x] Local signing rejects release-tree keys, symlinks, and group/world-
+  readable private-key permissions before OpenSSL runs.
 - [ ] Production key custody, secret provisioning, rotation, and trust-root
   policy.
 - [ ] Dynamic WCAG 2.1 AA and screen-reader accessibility acceptance.

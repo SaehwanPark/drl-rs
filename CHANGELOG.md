@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.38]
+
+- Hardened detached release signing to reject private keys inside `dist`,
+  symlinks, and group/world-readable permissions before OpenSSL runs.
+- Extended signing fixtures while keeping production custody, rotation, and
+  trust-root governance explicitly open.
+
 ## [0.2.37]
 
 - Added a deterministic subprocess contract for the real `drl-app --mcp`

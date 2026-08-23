@@ -33,7 +33,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.37`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.38`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:
@@ -87,8 +87,8 @@ replays, and regression testing.
     remain explicitly unclaimed.
   - Release builds emit a hashed static-bundle manifest with graphics rights
     metadata; optional detached manifest signing now has ephemeral-key hosted
-    CI smoke coverage, while key custody and offline/cross-browser acceptance
-    remain open.
+    CI smoke coverage plus local release-tree/symlink/permission hygiene, while
+    production key custody and offline/cross-browser acceptance remain open.
   - Placeholder M7 atlas rectangles are not a fidelity claim.
 
 ## Quick start
