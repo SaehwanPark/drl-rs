@@ -12,8 +12,8 @@ use drl_protocol::{
   MonsterSpawnSpec, PlayerObservation, Position, ReplayLog,
 };
 use drl_render::{
-  LightingBand, ParticleDecalSprite, ParticleDecalStorageError, ParticleDecalStore, PixelRect,
-  PresentationStep, RenderScene, effect_timeline_for_observations,
+  LightingBand, MinimapMarker, MinimapState, ParticleDecalSprite, ParticleDecalStorageError,
+  ParticleDecalStore, PixelRect, PresentationStep, RenderScene, effect_timeline_for_observations,
 };
 
 mod persistence;
@@ -52,6 +52,55 @@ fn inventory_markup(items: &[ItemView]) -> String {
     .expect("writing inventory markup to a String cannot fail");
   }
   controls
+}
+
+const MAX_MINIMAP_CELLS: u64 = 4096;
+
+/// Renders the fair minimap projection as a bounded, accessible text grid.
+#[cfg_attr(not(target_arch = "wasm32"), allow(dead_code))]
+fn minimap_markup(state: &MinimapState) -> String {
+  let cell_count = u64::from(state.map_width) * u64::from(state.map_height);
+  if state.map_width == 0 || state.map_height == 0 || cell_count > MAX_MINIMAP_CELLS {
+    return "Minimap unavailable.".to_string();
+  }
+
+  let width = state.map_width as usize;
+  let height = state.map_height as usize;
+  let mut glyphs = vec![' '; cell_count as usize];
+  for cell in &state.cells {
+    let Some(x) = usize::try_from(cell.position.x).ok() else {
+      continue;
+    };
+    let Some(y) = usize::try_from(cell.position.y).ok() else {
+      continue;
+    };
+    if x >= width || y >= height {
+      continue;
+    }
+    let glyph = match cell.marker {
+      Some(MinimapMarker::Player) => '@',
+      Some(MinimapMarker::VisibleActor) => 'a',
+      None => match cell.tile_kind {
+        drl_protocol::TileKind::Floor => '.',
+        drl_protocol::TileKind::Wall => '#',
+        drl_protocol::TileKind::DoorClosed => '+',
+        drl_protocol::TileKind::DoorOpen => '/',
+        drl_protocol::TileKind::StairsDown => '>',
+      },
+    };
+    glyphs[y * width + x] = glyph;
+  }
+
+  let mut markup = String::with_capacity((width + 1) * height);
+  for row in glyphs.chunks(width) {
+    if !markup.is_empty() {
+      markup.push('\n');
+    }
+    for glyph in row {
+      markup.push(*glyph);
+    }
+  }
+  markup
 }
 
 /// Returns the six UV coordinates for a top-left-origin textured quad.
@@ -1356,6 +1405,10 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
       };
       targets.set_text_content(Some(&value));
     }
+    if let Some(minimap) = document.get_element_by_id("minimap") {
+      let state = MinimapState::from_observation(observation);
+      minimap.set_text_content(Some(&minimap_markup(&state)));
+    }
     if let Some(inventory) = document.get_element_by_id("inventory") {
       inventory.set_inner_html(&inventory_markup(&observation.inventory));
     }
@@ -1961,7 +2014,7 @@ pub use wasm::{
 #[cfg(test)]
 mod tests {
   use super::*;
-  use drl_protocol::{ItemArchetype, ItemCategory};
+  use drl_protocol::{ItemArchetype, ItemCategory, Position, TileKind};
 
   fn test_item(name: &str) -> ItemView {
     ItemView {
@@ -1989,6 +2042,55 @@ mod tests {
     assert!(markup.contains("aria-label=\"Use Pistol &lt;&amp;&quot;&#39;\""));
     assert!(markup.contains("aria-label=\"Drop Pistol &lt;&amp;&quot;&#39;\""));
     assert!(!markup.contains("Pistol <&\"'"));
+  }
+
+  #[test]
+  fn minimap_markup_renders_only_projected_cells_and_markers() {
+    let markup = minimap_markup(&MinimapState {
+      map_width: 4,
+      map_height: 2,
+      cells: vec![
+        drl_render::MinimapCell {
+          position: Position::new(0, 0),
+          tile_kind: TileKind::Wall,
+          is_visible: true,
+          marker: None,
+        },
+        drl_render::MinimapCell {
+          position: Position::new(1, 0),
+          tile_kind: TileKind::Floor,
+          is_visible: true,
+          marker: Some(MinimapMarker::Player),
+        },
+        drl_render::MinimapCell {
+          position: Position::new(2, 0),
+          tile_kind: TileKind::Floor,
+          is_visible: true,
+          marker: Some(MinimapMarker::VisibleActor),
+        },
+        drl_render::MinimapCell {
+          position: Position::new(3, 1),
+          tile_kind: TileKind::StairsDown,
+          is_visible: false,
+          marker: None,
+        },
+      ],
+    });
+
+    assert_eq!(markup, "#@a \n   >");
+    assert!(!markup.contains("?"));
+  }
+
+  #[test]
+  fn minimap_markup_bounds_dom_work_for_malformed_dimensions() {
+    assert_eq!(
+      minimap_markup(&MinimapState {
+        map_width: 65,
+        map_height: 65,
+        cells: Vec::new(),
+      }),
+      "Minimap unavailable."
+    );
   }
 
   #[test]

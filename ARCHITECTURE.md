@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.62`
+Current project version: `0.2.63`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -146,6 +146,8 @@ Presentation Boundary
 - **Role**: WASM `cdylib` / `rlib` browser host, WebGPU renderer, and PWA shell.
 - **Key Responsibilities**:
   - Browser session management (`BrowserSession`) and DOM/keyboard mapping.
+  - Accessible semantic minimap text grid fed by the fair `MinimapState`
+    projection; it is bounded and never queries hidden world state.
   - WebGPU pipeline: texture cache, linear `Rgba8Unorm` storage, nearest base
     sampling, emissive lighting floor, `0.1` alpha cutoff, colorization tints,
     and outline-mask straight-alpha compositing.
