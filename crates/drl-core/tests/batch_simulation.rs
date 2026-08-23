@@ -7,7 +7,9 @@ use drl_core::batch::{
 };
 use drl_core::generator::LevelGeneratorConfig;
 use drl_core::scenario::Scenario;
-use drl_protocol::{BatchSummary, DeathCause, EpisodeMetrics, Position, ReplayLog, RunOutcome};
+use drl_protocol::{
+  BatchSummary, DeathCause, EpisodeMetrics, LevelId, Position, ReplayLog, RunOutcome,
+};
 
 #[test]
 fn test_procedural_batch_runner_greedy_combat_bot() {
@@ -456,6 +458,83 @@ fn cohort_telemetry_distribution_requires_integrity_and_handles_empty_samples() 
   assert_eq!(telemetry.total_damage_dealt, 0);
   assert_eq!(telemetry.shot_accuracy_rate(), 0.0);
   assert_eq!(telemetry.average_damage_dealt(), 0.0);
+}
+
+#[test]
+fn cohort_depth_distribution_sorts_buckets_and_normalizes_rates() {
+  let mut report = synthetic_outcome_report(&[
+    RunOutcome::Victory,
+    RunOutcome::Victory,
+    RunOutcome::TurnLimitReached,
+    RunOutcome::Death {
+      cause: DeathCause::Environment,
+    },
+  ]);
+  for (record, level) in
+    report
+      .records
+      .iter_mut()
+      .zip([LevelId(1), LevelId(3), LevelId(3), LevelId(5)])
+  {
+    record.metrics.level_reached = level;
+  }
+  report.summary = BatchSummary::from_episodes(
+    &report
+      .records
+      .iter()
+      .map(|record| record.metrics.clone())
+      .collect::<Vec<_>>(),
+  );
+
+  let distribution = report.depth_distribution().unwrap();
+  assert_eq!(distribution.total_episodes, 4);
+  assert_eq!(
+    distribution.buckets,
+    vec![
+      drl_core::batch::CohortDepthBucket {
+        level: LevelId(1),
+        episodes: 1,
+      },
+      drl_core::batch::CohortDepthBucket {
+        level: LevelId(3),
+        episodes: 2,
+      },
+      drl_core::batch::CohortDepthBucket {
+        level: LevelId(5),
+        episodes: 1,
+      },
+    ]
+  );
+  assert_eq!(distribution.rate_at_deepest_level(LevelId(1)), 0.25);
+  assert_eq!(distribution.rate_at_deepest_level(LevelId(3)), 0.5);
+  assert_eq!(distribution.rate_at_deepest_level(LevelId(5)), 0.25);
+  assert_eq!(distribution.rate_at_deepest_level(LevelId(4)), 0.0);
+}
+
+#[test]
+fn cohort_depth_distribution_requires_integrity_and_handles_empty_samples() {
+  let mut invalid = synthetic_outcome_report(&[RunOutcome::Victory]);
+  invalid.records.pop();
+  assert!(matches!(
+    invalid.depth_distribution(),
+    Err(CohortReportError::RecordCount { .. })
+  ));
+
+  let mut invalid_level = synthetic_outcome_report(&[RunOutcome::Victory]);
+  invalid_level.records[0].metrics.level_reached = LevelId(0);
+  assert_eq!(
+    invalid_level.depth_distribution(),
+    Err(CohortReportError::TelemetryInvariant {
+      index: 0,
+      field: "level_reached >= 1",
+    })
+  );
+
+  let empty = synthetic_outcome_report(&[]);
+  let distribution = empty.depth_distribution().unwrap();
+  assert_eq!(distribution.total_episodes, 0);
+  assert!(distribution.buckets.is_empty());
+  assert_eq!(distribution.rate_at_deepest_level(LevelId(1)), 0.0);
 }
 
 fn telemetry_report(

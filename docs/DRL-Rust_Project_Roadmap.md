@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.24`
+Current project version: `0.2.25`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.24)
+## 3. Current Progress Summary (`VERSION` 0.2.25)
 
 ### Delivered Foundations
 
@@ -84,13 +84,14 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active Milestone Slice (M10)**: Browser saves now migrate the shipped V1
-  token to a strict V2 command-count format after successful replay; real
-  offline lifecycle acceptance remains open.
+- **Active Milestone Slice (M11)**: Validated cohort reports now expose sorted
+  deepest-level buckets and descriptive sample rates; canonical difficulty
+  targets remain open.
 - **M9 Content Evidence**: Base, expansion, user-item, being, and terrain-cell
   evidence slices are delivered without runtime Lua or gameplay overclaims.
 - **M11 Evaluation**: Deterministic cohort reports support a three-policy
-  matrix; canonical difficulty targets remain open.
+  matrix plus descriptive depth distributions; canonical difficulty targets
+  remain open.
 - **M12 Release Hardening**: Optional detached release-manifest signing has
   repository and hosted ephemeral-key CI smoke coverage; production key
   governance and trust-root policy remain open.
@@ -389,6 +390,8 @@ balance.
   explorer policies.
 - [x] Deterministic `drl-rust cohort --bot all` matrix output runs the declared
   greedy, random, and explorer policies over shared cohort configuration.
+- [x] Descriptive depth distribution projects validated `level_reached` metrics
+  into ascending buckets with stable per-depth sample rates.
 - [ ] Difficulty curve validation against canonical target metrics.
 - [x] Strict isolation between player observations and evaluation telemetry is
   enforced by the observation-free `EpisodeRecord` boundary.

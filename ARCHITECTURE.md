@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.24`
+Current project version: `0.2.25`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -278,6 +278,9 @@ Presentation Boundary
 - **Descriptive Telemetry**: Cohort outcome distributions and telemetry
   comparisons report exact win/loss rates, accuracy, damage, and kills with
   caller-owned tolerances.
+- **Descriptive Depth**: `CohortDepthDistribution` validates reports before
+  grouping `level_reached` into ascending buckets and sample rates; it carries
+  no canonical difficulty or balance interpretation.
 
 ### 4.8 Persistence & Release Packaging
 - **Session Snapshots**: `drl-web::persistence` encodes complete command

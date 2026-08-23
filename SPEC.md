@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.24`
+Current project version: `0.2.25`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,53 +23,61 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M10 Replay-Compatible Save Migration
+## 2. Active Implementation Slice: M11 Descriptive Cohort Depth Distribution
 
 ### 2.1 Scope & Objective
 
-Add a bounded V1-to-V2 migration for the existing fixed-session browser save
-token. V1 remains the only legacy format accepted; new saves include a strict
-decimal command count in V2. A successfully replayed V1 token is rewritten in
-the existing localStorage slot only after replay succeeds.
+Project validated `EpisodeMetrics.level_reached` into deterministic, ascending
+depth buckets and stable CLI fields. The slice is descriptive only: it does
+not define canonical difficulty targets, balance thresholds, or significance
+claims.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
-1. **Versioned browser persistence (v0.2.12–v0.2.23)**:
-   - Fixed-session snapshots, transactional replay, corruption quarantine, and
-     localStorage recovery are already delivered.
-2. **Build-time boundary (ADR 0008)**:
-   - Legacy files remain pinned research inputs; the browser ships no Lua VM or
-     legacy object model, and unknown behavior remains an explicit gap.
+1. **Validated cohort reports (v0.2.13–v0.2.24)**:
+   - Fixed-seed reports retain episode metrics and replay evidence behind
+     integrity validation, including `level_reached >= 1`.
+2. **Evaluation boundary**:
+   - Existing outcome/telemetry projections are descriptive and observation
+     free; no canonical difficulty target values are present in the repository.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **V2 encoding**: Emit `DRL-RUST-BROWSER-SAVE/2:fixed-m4-v1:<count>:<payload>`
-  with bounded, deterministic command serialization.
-- [x] **V1 compatibility**: Accept only the shipped V1 token and preserve its
-  transactional replay semantics.
-- [x] **Strict validation**: Reject non-numeric counts, count/payload mismatch,
-  unsupported versions/content, malformed commands, and oversized tokens.
-- [x] **Post-replay migration**: Rewrite a successfully restored V1 token in
-  the existing storage key; leave the playable session intact if rewriting
-  fails and return a retry warning.
-- [ ] **Full offline-after-first-load acceptance**: Validate migration in real
-  installed browser lifecycles.
+- [x] **Validated grouping**: Project each record's deepest observed level only
+  after the report integrity gate succeeds.
+- [x] **Stable ordering**: Group with an ordered map and emit ascending
+  `LevelId` buckets with exact episode counts.
+- [x] **Normalized rates**: Expose per-bucket sample rates with an explicit
+  zero result for empty cohorts or absent levels.
+- [x] **CLI projection**: Emit stable `depth.total` and
+  `depth.deepest_level.<id>.episodes/rate` fields for single and matrix runs.
+- [x] **Boundary discipline**: Keep player observations, game policies, and
+  canonical balance interpretation outside this projection.
+- [ ] **Canonical difficulty curve validation**: Validate against externally
+  approved target metrics when those targets are supplied.
 
 ### 2.4 Pure Contract
 
-- **Input**: A V1 or V2 fixed-session token at the browser persistence boundary.
-- **Output**: V2 tokens for all new saves; V1 tokens are accepted only for
-  replay and are migrated after successful restore.
+- **Input**: An integrity-checked `CohortReport` retaining per-episode
+  `level_reached` metrics.
+- **Output**: `CohortDepthDistribution` buckets and deterministic CLI lines.
 - **Ownership Boundary**:
-  - `drl-web::persistence` owns token parsing, bounds, and format markers.
-  - `BrowserSession` owns transactional replay; storage migration is a WASM
-    shell concern.
-  - The browser bundle receives no Lua source, interpreter, or legacy object
-    model.
+  - `drl-core::batch` owns validation, ordered grouping, and rate projection.
+  - `drl-app::cohort_cli` owns line-oriented formatting and matrix prefixes.
+  - No game loop, policy, save format, or player-observation boundary changes.
 
 ---
 
 ## 3. Recent Delivered Slices
+
+### M11 — Descriptive Cohort Depth Distribution (`VERSION` 0.2.25)
+
+- [x] Added validated, sorted deepest-level buckets and sample rates to cohort
+  reports and single-policy/matrix CLI output.
+- [x] Added empty-cohort, invalid-evidence, deterministic-order, and stable
+  formatting coverage.
+- [ ] Canonical difficulty targets and externally approved progression metrics
+  remain open.
 
 ### M10 — Replay-Compatible Save Migration (`VERSION` 0.2.24)
 
@@ -290,8 +298,9 @@ the existing localStorage slot only after replay succeeds.
 
 ## 6. Verification Gates
 
-### Verified Baseline (`VERSION` 0.2.24)
+### Verified Baseline (`VERSION` 0.2.25)
 
+cae3b09 feat(web): migrate browser saves to v2 (#115)
 d7e5602 feat(content): add special-level metadata catalog (#114)
 1fd09d5 feat(content): add pinned special-level evidence index (#113)
 d1a8903 feat(content): bundle legacy item family evidence (#112)
