@@ -6,107 +6,12 @@ use crate::session::{
   McpSession, compute_legal_actions, episode_metrics_to_json, json_to_command,
   omniscient_observation_to_json, player_observation_to_json,
 };
+use crate::tools_schema::{
+  empty_object_schema, game_load_scenario_schema, game_start_schema, game_step_action_schema,
+};
 use drl_core::ReplayEngine;
 use drl_protocol::ReplayLog;
 use std::collections::BTreeMap;
-
-const JSON_SAFE_INTEGER_MAX: f64 = 9_007_199_254_740_992.0;
-const U32_MAX: f64 = 4_294_967_295.0;
-const I32_MIN: f64 = -2_147_483_648.0;
-const I32_MAX: f64 = 2_147_483_647.0;
-
-const ACTION_ALIASES: &[&str] = &[
-  "move",
-  "wait",
-  "attack_melee",
-  "melee",
-  "attack_ranged",
-  "fire",
-  "shoot",
-  "reload",
-  "pickup",
-  "use",
-  "equip",
-  "unequip",
-  "drop",
-  "descend",
-];
-const DIRECTION_ALIASES: &[&str] = &[
-  "north",
-  "n",
-  "up",
-  "k",
-  "south",
-  "s",
-  "down",
-  "j",
-  "east",
-  "e",
-  "right",
-  "l",
-  "west",
-  "w",
-  "left",
-  "h",
-  "northeast",
-  "ne",
-  "u",
-  "northwest",
-  "nw",
-  "y",
-  "southeast",
-  "se",
-  "n_key",
-  "b",
-  "southwest",
-  "sw",
-  "m",
-  "none",
-  "wait",
-  ".",
-];
-const SLOT_ALIASES: &[&str] = &["weapon", "armor", "Weapon", "Armor"];
-
-#[derive(Debug, Clone, Copy)]
-struct SchemaField {
-  name: &'static str,
-  type_name: &'static str,
-  description: &'static str,
-  required: bool,
-  enum_values: Option<&'static [&'static str]>,
-  minimum: Option<f64>,
-  maximum: Option<f64>,
-}
-
-impl SchemaField {
-  const fn new(
-    name: &'static str,
-    type_name: &'static str,
-    description: &'static str,
-    required: bool,
-  ) -> Self {
-    Self {
-      name,
-      type_name,
-      description,
-      required,
-      enum_values: None,
-      minimum: None,
-      maximum: None,
-    }
-  }
-
-  const fn with_enum(mut self, values: &'static [&'static str]) -> Self {
-    self.enum_values = Some(values);
-    self
-  }
-
-  const fn with_range(mut self, minimum: f64, maximum: f64) -> Self {
-    self.minimum = Some(minimum);
-    self.maximum = Some(maximum);
-    self
-  }
-}
 
 /// Returns the complete registry of MCP tools exposed by DRL-Rust.
 #[must_use]
@@ -115,124 +20,52 @@ pub fn get_all_tool_definitions() -> Vec<ToolDefinition> {
     ToolDefinition {
       name: "game_start".to_string(),
       description: "Start a new seeded procedural dungeon game session.".to_string(),
-      input_schema: create_object_schema_with_fields(&[
-        SchemaField::new("seed", "integer", "RNG seed for procedural generation", false)
-          .with_range(0.0, JSON_SAFE_INTEGER_MAX),
-        SchemaField::new(
-          "max_turns",
-          "integer",
-          "Maximum turn limit before episode cutoff",
-          false,
-        )
-        .with_range(0.0, JSON_SAFE_INTEGER_MAX),
-        SchemaField::new("width", "integer", "Map width in tiles (default: 40)", false)
-          .with_range(0.0, U32_MAX),
-        SchemaField::new("height", "integer", "Map height in tiles (default: 20)", false)
-          .with_range(0.0, U32_MAX),
-      ]),
+      input_schema: game_start_schema(),
     },
     ToolDefinition {
       name: "game_load_scenario".to_string(),
       description: "Load an approved ASCII scenario fixture into the game session.".to_string(),
-      input_schema: create_object_schema_with_fields(&[
-        SchemaField::new(
-          "ascii_map",
-          "string",
-          "ASCII representation of the dungeon map and actors",
-          true,
-        ),
-        SchemaField::new(
-          "max_turns",
-          "integer",
-          "Maximum turn limit before episode cutoff",
-          false,
-        )
-        .with_range(0.0, JSON_SAFE_INTEGER_MAX),
-      ]),
+      input_schema: game_load_scenario_schema(),
     },
     ToolDefinition {
       name: "game_get_observation".to_string(),
       description: "Retrieve the latest player-visible observation (grid, visible actors, inventory, equipment).".to_string(),
-      input_schema: create_object_schema_with_fields(&[]),
+      input_schema: empty_object_schema(),
     },
     ToolDefinition {
       name: "game_list_actions".to_string(),
       description: "List all currently legal semantic player actions available in this turn.".to_string(),
-      input_schema: create_object_schema_with_fields(&[]),
+      input_schema: empty_object_schema(),
     },
     ToolDefinition {
       name: "game_step_action".to_string(),
       description: "Execute a semantic player action (move, wait, fire, reload, pickup, use, equip, unequip, drop, descend).".to_string(),
-      input_schema: create_object_schema_with_fields(&[
-        SchemaField::new(
-          "action",
-          "string",
-          "Canonical action category spelling; runtime also accepts case variants",
-          true,
-        )
-        .with_enum(ACTION_ALIASES),
-        SchemaField::new(
-          "command",
-          "string",
-          "Runtime compatibility alias for action; canonical schemas require action",
-          false,
-        )
-        .with_enum(ACTION_ALIASES),
-        SchemaField::new(
-          "direction",
-          "string",
-          "Cardinal/diagonal direction alias for move or attack_melee",
-          false,
-        )
-        .with_enum(DIRECTION_ALIASES),
-        SchemaField::new("target_x", "integer", "Target X coordinate (for fire)", false)
-          .with_range(I32_MIN, I32_MAX),
-        SchemaField::new("target_y", "integer", "Target Y coordinate (for fire)", false)
-          .with_range(I32_MIN, I32_MAX),
-        SchemaField::new("x", "integer", "Runtime alias for target_x", false)
-          .with_range(I32_MIN, I32_MAX),
-        SchemaField::new("y", "integer", "Runtime alias for target_y", false)
-          .with_range(I32_MIN, I32_MAX),
-        SchemaField::new(
-          "item_id",
-          "integer",
-          "Item entity ID (for use, equip, drop)",
-          false,
-        )
-        .with_range(0.0, JSON_SAFE_INTEGER_MAX),
-        SchemaField::new(
-          "slot",
-          "string",
-          "Equipment slot name (for unequip; accepted by equip for compatibility)",
-          false,
-        )
-        .with_enum(SLOT_ALIASES),
-      ]),
+      input_schema: game_step_action_schema(),
     },
     ToolDefinition {
       name: "game_reset".to_string(),
       description: "Reset the current game session back to its initial state.".to_string(),
-      input_schema: create_object_schema_with_fields(&[]),
+      input_schema: empty_object_schema(),
     },
     ToolDefinition {
       name: "game_get_metrics".to_string(),
       description: "Retrieve cumulative episode metrics (damage dealt/taken, kills, turns survived, outcome).".to_string(),
-      input_schema: create_object_schema_with_fields(&[]),
+      input_schema: empty_object_schema(),
     },
     ToolDefinition {
       name: "game_save_replay".to_string(),
       description: "Export the current session's deterministic replay log as JSON.".to_string(),
-      input_schema: create_object_schema_with_fields(&[]),
+      input_schema: empty_object_schema(),
     },
     ToolDefinition {
       name: "game_verify_replay".to_string(),
       description: "Verify the current session's replay is deterministic without changing game state.".to_string(),
-      input_schema: create_object_schema_with_fields(&[]),
+      input_schema: empty_object_schema(),
     },
     ToolDefinition {
       name: "game_get_dev_state".to_string(),
       description: "Developer-only omniscient world state inspection. Fails if dev_mode is not enabled.".to_string(),
-      input_schema: create_object_schema_with_fields(&[]),
+      input_schema: empty_object_schema(),
     },
   ]
 }
@@ -531,46 +364,6 @@ fn replay_to_json_value(replay: &ReplayLog) -> JsonValue {
     cmds.push(JsonValue::from(format!("{c:?}")));
   }
   map.insert("commands".to_string(), JsonValue::Array(cmds));
-
-  JsonValue::Object(map)
-}
-
-fn create_object_schema_with_fields(fields: &[SchemaField]) -> JsonValue {
-  let mut map = BTreeMap::new();
-  map.insert("type".to_string(), JsonValue::from("object"));
-
-  let mut props = BTreeMap::new();
-  let mut required = Vec::new();
-
-  for field in fields {
-    let mut field_map = BTreeMap::new();
-    field_map.insert("type".to_string(), JsonValue::from(field.type_name));
-    field_map.insert(
-      "description".to_string(),
-      JsonValue::from(field.description),
-    );
-    if let Some(values) = field.enum_values {
-      field_map.insert(
-        "enum".to_string(),
-        JsonValue::Array(values.iter().map(|value| JsonValue::from(*value)).collect()),
-      );
-    }
-    if let Some(minimum) = field.minimum {
-      field_map.insert("minimum".to_string(), JsonValue::from(minimum));
-    }
-    if let Some(maximum) = field.maximum {
-      field_map.insert("maximum".to_string(), JsonValue::from(maximum));
-    }
-    props.insert(field.name.to_string(), JsonValue::Object(field_map));
-    if field.required {
-      required.push(JsonValue::from(field.name));
-    }
-  }
-
-  map.insert("properties".to_string(), JsonValue::Object(props));
-  if !required.is_empty() {
-    map.insert("required".to_string(), JsonValue::Array(required));
-  }
 
   JsonValue::Object(map)
 }

@@ -8,6 +8,7 @@ pub mod resources;
 pub mod server;
 pub mod session;
 pub mod tools;
+mod tools_schema;
 
 pub use json::JsonValue;
 pub use protocol::{

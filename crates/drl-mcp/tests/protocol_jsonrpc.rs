@@ -212,16 +212,113 @@ fn test_jsonrpc_tools_list_publishes_truthful_input_schemas() {
   );
 
   let step = schema_for("game_step_action");
-  let required = step
-    .get("required")
+  let discriminator = step
+    .get("anyOf")
     .and_then(JsonValue::as_array)
-    .expect("game_step_action required fields");
-  assert!(
-    required
-      .iter()
-      .any(|value| value.as_str() == Some("action"))
-  );
+    .expect("action-or-command discriminator");
+  assert_eq!(discriminator.len(), 2);
+  for (branch, field) in discriminator.iter().zip(["action", "command"]) {
+    assert_eq!(
+      branch
+        .get("required")
+        .and_then(JsonValue::as_array)
+        .map(|required| required.iter().any(|value| value.as_str() == Some(field))),
+      Some(true)
+    );
+  }
   assert!(step.get("additionalProperties").is_none());
+  let conditions = step
+    .get("allOf")
+    .and_then(JsonValue::as_array)
+    .expect("action-specific conditions");
+  assert_eq!(conditions.len(), 5);
+  let then_required = |condition: &JsonValue| {
+    condition
+      .get("then")
+      .and_then(|then_schema| then_schema.get("required"))
+      .and_then(JsonValue::as_array)
+      .map(|required| {
+        required
+          .iter()
+          .filter_map(JsonValue::as_str)
+          .map(str::to_string)
+          .collect::<Vec<_>>()
+      })
+      .unwrap_or_default()
+  };
+  assert_eq!(then_required(&conditions[0]), vec!["direction".to_string()]);
+  assert_eq!(then_required(&conditions[2]), vec!["item_id".to_string()]);
+  assert_eq!(then_required(&conditions[3]), vec!["slot".to_string()]);
+  assert!(then_required(&conditions[4]).is_empty());
+  assert_eq!(
+    conditions[0]
+      .get("if")
+      .and_then(|schema| schema.get("anyOf"))
+      .and_then(JsonValue::as_array)
+      .and_then(|branches| branches.get(1))
+      .and_then(|branch| branch.get("not"))
+      .and_then(|schema| schema.get("required"))
+      .and_then(JsonValue::as_array)
+      .and_then(|required| required.first())
+      .and_then(JsonValue::as_str),
+    Some("action"),
+    "command conditions must defer to a present action"
+  );
+  let ranged_alternatives = conditions[1]
+    .get("then")
+    .and_then(|then_schema| then_schema.get("anyOf"))
+    .and_then(JsonValue::as_array)
+    .expect("ranged coordinate alternatives");
+  assert_eq!(ranged_alternatives.len(), 4);
+  assert_eq!(
+    then_required(&conditions[1]),
+    Vec::<String>::new(),
+    "ranged branch uses anyOf rather than a flat required set"
+  );
+  assert_eq!(
+    ranged_alternatives[0]
+      .get("required")
+      .and_then(JsonValue::as_array)
+      .map(|required| required
+        .iter()
+        .filter_map(JsonValue::as_str)
+        .map(str::to_string)
+        .collect::<Vec<_>>()),
+    Some(vec!["target_x".to_string(), "target_y".to_string()])
+  );
+  assert_eq!(
+    ranged_alternatives[1]
+      .get("required")
+      .and_then(JsonValue::as_array)
+      .map(|required| required
+        .iter()
+        .filter_map(JsonValue::as_str)
+        .map(str::to_string)
+        .collect::<Vec<_>>()),
+    Some(vec!["target_x".to_string(), "y".to_string()])
+  );
+  assert_eq!(
+    ranged_alternatives[2]
+      .get("required")
+      .and_then(JsonValue::as_array)
+      .map(|required| required
+        .iter()
+        .filter_map(JsonValue::as_str)
+        .map(str::to_string)
+        .collect::<Vec<_>>()),
+    Some(vec!["x".to_string(), "target_y".to_string()])
+  );
+  assert_eq!(
+    ranged_alternatives[3]
+      .get("required")
+      .and_then(JsonValue::as_array)
+      .map(|required| required
+        .iter()
+        .filter_map(JsonValue::as_str)
+        .map(str::to_string)
+        .collect::<Vec<_>>()),
+    Some(vec!["x".to_string(), "y".to_string()])
+  );
   let step_props = step.get("properties").expect("game_step_action properties");
   let action_enum = step_props
     .get("action")
