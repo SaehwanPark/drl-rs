@@ -392,6 +392,7 @@ coverage only, not full MCP/client compatibility.
 
 ### Verified Baseline (`VERSION` 0.2.41)
 
+9c0eccf feat(mcp): support deterministic stdio batches (#132)
 eeb246d feat(mcp): handle stdio notifications correctly (#131)
 1441667 feat(content): validate typed definition invariants (#130)
 fbd7eee feat(release): harden signing key inputs (#129)
