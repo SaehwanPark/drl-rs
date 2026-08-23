@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.88`
+Current project version: `0.2.89`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -65,6 +65,22 @@ blocked by the exit gates in Section 2.7.
 
 ### 2.3 Transactional Command Contract
 
+#### Current bounded delivery target: ranged-attack rejection atomicity
+
+**Delivered in `0.2.89` on `fix/atomic-ranged-command`:** This delivery closes
+the ranged portion of Gate A without broadening the active slice into RNG,
+replay semantics, or content registration. Ranged-command
+validation must complete before consuming ammunition or simulation randomness;
+any reachable rejection leaves the complete `Game` value byte-for-byte
+equivalent under `PartialEq`. A reusable test helper and focused out-of-range
+and line-of-sight rejection scenarios provide the executable evidence. Other
+command families remain audited follow-up work until their own rejection paths
+have equivalent coverage.
+
+Verification for this bounded target passed with `cargo test -p drl-core`, the
+full workspace checks in Section 3, and the repository consistency script. Browser,
+legacy-runtime, and replay-wire behavior are unchanged and out of scope.
+
 For every `Game::step(command)` invocation:
 
 - if the result is `Ok(events)`, all state changes must correspond to the
@@ -85,10 +101,11 @@ State identity on rejection includes, at minimum:
 
 #### Acceptance criteria
 
-- [ ] Add a reusable invariant test helper asserting `Err => before == after`.
+- [x] Add a reusable invariant test helper asserting `Err => before == after`
+  for the bounded ranged-command slice.
 - [ ] Cover all current command classes with at least one rejected-command
   scenario where rejection is reachable without malformed construction.
-- [ ] Fix ranged attacks so target geometry/range/legality is validated before
+- [x] Fix ranged attacks so target geometry/range/legality is validated before
   ammunition, RNG, or other mutable state is consumed.
 - [ ] Fix equip/use/drop/reload and other multi-step commands so expected
   validation failures cannot lose or partially mutate items.

@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.89]
+
+- Made ranged-command validation transactional: out-of-range and blocked-line
+  rejections no longer consume pistol ammunition or RNG state. Added a reusable
+  exact-`Game` equality helper and focused rejection tests; other command
+  families remain active Gate A follow-up work.
+
 ## [0.2.88]
 
 - Added typed `MedicalPowerarmor`, `LavaArmor`, and `ShieldedArmor` families

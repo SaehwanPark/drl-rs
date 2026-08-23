@@ -746,39 +746,57 @@ impl Game {
 
     let distance = p_pos.distance_chebyshev(target_pos);
 
-    let (outcome, is_lethal, damage, fire_cost) = {
+    // Prepare the full validation boundary before consuming ammo or RNG.
+    let fire_cost = {
       let player = self
         .state
         .world
-        .get_actor_mut(player_id)
+        .get_actor(player_id)
         .ok_or(CommandError::EntityNotFound(player_id))?;
-
       let weapon = player
-        .equipment_mut()
-        .weapon_mut()
+        .equipment()
+        .weapon()
         .ok_or(CommandError::NoEquippedWeapon)?;
-
       let props = weapon
-        .weapon_properties_mut()
+        .weapon_properties()
         .ok_or(CommandError::NoEquippedWeapon)?;
 
       if !props.is_ranged {
         return Err(CommandError::NoEquippedWeapon);
       }
-
       if props.current_clip == 0 {
         return Err(CommandError::NoAmmoInClip);
       }
-
-      // Deduct 1 ammo round
-      props.current_clip -= 1;
-      let fire_cost = props.fire_cost;
-
-      let player_imm = self.state.world.get_actor(player_id).unwrap();
-      if distance > player_imm.ranged_range() {
+      if distance > props.range {
         return Err(CommandError::TargetOutOfRange(target_pos));
       }
 
+      props.fire_cost
+    };
+
+    // Commit the prepared shot only after every fallible validation succeeds.
+    {
+      let player = self
+        .state
+        .world
+        .get_actor_mut(player_id)
+        .ok_or(CommandError::EntityNotFound(player_id))?;
+      let weapon = player
+        .equipment_mut()
+        .weapon_mut()
+        .ok_or(CommandError::NoEquippedWeapon)?;
+      let props = weapon
+        .weapon_properties_mut()
+        .ok_or(CommandError::NoEquippedWeapon)?;
+      props.current_clip -= 1;
+    }
+
+    let (outcome, is_lethal, damage) = {
+      let player = self
+        .state
+        .world
+        .get_actor(player_id)
+        .ok_or(CommandError::EntityNotFound(player_id))?;
       let target_monster = self
         .state
         .world
@@ -786,7 +804,7 @@ impl Game {
         .ok_or(CommandError::EntityNotFound(target_monster_id))?;
 
       let outcome = CombatResolver::resolve_ranged_attack(
-        player_imm,
+        player,
         target_monster,
         distance,
         &mut self.state.rng,
@@ -795,7 +813,7 @@ impl Game {
         AttackOutcome::Hit { damage, is_lethal } => (is_lethal, damage),
         _ => (false, 0),
       };
-      (outcome, is_lethal, damage, fire_cost)
+      (outcome, is_lethal, damage)
     };
 
     events.push(GameEvent::AttackResolved {

@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.88`
+Current project version: `0.2.89`
 
 ---
 
@@ -52,13 +52,17 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.88)
+## 3. Current Progress Summary (`VERSION` 0.2.89)
 
 ### Delivered Foundations
 
 - **Core Simulation (M0–M2, M4)**: Pure deterministic grid maps, PRNG, turn
   economy, melee/ranged combat, armor mitigation, kinetic knockback, FOV/fog,
   inventory/equipment, tactical monster AI, and procedural level generation.
+- **M1/M2 Correctness Slice (`0.2.89`)**: Ranged-command target legality and
+  range are prepared before ammo/RNG mutation; out-of-range and blocked-line
+  rejections are covered by exact `Game` equality tests. Other command-family
+  rejection paths remain active Gate A follow-up work.
 - **Tooling & Replays (M5, M6)**: Versioned replay engine (`V1`), declarative
   ASCII scenario runners, scripted bots, batch sweep runners, and a pure Rust
   zero-dependency MCP server.
