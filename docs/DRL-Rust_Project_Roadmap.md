@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.20`
+Current project version: `0.2.21`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.20)
+## 3. Current Progress Summary (`VERSION` 0.2.21)
 
 ### Delivered Foundations
 
@@ -84,11 +84,11 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active Milestone Slice (M11)**: Deterministic cohort reports now support a
-  three-policy matrix; canonical difficulty targets remain open.
-- **M9 Typed Content Migration**: Pinned-source legacy Lua evidence conversion
-  covers shallow being/item and terrain-cell scalar records; full typed
-  terrain/content migration remains open.
+- **Active Milestone Slice (M9)**: Pinned-source legacy Lua evidence conversion
+  now bundles base, expansion, and user-item families with per-source
+  provenance; full typed item migration remains open.
+- **M11 Evaluation**: Deterministic cohort reports support a three-policy
+  matrix; canonical difficulty targets remain open.
 - **M12 Release Hardening**: Optional detached release-manifest signing has
   repository and hosted ephemeral-key CI smoke coverage; production key
   governance and trust-root policy remain open.
@@ -330,6 +330,8 @@ scripting.
   and `register_item` Lua records, with provenance and explicit migration gaps.
 - [x] Build-time conversion evidence for pinned shallow `register_cell` records,
   including deterministic simple-string decoding and explicit migration gaps.
+- [x] Multi-source build-time evidence bundle for base, expansion, and user-item
+  records with per-source provenance, sorted merge, and duplicate rejection.
 - [ ] Full migration of legacy monsters, weapons, armor, mods, and consumable
   items.
 - [ ] Full migration of special levels, vaults, and dungeon branches.
