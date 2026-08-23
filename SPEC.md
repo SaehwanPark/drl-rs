@@ -334,6 +334,7 @@ does not import runtime Lua behavior or assert gameplay parity.
 
 ### Verified Baseline (`VERSION` 0.2.28)
 
+a3d8fd2 feat(content): add evidence coverage gate (#119)
 0d919ec docs(spec): record merged cache isolation baseline
 9f0d601 feat(web): isolate service-worker cache reads (#118)
 afdc01f feat(web): harden dynamic accessibility semantics (#117)
