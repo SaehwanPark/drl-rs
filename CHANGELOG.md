@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.72]
+
+- Added typed `PlasmaRifle` content with pinned description, cell-ammo
+  relation, six-shot clip, `1d7` damage range, replay JSON kind, and measured
+  `SPRITE_PLASMA` atlas slot. Callback and exact legacy timing/accuracy parity
+  remain open.
+
 ## [0.2.71]
 
 - Preserved pinned `smed` and `lmed` descriptions in the typed med-pack

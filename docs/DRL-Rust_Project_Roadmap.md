@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.71`
+Current project version: `0.2.72`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.71)
+## 3. Current Progress Summary (`VERSION` 0.2.72)
 
 ### Delivered Foundations
 
@@ -76,7 +76,8 @@ verification item uses explicit status semantics:
   text-grid surface.
 - **Typed Content & Persistence (M9, M10)**: Rust-owned definitions for current
   monsters, items, tiles, and levels, including pinned rocket, power-cell, and
-  blue/red-armor families and pinned med-pack descriptions; versioned
+  blue/red-armor families, pinned med-pack descriptions, and a typed plasma
+  rifle; versioned
   fixed-session snapshot codec with localStorage
   persistence, bounded rejected-save quarantine, and static service-worker
   cache.
@@ -473,6 +474,9 @@ scripting.
   and movement modifiers remain explicit migration gaps.
 - [x] Pinned `smed`/`lmed` descriptions and existing med-pack atlas slots are
   preserved; dynamic difficulty/perk healing formulas remain open.
+- [x] Typed plasma rifle preserves pinned cell relation, six-shot clip, `1d7`
+  damage range, description, replay kind, and `SPRITE_PLASMA` slot; exact
+  accuracy/timing and dynamic callbacks remain open.
 - [ ] Full migration of legacy monsters, weapons, armor, mods, and consumable
   items.
 - [ ] Full migration of special levels, vaults, and dungeon branches.
