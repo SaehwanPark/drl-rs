@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.36`
+Current project version: `0.2.37`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -173,7 +173,9 @@ Presentation Boundary
 
 ### `drl-app` — Headless CLI & MCP Runner
 - **Role**: Native executable for running headless demos, deterministic cohort
-  study reports, batch sweeps, and stdio MCP sessions.
+  study reports, batch sweeps, and stdio MCP sessions. A deterministic
+  subprocess lifecycle contract checks this transport separately from the
+  in-process MCP semantics.
 - **Dependencies**: Depends on `drl-core`, `drl-protocol`, `drl-mcp`.
 
 ### `drl-script` — Content Conversion Boundary

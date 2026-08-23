@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.37]
+
+- Added a deterministic subprocess contract for the real `drl-app --mcp`
+  stdio transport across discovery, gameplay, replay/metrics, reset, scenario,
+  resources, and fairness-denied dev-state requests.
+- Repeated JSON-lines runs must match byte-for-byte; full external-client and
+  production deployment acceptance remain open.
+
 ## [0.2.36]
 
 - Configured service-worker registration to bypass browser HTTP caching for

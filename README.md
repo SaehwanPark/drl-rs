@@ -33,7 +33,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.36`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.37`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:
@@ -66,6 +66,10 @@ replays, and regression testing.
     special levels, complete record ID catalogs, scalar-only fields, explicit
     migration gaps, exact pinned source digests, and a versioned crosswalk
     schema. It never ships a Lua runtime or silently infers behavior.
+  - The native `drl-app --mcp` stdio transport has a deterministic JSON-lines
+    lifecycle contract covering discovery, gameplay, replay/metrics, reset,
+    scenarios, resources, and the fairness-denied dev-state path; full
+    external-client compatibility remains open.
   - Browser saves use a bounded V2 command-count token, accept the shipped V1
     token for transactional replay, and migrate successful V1 restores in place;
     real offline lifecycle acceptance remains open.
