@@ -124,6 +124,9 @@ pub enum ItemArchetype {
   MaleksArmor,
   CyberneticArmor,
   Necroarmor,
+  MedicalPowerarmor,
+  LavaArmor,
+  ShieldedArmor,
   PhaseDevice,
 }
 
@@ -184,6 +187,9 @@ impl fmt::Display for ItemArchetype {
       Self::MaleksArmor => "maleks_armor",
       Self::CyberneticArmor => "cybernetic_armor",
       Self::Necroarmor => "necroarmor",
+      Self::MedicalPowerarmor => "medical_powerarmor",
+      Self::LavaArmor => "lava_armor",
+      Self::ShieldedArmor => "shielded_armor",
       Self::PhaseDevice => "phase_device",
     };
     write!(f, "{value}")

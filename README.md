@@ -36,7 +36,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.87`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.88`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:
@@ -100,6 +100,7 @@ replays, and regression testing.
     Shotgun, Tristar Blaster, Butcher's Cleaver, Mjollnir, Subtle Knife,
     Trigun, Anti-Freak Jackal, Minigun, Onyx Armor, Phaseshift Armor, and
     Gothic Armor, Malek's Armor, Cybernetic Armor, and Necroarmor families
+    Necroarmor, Medical Powerarmor, Lava Armor, and Shielded Armor families
     with replay/atlas coverage;
     resistance, movement,
     prepared-slot consumption,

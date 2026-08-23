@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.88]
+
+- Added typed `MedicalPowerarmor`, `LavaArmor`, and `ShieldedArmor` families
+  from pinned specialized-item records, preserving descriptions, armor values,
+  replay JSON kinds, and measured shared armor atlas geometry. Resistance,
+  movement/knockback, no-durability, callbacks, and exact tint remain open.
+
 ## [0.2.87]
 
 - Added typed `MaleksArmor`, `CyberneticArmor`, and `Necroarmor` families from

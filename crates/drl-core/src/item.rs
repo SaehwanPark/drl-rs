@@ -670,6 +670,24 @@ impl Item {
     Self::from_spawn_kind(id, ItemSpawnKind::Necroarmor)
   }
 
+  /// Factory: Medical Powerarmor (6 armor protection policy).
+  #[must_use]
+  pub fn medical_powerarmor(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::MedicalPowerarmor)
+  }
+
+  /// Factory: Lava Armor (4 armor protection policy).
+  #[must_use]
+  pub fn lava_armor(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::LavaArmor)
+  }
+
+  /// Factory: Shielded Armor (2 armor protection policy).
+  #[must_use]
+  pub fn shielded_armor(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::ShieldedArmor)
+  }
+
   /// Factory: Phase Device (emergency teleportation consumable).
   #[must_use]
   pub fn phase_device(id: ItemId) -> Self {
@@ -954,6 +972,15 @@ mod tests {
         Item::cybernetic_armor(ItemId::new(54)),
       ),
       (ItemSpawnKind::Necroarmor, Item::necroarmor(ItemId::new(55))),
+      (
+        ItemSpawnKind::MedicalPowerarmor,
+        Item::medical_powerarmor(ItemId::new(56)),
+      ),
+      (ItemSpawnKind::LavaArmor, Item::lava_armor(ItemId::new(57))),
+      (
+        ItemSpawnKind::ShieldedArmor,
+        Item::shielded_armor(ItemId::new(58)),
+      ),
       (ItemSpawnKind::Chaingun, Item::chaingun(ItemId::new(11))),
       (
         ItemSpawnKind::PlasmaRifle,
