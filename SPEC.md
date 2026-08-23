@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.36`
+Current project version: `0.2.37`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,52 +23,62 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M10 PWA Update Freshness
+## 2. Active Implementation Slice: M13 Stdio MCP Lifecycle
 
 ### 2.1 Scope & Objective
 
-Make service-worker update checks bypass the browser HTTP cache and report a
-waiting update without forcing takeover of an active game shell. This keeps
-static-hosting releases discoverable while avoiding mixed-version page/cache
-state. It is a registration contract; it does not claim real browser offline
-installation, update activation, or cross-browser support.
+Exercise the actual line-oriented `drl-app --mcp` transport with a fixed,
+deterministic JSON-RPC lifecycle. The contract covers initialization, tool and
+resource discovery, one game session, replay/metrics boundaries, reset and
+scenario loading, and the permission-denied dev-state path. It verifies the
+stdio boundary only; it does not claim full external-client compatibility,
+browser deployment, or production operations.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
-1. **Versioned service-worker cache (v0.2.27)**:
-   - Install precaches the generated release and activate removes stale
-     project namespaces without reading unrelated caches.
-2. **Bootstrap registration contract**:
-   - Registration already begins before WebGPU startup and reports capability,
-     installing, ready, and failure states through the existing status path.
+1. **M6 MCP server (v0.2.1+)**:
+   - `drl-mcp` already implements deterministic JSON-RPC tools/resources and
+     in-process protocol, fairness, and replay tests.
+2. **Native runner boundary**:
+   - `drl-app --mcp` already exposes the stdio loop; this slice adds a fixed
+     subprocess contract over its real input/output lines.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Freshness registration**: `serviceWorker.register` passes
-  `updateViaCache: "none"` alongside the existing scope.
-- [x] **Waiting-update status**: A waiting registration reports that an update
-  is ready and suggests a reload; active-only and installing states retain
-  their existing messages.
-- [x] **Contract tests**: Node fixtures cover registration options, waiting
-  priority, capability failure, and registration failure.
-- [x] **No expansion of claims**: Real offline installation/control/reload,
-  forced activation, cross-browser support, and production deployment remain
-  open.
+- [x] **Fixed lifecycle**: A shell fixture sends initialize, ping, discovery,
+  game start/observation/actions/step, metrics, replay save, reset, scenario
+  load, and resource reads through the stdio process.
+- [x] **Fairness boundary**: The default dev-state request is denied and the
+  error remains part of the deterministic output.
+- [x] **Byte repeatability**: Running the same JSON-lines fixture twice produces
+  byte-identical output.
+- [x] **No expansion of claims**: Full M13 tooling, external MCP clients,
+  browser deployment, and production operations remain open.
 
 ### 2.4 Pure Contract
 
-- **Input**: Browser service-worker registration state.
-- **Output**: Registration uses a no-HTTP-cache update policy and returns a
-  stable status string; no active worker is forcibly replaced.
+- **Input**: A fixed JSON-lines JSON-RPC request sequence on stdin.
+- **Output**: Deterministic JSON-lines responses on stdout, including a
+  permission-denied dev-state response and no debug noise on the protocol
+  stream.
 - **Ownership Boundary**:
-  - `web/offline-cache.mjs` owns registration options and status projection.
-  - `scripts/test-offline-cache.mjs` owns deterministic registration fixtures.
-  - No service-worker cache algorithm, simulation, telemetry, or gameplay
-    changes.
+  - `crates/drl-app` owns process-level stdio transport.
+  - `crates/drl-mcp` owns JSON-RPC tool/resource semantics.
+  - `scripts/test-mcp-stdio.sh` owns the fixed subprocess fixture.
+  - No browser, release-signing, telemetry, or gameplay changes.
 
 ---
 
 ## 3. Recent Delivered Slices
+
+### M13 — Stdio MCP Lifecycle (`VERSION` 0.2.37)
+
+- [x] Added a fixed JSON-lines subprocess fixture covering initialization,
+  discovery, gameplay, replay/metrics, reset, scenario loading, and resources.
+- [x] Repeated runs are byte-identical and preserve permission denial for the
+  default omniscient dev-state request.
+- [ ] Full external MCP-client compatibility and production deployment remain
+  open.
 
 ### M10 — PWA Update Freshness (`VERSION` 0.2.36)
 
@@ -351,7 +361,7 @@ installation, update activation, or cross-browser support.
 
 ## 6. Verification Gates
 
-### Verified Baseline (`VERSION` 0.2.36)
+### Verified Baseline (`VERSION` 0.2.37)
 
 cf597d3 feat(web): report fresh service-worker updates (#127)
 47f3526 feat(web): classify unsupported browser environments (#126)

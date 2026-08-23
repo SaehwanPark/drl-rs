@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.36`
+Current project version: `0.2.37`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.36)
+## 3. Current Progress Summary (`VERSION` 0.2.37)
 
 ### Delivered Foundations
 
@@ -95,6 +95,9 @@ verification item uses explicit status semantics:
 - **M11 Evaluation**: Deterministic cohort reports support a three-policy
   matrix plus descriptive depth distributions; canonical difficulty targets
   remain open.
+- **M13 Tooling**: The actual `drl-app --mcp` stdio transport now has a fixed,
+  repeatable JSON-RPC lifecycle contract; full external-client compatibility
+  remains open.
 - **M12 Accessibility**: Static and native contracts cover generated names,
   escaping, live-channel boundaries, help association, focus styling, and
   diagnostic recovery; startup now classifies insecure contexts and missing
@@ -470,7 +473,10 @@ Final release readiness, documentation, and static distribution.
   WebGPU.
 - [ ] Approved audiovisual parity matrix verified against reference captures.
 - [ ] Fully functional offline PWA installation.
-- [ ] Complete deterministic headless/MCP agent tooling suite.
+- [x] Deterministic `drl-app --mcp` stdio lifecycle contract covers discovery,
+  gameplay, replay/metrics, reset, scenario, resources, and fairness denial.
+- [ ] Complete deterministic headless/MCP agent tooling suite and external
+  client compatibility.
 - [ ] Comprehensive public rights inventory and release documentation.
 
 ---
