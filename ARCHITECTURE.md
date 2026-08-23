@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.26`
+Current project version: `0.2.27`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -300,7 +300,8 @@ Presentation Boundary
   token for transactional replay, and migrates successful V1 restores in the
   existing storage slot.
 - **Service Worker Cache**: Versioned same-origin worker caches static bundles
-  keyed by project version and commit hash.
+  keyed by project version and commit hash; reads open only the current release
+  cache and fail closed when its shell/assets are absent.
 - **Release Manifests**: Build tooling generates `release-manifest.json` with
   sorted artifact SHA-256 hashes and a `.sha256` sidecar digest.
 

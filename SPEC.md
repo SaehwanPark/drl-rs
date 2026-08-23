@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.26`
+Current project version: `0.2.27`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,57 +23,64 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M12 Dynamic Interaction Accessibility Contract
+## 2. Active Implementation Slice: M10 Same-Release Offline-Cache Isolation
 
 ### 2.1 Scope & Objective
 
-Improve the browser shell's dynamic interaction semantics for keyboard and
-assistive-technology users. Generated inventory actions carry item-qualified
-names with escaped text; only `#game-status` announces dynamic status; canvas
-help is explicitly associated; focus-visible and diagnostic recovery behavior
-are deterministic. This slice does not claim WCAG 2.1 AA or screen-reader
-acceptance.
+Constrain service-worker offline reads to the current generated release cache.
+Network-first navigation and cache-first static assets remain unchanged, but
+an unrelated or stale Cache Storage namespace must never satisfy a request.
+This hardens the cache identity boundary without claiming real browser install,
+activation, control, or reload acceptance.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
-1. **Existing browser shell (v0.2.7–v0.2.25)**:
-   - Static landmarks, named controls, keyboard bindings, diagnostics, and
-     browser contract scripts already exist.
-2. **User-experience boundary**:
-   - The common task is start, focus the board, play with keyboard/canvas, and
-     recover from browser or storage diagnostics without losing session state.
+1. **Versioned service-worker cache (v0.2.15–v0.2.26)**:
+   - Release-specific cache names, generated precache URLs, activation cleanup,
+     and a deterministic Node worker harness already exist.
+2. **Offline boundary**:
+   - Cache Storage is shared per origin; global matching can cross release or
+     unrelated namespaces, so this slice isolates reads to `CACHE_NAME`.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Qualified inventory actions**: Render stable group IDs and item-
-  qualified `Equip`, `Use`, and `Drop` accessible names from escaped item text.
-- [x] **Single live status**: Keep `#game-status` as the only dynamic polite
-  announcement channel; keyboard help in `#game-log` remains static.
-- [x] **Canvas help association**: Connect the focusable canvas to keyboard
-  instructions with `aria-describedby` and retain an accessible canvas name.
-- [x] **Focus and diagnostics**: Add authored `:focus-visible` styling and
-  focus the same diagnostic alert panel for JS- and Rust-originated failures.
-- [x] **Contract coverage**: Extend static shell checks and native markup tests
-  for names, escaping, roles, live-channel count, help association, and focus.
-- [ ] **Full accessibility acceptance**: Real screen-reader, WCAG 2.1 AA,
-  contrast, and broad browser acceptance remain open.
+- [x] **Current-cache-only reads**: Navigation fallback and static asset reads
+  open and match only the generated `CACHE_NAME`.
+- [x] **Fail-closed stale isolation**: Missing current-cache entries do not
+  fall through to unrelated namespaces; navigation returns `Response.error()`
+  and asset fetches retain their network failure.
+- [x] **Preserved routing policy**: Same-origin GET gating, network-first
+  navigation, cache-first assets, response caching, and activation cleanup stay
+  unchanged.
+- [x] **Deterministic worker coverage**: VM tests cover current-cache hits,
+  offline navigation fallback, stale unrelated shell/assets, old-cache purge,
+  and cross-origin/non-GET bypass.
+- [ ] **Real offline lifecycle acceptance**: Browser install, activation,
+  control, reload, and offline gameplay remain external/`NOT_RUN` evidence.
 
 ### 2.4 Pure Contract
 
-- **Input**: Player-observation item names and browser status/diagnostic events
-  crossing the Rust/WASM/HTML shell boundary.
-- **Output**: Escaped, item-qualified controls; one dynamic status channel;
-  associated canvas help; visible focus and deterministic diagnostic recovery.
+- **Input**: Same-origin GET navigation or asset requests handled by the
+  versioned service worker.
+- **Output**: Responses from the current release cache only, or the existing
+  network/fail-closed result when the current cache has no entry.
 - **Ownership Boundary**:
-  - `drl-web` owns pure markup generation and WASM DOM updates.
-  - `web/index.html` owns static semantics, CSS focus treatment, and help text.
-  - `web/bootstrap.js` owns browser-originated status/diagnostic interaction.
-  - No game loop, keyboard mapping, save format, or player-observation content
-    changes.
+  - `web/service-worker.js` owns cache namespace reads and fetch routing.
+  - `scripts/test-service-worker.js` owns deterministic mocked evidence.
+  - No simulation, save format, browser UI, cache naming, or production key
+    policy changes.
 
 ---
 
 ## 3. Recent Delivered Slices
+
+### M10 — Same-Release Offline-Cache Isolation (`VERSION` 0.2.27)
+
+- [x] Service-worker reads now match only the current generated release cache;
+  stale/unrelated namespaces cannot satisfy offline requests.
+- [x] Node worker contracts cover current-cache hits and fail-closed stale
+  isolation while preserving routing and activation behavior.
+- [ ] Real browser offline install/control/reload acceptance remains open.
 
 ### M12 — Dynamic Interaction Accessibility Contract (`VERSION` 0.2.26)
 
@@ -311,7 +318,7 @@ acceptance.
 
 ## 6. Verification Gates
 
-### Verified Baseline (`VERSION` 0.2.26)
+### Verified Baseline (`VERSION` 0.2.27)
 
 afdc01f feat(web): harden dynamic accessibility semantics (#117)
 6024a15 feat(eval): add cohort depth distribution (#116)

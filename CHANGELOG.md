@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.27]
+
+- Isolated service-worker offline reads to the current generated release cache,
+  preventing stale or unrelated Cache Storage entries from satisfying requests.
+- Added VM coverage for current-cache hits, fail-closed stale isolation, and
+  preserved routing/activation behavior; real browser offline lifecycle
+  acceptance remains open.
+
 ## [0.2.26]
 
 - Added item-qualified, escaped inventory action names and a shared semantic
