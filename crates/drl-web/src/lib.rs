@@ -406,16 +406,24 @@ impl BrowserSession {
 
   /// Rebuilds this session from a versioned token without exposing game state.
   pub fn restore_snapshot(&mut self, token: &str) -> Result<(), SnapshotError> {
-    let commands = persistence::decode_snapshot(token)?;
+    self.restore_snapshot_with_format(token).map(|_| ())
+  }
+
+  fn restore_snapshot_with_format(
+    &mut self,
+    token: &str,
+  ) -> Result<persistence::SnapshotFormat, SnapshotError> {
+    let decoded = persistence::decode_snapshot_with_format(token)?;
     let mut restored =
       Self::new().map_err(|error| SnapshotError::Initialization(error.to_string()))?;
-    for command in commands {
+    for command in decoded.commands {
       restored
         .submit(command)
         .map_err(SnapshotError::CommandRejected)?;
     }
+    let format = decoded.format;
     *self = restored;
-    Ok(())
+    Ok(format)
   }
 
   /// Returns a replay-schema representation of the fixed browser session.
@@ -567,6 +575,20 @@ pub(crate) mod wasm {
     browser_storage()?
       .set_item(SAVE_STORAGE_KEY, &token)
       .map_err(|error| SnapshotError::Initialization(format!("save failed: {error:?}")))
+  }
+
+  fn migrate_legacy_snapshot(
+    session: &BrowserSession,
+    format: persistence::SnapshotFormat,
+  ) -> Option<String> {
+    (format == persistence::SnapshotFormat::V1)
+      .then(|| persist_session(session).err())
+      .flatten()
+      .map(|error| {
+        format!(
+          " Legacy save restored, but migration to the current format failed ({error}); use Save to retry."
+        )
+      })
   }
 
   fn remove_persisted_session() -> Result<(), SnapshotError> {
@@ -1501,8 +1523,15 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
     let mut session =
       BrowserSession::new().map_err(|error| JsValue::from_str(&error.to_string()))?;
     let restore_message = match read_persisted_session() {
-      Ok(Some(token)) => match session.restore_snapshot(&token) {
-        Ok(()) => " Restored the saved session.".to_string(),
+      Ok(Some(token)) => match session.restore_snapshot_with_format(&token) {
+        Ok(format) => {
+          let status = if format == persistence::SnapshotFormat::V1 {
+            " Restored and migrated the legacy saved session.".to_string()
+          } else {
+            " Restored the saved session.".to_string()
+          };
+          append_persistence_warning(status, migrate_legacy_snapshot(&session, format))
+        }
         Err(error) => rejected_save_message(&token, &error),
       },
       Ok(None) => String::new(),
@@ -1793,10 +1822,16 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
       let session = session_ref
         .as_mut()
         .ok_or_else(|| SnapshotError::Initialization("Press Start first.".to_string()))?;
-      session.restore_snapshot(&token)
+      session.restore_snapshot_with_format(&token)
     });
     match result {
-      Ok(()) => {
+      Ok(format) => {
+        let migration_warning = SESSION.with(|session_slot| {
+          session_slot
+            .borrow()
+            .as_ref()
+            .and_then(|session| migrate_legacy_snapshot(session, format))
+        });
         ANIMATION_CLOCK.with(|clock| clock.borrow_mut().reset());
         TARGET.with(|target_slot| *target_slot.borrow_mut() = None);
         if let Some(document) = web_sys::window().and_then(|window| window.document()) {
@@ -1811,7 +1846,12 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
             }
           });
         }
-        "Session loaded from this device.".to_string()
+        let status = if format == persistence::SnapshotFormat::V1 {
+          "Session loaded and migrated from the legacy format.".to_string()
+        } else {
+          "Session loaded from this device.".to_string()
+        };
+        append_persistence_warning(status, migration_warning)
       }
       Err(error) => rejected_save_message(&token, &error),
     }
@@ -2070,7 +2110,7 @@ mod tests {
     let expected_observation = session.observation();
     let expected_replay = session.replay_log();
     let token = session.snapshot_token().expect("snapshot encoding");
-    assert!(token.starts_with("DRL-RUST-BROWSER-SAVE/1:fixed-m4-v1:"));
+    assert_eq!(token, "DRL-RUST-BROWSER-SAVE/2:fixed-m4-v1:4:mr;mr;mr;p");
 
     let mut restored = BrowserSession::new().expect("fixed session");
     restored.restore_snapshot(&token).expect("snapshot restore");
@@ -2080,11 +2120,42 @@ mod tests {
   }
 
   #[test]
+  fn v1_snapshot_restores_and_reencodes_as_v2() {
+    let legacy = "DRL-RUST-BROWSER-SAVE/1:fixed-m4-v1:mr;mr;mr;p";
+    let mut expected = BrowserSession::new().expect("fixed session");
+    for command in [
+      Command::Move(Direction::East),
+      Command::Move(Direction::East),
+      Command::Move(Direction::East),
+      Command::Pickup,
+    ] {
+      expected.submit(command).expect("legal command");
+    }
+
+    let mut restored = BrowserSession::new().expect("fixed session");
+    restored
+      .restore_snapshot(legacy)
+      .expect("legacy snapshot restore");
+    assert_eq!(restored.observation(), expected.observation());
+    assert_eq!(restored.replay_log(), expected.replay_log());
+    assert_eq!(
+      restored.snapshot_token().expect("migrated encoding"),
+      "DRL-RUST-BROWSER-SAVE/2:fixed-m4-v1:4:mr;mr;mr;p"
+    );
+    assert_eq!(
+      persistence::decode_snapshot_with_format(legacy)
+        .expect("legacy decode")
+        .format,
+      persistence::SnapshotFormat::V1
+    );
+  }
+
+  #[test]
   fn snapshot_rejects_corruption_and_unknown_versions() {
     let mut session = BrowserSession::new().expect("fixed session");
     assert_eq!(
-      session.restore_snapshot("DRL-RUST-BROWSER-SAVE/2:fixed-m4-v1:w"),
-      Err(SnapshotError::UnsupportedVersion("2".to_string()))
+      session.restore_snapshot("DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:w"),
+      Err(SnapshotError::UnsupportedVersion("3".to_string()))
     );
     assert_eq!(
       session.restore_snapshot("DRL-RUST-BROWSER-SAVE/1:other:w"),
@@ -2096,6 +2167,18 @@ mod tests {
     );
     assert_eq!(
       session.restore_snapshot("DRL-RUST-BROWSER-SAVE/1:fixed-m4-v1:w;;p"),
+      Err(SnapshotError::Malformed)
+    );
+    assert_eq!(
+      session.restore_snapshot("DRL-RUST-BROWSER-SAVE/2:fixed-m4-v1:2:w"),
+      Err(SnapshotError::Malformed)
+    );
+    assert_eq!(
+      session.restore_snapshot("DRL-RUST-BROWSER-SAVE/2:fixed-m4-v1:nope:w"),
+      Err(SnapshotError::Malformed)
+    );
+    assert_eq!(
+      session.restore_snapshot("DRL-RUST-BROWSER-SAVE/2:fixed-m4-v1:1:"),
       Err(SnapshotError::Malformed)
     );
     let oversized = format!("DRL-RUST-BROWSER-SAVE/1:fixed-m4-v1:{}", "w;".repeat(8193));
@@ -2146,7 +2229,9 @@ mod tests {
     ];
     let token = persistence::encode_snapshot(&commands).expect("codec encoding");
     assert_eq!(
-      persistence::decode_snapshot(&token).expect("codec decoding"),
+      persistence::decode_snapshot_with_format(&token)
+        .expect("codec decoding")
+        .commands,
       commands
     );
   }

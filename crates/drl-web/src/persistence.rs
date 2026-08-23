@@ -3,7 +3,8 @@
 use drl_protocol::{Command, Direction, EquipmentSlot, ItemId, Position};
 
 const SNAPSHOT_PREFIX: &str = "DRL-RUST-BROWSER-SAVE/";
-const SNAPSHOT_VERSION: &str = "1";
+const SNAPSHOT_V1: &str = "1";
+const SNAPSHOT_V2: &str = "2";
 const SNAPSHOT_CONTENT: &str = "fixed-m4-v1";
 const SNAPSHOT_MAX_BYTES: usize = 16 * 1024;
 const SNAPSHOT_MAX_COMMANDS: usize = 4096;
@@ -45,6 +46,18 @@ impl std::fmt::Display for SnapshotError {
 }
 
 impl std::error::Error for SnapshotError {}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum SnapshotFormat {
+  V1,
+  V2,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub(crate) struct DecodedSnapshot {
+  pub(crate) commands: Vec<Command>,
+  pub(crate) format: SnapshotFormat,
+}
 
 fn direction_code(direction: Direction) -> Option<char> {
   Some(match direction {
@@ -155,42 +168,30 @@ pub(crate) fn encode_snapshot(commands: &[Command]) -> Result<String, SnapshotEr
   if commands.len() > SNAPSHOT_MAX_COMMANDS {
     return Err(SnapshotError::TooLarge);
   }
-  let mut token = format!("{SNAPSHOT_PREFIX}{SNAPSHOT_VERSION}:{SNAPSHOT_CONTENT}:");
-  for (index, command) in commands.iter().copied().enumerate() {
-    if index > 0 {
-      token.push(';');
-    }
-    token.push_str(&encode_command(command)?);
-  }
+  let payload = encode_payload(commands)?;
+  let mut token = format!(
+    "{SNAPSHOT_PREFIX}{SNAPSHOT_V2}:{SNAPSHOT_CONTENT}:{}:",
+    commands.len()
+  );
+  token.push_str(&payload);
   if token.len() > SNAPSHOT_MAX_BYTES {
     return Err(SnapshotError::TooLarge);
   }
   Ok(token)
 }
 
-pub(crate) fn decode_snapshot(token: &str) -> Result<Vec<Command>, SnapshotError> {
-  if token.len() > SNAPSHOT_MAX_BYTES {
-    return Err(SnapshotError::TooLarge);
+fn encode_payload(commands: &[Command]) -> Result<String, SnapshotError> {
+  let mut payload = String::new();
+  for (index, command) in commands.iter().copied().enumerate() {
+    if index > 0 {
+      payload.push(';');
+    }
+    payload.push_str(&encode_command(command)?);
   }
-  let Some(versioned) = token.strip_prefix(SNAPSHOT_PREFIX) else {
-    return Err(SnapshotError::Malformed);
-  };
-  let mut parts = versioned.splitn(3, ':');
-  let Some(version) = parts.next() else {
-    return Err(SnapshotError::Malformed);
-  };
-  if version != SNAPSHOT_VERSION {
-    return Err(SnapshotError::UnsupportedVersion(version.to_string()));
-  }
-  let Some(content) = parts.next() else {
-    return Err(SnapshotError::Malformed);
-  };
-  if content != SNAPSHOT_CONTENT {
-    return Err(SnapshotError::UnsupportedContent(content.to_string()));
-  }
-  let Some(payload) = parts.next() else {
-    return Err(SnapshotError::Malformed);
-  };
+  Ok(payload)
+}
+
+fn decode_payload(payload: &str) -> Result<Vec<Command>, SnapshotError> {
   if payload.is_empty() {
     return Ok(Vec::new());
   }
@@ -201,9 +202,81 @@ pub(crate) fn decode_snapshot(token: &str) -> Result<Vec<Command>, SnapshotError
   commands.map(decode_command).collect()
 }
 
+fn decode_v1(versioned: &str) -> Result<DecodedSnapshot, SnapshotError> {
+  let mut parts = versioned.splitn(2, ':');
+  let Some(content) = parts.next() else {
+    return Err(SnapshotError::Malformed);
+  };
+  if content != SNAPSHOT_CONTENT {
+    return Err(SnapshotError::UnsupportedContent(content.to_string()));
+  }
+  let Some(payload) = parts.next() else {
+    return Err(SnapshotError::Malformed);
+  };
+  Ok(DecodedSnapshot {
+    commands: decode_payload(payload)?,
+    format: SnapshotFormat::V1,
+  })
+}
+
+fn decode_v2(versioned: &str) -> Result<DecodedSnapshot, SnapshotError> {
+  let mut parts = versioned.splitn(3, ':');
+  let Some(content) = parts.next() else {
+    return Err(SnapshotError::Malformed);
+  };
+  if content != SNAPSHOT_CONTENT {
+    return Err(SnapshotError::UnsupportedContent(content.to_string()));
+  }
+  let Some(count_text) = parts.next() else {
+    return Err(SnapshotError::Malformed);
+  };
+  let count = count_text
+    .parse::<usize>()
+    .map_err(|_| SnapshotError::Malformed)?;
+  if count > SNAPSHOT_MAX_COMMANDS || count.to_string() != count_text {
+    return Err(if count > SNAPSHOT_MAX_COMMANDS {
+      SnapshotError::TooLarge
+    } else {
+      SnapshotError::Malformed
+    });
+  }
+  let Some(payload) = parts.next() else {
+    return Err(SnapshotError::Malformed);
+  };
+  let commands = decode_payload(payload)?;
+  if commands.len() != count {
+    return Err(SnapshotError::Malformed);
+  }
+  Ok(DecodedSnapshot {
+    commands,
+    format: SnapshotFormat::V2,
+  })
+}
+
+pub(crate) fn decode_snapshot_with_format(token: &str) -> Result<DecodedSnapshot, SnapshotError> {
+  if token.len() > SNAPSHOT_MAX_BYTES {
+    return Err(SnapshotError::TooLarge);
+  }
+  let Some(versioned) = token.strip_prefix(SNAPSHOT_PREFIX) else {
+    return Err(SnapshotError::Malformed);
+  };
+  let mut parts = versioned.splitn(2, ':');
+  let Some(version) = parts.next() else {
+    return Err(SnapshotError::Malformed);
+  };
+  let Some(remainder) = parts.next() else {
+    return Err(SnapshotError::Malformed);
+  };
+  match version {
+    SNAPSHOT_V1 => decode_v1(remainder),
+    SNAPSHOT_V2 => decode_v2(remainder),
+    _ => Err(SnapshotError::UnsupportedVersion(version.to_string())),
+  }
+}
+
 /// Builds one bounded diagnostic record for a rejected browser save.
 ///
-/// The record is never accepted by [`decode_snapshot`]. Keeping the original
+/// The record is never accepted by [`decode_snapshot_with_format`]. Keeping the original
 /// value when it fits gives a future explicit migration a chance to inspect
 /// it, while oversized values are represented by their size rather than
 /// allowing localStorage recovery data to grow without bound.

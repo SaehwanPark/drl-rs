@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.23`
+Current project version: `0.2.24`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.23)
+## 3. Current Progress Summary (`VERSION` 0.2.24)
 
 ### Delivered Foundations
 
@@ -84,9 +84,9 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active Milestone Slice (M9)**: Verified special-level scalar metadata now
-  has an immutable Rust catalog; full typed special-level migration remains
-  open.
+- **Active Milestone Slice (M10)**: Browser saves now migrate the shipped V1
+  token to a strict V2 command-count format after successful replay; real
+  offline lifecycle acceptance remains open.
 - **M9 Content Evidence**: Base, expansion, user-item, being, and terrain-cell
   evidence slices are delivered without runtime Lua or gameplay overclaims.
 - **M11 Evaluation**: Deterministic cohort reports support a three-policy
@@ -360,7 +360,9 @@ Implement robust client-side save state and offline browser capabilities.
 - [ ] Full offline-after-first-load PWA lifecycle acceptance.
 - [x] Corruption recovery policy: fail-closed restore, bounded quarantine, and
   playable boot/load when storage cleanup is unavailable.
-- [ ] Replay-compatible save migration for explicitly recognized older formats.
+- [x] Replay-compatible save migration for the shipped V1 token into strict V2
+  after successful transactional restore; storage-write failures remain
+  playable warnings.
 - [x] Explicit non-goal: No online accounts or centralized backend services.
 
 ---
