@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.84]
+
+- Added typed `ButchersCleaver`, `Mjollnir`, and `SubtleKnife` families from
+  pinned user-item records, preserving descriptions, melee damage/range
+  scalars, replay JSON kinds, and measured cleaver/knife atlas-slot reuse.
+  Blade/throw/alt-fire perks, callbacks, sound/UI, and exact timing remain
+  open.
+
 ## [0.2.83]
 
 - Added typed `Jackhammer`, `SuperShotgun`, and `TristarBlaster` families from

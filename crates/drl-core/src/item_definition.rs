@@ -437,6 +437,57 @@ const TRISTAR_BLASTER: ItemDefinition = ItemDefinition {
   },
 };
 
+const BUTCHERS_CLEAVER: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::ButchersCleaver,
+  name: "Butcher's Cleaver",
+  description: "Now that is a BIG cleaver. Butcher them!",
+  kind: ItemDefinitionKind::Weapon {
+    is_ranged: false,
+    ammo_type: None,
+    clip_capacity: 0,
+    damage: (5, 30),
+    range: 1,
+    accuracy: 85,
+    knockback: 0,
+    fire_cost: ActionCost::MELEE_ATTACK,
+    reload_cost: ActionCost::new(0),
+  },
+};
+
+const MJOLLNIR: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::Mjollnir,
+  name: "Mjollnir",
+  description: "Forged by the dwarves Eitri and Brokk, in response to Loki's challenge, Mjollnir is an indestructible war hammer.",
+  kind: ItemDefinitionKind::Weapon {
+    is_ranged: false,
+    ammo_type: None,
+    clip_capacity: 0,
+    damage: (1, 25),
+    range: 5,
+    accuracy: 75,
+    knockback: 0,
+    fire_cost: ActionCost::MELEE_ATTACK,
+    reload_cost: ActionCost::new(0),
+  },
+};
+
+const SUBTLE_KNIFE: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::SubtleKnife,
+  name: "Subtle Knife",
+  description: "A weapon that can cut the very fabric of reality. Too bad it's only eight inches long...",
+  kind: ItemDefinitionKind::Weapon {
+    is_ranged: false,
+    ammo_type: None,
+    clip_capacity: 0,
+    damage: (3, 15),
+    range: 1,
+    accuracy: 85,
+    knockback: 0,
+    fire_cost: ActionCost::MELEE_ATTACK,
+    reload_cost: ActionCost::new(0),
+  },
+};
+
 const CHAINGUN: ItemDefinition = ItemDefinition {
   archetype: ItemArchetype::Chaingun,
   name: "Chaingun",
@@ -707,6 +758,9 @@ pub const fn definition_for_spawn_kind(kind: ItemSpawnKind) -> &'static ItemDefi
     ItemSpawnKind::Jackhammer => &JACKHAMMER,
     ItemSpawnKind::SuperShotgun => &SUPER_SHOTGUN,
     ItemSpawnKind::TristarBlaster => &TRISTAR_BLASTER,
+    ItemSpawnKind::ButchersCleaver => &BUTCHERS_CLEAVER,
+    ItemSpawnKind::Mjollnir => &MJOLLNIR,
+    ItemSpawnKind::SubtleKnife => &SUBTLE_KNIFE,
     ItemSpawnKind::Chaingun => &CHAINGUN,
     ItemSpawnKind::PlasmaRifle => &PLASMA_RIFLE,
     ItemSpawnKind::RocketLauncher => &ROCKET_LAUNCHER,
@@ -826,6 +880,17 @@ mod tests {
         ItemSpawnKind::TristarBlaster,
         ItemArchetype::TristarBlaster,
         "Tristar Blaster",
+      ),
+      (
+        ItemSpawnKind::ButchersCleaver,
+        ItemArchetype::ButchersCleaver,
+        "Butcher's Cleaver",
+      ),
+      (ItemSpawnKind::Mjollnir, ItemArchetype::Mjollnir, "Mjollnir"),
+      (
+        ItemSpawnKind::SubtleKnife,
+        ItemArchetype::SubtleKnife,
+        "Subtle Knife",
       ),
       (ItemSpawnKind::Chaingun, ItemArchetype::Chaingun, "Chaingun"),
       (
@@ -1240,6 +1305,48 @@ mod tests {
         knockback: 0,
         fire_cost: ActionCost::RANGED_ATTACK,
         reload_cost: ActionCost::STANDARD,
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::ButchersCleaver).kind,
+      ItemDefinitionKind::Weapon {
+        is_ranged: false,
+        ammo_type: None,
+        clip_capacity: 0,
+        damage: (5, 30),
+        range: 1,
+        accuracy: 85,
+        knockback: 0,
+        fire_cost: ActionCost::MELEE_ATTACK,
+        reload_cost: ActionCost::new(0),
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::Mjollnir).kind,
+      ItemDefinitionKind::Weapon {
+        is_ranged: false,
+        ammo_type: None,
+        clip_capacity: 0,
+        damage: (1, 25),
+        range: 5,
+        accuracy: 75,
+        knockback: 0,
+        fire_cost: ActionCost::MELEE_ATTACK,
+        reload_cost: ActionCost::new(0),
+      }
+    );
+    assert_eq!(
+      definition_for_spawn_kind(ItemSpawnKind::SubtleKnife).kind,
+      ItemDefinitionKind::Weapon {
+        is_ranged: false,
+        ammo_type: None,
+        clip_capacity: 0,
+        damage: (3, 15),
+        range: 1,
+        accuracy: 85,
+        knockback: 0,
+        fire_cost: ActionCost::MELEE_ATTACK,
+        reload_cost: ActionCost::new(0),
       }
     );
 

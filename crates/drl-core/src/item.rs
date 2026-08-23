@@ -484,6 +484,24 @@ impl Item {
     Self::from_spawn_kind(id, ItemSpawnKind::TristarBlaster)
   }
 
+  /// Factory: unique Butcher's Cleaver (5d6 damage policy).
+  #[must_use]
+  pub fn butchers_cleaver(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::ButchersCleaver)
+  }
+
+  /// Factory: unique Mjollnir (1d25 damage policy).
+  #[must_use]
+  pub fn mjollnir(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::Mjollnir)
+  }
+
+  /// Factory: unique Subtle Knife (3d5 damage policy).
+  #[must_use]
+  pub fn subtle_knife(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::SubtleKnife)
+  }
+
   /// Factory: chaingun (40-round 9mm clip, 1d6 damage policy).
   #[must_use]
   pub fn chaingun(id: ItemId) -> Self {
@@ -848,6 +866,15 @@ mod tests {
       (
         ItemSpawnKind::TristarBlaster,
         Item::tristar_blaster(ItemId::new(43)),
+      ),
+      (
+        ItemSpawnKind::ButchersCleaver,
+        Item::butchers_cleaver(ItemId::new(44)),
+      ),
+      (ItemSpawnKind::Mjollnir, Item::mjollnir(ItemId::new(45))),
+      (
+        ItemSpawnKind::SubtleKnife,
+        Item::subtle_knife(ItemId::new(46)),
       ),
       (ItemSpawnKind::Chaingun, Item::chaingun(ItemId::new(11))),
       (

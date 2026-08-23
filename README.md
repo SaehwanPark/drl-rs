@@ -36,7 +36,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.83`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.84`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:
@@ -97,7 +97,8 @@ replays, and regression testing.
     Mega Buster, Grammaton Beretta, Frag Shotgun, chainsaw, chaingun,
     plasma-rifle, rocket-launcher, Revenant's Launcher, Railgun, Acid
     Spitter, Combat Pistol, Assault Shotgun, Plasma Shotgun, Jackhammer, Super
-    Shotgun, and Tristar Blaster families with replay/atlas coverage;
+    Shotgun, Tristar Blaster, Butcher's Cleaver, Mjollnir, and Subtle Knife
+    families with replay/atlas coverage;
     resistance, movement,
     prepared-slot consumption,
     dynamic healing, weapon callbacks/effects, and broader legacy item behavior
