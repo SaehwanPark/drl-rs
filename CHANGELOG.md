@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.49]
+
+- Added exact bounded numeric validation for MCP `game_step_action` ranged
+  coordinates and use/equip/drop item IDs; invalid values return `-32602`
+  before advancing the session while valid aliases remain unchanged.
+- Added direct parser, state-safety, and repeated real-stdio coverage; complete
+  action-schema validation and external-client compatibility remain open.
+
 ## [0.2.48]
 
 - Added zero-argument MCP `game_verify_replay`, which verifies the complete

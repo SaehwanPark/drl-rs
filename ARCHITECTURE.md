@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.48`
+Current project version: `0.2.49`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -193,6 +193,9 @@ Presentation Boundary
     arguments and values outside the accepted finite JSON-safe integer range
     (`0..=2^53`, with `u32` for dimensions) with `-32602` before session
     mutation; omitted fields retain their existing defaults.
+  - `game_step_action` validates ranged coordinates as exact `i32` values and
+    use/equip/drop item IDs as exact non-negative JSON-safe integers before
+    dispatching to the simulation.
   - A private `Uninitialized → AwaitingInitialized → Ready` phase gate requires
     an identified initialize request followed by `notifications/initialized`
     before tools and resources are available; premature/duplicate transitions

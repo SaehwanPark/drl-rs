@@ -415,3 +415,64 @@ fn test_jsonrpc_accepts_maximum_exact_json_integer() {
     Some(9_007_199_254_740_992)
   );
 }
+
+#[test]
+fn test_jsonrpc_rejects_unsafe_step_action_numbers_without_mutation() {
+  let mut server = ready_server();
+  let _ = server.handle_request(
+    r#"{"jsonrpc":"2.0","id":60,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":7,"width":20,"height":10}}}"#,
+  );
+  let metrics_before = server.handle_request(
+    r#"{"jsonrpc":"2.0","id":61,"method":"tools/call","params":{"name":"game_get_metrics","arguments":{}}}"#,
+  );
+  let replay_before = server.handle_request(
+    r#"{"jsonrpc":"2.0","id":62,"method":"tools/call","params":{"name":"game_save_replay","arguments":{}}}"#,
+  );
+
+  for (id, arguments) in [
+    (
+      63,
+      r#"{"action":"fire","target_x":2147483648,"target_y":0}"#,
+    ),
+    (
+      64,
+      r#"{"action":"fire","target_x":-2147483649,"target_y":0}"#,
+    ),
+    (65, r#"{"action":"fire","target_x":1.5,"target_y":0}"#),
+    (66, r#"{"action":"fire","target_x":"1","target_y":0}"#),
+    (67, r#"{"action":"use","item_id":-1}"#),
+    (68, r#"{"action":"use","item_id":9007199254740993}"#),
+    (69, r#"{"action":"drop","item_id":true}"#),
+  ] {
+    let request = format!(
+      r#"{{"jsonrpc":"2.0","id":{id},"method":"tools/call","params":{{"name":"game_step_action","arguments":{arguments}}}}}"#
+    );
+    let response = JsonValue::parse(&server.handle_request(&request)).unwrap();
+    assert_eq!(
+      response
+        .get("error")
+        .and_then(|error| error.get("code"))
+        .and_then(|code| code.as_i64()),
+      Some(error_codes::INVALID_PARAMS as i64)
+    );
+  }
+
+  assert_eq!(
+    metrics_before,
+    server.handle_request(
+      r#"{"jsonrpc":"2.0","id":61,"method":"tools/call","params":{"name":"game_get_metrics","arguments":{}}}"#,
+    )
+  );
+  assert_eq!(
+    replay_before,
+    server.handle_request(
+      r#"{"jsonrpc":"2.0","id":62,"method":"tools/call","params":{"name":"game_save_replay","arguments":{}}}"#,
+    )
+  );
+
+  let valid = JsonValue::parse(&server.handle_request(
+    r#"{"jsonrpc":"2.0","id":70,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"wait"}}}"#,
+  ))
+  .unwrap();
+  assert!(valid.get("error").is_none());
+}
