@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.37`
+Current project version: `0.2.38`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -152,7 +152,9 @@ Presentation Boundary
   - Release Packaging: Bootstrap-independent service worker registration,
     service worker caching with no-HTTP-cache update checks and waiting-update
     status, release manifest validation, digest sidecars, checkout-identity
-    verification, and optional detached OpenSSL signature verification.
+    verification, and optional detached OpenSSL signature verification. The
+    signing boundary rejects release-tree, symlinked, and group/world-readable
+    private-key inputs before OpenSSL.
   - Accessibility and Support: Accessible DOM shell, keyboard/numpad
     navigation, focused diagnostics panel, and a pure browser-environment
     classifier that rejects insecure contexts or missing WebGPU before WASM
