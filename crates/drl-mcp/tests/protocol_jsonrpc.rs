@@ -44,6 +44,34 @@ fn collect_list_pages(server: &mut McpServer, method: &str, key: &str) -> Vec<Js
   items
 }
 
+fn assert_tool_error(response: &JsonValue, code: i32) {
+  assert!(
+    response.get("error").is_none(),
+    "tool failure escaped as RPC error: {response:?}"
+  );
+  let result = response.get("result").expect("tool error result");
+  assert_eq!(
+    result.get("isError").and_then(JsonValue::as_bool),
+    Some(true)
+  );
+  let content = result
+    .get("content")
+    .and_then(JsonValue::as_array)
+    .expect("tool error content");
+  assert_eq!(content.len(), 1);
+  assert_eq!(
+    content[0].get("type").and_then(JsonValue::as_str),
+    Some("text")
+  );
+  assert!(content[0].get("text").and_then(JsonValue::as_str).is_some());
+  let data = result.get("data").expect("tool error details");
+  assert_eq!(
+    data.get("code").and_then(JsonValue::as_i64),
+    Some(code as i64)
+  );
+  assert!(data.get("message").and_then(JsonValue::as_str).is_some());
+}
+
 #[test]
 fn test_jsonrpc_initialize_handshake() {
   let mut server = McpServer::new();
@@ -560,24 +588,12 @@ fn test_jsonrpc_verify_replay_is_deterministic_and_state_safe() {
     r#"{"jsonrpc":"2.0","id":10,"method":"tools/call","params":{"name":"game_verify_replay","arguments":{}}}"#,
   ))
   .unwrap();
-  assert_eq!(
-    inactive
-      .get("error")
-      .and_then(|error| error.get("code"))
-      .and_then(|code| code.as_i64()),
-    Some(error_codes::SESSION_NOT_ACTIVE as i64)
-  );
+  assert_tool_error(&inactive, error_codes::SESSION_NOT_ACTIVE);
   let inactive_save = JsonValue::parse(&server.handle_request(
     r#"{"jsonrpc":"2.0","id":16,"method":"tools/call","params":{"name":"game_save_replay","arguments":{}}}"#,
   ))
   .unwrap();
-  assert_eq!(
-    inactive_save
-      .get("error")
-      .and_then(|error| error.get("code"))
-      .and_then(|code| code.as_i64()),
-    Some(error_codes::SESSION_NOT_ACTIVE as i64)
-  );
+  assert_tool_error(&inactive_save, error_codes::SESSION_NOT_ACTIVE);
 
   let _ = server.handle_request(
     r#"{"jsonrpc":"2.0","id":11,"method":"tools/call","params":{"name":"game_start","arguments":{"seed":91,"width":20,"height":10}}}"#,
@@ -723,13 +739,7 @@ fn test_jsonrpc_supplied_replay_verification_is_read_only_and_inactive_safe() {
     r#"{"jsonrpc":"2.0","id":45,"method":"tools/call","params":{"name":"game_verify_replay","arguments":{}}}"#,
   ))
   .unwrap();
-  assert_eq!(
-    inactive_current
-      .get("error")
-      .and_then(|error| error.get("code"))
-      .and_then(JsonValue::as_i64),
-    Some(error_codes::SESSION_NOT_ACTIVE as i64)
-  );
+  assert_tool_error(&inactive_current, error_codes::SESSION_NOT_ACTIVE);
 }
 
 #[test]
@@ -784,6 +794,23 @@ fn test_jsonrpc_supplied_replay_rejects_malformed_input_without_mutation() {
       .and_then(JsonValue::as_i64),
     Some(error_codes::INVALID_PARAMS as i64)
   );
+  let mut invalid_execution = exported
+    .get("result")
+    .and_then(|result| result.get("data"))
+    .cloned()
+    .expect("replay export data");
+  invalid_execution
+    .as_object_mut()
+    .and_then(|object| object.get_mut("commands"))
+    .and_then(JsonValue::as_array_mut)
+    .unwrap()
+    .push(JsonValue::parse(r#"{"action":"descend"}"#).unwrap());
+  let request = format!(
+    r#"{{"jsonrpc":"2.0","id":57,"method":"tools/call","params":{{"name":"game_verify_replay","arguments":{{"replay":{}}}}}}}"#,
+    invalid_execution.to_compact_string()
+  );
+  let response = JsonValue::parse(&server.handle_request(&request)).unwrap();
+  assert_tool_error(&response, error_codes::INTERNAL_ERROR);
   let mut unsafe_config = exported
     .get("result")
     .and_then(|result| result.get("data"))
@@ -825,13 +852,7 @@ fn test_jsonrpc_game_start_rejects_dimensions_outside_replay_bounds() {
     r#"{"jsonrpc":"2.0","id":56,"method":"tools/call","params":{"name":"game_start","arguments":{"width":513,"height":20}}}"#,
   ))
   .unwrap();
-  assert_eq!(
-    response
-      .get("error")
-      .and_then(|error| error.get("code"))
-      .and_then(JsonValue::as_i64),
-    Some(error_codes::INVALID_ACTION as i64)
-  );
+  assert_tool_error(&response, error_codes::INVALID_ACTION);
 }
 
 #[test]
@@ -946,16 +967,23 @@ fn test_jsonrpc_error_handling() {
     Some(error_codes::METHOD_NOT_FOUND as i64)
   );
 
+  // Unknown tools remain JSON-RPC dispatch errors, unlike recognized runtime failures.
+  let unknown_tool = r#"{"jsonrpc":"2.0","id":98,"method":"tools/call","params":{"name":"not_a_tool","arguments":{}}}"#;
+  let unknown_tool_response = JsonValue::parse(&server.handle_request(unknown_tool)).unwrap();
+  assert_eq!(
+    unknown_tool_response
+      .get("error")
+      .and_then(|error| error.get("code"))
+      .and_then(JsonValue::as_i64),
+    Some(error_codes::METHOD_NOT_FOUND as i64)
+  );
+
   // 3. Calling tool before game session started
   let obs_req =
     r#"{"jsonrpc":"2.0","id":100,"method":"tools/call","params":{"name":"game_get_observation"}}"#;
   let resp3_str = server.handle_request(obs_req);
   let resp3 = JsonValue::parse(&resp3_str).unwrap();
-  let err3 = resp3.get("error").unwrap();
-  assert_eq!(
-    err3.get("code").and_then(|v| v.as_i64()),
-    Some(error_codes::SESSION_NOT_ACTIVE as i64)
-  );
+  assert_tool_error(&resp3, error_codes::SESSION_NOT_ACTIVE);
 }
 
 #[test]

@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.58`
+Current project version: `0.2.59`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,16 +23,15 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M13/M6 Deterministic List Pagination
+## 2. Active Implementation Slice: M6/M13 Tool-Execution Error Results
 
 ### 2.1 Scope & Objective
 
-Add deterministic, local cursor pagination to `tools/list` and `resources/list`
-without changing registry content, tool calls, resource reads, lifecycle, or
-session behavior. Preserve no-params requests as the first page, expose stable
-server-owned page sizes (4 tools and 2 resources), and return method-scoped
-opaque cursors only when another page remains. This slice documents the local
-contract and does not claim complete external-client MCP compatibility.
+Normalize runtime failures from recognized `tools/call` tools into successful
+MCP-shaped results with `isError: true`, while preserving JSON-RPC errors for
+malformed envelopes/parameters, unsafe arguments, unknown methods/tools, and
+malformed supplied replay JSON. This slice documents a deterministic local
+error boundary and does not claim complete external-client MCP compatibility.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
@@ -59,42 +58,56 @@ contract and does not claim complete external-client MCP compatibility.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Stable first pages**: No-params and empty-object requests return the
-  first bounded page deterministically; tools use four entries and resources
-  use two entries.
-- [x] **Cursor continuation**: Valid `tools-v1-N` and `resources-v1-N` cursors
-  reconstruct the complete stable registry without omissions, duplicates, or
-  order changes; final pages omit `nextCursor`.
-- [x] **Fail-closed cursors**: Missing, non-object, wrong-type, cross-list,
-  malformed, stale, unaligned, and out-of-range cursors return `-32602` before
-  any session mutation.
-- [x] **Transport determinism**: Repeated pages are byte-identical, and stdio
-  plus batch response IDs/order and notification suppression remain stable.
-- [x] **Explicit non-goals**: No registry/content changes, other MCP primitive
-  pagination, external-client certification, reconnect/resume, replay import,
-  gameplay, browser, or deployment changes are claimed.
+- [x] **Runtime result boundary**: Inactive-session, invalid recognized action,
+  terminal, permission, and replay execution failures return a successful
+  JSON-RPC result with `content[0].type = "text"`, `isError: true`, and
+  `data.code`/`data.message`.
+- [x] **Protocol error preservation**: Malformed JSON-RPC, malformed or
+  non-object `tools/call` params/arguments, unsafe numeric values, malformed
+  supplied replay JSON, and unknown methods/tools retain `-32700`, `-32602`,
+  or `-32601` JSON-RPC error responses as applicable.
+- [x] **State and transport safety**: Runtime failures do not mutate session,
+  metrics, or replay state; notifications suppress results, batches preserve
+  response order/IDs, and repeated stdio output is byte-identical.
+- [x] **Delivered predecessor retained**: Deterministic `tools/list` and
+  `resources/list` pagination remains stable with fixed 4/2 pages and
+  method-scoped cursors.
+- [x] **Explicit non-goals**: No new tools, gameplay, lifecycle, replay
+  import/load, transport, deployment, or external-client/schema certification
+  claims are made.
 
 ### 2.4 Pure Contract
 
-- **Input**: Optional object params for `tools/list` or `resources/list`, with an
-  optional string `cursor`; omitted params select the first page.
-- **Output**: The requested registry page and an optional `nextCursor` string.
+- **Input**: A validated `tools/call` envelope and object-shaped arguments.
+- **Output**: Successful tool execution retains `{content, isError: false,
+  data}`; recognized runtime failure returns `{content, isError: true, data}`
+  where `data` contains the numeric project error code and stable message.
 - **Ownership Boundary**:
-  - `McpServer` owns fixed page sizes, stable registry slicing, and
-    method-scoped cursor validation; cursors are opaque implementation tokens,
-    not a general interchange format.
+  - `McpServer` classifies only runtime codes (`SESSION_NOT_ACTIVE`,
+    `INVALID_ACTION`, `PERMISSION_DENIED`, `INTERNAL_ERROR`) as MCP tool
+    results; `execute_tool` remains the semantic implementation boundary.
   - Tool calls, resource reads, session state, lifecycle transitions, replay
-    behavior, and registry definitions remain unchanged.
+    behavior, registry definitions, and delivered list pagination remain
+    unchanged.
 
 ---
 
 ## 3. Recent Delivered Slices
 
+### M13/M6 — Deterministic List Pagination (`VERSION` 0.2.58)
+
+- [x] `tools/list` and `resources/list` expose stable fixed-size pages (4 and
+  2 entries) with method-scoped cursors, deterministic continuation, final-page
+  omission, and fail-closed invalid-cursor handling.
+- [x] No-params behavior, session state, tool/resource content, lifecycle, and
+  broader external MCP compatibility remain unchanged/open.
+
 ### M13/M6 — Read-Only Canonical V1 Replay Verification (`VERSION` 0.2.57)
 
 - [x] `game_verify_replay` decodes and verifies supplied canonical V1 replay
   JSON without an active session or mutation; malformed, unsafe, out-of-bounds,
-  and simulation-invalid input returns `-32602`.
+  and type-invalid input returns `-32602`, while replay execution failures use
+  the recognized runtime-error result boundary.
 - [x] MCP session dimensions and generator parameters are bounded before export;
   session loading, replay-file IO, migration, and external interchange remain
   open.

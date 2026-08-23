@@ -3,6 +3,18 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.59]
+
+- Normalized recognized `tools/call` runtime failures into successful MCP
+  results with `isError: true`, stable text, and numeric `data.code`/
+  `data.message` details; inactive, invalid-action, terminal, permission, and
+  replay-execution failures are now machine-readable tool results.
+- Preserved JSON-RPC errors for malformed envelopes/params, unsafe arguments,
+  malformed supplied replay JSON, and unknown methods/tools, with notification
+  suppression, batch ordering, pagination, and state safety unchanged.
+- External-client certification, network integration, replay import/load, and
+  broader MCP error-class coverage remain open.
+
 ## [0.2.58]
 
 - Added deterministic cursor pagination for `tools/list` and `resources/list`
@@ -21,8 +33,9 @@ documented in this file.
   and exact u64 before deterministic verification. MCP session creation enforces
   bounded dimensions and generator parameters before export.
 - Supplied verification works without an active session, preserves the existing
-  zero-argument current-session path, returns `-32602` for malformed or
-  simulation-invalid supplied input, and leaves active session state unchanged.
+  zero-argument current-session path, returns `-32602` for malformed supplied
+  input while replay execution failures use the later tool-error result
+  boundary, and leaves active session state unchanged.
 - Session loading/activation, replay-file IO, migrations, cross-version and
   external interchange, and client certification remain open.
 

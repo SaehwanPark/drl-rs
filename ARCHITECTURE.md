@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.58`
+Current project version: `0.2.59`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -187,6 +187,11 @@ Presentation Boundary
     pages with method-scoped opaque cursors; malformed or stale cursors fail
     before session access, and list pagination does not alter tool/resource
     definitions or lifecycle state.
+  - `tools/call` keeps malformed envelopes, unsafe arguments, malformed replay
+    input, and unknown methods/tools as JSON-RPC errors, but wraps recognized
+    runtime failures in successful MCP results with `isError: true`, stable
+    text, and numeric `data.code`/`data.message`; this boundary does not change
+    session mutation or the lower-level `execute_tool` contract.
   - Strict observation boundaries with explicit `dev_mode` flag for omniscient
     inspection.
   - `initialize` validates a string `protocolVersion`, echoes supported

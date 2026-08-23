@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.58`
+Current project version: `0.2.59`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.58)
+## 3. Current Progress Summary (`VERSION` 0.2.59)
 
 ### Delivered Foundations
 
@@ -84,13 +84,16 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active Milestone Slice (M13/M6)**: `tools/list` and `resources/list` now
-  expose deterministic fixed-size pages (4 tools, 2 resources) with
-  method-scoped opaque cursors and `-32602` rejection for malformed, stale,
-  cross-list, or out-of-range cursors. No-params requests remain first-page
-  requests; continuation reconstructs each stable registry without omissions or
-  duplicates, and batch/stdio ordering remains deterministic. External-client
-  certification, reconnect/resume, and broader MCP compatibility remain open.
+- **Active Milestone Slice (M6/M13)**: recognized `tools/call` runtime failures
+  now return successful MCP results with `isError: true`, deterministic text,
+  and numeric `data.code`/`data.message` details. Malformed JSON-RPC/params,
+  unsafe arguments, malformed supplied replay input, and unknown methods/tools
+  remain JSON-RPC errors; state, metrics, replay, notifications, and batch
+  ordering remain deterministic and state-safe. The preceding `tools/list` and
+  `resources/list` fixed pages (4 tools, 2 resources) use method-scoped opaque
+  cursors and remain delivered. External-client/schema certification,
+  reconnect/resume, replay import/load, and broader MCP compatibility remain
+  open.
   `game_verify_replay` accepts an exact `drl-rust-replay-v1` JSON envelope and
   verifies it read-only, including without an active session. The preceding
   0.2.56 export emits every in-memory V1 `ReplayLog` field with deterministic
@@ -300,6 +303,11 @@ tooling.
 - [x] `tools/list` and `resources/list` provide deterministic fixed-size pages
   with method-scoped cursors, stable reconstruction, final-page omission, and
   fail-closed invalid-cursor handling; broader MCP compatibility remains open.
+- [x] Recognized `tools/call` runtime failures are successful MCP results with
+  `isError: true`, deterministic text, and numeric error details, while
+  malformed envelopes/arguments, malformed supplied replay input, and unknown
+  methods/tools retain JSON-RPC errors; notifications, batches, and state safety
+  remain deterministic.
 - [x] Terminal `game_step_action` calls are rejected after victory, death,
   turn-limit, or stalled outcomes; stair transitions report victory while
   reset and replay/metrics inspection remain available.

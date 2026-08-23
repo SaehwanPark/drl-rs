@@ -24,9 +24,14 @@ fn test_dev_mode_permission_boundary() {
   // Default: dev mode disabled -> game_get_dev_state fails
   let dev_req = r#"{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"game_get_dev_state","arguments":{}}}"#;
   let dev_resp = JsonValue::parse(&server.handle_request(dev_req)).unwrap();
-  let err = dev_resp.get("error").expect("Permission error expected");
+  let result = dev_resp.get("result").expect("Permission result expected");
   assert_eq!(
-    err.get("code").and_then(|v| v.as_i64()),
+    result.get("isError").and_then(JsonValue::as_bool),
+    Some(true)
+  );
+  let data = result.get("data").expect("Permission error details");
+  assert_eq!(
+    data.get("code").and_then(|v| v.as_i64()),
     Some(error_codes::PERMISSION_DENIED as i64)
   );
 
@@ -137,11 +142,20 @@ fn test_turn_limit_boundary_enforcement() {
     r#"{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"game_step_action","arguments":{"action":"wait"}}}"#,
   ))
   .unwrap();
+  assert_eq!(rejected.get("error"), None);
   assert_eq!(
     rejected
-      .get("error")
-      .and_then(|error| error.get("code"))
-      .and_then(|code| code.as_i64()),
+      .get("result")
+      .and_then(|result| result.get("isError"))
+      .and_then(JsonValue::as_bool),
+    Some(true)
+  );
+  assert_eq!(
+    rejected
+      .get("result")
+      .and_then(|result| result.get("data"))
+      .and_then(|data| data.get("code"))
+      .and_then(JsonValue::as_i64),
     Some(error_codes::INVALID_ACTION as i64)
   );
   assert_eq!(metrics_before, server.handle_request(metrics_request));

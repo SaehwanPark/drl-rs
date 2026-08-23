@@ -56,6 +56,17 @@ lines = [line for line in open(sys.argv[1], encoding="utf-8") if line.strip()]
 if len(lines) != 27:
     raise SystemExit(f"expected 27 JSON-RPC responses, found {len(lines)}")
 responses = [json.loads(line) for line in lines]
+
+def expect_tool_error(index, code):
+    result = responses[index].get("result", {})
+    if responses[index].get("error") is not None or result.get("isError") is not True:
+        raise SystemExit(f"response {index + 1} did not use an MCP tool error result")
+    if result.get("data", {}).get("code") != code:
+        raise SystemExit(f"response {index + 1} returned the wrong tool error code")
+    content = result.get("content", [])
+    if len(content) != 1 or content[0].get("type") != "text" or not content[0].get("text"):
+        raise SystemExit(f"response {index + 1} lacks deterministic error text")
+
 if [response.get("id") for response in responses] != list(range(1, 28)):
     raise SystemExit("stdio response IDs are not in request order")
 if not responses[0].get("result", {}).get("serverInfo", {}).get("name") == "drl-mcp":
@@ -137,24 +148,21 @@ if responses[11].get("result", {}).get("data", {}).get("deterministic") is not T
     raise SystemExit("game_verify_replay did not report deterministic replay")
 if responses[11].get("result", {}).get("data", {}).get("command_count") != 1:
     raise SystemExit("game_verify_replay reported the wrong command count")
-if responses[12].get("error", {}).get("code") != -32002:
-    raise SystemExit("dev-state request did not preserve permission denial")
+expect_tool_error(12, -32002)
 if responses[13].get("result", {}).get("data", {}).get("status") != "SessionReset":
     raise SystemExit("game_reset did not report SessionReset")
 if responses[14].get("result", {}).get("data", {}).get("status") != "ScenarioLoaded":
     raise SystemExit("game_load_scenario did not report ScenarioLoaded")
 if responses[17].get("result", {}).get("data", {}).get("outcome") != "Victory":
     raise SystemExit("scenario descend did not report Victory")
-if responses[18].get("error", {}).get("code") != -32001:
-    raise SystemExit("post-victory action was not rejected")
+expect_tool_error(18, -32001)
 if not responses[19].get("result", {}).get("contents"):
     raise SystemExit("rules resource read returned no contents")
 if not responses[20].get("result", {}).get("contents"):
     raise SystemExit("metrics resource read returned no contents")
 if responses[21].get("result", {}).get("data", {}).get("status") != "GameStarted":
     raise SystemExit("pre-dispatch state-safety fixture did not restart a game")
-if responses[22].get("error", {}).get("code") != -32001:
-    raise SystemExit("recognized but unadvertised action did not return INVALID_ACTION")
+expect_tool_error(22, -32001)
 if responses[23].get("result", {}).get("data", {}).get("game_over") is not False:
     raise SystemExit("valid action after pre-dispatch rejection did not execute")
 PY
