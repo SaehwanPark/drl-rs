@@ -64,17 +64,6 @@ coverage only, not full MCP/client compatibility.
   - `handle_request` retains its existing direct-call response API.
   - No external client adapter or deployment policy is added.
 
-## 2.5 Browser Offline Lifecycle Acceptance (Evidence Baseline)
-
-- [x] A real desktop Chromium run installed the generated service worker,
-  reloaded from the current release cache with network requests disabled, and
-  started the cached WASM game successfully. The recorded environment and
-  boundary are in
-  [`docs/acceptance/browser-offline-2026-08-23.md`](docs/acceptance/browser-offline-2026-08-23.md).
-- [ ] OS-level PWA installation prompts, production HTTPS deployment, other
-  browsers/backends, WCAG/screen-reader behavior, audible output, and
-  capture-backed parity remain open.
-
 ---
 
 ## 3. Recent Delivered Slices
@@ -85,6 +74,18 @@ coverage only, not full MCP/client compatibility.
   reject empty batches.
 - [x] Existing notification, null-ID, malformed-input, and identified-request
   contracts remain covered; full external-client compatibility remains open.
+
+### M10 — Browser Offline Lifecycle Acceptance (evidence baseline)
+
+- [x] A real desktop Chromium run installed the generated service worker,
+  reloaded from the current release cache with network requests disabled, and
+  started the cached WASM game successfully. The recorded environment and
+  boundary are in
+  [`docs/acceptance/browser-offline-2026-08-23.md`](docs/acceptance/browser-offline-2026-08-23.md).
+- [ ] The test-plan-required offline Clear Save action is awaiting explicit
+  action-time confirmation; OS-level PWA installation prompts, production
+  HTTPS deployment, other browsers/backends, WCAG/screen-reader behavior,
+  audible output, and capture-backed parity remain open.
 
 ### M13 — JSON-RPC Notification-Correct Stdio (`VERSION` 0.2.40)
 

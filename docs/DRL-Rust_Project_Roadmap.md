@@ -396,8 +396,10 @@ Implement robust client-side save state and offline browser capabilities.
   waiting updates without forcing active-client takeover.
 - [x] Service-worker navigation and asset reads are isolated to the current
   generated release cache; stale/unrelated cache namespaces fail closed.
-- [x] Full offline-after-first-load PWA lifecycle acceptance on the local
-  desktop Chromium target; see
+- [ ] Full offline-after-first-load PWA lifecycle acceptance remains open while
+  the test-plan-required Clear Save action awaits confirmation; offline
+  navigation/startup and Save/Load are evidenced on the local desktop
+  Chromium target in
   [`docs/acceptance/browser-offline-2026-08-23.md`](acceptance/browser-offline-2026-08-23.md).
 - [x] Corruption recovery policy: fail-closed restore, bounded quarantine, and
   playable boot/load when storage cleanup is unavailable.

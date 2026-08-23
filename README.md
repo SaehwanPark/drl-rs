@@ -58,8 +58,8 @@ replays, and regression testing.
 - Staged work:
   - Full audiovisual equivalence, broader content migration, OS-level PWA
     installation, production deployment, and support for other browsers remain
-    roadmap work; local desktop-Chromium offline-after-first-load acceptance
-    is recorded in
+    roadmap work; local desktop-Chromium offline navigation/startup and
+    Save/Load evidence is recorded in
     [`docs/acceptance/browser-offline-2026-08-23.md`](docs/acceptance/browser-offline-2026-08-23.md).
   - Cohort projections reject impossible telemetry and never carry player
     observations; `drl-rust cohort` emits bounded deterministic,
@@ -79,8 +79,8 @@ replays, and regression testing.
     remains open.
   - Browser saves use a bounded V2 command-count token, accept the shipped V1
     token for transactional replay, and migrate successful V1 restores in place;
-    the real offline lifecycle is verified on the supported local Chromium
-    target.
+    offline Save/Load is verified on the supported local Chromium target, while
+    the full Clear Save lifecycle remains open.
   - The service worker reads only the current generated release cache, so stale
     or unrelated Cache Storage namespaces cannot satisfy offline requests;
     registration bypasses browser HTTP caching for worker updates and reports
