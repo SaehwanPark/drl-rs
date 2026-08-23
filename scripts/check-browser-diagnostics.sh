@@ -7,10 +7,12 @@ cd "$(dirname "$0")/.."
 html=web/index.html
 bootstrap=web/bootstrap.js
 offline_cache=web/offline-cache.mjs
+browser_support=web/browser-support.mjs
 wasm=crates/drl-web/src/lib.rs
 test -s "$html"
 test -s "$bootstrap"
 test -s "$offline_cache"
+test -s "$browser_support"
 test -s "$wasm"
 grep -F 'id="game-diagnostics"' "$html" >/dev/null
 grep -F 'role="alert"' "$html" >/dev/null
@@ -18,6 +20,8 @@ grep -F 'id="browser-support"' "$html" >/dev/null
 grep -F 'Tested target: desktop Chromium with WebGPU enabled.' "$html" >/dev/null
 grep -F 'function writeDiagnostic' "$bootstrap" >/dev/null
 grep -F 'navigator.gpu' "$bootstrap" >/dev/null
+grep -F 'browserSupportDiagnostic' "$bootstrap" "$browser_support" >/dev/null
+grep -F 'window.isSecureContext' "$bootstrap" >/dev/null
 grep -F 'Offline cache unavailable' "$offline_cache" >/dev/null
 grep -F 'Audio unavailable' "$bootstrap" >/dev/null
 grep -F 'fn set_diagnostic' "$wasm" >/dev/null

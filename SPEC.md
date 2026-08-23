@@ -1,7 +1,7 @@
 # Specification
 
-Last reviewed: 2026-08-22
-Current project version: `0.2.34`
+Last reviewed: 2026-08-23
+Current project version: `0.2.35`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -23,79 +23,61 @@ criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 Representative Content-Evidence Coverage
+## 2. Active Implementation Slice: M12 Browser-Environment Diagnostics
 
 ### 2.1 Scope & Objective
 
-Validate the existing pinned legacy-content converters with a reviewed
-crosswalk (schema version 2). The gate checks source provenance, exact SHA-256 digests,
-deterministic ordering/uniqueness, complete being/item/cell record ID catalogs,
-scalar-only fields, structured migration gaps, and complete coverage of all 26
-indexed special-level IDs. It also synchronizes
-those IDs with the Rust descriptive catalog, including names, optional depths,
-entry strings, and welcome strings. It records evidence coverage only; it does
-not import runtime Lua behavior or assert gameplay parity.
+Make unsupported or untested browser environments fail with a clear, local
+recovery diagnostic before WebGPU startup. The contract distinguishes an
+insecure context from an unavailable WebGPU API and keeps the existing
+service-worker/audio diagnostics explicit. It is a browser-boundary contract;
+it does not claim support for another browser, backend, or real deployment.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
-1. **Pinned content converters (v0.2.17–v0.2.23)**:
-   - Build-time converters already extract shallow scalar records for beings,
-     item families, terrain cells, and special levels with provenance and
-     explicit migration gaps.
-2. **Typed Rust content boundary**:
-   - Current Rust definitions and the descriptive special-level catalog remain
-     runtime-owned; this slice adds only a validation gate over evidence.
+1. **Browser diagnostics shell (v0.2.14–v0.2.27)**:
+   - The page already exposes an accessible diagnostic alert, offline-cache
+     registration status, and recoverable audio/WebGPU messages.
+2. **Static support contract**:
+   - The local web checks already assert that diagnostics are same-origin,
+     non-telemetric, and focused for recovery.
 
 ### 2.3 Present Slice Acceptance Criteria
 
-- [x] **Reviewed crosswalk**: `docs/content/evidence-coverage.json` pins the
-  legacy revision, source paths, record counts, representative IDs, and the
-  complete 26-level ID catalog.
-- [x] **Provenance validation**: Every bundle source carries the pinned
-  revision and an exact reviewed 64-character SHA-256 digest.
-- [x] **Deterministic record validation**: Bundles are sorted and duplicate-free;
-  source indices remain within the declared provenance list.
-- [x] **Record catalog coverage**: Being, item-family, and terrain-cell bundles
-  match their complete reviewed record ID catalogs; the level bundle matches
-  all 26 indexed special-level IDs.
-- [x] **Rust catalog synchronization**: The reviewed level IDs match the
-  `SPECIAL_LEVEL_DEFINITIONS` source IDs exactly.
-- [x] **Scalar synchronization**: Each Rust special-level name, optional
-  depth, entry string, and welcome string matches the pinned evidence record.
-- [x] **Exact source digests**: Every configured source digest matches the
-  pinned revision content; digest drift is rejected by fixtures.
-- [x] **Evidence record shape**: Every record has scalar fields, structured
-  migration-gap entries, and positive source line metadata; nested imports are
-  rejected by fixtures.
-- [x] **Crosswalk schema**: Exact-digest and complete-catalog fields are
-  governed by schema version 2; obsolete schema versions are rejected.
-- [x] **Fixture rejection coverage**: Validator tests reject duplicate IDs,
-  unsorted records, missing representatives, wrong revisions, and wrong
-  source digests.
-- [ ] **Full typed content migration and behavior validation**: Nested tables,
-  callbacks, symbolic fields, assets, and gameplay semantics remain explicit
-  migration gaps.
+- [x] **Pure environment classifier**: A small JavaScript module maps secure
+  context and WebGPU availability to stable title/detail/action/status text.
+- [x] **Startup guard**: The Start handler uses the classifier before WASM
+  initialization and routes the resulting message through the existing
+  focused diagnostic panel.
+- [x] **Contract tests**: Node tests cover secure-context failure, WebGPU
+  absence, supported startup, and stable recovery text.
+- [x] **No expansion of claims**: Unsupported browser/backends, offline
+  installation, WCAG conformance, and screen-reader acceptance remain open.
 
 ### 2.4 Pure Contract
 
-- **Input**: Four provenance-bearing JSON evidence bundles and the reviewed
-  crosswalk.
-- **Output**: PASS only when pinned sources, deterministic records, reviewed
-  representatives, and special-level coverage all match; otherwise a bounded
-  diagnostic failure.
+- **Input**: Browser environment capabilities at the Start-button boundary.
+- **Output**: A stable diagnostic object or `null`; no WASM initialization or
+  gameplay command is attempted when the environment is unsupported.
 - **Ownership Boundary**:
-  - `scripts/convert-legacy-content-bundle.py` and
-    `scripts/convert-legacy-level-index.py` own extraction.
-  - `scripts/check-content-evidence.py` owns crosswalk validation.
-  - `crates/drl-core/src/special_level_definition.rs` owns the descriptive
-    Rust ID catalog checked by the validator.
-  - `docs/content/evidence-coverage.json` owns reviewed coverage scope.
-  - No simulation, browser runtime, Lua interpreter, or inferred gameplay
-    behavior changes.
+  - `web/browser-support.mjs` owns the pure environment classification.
+  - `web/bootstrap.js` owns DOM integration and diagnostic focus.
+  - `scripts/test-browser-support.mjs` owns deterministic contract fixtures.
+  - No simulation, content migration, telemetry, or network behavior changes.
 
 ---
 
 ## 3. Recent Delivered Slices
+
+### M12 — Browser-Environment Diagnostics (`VERSION` 0.2.35)
+
+- [x] Pure classifier distinguishes insecure contexts from missing WebGPU.
+- [x] Start-up guard routes unsupported environments through the focused
+  diagnostic panel before WASM initialization.
+- [x] Node tests cover both failure classes, supported startup, and stable
+  recovery text.
+- [ ] Real browser support, offline installation, WCAG, and screen-reader
+  acceptance remain open.
 
 ### M9 — Representative Content-Evidence Coverage (`VERSION` 0.2.34)
 
@@ -361,7 +343,7 @@ not import runtime Lua behavior or assert gameplay parity.
 
 ## 6. Verification Gates
 
-### Verified Baseline (`VERSION` 0.2.34)
+### Verified Baseline (`VERSION` 0.2.35)
 
 d9d78ea feat(content): version evidence crosswalk schema (#125)
 a8cda3e feat(content): validate evidence record shape (#124)
