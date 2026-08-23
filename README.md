@@ -33,7 +33,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.30`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.31`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:
@@ -64,8 +64,8 @@ replays, and regression testing.
     beings, item families, terrain cells, and special-level metadata; the
     reviewed evidence-coverage gate checks representative IDs, all 26 indexed
     special levels, and synchronization of their scalar metadata with the Rust
-    descriptive catalog. It never ships a Lua runtime or silently infers
-    behavior.
+    descriptive catalog and exact pinned source digests. It never ships a Lua
+    runtime or silently infers behavior.
   - Browser saves use a bounded V2 command-count token, accept the shipped V1
     token for transactional replay, and migrate successful V1 restores in place;
     real offline lifecycle acceptance remains open.

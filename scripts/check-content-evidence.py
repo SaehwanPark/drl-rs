@@ -231,6 +231,16 @@ def validate_bundle(kind: str, path: Path, expected: dict[str, object], revision
       isinstance(digest, str) and SHA256.fullmatch(digest) is not None,
       f"{kind} source {index} lacks a SHA-256",
     )
+  expected_digests = expected.get("source_sha256")
+  require(
+    isinstance(expected_digests, list) and len(expected_digests) == len(sources),
+    f"{kind} source digest crosswalk is missing or mis-sized",
+  )
+  for index, source in enumerate(sources):
+    require(
+      source.get("sha256") == expected_digests[index],
+      f"{kind} source {index} digest differs from the reviewed crosswalk",
+    )
 
   records = payload.get("records")
   require(isinstance(records, list), f"{kind} records are not a list")

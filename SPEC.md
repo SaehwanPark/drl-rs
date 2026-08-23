@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-22
-Current project version: `0.2.30`
+Current project version: `0.2.31`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. This file expands **exactly one active
@@ -28,12 +28,12 @@ criteria, and verification boundaries.
 ### 2.1 Scope & Objective
 
 Validate the existing pinned legacy-content converters with a reviewed
-crosswalk. The gate checks source provenance, SHA-256 shape, deterministic
-ordering/uniqueness, representative being/item/cell IDs, and complete coverage
-of all 26 indexed special-level IDs. It also synchronizes those IDs with the
-Rust descriptive catalog, including names, optional depths, entry strings, and
-welcome strings. It records evidence coverage only; it does not import runtime
-Lua behavior or assert gameplay parity.
+crosswalk. The gate checks source provenance, exact SHA-256 digests,
+deterministic ordering/uniqueness, representative being/item/cell IDs, and
+complete coverage of all 26 indexed special-level IDs. It also synchronizes
+those IDs with the Rust descriptive catalog, including names, optional depths,
+entry strings, and welcome strings. It records evidence coverage only; it does
+not import runtime Lua behavior or assert gameplay parity.
 
 ### 2.2 Predecessor Foundation (Delivered Slices)
 
@@ -51,7 +51,7 @@ Lua behavior or assert gameplay parity.
   legacy revision, source paths, record counts, representative IDs, and the
   complete 26-level ID catalog.
 - [x] **Provenance validation**: Every bundle source carries the pinned
-  revision and a non-empty 64-character SHA-256 digest.
+  revision and an exact reviewed 64-character SHA-256 digest.
 - [x] **Deterministic record validation**: Bundles are sorted and duplicate-free;
   source indices remain within the declared provenance list.
 - [x] **Representative coverage**: Being, item-family, and terrain-cell bundles
@@ -61,8 +61,11 @@ Lua behavior or assert gameplay parity.
   `SPECIAL_LEVEL_DEFINITIONS` source IDs exactly.
 - [x] **Scalar synchronization**: Each Rust special-level name, optional
   depth, entry string, and welcome string matches the pinned evidence record.
+- [x] **Exact source digests**: Every configured source digest matches the
+  pinned revision content; digest drift is rejected by fixtures.
 - [x] **Fixture rejection coverage**: Validator tests reject duplicate IDs,
-  unsorted records, missing representatives, and wrong revisions.
+  unsorted records, missing representatives, wrong revisions, and wrong
+  source digests.
 - [ ] **Full typed content migration and behavior validation**: Nested tables,
   callbacks, symbolic fields, assets, and gameplay semantics remain explicit
   migration gaps.
@@ -88,7 +91,7 @@ Lua behavior or assert gameplay parity.
 
 ## 3. Recent Delivered Slices
 
-### M9 — Representative Content-Evidence Coverage (`VERSION` 0.2.30)
+### M9 — Representative Content-Evidence Coverage (`VERSION` 0.2.31)
 
 - [x] Added a reviewed crosswalk and validator for pinned being, item-family,
   terrain-cell, and special-level evidence bundles.
@@ -98,6 +101,8 @@ Lua behavior or assert gameplay parity.
   `SPECIAL_LEVEL_DEFINITIONS` catalog and rejected fixture drift.
 - [x] Compared all descriptive scalar fields against the pinned level evidence
   records without importing maps, callbacks, or level behavior.
+- [x] Locked every reviewed source to its exact pinned SHA-256 digest and added
+  wrong-digest rejection coverage.
 - [ ] Full typed migration, assets, callbacks, and gameplay parity remain open.
 
 ### M10 — Same-Release Offline-Cache Isolation (`VERSION` 0.2.27)
@@ -344,7 +349,7 @@ Lua behavior or assert gameplay parity.
 
 ## 6. Verification Gates
 
-### Verified Baseline (`VERSION` 0.2.30)
+### Verified Baseline (`VERSION` 0.2.31)
 
 6aade20 feat(content): synchronize special-level scalar evidence (#121)
 3c8d618 docs(spec): record catalog sync baseline

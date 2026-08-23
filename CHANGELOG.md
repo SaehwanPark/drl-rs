@@ -3,6 +3,12 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.31]
+
+- Locked every reviewed legacy evidence source to its exact pinned SHA-256
+  digest and added wrong-digest rejection coverage.
+- Kept the gate descriptive-only; no runtime Lua or gameplay behavior changed.
+
 ## [0.2.30]
 
 - Extended the M9 evidence gate to compare all 26 Rust special-level scalar
