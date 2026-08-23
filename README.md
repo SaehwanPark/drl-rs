@@ -36,7 +36,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.61`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.62`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:
@@ -48,6 +48,9 @@ replays, and regression testing.
     Armor, Phase Device, and StairsDown tint boundaries, an emissive lighting
     floor, optional outline-mask compositing, and animation frame
     metadata/selection.
+  - The renderer also exposes a fair explored-topology minimap projection with
+    deterministic ordering and visible actor/player markers; exact legacy
+    minimap parity remains staged work.
   - Pure contracts cover effect timing, low-health tone/pulse, explosion marks,
     movement and missile progress, screen-shake fade, particle origins,
     burst directions/range sampling, decal cell/placement/eligibility,

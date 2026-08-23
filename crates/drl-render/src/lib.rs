@@ -5,11 +5,13 @@
 //! presentation timing can never advance the simulation.
 
 mod animation;
+mod minimap;
 mod outline;
 mod particle_decal;
 mod particle_decal_plan;
 
 pub use animation::{AnimationPlayback, animation_frame_index_at_elapsed};
+pub use minimap::{MinimapCell, MinimapMarker, MinimapState};
 pub use outline::outline_mask_composite;
 pub use particle_decal::{ParticleDecalStorageError, ParticleDecalStore};
 pub use particle_decal_plan::{ParticleDecalSprite, particle_decal_draw_plan};
