@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.45]
+
+- Added JSON-RPC request-ID domain validation: string, number, and explicit
+  `null` IDs remain supported, while boolean, array, and object IDs return
+  deterministic `-32600` invalid-request errors before dispatch.
+- Preserved omitted-ID notification suppression, explicit null-ID responses,
+  initialize envelope validation, lifecycle gating, and deterministic stdio
+  behavior; full external-client compatibility remains open.
+
 ## [0.2.44]
 
 - Added bounded MCP initialize-envelope validation for object `capabilities`

@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.44`
+Current project version: `0.2.45`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.44)
+## 3. Current Progress Summary (`VERSION` 0.2.45)
 
 ### Delivered Foundations
 
@@ -86,8 +86,9 @@ verification item uses explicit status semantics:
 
 - **Active Milestone Slice (M13)**: MCP `initialize` now validates object
   `capabilities` and string `clientInfo.name`/`version` fields while retaining
-  identified lifecycle gating before discovery, tools, and resources. Full
-  schema validation and external-client compatibility remain open.
+  identified lifecycle gating before discovery, tools, and resources; JSON-RPC
+  request IDs now reject non-scalar values before dispatch. Full schema
+  validation and external-client compatibility remain open.
 - **M9 Content Evidence**: Base, expansion, user-item, being, terrain-cell,
   and special-level evidence slices are delivered without runtime Lua or
   gameplay overclaims.
@@ -506,6 +507,9 @@ Final release readiness, documentation, and static distribution.
   `clientInfo` with string `name`/`version`, returning `-32602` without
   advancing lifecycle for malformed fields; full schema/client compatibility
   remains open.
+- [x] JSON-RPC request IDs accept strings, numbers, and explicit `null`, while
+  boolean/array/object IDs return `-32600` before dispatch; notification and
+  batch response boundaries remain deterministic.
 - [ ] Complete deterministic headless/MCP agent tooling suite and external
   client compatibility.
 - [ ] Comprehensive public rights inventory and release documentation.

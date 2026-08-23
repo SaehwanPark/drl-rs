@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.44`
+Current project version: `0.2.45`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -180,6 +180,9 @@ Presentation Boundary
   - Initialize params also require object `capabilities` and `clientInfo`
     fields with string `name` and `version`; unknown nested fields remain
     tolerated and malformed required fields return `-32602`.
+  - JSON-RPC request IDs are limited to strings, numbers, or explicit `null`;
+    boolean, array, and object IDs return `-32600` before dispatch, while
+    omitted IDs remain notifications.
   - A private `Uninitialized → AwaitingInitialized → Ready` phase gate requires
     an identified initialize request followed by `notifications/initialized`
     before tools and resources are available; premature/duplicate transitions

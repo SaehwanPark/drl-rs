@@ -223,3 +223,23 @@ fn test_jsonrpc_error_handling() {
     Some(error_codes::SESSION_NOT_ACTIVE as i64)
   );
 }
+
+#[test]
+fn test_jsonrpc_rejects_non_scalar_request_ids() {
+  let mut server = McpServer::new();
+  for request in [
+    r#"{"jsonrpc":"2.0","id":true,"method":"ping"}"#,
+    r#"{"jsonrpc":"2.0","id":[],"method":"ping"}"#,
+    r#"{"jsonrpc":"2.0","id":{},"method":"ping"}"#,
+  ] {
+    let response = JsonValue::parse(&server.handle_request(request)).unwrap();
+    assert!(response.get("id").is_some_and(JsonValue::is_null));
+    assert_eq!(
+      response
+        .get("error")
+        .and_then(|error| error.get("code"))
+        .and_then(|code| code.as_i64()),
+      Some(error_codes::INVALID_REQUEST as i64)
+    );
+  }
+}

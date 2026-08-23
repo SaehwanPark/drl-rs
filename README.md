@@ -36,7 +36,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.44`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.45`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:
@@ -74,8 +74,8 @@ replays, and regression testing.
     schema. It never ships a Lua runtime or silently infers behavior.
   - The native `drl-app --mcp` stdio transport has a deterministic JSON-lines
     contract with version-aware initialize negotiation, required object-shaped
-    capabilities/client metadata, and an identified initialize/initialized
-    lifecycle gate before discovery, gameplay,
+    capabilities/client metadata, scalar/null request-ID validation, and an
+    identified initialize/initialized lifecycle gate before discovery, gameplay,
     replay/metrics, reset, scenarios, resources, fairness denial, notification
     side effects without responses, and ordered JSON-RPC batches; reconnect and
     full external-client compatibility remain open.
