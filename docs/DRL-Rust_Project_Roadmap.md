@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-23
-Current project version: `0.2.40`
+Current project version: `0.2.41`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.40)
+## 3. Current Progress Summary (`VERSION` 0.2.41)
 
 ### Delivered Foundations
 
@@ -96,9 +96,9 @@ verification item uses explicit status semantics:
   matrix plus descriptive depth distributions; canonical difficulty targets
   remain open.
 - **M13 Tooling**: The actual `drl-app --mcp` stdio transport now has a fixed,
-  repeatable JSON-RPC lifecycle contract, including notification side effects
-  without responses, explicit null-ID responses, and malformed-input errors;
-  batch and full external-client compatibility remain open.
+  repeatable JSON-RPC lifecycle contract with notification side effects,
+  ordered batch responses, explicit null-ID responses, and malformed-input
+  errors; full external-client compatibility remains open.
 - **M12 Accessibility**: Static and native contracts cover generated names,
   escaping, live-channel boundaries, help association, focus styling, and
   diagnostic recovery; startup now classifies insecure contexts and missing
@@ -484,6 +484,8 @@ Final release readiness, documentation, and static distribution.
   gameplay, replay/metrics, reset, scenario, resources, and fairness denial.
 - [x] Stdio notifications apply side effects without responses while identified,
   explicit null-ID, and malformed requests retain response contracts.
+- [x] Nonempty stdio batch arrays preserve response order, omit notification
+  members, and reject empty batches deterministically.
 - [ ] Complete deterministic headless/MCP agent tooling suite and external
   client compatibility.
 - [ ] Comprehensive public rights inventory and release documentation.
