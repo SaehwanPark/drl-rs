@@ -3,6 +3,11 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.115]
+
+- Added the protocol's stable `ItemArchetype::ALL` catalog and routed routine
+  atlas descriptor coverage tests through it, removing duplicate test lists.
+
 ## [0.2.114]
 
 - Added protocol-owned stable item-name parsing and typed spawn reconstruction;

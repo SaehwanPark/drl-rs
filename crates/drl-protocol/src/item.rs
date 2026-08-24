@@ -130,6 +130,73 @@ pub enum ItemArchetype {
   PhaseDevice,
 }
 
+impl ItemArchetype {
+  /// All stable item archetypes currently registered by the protocol.
+  ///
+  /// This is a presentation/contract catalog, not a gameplay definition
+  /// table. Core definitions remain authoritative for balance and behavior.
+  pub const ALL: &[Self] = &[
+    Self::Unknown,
+    Self::Pistol,
+    Self::Shotgun,
+    Self::DoubleShotgun,
+    Self::CombatShotgun,
+    Self::Blaster,
+    Self::LaserRifle,
+    Self::MissileLauncher,
+    Self::NuclearPlasmaRifle,
+    Self::NuclearBfg9000,
+    Self::Bfg10k,
+    Self::MegaBuster,
+    Self::GrammatonBeretta,
+    Self::FragShotgun,
+    Self::RevenantsLauncher,
+    Self::Railgun,
+    Self::AcidSpitter,
+    Self::CombatPistol,
+    Self::AssaultShotgun,
+    Self::PlasmaShotgun,
+    Self::Jackhammer,
+    Self::SuperShotgun,
+    Self::TristarBlaster,
+    Self::ButchersCleaver,
+    Self::Mjollnir,
+    Self::SubtleKnife,
+    Self::Trigun,
+    Self::AntiFreakJackal,
+    Self::Minigun,
+    Self::Chaingun,
+    Self::RocketLauncher,
+    Self::PlasmaRifle,
+    Self::Bfg9000,
+    Self::Chainsaw,
+    Self::CombatKnife,
+    Self::Ammo9mm,
+    Self::AmmoShells,
+    Self::AmmoRockets,
+    Self::AmmoCells,
+    Self::AmmoPackRockets,
+    Self::AmmoPackCells,
+    Self::AmmoPack9mm,
+    Self::AmmoPackShells,
+    Self::SmallMedPack,
+    Self::LargeMedPack,
+    Self::GreenArmor,
+    Self::BlueArmor,
+    Self::RedArmor,
+    Self::OnyxArmor,
+    Self::PhaseshiftArmor,
+    Self::GothicArmor,
+    Self::MaleksArmor,
+    Self::CyberneticArmor,
+    Self::Necroarmor,
+    Self::MedicalPowerarmor,
+    Self::LavaArmor,
+    Self::ShieldedArmor,
+    Self::PhaseDevice,
+  ];
+}
+
 impl fmt::Display for ItemArchetype {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     let value = match self {

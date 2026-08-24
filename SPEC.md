@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-24
-Current project version: `0.2.114`
+Current project version: `0.2.115`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -316,10 +316,11 @@ insufficient.
 
 - [ ] Inventory all current manual fan-out points for adding an item archetype.
 - [ ] Establish one authoritative compile-time item/content catalog or
-  equivalent source of truth. **Partial in `0.2.114`:** definition coverage
-  tests and replay JSON item encode/decode now derive from typed projections;
-  structural validation continues to use `CURRENT_ITEM_SPAWN_KINDS`; behavioral
-  and presentation projections remain explicit.
+  equivalent source of truth. **Partial in `0.2.115`:** definition coverage,
+  replay JSON encode/decode, and routine descriptor coverage tests now derive
+  from typed catalogs/projections; structural validation continues to use
+  `CURRENT_ITEM_SPAWN_KINDS`; behavioral and presentation mappings remain
+  explicit.
 - [ ] Generate or mechanically derive routine projections such as stable IDs,
   display strings, validation coverage, replay names, and presentation lookup
   where doing so does not weaken type safety.

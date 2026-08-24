@@ -810,66 +810,7 @@ mod tests {
           .is_some()
       );
     }
-    for archetype in [
-      ItemArchetype::Unknown,
-      ItemArchetype::Pistol,
-      ItemArchetype::Shotgun,
-      ItemArchetype::DoubleShotgun,
-      ItemArchetype::CombatShotgun,
-      ItemArchetype::Blaster,
-      ItemArchetype::LaserRifle,
-      ItemArchetype::MissileLauncher,
-      ItemArchetype::NuclearPlasmaRifle,
-      ItemArchetype::NuclearBfg9000,
-      ItemArchetype::Bfg10k,
-      ItemArchetype::MegaBuster,
-      ItemArchetype::GrammatonBeretta,
-      ItemArchetype::FragShotgun,
-      ItemArchetype::RevenantsLauncher,
-      ItemArchetype::Railgun,
-      ItemArchetype::AcidSpitter,
-      ItemArchetype::CombatPistol,
-      ItemArchetype::AssaultShotgun,
-      ItemArchetype::PlasmaShotgun,
-      ItemArchetype::Jackhammer,
-      ItemArchetype::SuperShotgun,
-      ItemArchetype::TristarBlaster,
-      ItemArchetype::ButchersCleaver,
-      ItemArchetype::Mjollnir,
-      ItemArchetype::SubtleKnife,
-      ItemArchetype::Trigun,
-      ItemArchetype::AntiFreakJackal,
-      ItemArchetype::Minigun,
-      ItemArchetype::Chaingun,
-      ItemArchetype::RocketLauncher,
-      ItemArchetype::PlasmaRifle,
-      ItemArchetype::Chainsaw,
-      ItemArchetype::Bfg9000,
-      ItemArchetype::CombatKnife,
-      ItemArchetype::Ammo9mm,
-      ItemArchetype::AmmoShells,
-      ItemArchetype::AmmoRockets,
-      ItemArchetype::AmmoCells,
-      ItemArchetype::AmmoPackRockets,
-      ItemArchetype::AmmoPackCells,
-      ItemArchetype::AmmoPack9mm,
-      ItemArchetype::AmmoPackShells,
-      ItemArchetype::SmallMedPack,
-      ItemArchetype::LargeMedPack,
-      ItemArchetype::GreenArmor,
-      ItemArchetype::BlueArmor,
-      ItemArchetype::RedArmor,
-      ItemArchetype::OnyxArmor,
-      ItemArchetype::PhaseshiftArmor,
-      ItemArchetype::GothicArmor,
-      ItemArchetype::MaleksArmor,
-      ItemArchetype::CyberneticArmor,
-      ItemArchetype::Necroarmor,
-      ItemArchetype::MedicalPowerarmor,
-      ItemArchetype::LavaArmor,
-      ItemArchetype::ShieldedArmor,
-      ItemArchetype::PhaseDevice,
-    ] {
+    for archetype in ItemArchetype::ALL.iter().copied() {
       let descriptor = item_sprite(archetype);
       assert!(descriptor.rect.is_within(
         descriptor.atlas.dimensions().0,
@@ -1173,67 +1114,16 @@ mod tests {
       assert_eq!(descriptor.frame_rect(0), Some(descriptor.rect));
       assert!(descriptor.frame_rect(1).is_none());
     }
-    for item in [
-      ItemArchetype::Unknown,
-      ItemArchetype::CombatKnife,
-      ItemArchetype::Pistol,
-      ItemArchetype::Shotgun,
-      ItemArchetype::DoubleShotgun,
-      ItemArchetype::CombatShotgun,
-      ItemArchetype::Blaster,
-      ItemArchetype::LaserRifle,
-      ItemArchetype::MissileLauncher,
-      ItemArchetype::NuclearPlasmaRifle,
-      ItemArchetype::NuclearBfg9000,
-      ItemArchetype::Bfg10k,
-      ItemArchetype::MegaBuster,
-      ItemArchetype::GrammatonBeretta,
-      ItemArchetype::FragShotgun,
-      ItemArchetype::RevenantsLauncher,
-      ItemArchetype::Railgun,
-      ItemArchetype::AcidSpitter,
-      ItemArchetype::CombatPistol,
-      ItemArchetype::AssaultShotgun,
-      ItemArchetype::PlasmaShotgun,
-      ItemArchetype::Jackhammer,
-      ItemArchetype::SuperShotgun,
-      ItemArchetype::TristarBlaster,
-      ItemArchetype::ButchersCleaver,
-      ItemArchetype::Mjollnir,
-      ItemArchetype::SubtleKnife,
-      ItemArchetype::Trigun,
-      ItemArchetype::AntiFreakJackal,
-      ItemArchetype::Minigun,
-      ItemArchetype::Chaingun,
-      ItemArchetype::RocketLauncher,
-      ItemArchetype::PlasmaRifle,
-      ItemArchetype::Chainsaw,
-      ItemArchetype::Bfg9000,
-      ItemArchetype::GreenArmor,
-      ItemArchetype::BlueArmor,
-      ItemArchetype::RedArmor,
-      ItemArchetype::OnyxArmor,
-      ItemArchetype::PhaseshiftArmor,
-      ItemArchetype::GothicArmor,
-      ItemArchetype::MaleksArmor,
-      ItemArchetype::CyberneticArmor,
-      ItemArchetype::Necroarmor,
-      ItemArchetype::MedicalPowerarmor,
-      ItemArchetype::LavaArmor,
-      ItemArchetype::ShieldedArmor,
-      ItemArchetype::Ammo9mm,
-      ItemArchetype::AmmoShells,
-      ItemArchetype::AmmoRockets,
-      ItemArchetype::AmmoPackRockets,
-      ItemArchetype::AmmoPack9mm,
-      ItemArchetype::AmmoPackShells,
-      ItemArchetype::SmallMedPack,
-      ItemArchetype::LargeMedPack,
-    ] {
+    for item in ItemArchetype::ALL.iter().copied() {
       let descriptor = item_sprite(item);
-      assert_eq!(descriptor.animation, None);
       assert_eq!(descriptor.frame_rect(0), Some(descriptor.rect));
-      assert!(descriptor.frame_rect(1).is_none());
+      match descriptor.animation {
+        Some(animation) => {
+          assert!(animation.frame_count > 1);
+          assert!(descriptor.frame_rect(1).is_some());
+        }
+        None => assert!(descriptor.frame_rect(1).is_none()),
+      }
     }
     let cells = item_sprite(ItemArchetype::AmmoCells);
     assert_eq!(
