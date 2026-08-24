@@ -4,9 +4,11 @@
 //! It intentionally does not compare values with legacy Lua, balance targets,
 //! or external captures.
 
-use drl_protocol::{ItemSpawnKind, MonsterDefinition, MonsterKind};
+use drl_protocol::{MonsterDefinition, MonsterKind};
 
-use crate::item_definition::{ItemDefinition, ItemDefinitionKind, definition_for_spawn_kind};
+use crate::item_definition::{
+  CURRENT_ITEM_SPAWN_KINDS, ItemDefinition, ItemDefinitionKind, definition_for_spawn_kind,
+};
 use crate::level_definition::{LEVEL_DEFINITIONS, LevelDefinition};
 use crate::loot_definition::{GENERATED_LOOT_DEFINITIONS, GeneratedLootDefinition};
 use crate::monster_roll_definition::{GENERATED_MONSTER_DEFINITIONS, GeneratedMonsterDefinition};
@@ -71,65 +73,7 @@ pub fn validate_current_content() -> Result<(), ContentValidationError> {
   ] {
     validate_monster_definition(kind.definition())?;
   }
-  for kind in [
-    ItemSpawnKind::Pistol,
-    ItemSpawnKind::Shotgun,
-    ItemSpawnKind::DoubleShotgun,
-    ItemSpawnKind::CombatShotgun,
-    ItemSpawnKind::Blaster,
-    ItemSpawnKind::LaserRifle,
-    ItemSpawnKind::MissileLauncher,
-    ItemSpawnKind::NuclearPlasmaRifle,
-    ItemSpawnKind::NuclearBfg9000,
-    ItemSpawnKind::Bfg10k,
-    ItemSpawnKind::MegaBuster,
-    ItemSpawnKind::GrammatonBeretta,
-    ItemSpawnKind::FragShotgun,
-    ItemSpawnKind::RevenantsLauncher,
-    ItemSpawnKind::Railgun,
-    ItemSpawnKind::AcidSpitter,
-    ItemSpawnKind::CombatPistol,
-    ItemSpawnKind::AssaultShotgun,
-    ItemSpawnKind::PlasmaShotgun,
-    ItemSpawnKind::Jackhammer,
-    ItemSpawnKind::SuperShotgun,
-    ItemSpawnKind::TristarBlaster,
-    ItemSpawnKind::ButchersCleaver,
-    ItemSpawnKind::Mjollnir,
-    ItemSpawnKind::SubtleKnife,
-    ItemSpawnKind::Trigun,
-    ItemSpawnKind::AntiFreakJackal,
-    ItemSpawnKind::Minigun,
-    ItemSpawnKind::Chaingun,
-    ItemSpawnKind::PlasmaRifle,
-    ItemSpawnKind::RocketLauncher,
-    ItemSpawnKind::Bfg9000,
-    ItemSpawnKind::Chainsaw,
-    ItemSpawnKind::CombatKnife,
-    ItemSpawnKind::Ammo9mm(0),
-    ItemSpawnKind::AmmoShells(0),
-    ItemSpawnKind::AmmoRockets(0),
-    ItemSpawnKind::AmmoCells(0),
-    ItemSpawnKind::AmmoPackRockets,
-    ItemSpawnKind::AmmoPackCells,
-    ItemSpawnKind::AmmoPack9mm,
-    ItemSpawnKind::AmmoPackShells,
-    ItemSpawnKind::SmallMedPack,
-    ItemSpawnKind::LargeMedPack,
-    ItemSpawnKind::GreenArmor,
-    ItemSpawnKind::BlueArmor,
-    ItemSpawnKind::RedArmor,
-    ItemSpawnKind::OnyxArmor,
-    ItemSpawnKind::PhaseshiftArmor,
-    ItemSpawnKind::GothicArmor,
-    ItemSpawnKind::MaleksArmor,
-    ItemSpawnKind::CyberneticArmor,
-    ItemSpawnKind::Necroarmor,
-    ItemSpawnKind::MedicalPowerarmor,
-    ItemSpawnKind::LavaArmor,
-    ItemSpawnKind::ShieldedArmor,
-    ItemSpawnKind::PhaseDevice,
-  ] {
+  for &kind in CURRENT_ITEM_SPAWN_KINDS {
     validate_item_definition(definition_for_spawn_kind(kind))?;
   }
 
