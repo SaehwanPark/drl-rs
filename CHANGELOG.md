@@ -3,6 +3,12 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.114]
+
+- Added protocol-owned stable item-name parsing and typed spawn reconstruction;
+  replay JSON decoding now uses those projections instead of a duplicate
+  56-variant MCP match.
+
 ## [0.2.113]
 
 - Added typed `ItemSpawnKind` archetype and loose-ammo count projections and

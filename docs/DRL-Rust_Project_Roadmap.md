@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-24
-Current project version: `0.2.113`
+Current project version: `0.2.114`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.113)
+## 3. Current Progress Summary (`VERSION` 0.2.114)
 
 ### Delivered Foundations
 
@@ -89,8 +89,8 @@ verification item uses explicit status semantics:
   The first Gate C slice centralizes representative item spawn families in
   `CURRENT_ITEM_SPAWN_KINDS` for structural validation, and the definition
   coverage test now derives from that same catalog. Replay JSON stable item
-  names and loose-ammo counts now use typed `ItemSpawnKind` projections;
-  behavior and presentation fan-out remain explicitly open.
+  names, loose-ammo counts, and inverse decoding now use typed protocol
+  projections; behavior and presentation fan-out remain explicitly open.
 - **Tooling & Replays (M5, M6)**: Versioned replay engine (`V1`), declarative
   ASCII scenario runners, scripted bots, batch sweep runners, and a pure Rust
   zero-dependency MCP server.

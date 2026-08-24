@@ -5,7 +5,7 @@ use crate::replay_json::{
   MAX_CONTENT_PER_ROOM, MAX_PROCEDURAL_ROOMS, MAX_REPLAY_DIMENSION, MAX_ROOM_SIZE,
 };
 use drl_protocol::{
-  Command, Direction, EquipmentSlot, ItemSpawnKind, ItemSpawnSpec, MonsterSpawnSpec,
+  Command, Direction, EquipmentSlot, ItemArchetype, ItemSpawnKind, ItemSpawnSpec, MonsterSpawnSpec,
   PlayerSpawnConfig, Position, ProceduralGenerationConfig, ReplayLog, ReplayMetadata,
   ReplayVersion, TileKind,
 };
@@ -278,78 +278,20 @@ fn parse_command(value: &JsonValue, index: usize) -> Result<Command, String> {
 fn item_kind(value: &JsonValue, context: &str) -> Result<ItemSpawnKind, String> {
   let object = object(value, context)?;
   let kind = string(required(object, "kind")?, &format!("{context}.kind"))?;
-  match kind {
-    "pistol" => Ok(ItemSpawnKind::Pistol),
-    "shotgun" => Ok(ItemSpawnKind::Shotgun),
-    "double_shotgun" => Ok(ItemSpawnKind::DoubleShotgun),
-    "combat_shotgun" => Ok(ItemSpawnKind::CombatShotgun),
-    "blaster" => Ok(ItemSpawnKind::Blaster),
-    "laser_rifle" => Ok(ItemSpawnKind::LaserRifle),
-    "missile_launcher" => Ok(ItemSpawnKind::MissileLauncher),
-    "nuclear_plasma_rifle" => Ok(ItemSpawnKind::NuclearPlasmaRifle),
-    "nuclear_bfg9000" => Ok(ItemSpawnKind::NuclearBfg9000),
-    "bfg_10k" => Ok(ItemSpawnKind::Bfg10k),
-    "mega_buster" => Ok(ItemSpawnKind::MegaBuster),
-    "grammaton_beretta" => Ok(ItemSpawnKind::GrammatonBeretta),
-    "frag_shotgun" => Ok(ItemSpawnKind::FragShotgun),
-    "revenants_launcher" => Ok(ItemSpawnKind::RevenantsLauncher),
-    "railgun" => Ok(ItemSpawnKind::Railgun),
-    "acid_spitter" => Ok(ItemSpawnKind::AcidSpitter),
-    "combat_pistol" => Ok(ItemSpawnKind::CombatPistol),
-    "assault_shotgun" => Ok(ItemSpawnKind::AssaultShotgun),
-    "plasma_shotgun" => Ok(ItemSpawnKind::PlasmaShotgun),
-    "jackhammer" => Ok(ItemSpawnKind::Jackhammer),
-    "super_shotgun" => Ok(ItemSpawnKind::SuperShotgun),
-    "tristar_blaster" => Ok(ItemSpawnKind::TristarBlaster),
-    "butchers_cleaver" => Ok(ItemSpawnKind::ButchersCleaver),
-    "mjollnir" => Ok(ItemSpawnKind::Mjollnir),
-    "subtle_knife" => Ok(ItemSpawnKind::SubtleKnife),
-    "trigun" => Ok(ItemSpawnKind::Trigun),
-    "anti_freak_jackal" => Ok(ItemSpawnKind::AntiFreakJackal),
-    "minigun" => Ok(ItemSpawnKind::Minigun),
-    "chaingun" => Ok(ItemSpawnKind::Chaingun),
-    "rocket_launcher" => Ok(ItemSpawnKind::RocketLauncher),
-    "plasma_rifle" => Ok(ItemSpawnKind::PlasmaRifle),
-    "bfg9000" => Ok(ItemSpawnKind::Bfg9000),
-    "chainsaw" => Ok(ItemSpawnKind::Chainsaw),
-    "combat_knife" => Ok(ItemSpawnKind::CombatKnife),
-    "ammo_9mm" => Ok(ItemSpawnKind::Ammo9mm(u32_value(
+  let archetype = ItemArchetype::from_stable_name(kind)
+    .ok_or_else(|| format!("{context}.kind has unsupported item kind '{kind}'"))?;
+  let count = match archetype {
+    ItemArchetype::Ammo9mm
+    | ItemArchetype::AmmoShells
+    | ItemArchetype::AmmoRockets
+    | ItemArchetype::AmmoCells => Some(u32_value(
       required(object, "count")?,
       &format!("{context}.count"),
-    )?)),
-    "ammo_shells" => Ok(ItemSpawnKind::AmmoShells(u32_value(
-      required(object, "count")?,
-      &format!("{context}.count"),
-    )?)),
-    "ammo_rockets" => Ok(ItemSpawnKind::AmmoRockets(u32_value(
-      required(object, "count")?,
-      &format!("{context}.count"),
-    )?)),
-    "ammo_cells" => Ok(ItemSpawnKind::AmmoCells(u32_value(
-      required(object, "count")?,
-      &format!("{context}.count"),
-    )?)),
-    "ammo_pack_rockets" => Ok(ItemSpawnKind::AmmoPackRockets),
-    "ammo_pack_cells" => Ok(ItemSpawnKind::AmmoPackCells),
-    "ammo_pack_9mm" => Ok(ItemSpawnKind::AmmoPack9mm),
-    "ammo_pack_shells" => Ok(ItemSpawnKind::AmmoPackShells),
-    "small_medpack" => Ok(ItemSpawnKind::SmallMedPack),
-    "large_medpack" => Ok(ItemSpawnKind::LargeMedPack),
-    "green_armor" => Ok(ItemSpawnKind::GreenArmor),
-    "blue_armor" => Ok(ItemSpawnKind::BlueArmor),
-    "red_armor" => Ok(ItemSpawnKind::RedArmor),
-    "onyx_armor" => Ok(ItemSpawnKind::OnyxArmor),
-    "phaseshift_armor" => Ok(ItemSpawnKind::PhaseshiftArmor),
-    "gothic_armor" => Ok(ItemSpawnKind::GothicArmor),
-    "maleks_armor" => Ok(ItemSpawnKind::MaleksArmor),
-    "cybernetic_armor" => Ok(ItemSpawnKind::CyberneticArmor),
-    "necroarmor" => Ok(ItemSpawnKind::Necroarmor),
-    "medical_powerarmor" => Ok(ItemSpawnKind::MedicalPowerarmor),
-    "lava_armor" => Ok(ItemSpawnKind::LavaArmor),
-    "shielded_armor" => Ok(ItemSpawnKind::ShieldedArmor),
-    "phase_device" => Ok(ItemSpawnKind::PhaseDevice),
-    _ => Err(format!("{context}.kind has unsupported item kind '{kind}'")),
-  }
+    )?),
+    _ => None,
+  };
+  ItemSpawnKind::from_archetype(archetype, count)
+    .ok_or_else(|| format!("{context}.kind does not identify a reconstructible item spawn"))
 }
 
 fn tile_kind(value: &JsonValue, context: &str) -> Result<TileKind, String> {

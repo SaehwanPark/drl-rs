@@ -196,6 +196,74 @@ impl fmt::Display for ItemArchetype {
   }
 }
 
+impl ItemArchetype {
+  /// Parses the stable wire identifier emitted by `Display`.
+  #[must_use]
+  pub fn from_stable_name(name: &str) -> Option<Self> {
+    match name {
+      "unknown" => Some(Self::Unknown),
+      "pistol" => Some(Self::Pistol),
+      "shotgun" => Some(Self::Shotgun),
+      "double_shotgun" => Some(Self::DoubleShotgun),
+      "combat_shotgun" => Some(Self::CombatShotgun),
+      "blaster" => Some(Self::Blaster),
+      "laser_rifle" => Some(Self::LaserRifle),
+      "missile_launcher" => Some(Self::MissileLauncher),
+      "nuclear_plasma_rifle" => Some(Self::NuclearPlasmaRifle),
+      "nuclear_bfg9000" => Some(Self::NuclearBfg9000),
+      "bfg_10k" => Some(Self::Bfg10k),
+      "mega_buster" => Some(Self::MegaBuster),
+      "grammaton_beretta" => Some(Self::GrammatonBeretta),
+      "frag_shotgun" => Some(Self::FragShotgun),
+      "revenants_launcher" => Some(Self::RevenantsLauncher),
+      "railgun" => Some(Self::Railgun),
+      "acid_spitter" => Some(Self::AcidSpitter),
+      "combat_pistol" => Some(Self::CombatPistol),
+      "assault_shotgun" => Some(Self::AssaultShotgun),
+      "plasma_shotgun" => Some(Self::PlasmaShotgun),
+      "jackhammer" => Some(Self::Jackhammer),
+      "super_shotgun" => Some(Self::SuperShotgun),
+      "tristar_blaster" => Some(Self::TristarBlaster),
+      "butchers_cleaver" => Some(Self::ButchersCleaver),
+      "mjollnir" => Some(Self::Mjollnir),
+      "subtle_knife" => Some(Self::SubtleKnife),
+      "trigun" => Some(Self::Trigun),
+      "anti_freak_jackal" => Some(Self::AntiFreakJackal),
+      "minigun" => Some(Self::Minigun),
+      "chaingun" => Some(Self::Chaingun),
+      "rocket_launcher" => Some(Self::RocketLauncher),
+      "plasma_rifle" => Some(Self::PlasmaRifle),
+      "bfg9000" => Some(Self::Bfg9000),
+      "chainsaw" => Some(Self::Chainsaw),
+      "combat_knife" => Some(Self::CombatKnife),
+      "ammo_9mm" => Some(Self::Ammo9mm),
+      "ammo_shells" => Some(Self::AmmoShells),
+      "ammo_rockets" => Some(Self::AmmoRockets),
+      "ammo_cells" => Some(Self::AmmoCells),
+      "ammo_pack_rockets" => Some(Self::AmmoPackRockets),
+      "ammo_pack_cells" => Some(Self::AmmoPackCells),
+      "ammo_pack_9mm" => Some(Self::AmmoPack9mm),
+      "ammo_pack_shells" => Some(Self::AmmoPackShells),
+      "small_medpack" => Some(Self::SmallMedPack),
+      "large_medpack" => Some(Self::LargeMedPack),
+      "green_armor" => Some(Self::GreenArmor),
+      "blue_armor" => Some(Self::BlueArmor),
+      "red_armor" => Some(Self::RedArmor),
+      "onyx_armor" => Some(Self::OnyxArmor),
+      "phaseshift_armor" => Some(Self::PhaseshiftArmor),
+      "gothic_armor" => Some(Self::GothicArmor),
+      "maleks_armor" => Some(Self::MaleksArmor),
+      "cybernetic_armor" => Some(Self::CyberneticArmor),
+      "necroarmor" => Some(Self::Necroarmor),
+      "medical_powerarmor" => Some(Self::MedicalPowerarmor),
+      "lava_armor" => Some(Self::LavaArmor),
+      "shielded_armor" => Some(Self::ShieldedArmor),
+      "phase_device" => Some(Self::PhaseDevice),
+      _ => None,
+    }
+  }
+}
+
 impl fmt::Display for ItemCategory {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     match self {
@@ -274,6 +342,22 @@ mod tests {
     assert_eq!(ItemArchetype::Bfg10k.to_string(), "bfg_10k");
     assert_eq!(ItemArchetype::PlasmaRifle.to_string(), "plasma_rifle");
     assert_eq!(ItemArchetype::RocketLauncher.to_string(), "rocket_launcher");
+  }
+
+  #[test]
+  fn stable_archetype_names_round_trip() {
+    for archetype in [
+      ItemArchetype::Pistol,
+      ItemArchetype::Bfg10k,
+      ItemArchetype::AmmoCells,
+      ItemArchetype::PhaseDevice,
+    ] {
+      assert_eq!(
+        ItemArchetype::from_stable_name(&archetype.to_string()),
+        Some(archetype)
+      );
+    }
+    assert_eq!(ItemArchetype::from_stable_name("not-an-item"), None);
   }
 
   #[test]
