@@ -75,8 +75,8 @@ before the inventory is mutated. The existing exact-`Game` equality helper
 provides the executable rejection contract.
 
 **Delivered in `0.2.91`:** Player pickup rejection is transactional when a
-ground ammunition stack would partially merge into an
-existing inventory stack and then encounter a full backpack. Inventory
+ground ammunition stack would partially merge into an existing inventory
+stack and then encounter a full backpack. Inventory
 insertion must validate or stage all fallible capacity work before committing
 stack mutations. A rejected pickup must leave the complete `Game` state,
 including the original ground item and every inventory stack, byte-for-byte
