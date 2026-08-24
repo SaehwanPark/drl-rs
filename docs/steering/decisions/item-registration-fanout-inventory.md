@@ -1,6 +1,6 @@
 # Item Registration Fan-out Inventory
 
-**Status:** Verified inventory for project version `0.2.116`
+**Status:** Verified inventory for project version `0.2.117`
 
 **Date:** 2026-08-24
 
@@ -15,7 +15,7 @@ behavioral tests, where an explicit match is an intentional review boundary.
 | --- | --- | --- | --- |
 | Stable identity catalog | `crates/drl-protocol/src/item.rs` (`ItemArchetype`, `ALL`, `stable_name`) | Stable protocol archetype IDs and canonical wire names | Catalog-backed name/display/parsing and uniqueness tests are delivered. Keep the enum and name projection exhaustive. |
 | Spawn/replay identity | `crates/drl-protocol/src/replay.rs` (`ItemSpawnKind`) | Typed spawn variants, loose-ammo counts, archetype conversion | `archetype`, `stack_count`, and `from_archetype` are typed projections. Keep count-sensitive and `Unknown` handling explicit. |
-| Gameplay family catalog | `crates/drl-core/src/item_definition.rs` (`CURRENT_ITEM_SPAWN_KINDS`) | Canonical representative families and definition-backed structural validation | This remains the gameplay/catalog authority. Do not move balance or behavior into protocol merely to remove a match. |
+| Gameplay family catalog | `crates/drl-protocol/src/replay.rs` (`ItemSpawnKind::ALL`), exposed by `crates/drl-core/src/item_definition.rs` (`CURRENT_ITEM_SPAWN_KINDS`) | Stable representative families and definition-backed structural validation | The stable family list is single-sourced in the protocol spawn contract; core keeps the validation alias and owns balance/behavior. |
 | Gameplay definitions/factory | `crates/drl-core/src/item_definition.rs`, `crates/drl-core/src/item.rs` | Immutable balance, stack policy, item construction, and item views | Behavior and balance are core-owned; migrate only through a typed catalog or domain boundary that preserves this ownership. |
 | Replay JSON | `crates/drl-mcp/src/replay_json.rs`, `replay_json_decode.rs` | Wire encoding/decoding of stable item names and optional counts | Uses typed spawn projections and protocol stable-name parsing. No independent name table remains. |
 | Atlas descriptors | `crates/drl-assets/src/lib.rs` (`item_sprite`) | Atlas geometry, layers, and evidenced animation metadata | The exhaustive descriptor match remains explicit for compiler coverage. Routine descriptor tests iterate `ItemArchetype::ALL`; geometry still requires a deliberate entry. |

@@ -51,71 +51,15 @@ pub struct ItemDefinition {
   pub kind: ItemDefinitionKind,
 }
 
-/// Canonical representative spawn values for every current item family.
+/// Core-facing alias for the canonical representative spawn values for every
+/// current item family.
 ///
 /// Stack counts are intentionally normalized to zero for loose ammunition;
 /// callers own the amount for a concrete item instance. Routine structural
-/// validation should iterate this catalog rather than maintaining another
-/// manually synchronized family list.
-pub const CURRENT_ITEM_SPAWN_KINDS: &[ItemSpawnKind] = &[
-  ItemSpawnKind::Pistol,
-  ItemSpawnKind::Shotgun,
-  ItemSpawnKind::DoubleShotgun,
-  ItemSpawnKind::CombatShotgun,
-  ItemSpawnKind::Blaster,
-  ItemSpawnKind::LaserRifle,
-  ItemSpawnKind::MissileLauncher,
-  ItemSpawnKind::NuclearPlasmaRifle,
-  ItemSpawnKind::NuclearBfg9000,
-  ItemSpawnKind::Bfg10k,
-  ItemSpawnKind::MegaBuster,
-  ItemSpawnKind::GrammatonBeretta,
-  ItemSpawnKind::FragShotgun,
-  ItemSpawnKind::RevenantsLauncher,
-  ItemSpawnKind::Railgun,
-  ItemSpawnKind::AcidSpitter,
-  ItemSpawnKind::CombatPistol,
-  ItemSpawnKind::AssaultShotgun,
-  ItemSpawnKind::PlasmaShotgun,
-  ItemSpawnKind::Jackhammer,
-  ItemSpawnKind::SuperShotgun,
-  ItemSpawnKind::TristarBlaster,
-  ItemSpawnKind::ButchersCleaver,
-  ItemSpawnKind::Mjollnir,
-  ItemSpawnKind::SubtleKnife,
-  ItemSpawnKind::Trigun,
-  ItemSpawnKind::AntiFreakJackal,
-  ItemSpawnKind::Minigun,
-  ItemSpawnKind::Chaingun,
-  ItemSpawnKind::PlasmaRifle,
-  ItemSpawnKind::RocketLauncher,
-  ItemSpawnKind::Bfg9000,
-  ItemSpawnKind::Chainsaw,
-  ItemSpawnKind::CombatKnife,
-  ItemSpawnKind::Ammo9mm(0),
-  ItemSpawnKind::AmmoShells(0),
-  ItemSpawnKind::AmmoRockets(0),
-  ItemSpawnKind::AmmoCells(0),
-  ItemSpawnKind::AmmoPackRockets,
-  ItemSpawnKind::AmmoPackCells,
-  ItemSpawnKind::AmmoPack9mm,
-  ItemSpawnKind::AmmoPackShells,
-  ItemSpawnKind::SmallMedPack,
-  ItemSpawnKind::LargeMedPack,
-  ItemSpawnKind::GreenArmor,
-  ItemSpawnKind::BlueArmor,
-  ItemSpawnKind::RedArmor,
-  ItemSpawnKind::OnyxArmor,
-  ItemSpawnKind::PhaseshiftArmor,
-  ItemSpawnKind::GothicArmor,
-  ItemSpawnKind::MaleksArmor,
-  ItemSpawnKind::CyberneticArmor,
-  ItemSpawnKind::Necroarmor,
-  ItemSpawnKind::MedicalPowerarmor,
-  ItemSpawnKind::LavaArmor,
-  ItemSpawnKind::ShieldedArmor,
-  ItemSpawnKind::PhaseDevice,
-];
+/// validation should iterate this alias rather than maintaining another
+/// manually synchronized family list. The stable family list is owned by the
+/// protocol spawn contract; balance and behavior remain core-owned below.
+pub const CURRENT_ITEM_SPAWN_KINDS: &[ItemSpawnKind] = ItemSpawnKind::ALL;
 
 impl ItemDefinition {
   /// Returns the pinned initial amount for a canonical ammo pickup, when

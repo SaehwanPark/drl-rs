@@ -3,6 +3,11 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.117]
+
+- Added the protocol-owned `ItemSpawnKind::ALL` representative family catalog
+  and made core structural validation consume it through its existing alias.
+
 ## [0.2.116]
 
 - Centralized stable item-name projection so display and inverse parsing share

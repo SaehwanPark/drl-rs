@@ -189,6 +189,71 @@ pub enum ItemSpawnKind {
 }
 
 impl ItemSpawnKind {
+  /// All stable spawn families with normalized representative values.
+  ///
+  /// Loose-ammo counts are intentionally zero here; callers own the amount
+  /// for a concrete item instance. Gameplay definitions and balance remain
+  /// core-owned, while this catalog supplies stable family coverage.
+  pub const ALL: &[Self] = &[
+    Self::Pistol,
+    Self::Shotgun,
+    Self::DoubleShotgun,
+    Self::CombatShotgun,
+    Self::Blaster,
+    Self::LaserRifle,
+    Self::MissileLauncher,
+    Self::NuclearPlasmaRifle,
+    Self::NuclearBfg9000,
+    Self::Bfg10k,
+    Self::MegaBuster,
+    Self::GrammatonBeretta,
+    Self::FragShotgun,
+    Self::RevenantsLauncher,
+    Self::Railgun,
+    Self::AcidSpitter,
+    Self::CombatPistol,
+    Self::AssaultShotgun,
+    Self::PlasmaShotgun,
+    Self::Jackhammer,
+    Self::SuperShotgun,
+    Self::TristarBlaster,
+    Self::ButchersCleaver,
+    Self::Mjollnir,
+    Self::SubtleKnife,
+    Self::Trigun,
+    Self::AntiFreakJackal,
+    Self::Minigun,
+    Self::Chaingun,
+    Self::RocketLauncher,
+    Self::PlasmaRifle,
+    Self::Bfg9000,
+    Self::Chainsaw,
+    Self::CombatKnife,
+    Self::Ammo9mm(0),
+    Self::AmmoShells(0),
+    Self::AmmoRockets(0),
+    Self::AmmoCells(0),
+    Self::AmmoPackRockets,
+    Self::AmmoPackCells,
+    Self::AmmoPack9mm,
+    Self::AmmoPackShells,
+    Self::SmallMedPack,
+    Self::LargeMedPack,
+    Self::GreenArmor,
+    Self::BlueArmor,
+    Self::RedArmor,
+    Self::OnyxArmor,
+    Self::PhaseshiftArmor,
+    Self::GothicArmor,
+    Self::MaleksArmor,
+    Self::CyberneticArmor,
+    Self::Necroarmor,
+    Self::MedicalPowerarmor,
+    Self::LavaArmor,
+    Self::ShieldedArmor,
+    Self::PhaseDevice,
+  ];
+
   /// Returns the stable presentation/replay archetype for this spawn family.
   #[must_use]
   pub const fn archetype(self) -> ItemArchetype {
@@ -548,5 +613,24 @@ mod tests {
       ItemSpawnKind::from_archetype(ItemArchetype::Pistol, Some(20)),
       Some(ItemSpawnKind::Pistol)
     );
+  }
+
+  #[test]
+  fn spawn_catalog_covers_each_known_archetype_once() {
+    let mut archetypes = Vec::with_capacity(ItemSpawnKind::ALL.len());
+    for &kind in ItemSpawnKind::ALL {
+      let archetype = kind.archetype();
+      assert_ne!(archetype, ItemArchetype::Unknown);
+      assert!(
+        !archetypes.contains(&archetype),
+        "duplicate spawn catalog archetype: {archetype:?}"
+      );
+      assert_eq!(
+        ItemSpawnKind::from_archetype(archetype, kind.stack_count()),
+        Some(kind)
+      );
+      archetypes.push(archetype);
+    }
+    assert_eq!(archetypes.len(), ItemArchetype::ALL.len() - 1);
   }
 }

@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-24
-Current project version: `0.2.116`
+Current project version: `0.2.117`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.116)
+## 3. Current Progress Summary (`VERSION` 0.2.117)
 
 ### Delivered Foundations
 
@@ -86,15 +86,15 @@ verification item uses explicit status semantics:
   preserving turn and RNG through a documented bounded rollback backstop.
   Accepted-only `Wait` and `Move(None)` branches are covered separately because
   they have no reachable rejection path.
-  The first Gate C slice centralizes representative item spawn families in
-  `CURRENT_ITEM_SPAWN_KINDS` for structural validation, and the definition
-  coverage test now derives from that same catalog. Replay JSON stable item
-  names, loose-ammo counts, and inverse decoding now use typed protocol
-  projections. Stable item names now expose one typed projection used by
-  display and inverse parsing, and routine atlas descriptor coverage tests
-  iterate the protocol's stable `ItemArchetype::ALL` catalog; behavior and
-  presentation mappings remain explicitly open. The current manual fan-out
-  inventory is recorded in
+  The first Gate C slice centralizes stable representative item spawn families
+  in protocol's `ItemSpawnKind::ALL`; core structural validation accesses that
+  catalog through `CURRENT_ITEM_SPAWN_KINDS`, and definition coverage derives
+  from the alias. Replay JSON stable item names, loose-ammo counts, and inverse
+  decoding now use typed protocol projections. Stable item names now expose one
+  typed projection used by display and inverse parsing, and routine atlas
+  descriptor coverage tests iterate the protocol's stable `ItemArchetype::ALL`
+  catalog; behavior and presentation mappings remain explicitly open. The
+  current manual fan-out inventory is recorded in
   `docs/steering/decisions/item-registration-fanout-inventory.md`.
 - **Tooling & Replays (M5, M6)**: Versioned replay engine (`V1`), declarative
   ASCII scenario runners, scripted bots, batch sweep runners, and a pure Rust
