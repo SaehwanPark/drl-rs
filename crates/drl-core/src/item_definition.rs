@@ -1029,255 +1029,29 @@ mod tests {
 
   #[test]
   fn definition_table_covers_every_current_spawn_family() {
-    let cases = [
-      (ItemSpawnKind::Pistol, ItemArchetype::Pistol, "Pistol"),
-      (ItemSpawnKind::Shotgun, ItemArchetype::Shotgun, "Shotgun"),
-      (
-        ItemSpawnKind::DoubleShotgun,
-        ItemArchetype::DoubleShotgun,
-        "Double Shotgun",
-      ),
-      (
-        ItemSpawnKind::CombatShotgun,
-        ItemArchetype::CombatShotgun,
-        "Combat Shotgun",
-      ),
-      (ItemSpawnKind::Blaster, ItemArchetype::Blaster, "Blaster"),
-      (
-        ItemSpawnKind::LaserRifle,
-        ItemArchetype::LaserRifle,
-        "Laser Rifle",
-      ),
-      (
-        ItemSpawnKind::MissileLauncher,
-        ItemArchetype::MissileLauncher,
-        "Missile Launcher",
-      ),
-      (
-        ItemSpawnKind::NuclearPlasmaRifle,
-        ItemArchetype::NuclearPlasmaRifle,
-        "Nuclear Plasma Rifle",
-      ),
-      (
-        ItemSpawnKind::NuclearBfg9000,
-        ItemArchetype::NuclearBfg9000,
-        "Nuclear BFG 9000",
-      ),
-      (ItemSpawnKind::Bfg10k, ItemArchetype::Bfg10k, "BFG 10K"),
-      (
-        ItemSpawnKind::MegaBuster,
-        ItemArchetype::MegaBuster,
-        "Mega Buster",
-      ),
-      (
-        ItemSpawnKind::GrammatonBeretta,
-        ItemArchetype::GrammatonBeretta,
-        "Grammaton Cleric Beretta",
-      ),
-      (
-        ItemSpawnKind::FragShotgun,
-        ItemArchetype::FragShotgun,
-        "Frag Shotgun",
-      ),
-      (
-        ItemSpawnKind::RevenantsLauncher,
-        ItemArchetype::RevenantsLauncher,
-        "Revenant's Launcher",
-      ),
-      (ItemSpawnKind::Railgun, ItemArchetype::Railgun, "Railgun"),
-      (
-        ItemSpawnKind::AcidSpitter,
-        ItemArchetype::AcidSpitter,
-        "Acid Spitter",
-      ),
-      (
-        ItemSpawnKind::CombatPistol,
-        ItemArchetype::CombatPistol,
-        "Combat Pistol",
-      ),
-      (
-        ItemSpawnKind::AssaultShotgun,
-        ItemArchetype::AssaultShotgun,
-        "Assault Shotgun",
-      ),
-      (
-        ItemSpawnKind::PlasmaShotgun,
-        ItemArchetype::PlasmaShotgun,
-        "Plasma Shotgun",
-      ),
-      (
-        ItemSpawnKind::Jackhammer,
-        ItemArchetype::Jackhammer,
-        "Jackhammer",
-      ),
-      (
-        ItemSpawnKind::SuperShotgun,
-        ItemArchetype::SuperShotgun,
-        "Super Shotgun",
-      ),
-      (
-        ItemSpawnKind::TristarBlaster,
-        ItemArchetype::TristarBlaster,
-        "Tristar Blaster",
-      ),
-      (
-        ItemSpawnKind::ButchersCleaver,
-        ItemArchetype::ButchersCleaver,
-        "Butcher's Cleaver",
-      ),
-      (ItemSpawnKind::Mjollnir, ItemArchetype::Mjollnir, "Mjollnir"),
-      (
-        ItemSpawnKind::SubtleKnife,
-        ItemArchetype::SubtleKnife,
-        "Subtle Knife",
-      ),
-      (ItemSpawnKind::Trigun, ItemArchetype::Trigun, "Trigun"),
-      (
-        ItemSpawnKind::AntiFreakJackal,
-        ItemArchetype::AntiFreakJackal,
-        "Anti-Freak Jackal",
-      ),
-      (ItemSpawnKind::Minigun, ItemArchetype::Minigun, "Minigun"),
-      (ItemSpawnKind::Chaingun, ItemArchetype::Chaingun, "Chaingun"),
-      (
-        ItemSpawnKind::PlasmaRifle,
-        ItemArchetype::PlasmaRifle,
-        "Plasma Rifle",
-      ),
-      (
-        ItemSpawnKind::RocketLauncher,
-        ItemArchetype::RocketLauncher,
-        "Rocket Launcher",
-      ),
-      (ItemSpawnKind::Chainsaw, ItemArchetype::Chainsaw, "Chainsaw"),
-      (ItemSpawnKind::Bfg9000, ItemArchetype::Bfg9000, "BFG 9000"),
-      (
-        ItemSpawnKind::CombatKnife,
-        ItemArchetype::CombatKnife,
-        "Combat Knife",
-      ),
-      (
-        ItemSpawnKind::Ammo9mm(0),
-        ItemArchetype::Ammo9mm,
-        "9mm Ammo",
-      ),
-      (
-        ItemSpawnKind::AmmoShells(0),
-        ItemArchetype::AmmoShells,
-        "Shotgun Shells",
-      ),
-      (
-        ItemSpawnKind::AmmoRockets(0),
-        ItemArchetype::AmmoRockets,
-        "Rocket",
-      ),
-      (
-        ItemSpawnKind::AmmoCells(0),
-        ItemArchetype::AmmoCells,
-        "Power Cell",
-      ),
-      (
-        ItemSpawnKind::AmmoPackRockets,
-        ItemArchetype::AmmoPackRockets,
-        "Rocket Box",
-      ),
-      (
-        ItemSpawnKind::AmmoPackCells,
-        ItemArchetype::AmmoPackCells,
-        "Power Battery",
-      ),
-      (
-        ItemSpawnKind::AmmoPack9mm,
-        ItemArchetype::AmmoPack9mm,
-        "10mm Ammo Chain",
-      ),
-      (
-        ItemSpawnKind::AmmoPackShells,
-        ItemArchetype::AmmoPackShells,
-        "Shell Box",
-      ),
-      (
-        ItemSpawnKind::SmallMedPack,
-        ItemArchetype::SmallMedPack,
-        "Small MedPack",
-      ),
-      (
-        ItemSpawnKind::LargeMedPack,
-        ItemArchetype::LargeMedPack,
-        "Large MedPack",
-      ),
-      (
-        ItemSpawnKind::GreenArmor,
-        ItemArchetype::GreenArmor,
-        "Green Armor",
-      ),
-      (
-        ItemSpawnKind::BlueArmor,
-        ItemArchetype::BlueArmor,
-        "Blue Armor",
-      ),
-      (
-        ItemSpawnKind::RedArmor,
-        ItemArchetype::RedArmor,
-        "Red Armor",
-      ),
-      (
-        ItemSpawnKind::OnyxArmor,
-        ItemArchetype::OnyxArmor,
-        "onyx armor",
-      ),
-      (
-        ItemSpawnKind::PhaseshiftArmor,
-        ItemArchetype::PhaseshiftArmor,
-        "phaseshift armor",
-      ),
-      (
-        ItemSpawnKind::GothicArmor,
-        ItemArchetype::GothicArmor,
-        "gothic armor",
-      ),
-      (
-        ItemSpawnKind::MaleksArmor,
-        ItemArchetype::MaleksArmor,
-        "Malek's Armor",
-      ),
-      (
-        ItemSpawnKind::CyberneticArmor,
-        ItemArchetype::CyberneticArmor,
-        "Cybernetic Armor",
-      ),
-      (
-        ItemSpawnKind::Necroarmor,
-        ItemArchetype::Necroarmor,
-        "Necroarmor",
-      ),
-      (
-        ItemSpawnKind::MedicalPowerarmor,
-        ItemArchetype::MedicalPowerarmor,
-        "Medical Powerarmor",
-      ),
-      (
-        ItemSpawnKind::LavaArmor,
-        ItemArchetype::LavaArmor,
-        "Lava Armor",
-      ),
-      (
-        ItemSpawnKind::ShieldedArmor,
-        ItemArchetype::ShieldedArmor,
-        "Shielded Armor",
-      ),
-      (
-        ItemSpawnKind::PhaseDevice,
-        ItemArchetype::PhaseDevice,
-        "Phase Device",
-      ),
-    ];
-    for (kind, archetype, name) in cases {
+    let mut archetypes = Vec::with_capacity(CURRENT_ITEM_SPAWN_KINDS.len());
+    for &kind in CURRENT_ITEM_SPAWN_KINDS {
       let definition = definition_for_spawn_kind(kind);
-      assert_eq!(definition.archetype, archetype);
-      assert_eq!(definition.name, name);
-      assert!(!definition.description.is_empty());
+      assert_ne!(
+        definition.archetype,
+        ItemArchetype::Unknown,
+        "catalog entry has no stable archetype: {kind:?}"
+      );
+      assert!(
+        !definition.name.is_empty(),
+        "catalog entry has no name: {kind:?}"
+      );
+      assert!(
+        !definition.description.is_empty(),
+        "catalog entry has no description: {kind:?}"
+      );
+      assert!(
+        !archetypes.contains(&definition.archetype),
+        "duplicate definition archetype for catalog entry: {kind:?}"
+      );
+      archetypes.push(definition.archetype);
     }
+    assert_eq!(archetypes.len(), CURRENT_ITEM_SPAWN_KINDS.len());
   }
 
   #[test]

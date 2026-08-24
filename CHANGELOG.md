@@ -3,6 +3,11 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.112]
+
+- Replaced the duplicate 56-entry item-definition coverage table with
+  catalog-driven assertions for unique archetypes and non-empty metadata.
+
 ## [0.2.111]
 
 - Added the canonical `CURRENT_ITEM_SPAWN_KINDS` catalog and routed structural
