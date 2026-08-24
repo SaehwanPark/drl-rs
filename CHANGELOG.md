@@ -3,6 +3,12 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.110]
+
+- Completed the current `Game::step` command audit, with explicit accepted-path
+  coverage for `Wait` and `Move(None)` and transaction-backed rejection coverage
+  for every other command class.
+
 ## [0.2.109]
 
 - Added a transactional `Game::step` rejection boundary that restores turn,

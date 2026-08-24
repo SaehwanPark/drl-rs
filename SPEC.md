@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-24
-Current project version: `0.2.109`
+Current project version: `0.2.110`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -193,6 +193,11 @@ fallible substep fails after an earlier mutation. Existing prepare/commit
 handlers remain the preferred local pattern; the bounded rollback guard is an
 interim command-boundary backstop.
 
+**Delivered in `0.2.110`:** The command audit records accepted-only coverage for
+`Wait` and `Move(None)`, whose dispatch branches have no reachable rejection;
+all other current command classes have reachable rejection cases protected by
+the transactional boundary.
+
 Verification passed the focused and full `drl-core` suites, locked workspace
 format/Clippy/tests, the base-relative version contract, and the repository
 consistency script. Native/WASM compile and web contract checks also passed for
@@ -222,8 +227,9 @@ State identity on rejection includes, at minimum:
 
 - [x] Add a reusable invariant test helper asserting `Err => before == after`
   for the bounded ranged-command slice.
-- [ ] Cover all current command classes with at least one rejected-command
-  scenario where rejection is reachable without malformed construction.
+- [x] Cover every current command class with a reachable rejection scenario
+  where one exists; `Wait` and `Move(None)` have accepted-path coverage because
+  their dispatch branches have no reachable rejection.
 - [x] Fix ranged attacks so target geometry/range/legality is validated before
   ammunition, RNG, or other mutable state is consumed.
 - [x] Validate equip eligibility before removing the inventory item, with an
@@ -255,10 +261,12 @@ State identity on rejection includes, at minimum:
   equality test.
 - [x] Validate pickup position before ground-item removal with an exact
   out-of-bounds `Game` equality test.
-- [ ] Fix pickup/use/drop/reload and other multi-step commands so expected
-  validation failures cannot lose or partially mutate items.
-- [ ] Audit all current `Game::step` command paths for mutation-before-error
-  behavior.
+- [x] Fix pickup/use/drop/reload and other multi-step commands so expected
+  validation failures cannot lose or partially mutate items through the
+  transactional command boundary.
+- [x] Audit all current `Game::step` command paths: handlers retain
+  prepare/commit validation where practical and the shared rollback guard covers
+  every dispatch branch.
 - [x] Preserve turn and RNG state exactly on rejection.
 - [x] Document the chosen implementation pattern: prepare/commit is preferred;
   a bounded rollback guard is used as an interim correctness backstop.
