@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-24
-Current project version: `0.2.108`
+Current project version: `0.2.109`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -187,6 +187,12 @@ generator-semantics version. Core and MCP validation require that version only
 when a replay reconstructs a procedural map, while fixed-map replays continue
 to use gameplay and ruleset identities without a generator-policy dependency.
 
+**Delivered in `0.2.109`:** `Game::step` now snapshots and restores the complete
+state when any command rejects, preserving turn, world, and RNG even if a later
+fallible substep fails after an earlier mutation. Existing prepare/commit
+handlers remain the preferred local pattern; the bounded rollback guard is an
+interim command-boundary backstop.
+
 Verification passed the focused and full `drl-core` suites, locked workspace
 format/Clippy/tests, the base-relative version contract, and the repository
 consistency script. Native/WASM compile and web contract checks also passed for
@@ -253,9 +259,9 @@ State identity on rejection includes, at minimum:
   validation failures cannot lose or partially mutate items.
 - [ ] Audit all current `Game::step` command paths for mutation-before-error
   behavior.
-- [ ] Preserve turn and RNG state exactly on rejection.
-- [ ] Document the chosen implementation pattern: prepare/commit is preferred;
-  a bounded rollback guard may be used as an interim correctness backstop.
+- [x] Preserve turn and RNG state exactly on rejection.
+- [x] Document the chosen implementation pattern: prepare/commit is preferred;
+  a bounded rollback guard is used as an interim correctness backstop.
 
 ### 2.4 RNG and Replay Semantics Contract
 

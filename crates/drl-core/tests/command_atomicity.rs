@@ -55,6 +55,20 @@ fn ranged_attack_blocked_by_wall_preserves_ammo_and_rng() {
 }
 
 #[test]
+fn rejected_command_restores_turn_and_rng_state() {
+  let mut game = Game::new(2_024, 10, 10, Position::new(2, 2)).unwrap();
+  let before_turn = game.turn();
+  let before_rng = game.rng().clone();
+
+  assert_eq!(
+    game.step(Command::AttackRanged(Position::new(99, 99))),
+    Err(CommandError::OutOfBounds(Position::new(99, 99)))
+  );
+  assert_eq!(game.turn(), before_turn);
+  assert_eq!(game.rng(), &before_rng);
+}
+
+#[test]
 fn equipping_non_equippable_item_preserves_inventory() {
   let mut game = Game::new(3, 10, 10, Position::new(2, 2)).unwrap();
   let medpack_id = game
