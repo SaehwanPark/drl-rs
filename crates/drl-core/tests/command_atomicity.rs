@@ -180,3 +180,36 @@ fn unequip_with_full_backpack_preserves_equipment() {
     CommandError::InventoryFull,
   );
 }
+
+#[test]
+fn use_non_consumable_item_preserves_game_state() {
+  let mut game = Game::new(8, 10, 10, Position::new(2, 2)).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let armor_id = game.world_mut().allocate_item_id();
+
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .inventory_mut()
+    .add_item(Item::green_armor(armor_id))
+    .unwrap();
+
+  assert_rejected_command_is_atomic(
+    &mut game,
+    Command::Use(armor_id),
+    CommandError::CannotUse(armor_id),
+  );
+}
+
+#[test]
+fn use_missing_item_preserves_game_state() {
+  let mut game = Game::new(9, 10, 10, Position::new(2, 2)).unwrap();
+  let missing_item_id = drl_protocol::ItemId::new(u64::MAX);
+
+  assert_rejected_command_is_atomic(
+    &mut game,
+    Command::Use(missing_item_id),
+    CommandError::ItemNotFound(missing_item_id),
+  );
+}

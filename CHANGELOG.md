@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.94]
+
+- Added exact-state rejection coverage for `Command::Use` with a present
+  non-consumable item or a missing item. Both paths now have explicit Gate A
+  evidence that inventory, health, RNG, and the complete `Game` state remain
+  unchanged.
+
 ## [0.2.93]
 
 - Added exact-state rejection coverage for `Command::Unequip` when the target
