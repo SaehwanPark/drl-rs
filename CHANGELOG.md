@@ -3,6 +3,11 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.116]
+
+- Centralized stable item-name projection so display and inverse parsing share
+  the protocol archetype catalog, with uniqueness and round-trip coverage.
+
 ## [0.2.115]
 
 - Added the protocol's stable `ItemArchetype::ALL` catalog and routed routine
