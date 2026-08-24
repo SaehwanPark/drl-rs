@@ -1206,9 +1206,19 @@ mod tests {
         .any(|e| matches!(e, GameEvent::EntityMoved { .. }))
     );
 
+    // Move(None) is the direction-level wait form and has no reachable
+    // rejection branch; it still consumes one accepted turn.
+    let events_none = game.step(Command::Move(Direction::None)).unwrap();
+    assert_eq!(game.turn().count, 2);
+    assert!(
+      events_none
+        .iter()
+        .any(|e| matches!(e, GameEvent::EntityWaited { .. }))
+    );
+
     // Step Wait
     let events2 = game.step(Command::Wait).unwrap();
-    assert_eq!(game.turn().count, 2);
+    assert_eq!(game.turn().count, 3);
     assert!(
       events2
         .iter()
