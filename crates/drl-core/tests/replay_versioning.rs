@@ -16,6 +16,10 @@ fn test_replay_version_and_metadata_headers() {
     replay.metadata.gameplay_semantics_version,
     drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION
   );
+  assert_eq!(
+    replay.metadata.generator_semantics_version,
+    drl_protocol::CURRENT_GENERATOR_SEMANTICS_VERSION
+  );
   assert_eq!(replay.metadata.ruleset_id, drl_protocol::CURRENT_RULESET_ID);
 
   replay = replay.with_metadata(ReplayMetadata {
@@ -23,6 +27,7 @@ fn test_replay_version_and_metadata_headers() {
     engine_name: "DRL-Rust-TestHarness".to_string(),
     engine_version: "0.1.0".to_string(),
     gameplay_semantics_version: drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION,
+    generator_semantics_version: drl_protocol::CURRENT_GENERATOR_SEMANTICS_VERSION,
     ruleset_id: drl_protocol::CURRENT_RULESET_ID.to_string(),
   });
 

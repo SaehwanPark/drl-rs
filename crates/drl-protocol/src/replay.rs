@@ -17,6 +17,11 @@ pub enum ReplayVersion {
 /// sampling or other simulation rules change.
 pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 2;
 
+/// Procedural-generation semantics identifier expected for replays that carry
+/// a procedural generation configuration. Version 2 includes the exact
+/// integer-ratio room-connection branch introduced in 0.2.107.
+pub const CURRENT_GENERATOR_SEMANTICS_VERSION: u32 = 2;
+
 /// Ruleset/content identity expected by the current replay engine.
 pub const CURRENT_RULESET_ID: &str = "drl-rust-ruleset-v1";
 
@@ -31,6 +36,8 @@ pub struct ReplayMetadata {
   pub engine_version: String,
   /// Gameplay semantics version required to interpret the command history.
   pub gameplay_semantics_version: u32,
+  /// Procedural-generation semantics required when reconstructing generated maps.
+  pub generator_semantics_version: u32,
   /// Ruleset/content identity required to reconstruct initial state and policy.
   pub ruleset_id: String,
 }
@@ -42,6 +49,7 @@ impl Default for ReplayMetadata {
       engine_name: "DRL-Rust".to_string(),
       engine_version: env!("CARGO_PKG_VERSION").to_string(),
       gameplay_semantics_version: CURRENT_GAMEPLAY_SEMANTICS_VERSION,
+      generator_semantics_version: CURRENT_GENERATOR_SEMANTICS_VERSION,
       ruleset_id: CURRENT_RULESET_ID.to_string(),
     }
   }
