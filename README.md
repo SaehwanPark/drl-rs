@@ -20,9 +20,10 @@ replays, and regression testing.
     claiming legacy parity or balance targets.
   - Rejected ranged attacks validate target legality and range before consuming
     ammo or RNG, rejected equips validate slot eligibility before removing
-    inventory items, and inventory insertion stages ammunition merges before
-    committing capacity changes; focused tests assert exact `Game` state
-    preservation for these paths.
+    inventory items, inventory insertion stages ammunition merges before
+    committing capacity changes, and drops validate destinations before
+    removing items; focused tests assert exact `Game` state preservation for
+    these paths.
   - Fixed-seed cohort reports preserve sample definitions, policy identity,
     aggregate metrics, and per-seed replay evidence for evaluation.
   - Cohort regression math applies explicit win-rate and average-turn
@@ -41,7 +42,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.91`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.92`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:

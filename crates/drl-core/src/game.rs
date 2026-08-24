@@ -368,6 +368,10 @@ impl Game {
       .ok_or(CommandError::EntityNotFound(player_id))?
       .position();
 
+    if !self.state.world.map().is_in_bounds(p_pos) {
+      return Err(CommandError::OutOfBounds(p_pos));
+    }
+
     let player = self
       .state
       .world

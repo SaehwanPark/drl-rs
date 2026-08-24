@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.92]
+
+- Made `Command::Drop` validate the player destination before removing an
+  inventory item. An out-of-bounds player position now rejects atomically with
+  exact `Game` equality coverage, preventing item loss in malformed-world
+  states.
+
 ## [0.2.91]
 
 - Made inventory insertion transactional so a failed ammunition merge cannot

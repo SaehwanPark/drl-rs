@@ -77,10 +77,10 @@ Presentation Boundary
    prepare/commit mutation boundary. The equip path likewise validates item
    existence and equipment-slot eligibility before removing the item from
    inventory, and inventory insertion stages ammunition merges so a capacity
-   rejection cannot partially mutate an existing stack. These paths have
-   focused equality tests; the repository-wide command invariant remains an
-   active correction target until every command family has equivalent
-   evidence. See
+   rejection cannot partially mutate an existing stack. Drop validates its
+   destination before removing the inventory item. These paths have focused
+   equality tests; the repository-wide command invariant remains an active
+   correction target until every command family has equivalent evidence. See
    [`docs/steering/decisions/atomic-command-transactions.md`](docs/steering/decisions/atomic-command-transactions.md).
 
 ---
@@ -495,7 +495,7 @@ target contract but is not reported as already verified:
 5. **No Runtime Scripting**: No Lua VM or JavaScript gameplay interpreters.
 6. **Atomic Rejection**: Illegal/rejected commands and corrupt saves must fail
    without partial simulation mutation. Ranged-command, non-equippable-item,
-   and full-backpack pickup rejection are covered by
+   full-backpack pickup, and out-of-bounds drop rejection are covered by
    `crates/drl-core/tests/command_atomicity.rs`; command-wide verification is
    still an active correction gate documented in `docs/steering/`.
 
