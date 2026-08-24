@@ -1,6 +1,6 @@
 # Item Registration Fan-out Inventory
 
-**Status:** Verified inventory for project version `0.2.117`
+**Status:** Verified inventory for project version `0.2.118`
 
 **Date:** 2026-08-24
 
@@ -22,7 +22,7 @@ behavioral tests, where an explicit match is an intentional review boundary.
 | Render policy | `crates/drl-render/src/lib.rs` | Item-specific colorization and effect policy | Explicit presentation policy, not routine registration. Keep separate until a typed presentation vocabulary is evidenced. |
 | Web/UI policy | `crates/drl-web/src/lib.rs` | Inventory markup, browser actions, and item-facing controls | Explicit UI behavior and escaping tests; not an identity registry. |
 | Core loot/scenario data | `crates/drl-core/src/loot_definition.rs`, `scenario.rs`, and integration fixtures | Roll payloads, deterministic examples, and scenario setup | These are gameplay evidence and fixtures. They may mention concrete items but are not registration fan-outs. |
-| Cross-cutting tests | `crates/drl-core/src/item_definition.rs` tests, replay/MCP tests, asset tests, and integration suites | Preserve invariants, compatibility, and evidence | Keep semantic tests explicit; replace only duplicated routine coverage lists with catalog iteration. |
+| Cross-cutting tests | `crates/drl-core/src/item_definition.rs` tests, replay/MCP tests, asset tests, and integration suites | Preserve invariants, compatibility, and evidence | Routine replay completeness and asset coverage now iterate the catalog; semantic tests and explicit normalized ammo fixture counts remain reviewable. |
 
 ## Classification rule
 

@@ -3,6 +3,11 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.118]
+
+- Routed replay completeness fixture coverage through `ItemSpawnKind::ALL`
+  while keeping its explicit normalized loose-ammo counts.
+
 ## [0.2.117]
 
 - Added the protocol-owned `ItemSpawnKind::ALL` representative family catalog

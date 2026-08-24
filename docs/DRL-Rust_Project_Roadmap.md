@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-24
-Current project version: `0.2.117`
+Current project version: `0.2.118`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.117)
+## 3. Current Progress Summary (`VERSION` 0.2.118)
 
 ### Delivered Foundations
 
@@ -93,7 +93,9 @@ verification item uses explicit status semantics:
   decoding now use typed protocol projections. Stable item names now expose one
   typed projection used by display and inverse parsing, and routine atlas
   descriptor coverage tests iterate the protocol's stable `ItemArchetype::ALL`
-  catalog; behavior and presentation mappings remain explicitly open. The
+  catalog. Replay completeness fixtures now derive their family coverage from
+  `ItemSpawnKind::ALL` while keeping explicit normalized ammo counts; behavior
+  and presentation mappings remain explicitly open. The
   current manual fan-out inventory is recorded in
   `docs/steering/decisions/item-registration-fanout-inventory.md`.
 - **Tooling & Replays (M5, M6)**: Versioned replay engine (`V1`), declarative
