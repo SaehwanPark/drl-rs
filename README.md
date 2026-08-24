@@ -19,7 +19,8 @@ replays, and regression testing.
     roll coverage, level bounds, and special-level catalog ordering without
     claiming legacy parity or balance targets.
   - Rejected ranged attacks validate target legality and range before consuming
-    ammo or RNG; focused tests assert exact `Game` state preservation.
+    ammo or RNG, and rejected equips validate slot eligibility before removing
+    inventory items; focused tests assert exact `Game` state preservation.
   - Fixed-seed cohort reports preserve sample definitions, policy identity,
     aggregate metrics, and per-seed replay evidence for evaluation.
   - Cohort regression math applies explicit win-rate and average-turn
@@ -38,7 +39,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.89`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.90`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:
@@ -101,8 +102,8 @@ replays, and regression testing.
     Spitter, Combat Pistol, Assault Shotgun, Plasma Shotgun, Jackhammer, Super
     Shotgun, Tristar Blaster, Butcher's Cleaver, Mjollnir, Subtle Knife,
     Trigun, Anti-Freak Jackal, Minigun, Onyx Armor, Phaseshift Armor, and
-    Gothic Armor, Malek's Armor, Cybernetic Armor, and Necroarmor families
-    Necroarmor, Medical Powerarmor, Lava Armor, and Shielded Armor families
+    Gothic Armor, Malek's Armor, Cybernetic Armor, Necroarmor, Medical
+    Powerarmor, Lava Armor, and Shielded Armor families
     with replay/atlas coverage;
     resistance, movement,
     prepared-slot consumption,
