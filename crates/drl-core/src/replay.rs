@@ -31,6 +31,16 @@ impl ReplayEngine {
         drl_protocol::CURRENT_RULESET_ID
       ));
     }
+    if replay.procedural_config.is_some()
+      && replay.metadata.generator_semantics_version
+        != drl_protocol::CURRENT_GENERATOR_SEMANTICS_VERSION
+    {
+      return Err(format!(
+        "unsupported generator semantics version {}; expected {}",
+        replay.metadata.generator_semantics_version,
+        drl_protocol::CURRENT_GENERATOR_SEMANTICS_VERSION
+      ));
+    }
     if replay.width == 0 || replay.height == 0 {
       return Err(format!(
         "Invalid map dimensions: {}x{}",
@@ -307,6 +317,24 @@ mod tests {
     replay.metadata.ruleset_id = "legacy-ruleset".to_string();
     let error = ReplayEngine::validate(&replay).unwrap_err();
     assert!(error.contains("unsupported replay ruleset"));
+
+    let mut replay = ReplayLog::new(1234, 10, 10, Position::new(1, 1));
+    replay.procedural_config = Some(drl_protocol::ProceduralGenerationConfig {
+      max_rooms: 2,
+      min_room_size: 4,
+      max_room_size: 6,
+      max_monsters_per_room: 1,
+      max_items_per_room: 1,
+    });
+    replay.metadata.generator_semantics_version =
+      drl_protocol::CURRENT_GENERATOR_SEMANTICS_VERSION - 1;
+    let error = ReplayEngine::validate(&replay).unwrap_err();
+    assert!(error.contains("unsupported generator semantics version"));
+
+    let mut replay = ReplayLog::new(1234, 10, 10, Position::new(1, 1));
+    replay.metadata.generator_semantics_version =
+      drl_protocol::CURRENT_GENERATOR_SEMANTICS_VERSION - 1;
+    assert!(ReplayEngine::validate(&replay).is_ok());
   }
 
   #[test]

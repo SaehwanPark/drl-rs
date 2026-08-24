@@ -21,9 +21,9 @@ pub use observation::{
   TileView,
 };
 pub use replay::{
-  CURRENT_GAMEPLAY_SEMANTICS_VERSION, CURRENT_RULESET_ID, ItemSpawnKind, ItemSpawnSpec,
-  MonsterSpawnSpec, PlayerSpawnConfig, ProceduralGenerationConfig, ReplayExecutionError, ReplayLog,
-  ReplayMetadata, ReplayVersion,
+  CURRENT_GAMEPLAY_SEMANTICS_VERSION, CURRENT_GENERATOR_SEMANTICS_VERSION, CURRENT_RULESET_ID,
+  ItemSpawnKind, ItemSpawnSpec, MonsterSpawnSpec, PlayerSpawnConfig, ProceduralGenerationConfig,
+  ReplayExecutionError, ReplayLog, ReplayMetadata, ReplayVersion,
 };
 pub use scenario::{ScenarioFixture, ScenarioMap};
 pub use types::{

@@ -116,6 +116,10 @@ fn metadata_to_json(metadata: &ReplayMetadata) -> JsonValue {
       "gameplay_semantics_version",
       JsonValue::from(metadata.gameplay_semantics_version),
     ),
+    (
+      "generator_semantics_version",
+      JsonValue::from(metadata.generator_semantics_version),
+    ),
     ("ruleset_id", JsonValue::from(metadata.ruleset_id.as_str())),
   ])
 }
@@ -485,6 +489,7 @@ mod tests {
         engine_name: "fixture-engine".to_string(),
         engine_version: "test".to_string(),
         gameplay_semantics_version: drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION,
+        generator_semantics_version: drl_protocol::CURRENT_GENERATOR_SEMANTICS_VERSION,
         ruleset_id: drl_protocol::CURRENT_RULESET_ID.to_string(),
       });
     replay.record_stairs(Position::new(4, 5));
@@ -607,5 +612,44 @@ mod tests {
       .insert("ruleset_id".to_string(), JsonValue::from("legacy-ruleset"));
     let error = from_json_value(&incompatible_ruleset).unwrap_err();
     assert!(error.contains("unsupported replay ruleset"));
+
+    let mut incompatible_generator = to_json_value(&replay);
+    incompatible_generator
+      .as_object_mut()
+      .unwrap()
+      .get_mut("metadata")
+      .unwrap()
+      .as_object_mut()
+      .unwrap()
+      .insert(
+        "generator_semantics_version".to_string(),
+        JsonValue::from(drl_protocol::CURRENT_GENERATOR_SEMANTICS_VERSION - 1),
+      );
+    incompatible_generator.as_object_mut().unwrap().insert(
+      "procedural_config".to_string(),
+      procedural_config_to_json(&ProceduralGenerationConfig {
+        max_rooms: 2,
+        min_room_size: 4,
+        max_room_size: 6,
+        max_monsters_per_room: 1,
+        max_items_per_room: 1,
+      }),
+    );
+    let error = from_json_value(&incompatible_generator).unwrap_err();
+    assert!(error.contains("unsupported generator semantics version"));
+
+    let mut fixed_map_with_old_generator = to_json_value(&replay);
+    fixed_map_with_old_generator
+      .as_object_mut()
+      .unwrap()
+      .get_mut("metadata")
+      .unwrap()
+      .as_object_mut()
+      .unwrap()
+      .insert(
+        "generator_semantics_version".to_string(),
+        JsonValue::from(drl_protocol::CURRENT_GENERATOR_SEMANTICS_VERSION - 1),
+      );
+    assert!(from_json_value(&fixed_map_with_old_generator).is_ok());
   }
 }

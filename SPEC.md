@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-24
-Current project version: `0.2.107`
+Current project version: `0.2.108`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -182,6 +182,11 @@ with unbiased integer-domain sampling. Procedural room decoration now expresses
 its 1/2 branch as an exact ratio; the floating-point helper documents its role
 as an outer convenience conversion and has golden coverage.
 
+**Delivered in `0.2.108`:** Procedural replay metadata carries a separate
+generator-semantics version. Core and MCP validation require that version only
+when a replay reconstructs a procedural map, while fixed-map replays continue
+to use gameplay and ruleset identities without a generator-policy dependency.
+
 Verification passed the focused and full `drl-core` suites, locked workspace
 format/Clippy/tests, the base-relative version contract, and the repository
 consistency script. Native/WASM compile and web contract checks also passed for
@@ -271,8 +276,8 @@ must be intentional because changing it changes deterministic histories.
   version.
 - [x] Record a ruleset/content semantics identifier sufficient to reject
   incompatible replays (migration remains future work).
-- [ ] Define whether procedural-generation semantics are part of the same
-  ruleset identifier or receive a separate generator version.
+- [x] Define procedural-generation semantics with a separate generator version
+  in replay metadata; validate it only for procedural replays.
 - [x] Reject incompatible replay semantics explicitly until a migration path is
   implemented; do not silently reinterpret an old replay through current item
   definitions.

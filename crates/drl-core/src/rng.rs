@@ -12,9 +12,8 @@ pub struct GameRng {
 
 /// Version of the deterministic sampling algorithms layered on raw PRNG output.
 ///
-/// Replay metadata does not yet carry this identifier; it is exposed here so
-/// the sampler contract has one explicit version to bind when replay semantics
-/// versioning is added.
+/// Procedural replay metadata carries its own generator-semantics identifier;
+/// this sampler version remains an implementation contract for that identity.
 pub const RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 
 impl GameRng {

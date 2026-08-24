@@ -3,6 +3,12 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.108]
+
+- Added a separate procedural-generator semantics version to replay metadata;
+  incompatible generated-map policies are rejected while fixed-map replays do
+  not require that identity.
+
 ## [0.2.107]
 
 - Added exact integer-ratio probability sampling and routed procedural room

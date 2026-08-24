@@ -51,15 +51,16 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.107`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.108`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
     domain, with raw, bounded, and probability golden vectors.
   - Core probability rules use exact integer ratios; the floating-point helper
     is an explicit outer conversion.
-  - Replay metadata carries gameplay-semantics and ruleset identities; imports
-    reject unsupported values before simulation.
+  - Replay metadata carries gameplay-semantics and ruleset identities, plus a
+    separate generator-semantics version for procedural maps; imports reject
+    unsupported values before simulation.
 - Browser and presentation slice:
   - M7 functional checks pass locally and in remote web CI.
   - M8 provides square pixel-grid letterboxing, shared lighting bands, measured

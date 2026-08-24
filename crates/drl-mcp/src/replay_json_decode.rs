@@ -111,6 +111,10 @@ fn parse_metadata(value: &JsonValue) -> Result<ReplayMetadata, String> {
       required(object, "gameplay_semantics_version")?,
       "metadata.gameplay_semantics_version",
     )?,
+    generator_semantics_version: u32_value(
+      required(object, "generator_semantics_version")?,
+      "metadata.generator_semantics_version",
+    )?,
     ruleset_id: string(required(object, "ruleset_id")?, "metadata.ruleset_id")?.to_string(),
   })
 }
@@ -496,6 +500,16 @@ fn validate_replay_safety(replay: &ReplayLog) -> Result<(), String> {
       "unsupported replay ruleset {:?}; expected {:?}",
       replay.metadata.ruleset_id,
       drl_protocol::CURRENT_RULESET_ID
+    ));
+  }
+  if replay.procedural_config.is_some()
+    && replay.metadata.generator_semantics_version
+      != drl_protocol::CURRENT_GENERATOR_SEMANTICS_VERSION
+  {
+    return Err(format!(
+      "unsupported generator semantics version {}; expected {}",
+      replay.metadata.generator_semantics_version,
+      drl_protocol::CURRENT_GENERATOR_SEMANTICS_VERSION
     ));
   }
   if !(3..=MAX_REPLAY_DIMENSION).contains(&replay.width)
