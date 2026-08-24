@@ -188,7 +188,7 @@ impl LevelGenerator {
           let prev_center = prev_room.center();
           let new_center = candidate.center();
 
-          if rng.gen_bool(0.5) {
+          if rng.gen_bool_ratio(1, 2) {
             Self::carve_h_tunnel(&mut map, prev_center.x, new_center.x, prev_center.y);
             Self::carve_v_tunnel(&mut map, prev_center.y, new_center.y, new_center.x);
           } else {

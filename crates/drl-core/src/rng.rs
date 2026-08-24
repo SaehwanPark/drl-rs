@@ -90,7 +90,31 @@ impl GameRng {
     }
   }
 
+  /// Generates a random boolean from an exact integer probability ratio.
+  ///
+  /// The ratio is sampled through [`Self::gen_range`], so the result is
+  /// unbiased even when the denominator does not divide the raw `u32` domain.
+  /// Panics when `denominator` is zero or `numerator > denominator`.
+  pub fn gen_bool_ratio(&mut self, numerator: u32, denominator: u32) -> bool {
+    assert!(denominator > 0, "probability denominator must be non-zero");
+    assert!(
+      numerator <= denominator,
+      "probability numerator must not exceed denominator"
+    );
+    if numerator == 0 {
+      return false;
+    }
+    if numerator == denominator {
+      return true;
+    }
+    self.gen_range(0..denominator) < numerator
+  }
+
   /// Generates a random boolean with the specified probability in `[0.0, 1.0]`.
+  ///
+  /// This outer convenience API converts the probability to an explicit
+  /// threshold over the full `2^32` integer domain. Core rules should prefer
+  /// [`Self::gen_bool_ratio`] so their probability contract is rational.
   pub fn gen_bool(&mut self, probability: f64) -> bool {
     if probability <= 0.0 {
       return false;
@@ -98,8 +122,8 @@ impl GameRng {
     if probability >= 1.0 {
       return true;
     }
-    let threshold = (probability * (u32::MAX as f64)) as u32;
-    self.next_u32() < threshold
+    let threshold = (probability * 4_294_967_296.0) as u64;
+    u64::from(self.next_u32()) < threshold
   }
 
   /// In-place Fisher-Yates shuffle on a mutable slice.
@@ -197,6 +221,17 @@ mod tests {
     assert!(rng.gen_bool(0.5));
     assert!(rng.gen_bool(0.75));
     assert!(rng.gen_bool(1.0));
+  }
+
+  #[test]
+  fn test_gen_bool_ratio_golden_vectors() {
+    let mut rng = GameRng::from_seed(0);
+    assert!(!rng.gen_bool_ratio(1, 4));
+    assert!(!rng.gen_bool_ratio(1, 2));
+    assert!(rng.gen_bool_ratio(3, 4));
+    assert!(rng.gen_bool_ratio(1, 2));
+    assert!(!rng.gen_bool_ratio(0, 1));
+    assert!(rng.gen_bool_ratio(1, 1));
   }
 
   #[test]

@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-24
-Current project version: `0.2.106`
+Current project version: `0.2.107`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -177,6 +177,11 @@ version and ruleset/content identity independently from wire schema V1. Core and
 MCP replay validation reject unsupported values before simulation, avoiding
 silent reinterpretation through current rules.
 
+**Delivered in `0.2.107`:** Core probability rules use `GameRng::gen_bool_ratio`
+with unbiased integer-domain sampling. Procedural room decoration now expresses
+its 1/2 branch as an exact ratio; the floating-point helper documents its role
+as an outer convenience conversion and has golden coverage.
+
 Verification passed the focused and full `drl-core` suites, locked workspace
 format/Clippy/tests, the base-relative version contract, and the repository
 consistency script. Native/WASM compile and web contract checks also passed for
@@ -257,8 +262,9 @@ must be intentional because changing it changes deterministic histories.
 
 - [x] Replace modulo-based bounded integer sampling with an unbiased algorithm
   whose output contract is documented and tested.
-- [ ] Define boolean/probability sampling without relying on unspecified or
-  avoidable floating-point behavior in the simulation contract.
+- [x] Define boolean/probability sampling with an explicit integer-domain
+  contract; core rules prefer rational ratios and the outer float conversion is
+  bounded and tested.
 - [x] Add fixed raw, bounded, rejection, and probability RNG vectors for the
   supported sampler semantics version.
 - [x] Distinguish replay wire-schema version from engine/gameplay semantics

@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-24
-Current project version: `0.2.106`
+Current project version: `0.2.107`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -330,8 +330,9 @@ Presentation Boundary
   standard energy units.
 - **Deterministic PRNG**: All randomness flows through `GameRng`. No ambient or
   thread-local RNG is permitted. Bounded integer sampling uses documented
-  rejection sampling under `RNG_SAMPLING_SEMANTICS_VERSION`; replay metadata
-  separately records and validates gameplay-semantics and ruleset identities.
+  rejection sampling under `RNG_SAMPLING_SEMANTICS_VERSION`; core rules use
+  exact integer probability ratios, and replay metadata separately records and
+  validates gameplay-semantics and ruleset identities.
 - **Combat Resolution**: `CombatResolver` evaluates melee bump attacks and
   targeted ranged attacks with explicit distance accuracy scaling, uniform
   damage rolls, armor protection mitigation, and health clamping.

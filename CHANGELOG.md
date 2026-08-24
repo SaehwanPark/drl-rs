@@ -3,6 +3,11 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.107]
+
+- Added exact integer-ratio probability sampling and routed procedural room
+  decoration through the deterministic 1/2 contract.
+
 ## [0.2.106]
 
 - Added gameplay-semantics and ruleset identities to replay metadata, with core

@@ -692,6 +692,18 @@ fn test_jsonrpc_verify_replay_reconstructs_procedural_layout() {
     );
   }
 
+  let saved = JsonValue::parse(&server.handle_request(
+    r#"{"jsonrpc":"2.0","id":39,"method":"tools/call","params":{"name":"game_save_replay","arguments":{}}}"#,
+  ))
+  .unwrap();
+  let expected_command_count = saved
+    .get("result")
+    .and_then(|result| result.get("data"))
+    .and_then(|data| data.get("commands"))
+    .and_then(JsonValue::as_array)
+    .map(Vec::len)
+    .expect("saved replay command list");
+
   let verify = JsonValue::parse(&server.handle_request(
     r#"{"jsonrpc":"2.0","id":38,"method":"tools/call","params":{"name":"game_verify_replay","arguments":{}}}"#,
   ))
@@ -707,7 +719,7 @@ fn test_jsonrpc_verify_replay_reconstructs_procedural_layout() {
     data
       .and_then(|data| data.get("command_count"))
       .and_then(|value| value.as_u64()),
-    Some(17)
+    Some(expected_command_count as u64)
   );
 }
 
