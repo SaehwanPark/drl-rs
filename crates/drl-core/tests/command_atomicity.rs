@@ -375,6 +375,24 @@ fn pickup_without_ground_item_preserves_game_state() {
 }
 
 #[test]
+fn pickup_with_out_of_bounds_position_preserves_game_state() {
+  let mut game = Game::new(27, 10, 10, Position::new(2, 2)).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let out_of_bounds_position = Position::new(-1, 2);
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .set_position(out_of_bounds_position);
+
+  assert_rejected_command_is_atomic(
+    &mut game,
+    Command::Pickup,
+    CommandError::OutOfBounds(out_of_bounds_position),
+  );
+}
+
+#[test]
 fn ranged_attack_out_of_bounds_preserves_game_state() {
   let mut game = Game::new(21, 10, 10, Position::new(2, 2)).unwrap();
   let target_position = Position::new(-1, 2);

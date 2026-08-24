@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-24
-Current project version: `0.2.103`
+Current project version: `0.2.104`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -159,6 +159,12 @@ command must return the documented terminal `CommandError` without changing the
 terminal state, turn, RNG, or any other game state. Command-wide audit coverage
 remains follow-up work.
 
+**Delivered in `0.2.104`:** Pickup validates the player's map position before
+ground-item removal. An out-of-bounds player position must return
+`CommandError::OutOfBounds` with exact `Game` identity, preventing a malformed
+pickup path from removing an item before rollback can fail. Command-wide audit
+coverage remains follow-up work.
+
 Verification passed the focused and full `drl-core` suites, locked workspace
 format/Clippy/tests, the base-relative version contract, and the repository
 consistency script. Native/WASM compile and web contract checks also passed for
@@ -219,6 +225,8 @@ State identity on rejection includes, at minimum:
   equality test.
 - [x] Cover a command after normal game-over termination with an exact `Game`
   equality test.
+- [x] Validate pickup position before ground-item removal with an exact
+  out-of-bounds `Game` equality test.
 - [ ] Fix pickup/use/drop/reload and other multi-step commands so expected
   validation failures cannot lose or partially mutate items.
 - [ ] Audit all current `Game::step` command paths for mutation-before-error
