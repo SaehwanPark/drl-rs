@@ -53,3 +53,24 @@ fn ranged_attack_blocked_by_wall_preserves_ammo_and_rng() {
     CommandError::LineOfSightBlocked(monster_position),
   );
 }
+
+#[test]
+fn equipping_non_equippable_item_preserves_inventory() {
+  let mut game = Game::new(3, 10, 10, Position::new(2, 2)).unwrap();
+  let medpack_id = game
+    .world()
+    .player()
+    .unwrap()
+    .inventory()
+    .items()
+    .values()
+    .find(|item| item.consumable_properties().is_some())
+    .unwrap()
+    .id();
+
+  assert_rejected_command_is_atomic(
+    &mut game,
+    Command::Equip(medpack_id),
+    CommandError::CannotEquip(medpack_id),
+  );
+}

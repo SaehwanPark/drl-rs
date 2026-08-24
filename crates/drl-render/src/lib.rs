@@ -1160,7 +1160,7 @@ pub fn layer_draw_plan_at_progress(
   viewport: PixelViewport,
   progress: f32,
 ) -> Option<Vec<LayerDraw>> {
-  if !progress.is_finite() || progress < 0.0 || progress >= 1.0 {
+  if !progress.is_finite() || !(0.0..1.0).contains(&progress) {
     return None;
   }
   build_layer_draw_plan(scene, viewport, FrameSelection::Progress(progress))

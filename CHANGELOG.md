@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.90]
+
+- Made rejected equip commands transactional: item existence and slot
+  eligibility are validated before inventory mutation, so attempting to equip
+  a non-equippable item preserves the complete game state. Added focused
+  exact-state invariant coverage; other command families remain active Gate A
+  follow-up work.
+
 ## [0.2.89]
 
 - Made ranged-command validation transactional: out-of-range and blocked-line

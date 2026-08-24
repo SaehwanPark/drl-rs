@@ -1,7 +1,7 @@
 # Specification
 
-Last reviewed: 2026-08-23
-Current project version: `0.2.89`
+Last reviewed: 2026-08-24
+Current project version: `0.2.90`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -65,21 +65,27 @@ blocked by the exit gates in Section 2.7.
 
 ### 2.3 Transactional Command Contract
 
-#### Current bounded delivery target: ranged-attack rejection atomicity
+#### Current bounded delivery target: equip rejection atomicity
 
-**Delivered in `0.2.89` on `fix/atomic-ranged-command`:** This delivery closes
-the ranged portion of Gate A without broadening the active slice into RNG,
-replay semantics, or content registration. Ranged-command
-validation must complete before consuming ammunition or simulation randomness;
-any reachable rejection leaves the complete `Game` value byte-for-byte
-equivalent under `PartialEq`. A reusable test helper and focused out-of-range
-and line-of-sight rejection scenarios provide the executable evidence. Other
-command families remain audited follow-up work until their own rejection paths
-have equivalent coverage.
+**Delivered in `0.2.90` on `codex/fix-equip-rejection-atomicity`:** Equipping a
+non-equippable inventory item must return `CommandError::CannotEquip` without
+removing, reordering, or otherwise changing that item or any other simulation
+state. Equipment-slot eligibility must be validated through immutable state
+before the inventory is mutated. The existing exact-`Game` equality helper
+provides the executable rejection contract.
 
-Verification for this bounded target passed with `cargo test -p drl-core`, the
-full workspace checks in Section 3, and the repository consistency script. Browser,
-legacy-runtime, and replay-wire behavior are unchanged and out of scope.
+This target closes only the equip portion of Gate A. The ranged-command portion
+was delivered in `0.2.89`; pickup, drop, unequip, use, reload, movement, melee,
+descent, and command-wide audit coverage remain follow-up work. RNG/replay
+semantics, content registration, protocol/domain ownership, legacy behavior,
+browser behavior, and rights are unchanged and explicitly out of scope.
+
+Verification passed the focused and full `drl-core` suites, locked workspace
+format/Clippy/tests, the base-relative version contract, and the repository
+consistency script. Native/WASM compile and web contract checks also passed for
+the behavior-preserving renderer lint adaptation required by the local Rust
+1.97.1 toolchain; the real browser runner and controlled legacy runtime were
+`NOT_RUN`.
 
 For every `Game::step(command)` invocation:
 
@@ -107,7 +113,9 @@ State identity on rejection includes, at minimum:
   scenario where rejection is reachable without malformed construction.
 - [x] Fix ranged attacks so target geometry/range/legality is validated before
   ammunition, RNG, or other mutable state is consumed.
-- [ ] Fix equip/use/drop/reload and other multi-step commands so expected
+- [x] Validate equip eligibility before removing the inventory item, with an
+  exact-state rejection test for a reachable non-equippable item.
+- [ ] Fix pickup/use/drop/reload and other multi-step commands so expected
   validation failures cannot lose or partially mutate items.
 - [ ] Audit all current `Game::step` command paths for mutation-before-error
   behavior.

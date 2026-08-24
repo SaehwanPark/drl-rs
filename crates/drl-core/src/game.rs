@@ -395,6 +395,17 @@ impl Game {
     item_id: drl_protocol::ItemId,
     events: &mut Vec<GameEvent>,
   ) -> Result<(), CommandError> {
+    let slot = self
+      .state
+      .world
+      .get_actor(player_id)
+      .ok_or(CommandError::EntityNotFound(player_id))?
+      .inventory()
+      .get_item(item_id)
+      .ok_or(CommandError::ItemNotFound(item_id))?
+      .equipment_slot()
+      .ok_or(CommandError::CannotEquip(item_id))?;
+
     let player = self
       .state
       .world
@@ -402,20 +413,16 @@ impl Game {
       .ok_or(CommandError::EntityNotFound(player_id))?;
 
     let item = player.inventory_mut().remove_item(item_id)?;
-    let slot = item
-      .equipment_slot()
-      .ok_or(CommandError::CannotEquip(item_id))?;
-
-    let prev = match player.equipment_mut().equip(slot, item.clone()) {
-      Ok(prev) => prev,
-      Err(err) => {
-        let _ = player.inventory_mut().add_item(item);
-        return Err(err);
-      }
-    };
+    let prev = player
+      .equipment_mut()
+      .equip(slot, item)
+      .expect("equipment slot was validated before inventory mutation");
 
     if let Some(old_item) = prev {
-      let _ = player.inventory_mut().add_item(old_item);
+      player
+        .inventory_mut()
+        .add_item(old_item)
+        .expect("equipping frees an inventory slot for the replaced item");
     }
 
     events.push(GameEvent::ItemEquipped {
