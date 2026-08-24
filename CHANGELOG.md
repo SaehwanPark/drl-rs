@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.95]
+
+- Added exact-state rejection coverage for `Command::Reload` when no ranged
+  weapon is equipped, the clip is already full, or matching reserve ammunition
+  is unavailable. These paths now have explicit Gate A evidence that equipment,
+  inventory, turn, RNG, and the complete `Game` state remain unchanged.
+
 ## [0.2.94]
 
 - Added exact-state rejection coverage for `Command::Use` with a present

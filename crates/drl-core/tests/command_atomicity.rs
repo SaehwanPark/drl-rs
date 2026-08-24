@@ -1,7 +1,7 @@
 //! Rejected command invariants for the deterministic simulation kernel.
 
 use drl_core::{Game, Item, Tile};
-use drl_protocol::{Command, CommandError, Position};
+use drl_protocol::{Command, CommandError, ItemCategory, Position};
 
 fn assert_rejected_command_is_atomic(
   game: &mut Game,
@@ -212,4 +212,68 @@ fn use_missing_item_preserves_game_state() {
     Command::Use(missing_item_id),
     CommandError::ItemNotFound(missing_item_id),
   );
+}
+
+#[test]
+fn reload_without_ranged_weapon_preserves_game_state() {
+  let mut game = Game::new(10, 10, 10, Position::new(2, 2)).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let knife_id = game.world_mut().allocate_item_id();
+
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .inventory_mut()
+    .add_item(Item::combat_knife(knife_id))
+    .unwrap();
+  game.step(Command::Equip(knife_id)).unwrap();
+
+  assert_rejected_command_is_atomic(&mut game, Command::Reload, CommandError::NoEquippedWeapon);
+}
+
+#[test]
+fn reload_with_full_clip_preserves_game_state() {
+  let mut game = Game::new(11, 10, 10, Position::new(2, 2)).unwrap();
+
+  assert_rejected_command_is_atomic(&mut game, Command::Reload, CommandError::ClipAlreadyFull);
+}
+
+#[test]
+fn reload_without_matching_ammo_preserves_game_state() {
+  let mut game = Game::new(12, 10, 10, Position::new(2, 2)).unwrap();
+  let player_id = game.world().player_id().unwrap();
+
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 0;
+
+  let ammo_ids: Vec<_> = game
+    .world()
+    .get_actor(player_id)
+    .unwrap()
+    .inventory()
+    .items()
+    .values()
+    .filter(|item| item.category() == ItemCategory::Ammo)
+    .map(Item::id)
+    .collect();
+  for item_id in ammo_ids {
+    game
+      .world_mut()
+      .get_actor_mut(player_id)
+      .unwrap()
+      .inventory_mut()
+      .remove_item(item_id)
+      .unwrap();
+  }
+
+  assert_rejected_command_is_atomic(&mut game, Command::Reload, CommandError::NoMatchingAmmo);
 }
