@@ -357,6 +357,12 @@ decomposition are recorded in
 Its typed Rust implementation is intentionally not claimed by this evidence
 slice.
 
+The second selected case is Subtle Knife alternate fire; its source and
+callback decomposition are recorded in
+[`docs/legacy-behavior/subtle-knife.md`](docs/legacy-behavior/subtle-knife.md).
+Its typed Rust implementation and runtime parity are also intentionally not
+claimed by this evidence slice.
+
 - an equipment set with reversible equip/unequip modifiers;
 - Subtle Knife-style alternate action with health/status cost and visible-target
   iteration;
