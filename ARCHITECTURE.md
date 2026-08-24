@@ -80,7 +80,9 @@ Presentation Boundary
    rejection cannot partially mutate an existing stack. Drop validates its
    destination before removing the inventory item. These paths have focused
    equality tests; the repository-wide command invariant remains an active
-   correction target until every command family has equivalent evidence. See
+   correction target until every command family has equivalent evidence. The
+   unequip path rejects empty slots and full inventories before removing an
+   equipped item. See
    [`docs/steering/decisions/atomic-command-transactions.md`](docs/steering/decisions/atomic-command-transactions.md).
 
 ---
@@ -495,7 +497,8 @@ target contract but is not reported as already verified:
 5. **No Runtime Scripting**: No Lua VM or JavaScript gameplay interpreters.
 6. **Atomic Rejection**: Illegal/rejected commands and corrupt saves must fail
    without partial simulation mutation. Ranged-command, non-equippable-item,
-   full-backpack pickup, and out-of-bounds drop rejection are covered by
+   full-backpack pickup, out-of-bounds drop, empty-slot unequip, and
+   full-backpack unequip rejection cases are covered by
    `crates/drl-core/tests/command_atomicity.rs`; command-wide verification is
    still an active correction gate documented in `docs/steering/`.
 

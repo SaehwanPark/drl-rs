@@ -3,6 +3,12 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.93]
+
+- Added exact-state rejection coverage for `Command::Unequip` when the target
+  slot is empty or the inventory is full. Both paths now have explicit Gate A
+  evidence that the equipped item and complete `Game` state remain unchanged.
+
 ## [0.2.92]
 
 - Made `Command::Drop` validate the player destination before removing an

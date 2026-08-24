@@ -136,3 +136,47 @@ fn drop_with_out_of_bounds_position_preserves_inventory() {
     CommandError::OutOfBounds(Position::new(-1, 2)),
   );
 }
+
+#[test]
+fn unequip_empty_slot_preserves_game_state() {
+  let mut game = Game::new(6, 10, 10, Position::new(2, 2)).unwrap();
+
+  assert_rejected_command_is_atomic(
+    &mut game,
+    Command::Unequip(drl_protocol::EquipmentSlot::Armor),
+    CommandError::SlotEmpty(drl_protocol::EquipmentSlot::Armor),
+  );
+}
+
+#[test]
+fn unequip_with_full_backpack_preserves_equipment() {
+  let mut game = Game::new(7, 10, 10, Position::new(2, 2)).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let armor_id = game.world_mut().allocate_item_id();
+
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .inventory_mut()
+    .add_item(Item::green_armor(armor_id))
+    .unwrap();
+  game.step(Command::Equip(armor_id)).unwrap();
+
+  for _ in 0..8 {
+    let item_id = game.world_mut().allocate_item_id();
+    game
+      .world_mut()
+      .get_actor_mut(player_id)
+      .unwrap()
+      .inventory_mut()
+      .add_item(Item::small_medpack(item_id))
+      .unwrap();
+  }
+
+  assert_rejected_command_is_atomic(
+    &mut game,
+    Command::Unequip(drl_protocol::EquipmentSlot::Armor),
+    CommandError::InventoryFull,
+  );
+}
