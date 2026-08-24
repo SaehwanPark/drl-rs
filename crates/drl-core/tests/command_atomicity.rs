@@ -452,3 +452,24 @@ fn ranged_attack_without_ammo_preserves_game_state() {
     CommandError::NoAmmoInClip,
   );
 }
+
+#[test]
+fn phase_device_without_destination_preserves_game_state() {
+  let mut game = Game::new(25, 3, 3, Position::new(1, 1)).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let phase_device_id = game.world_mut().allocate_item_id();
+
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .inventory_mut()
+    .add_item(Item::phase_device(phase_device_id))
+    .unwrap();
+
+  assert_rejected_command_is_atomic(
+    &mut game,
+    Command::Use(phase_device_id),
+    CommandError::InvalidCommand("no valid teleport destination available".to_string()),
+  );
+}
