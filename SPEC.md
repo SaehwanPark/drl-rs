@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-24
-Current project version: `0.2.90`
+Current project version: `0.2.91`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -74,8 +74,18 @@ state. Equipment-slot eligibility must be validated through immutable state
 before the inventory is mutated. The existing exact-`Game` equality helper
 provides the executable rejection contract.
 
-This target closes only the equip portion of Gate A. The ranged-command portion
-was delivered in `0.2.89`; pickup, drop, unequip, use, reload, movement, melee,
+**Delivered in `0.2.91`:** Player pickup rejection is transactional when a
+ground ammunition stack would partially merge into an existing inventory
+stack and then encounter a full backpack. Inventory
+insertion must validate or stage all fallible capacity work before committing
+stack mutations. A rejected pickup must leave the complete `Game` state,
+including the original ground item and every inventory stack, byte-for-byte
+equivalent under `Game` equality. This closes only the pickup portion of Gate A;
+drop, use, unequip, reload, descent, and command-wide audit coverage remain
+follow-up work.
+
+The preceding equip target closed that portion of Gate A, and the ranged-command
+portion was delivered in `0.2.89`; drop, unequip, use, reload, movement, melee,
 descent, and command-wide audit coverage remain follow-up work. RNG/replay
 semantics, content registration, protocol/domain ownership, legacy behavior,
 browser behavior, and rights are unchanged and explicitly out of scope.
@@ -115,6 +125,8 @@ State identity on rejection includes, at minimum:
   ammunition, RNG, or other mutable state is consumed.
 - [x] Validate equip eligibility before removing the inventory item, with an
   exact-state rejection test for a reachable non-equippable item.
+- [x] Make pickup rejection atomic when inventory insertion would partially
+  merge ammunition before returning `InventoryFull`.
 - [ ] Fix pickup/use/drop/reload and other multi-step commands so expected
   validation failures cannot lose or partially mutate items.
 - [ ] Audit all current `Game::step` command paths for mutation-before-error

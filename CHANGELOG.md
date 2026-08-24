@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.91]
+
+- Made inventory insertion transactional so a failed ammunition merge cannot
+  partially change an existing stack before returning `InventoryFull`. Player
+  pickup now preserves the complete game state, including the ground item,
+  inventory, turn, and RNG, on full-backpack rejection; focused unit and
+  integration tests cover the reachable partial-merge case.
+
 ## [0.2.90]
 
 - Made rejected equip commands transactional: item existence and slot

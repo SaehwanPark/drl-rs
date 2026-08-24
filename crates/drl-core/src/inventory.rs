@@ -75,7 +75,17 @@ impl Inventory {
   ///
   /// For ammunition, automatically attempts to merge into existing compatible ammo stacks.
   /// Returns the `ItemId` where the item (or its remaining stack) was placed.
-  pub fn add_item(&mut self, mut item: Item) -> Result<ItemId, CommandError> {
+  pub fn add_item(&mut self, item: Item) -> Result<ItemId, CommandError> {
+    // Stage the insertion on a clone so a capacity error cannot leave a
+    // partially merged ammunition stack behind. Callers can therefore use
+    // `add_item` as a transactional prepare/commit boundary.
+    let mut candidate = self.clone();
+    let id = candidate.add_item_unchecked(item)?;
+    *self = candidate;
+    Ok(id)
+  }
+
+  fn add_item_unchecked(&mut self, mut item: Item) -> Result<ItemId, CommandError> {
     if item.is_ammo() {
       let ammo_type = item.ammo_type().unwrap();
       // Try to merge into existing ammo stacks of the same type
@@ -277,6 +287,20 @@ mod tests {
     let knife = Item::combat_knife(ItemId::new(4));
     let err = inv.add_item(knife).unwrap_err();
     assert_eq!(err, CommandError::InventoryFull);
+  }
+
+  #[test]
+  fn test_failed_ammo_merge_is_atomic() {
+    let mut inv = Inventory::new(1);
+    inv.add_item(Item::ammo_9mm(ItemId::new(1), 95)).unwrap();
+    let before = inv.clone();
+
+    let err = inv
+      .add_item(Item::ammo_9mm(ItemId::new(2), 10))
+      .unwrap_err();
+
+    assert_eq!(err, CommandError::InventoryFull);
+    assert_eq!(inv, before);
   }
 
   #[test]

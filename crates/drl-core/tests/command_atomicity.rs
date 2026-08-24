@@ -1,6 +1,6 @@
 //! Rejected command invariants for the deterministic simulation kernel.
 
-use drl_core::{Game, Tile};
+use drl_core::{Game, Item, Tile};
 use drl_protocol::{Command, CommandError, Position};
 
 fn assert_rejected_command_is_atomic(
@@ -73,4 +73,38 @@ fn equipping_non_equippable_item_preserves_inventory() {
     Command::Equip(medpack_id),
     CommandError::CannotEquip(medpack_id),
   );
+}
+
+#[test]
+fn pickup_with_full_backpack_preserves_partial_ammo_merge() {
+  let mut game = Game::new(4, 10, 10, Position::new(2, 2)).unwrap();
+  let player_id = game.world().player_id().unwrap();
+
+  let extra_ammo_id = game.world_mut().allocate_item_id();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .inventory_mut()
+    .add_item(Item::ammo_9mm(extra_ammo_id, 65))
+    .unwrap();
+
+  for _ in 0..8 {
+    let item_id = game.world_mut().allocate_item_id();
+    game
+      .world_mut()
+      .get_actor_mut(player_id)
+      .unwrap()
+      .inventory_mut()
+      .add_item(Item::small_medpack(item_id))
+      .unwrap();
+  }
+
+  let ground_ammo_id = game.world_mut().allocate_item_id();
+  game
+    .world_mut()
+    .spawn_ground_item(Position::new(2, 2), Item::ammo_9mm(ground_ammo_id, 10))
+    .unwrap();
+
+  assert_rejected_command_is_atomic(&mut game, Command::Pickup, CommandError::InventoryFull);
 }

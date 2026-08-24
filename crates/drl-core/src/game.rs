@@ -1306,6 +1306,50 @@ mod tests {
   }
 
   #[test]
+  fn test_game_step_pickup_rejection_preserves_partial_ammo_merge() {
+    let mut game = Game::new(425, 10, 10, Position::new(2, 2)).unwrap();
+    let player_id = game.world().player_id().unwrap();
+
+    // The default 9mm stack has 30 rounds. Add 65 so a later pickup can
+    // partially merge five rounds before the full backpack check is reached.
+    let extra_ammo_id = game.world_mut().allocate_item_id();
+    game
+      .world_mut()
+      .get_actor_mut(player_id)
+      .unwrap()
+      .inventory_mut()
+      .add_item(crate::item::Item::ammo_9mm(extra_ammo_id, 65))
+      .unwrap();
+
+    // Fill the remaining inventory slots with non-ammunition items.
+    for _ in 0..8 {
+      let item_id = game.world_mut().allocate_item_id();
+      game
+        .world_mut()
+        .get_actor_mut(player_id)
+        .unwrap()
+        .inventory_mut()
+        .add_item(crate::item::Item::small_medpack(item_id))
+        .unwrap();
+    }
+
+    let ground_ammo_id = game.world_mut().allocate_item_id();
+    game
+      .world_mut()
+      .spawn_ground_item(
+        Position::new(2, 2),
+        crate::item::Item::ammo_9mm(ground_ammo_id, 10),
+      )
+      .unwrap();
+
+    let before = game.clone();
+    let err = game.step(Command::Pickup).unwrap_err();
+
+    assert_eq!(err, CommandError::InventoryFull);
+    assert_eq!(game, before);
+  }
+
+  #[test]
   fn test_death_drop_uses_canonical_item_factory() {
     let mut game = Game::new(450, 12, 12, Position::new(2, 2)).unwrap();
     let kinds = [
