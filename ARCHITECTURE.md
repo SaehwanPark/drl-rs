@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-24
-Current project version: `0.2.110`
+Current project version: `0.2.111`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -352,6 +352,7 @@ Presentation Boundary
   ownership for new gameplay policy; migrate gameplay definitions toward the
   core/domain side while stable semantic kind IDs remain protocol-safe.
 - **Item Definitions**: `drl-core::item_definition` owns item definitions;
+  `CURRENT_ITEM_SPAWN_KINDS` is the canonical representative family catalog;
   `Item::from_spawn_kind` serves as canonical item factory. New routine content
   should converge on one authoritative compile-time catalog whose projections
   supply enums/lookup/display/replay/validation coverage instead of manual

@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-24
-Current project version: `0.2.110`
+Current project version: `0.2.111`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -198,6 +198,11 @@ interim command-boundary backstop.
 all other current command classes have reachable rejection cases protected by
 the transactional boundary.
 
+**Delivered in `0.2.111`:** Structural item validation now consumes the
+canonical `CURRENT_ITEM_SPAWN_KINDS` catalog owned by `drl-core::item_definition`;
+the catalog has uniqueness and definition-backed coverage tests. Behavioral and
+presentation projections remain explicit until their own fan-out slices migrate.
+
 Verification passed the focused and full `drl-core` suites, locked workspace
 format/Clippy/tests, the base-relative version contract, and the repository
 consistency script. Native/WASM compile and web contract checks also passed for
@@ -311,7 +316,9 @@ insufficient.
 
 - [ ] Inventory all current manual fan-out points for adding an item archetype.
 - [ ] Establish one authoritative compile-time item/content catalog or
-  equivalent source of truth.
+  equivalent source of truth. **Partial in `0.2.111`:** structural validation
+  uses `CURRENT_ITEM_SPAWN_KINDS`; behavioral and presentation projections
+  remain explicit.
 - [ ] Generate or mechanically derive routine projections such as stable IDs,
   display strings, validation coverage, replay names, and presentation lookup
   where doing so does not weaken type safety.

@@ -3,6 +3,11 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.111]
+
+- Added the canonical `CURRENT_ITEM_SPAWN_KINDS` catalog and routed structural
+  item validation through it, with uniqueness and definition-backed tests.
+
 ## [0.2.110]
 
 - Completed the current `Game::step` command audit, with explicit accepted-path

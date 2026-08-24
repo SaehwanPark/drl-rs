@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-24
-Current project version: `0.2.110`
+Current project version: `0.2.111`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.110)
+## 3. Current Progress Summary (`VERSION` 0.2.111)
 
 ### Delivered Foundations
 
@@ -86,6 +86,9 @@ verification item uses explicit status semantics:
   preserving turn and RNG through a documented bounded rollback backstop.
   Accepted-only `Wait` and `Move(None)` branches are covered separately because
   they have no reachable rejection path.
+  The first Gate C slice centralizes representative item spawn families in
+  `CURRENT_ITEM_SPAWN_KINDS` for structural validation; behavior and
+  presentation fan-out remain explicitly open.
 - **Tooling & Replays (M5, M6)**: Versioned replay engine (`V1`), declarative
   ASCII scenario runners, scripted bots, batch sweep runners, and a pure Rust
   zero-dependency MCP server.
