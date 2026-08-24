@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-24
-Current project version: `0.2.104`
+Current project version: `0.2.105`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -329,8 +329,9 @@ Presentation Boundary
   When an actor reaches the action threshold, it executes one action costing
   standard energy units.
 - **Deterministic PRNG**: All randomness flows through `GameRng`. No ambient or
-  thread-local RNG is permitted. Bounded integer sampling must be unbiased and
-  its replay-visible semantics explicitly versioned when changed.
+  thread-local RNG is permitted. Bounded integer sampling uses documented
+  rejection sampling under `RNG_SAMPLING_SEMANTICS_VERSION`; replay-visible
+  semantics remain a separate versioning follow-up.
 - **Combat Resolution**: `CombatResolver` evaluates melee bump attacks and
   targeted ranged attacks with explicit distance accuracy scaling, uniform
   damage rolls, armor protection mitigation, and health clamping.
