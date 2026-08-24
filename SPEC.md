@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-24
-Current project version: `0.2.91`
+Current project version: `0.2.92`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -84,6 +84,13 @@ equivalent under `Game` equality. This closes only the pickup portion of Gate A;
 drop, use, unequip, reload, descent, and command-wide audit coverage remain
 follow-up work.
 
+**Delivered in `0.2.92`:** Player drop validates the destination
+position before removing an inventory item. If a malformed or externally
+constructed world places the player outside the map, `Command::Drop` must return
+`CommandError::OutOfBounds` with the complete `Game` state unchanged. This
+closes only the drop portion of Gate A; use, unequip, reload, descent, and
+command-wide audit coverage remain follow-up work.
+
 The preceding equip target closed that portion of Gate A, and the ranged-command
 portion was delivered in `0.2.89`; drop, unequip, use, reload, movement, melee,
 descent, and command-wide audit coverage remain follow-up work. RNG/replay
@@ -127,6 +134,8 @@ State identity on rejection includes, at minimum:
   exact-state rejection test for a reachable non-equippable item.
 - [x] Make pickup rejection atomic when inventory insertion would partially
   merge ammunition before returning `InventoryFull`.
+- [x] Validate the drop destination before removing an inventory item, with an
+  exact-state rejection test for an out-of-bounds player position.
 - [ ] Fix pickup/use/drop/reload and other multi-step commands so expected
   validation failures cannot lose or partially mutate items.
 - [ ] Audit all current `Game::step` command paths for mutation-before-error

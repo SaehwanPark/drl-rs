@@ -108,3 +108,31 @@ fn pickup_with_full_backpack_preserves_partial_ammo_merge() {
 
   assert_rejected_command_is_atomic(&mut game, Command::Pickup, CommandError::InventoryFull);
 }
+
+#[test]
+fn drop_with_out_of_bounds_position_preserves_inventory() {
+  let mut game = Game::new(5, 10, 10, Position::new(2, 2)).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let item_id = game
+    .world()
+    .get_actor(player_id)
+    .unwrap()
+    .inventory()
+    .items()
+    .keys()
+    .next()
+    .copied()
+    .unwrap();
+
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .set_position(Position::new(-1, 2));
+
+  assert_rejected_command_is_atomic(
+    &mut game,
+    Command::Drop(item_id),
+    CommandError::OutOfBounds(Position::new(-1, 2)),
+  );
+}
