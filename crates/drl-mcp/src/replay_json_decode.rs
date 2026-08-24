@@ -107,6 +107,11 @@ fn parse_metadata(value: &JsonValue) -> Result<ReplayMetadata, String> {
       "metadata.engine_version",
     )?
     .to_string(),
+    gameplay_semantics_version: u32_value(
+      required(object, "gameplay_semantics_version")?,
+      "metadata.gameplay_semantics_version",
+    )?,
+    ruleset_id: string(required(object, "ruleset_id")?, "metadata.ruleset_id")?.to_string(),
   })
 }
 
@@ -478,6 +483,21 @@ fn bounded_array<'a>(
 }
 
 fn validate_replay_safety(replay: &ReplayLog) -> Result<(), String> {
+  if replay.metadata.gameplay_semantics_version != drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION
+  {
+    return Err(format!(
+      "unsupported gameplay semantics version {}; expected {}",
+      replay.metadata.gameplay_semantics_version,
+      drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION
+    ));
+  }
+  if replay.metadata.ruleset_id != drl_protocol::CURRENT_RULESET_ID {
+    return Err(format!(
+      "unsupported replay ruleset {:?}; expected {:?}",
+      replay.metadata.ruleset_id,
+      drl_protocol::CURRENT_RULESET_ID
+    ));
+  }
   if !(3..=MAX_REPLAY_DIMENSION).contains(&replay.width)
     || !(3..=MAX_REPLAY_DIMENSION).contains(&replay.height)
   {

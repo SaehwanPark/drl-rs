@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-24
-Current project version: `0.2.105`
+Current project version: `0.2.106`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -172,6 +172,11 @@ and current probability conversion have fixed golden vectors. Replay metadata
 does not yet carry the sampler identifier; replay semantics versioning remains
 follow-up work.
 
+**Delivered in `0.2.106`:** Replay metadata now carries a gameplay-semantics
+version and ruleset/content identity independently from wire schema V1. Core and
+MCP replay validation reject unsupported values before simulation, avoiding
+silent reinterpretation through current rules.
+
 Verification passed the focused and full `drl-core` suites, locked workspace
 format/Clippy/tests, the base-relative version contract, and the repository
 consistency script. Native/WASM compile and web contract checks also passed for
@@ -256,13 +261,13 @@ must be intentional because changing it changes deterministic histories.
   avoidable floating-point behavior in the simulation contract.
 - [x] Add fixed raw, bounded, rejection, and probability RNG vectors for the
   supported sampler semantics version.
-- [ ] Distinguish replay wire-schema version from engine/gameplay semantics
+- [x] Distinguish replay wire-schema version from engine/gameplay semantics
   version.
-- [ ] Record a ruleset/content semantics identifier sufficient to reject or
-  explicitly migrate incompatible replays.
+- [x] Record a ruleset/content semantics identifier sufficient to reject
+  incompatible replays (migration remains future work).
 - [ ] Define whether procedural-generation semantics are part of the same
   ruleset identifier or receive a separate generator version.
-- [ ] Reject incompatible replay semantics explicitly until a migration path is
+- [x] Reject incompatible replay semantics explicitly until a migration path is
   implemented; do not silently reinterpret an old replay through current item
   definitions.
 

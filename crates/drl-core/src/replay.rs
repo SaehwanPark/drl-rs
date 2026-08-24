@@ -15,6 +15,22 @@ pub struct ReplayEngine;
 impl ReplayEngine {
   /// Validates a replay log's spatial bounds and structural consistency before execution.
   pub fn validate(replay: &ReplayLog) -> Result<(), String> {
+    if replay.metadata.gameplay_semantics_version
+      != drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION
+    {
+      return Err(format!(
+        "unsupported gameplay semantics version {}; expected {}",
+        replay.metadata.gameplay_semantics_version,
+        drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION
+      ));
+    }
+    if replay.metadata.ruleset_id != drl_protocol::CURRENT_RULESET_ID {
+      return Err(format!(
+        "unsupported replay ruleset {:?}; expected {:?}",
+        replay.metadata.ruleset_id,
+        drl_protocol::CURRENT_RULESET_ID
+      ));
+    }
     if replay.width == 0 || replay.height == 0 {
       return Err(format!(
         "Invalid map dimensions: {}x{}",
@@ -277,6 +293,20 @@ mod tests {
   fn test_replay_validation_failure() {
     let replay = ReplayLog::new(1234, 10, 10, Position::new(15, 15));
     assert!(ReplayEngine::validate(&replay).is_err());
+  }
+
+  #[test]
+  fn test_replay_validation_rejects_incompatible_semantics() {
+    let mut replay = ReplayLog::new(1234, 10, 10, Position::new(1, 1));
+    replay.metadata.gameplay_semantics_version =
+      drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION - 1;
+    let error = ReplayEngine::validate(&replay).unwrap_err();
+    assert!(error.contains("unsupported gameplay semantics version"));
+
+    let mut replay = ReplayLog::new(1234, 10, 10, Position::new(1, 1));
+    replay.metadata.ruleset_id = "legacy-ruleset".to_string();
+    let error = ReplayEngine::validate(&replay).unwrap_err();
+    assert!(error.contains("unsupported replay ruleset"));
   }
 
   #[test]

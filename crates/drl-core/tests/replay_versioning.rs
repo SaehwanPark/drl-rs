@@ -12,11 +12,18 @@ fn test_replay_version_and_metadata_headers() {
   assert_eq!(replay.version, ReplayVersion::V1);
   assert_eq!(replay.metadata.version, ReplayVersion::V1);
   assert_eq!(replay.metadata.engine_name, "DRL-Rust");
+  assert_eq!(
+    replay.metadata.gameplay_semantics_version,
+    drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION
+  );
+  assert_eq!(replay.metadata.ruleset_id, drl_protocol::CURRENT_RULESET_ID);
 
   replay = replay.with_metadata(ReplayMetadata {
     version: ReplayVersion::V1,
     engine_name: "DRL-Rust-TestHarness".to_string(),
     engine_version: "0.1.0".to_string(),
+    gameplay_semantics_version: drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION,
+    ruleset_id: drl_protocol::CURRENT_RULESET_ID.to_string(),
   });
 
   assert_eq!(replay.metadata.engine_name, "DRL-Rust-TestHarness");
