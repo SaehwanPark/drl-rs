@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-24
-Current project version: `0.2.92`
+Current project version: `0.2.93`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -97,6 +97,13 @@ descent, and command-wide audit coverage remain follow-up work. RNG/replay
 semantics, content registration, protocol/domain ownership, legacy behavior,
 browser behavior, and rights are unchanged and explicitly out of scope.
 
+**Delivered in `0.2.93`:** Unequip rejection paths retain exact
+`Game` identity. An empty equipment slot must return `CommandError::SlotEmpty`
+without mutation, and a full inventory must return `CommandError::InventoryFull`
+before removing the equipped item. This evidence-only target closes the
+unequip portion of Gate A; use, reload, descent, and command-wide audit
+coverage remain follow-up work.
+
 Verification passed the focused and full `drl-core` suites, locked workspace
 format/Clippy/tests, the base-relative version contract, and the repository
 consistency script. Native/WASM compile and web contract checks also passed for
@@ -136,6 +143,8 @@ State identity on rejection includes, at minimum:
   merge ammunition before returning `InventoryFull`.
 - [x] Validate the drop destination before removing an inventory item, with an
   exact-state rejection test for an out-of-bounds player position.
+- [x] Cover unequip rejection for an empty slot and a full inventory with exact
+  `Game` equality tests.
 - [ ] Fix pickup/use/drop/reload and other multi-step commands so expected
   validation failures cannot lose or partially mutate items.
 - [ ] Audit all current `Game::step` command paths for mutation-before-error
