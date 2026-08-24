@@ -3,6 +3,11 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.105]
+
+- Replaced modulo-biased bounded RNG sampling with full-domain rejection
+  sampling and pinned raw, bounded, rejection, and probability golden vectors.
+
 ## [0.2.104]
 
 - Validated pickup positions before removing ground items, preventing an

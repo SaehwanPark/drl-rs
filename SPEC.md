@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-24
-Current project version: `0.2.104`
+Current project version: `0.2.105`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -165,6 +165,13 @@ ground-item removal. An out-of-bounds player position must return
 pickup path from removing an item before rollback can fail. Command-wide audit
 coverage remains follow-up work.
 
+**Delivered in `0.2.105`:** `GameRng::gen_range` uses rejection sampling over
+the complete `2^32` output domain, avoiding modulo bias while preserving the
+explicit raw PRNG stream. Raw output, bounded samples (including rejection),
+and current probability conversion have fixed golden vectors. Replay metadata
+does not yet carry the sampler identifier; replay semantics versioning remains
+follow-up work.
+
 Verification passed the focused and full `drl-core` suites, locked workspace
 format/Clippy/tests, the base-relative version contract, and the repository
 consistency script. Native/WASM compile and web contract checks also passed for
@@ -243,11 +250,12 @@ must be intentional because changing it changes deterministic histories.
 
 #### Acceptance criteria
 
-- [ ] Replace modulo-based bounded integer sampling with an unbiased algorithm
+- [x] Replace modulo-based bounded integer sampling with an unbiased algorithm
   whose output contract is documented and tested.
 - [ ] Define boolean/probability sampling without relying on unspecified or
   avoidable floating-point behavior in the simulation contract.
-- [ ] Add fixed golden RNG vectors for the supported semantics version.
+- [x] Add fixed raw, bounded, rejection, and probability RNG vectors for the
+  supported sampler semantics version.
 - [ ] Distinguish replay wire-schema version from engine/gameplay semantics
   version.
 - [ ] Record a ruleset/content semantics identifier sufficient to reject or

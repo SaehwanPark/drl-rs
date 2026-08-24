@@ -10,6 +10,13 @@ pub struct GameRng {
   state: [u64; 4],
 }
 
+/// Version of the deterministic sampling algorithms layered on raw PRNG output.
+///
+/// Replay metadata does not yet carry this identifier; it is exposed here so
+/// the sampler contract has one explicit version to bind when replay semantics
+/// versioning is added.
+pub const RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
+
 impl GameRng {
   /// Creates a new RNG seeded deterministically from a 64-bit integer.
   #[must_use]
@@ -62,11 +69,25 @@ impl GameRng {
   }
 
   /// Generates a random integer within `[min, max)` (half-open range).
+  ///
+  /// Rejection sampling uses the complete `2^32` `u32` output domain, so every
+  /// value in the requested span has equal probability. Rejected raw samples
+  /// consume additional PRNG output by design and are part of the sampling
+  /// semantics version.
+  ///
   /// Panics if `range` is empty (`min >= max`).
   pub fn gen_range(&mut self, range: std::ops::Range<u32>) -> u32 {
     assert!(range.start < range.end, "empty range for gen_range");
-    let span = range.end - range.start;
-    range.start + (self.next_u32() % span)
+    let span = u64::from(range.end - range.start);
+    let domain_size = u64::from(u32::MAX) + 1;
+    let acceptance_limit = domain_size - (domain_size % span);
+
+    loop {
+      let sample = u64::from(self.next_u32());
+      if sample < acceptance_limit {
+        return range.start + (sample % span) as u32;
+      }
+    }
   }
 
   /// Generates a random boolean with the specified probability in `[0.0, 1.0]`.
@@ -138,6 +159,44 @@ mod tests {
       let val = rng.gen_range(5..15);
       assert!((5..15).contains(&val));
     }
+  }
+
+  #[test]
+  fn test_raw_rng_golden_vector() {
+    let mut rng = GameRng::from_seed(0);
+    let expected = [
+      5_987_356_902_031_041_503,
+      7_051_070_477_665_621_255,
+      6_633_766_593_972_829_180,
+      211_316_841_551_650_330,
+      9_136_120_204_379_184_874,
+    ];
+
+    for value in expected {
+      assert_eq!(rng.next_u64(), value);
+    }
+  }
+
+  #[test]
+  fn test_gen_range_golden_vectors_use_rejection_sampling() {
+    let mut rng = GameRng::from_seed(0);
+    assert_eq!(rng.gen_range(0..3), 2);
+    assert_eq!(rng.gen_range(5..15), 12);
+    assert_eq!(rng.gen_range(0..100), 45);
+
+    let mut wide_rng = GameRng::from_seed(1);
+    assert_eq!(wide_rng.gen_range(0..2_147_483_649), 430_144_855);
+    assert_eq!(wide_rng.gen_range(0..2_147_483_649), 793_188_427);
+  }
+
+  #[test]
+  fn test_gen_bool_golden_vectors() {
+    let mut rng = GameRng::from_seed(0);
+    assert!(!rng.gen_bool(0.0));
+    assert!(!rng.gen_bool(0.25));
+    assert!(rng.gen_bool(0.5));
+    assert!(rng.gen_bool(0.75));
+    assert!(rng.gen_bool(1.0));
   }
 
   #[test]
