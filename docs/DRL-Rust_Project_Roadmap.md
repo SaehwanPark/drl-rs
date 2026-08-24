@@ -93,7 +93,9 @@ verification item uses explicit status semantics:
   projections. Stable item names now expose one typed projection used by
   display and inverse parsing, and routine atlas descriptor coverage tests
   iterate the protocol's stable `ItemArchetype::ALL` catalog; behavior and
-  presentation mappings remain explicitly open.
+  presentation mappings remain explicitly open. The current manual fan-out
+  inventory is recorded in
+  `docs/steering/decisions/item-registration-fanout-inventory.md`.
 - **Tooling & Replays (M5, M6)**: Versioned replay engine (`V1`), declarative
   ASCII scenario runners, scripted bots, batch sweep runners, and a pure Rust
   zero-dependency MCP server.

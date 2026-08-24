@@ -314,7 +314,8 @@ insufficient.
 
 #### Acceptance criteria
 
-- [ ] Inventory all current manual fan-out points for adding an item archetype.
+- [x] Inventory all current manual fan-out points for adding an item archetype;
+  see [the verified inventory](docs/steering/decisions/item-registration-fanout-inventory.md).
 - [ ] Establish one authoritative compile-time item/content catalog or
   equivalent source of truth. **Partial in `0.2.116`:** definition coverage,
   replay JSON encode/decode, stable-name parsing/display, and routine descriptor
