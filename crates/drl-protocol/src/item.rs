@@ -199,7 +199,15 @@ impl ItemArchetype {
 
 impl fmt::Display for ItemArchetype {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    let value = match self {
+    f.write_str(self.stable_name())
+  }
+}
+
+impl ItemArchetype {
+  /// Returns the stable wire identifier for this archetype.
+  #[must_use]
+  pub const fn stable_name(self) -> &'static str {
+    match self {
       Self::Unknown => "unknown",
       Self::Pistol => "pistol",
       Self::Shotgun => "shotgun",
@@ -258,76 +266,16 @@ impl fmt::Display for ItemArchetype {
       Self::LavaArmor => "lava_armor",
       Self::ShieldedArmor => "shielded_armor",
       Self::PhaseDevice => "phase_device",
-    };
-    write!(f, "{value}")
+    }
   }
-}
 
-impl ItemArchetype {
   /// Parses the stable wire identifier emitted by `Display`.
   #[must_use]
   pub fn from_stable_name(name: &str) -> Option<Self> {
-    match name {
-      "unknown" => Some(Self::Unknown),
-      "pistol" => Some(Self::Pistol),
-      "shotgun" => Some(Self::Shotgun),
-      "double_shotgun" => Some(Self::DoubleShotgun),
-      "combat_shotgun" => Some(Self::CombatShotgun),
-      "blaster" => Some(Self::Blaster),
-      "laser_rifle" => Some(Self::LaserRifle),
-      "missile_launcher" => Some(Self::MissileLauncher),
-      "nuclear_plasma_rifle" => Some(Self::NuclearPlasmaRifle),
-      "nuclear_bfg9000" => Some(Self::NuclearBfg9000),
-      "bfg_10k" => Some(Self::Bfg10k),
-      "mega_buster" => Some(Self::MegaBuster),
-      "grammaton_beretta" => Some(Self::GrammatonBeretta),
-      "frag_shotgun" => Some(Self::FragShotgun),
-      "revenants_launcher" => Some(Self::RevenantsLauncher),
-      "railgun" => Some(Self::Railgun),
-      "acid_spitter" => Some(Self::AcidSpitter),
-      "combat_pistol" => Some(Self::CombatPistol),
-      "assault_shotgun" => Some(Self::AssaultShotgun),
-      "plasma_shotgun" => Some(Self::PlasmaShotgun),
-      "jackhammer" => Some(Self::Jackhammer),
-      "super_shotgun" => Some(Self::SuperShotgun),
-      "tristar_blaster" => Some(Self::TristarBlaster),
-      "butchers_cleaver" => Some(Self::ButchersCleaver),
-      "mjollnir" => Some(Self::Mjollnir),
-      "subtle_knife" => Some(Self::SubtleKnife),
-      "trigun" => Some(Self::Trigun),
-      "anti_freak_jackal" => Some(Self::AntiFreakJackal),
-      "minigun" => Some(Self::Minigun),
-      "chaingun" => Some(Self::Chaingun),
-      "rocket_launcher" => Some(Self::RocketLauncher),
-      "plasma_rifle" => Some(Self::PlasmaRifle),
-      "bfg9000" => Some(Self::Bfg9000),
-      "chainsaw" => Some(Self::Chainsaw),
-      "combat_knife" => Some(Self::CombatKnife),
-      "ammo_9mm" => Some(Self::Ammo9mm),
-      "ammo_shells" => Some(Self::AmmoShells),
-      "ammo_rockets" => Some(Self::AmmoRockets),
-      "ammo_cells" => Some(Self::AmmoCells),
-      "ammo_pack_rockets" => Some(Self::AmmoPackRockets),
-      "ammo_pack_cells" => Some(Self::AmmoPackCells),
-      "ammo_pack_9mm" => Some(Self::AmmoPack9mm),
-      "ammo_pack_shells" => Some(Self::AmmoPackShells),
-      "small_medpack" => Some(Self::SmallMedPack),
-      "large_medpack" => Some(Self::LargeMedPack),
-      "green_armor" => Some(Self::GreenArmor),
-      "blue_armor" => Some(Self::BlueArmor),
-      "red_armor" => Some(Self::RedArmor),
-      "onyx_armor" => Some(Self::OnyxArmor),
-      "phaseshift_armor" => Some(Self::PhaseshiftArmor),
-      "gothic_armor" => Some(Self::GothicArmor),
-      "maleks_armor" => Some(Self::MaleksArmor),
-      "cybernetic_armor" => Some(Self::CyberneticArmor),
-      "necroarmor" => Some(Self::Necroarmor),
-      "medical_powerarmor" => Some(Self::MedicalPowerarmor),
-      "lava_armor" => Some(Self::LavaArmor),
-      "shielded_armor" => Some(Self::ShieldedArmor),
-      "phase_device" => Some(Self::PhaseDevice),
-      _ => None,
-    }
+    Self::ALL
+      .iter()
+      .copied()
+      .find(|archetype| archetype.stable_name() == name)
   }
 }
 
@@ -370,6 +318,7 @@ pub struct GroundItemView {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use std::collections::BTreeSet;
 
   #[test]
   fn test_ammo_type_display() {
@@ -425,6 +374,23 @@ mod tests {
       );
     }
     assert_eq!(ItemArchetype::from_stable_name("not-an-item"), None);
+  }
+
+  #[test]
+  fn stable_archetype_catalog_names_are_unique_and_round_trip() {
+    let names = ItemArchetype::ALL
+      .iter()
+      .map(|archetype| archetype.stable_name())
+      .collect::<BTreeSet<_>>();
+    assert_eq!(names.len(), ItemArchetype::ALL.len());
+
+    for archetype in ItemArchetype::ALL.iter().copied() {
+      assert_eq!(archetype.to_string(), archetype.stable_name());
+      assert_eq!(
+        ItemArchetype::from_stable_name(archetype.stable_name()),
+        Some(archetype)
+      );
+    }
   }
 
   #[test]

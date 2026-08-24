@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-24
-Current project version: `0.2.115`
+Current project version: `0.2.116`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.115)
+## 3. Current Progress Summary (`VERSION` 0.2.116)
 
 ### Delivered Foundations
 
@@ -90,9 +90,10 @@ verification item uses explicit status semantics:
   `CURRENT_ITEM_SPAWN_KINDS` for structural validation, and the definition
   coverage test now derives from that same catalog. Replay JSON stable item
   names, loose-ammo counts, and inverse decoding now use typed protocol
-  projections. Routine atlas descriptor coverage tests now iterate the
-  protocol's stable `ItemArchetype::ALL` catalog; behavior and presentation
-  mappings remain explicitly open.
+  projections. Stable item names now expose one typed projection used by
+  display and inverse parsing, and routine atlas descriptor coverage tests
+  iterate the protocol's stable `ItemArchetype::ALL` catalog; behavior and
+  presentation mappings remain explicitly open.
 - **Tooling & Replays (M5, M6)**: Versioned replay engine (`V1`), declarative
   ASCII scenario runners, scripted bots, batch sweep runners, and a pure Rust
   zero-dependency MCP server.
