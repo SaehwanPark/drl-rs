@@ -21,6 +21,23 @@ truth.
   environment, and the narrow claim it supports. Never turn source similarity
   into a numeric, visual, or balance-parity claim without a controlled probe.
 
+## Do not confuse callback results with dispatch success
+
+- **Context:** Legacy Lua perks can return `true` or `false` from action hooks
+  such as alternate fire and alternate reload.
+- **Symptom:** A direct port may treat the Lua return value as the command's
+  accepted/rejected result and accidentally change action timing or rejection
+  atomicity.
+- **Cause:** The Pascal `CallHookCheck` boundary uses protected-call success as
+  its Boolean and does not necessarily expose the callback's returned Lua
+  value. The Subtle Knife and Trigun evidence notes both show this mismatch.
+- **Resolution:** Inspect the native wrapper before assigning meaning to a
+  callback return. Separate dispatch success, gameplay effect eligibility,
+  feedback, and time/action cost in the typed Rust model.
+- **Prevention:** Add an explicit accepted/rejected/feedback result to each
+  behavior transition and test no-effect branches independently from transport
+  or callback invocation success.
+
 ## Prefer immutable tables with compatibility accessors
 
 - **Context:** Item, monster, loot, tile, and level metadata was repeated in
