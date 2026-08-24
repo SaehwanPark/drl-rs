@@ -202,68 +202,10 @@ fn item_spec_to_json(spec: &drl_protocol::ItemSpawnSpec) -> JsonValue {
 }
 
 fn item_kind_to_json(kind: ItemSpawnKind) -> JsonValue {
-  let (name, count) = match kind {
-    ItemSpawnKind::Pistol => ("pistol", None),
-    ItemSpawnKind::Shotgun => ("shotgun", None),
-    ItemSpawnKind::DoubleShotgun => ("double_shotgun", None),
-    ItemSpawnKind::CombatShotgun => ("combat_shotgun", None),
-    ItemSpawnKind::Blaster => ("blaster", None),
-    ItemSpawnKind::LaserRifle => ("laser_rifle", None),
-    ItemSpawnKind::MissileLauncher => ("missile_launcher", None),
-    ItemSpawnKind::NuclearPlasmaRifle => ("nuclear_plasma_rifle", None),
-    ItemSpawnKind::NuclearBfg9000 => ("nuclear_bfg9000", None),
-    ItemSpawnKind::Bfg10k => ("bfg_10k", None),
-    ItemSpawnKind::MegaBuster => ("mega_buster", None),
-    ItemSpawnKind::GrammatonBeretta => ("grammaton_beretta", None),
-    ItemSpawnKind::FragShotgun => ("frag_shotgun", None),
-    ItemSpawnKind::RevenantsLauncher => ("revenants_launcher", None),
-    ItemSpawnKind::Railgun => ("railgun", None),
-    ItemSpawnKind::AcidSpitter => ("acid_spitter", None),
-    ItemSpawnKind::CombatPistol => ("combat_pistol", None),
-    ItemSpawnKind::AssaultShotgun => ("assault_shotgun", None),
-    ItemSpawnKind::PlasmaShotgun => ("plasma_shotgun", None),
-    ItemSpawnKind::Jackhammer => ("jackhammer", None),
-    ItemSpawnKind::SuperShotgun => ("super_shotgun", None),
-    ItemSpawnKind::TristarBlaster => ("tristar_blaster", None),
-    ItemSpawnKind::ButchersCleaver => ("butchers_cleaver", None),
-    ItemSpawnKind::Mjollnir => ("mjollnir", None),
-    ItemSpawnKind::SubtleKnife => ("subtle_knife", None),
-    ItemSpawnKind::Trigun => ("trigun", None),
-    ItemSpawnKind::AntiFreakJackal => ("anti_freak_jackal", None),
-    ItemSpawnKind::Minigun => ("minigun", None),
-    ItemSpawnKind::Chaingun => ("chaingun", None),
-    ItemSpawnKind::RocketLauncher => ("rocket_launcher", None),
-    ItemSpawnKind::PlasmaRifle => ("plasma_rifle", None),
-    ItemSpawnKind::Bfg9000 => ("bfg9000", None),
-    ItemSpawnKind::Chainsaw => ("chainsaw", None),
-    ItemSpawnKind::CombatKnife => ("combat_knife", None),
-    ItemSpawnKind::Ammo9mm(count) => ("ammo_9mm", Some(count)),
-    ItemSpawnKind::AmmoShells(count) => ("ammo_shells", Some(count)),
-    ItemSpawnKind::AmmoRockets(count) => ("ammo_rockets", Some(count)),
-    ItemSpawnKind::AmmoCells(count) => ("ammo_cells", Some(count)),
-    ItemSpawnKind::AmmoPackRockets => ("ammo_pack_rockets", None),
-    ItemSpawnKind::AmmoPackCells => ("ammo_pack_cells", None),
-    ItemSpawnKind::AmmoPack9mm => ("ammo_pack_9mm", None),
-    ItemSpawnKind::AmmoPackShells => ("ammo_pack_shells", None),
-    ItemSpawnKind::SmallMedPack => ("small_medpack", None),
-    ItemSpawnKind::LargeMedPack => ("large_medpack", None),
-    ItemSpawnKind::GreenArmor => ("green_armor", None),
-    ItemSpawnKind::BlueArmor => ("blue_armor", None),
-    ItemSpawnKind::RedArmor => ("red_armor", None),
-    ItemSpawnKind::OnyxArmor => ("onyx_armor", None),
-    ItemSpawnKind::PhaseshiftArmor => ("phaseshift_armor", None),
-    ItemSpawnKind::GothicArmor => ("gothic_armor", None),
-    ItemSpawnKind::MaleksArmor => ("maleks_armor", None),
-    ItemSpawnKind::CyberneticArmor => ("cybernetic_armor", None),
-    ItemSpawnKind::Necroarmor => ("necroarmor", None),
-    ItemSpawnKind::MedicalPowerarmor => ("medical_powerarmor", None),
-    ItemSpawnKind::LavaArmor => ("lava_armor", None),
-    ItemSpawnKind::ShieldedArmor => ("shielded_armor", None),
-    ItemSpawnKind::PhaseDevice => ("phase_device", None),
-  };
+  let name = kind.archetype().to_string();
   let mut map = BTreeMap::new();
   map.insert("kind".to_string(), JsonValue::from(name));
-  if let Some(count) = count {
+  if let Some(count) = kind.stack_count() {
     map.insert("count".to_string(), JsonValue::from(count));
   }
   JsonValue::Object(map)

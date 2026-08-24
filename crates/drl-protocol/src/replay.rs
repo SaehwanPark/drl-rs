@@ -1,6 +1,7 @@
 //! Replay log schema for deterministic recording and playback.
 
 use crate::command::{Command, CommandError};
+use crate::item::ItemArchetype;
 use crate::observation::TileKind;
 use crate::types::{Position, Turn};
 
@@ -187,6 +188,84 @@ pub enum ItemSpawnKind {
   PhaseDevice,
 }
 
+impl ItemSpawnKind {
+  /// Returns the stable presentation/replay archetype for this spawn family.
+  #[must_use]
+  pub const fn archetype(self) -> ItemArchetype {
+    match self {
+      Self::Pistol => ItemArchetype::Pistol,
+      Self::Shotgun => ItemArchetype::Shotgun,
+      Self::DoubleShotgun => ItemArchetype::DoubleShotgun,
+      Self::CombatShotgun => ItemArchetype::CombatShotgun,
+      Self::Blaster => ItemArchetype::Blaster,
+      Self::LaserRifle => ItemArchetype::LaserRifle,
+      Self::MissileLauncher => ItemArchetype::MissileLauncher,
+      Self::NuclearPlasmaRifle => ItemArchetype::NuclearPlasmaRifle,
+      Self::NuclearBfg9000 => ItemArchetype::NuclearBfg9000,
+      Self::Bfg10k => ItemArchetype::Bfg10k,
+      Self::MegaBuster => ItemArchetype::MegaBuster,
+      Self::GrammatonBeretta => ItemArchetype::GrammatonBeretta,
+      Self::FragShotgun => ItemArchetype::FragShotgun,
+      Self::RevenantsLauncher => ItemArchetype::RevenantsLauncher,
+      Self::Railgun => ItemArchetype::Railgun,
+      Self::AcidSpitter => ItemArchetype::AcidSpitter,
+      Self::CombatPistol => ItemArchetype::CombatPistol,
+      Self::AssaultShotgun => ItemArchetype::AssaultShotgun,
+      Self::PlasmaShotgun => ItemArchetype::PlasmaShotgun,
+      Self::Jackhammer => ItemArchetype::Jackhammer,
+      Self::SuperShotgun => ItemArchetype::SuperShotgun,
+      Self::TristarBlaster => ItemArchetype::TristarBlaster,
+      Self::ButchersCleaver => ItemArchetype::ButchersCleaver,
+      Self::Mjollnir => ItemArchetype::Mjollnir,
+      Self::SubtleKnife => ItemArchetype::SubtleKnife,
+      Self::Trigun => ItemArchetype::Trigun,
+      Self::AntiFreakJackal => ItemArchetype::AntiFreakJackal,
+      Self::Minigun => ItemArchetype::Minigun,
+      Self::Chaingun => ItemArchetype::Chaingun,
+      Self::RocketLauncher => ItemArchetype::RocketLauncher,
+      Self::PlasmaRifle => ItemArchetype::PlasmaRifle,
+      Self::Bfg9000 => ItemArchetype::Bfg9000,
+      Self::Chainsaw => ItemArchetype::Chainsaw,
+      Self::CombatKnife => ItemArchetype::CombatKnife,
+      Self::Ammo9mm(_) => ItemArchetype::Ammo9mm,
+      Self::AmmoShells(_) => ItemArchetype::AmmoShells,
+      Self::AmmoRockets(_) => ItemArchetype::AmmoRockets,
+      Self::AmmoCells(_) => ItemArchetype::AmmoCells,
+      Self::AmmoPackRockets => ItemArchetype::AmmoPackRockets,
+      Self::AmmoPackCells => ItemArchetype::AmmoPackCells,
+      Self::AmmoPack9mm => ItemArchetype::AmmoPack9mm,
+      Self::AmmoPackShells => ItemArchetype::AmmoPackShells,
+      Self::SmallMedPack => ItemArchetype::SmallMedPack,
+      Self::LargeMedPack => ItemArchetype::LargeMedPack,
+      Self::GreenArmor => ItemArchetype::GreenArmor,
+      Self::BlueArmor => ItemArchetype::BlueArmor,
+      Self::RedArmor => ItemArchetype::RedArmor,
+      Self::OnyxArmor => ItemArchetype::OnyxArmor,
+      Self::PhaseshiftArmor => ItemArchetype::PhaseshiftArmor,
+      Self::GothicArmor => ItemArchetype::GothicArmor,
+      Self::MaleksArmor => ItemArchetype::MaleksArmor,
+      Self::CyberneticArmor => ItemArchetype::CyberneticArmor,
+      Self::Necroarmor => ItemArchetype::Necroarmor,
+      Self::MedicalPowerarmor => ItemArchetype::MedicalPowerarmor,
+      Self::LavaArmor => ItemArchetype::LavaArmor,
+      Self::ShieldedArmor => ItemArchetype::ShieldedArmor,
+      Self::PhaseDevice => ItemArchetype::PhaseDevice,
+    }
+  }
+
+  /// Returns the explicit stack count carried by a loose-ammo spawn.
+  #[must_use]
+  pub const fn stack_count(self) -> Option<u32> {
+    match self {
+      Self::Ammo9mm(count)
+      | Self::AmmoShells(count)
+      | Self::AmmoRockets(count)
+      | Self::AmmoCells(count) => Some(count),
+      _ => None,
+    }
+  }
+}
+
 /// Initial item spawn specification recorded in a replay log.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ItemSpawnSpec {
@@ -362,5 +441,23 @@ impl ReplayLog {
   /// Appends a command to the log.
   pub fn record_command(&mut self, command: Command) {
     self.commands.push(command);
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn item_spawn_projection_preserves_stable_names_and_counts() {
+    assert_eq!(ItemSpawnKind::Pistol.archetype().to_string(), "pistol");
+    assert_eq!(ItemSpawnKind::Bfg10k.archetype().to_string(), "bfg_10k");
+    assert_eq!(
+      ItemSpawnKind::AmmoCells(20).archetype().to_string(),
+      "ammo_cells"
+    );
+    assert_eq!(ItemSpawnKind::AmmoCells(20).stack_count(), Some(20));
+    assert_eq!(ItemSpawnKind::AmmoPackCells.stack_count(), None);
+    assert_eq!(ItemSpawnKind::PhaseDevice.stack_count(), None);
   }
 }

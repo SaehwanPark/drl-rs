@@ -3,6 +3,12 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.113]
+
+- Added typed `ItemSpawnKind` archetype and loose-ammo count projections and
+  routed replay JSON serialization through them, removing its duplicate
+  56-variant stable-name table.
+
 ## [0.2.112]
 
 - Replaced the duplicate 56-entry item-definition coverage table with
