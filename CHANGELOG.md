@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.97]
+
+- Added exact-state rejection coverage for blocked-terrain and out-of-bounds
+  `Command::Move` targets. These paths now have explicit Gate A evidence that
+  player position, visibility, turn, RNG, and complete `Game` state remain
+  unchanged on rejection.
+
 ## [0.2.96]
 
 - Added exact-state rejection coverage for `Command::Descend` away from stairs.
