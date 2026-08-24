@@ -30,7 +30,8 @@ replays, and regression testing.
     Equip/Drop and no-ground-item Pickup reject atomically; focused tests assert
     exact `Game` state preservation for these paths; ranged out-of-bounds,
     empty-target, no-weapon, and empty-clip rejections are covered as well;
-    phase-device failure with no destination is atomic too.
+    phase-device failure with no destination and post-game-over commands are
+    atomic too.
   - Fixed-seed cohort reports preserve sample definitions, policy identity,
     aggregate metrics, and per-seed replay evidence for evaluation.
   - Cohort regression math applies explicit win-rate and average-turn
@@ -49,7 +50,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.102`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.103`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:
