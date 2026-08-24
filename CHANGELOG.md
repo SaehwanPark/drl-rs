@@ -3,6 +3,12 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.103]
+
+- Added exact-state rejection coverage for commands submitted after a normal
+  combat death. The terminal flag, turn, RNG, and complete `Game` state remain
+  unchanged on the documented game-over error.
+
 ## [0.2.102]
 
 - Added exact-state rejection coverage for using a phase device when no

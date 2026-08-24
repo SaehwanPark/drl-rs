@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-24
-Current project version: `0.2.102`
+Current project version: `0.2.103`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -153,6 +153,12 @@ must return its documented `CommandError` without removing the item or changing
 RNG, turn, or any other game state. Command-wide audit coverage remains
 follow-up work.
 
+**Delivered in `0.2.103`:** Terminal-state rejection retains exact `Game`
+identity. After a normal combat death sets the game-over flag, any subsequent
+command must return the documented terminal `CommandError` without changing the
+terminal state, turn, RNG, or any other game state. Command-wide audit coverage
+remains follow-up work.
+
 Verification passed the focused and full `drl-core` suites, locked workspace
 format/Clippy/tests, the base-relative version contract, and the repository
 consistency script. Native/WASM compile and web contract checks also passed for
@@ -210,6 +216,8 @@ State identity on rejection includes, at minimum:
 - [x] Cover no-equipped-weapon and empty-clip ranged rejection with exact
   `Game` equality tests.
 - [x] Cover phase-device use with no valid destination using an exact `Game`
+  equality test.
+- [x] Cover a command after normal game-over termination with an exact `Game`
   equality test.
 - [ ] Fix pickup/use/drop/reload and other multi-step commands so expected
   validation failures cannot lose or partially mutate items.

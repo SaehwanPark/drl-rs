@@ -473,3 +473,29 @@ fn phase_device_without_destination_preserves_game_state() {
     CommandError::InvalidCommand("no valid teleport destination available".to_string()),
   );
 }
+
+#[test]
+fn command_after_game_over_preserves_game_state() {
+  let mut game = Game::new(26, 10, 10, Position::new(2, 2)).unwrap();
+  game
+    .world_mut()
+    .spawn_monster(Position::new(3, 2), "Demon", 100, 1000, (1000, 1000))
+    .unwrap();
+
+  for _ in 0..10 {
+    if game.is_game_over() {
+      break;
+    }
+    game.step(Command::Wait).unwrap();
+  }
+
+  assert!(
+    game.is_game_over(),
+    "the adjacent high-damage monster must kill the player"
+  );
+  assert_rejected_command_is_atomic(
+    &mut game,
+    Command::Wait,
+    CommandError::InvalidCommand("game is over".to_string()),
+  );
+}
