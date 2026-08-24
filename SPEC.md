@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-24
-Current project version: `0.2.94`
+Current project version: `0.2.95`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -104,10 +104,16 @@ before removing the equipped item. This evidence-only target closes the
 unequip portion of Gate A; use, reload, descent, and command-wide audit
 coverage remain follow-up work.
 
-**Targeted in `0.2.94`:** Use rejection paths retain exact `Game` identity. A
+**Delivered in `0.2.94`:** Use rejection paths retain exact `Game` identity. A
 present non-consumable item must return `CommandError::CannotUse`, and a
 missing item must return `CommandError::ItemNotFound`, without mutating the
 inventory, health, RNG, or any other game state. Reload, descent, and
+command-wide audit coverage remain follow-up work.
+
+**Delivered in `0.2.95`:** Reload rejection paths retain exact `Game` identity.
+No equipped ranged weapon, an already-full clip, and missing matching reserve
+ammunition must return their documented `CommandError` without mutating
+equipment, inventory, turn, RNG, or any other game state. Descent and
 command-wide audit coverage remain follow-up work.
 
 Verification passed the focused and full `drl-core` suites, locked workspace
@@ -153,6 +159,8 @@ State identity on rejection includes, at minimum:
   `Game` equality tests.
 - [x] Cover use rejection for a present non-consumable and a missing item with
   exact `Game` equality tests.
+- [x] Cover reload rejection for no equipped ranged weapon, a full clip, and
+  missing matching reserve ammunition with exact `Game` equality tests.
 - [ ] Fix pickup/use/drop/reload and other multi-step commands so expected
   validation failures cannot lose or partially mutate items.
 - [ ] Audit all current `Game::step` command paths for mutation-before-error
