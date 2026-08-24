@@ -3,6 +3,12 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.102]
+
+- Added exact-state rejection coverage for using a phase device when no
+  unoccupied walkable destination exists. The item, RNG, turn, and complete
+  `Game` state are explicitly verified unchanged.
+
 ## [0.2.101]
 
 - Added exact-state rejection coverage for ranged attacks with no equipped
