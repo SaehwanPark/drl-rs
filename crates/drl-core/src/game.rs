@@ -331,6 +331,10 @@ impl Game {
       .ok_or(CommandError::EntityNotFound(player_id))?
       .position();
 
+    if !self.state.world.map().is_in_bounds(p_pos) {
+      return Err(CommandError::OutOfBounds(p_pos));
+    }
+
     let item = self.state.world.pickup_ground_item(p_pos)?;
     let item_id = item.id();
     let item_name = item.name().to_string();

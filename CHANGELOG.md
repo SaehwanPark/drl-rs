@@ -3,6 +3,11 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.104]
+
+- Validated pickup positions before removing ground items, preventing an
+  out-of-bounds rollback path from losing an item; added exact-state coverage.
+
 ## [0.2.103]
 
 - Added exact-state rejection coverage for commands submitted after a normal
