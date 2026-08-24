@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-24
-Current project version: `0.2.98`
+Current project version: `0.2.99`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -500,8 +500,8 @@ target contract but is not reported as already verified:
    full-backpack pickup, out-of-bounds drop, empty-slot unequip, and
    full-backpack unequip, non-consumable use, missing-item use, reload,
    off-stairs descend, blocked-terrain movement, out-of-bounds movement,
-   invalid-direction melee, and empty-target melee rejection cases are covered
-   by
+   invalid-direction melee, empty-target melee, missing-item Equip/Drop, and
+   no-ground-item Pickup rejection cases are covered by
    `crates/drl-core/tests/command_atomicity.rs`; command-wide verification is
    still an active correction gate documented in `docs/steering/`.
 

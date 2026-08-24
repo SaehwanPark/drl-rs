@@ -338,3 +338,38 @@ fn melee_empty_target_preserves_game_state() {
     CommandError::InvalidTarget(Position::new(3, 2)),
   );
 }
+
+#[test]
+fn equip_missing_item_preserves_game_state() {
+  let mut game = Game::new(18, 10, 10, Position::new(2, 2)).unwrap();
+  let missing_item_id = drl_protocol::ItemId::new(u64::MAX);
+
+  assert_rejected_command_is_atomic(
+    &mut game,
+    Command::Equip(missing_item_id),
+    CommandError::ItemNotFound(missing_item_id),
+  );
+}
+
+#[test]
+fn drop_missing_item_preserves_game_state() {
+  let mut game = Game::new(19, 10, 10, Position::new(2, 2)).unwrap();
+  let missing_item_id = drl_protocol::ItemId::new(u64::MAX);
+
+  assert_rejected_command_is_atomic(
+    &mut game,
+    Command::Drop(missing_item_id),
+    CommandError::ItemNotFound(missing_item_id),
+  );
+}
+
+#[test]
+fn pickup_without_ground_item_preserves_game_state() {
+  let mut game = Game::new(20, 10, 10, Position::new(2, 2)).unwrap();
+
+  assert_rejected_command_is_atomic(
+    &mut game,
+    Command::Pickup,
+    CommandError::NoItemAtPosition(Position::new(2, 2)),
+  );
+}
