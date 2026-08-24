@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.99]
+
+- Added exact-state rejection coverage for missing-item `Equip`/`Drop` and
+  no-ground-item `Pickup`. These paths now have explicit Gate A evidence that
+  inventory, ground items, turn, RNG, and complete `Game` state remain
+  unchanged.
+
 ## [0.2.98]
 
 - Added exact-state rejection coverage for invalid-direction and empty-target
