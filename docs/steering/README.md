@@ -54,7 +54,8 @@ slice before implementation proceeds.
 Legacy behavior evidence lives under [`../legacy-behavior/`](../legacy-behavior/);
 the current Gate D stress-case notes are
 [`medical-powerarmor.md`](../legacy-behavior/medical-powerarmor.md) and
-[`subtle-knife.md`](../legacy-behavior/subtle-knife.md).
+[`subtle-knife.md`](../legacy-behavior/subtle-knife.md), plus
+[`trigun.md`](../legacy-behavior/trigun.md).
 
 
 ## Agent harness

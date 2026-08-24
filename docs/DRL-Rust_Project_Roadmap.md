@@ -104,6 +104,10 @@ verification item uses explicit status semantics:
 - **Gate D evidence:** A second callback-heavy stress case is now characterized
   in `docs/legacy-behavior/subtle-knife.md`; typed implementation, runtime
   confirmation, and the remaining stress cases remain open.
+- **Gate D evidence:** A third callback-heavy stress case is now characterized
+  in `docs/legacy-behavior/trigun.md`; the evidence set is complete for the
+  initial three-case target, but typed implementation and runtime confirmation
+  remain open.
 - **Tooling & Replays (M5, M6)**: Versioned replay engine (`V1`), declarative
   ASCII scenario runners, scripted bots, batch sweep runners, and a pure Rust
   zero-dependency MCP server.
