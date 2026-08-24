@@ -3,6 +3,12 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.96]
+
+- Added exact-state rejection coverage for `Command::Descend` away from stairs.
+  The command now has explicit Gate A evidence that the world, player, level,
+  turn, RNG, and complete `Game` state remain unchanged on rejection.
+
 ## [0.2.95]
 
 - Added exact-state rejection coverage for `Command::Reload` when no ranged

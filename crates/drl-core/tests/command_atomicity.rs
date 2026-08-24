@@ -277,3 +277,14 @@ fn reload_without_matching_ammo_preserves_game_state() {
 
   assert_rejected_command_is_atomic(&mut game, Command::Reload, CommandError::NoMatchingAmmo);
 }
+
+#[test]
+fn descend_off_stairs_preserves_game_state() {
+  let mut game = Game::new(13, 10, 10, Position::new(2, 2)).unwrap();
+
+  assert_rejected_command_is_atomic(
+    &mut game,
+    Command::Descend,
+    CommandError::NotOnStairs(Position::new(2, 2)),
+  );
+}
