@@ -98,6 +98,9 @@ verification item uses explicit status semantics:
   and presentation mappings remain explicitly open. The
   current manual fan-out inventory is recorded in
   `docs/steering/decisions/item-registration-fanout-inventory.md`.
+- **Gate D evidence:** A first callback-heavy stress case is now characterized
+  in `docs/legacy-behavior/medical-powerarmor.md`; implementation and the
+  remaining stress cases remain open, with no runtime parity claim.
 - **Tooling & Replays (M5, M6)**: Versioned replay engine (`V1`), declarative
   ASCII scenario runners, scripted bots, batch sweep runners, and a pure Rust
   zero-dependency MCP server.
