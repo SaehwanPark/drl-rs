@@ -3,6 +3,12 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.98]
+
+- Added exact-state rejection coverage for invalid-direction and empty-target
+  `Command::AttackMelee` attempts. These paths now have explicit Gate A
+  evidence that player, turn, RNG, and complete `Game` state remain unchanged.
+
 ## [0.2.97]
 
 - Added exact-state rejection coverage for blocked-terrain and out-of-bounds

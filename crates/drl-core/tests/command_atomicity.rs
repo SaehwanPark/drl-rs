@@ -316,3 +316,25 @@ fn move_out_of_bounds_preserves_game_state() {
     CommandError::OutOfBounds(Position::new(5, 1)),
   );
 }
+
+#[test]
+fn melee_invalid_direction_preserves_game_state() {
+  let mut game = Game::new(16, 10, 10, Position::new(2, 2)).unwrap();
+
+  assert_rejected_command_is_atomic(
+    &mut game,
+    Command::AttackMelee(drl_protocol::Direction::None),
+    CommandError::InvalidDirection(drl_protocol::Direction::None),
+  );
+}
+
+#[test]
+fn melee_empty_target_preserves_game_state() {
+  let mut game = Game::new(17, 10, 10, Position::new(2, 2)).unwrap();
+
+  assert_rejected_command_is_atomic(
+    &mut game,
+    Command::AttackMelee(drl_protocol::Direction::East),
+    CommandError::InvalidTarget(Position::new(3, 2)),
+  );
+}
