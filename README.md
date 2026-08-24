@@ -28,7 +28,8 @@ replays, and regression testing.
     off-stairs, blocked-terrain, and out-of-bounds commands atomically; melee
     rejects invalid directions and empty targets atomically; missing-item
     Equip/Drop and no-ground-item Pickup reject atomically; focused tests assert
-    exact `Game` state preservation for these paths.
+    exact `Game` state preservation for these paths; ranged out-of-bounds and
+    empty-target rejections are covered as well.
   - Fixed-seed cohort reports preserve sample definitions, policy identity,
     aggregate metrics, and per-seed replay evidence for evaluation.
   - Cohort regression math applies explicit win-rate and average-turn
@@ -47,7 +48,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.99`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.100`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
 - Browser and presentation slice:

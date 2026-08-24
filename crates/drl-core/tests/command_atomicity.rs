@@ -373,3 +373,27 @@ fn pickup_without_ground_item_preserves_game_state() {
     CommandError::NoItemAtPosition(Position::new(2, 2)),
   );
 }
+
+#[test]
+fn ranged_attack_out_of_bounds_preserves_game_state() {
+  let mut game = Game::new(21, 10, 10, Position::new(2, 2)).unwrap();
+  let target_position = Position::new(-1, 2);
+
+  assert_rejected_command_is_atomic(
+    &mut game,
+    Command::AttackRanged(target_position),
+    CommandError::OutOfBounds(target_position),
+  );
+}
+
+#[test]
+fn ranged_attack_empty_target_preserves_game_state() {
+  let mut game = Game::new(22, 10, 10, Position::new(2, 2)).unwrap();
+  let target_position = Position::new(3, 2);
+
+  assert_rejected_command_is_atomic(
+    &mut game,
+    Command::AttackRanged(target_position),
+    CommandError::InvalidTarget(target_position),
+  );
+}
