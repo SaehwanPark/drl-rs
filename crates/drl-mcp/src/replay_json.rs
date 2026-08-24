@@ -311,6 +311,16 @@ mod tests {
   use super::*;
   use drl_protocol::{EquipmentSlot, ItemId, Position};
 
+  fn fixture_item(kind: ItemSpawnKind) -> ItemSpawnKind {
+    match kind {
+      ItemSpawnKind::Ammo9mm(_) => ItemSpawnKind::Ammo9mm(20),
+      ItemSpawnKind::AmmoShells(_) => ItemSpawnKind::AmmoShells(10),
+      ItemSpawnKind::AmmoRockets(_) => ItemSpawnKind::AmmoRockets(3),
+      ItemSpawnKind::AmmoCells(_) => ItemSpawnKind::AmmoCells(20),
+      kind => kind,
+    }
+  }
+
   #[test]
   fn command_export_covers_every_variant_with_typed_fields() {
     let commands = [
@@ -355,65 +365,11 @@ mod tests {
       hp: 30,
       max_hp: 60,
       speed: 90,
-      initial_items: vec![
-        ItemSpawnKind::Pistol,
-        ItemSpawnKind::Shotgun,
-        ItemSpawnKind::DoubleShotgun,
-        ItemSpawnKind::CombatShotgun,
-        ItemSpawnKind::Blaster,
-        ItemSpawnKind::LaserRifle,
-        ItemSpawnKind::MissileLauncher,
-        ItemSpawnKind::NuclearPlasmaRifle,
-        ItemSpawnKind::NuclearBfg9000,
-        ItemSpawnKind::Bfg10k,
-        ItemSpawnKind::MegaBuster,
-        ItemSpawnKind::GrammatonBeretta,
-        ItemSpawnKind::FragShotgun,
-        ItemSpawnKind::RevenantsLauncher,
-        ItemSpawnKind::Railgun,
-        ItemSpawnKind::AcidSpitter,
-        ItemSpawnKind::CombatPistol,
-        ItemSpawnKind::AssaultShotgun,
-        ItemSpawnKind::PlasmaShotgun,
-        ItemSpawnKind::Jackhammer,
-        ItemSpawnKind::SuperShotgun,
-        ItemSpawnKind::TristarBlaster,
-        ItemSpawnKind::ButchersCleaver,
-        ItemSpawnKind::Mjollnir,
-        ItemSpawnKind::SubtleKnife,
-        ItemSpawnKind::Trigun,
-        ItemSpawnKind::AntiFreakJackal,
-        ItemSpawnKind::Minigun,
-        ItemSpawnKind::Chaingun,
-        ItemSpawnKind::RocketLauncher,
-        ItemSpawnKind::PlasmaRifle,
-        ItemSpawnKind::Bfg9000,
-        ItemSpawnKind::Chainsaw,
-        ItemSpawnKind::CombatKnife,
-        ItemSpawnKind::Ammo9mm(20),
-        ItemSpawnKind::AmmoShells(10),
-        ItemSpawnKind::AmmoRockets(3),
-        ItemSpawnKind::AmmoCells(20),
-        ItemSpawnKind::AmmoPackRockets,
-        ItemSpawnKind::AmmoPackCells,
-        ItemSpawnKind::AmmoPack9mm,
-        ItemSpawnKind::AmmoPackShells,
-        ItemSpawnKind::SmallMedPack,
-        ItemSpawnKind::LargeMedPack,
-        ItemSpawnKind::GreenArmor,
-        ItemSpawnKind::BlueArmor,
-        ItemSpawnKind::RedArmor,
-        ItemSpawnKind::OnyxArmor,
-        ItemSpawnKind::PhaseshiftArmor,
-        ItemSpawnKind::GothicArmor,
-        ItemSpawnKind::MaleksArmor,
-        ItemSpawnKind::CyberneticArmor,
-        ItemSpawnKind::Necroarmor,
-        ItemSpawnKind::MedicalPowerarmor,
-        ItemSpawnKind::LavaArmor,
-        ItemSpawnKind::ShieldedArmor,
-        ItemSpawnKind::PhaseDevice,
-      ],
+      initial_items: ItemSpawnKind::ALL
+        .iter()
+        .copied()
+        .map(fixture_item)
+        .collect(),
       equipped_weapon: Some(ItemSpawnKind::Shotgun),
       equipped_armor: Some(ItemSpawnKind::GreenArmor),
     };
