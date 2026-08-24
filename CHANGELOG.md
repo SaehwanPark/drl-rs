@@ -3,6 +3,11 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.106]
+
+- Added gameplay-semantics and ruleset identities to replay metadata, with core
+  and MCP validation rejecting unsupported values before simulation.
+
 ## [0.2.105]
 
 - Replaced modulo-biased bounded RNG sampling with full-domain rejection

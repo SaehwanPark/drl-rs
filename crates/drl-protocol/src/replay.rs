@@ -11,6 +11,15 @@ pub enum ReplayVersion {
   V1 = 1,
 }
 
+/// Gameplay semantics identifier expected by the current replay engine.
+///
+/// This advances independently from the wire/schema version when deterministic
+/// sampling or other simulation rules change.
+pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 2;
+
+/// Ruleset/content identity expected by the current replay engine.
+pub const CURRENT_RULESET_ID: &str = "drl-rust-ruleset-v1";
+
 /// Metadata header describing engine environment and replay context.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ReplayMetadata {
@@ -20,6 +29,10 @@ pub struct ReplayMetadata {
   pub engine_name: String,
   /// Engine crate version string.
   pub engine_version: String,
+  /// Gameplay semantics version required to interpret the command history.
+  pub gameplay_semantics_version: u32,
+  /// Ruleset/content identity required to reconstruct initial state and policy.
+  pub ruleset_id: String,
 }
 
 impl Default for ReplayMetadata {
@@ -28,6 +41,8 @@ impl Default for ReplayMetadata {
       version: ReplayVersion::V1,
       engine_name: "DRL-Rust".to_string(),
       engine_version: env!("CARGO_PKG_VERSION").to_string(),
+      gameplay_semantics_version: CURRENT_GAMEPLAY_SEMANTICS_VERSION,
+      ruleset_id: CURRENT_RULESET_ID.to_string(),
     }
   }
 }

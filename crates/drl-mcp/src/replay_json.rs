@@ -112,6 +112,11 @@ fn metadata_to_json(metadata: &ReplayMetadata) -> JsonValue {
       "engine_version",
       JsonValue::from(metadata.engine_version.as_str()),
     ),
+    (
+      "gameplay_semantics_version",
+      JsonValue::from(metadata.gameplay_semantics_version),
+    ),
+    ("ruleset_id", JsonValue::from(metadata.ruleset_id.as_str())),
   ])
 }
 
@@ -479,6 +484,8 @@ mod tests {
         version: drl_protocol::ReplayVersion::V1,
         engine_name: "fixture-engine".to_string(),
         engine_version: "test".to_string(),
+        gameplay_semantics_version: drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION,
+        ruleset_id: drl_protocol::CURRENT_RULESET_ID.to_string(),
       });
     replay.record_stairs(Position::new(4, 5));
     replay.record_monster(
@@ -568,5 +575,37 @@ mod tests {
         .map(JsonValue::to_compact_string),
       Some(item_id.to_string())
     );
+  }
+
+  #[test]
+  fn replay_import_rejects_incompatible_semantics_metadata() {
+    let replay = ReplayLog::new(42, 4, 4, Position::new(1, 1));
+
+    let mut incompatible_semantics = to_json_value(&replay);
+    incompatible_semantics
+      .as_object_mut()
+      .unwrap()
+      .get_mut("metadata")
+      .unwrap()
+      .as_object_mut()
+      .unwrap()
+      .insert(
+        "gameplay_semantics_version".to_string(),
+        JsonValue::from(drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION - 1),
+      );
+    let error = from_json_value(&incompatible_semantics).unwrap_err();
+    assert!(error.contains("unsupported gameplay semantics version"));
+
+    let mut incompatible_ruleset = to_json_value(&replay);
+    incompatible_ruleset
+      .as_object_mut()
+      .unwrap()
+      .get_mut("metadata")
+      .unwrap()
+      .as_object_mut()
+      .unwrap()
+      .insert("ruleset_id".to_string(), JsonValue::from("legacy-ruleset"));
+    let error = from_json_value(&incompatible_ruleset).unwrap_err();
+    assert!(error.contains("unsupported replay ruleset"));
   }
 }
