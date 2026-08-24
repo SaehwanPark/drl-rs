@@ -3,6 +3,12 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.101]
+
+- Added exact-state rejection coverage for ranged attacks with no equipped
+  weapon and an empty clip. These paths now have explicit Gate A evidence that
+  ammunition, turn, RNG, and complete `Game` state remain unchanged.
+
 ## [0.2.100]
 
 - Added exact-state rejection coverage for out-of-bounds and empty-target

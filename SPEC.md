@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-24
-Current project version: `0.2.100`
+Current project version: `0.2.101`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -142,6 +142,11 @@ identity. Out-of-bounds and empty-target `AttackRanged` commands must return
 their documented `CommandError` without changing ammunition, turn, RNG, or any
 other game state. Command-wide audit coverage remains follow-up work.
 
+**Delivered in `0.2.101`:** Ranged weapon-state rejection retains exact `Game`
+identity. `AttackRanged` with no equipped ranged weapon or an empty clip must
+return its documented `CommandError` without changing ammunition, turn, RNG, or
+any other game state. Command-wide audit coverage remains follow-up work.
+
 Verification passed the focused and full `drl-core` suites, locked workspace
 format/Clippy/tests, the base-relative version contract, and the repository
 consistency script. Native/WASM compile and web contract checks also passed for
@@ -196,6 +201,8 @@ State identity on rejection includes, at minimum:
   exact `Game` equality tests.
 - [x] Cover out-of-bounds and empty-target ranged rejection with exact `Game`
   equality tests.
+- [x] Cover no-equipped-weapon and empty-clip ranged rejection with exact
+  `Game` equality tests.
 - [ ] Fix pickup/use/drop/reload and other multi-step commands so expected
   validation failures cannot lose or partially mutate items.
 - [ ] Audit all current `Game::step` command paths for mutation-before-error

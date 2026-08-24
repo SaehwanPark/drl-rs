@@ -397,3 +397,58 @@ fn ranged_attack_empty_target_preserves_game_state() {
     CommandError::InvalidTarget(target_position),
   );
 }
+
+#[test]
+fn ranged_attack_without_weapon_preserves_game_state() {
+  let mut game = Game::new(23, 20, 20, Position::new(2, 2)).unwrap();
+  let target_position = Position::new(5, 2);
+  game
+    .world_mut()
+    .spawn_monster(target_position, "Demon", 100, 0, (2, 4))
+    .unwrap();
+
+  let player_id = game.world().player_id().unwrap();
+  let knife_id = game.world_mut().allocate_item_id();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .inventory_mut()
+    .add_item(Item::combat_knife(knife_id))
+    .unwrap();
+  game.step(Command::Equip(knife_id)).unwrap();
+
+  assert_rejected_command_is_atomic(
+    &mut game,
+    Command::AttackRanged(target_position),
+    CommandError::NoEquippedWeapon,
+  );
+}
+
+#[test]
+fn ranged_attack_without_ammo_preserves_game_state() {
+  let mut game = Game::new(24, 20, 20, Position::new(2, 2)).unwrap();
+  let target_position = Position::new(5, 2);
+  game
+    .world_mut()
+    .spawn_monster(target_position, "Demon", 100, 0, (2, 4))
+    .unwrap();
+
+  let player_id = game.world().player_id().unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 0;
+
+  assert_rejected_command_is_atomic(
+    &mut game,
+    Command::AttackRanged(target_position),
+    CommandError::NoAmmoInClip,
+  );
+}
