@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-24
-Current project version: `0.2.90`
+Current project version: `0.2.94`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -498,7 +498,8 @@ target contract but is not reported as already verified:
 6. **Atomic Rejection**: Illegal/rejected commands and corrupt saves must fail
    without partial simulation mutation. Ranged-command, non-equippable-item,
    full-backpack pickup, out-of-bounds drop, empty-slot unequip, and
-   full-backpack unequip rejection cases are covered by
+   full-backpack unequip, non-consumable use, and missing-item use rejection
+   cases are covered by
    `crates/drl-core/tests/command_atomicity.rs`; command-wide verification is
    still an active correction gate documented in `docs/steering/`.
 
