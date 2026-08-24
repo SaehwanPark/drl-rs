@@ -3,6 +3,11 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.109]
+
+- Added a transactional `Game::step` rejection boundary that restores turn,
+  world, and RNG state when any command fails.
+
 ## [0.2.108]
 
 - Added a separate procedural-generator semantics version to replay metadata;

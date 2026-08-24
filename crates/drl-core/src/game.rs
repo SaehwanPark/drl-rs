@@ -139,7 +139,23 @@ impl Game {
   }
 
   /// Advances the game by one player command step, emitting deterministic events.
+  ///
+  /// Rejected commands are transactional: the complete pre-command state is
+  /// restored, including turn, world, and RNG state. Individual handlers still
+  /// validate before commit where practical; this bounded rollback guard is the
+  /// interim backstop for later fallible substeps.
   pub fn step(&mut self, command: Command) -> Result<Vec<GameEvent>, CommandError> {
+    let before = self.state.clone();
+    match self.step_inner(command) {
+      Ok(events) => Ok(events),
+      Err(error) => {
+        self.state = before;
+        Err(error)
+      }
+    }
+  }
+
+  fn step_inner(&mut self, command: Command) -> Result<Vec<GameEvent>, CommandError> {
     if self.state.is_game_over {
       return Err(CommandError::InvalidCommand("game is over".to_string()));
     }

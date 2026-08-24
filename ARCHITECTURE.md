@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-24
-Current project version: `0.2.108`
+Current project version: `0.2.109`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -328,6 +328,10 @@ Presentation Boundary
 - **Energy-Based Scheduler**: Actors accumulate energy based on their `Speed`.
   When an actor reaches the action threshold, it executes one action costing
   standard energy units.
+- **Transactional command boundary**: `Game::step` snapshots and restores the
+  complete state on any rejection, including turn, world, and RNG. Command
+  handlers still use prepare/commit validation where practical; the bounded
+  rollback guard protects later fallible substeps until the audit is complete.
 - **Deterministic PRNG**: All randomness flows through `GameRng`. No ambient or
   thread-local RNG is permitted. Bounded integer sampling uses documented
   rejection sampling under `RNG_SAMPLING_SEMANTICS_VERSION`; core rules use
