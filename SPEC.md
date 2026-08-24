@@ -351,6 +351,12 @@ The initial target set should include at least three of the following or
 similarly difficult equivalents, with source evidence recorded from the pinned
 legacy revision:
 
+The first selected case is Medical Powerarmor; its source and callback
+decomposition are recorded in
+[`docs/legacy-behavior/medical-powerarmor.md`](docs/legacy-behavior/medical-powerarmor.md).
+Its typed Rust implementation is intentionally not claimed by this evidence
+slice.
+
 - an equipment set with reversible equip/unequip modifiers;
 - Subtle Knife-style alternate action with health/status cost and visible-target
   iteration;
