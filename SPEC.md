@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-24
-Current project version: `0.2.96`
+Current project version: `0.2.97`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -122,6 +122,11 @@ Attempting `Command::Descend` away from a stairs tile must return
 RNG, or any other game state. Command-wide audit coverage remains follow-up
 work.
 
+**Delivered in `0.2.97`:** Movement rejection retains exact `Game` identity.
+Blocked-terrain and out-of-bounds movement targets must return their documented
+`CommandError` without changing the player, visibility, turn, RNG, or any other
+game state. Command-wide audit coverage remains follow-up work.
+
 Verification passed the focused and full `drl-core` suites, locked workspace
 format/Clippy/tests, the base-relative version contract, and the repository
 consistency script. Native/WASM compile and web contract checks also passed for
@@ -168,6 +173,8 @@ State identity on rejection includes, at minimum:
 - [x] Cover reload rejection for no equipped ranged weapon, a full clip, and
   missing matching reserve ammunition with exact `Game` equality tests.
 - [x] Cover off-stairs descend rejection with an exact `Game` equality test.
+- [x] Cover blocked-terrain and out-of-bounds movement rejection with exact
+  `Game` equality tests.
 - [ ] Fix pickup/use/drop/reload and other multi-step commands so expected
   validation failures cannot lose or partially mutate items.
 - [ ] Audit all current `Game::step` command paths for mutation-before-error

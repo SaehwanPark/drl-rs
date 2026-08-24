@@ -288,3 +288,31 @@ fn descend_off_stairs_preserves_game_state() {
     CommandError::NotOnStairs(Position::new(2, 2)),
   );
 }
+
+#[test]
+fn move_into_blocked_terrain_preserves_game_state() {
+  let mut game = Game::new(14, 5, 5, Position::new(1, 1)).unwrap();
+
+  assert_rejected_command_is_atomic(
+    &mut game,
+    Command::Move(drl_protocol::Direction::North),
+    CommandError::BlockedByTerrain(Position::new(1, 0)),
+  );
+}
+
+#[test]
+fn move_out_of_bounds_preserves_game_state() {
+  let mut game = Game::new(15, 5, 5, Position::new(1, 1)).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .set_position(Position::new(4, 1));
+
+  assert_rejected_command_is_atomic(
+    &mut game,
+    Command::Move(drl_protocol::Direction::East),
+    CommandError::OutOfBounds(Position::new(5, 1)),
+  );
+}
