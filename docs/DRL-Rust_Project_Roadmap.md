@@ -101,6 +101,9 @@ verification item uses explicit status semantics:
 - **Gate D evidence:** A first callback-heavy stress case is now characterized
   in `docs/legacy-behavior/medical-powerarmor.md`; implementation and the
   remaining stress cases remain open, with no runtime parity claim.
+- **Gate D evidence:** A second callback-heavy stress case is now characterized
+  in `docs/legacy-behavior/subtle-knife.md`; typed implementation, runtime
+  confirmation, and the remaining stress cases remain open.
 - **Tooling & Replays (M5, M6)**: Versioned replay engine (`V1`), declarative
   ASCII scenario runners, scripted bots, batch sweep runners, and a pure Rust
   zero-dependency MCP server.

@@ -52,8 +52,9 @@ slice before implementation proceeds.
 - [`drop-in-manifest.md`](drop-in-manifest.md) — file-level map for the steering/harness overlay.
 
 Legacy behavior evidence lives under [`../legacy-behavior/`](../legacy-behavior/);
-the first Gate D stress-case note is
-[`medical-powerarmor.md`](../legacy-behavior/medical-powerarmor.md).
+the current Gate D stress-case notes are
+[`medical-powerarmor.md`](../legacy-behavior/medical-powerarmor.md) and
+[`subtle-knife.md`](../legacy-behavior/subtle-knife.md).
 
 
 ## Agent harness
