@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.123`
+Current project version: `0.2.124`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -360,12 +360,13 @@ Presentation Boundary
   ownership for new gameplay policy; migrate gameplay definitions toward the
   core/domain side while stable semantic kind IDs remain protocol-safe.
 - **Item Definitions**: `drl-core::item_definition` owns item definitions;
-  `ItemSpawnKind::ALL` is the stable representative family catalog and
-  `CURRENT_ITEM_SPAWN_KINDS` is the core-facing alias;
-  `Item::from_spawn_kind` serves as canonical item factory. New routine content
-  should converge on one authoritative compile-time catalog whose projections
-  supply enums/lookup/display/replay/validation coverage instead of manual
-  cross-crate registry duplication.
+  `ItemSpawnKind::ALL` is the stable representative family catalog,
+  `CURRENT_ITEM_SPAWN_KINDS` is the core-facing alias, and
+  `CURRENT_ITEM_DEFINITIONS` is the core-owned balance table used for lookup
+  and coverage. `Item::from_spawn_kind` serves as canonical item factory. New
+  routine content should converge on one authoritative compile-time catalog
+  whose projections supply enums/lookup/display/replay/validation coverage
+  instead of manual cross-crate registry duplication.
 - **Behavior Definitions**: Callback-heavy legacy semantics should be expressed
   through a bounded typed Rust vocabulary (modifiers, equip/use/attack/kill
   effects, alternate actions, recharge/periodic policy, set membership, and
