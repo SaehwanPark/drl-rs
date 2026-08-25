@@ -115,9 +115,9 @@ verification item uses explicit status semantics:
   replay identity `5`; explosion/map effects and runtime/presentation parity
   remain open.
 - **Gate D evidence:** A third callback-heavy stress case is now characterized
-  in `docs/legacy-behavior/trigun.md`; the evidence set is complete for the
-  initial three-case target, but typed implementation and runtime confirmation
-  remain open.
+  in `docs/legacy-behavior/trigun.md`; the evidence set and typed
+  implementation are complete for the initial three-case target, while runtime
+  confirmation and presentation parity remain open.
 - **Tooling & Replays (M5, M6)**: Versioned replay engine (`V1`), declarative
   ASCII scenario runners, scripted bots, batch sweep runners, and a pure Rust
   zero-dependency MCP server.

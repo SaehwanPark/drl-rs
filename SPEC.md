@@ -448,21 +448,21 @@ Subtle Knife alternate invoke. Its typed transition must:
 The bounded implementation target for this revision is the third stress case,
 Trigun alternate reload. Its typed transition must:
 
-- [ ] expose an explicit `Command::AltReload { item_id, confirmed }` path for
+- [x] expose an explicit `Command::AltReload { item_id, confirmed }` path for
   the equipped Trigun;
-- [ ] reject a missing/non-Trigun item, low maximum HP, and declined
+- [x] reject a missing/non-Trigun item, low maximum HP, and declined
   confirmation atomically without spending a turn, RNG, or mutating player
   resources;
-- [ ] on success, reduce maximum HP by five but clamp it to ten, reduce current
+- [x] on success, reduce maximum HP by five but clamp it to ten, reduce current
   HP by five but clamp it to one, subtract 1000 score count with explicit
   signed saturation, and preserve the equipped weapon;
-- [ ] schedule a one-tick nuke and resolve it at the accepted-turn boundary,
+- [x] schedule a one-tick nuke and resolve it at the accepted-turn boundary,
   emitting typed activation/level-nuked/damage/death events and applying 6000
   internal environment damage to the player;
-- [ ] cover the pure transition, confirmation and low-HP rejection paths,
+- [x] cover the pure transition, confirmation and low-HP rejection paths,
   exact command rollback, nuke event ordering, terminal game-over behavior,
   replay determinism, and command/protocol persistence;
-- [ ] record that explosion geometry, animation timing, confirmation UI, and
+- [x] record that explosion geometry, animation timing, confirmation UI, and
   controlled legacy runtime parity remain `NOT_RUN` or out of scope.
 
 ### 2.7 Exit Gates Before Broad Content Migration Resumes
