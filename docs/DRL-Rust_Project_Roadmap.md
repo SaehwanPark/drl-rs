@@ -224,6 +224,10 @@ verification item uses explicit status semantics:
   the initial Medical Powerarmor, Subtle Knife, and Trigun stress-case gate as
   verified from their evidence notes and deterministic Rust tests; broader
   behavior vocabulary and controlled legacy runtime parity remain open.
+- **M9 exit-gate evidence reconciliation:** The active specification now records
+  verified protocol/domain ownership, bounded module scope, and local plus
+  hosted repository/WASM checks for the delivered foundation; legacy runtime
+  and audiovisual parity remain outside the evidence boundary.
 - **Tooling & Replays (M5, M6)**: Versioned replay engine (`V2`), declarative
   ASCII scenario runners, scripted bots, batch sweep runners, and a pure Rust
   zero-dependency MCP server.
