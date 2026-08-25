@@ -17,6 +17,8 @@ const ACTION_ALIASES: &[&str] = &[
   "fire",
   "shoot",
   "reload",
+  "invoke",
+  "alt_reload",
   "pickup",
   "use",
   "equip",
@@ -26,7 +28,8 @@ const ACTION_ALIASES: &[&str] = &[
 ];
 const MOVE_ACTIONS: &[&str] = &["move", "attack_melee", "melee"];
 const RANGED_ACTIONS: &[&str] = &["attack_ranged", "fire", "shoot"];
-const ITEM_ACTIONS: &[&str] = &["use", "equip", "drop"];
+const ITEM_ACTIONS: &[&str] = &["use", "equip", "drop", "invoke"];
+const ALT_RELOAD_ACTIONS: &[&str] = &["alt_reload"];
 const UNEQUIP_ACTIONS: &[&str] = &["unequip"];
 const NO_ARGUMENT_ACTIONS: &[&str] = &["wait", "pickup", "reload", "descend"];
 const DIRECTION_ALIASES: &[&str] = &[
@@ -260,7 +263,7 @@ pub fn game_step_action_schema() -> JsonValue {
     SchemaField::new(
       "item_id",
       "integer",
-      "Item entity ID (for use, equip, drop)",
+      "Item entity ID (for use, equip, drop, invoke, alt_reload)",
       false,
     )
     .with_range(0.0, JSON_SAFE_INTEGER_MAX),
@@ -271,6 +274,12 @@ pub fn game_step_action_schema() -> JsonValue {
       false,
     )
     .with_enum(SLOT_ALIASES),
+    SchemaField::new(
+      "confirmed",
+      "boolean",
+      "Explicit confirmation for the Trigun alternate reload",
+      false,
+    ),
   ]) else {
     unreachable!("object schema builder must return an object");
   };
@@ -295,6 +304,10 @@ pub fn game_step_action_schema() -> JsonValue {
       ]),
     ),
     action_condition(ITEM_ACTIONS, required_fields(&["item_id"])),
+    action_condition(
+      ALT_RELOAD_ACTIONS,
+      required_fields(&["item_id", "confirmed"]),
+    ),
     action_condition(UNEQUIP_ACTIONS, required_fields(&["slot"])),
     action_condition(NO_ARGUMENT_ACTIONS, required_fields(&[])),
   ];

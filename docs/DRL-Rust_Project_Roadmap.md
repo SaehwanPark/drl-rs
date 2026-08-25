@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.120`
+Current project version: `0.2.121`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.120)
+## 3. Current Progress Summary (`VERSION` 0.2.121)
 
 ### Delivered Foundations
 
@@ -109,6 +109,11 @@ verification item uses explicit status semantics:
   damage, typed invocation events, replay/persistence coverage, and gameplay-
   semantics replay identity `4`; runtime/presentation parity and Trigun remain
   open.
+- **Gate D third behavior slice:** Trigun now has a typed, confirmation-gated
+  alternate reload with explicit HP/max-HP/score costs, one-tick nuke state,
+  terminal internal damage, replay/persistence coverage, and gameplay-semantics
+  replay identity `5`; explosion/map effects and runtime/presentation parity
+  remain open.
 - **Gate D evidence:** A third callback-heavy stress case is now characterized
   in `docs/legacy-behavior/trigun.md`; the evidence set is complete for the
   initial three-case target, but typed implementation and runtime confirmation
@@ -607,6 +612,11 @@ scripting.
   command: it applies the evidence-backed HP/status/score costs, damages living
   visible targets in deterministic EntityId order, emits invocation/damage
   events, and rejects tired/invalid invocations atomically. Legacy runtime and
+  presentation parity remain `NOT_RUN`/open.
+- [x] Trigun alternate reload is behavior-covered by an explicit typed command:
+  it applies the evidence-backed confirmation, health/score costs, one-tick
+  nuke transition, terminal internal damage, and ordered events without
+  destroying the weapon. Legacy runtime, explosion/map effects, and
   presentation parity remain `NOT_RUN`/open.
 - [ ] Full migration of legacy monsters, weapons, armor, mods, and consumable
   items.

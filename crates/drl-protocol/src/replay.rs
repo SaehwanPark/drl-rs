@@ -15,9 +15,10 @@ pub enum ReplayVersion {
 /// Gameplay semantics identifier expected by the current replay engine.
 ///
 /// This advances independently from the wire/schema version when deterministic
-/// sampling or other simulation rules change. Version `4` includes the
-/// accepted-turn Medical Powerarmor repair and Subtle Knife invoke transitions.
-pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 4;
+/// sampling or other simulation rules change. Version `5` includes the
+/// accepted-turn Medical Powerarmor repair, Subtle Knife invoke, and typed
+/// Trigun alternate-reload/nuke transitions.
+pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 5;
 
 /// Procedural-generation semantics identifier expected for replays that carry
 /// a procedural generation configuration. Version 2 includes the exact
@@ -37,6 +38,7 @@ pub struct ReplayMetadata {
   /// Engine crate version string.
   pub engine_version: String,
   /// Gameplay semantics version required to interpret the command history.
+  /// Version 5 includes the typed Trigun alternate-reload/nuke transition.
   pub gameplay_semantics_version: u32,
   /// Procedural-generation semantics required when reconstructing generated maps.
   pub generator_semantics_version: u32,

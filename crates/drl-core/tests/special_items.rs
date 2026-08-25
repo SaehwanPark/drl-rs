@@ -497,3 +497,201 @@ fn subtle_knife_replay_with_player_config_is_deterministic() {
       .any(|event| matches!(event, GameEvent::SubtleKnifeInvoked { .. }))
   );
 }
+
+#[test]
+fn trigun_alt_reload_applies_costs_without_destroying_weapon() {
+  let mut game = Game::new_arena(788, 20, 20).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let trigun_id = game.world_mut().allocate_item_id();
+  let player = game.world_mut().get_actor_mut(player_id).unwrap();
+  *player.hp_mut() = drl_protocol::HitPoints::new(12, 20);
+  player.set_score_count(2_000);
+  player
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, Item::trigun(trigun_id))
+    .unwrap();
+
+  let events = game
+    .step(Command::AltReload {
+      item_id: trigun_id,
+      confirmed: true,
+    })
+    .unwrap();
+
+  assert!(events.iter().any(|event| matches!(
+    event,
+    GameEvent::TrigunAltReloaded {
+      entity_id,
+      item_id,
+      remaining_hp: drl_protocol::HitPoints { current: 7, max: 15 },
+      score_count_remaining: 1_000,
+    } if *entity_id == player_id && *item_id == trigun_id
+  )));
+  assert_eq!(
+    game
+      .world()
+      .player()
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .id(),
+    trigun_id
+  );
+  assert!(game.is_game_over());
+  assert_eq!(game.world().player().unwrap().hp().current, 0);
+  assert!(game.nuke_state().level_nuked());
+}
+
+#[test]
+fn trigun_alt_reload_rejections_are_transactional() {
+  let mut declined = Game::new_arena(789, 20, 20).unwrap();
+  let player_id = declined.world().player_id().unwrap();
+  let trigun_id = declined.world_mut().allocate_item_id();
+  declined
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, Item::trigun(trigun_id))
+    .unwrap();
+  let before_declined = declined.clone();
+  assert_eq!(
+    declined
+      .step(Command::AltReload {
+        item_id: trigun_id,
+        confirmed: false,
+      })
+      .unwrap_err(),
+    drl_protocol::CommandError::AltReloadNotConfirmed(trigun_id)
+  );
+  assert_eq!(declined, before_declined);
+
+  let mut low_health = Game::new_arena(790, 20, 20).unwrap();
+  let low_player = low_health.world().player_id().unwrap();
+  let low_id = low_health.world_mut().allocate_item_id();
+  let low_actor = low_health.world_mut().get_actor_mut(low_player).unwrap();
+  *low_actor.hp_mut() = drl_protocol::HitPoints::new(10, 10);
+  low_actor
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, Item::trigun(low_id))
+    .unwrap();
+  let before_low = low_health.clone();
+  assert_eq!(
+    low_health
+      .step(Command::AltReload {
+        item_id: low_id,
+        confirmed: true,
+      })
+      .unwrap_err(),
+    drl_protocol::CommandError::CannotAltReload(low_id)
+  );
+  assert_eq!(low_health, before_low);
+
+  let mut missing = Game::new_arena(791, 20, 20).unwrap();
+  let missing_id = ItemId::new(999);
+  let before_missing = missing.clone();
+  assert_eq!(
+    missing
+      .step(Command::AltReload {
+        item_id: missing_id,
+        confirmed: true,
+      })
+      .unwrap_err(),
+    drl_protocol::CommandError::CannotAltReload(missing_id)
+  );
+  assert_eq!(missing, before_missing);
+}
+
+#[test]
+fn trigun_nuke_events_resolve_in_typed_order_and_end_the_game() {
+  let mut game = Game::new_arena(792, 20, 20).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let trigun_id = game.world_mut().allocate_item_id();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, Item::trigun(trigun_id))
+    .unwrap();
+
+  let events = game
+    .step(Command::AltReload {
+      item_id: trigun_id,
+      confirmed: true,
+    })
+    .unwrap();
+  let reload_index = events
+    .iter()
+    .position(|event| matches!(event, GameEvent::TrigunAltReloaded { .. }))
+    .unwrap();
+  let activate_index = events
+    .iter()
+    .position(|event| matches!(event, GameEvent::NukeActivated { .. }))
+    .unwrap();
+  let level_index = events
+    .iter()
+    .position(|event| matches!(event, GameEvent::LevelNuked { .. }))
+    .unwrap();
+  let damage_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::DamageApplied {
+          target_id,
+          amount: 45,
+          source: drl_protocol::DamageSource::Environment,
+          remaining_hp: 0,
+        } if *target_id == player_id
+      )
+    })
+    .unwrap();
+  let death_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::ActorDied {
+          entity_id,
+          cause: drl_protocol::DeathCause::Environment,
+        } if *entity_id == player_id
+      )
+    })
+    .unwrap();
+  assert!(reload_index < activate_index);
+  assert!(activate_index < level_index);
+  assert!(level_index < damage_index);
+  assert!(damage_index < death_index);
+  assert!(game.is_game_over());
+  assert_eq!(
+    game.step(Command::Wait).unwrap_err(),
+    drl_protocol::CommandError::InvalidCommand("game is over".to_string())
+  );
+}
+
+#[test]
+fn trigun_alt_reload_replay_is_deterministic() {
+  let mut replay =
+    ReplayLog::new(793, 20, 20, Position::new(10, 10)).with_player_config(PlayerSpawnConfig {
+      hp: 20,
+      max_hp: 50,
+      speed: 100,
+      initial_items: Vec::new(),
+      equipped_weapon: Some(ItemSpawnKind::Trigun),
+      equipped_armor: None,
+    });
+  replay.record_command(Command::AltReload {
+    item_id: ItemId::new(4),
+    confirmed: true,
+  });
+
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+  let (_game, events) = ReplayEngine::run(&replay).unwrap();
+  assert!(
+    events
+      .iter()
+      .any(|event| matches!(event, GameEvent::LevelNuked { .. }))
+  );
+}

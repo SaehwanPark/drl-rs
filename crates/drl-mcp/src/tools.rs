@@ -45,7 +45,7 @@ pub fn get_all_tool_definitions() -> Vec<ToolDefinition> {
     },
     ToolDefinition {
       name: "game_step_action".to_string(),
-      description: "Execute a semantic player action (move, wait, fire, reload, pickup, use, equip, unequip, drop, descend).".to_string(),
+      description: "Execute a semantic player action (move, wait, fire, reload, invoke, alt_reload, pickup, use, equip, unequip, drop, descend).".to_string(),
       input_schema: game_step_action_schema(),
     },
     ToolDefinition {

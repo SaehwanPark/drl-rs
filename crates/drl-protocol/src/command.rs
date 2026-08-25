@@ -27,6 +27,8 @@ pub enum Command {
   Use(ItemId),
   /// Invoke a typed alternate action on an equipped item (e.g. Subtle Knife).
   Invoke(ItemId),
+  /// Alternate-reload an equipped item with an explicit confirmation decision.
+  AltReload { item_id: ItemId, confirmed: bool },
   /// Reload the equipped ranged weapon from inventory ammo stacks.
   Reload,
   /// Descend stairs at the current position to transition to the next level.
@@ -69,6 +71,10 @@ pub enum CommandError {
   CannotUse(ItemId),
   /// Item cannot perform its requested alternate action.
   CannotInvoke(ItemId),
+  /// Item cannot perform its requested alternate reload.
+  CannotAltReload(ItemId),
+  /// A confirmation decision was required or the alternate action was declined.
+  AltReloadNotConfirmed(ItemId),
   /// Equipment slot is already empty.
   SlotEmpty(EquipmentSlot),
   /// Action requires an equipped weapon, but none is equipped.
@@ -136,6 +142,14 @@ impl fmt::Display for CommandError {
       Self::CannotEquip(id) => write!(f, "item {} cannot be equipped", id.as_u64()),
       Self::CannotUse(id) => write!(f, "item {} cannot be used", id.as_u64()),
       Self::CannotInvoke(id) => write!(f, "item {} cannot be invoked", id.as_u64()),
+      Self::CannotAltReload(id) => {
+        write!(f, "item {} cannot perform an alternate reload", id.as_u64())
+      }
+      Self::AltReloadNotConfirmed(id) => write!(
+        f,
+        "alternate reload for item {} was not confirmed",
+        id.as_u64()
+      ),
       Self::SlotEmpty(slot) => write!(f, "{slot} slot is empty"),
       Self::NoEquippedWeapon => write!(f, "no weapon equipped"),
       Self::NoAmmoInClip => write!(f, "weapon clip is empty - reload required"),

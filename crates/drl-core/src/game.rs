@@ -12,10 +12,12 @@ use crate::generator::{LevelGenerator, LevelGeneratorConfig};
 use crate::grid::Map;
 use crate::item::Item;
 use crate::level_definition::standard_procedural;
+use crate::nuke::NukeState;
 use crate::rng::GameRng;
 use crate::scheduler::{ACTION_THRESHOLD, Scheduler};
 use crate::subtle_knife::{SUBTLE_KNIFE_TARGET_DAMAGE, SubtleKnifeError};
 use crate::targeting::TargetingSystem;
+use crate::trigun::{TRIGUN_NUKE_TIMER, TrigunError};
 use crate::world::World;
 
 /// Complete snapshot of the simulation state at a specific turn.
@@ -25,6 +27,7 @@ pub struct GameState {
   pub world: World,
   pub rng: GameRng,
   pub is_game_over: bool,
+  pub nuke: NukeState,
 }
 
 /// Simulation runner executing turns deterministically.
@@ -55,6 +58,7 @@ impl Game {
       world,
       rng: GameRng::from_seed(seed),
       is_game_over: false,
+      nuke: NukeState::new(),
     };
 
     Ok(Self { state })
@@ -88,6 +92,7 @@ impl Game {
       world,
       rng,
       is_game_over: false,
+      nuke: NukeState::new(),
     };
 
     Ok(Self { state })
@@ -125,6 +130,12 @@ impl Game {
   #[must_use]
   pub const fn is_game_over(&self) -> bool {
     self.state.is_game_over
+  }
+
+  /// Returns the typed level-nuke state.
+  #[must_use]
+  pub const fn nuke_state(&self) -> NukeState {
+    self.state.nuke
   }
 
   /// Generates a player observation snapshot.
@@ -268,6 +279,9 @@ impl Game {
       Command::Invoke(item_id) => {
         self.execute_player_invoke(player_id, item_id, &mut events)?;
       }
+      Command::AltReload { item_id, confirmed } => {
+        self.execute_player_alt_reload(player_id, item_id, confirmed, &mut events)?;
+      }
       Command::Reload => {
         action_cost = self.execute_player_reload(player_id, &mut events)?;
       }
@@ -286,6 +300,8 @@ impl Game {
         cost: action_cost,
       });
     }
+
+    self.tick_nuke(player_id, &mut events)?;
 
     // 2. Execute Monster AI turns until player is ready to act again
     self.run_scheduled_monster_turns(player_id, &mut events)?;
@@ -383,6 +399,99 @@ impl Game {
           self.spawn_death_drop(target_id, position, drop_kind, events)?;
         }
       }
+    }
+    Ok(())
+  }
+
+  /// Executes the typed Trigun alternate reload and schedules its level nuke.
+  fn execute_player_alt_reload(
+    &mut self,
+    player_id: drl_protocol::EntityId,
+    item_id: drl_protocol::ItemId,
+    confirmed: bool,
+    events: &mut Vec<GameEvent>,
+  ) -> Result<(), CommandError> {
+    if !confirmed {
+      return Err(CommandError::AltReloadNotConfirmed(item_id));
+    }
+
+    let player = self
+      .state
+      .world
+      .get_actor(player_id)
+      .ok_or(CommandError::EntityNotFound(player_id))?;
+    let weapon = player
+      .equipment()
+      .weapon()
+      .filter(|item| item.id() == item_id)
+      .filter(|item| item.archetype() == drl_protocol::ItemArchetype::Trigun)
+      .ok_or(CommandError::CannotAltReload(item_id))?;
+    let _ = weapon;
+
+    let cost = self
+      .state
+      .world
+      .get_actor_mut(player_id)
+      .ok_or(CommandError::EntityNotFound(player_id))?
+      .alt_reload_trigun()
+      .map_err(|error| match error {
+        TrigunError::MaximumHealthTooLow | TrigunError::Dead => {
+          CommandError::CannotAltReload(item_id)
+        }
+      })?;
+
+    self
+      .state
+      .nuke
+      .activate(TRIGUN_NUKE_TIMER)
+      .map_err(|_| CommandError::CannotAltReload(item_id))?;
+    events.push(GameEvent::TrigunAltReloaded {
+      entity_id: player_id,
+      item_id,
+      remaining_hp: cost.remaining_hp,
+      score_count_remaining: cost.score_count_remaining,
+    });
+    events.push(GameEvent::NukeActivated {
+      level_id: self.state.world.level_id(),
+      countdown: TRIGUN_NUKE_TIMER,
+    });
+    Ok(())
+  }
+
+  /// Resolves a pending nuke at the accepted command boundary.
+  fn tick_nuke(
+    &mut self,
+    player_id: drl_protocol::EntityId,
+    events: &mut Vec<GameEvent>,
+  ) -> Result<(), CommandError> {
+    if !self.state.nuke.tick() {
+      return Ok(());
+    }
+
+    let level_id = self.state.world.level_id();
+    events.push(GameEvent::LevelNuked { level_id });
+    let (taken, lethal, _) =
+      self
+        .state
+        .world
+        .apply_internal_damage(player_id, 6_000, DamageSource::Environment)?;
+    let remaining_hp = self
+      .state
+      .world
+      .get_actor(player_id)
+      .map_or(0, |actor| actor.hp().current);
+    events.push(GameEvent::DamageApplied {
+      target_id: player_id,
+      amount: taken,
+      remaining_hp,
+      source: DamageSource::Environment,
+    });
+    if lethal {
+      events.push(GameEvent::ActorDied {
+        entity_id: player_id,
+        cause: DeathCause::Environment,
+      });
+      self.state.is_game_over = true;
     }
     Ok(())
   }

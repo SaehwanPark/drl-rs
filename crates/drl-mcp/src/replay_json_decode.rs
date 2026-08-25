@@ -271,6 +271,16 @@ fn parse_command(value: &JsonValue, index: usize) -> Result<Command, String> {
       required(object, "item_id")?,
       &format!("{context}.item_id"),
     )?))),
+    "alt_reload" => Ok(Command::AltReload {
+      item_id: drl_protocol::ItemId::new(u64_value(
+        required(object, "item_id")?,
+        &format!("{context}.item_id"),
+      )?),
+      confirmed: bool_value(
+        required(object, "confirmed")?,
+        &format!("{context}.confirmed"),
+      )?,
+    }),
     "reload" => Ok(Command::Reload),
     "descend" => Ok(Command::Descend),
     _ => Err(format!(
@@ -378,6 +388,12 @@ fn u64_value(value: &JsonValue, context: &str) -> Result<u64, String> {
 fn u32_value(value: &JsonValue, context: &str) -> Result<u32, String> {
   u64_value(value, context)
     .and_then(|value| u32::try_from(value).map_err(|_| format!("{context} must fit in u32")))
+}
+
+fn bool_value(value: &JsonValue, context: &str) -> Result<bool, String> {
+  value
+    .as_bool()
+    .ok_or_else(|| format!("{context} must be a boolean"))
 }
 
 fn i32_value(value: &JsonValue, context: &str) -> Result<i32, String> {
