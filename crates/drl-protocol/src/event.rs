@@ -107,6 +107,13 @@ pub enum GameEvent {
     mode: WeaponFireMode,
     score_count_remaining: i32,
   },
+  /// A Jackhammer alternate reload toggled its typed fire mode.
+  JackhammerFireModeChanged {
+    entity_id: EntityId,
+    item_id: ItemId,
+    mode: WeaponFireMode,
+    score_count_remaining: i32,
+  },
   /// A typed level nuke was scheduled at an accepted command boundary.
   NukeActivated { level_id: LevelId, countdown: u32 },
   /// The scheduled level nuke resolved before its internal player damage.

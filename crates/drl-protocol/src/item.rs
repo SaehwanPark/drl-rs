@@ -63,7 +63,7 @@ pub enum ItemCategory {
   PhaseDevice,
 }
 
-/// Typed fire mode for the Grammaton Cleric Beretta.
+/// Typed fire mode for weapons with explicit mode behavior.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum WeaponFireMode {
   /// One round using the single-fire profile.

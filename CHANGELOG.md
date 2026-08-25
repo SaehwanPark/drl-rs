@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.129]
+
+- Added pinned Jackhammer alternate-reload evidence and a typed burst/single
+  fire-mode toggle with the legacy one-score-count cost.
+- Added deterministic selected-shell resolution, partial-clip atomicity,
+  replay coverage, and MCP legal-action/event projection.
+- Advanced gameplay-semantics replay identity to `8`; legacy spread/falloff,
+  timing, runtime, and presentation parity remain `NOT_RUN`.
+
 ## [0.2.128]
 
 - Added pinned Grammaton Cleric Beretta behavior evidence and a typed

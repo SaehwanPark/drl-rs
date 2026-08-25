@@ -277,7 +277,7 @@ pub fn game_step_action_schema() -> JsonValue {
     SchemaField::new(
       "confirmed",
       "boolean",
-      "Explicit confirmation for the Trigun alternate reload; ignored by mode-cycle weapons",
+      "Explicit confirmation for the Trigun alternate reload; ignored by Jackhammer and Grammaton mode cycles",
       false,
     ),
   ]) else {

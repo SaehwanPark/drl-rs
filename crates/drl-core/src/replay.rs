@@ -309,8 +309,8 @@ mod tests {
   fn test_replay_validation_rejects_incompatible_semantics() {
     let mut replay = ReplayLog::new(1234, 10, 10, Position::new(1, 1));
     // Version 5 predates the AI movement candidate-order change and must not
-    // be interpreted by the version-7 engine without an explicit migration.
-    assert_eq!(drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION, 7);
+    // be interpreted by the version-8 engine without an explicit migration.
+    assert_eq!(drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION, 8);
     replay.metadata.gameplay_semantics_version = 5;
     let error = ReplayEngine::validate(&replay).unwrap_err();
     assert!(error.contains("unsupported gameplay semantics version"));

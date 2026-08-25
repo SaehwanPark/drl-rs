@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.128`
+Current project version: `0.2.129`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.128)
+## 3. Current Progress Summary (`VERSION` 0.2.129)
 
 ### Delivered Foundations
 
@@ -136,6 +136,13 @@ verification item uses explicit status semantics:
   bursts reject before clip/RNG mutation; gameplay-semantics replay identity
   advances to `7` and rejects older envelopes until migration. Legacy runtime
   accuracy-equation and presentation comparison remain `NOT_RUN`.
+- **M9/Gate D Jackhammer behavior (`0.2.129`)**: Pinned legacy source now
+  drives a typed burst/single fire-mode toggle with the existing `8d3` shotgun
+  profile, one score-count cost, deterministic selected-shell resolution, and
+  an ordered mode-change event. Partial clips reject before clip/RNG mutation;
+  gameplay-semantics replay identity advances to `8` and rejects older
+  envelopes until migration. Legacy spread/falloff, timing, runtime, and
+  presentation comparison remain `NOT_RUN`.
 - **Gate D first behavior slice:** Medical Powerarmor now has a typed,
   deterministic periodic-repair transition in `drl-core`, accepted-turn
   integration, exact timer/durability/health edge tests, and a typed repair
@@ -661,6 +668,10 @@ scripting.
   200 score-count cost, ordered multi-shot resolution, and replay/MCP event
   projection. Legacy accuracy-equation and presentation parity remain
   `NOT_RUN`/open.
+- [x] Jackhammer alternate reload is behavior-covered by a typed burst/single
+  fire-mode toggle with one score-count cost, ordered selected-shell
+  resolution, replay coverage, and MCP event projection. Legacy spread/falloff,
+  timing, runtime, and presentation parity remain `NOT_RUN`/open.
 - [x] Direct player diagonal movement preserves the pinned destination-only
   validation rule, including corner cutting around two blocked cardinal
   neighbors; AI fallback remains a separate policy and legacy runtime

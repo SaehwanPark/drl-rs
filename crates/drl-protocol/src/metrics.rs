@@ -137,6 +137,7 @@ impl EpisodeMetrics {
       | GameEvent::SubtleKnifeInvoked { .. }
       | GameEvent::TrigunAltReloaded { .. }
       | GameEvent::GrammatonFireModeChanged { .. }
+      | GameEvent::JackhammerFireModeChanged { .. }
       | GameEvent::NukeActivated { .. }
       | GameEvent::LevelNuked { .. }
       | GameEvent::ActorKnockedBack { .. }

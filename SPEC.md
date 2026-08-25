@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.128`
+Current project version: `0.2.129`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,15 +25,15 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9/Gate D Grammaton Fire-Mode Behavior
+## 2. Active Implementation Slice: M9/Gate D Jackhammer Fire-Mode Behavior
 
 ### 2.1 Objective
 
-Close one callback-heavy legacy behavior gap by pinning the Grammaton Cleric
-Beretta's alternate-reload mode cycle and making it an explicit Rust state
-transition. The equipped weapon cycles through single, burst, and full-auto
-modes in that order, with mode-specific damage and shot-count policies, and
-the cycle costs 200 score count.
+Close one callback-heavy legacy behavior gap by pinning the Jackhammer's
+alternate-reload mode cycle and making it an explicit Rust state transition.
+The equipped shotgun toggles between its default three-shot burst and a
+single-shot mode, preserving the existing shotgun damage profile and charging
+one score count for the cycle.
 
 The legacy Pascal/Lua implementation remains the behavioral reference. Its
 architecture, global callback machinery, and runtime Lua object model remain
@@ -43,25 +43,25 @@ non-goals for reproduction.
 
 - **Steering priority:** Typed legacy behavior (Gate D), with Gate E's
   evidence-bounded claims applied to the source comparison.
-- **Observable outcome:** `Command::AltReload` on an equipped Grammaton cycles
-  `Single -> Burst -> Auto -> Single`, updates the typed weapon damage and shot
-  count, emits a `GrammatonFireModeChanged` event, and spends 200 score count.
-  Ranged attacks consume the mode's shot count atomically and emit one ordered
-  attack/damage sequence per shot, stopping after a lethal shot.
+- **Observable outcome:** `Command::AltReload` on an equipped Jackhammer
+  toggles `Burst -> Single -> Burst`, emits a typed
+  `JackhammerFireModeChanged` event, and spends one score count. Ranged
+  attacks consume the selected one- or three-shell count atomically and retain
+  the pinned `8d3` shotgun damage profile.
 - **Replay/RNG impact:** The V1 wire format remains unchanged, but gameplay
-  semantics advance from `6` to `7` because mode state changes future command
-  outcomes. The transition and burst resolution consume no RNG until all
+  semantics advance from `7` to `8` because mode state changes future command
+  outcomes. The transition and shot-count validation consume no RNG until all
   command validation succeeds; rejected commands preserve exact `Game` state.
 - **Content-catalog impact:** No new item family or registration path is added.
-  The existing Grammaton definition remains the authoritative identity.
+  The existing Jackhammer definition remains the authoritative identity.
 - **Protocol/domain ownership:** `WeaponFireMode` and the mode-change event are
-  stable semantic protocol contracts; mode profiles, score cost, and shot
-  resolution remain core-owned policy.
-- **Evidence boundary:** The pinned Lua source supports the cycle, mode
-  profiles, and score cost. Controlled legacy runtime/capture comparison is
-  `NOT_RUN`.
-- **Non-goals:** Generic burst-fire infrastructure, other weapon alt-reloads,
-  legacy confirmation/UI behavior, runtime Lua, explosion effects, and broad
+  stable semantic protocol contracts; Jackhammer cycle policy, score cost, and
+  shot resolution remain core-owned.
+- **Evidence boundary:** The pinned Lua source supports the 3/1 cycle, the
+  default three-shot profile, and the one-score-count cost. Controlled legacy
+  runtime/capture comparison is `NOT_RUN`.
+- **Non-goals:** Generic callback or burst registries, other weapon
+  alt-reloads, spread/falloff parity, legacy UI text, runtime Lua, and broad
   content migration.
 
 ### 2.2 Why this slice supersedes content breadth
@@ -77,19 +77,19 @@ At the same time, adding a conventional content family now fans out across
 protocol enums, definitions, validation, replay codecs, assets, documentation,
 and other exhaustive registries. Continuing scalar-only breadth before a
 behavior model is selected would increase both migration debt and change
-amplification. The Grammaton source audit gives this slice a narrow typed state
+amplification. The Jackhammer source audit gives this slice a narrow typed state
 machine, a focused end-to-end test, and an explicit runtime evidence boundary.
 
 Therefore, additional broad scalar-only family additions are temporarily
 blocked by the exit gates in Section 2.8.
 
-### 2.3 Grammaton fire-mode contracts
+### 2.3 Jackhammer fire-mode contracts
 
-For an equipped Grammaton with a loaded clip, each accepted alternate reload
-must cycle the mode and subtract exactly 200 score count using saturating core
-policy. Single mode uses one shot with the base `2d6` profile; burst uses three
-shots of `1d8`; full-auto uses six shots of `1d7`. The mode transition itself
-does not consume RNG. A ranged command must reject before clip/RNG mutation when
+For an equipped Jackhammer with a loaded clip, each accepted alternate reload
+must toggle the mode and subtract exactly one score count using saturating core
+policy. Burst mode resolves three shells and single mode resolves one shell;
+both use the existing `8d3` weapon profile. The mode transition itself does
+not consume RNG. A ranged command must reject before clip/RNG mutation when
 the current clip contains fewer rounds than the selected shot count. Successful
 shots resolve in deterministic order against the originally selected target;
 lethal resolution stops the sequence and commits one death drop at most.
@@ -97,11 +97,9 @@ lethal resolution stops the sequence and commits one death drop at most.
 #### Legacy evidence boundary
 
 Pinned source evidence is recorded in
-[`docs/legacy-behavior/grammaton-beretta.md`](docs/legacy-behavior/grammaton-beretta.md).
-The source callback's raw accuracy values are retained as evidence, while
-DRL-Rust maps them to its existing percentage policy (`80`, `75`, `70`) until
-the legacy accuracy equation is audited. Runtime parity and presentation
-feedback remain `NOT_RUN`.
+[`docs/legacy-behavior/jackhammer.md`](docs/legacy-behavior/jackhammer.md).
+The source callback's UI text and exact shot timing remain evidence-only.
+Runtime parity, spread/falloff, and presentation feedback remain `NOT_RUN`.
 
 ### 2.4 Previous movement and historical correctness contracts
 
@@ -167,7 +165,7 @@ comparison is `NOT_RUN`. The strongly-skewed smoothing ratio is supporting
 evidence from the dirty untracked helper rather than a clean pinned-source
 fact.
 
-**Current bounded delivery target (`0.2.128`):** The pinned legacy Grammaton
+**Previous bounded delivery target (`0.2.128`):** The pinned legacy Grammaton
 source records the single/burst/auto cycle, `2d6`/`1d8`/`1d7` profiles,
 three-/six-shot counts, and 200 score-count cost. Typed transition, ordered
 multi-shot, partial-clip rejection, replay, and MCP projections are covered;
@@ -570,7 +568,7 @@ Trigun alternate reload. Its typed transition must:
 - [x] record that explosion geometry, animation timing, confirmation UI, and
   controlled legacy runtime parity remain `NOT_RUN` or out of scope.
 
-### 2.7d Current Grammaton delivery target
+### 2.7d Previous Grammaton delivery target
 
 The bounded implementation target for this revision is the fourth stress case,
 Grammaton Cleric Beretta fire-mode behavior. Its typed transition must:
@@ -585,6 +583,24 @@ Grammaton Cleric Beretta fire-mode behavior. Its typed transition must:
   determinism, and MCP legal-action/event projection;
 - [x] record that the legacy accuracy equation and controlled runtime or
   presentation parity remain `NOT_RUN`.
+
+### 2.7e Current Jackhammer delivery target
+
+The bounded implementation target for this revision is the fifth stress case,
+Jackhammer alternate fire-mode behavior. Its typed transition must:
+
+- [x] expose the stable `WeaponFireMode` contract while keeping Jackhammer's
+  default mode as three-shot burst and toggling `Burst <-> Single`;
+- [x] preserve the pinned `8d3` shotgun profile and range while resolving one
+  or three shells according to the selected mode;
+- [x] subtract one score count with saturating core policy and emit an ordered
+  `JackhammerFireModeChanged` event;
+- [x] preflight the selected shot count before clip or RNG mutation, stop after
+  the first actual lethal result, and preserve one death drop at most;
+- [x] cover pure transition behavior, partial-clip rollback, replay
+  determinism, and MCP legal-action/event projection;
+- [x] record that spread/falloff, exact timing, UI text, and controlled runtime
+  or presentation parity remain `NOT_RUN`.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
