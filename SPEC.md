@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.143`
+Current project version: `0.2.144`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9/Gate C Item Identity Catalog
+## 2. Active Implementation Slice: M9/Vertical Fidelity — Subtle Knife Encounter
 
 ### 2.1 Objective
 
-Centralize routine item identity registration in one protocol-owned compile-time
-catalog. The declaration must generate the stable `ItemArchetype` enum, ordered
-`ALL` view, and canonical wire names without changing gameplay or presentation
-policy.
+Exercise the already-delivered Subtle Knife transition as one bounded vertical
+encounter. The same stable scenario/replay command must be observable through
+core events and the browser presentation boundary without changing gameplay
+semantics or balance.
 
 The legacy Pascal/Lua implementation remains the behavioral reference. Its
 architecture, global callback machinery, and runtime Lua object model remain
@@ -40,37 +40,37 @@ non-goals for reproduction.
 
 ### 2.1a Scope and steering gate
 
-- **Steering priority:** Content-model scalability (Gate C).
-- **Observable outcome:** `ItemArchetype` and `ItemSpawnKind` variants,
-  normalized catalog order, stable names, and routine spawn projections have
-  one compile-time declaration; existing replay, asset, and parsing projections
-  continue to consume the same stable views.
-- **Gameplay/replay impact:** No item balance, spawn payload, command, replay
-  schema, or RNG behavior changes.
-- **Protocol/domain ownership:** `drl-protocol` owns stable identity and wire
-  names; core owns definitions and behavior; assets/render/web own presentation.
-- **Evidence boundary:** This is a Rust catalog/invariant slice. Legacy runtime,
-  browser, audio/visual, and external capture comparisons are `NOT_RUN`.
-- **Non-goals:** Broad content migration, behavior vocabulary, gameplay
-  definitions, count-sensitive spawn reconstruction changes, and presentation
-  parity.
+- **Steering priority:** Vertical canonical fidelity after the Gate C/D exit
+  gates.
+- **Observable outcome:** A declarative encounter, replay execution, and
+  browser session agree on Subtle Knife target selection, event ordering,
+  player observation, and pure presentation effects.
+- **Gameplay/replay impact:** No accepted transition, replay schema, RNG
+  sampling rule, or gameplay-semantics version changes.
+- **Protocol/domain ownership:** `drl-protocol` owns stable item identity and
+  commands; core owns the transition and event order; render/web own derived
+  observations and effects.
+- **Evidence boundary:** Rust scenario/replay/core/browser-boundary tests are
+  verified. Controlled legacy runtime, browser capture, audio, WebGPU, and
+  audiovisual comparisons remain `NOT_RUN`.
+- **Non-goals:** New Subtle Knife balance, broad content migration, new
+  protocol fields, AI policy changes, armor/resistance parity, and runtime Lua.
 
 ### 2.2 Why this slice is bounded
 
-The existing Gate C work already centralizes core definitions, replay
-projections, and coverage. This slice removes the remaining routine duplication
-between the stable archetype and replay spawn-family declarations without
-broadening gameplay or behavior claims. Count-sensitive reconstruction remains
-an explicit replay boundary because the normalized catalog stores zero counts.
+The existing Gate C and Gate D work already centralizes stable item identity and
+delivers the typed Subtle Knife transition. This slice proves that those pieces
+survive the scenario/replay and browser boundaries without introducing a second
+simulation model or a browser-specific wire format.
 
-Behavioral and presentation mappings remain explicit by design. The catalog
-therefore improves routine identity registration while preserving compiler
-exhaustiveness at semantic boundaries.
+Behavioral and presentation mappings remain explicit by design. The encounter
+consumes those typed boundaries while preserving compiler exhaustiveness and
+avoiding a second browser-side simulation model.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
 
-### 2.3 Gate C item identity and spawn contracts
+### 2.3 Historical Gate C item identity and spawn contracts
 
 The catalog declaration is the only routine source for `ItemArchetype` and
 `ItemSpawnKind` variants, ordered `ALL` views, stable wire names, normalized
@@ -766,7 +766,7 @@ sampling identity in replay metadata. Its transition did:
   at `16` without changing accepted command behavior;
 - [x] record migration/runtime/browser/audiovisual comparisons as `NOT_RUN`.
 
-### 2.7q Current Gate C item identity catalog delivery target
+### 2.7q Previous Gate C item identity catalog delivery target
 
 The bounded implementation target for this revision is one compile-time source
 for routine stable item identity projections. Its transition must:
@@ -780,6 +780,24 @@ for routine stable item identity projections. Its transition must:
   presentation mappings explicit;
 - [x] record legacy runtime, behavior, browser, and audiovisual comparisons as
   `NOT_RUN`.
+
+### 2.7r Current vertical Subtle Knife encounter delivery target
+
+The bounded implementation target for this revision is evidence that the
+delivered Subtle Knife behavior remains coherent across the public Rust
+boundaries. Its vertical slice must:
+
+- [x] construct a deterministic declarative encounter with a configured knife,
+  a visible target, and an occluded target;
+- [x] run the same `Command::Invoke` through `ScenarioRunner` and preserve
+  target ordering, hidden-target exclusion, player cost, and event ordering;
+- [x] verify the resulting replay remains deterministic and retains the stable
+  item identity/command payload;
+- [x] compare `BrowserSession::submit` with direct `Game::step` for events,
+  player observations, pure effect timelines, and scene derivation;
+- [x] keep accepted gameplay semantics unchanged while recording controlled
+  legacy runtime, browser capture, audio, WebGPU, armor/resistance, and broad
+  monster/AI parity as `NOT_RUN`.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 

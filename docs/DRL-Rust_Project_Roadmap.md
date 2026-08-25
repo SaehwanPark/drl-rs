@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.143`
+Current project version: `0.2.144`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.143)
+## 3. Current Progress Summary (`VERSION` 0.2.144)
 
 ### Delivered Foundations
 
@@ -228,6 +228,13 @@ verification item uses explicit status semantics:
   verified protocol/domain ownership, bounded module scope, and local plus
   hosted repository/WASM checks for the delivered foundation; legacy runtime
   and audiovisual parity remain outside the evidence boundary.
+- **M9 vertical Subtle Knife encounter (`0.2.144`):** The delivered typed
+  Subtle Knife transition now has a declarative ASCII scenario, replay
+  determinism, and browser-session presentation-boundary parity covering
+  target visibility, event order, observations, effects, and scene derivation.
+  No gameplay-semantics or balance change is introduced; controlled legacy
+  runtime, browser capture, audio, WebGPU, armor/resistance, and broad AI
+  parity remain `NOT_RUN`.
 - **Tooling & Replays (M5, M6)**: Versioned replay engine (`V2`), declarative
   ASCII scenario runners, scripted bots, batch sweep runners, and a pure Rust
   zero-dependency MCP server.

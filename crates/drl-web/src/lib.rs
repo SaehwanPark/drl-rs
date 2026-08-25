@@ -368,13 +368,21 @@ pub struct BrowserSession {
 impl BrowserSession {
   /// Creates the fixed M4 arena and its representative loot/combat content.
   pub fn new() -> Result<Self, drl_protocol::CommandError> {
-    Ok(Self {
-      game: Self::fixed_game()?,
+    Ok(Self::from_game(Self::fixed_game()?))
+  }
+
+  /// Wraps an already-instantiated deterministic game at the browser boundary.
+  ///
+  /// The helper keeps browser presentation tests on the same authoritative
+  /// `Game` state without adding a second scenario or replay representation.
+  fn from_game(game: Game) -> Self {
+    Self {
+      game,
       last_error: None,
       commands: Vec::new(),
       particle_decals: ParticleDecalStore::new(256),
       particle_decal_sprites: Vec::new(),
-    })
+    }
   }
 
   /// Builds the same fixed content for direct-core parity tests and tools.
@@ -516,8 +524,8 @@ impl BrowserSession {
 
   /// Returns a replay-schema representation of the fixed browser session.
   ///
-  /// The log uses the existing V1 schema; it does not create a browser-specific
-  /// wire format or expose authoritative state to JavaScript.
+  /// The log uses the existing versioned replay schema; it does not create a
+  /// browser-specific wire format or expose authoritative state to JavaScript.
   #[must_use]
   pub fn replay_log(&self) -> ReplayLog {
     let mut replay = ReplayLog::new(M4_SEED, M4_WIDTH, M4_HEIGHT, M4_START);
@@ -2022,7 +2030,7 @@ pub use wasm::{
 #[cfg(test)]
 mod tests {
   use super::*;
-  use drl_protocol::{ItemArchetype, ItemCategory, Position, TileKind};
+  use drl_protocol::{ItemArchetype, ItemCategory, PlayerSpawnConfig, Position, TileKind};
 
   fn test_item(name: &str) -> ItemView {
     ItemView {
@@ -2498,6 +2506,61 @@ mod tests {
     let replay_observation = replayed.observe_player();
     assert_eq!(browser_observation, replay_observation);
     assert!(drl_core::ReplayEngine::verify_determinism(&replay).expect("replay determinism"));
+  }
+
+  #[test]
+  fn subtle_knife_browser_boundary_matches_direct_core_presentation() {
+    let mut setup_replay =
+      ReplayLog::new(784, 30, 30, Position::new(15, 15)).with_player_config(PlayerSpawnConfig {
+        hp: 50,
+        max_hp: 50,
+        speed: 100,
+        initial_items: Vec::new(),
+        equipped_weapon: Some(ItemSpawnKind::SubtleKnife),
+        equipped_armor: None,
+        equipped_armor_durability: None,
+      });
+    setup_replay.record_tile(Position::new(17, 15), TileKind::Wall);
+    setup_replay.record_monster(MonsterSpawnSpec::new(
+      Position::new(16, 15),
+      "Visible Imp",
+      30,
+      1,
+      (1, 1),
+    ));
+    setup_replay.record_monster(MonsterSpawnSpec::new(
+      Position::new(18, 15),
+      "Occluded Imp",
+      30,
+      1,
+      (1, 1),
+    ));
+
+    let (initial, setup_events) =
+      drl_core::ReplayEngine::run(&setup_replay).expect("vertical replay setup");
+    assert!(setup_events.is_empty());
+    let mut direct = initial.clone();
+    let mut browser = BrowserSession::from_game(initial);
+    let command = Command::Invoke(ItemId::new(4));
+
+    let expected_events = direct.step(command).expect("direct invoke");
+    let step = browser.submit(command).expect("browser invoke");
+    assert_eq!(step.events, expected_events);
+    assert_eq!(step.after, direct.observe_player());
+    assert_eq!(
+      step.effects,
+      drl_render::effect_timeline_for_observations(&step.before, &step.after, &expected_events,)
+    );
+    assert_eq!(browser.scene(), RenderScene::from_observation(&step.after));
+    let mut command_replay = setup_replay;
+    command_replay.record_command(command);
+    let (replayed, replay_events) =
+      drl_core::ReplayEngine::run(&command_replay).expect("vertical command replay");
+    assert_eq!(replay_events, expected_events);
+    assert_eq!(replayed.observe_player(), direct.observe_player());
+    assert!(
+      drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism")
+    );
   }
 }
 
