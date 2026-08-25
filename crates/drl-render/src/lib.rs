@@ -1359,6 +1359,7 @@ pub fn effects_for_events(events: &[GameEvent]) -> Vec<PresentationEffect> {
       GameEvent::ItemUsed { .. } => Some(PresentationEffect::Use),
       GameEvent::WeaponReloaded { .. } => Some(PresentationEffect::Reload),
       GameEvent::MedicalPowerarmorRepaired { .. } => None,
+      GameEvent::SubtleKnifeInvoked { .. } => None,
       GameEvent::LevelTransitioned { .. } => Some(PresentationEffect::LevelTransition),
       GameEvent::PlayerTeleported { .. } => Some(PresentationEffect::Teleport),
       GameEvent::ActorKnockedBack { .. } => Some(PresentationEffect::Knockback),
@@ -1449,6 +1450,7 @@ fn event_entity_ids(event: &GameEvent) -> [Option<EntityId>; 2] {
     | GameEvent::ItemUsed { entity_id, .. }
     | GameEvent::WeaponReloaded { entity_id, .. }
     | GameEvent::MedicalPowerarmorRepaired { entity_id, .. }
+    | GameEvent::SubtleKnifeInvoked { entity_id, .. }
     | GameEvent::ActorKnockedBack { entity_id, .. } => [Some(*entity_id), None],
     GameEvent::AttackResolved {
       attacker_id,

@@ -267,6 +267,10 @@ fn parse_command(value: &JsonValue, index: usize) -> Result<Command, String> {
       required(object, "item_id")?,
       &format!("{context}.item_id"),
     )?))),
+    "invoke" => Ok(Command::Invoke(drl_protocol::ItemId::new(u64_value(
+      required(object, "item_id")?,
+      &format!("{context}.item_id"),
+    )?))),
     "reload" => Ok(Command::Reload),
     "descend" => Ok(Command::Descend),
     _ => Err(format!(

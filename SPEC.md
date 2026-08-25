@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.119`
+Current project version: `0.2.120`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,16 +25,15 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9/Gate D Medical Powerarmor Behavior
+## 2. Active Implementation Slice: M9/Gate D Subtle Knife Alternate Invoke
 
 ### 2.1 Objective
 
-Deliver the first Gate D behavior-covered stress case by representing Medical
-Powerarmor's periodic repair as a typed, deterministic Rust transition and
-running it through the headless turn boundary. The preceding M1/M9
-correctness, RNG, replay, and catalog work remains the delivered foundation
-for this slice; its unresolved catalog and additional stress-case criteria are
-tracked below as deferred work rather than silently reactivated.
+Deliver the second Gate D behavior-covered stress case by representing Subtle
+Knife's alternate invoke as a typed, deterministic Rust transition and running
+it through the headless turn boundary. The preceding Medical Powerarmor slice
+established the first explicit behavior transition; Trigun and the remaining
+behavior vocabulary stay deferred rather than silently reactivated.
 
 The legacy Pascal/Lua implementation remains the behavioral reference. Its
 architecture, global callback machinery, and runtime Lua object model remain
@@ -43,21 +42,21 @@ non-goals for reproduction.
 ### 2.1a Scope and steering gate
 
 - **Steering gate:** Gate D — Behavior model passes hard cases.
-- **Observable outcome:** Equipped Medical Powerarmor ticks once per accepted
-  player command, follows the evidence-backed durability/health/timer rules,
-  mutates only typed core state, and emits a deterministic repair event when a
-  point is restored.
+- **Observable outcome:** An equipped Subtle Knife accepts a typed invoke
+  command when the actor is not tired, applies the evidence-backed HP/status/
+  score costs, and damages every living non-player actor currently visible to
+  the player in stable order.
 - **Replay/RNG impact:** The transition consumes no RNG and preserves the V1
   replay wire format; its gameplay semantics advance to project version
-  `0.2.119` and are not claimed cross-version compatible without matching
+  `0.2.120` and are not claimed cross-version compatible without matching
   engine semantics.
 - **Catalog impact:** No new item family or registry is added. The existing
-  typed `ItemArchetype::MedicalPowerarmor` identity selects the behavior.
-- **Protocol/domain ownership:** `GameEvent::MedicalPowerarmorRepaired` is a
-  stable event contract; timer policy, thresholds, and durability mutation
-  remain owned by `drl-core`.
-- **Non-goals:** Subtle Knife, Trigun, generic callback infrastructure, runtime
-  Lua, legacy runtime/capture parity, resistance/movement modifiers, and broad
+  typed `ItemArchetype::SubtleKnife` identity selects the behavior.
+- **Protocol/domain ownership:** `Command::Invoke` and
+  `GameEvent::SubtleKnifeInvoked` are stable semantic contracts; status, cost,
+  target policy, and damage mutation remain owned by `drl-core`.
+- **Non-goals:** Trigun, generic callback/alternate-action infrastructure,
+  runtime Lua, legacy runtime/capture parity, confirmation UI, and broad
   content migration remain open.
 
 ### 2.2 Why this slice supersedes content breadth
@@ -344,8 +343,8 @@ insufficient.
 - [ ] Keep genuinely behavioral code explicit and reviewable rather than
   embedding arbitrary callbacks in the catalog.
 - [ ] Define a typed behavior vocabulary that can represent at least:
-  **Partial in `0.2.119`:** the explicit Medical Powerarmor periodic-repair
-  state transition and structured repair event are delivered; the broader
+  **Partial in `0.2.120`:** explicit Medical Powerarmor periodic repair and
+  Subtle Knife alternate invoke transitions are delivered; the broader
   vocabulary remains open.
   - passive stat/resistance modifiers;
   - equip/unequip effects and item-set membership;
@@ -371,14 +370,14 @@ legacy revision:
 The first selected case is Medical Powerarmor; its source and callback
 decomposition are recorded in
 [`docs/legacy-behavior/medical-powerarmor.md`](docs/legacy-behavior/medical-powerarmor.md).
-Its typed Rust implementation is delivered in `0.2.119` below; controlled
-legacy runtime cadence and presentation parity remain unclaimed.
+Its typed Rust implementation is delivered in `0.2.119`; controlled legacy
+runtime cadence and presentation parity remain unclaimed.
 
 The second selected case is Subtle Knife alternate fire; its source and
 callback decomposition are recorded in
 [`docs/legacy-behavior/subtle-knife.md`](docs/legacy-behavior/subtle-knife.md).
-Its typed Rust implementation and runtime parity are also intentionally not
-claimed by this evidence slice.
+Its typed Rust implementation is delivered in `0.2.120`; runtime and
+presentation parity remain intentionally unclaimed.
 
 The third selected case is Trigun alternate reload; its source and callback
 decomposition are recorded in
@@ -421,6 +420,22 @@ Medical Powerarmor. Its typed transition must:
   `GameEvent::MedicalPowerarmorRepaired` only for an actual repair;
 - [x] cover the pure transition, edge cases, accepted-turn integration, and
   deterministic replay/event ordering with focused tests.
+
+### 2.6b Current Subtle Knife delivery target
+
+The bounded implementation target for this revision is the second stress case,
+Subtle Knife alternate invoke. Its typed transition must:
+
+- [x] expose an explicit `Command::Invoke(ItemId)` path for the equipped knife;
+- [x] apply a five-HP cost clamped to one, set the typed tired condition, and
+  spend 1000 score count without consuming RNG;
+- [x] select living non-player actors in the player's current field of view in
+  deterministic EntityId order and apply 15 points of internal damage;
+- [x] emit a typed invocation event plus ordered damage/death events while
+  leaving player and hidden actors excluded;
+- [x] reject invalid or tired invocations atomically without spending a turn;
+- [x] cover pure transition, visibility boundaries, accepted integration,
+  rejection rollback, replay determinism, and command/protocol persistence.
 
 ### 2.7 Exit Gates Before Broad Content Migration Resumes
 

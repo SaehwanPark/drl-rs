@@ -2,8 +2,8 @@
 
 **Domain:** alternate melee action with status and visible-target effects
 **Milestone relevance:** M9 / Gate D behavior stress cases
-**Last updated:** 2026-08-24
-**Status:** Partial — evidence captured; Rust behavior not implemented
+**Last updated:** 2026-08-25
+**Status:** Partial — evidence captured; typed Rust behavior covered in 0.2.120
 
 This note is the second selected Gate D stress-case artifact. It isolates the
 legacy alternate-fire rule and its action-dispatch boundary; it does not treat
@@ -124,7 +124,7 @@ the legacy Lua callback registry as a Rust architecture.
   is a deliberate Rust design question; importing a generic callback bus is
   out of scope.
 
-## Candidate DRL-Rust decisions (`drl-rust-decision`, not yet accepted)
+## DRL-Rust delivery decisions (`drl-rust-decision`)
 
 - Model `SubtleKnifeInvoke` as a typed alternate action with an explicit
   precondition (`tired` absent), actor-cost transition, stable visible-target
@@ -135,6 +135,22 @@ the legacy Lua callback registry as a Rust architecture.
   unchanged (apart from an explicitly modeled feedback event).
 - Keep the target-coordinate parameter absent from the behavior model unless a
   later legacy probe shows it affects this specific perk.
+- The current typed command rejects a tired or invalid invocation with no
+  gameplay mutation or turn consumption; canonical legacy scheduler cadence
+  for the no-effect branch remains unresolved.
+
+## Current DRL-Rust delivery evidence
+
+- `crates/drl-core/src/subtle_knife.rs` owns the pure actor-cost transition;
+  `Actor` stores the typed tired condition and score count, while `Game` owns
+  the explicit `Command::Invoke(ItemId)` target loop.
+- Current Rust policy selects living non-player actors in the player's current
+  field of view by deterministic `EntityId` order, applies 15 points of
+  internal damage without armor mitigation, and rejects tired/invalid invokes
+  atomically without spending a turn.
+- Focused pure, visibility-boundary, integration, rejection, replay, and
+  persistence tests cover the delivered behavior. Legacy runtime timing,
+  confirmation/UI behavior, and presentation parity remain `NOT_RUN`.
 
 ## Proposed acceptance tests
 
@@ -155,8 +171,9 @@ the legacy Lua callback registry as a Rust architecture.
   selected beings canonical? Needs: runtime capture or collection evidence.
 - Does the delayed blue explosion have any player-visible timing beyond the
   direct damage event? Needs: controlled capture.
-- This slice does not implement the Subtle Knife, generic alternate-action
-  infrastructure, status effects, room-wide targeting, or Lua compatibility.
+- This slice does not implement Trigun, generic alternate-action
+  infrastructure, confirmation UI, runtime Lua compatibility, or canonical
+  legacy timing/presentation parity.
 
 ## Provenance and rights
 

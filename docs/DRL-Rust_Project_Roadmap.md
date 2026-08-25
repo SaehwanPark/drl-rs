@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.119`
+Current project version: `0.2.120`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.119)
+## 3. Current Progress Summary (`VERSION` 0.2.120)
 
 ### Delivered Foundations
 
@@ -102,11 +102,13 @@ verification item uses explicit status semantics:
   deterministic periodic-repair transition in `drl-core`, accepted-turn
   integration, exact timer/durability/health edge tests, and a typed repair
   event; gameplay-semantics replay identity `3` rejects older envelopes until
-  migration exists, while legacy runtime parity and the remaining stress cases
-  remain open.
-- **Gate D evidence:** A second callback-heavy stress case is now characterized
-  in `docs/legacy-behavior/subtle-knife.md`; typed implementation, runtime
-  confirmation, and the remaining stress cases remain open.
+  migration exists, while legacy runtime parity and later stress cases remain
+  open.
+- **Gate D second behavior slice:** Subtle Knife now has a typed alternate
+  invoke command, HP/status/score costs, deterministic visible-target internal
+  damage, typed invocation events, replay/persistence coverage, and gameplay-
+  semantics replay identity `4`; runtime/presentation parity and Trigun remain
+  open.
 - **Gate D evidence:** A third callback-heavy stress case is now characterized
   in `docs/legacy-behavior/trigun.md`; the evidence set is complete for the
   initial three-case target, but typed implementation and runtime confirmation
@@ -601,6 +603,11 @@ scripting.
   command, heals one HP at the evidence-backed interval, spends one
   durability point, and emits a deterministic repair event. Legacy runtime
   cadence and exact presentation remain `NOT_RUN`/open.
+- [x] Subtle Knife alternate invoke is behavior-covered by an explicit typed
+  command: it applies the evidence-backed HP/status/score costs, damages living
+  visible targets in deterministic EntityId order, emits invocation/damage
+  events, and rejects tired/invalid invocations atomically. Legacy runtime and
+  presentation parity remain `NOT_RUN`/open.
 - [ ] Full migration of legacy monsters, weapons, armor, mods, and consumable
   items.
 - [ ] Full migration of special levels, vaults, and dungeon branches.

@@ -3,6 +3,17 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.120]
+
+- Added the second Gate D typed behavior slice: equipped Subtle Knife invoke
+  applies the evidence-backed HP/status/score costs and fixed internal damage
+  to living visible targets in deterministic EntityId order.
+- Added `Command::Invoke`, `SubtleKnifeInvoked`, replay/persistence coverage,
+  visibility and rejection-atomicity tests, and a pure transition module.
+- Advanced the gameplay-semantics replay identifier to `4`; old envelopes are
+  rejected until an explicit migration exists. Trigun and legacy runtime or
+  presentation parity remain open.
+
 ## [0.2.119]
 
 - Added the first Gate D typed behavior slice: equipped Medical Powerarmor
