@@ -3,6 +3,12 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.136]
+
+- Projected the typed Acid/Fire classification from environment damage into
+  `DamageApplied` and MCP JSON events; actor and unclassified environment
+  damage retain an explicit absent type. Resistance behavior remains deferred.
+
 ## [0.2.135]
 
 - Extended the pinned `move_cost=1.25` policy to direct player movement onto
@@ -25,9 +31,9 @@ documented in this file.
   contact policy: Acid deals 6 damage and Lava deals 12 on accepted player
   movement.
 - Reused deterministic environment damage/death events for hazard contact;
-  the current event intentionally exposes source/amount but not Acid/Fire
-  `DamageType`; resistance, difficulty/running modifiers, fluid movement cost,
-  runtime comparison, and audiovisual parity remain `NOT_RUN`.
+  the event intentionally exposed source/amount only; resistance,
+  difficulty/running modifiers, fluid movement cost, runtime comparison, and
+  audiovisual parity remain `NOT_RUN`.
 
 ## [0.2.132]
 

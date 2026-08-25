@@ -402,6 +402,7 @@ impl Game {
         amount: taken,
         remaining_hp,
         source: DamageSource::Actor(player_id),
+        damage_type: None,
       });
 
       if is_lethal {
@@ -558,6 +559,7 @@ impl Game {
       amount: taken,
       remaining_hp,
       source: DamageSource::Environment,
+      damage_type: None,
     });
     if lethal {
       events.push(GameEvent::ActorDied {
@@ -713,6 +715,7 @@ impl Game {
       amount: taken,
       remaining_hp,
       source: DamageSource::Environment,
+      damage_type: Some(hazard.damage_type),
     });
 
     if lethal {
@@ -1231,6 +1234,7 @@ impl Game {
         amount: taken,
         remaining_hp: remaining,
         source: DamageSource::Actor(attacker_id),
+        damage_type: None,
       });
 
       if is_lethal {
@@ -1420,6 +1424,7 @@ impl Game {
         amount: taken,
         remaining_hp: remaining,
         source: DamageSource::Actor(player_id),
+        damage_type: None,
       });
 
       if actual_lethal {
@@ -1693,6 +1698,7 @@ impl Game {
         amount: taken,
         remaining_hp: remaining,
         source: DamageSource::Actor(monster_id),
+        damage_type: None,
       });
 
       if is_lethal {

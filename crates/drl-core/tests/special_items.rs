@@ -1093,6 +1093,7 @@ fn trigun_nuke_events_resolve_in_typed_order_and_end_the_game() {
           amount: 45,
           source: drl_protocol::DamageSource::Environment,
           remaining_hp: 0,
+          damage_type: None,
         } if *target_id == player_id
       )
     })

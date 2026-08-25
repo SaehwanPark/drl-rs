@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.135`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.136`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -149,10 +149,11 @@ replays, and regression testing.
     single/burst/auto fire-mode cycle, Jackhammer's typed burst/single
     fire-mode toggle, Lava Armor's five-tick Lava recharge, and Null Pointer's
     target-dependent on-hit score branch, plus baseline Acid/Lava entered-cell
-    contact damage, and Acid/Lava/Water's typed 1250-unit movement policy, are
+    contact damage, Acid/Lava/Water's typed 1250-unit movement policy, and
+    optional Acid/Fire damage-type projection, are
     behavior-covered through typed
     deterministic transitions and events in the headless core;
-    resistance, damage-type projection, running modifiers, Mud movement,
+    resistance, running modifiers, Mud movement,
     prepared-slot consumption,
     explosion/map effects,
     other dynamic healing, weapon callbacks/effects, and broader legacy item

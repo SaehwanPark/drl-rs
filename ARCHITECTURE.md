@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.135`
+Current project version: `0.2.136`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -158,9 +158,10 @@ Presentation Boundary
     exact area damage remains an explicit gap. Legacy
     Acid/Lava entered-cell contact uses the dedicated `environment` classifier
     and applies the bounded raw baseline through environment damage/death
-    events; Acid/Lava/Water movement uses the typed 1250-unit terrain cost;
-    resistance and damage-type projection remain explicit gaps. Legacy
-    resistance, running modifiers, Mud movement, prepared-slot consumption,
+    events; Acid/Lava/Water movement uses the typed 1250-unit terrain cost and
+    Acid/Fire damage types are optionally projected; resistance remains an
+    explicit gap. Legacy resistance, running modifiers,
+    Mud movement, prepared-slot consumption,
     map-cell explosions, and
     broader item behavior remain explicit gaps, as do exact legacy
     timing/accuracy semantics.
