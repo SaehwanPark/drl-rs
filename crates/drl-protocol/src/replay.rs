@@ -614,4 +614,21 @@ mod tests {
     }
     assert_eq!(archetypes.len(), ItemArchetype::ALL.len() - 1);
   }
+
+  #[test]
+  fn spawn_catalog_preserves_stable_archetype_order() {
+    assert_eq!(
+      ItemArchetype::ALL.first().copied(),
+      Some(ItemArchetype::Unknown)
+    );
+    assert_eq!(ItemSpawnKind::ALL.len() + 1, ItemArchetype::ALL.len());
+
+    for (index, &kind) in ItemSpawnKind::ALL.iter().enumerate() {
+      assert_eq!(
+        kind.archetype(),
+        ItemArchetype::ALL[index + 1],
+        "spawn/archetype catalog order diverged at index {index}"
+      );
+    }
+  }
 }

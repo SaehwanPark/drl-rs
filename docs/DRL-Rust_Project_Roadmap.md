@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.141`
+Current project version: `0.2.142`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.141)
+## 3. Current Progress Summary (`VERSION` 0.2.142)
 
 ### Delivered Foundations
 
@@ -193,6 +193,8 @@ verification item uses explicit status semantics:
   now generates the stable `ItemArchetype` enum, ordered `ALL` view, and wire
   names; count-sensitive spawn payloads, gameplay definitions, and presentation
   mappings remain explicit.
+- **M9/Gate C catalog order invariant (`0.2.142`)**: Protocol tests now assert
+  normalized spawn-family order stays aligned with the stable archetype catalog.
 - **Gate D first behavior slice:** Medical Powerarmor now has a typed,
   deterministic periodic-repair transition in `drl-core`, accepted-turn
   integration, exact timer/durability/health edge tests, and a typed repair

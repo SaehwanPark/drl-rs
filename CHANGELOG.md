@@ -3,6 +3,11 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.142]
+
+- Added a deterministic compatibility test tying normalized spawn-family order
+  to the stable archetype catalog without duplicating the expected list.
+
 ## [0.2.141]
 
 - Centralized routine `ItemArchetype` identity registration in one protocol
