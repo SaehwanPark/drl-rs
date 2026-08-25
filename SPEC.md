@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.141`
+Current project version: `0.2.142`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
