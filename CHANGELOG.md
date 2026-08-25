@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.138]
+
+- Added a Gate A command-surface rejection matrix covering representative
+  invalid movement, combat, inventory, equipment, alternate-action, reload,
+  and descent commands; each rejection now asserts exact `Game` and RNG
+  identity through the transactional step boundary.
+
 ## [0.2.137]
 
 - Added a typed walkable Mud terrain across core, replay, scenario, MCP, web,

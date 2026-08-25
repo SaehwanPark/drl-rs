@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.137`
+Current project version: `0.2.138`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9/Gate D Mud Terrain
+## 2. Active Implementation Slice: M1/Gate A Rejection Matrix
 
 ### 2.1 Objective
 
-Close one terrain behavior gap by adding the pinned legacy Mud cell as a typed
-walkable Rust tile. Direct movement onto Mud costs 1650 units (the source-backed
-1.65 ratio); Acid/Lava/Water retain their existing typed movement costs and Mud
-has no contact damage in this bounded policy.
+Strengthen the Gate A command-atomicity invariant with one explicit rejection
+matrix spanning the current command surface. Each representative invalid
+command must return an error while preserving exact `Game` state, including the
+RNG stream, turn, world, inventory, equipment, and terminal flags.
 
 The legacy Pascal/Lua implementation remains the behavioral reference. Its
 architecture, global callback machinery, and runtime Lua object model remain
@@ -40,23 +40,20 @@ non-goals for reproduction.
 
 ### 2.1a Scope and steering gate
 
-- **Steering priority:** Typed legacy behavior (Gate D), with Gate E's
-  evidence-bounded claims applied to the source comparison.
-- **Observable outcome:** A successful player move onto Mud pays
-  `ActionCost::new(1650)` and emits no hazard damage; existing Acid/Fire event
-  projection remains stable.
-- **Replay/RNG impact:** Gameplay semantics advance from `15` to `16` because
-  Mud terrain and movement cost change future scheduling. The transition
-  consumes no RNG; rejected commands preserve exact `Game` state.
-- **Content-catalog impact:** The typed Mud terrain is added to existing
-  exhaustive terrain projections; no item family or registry is added.
-- **Protocol/domain ownership:** `TileKind::Mud` and `ActionCost` remain stable
-  protocol contracts; Mud balance and flow policy remain core-owned.
-- **Evidence boundary:** Pinned Lua source supports Mud `move_cost=1.65` and a
-  neutral liquid cell. Flow, running/difficulty modifiers, resistance/avoidance,
-  runtime/capture, and audiovisual parity remain `NOT_RUN`.
-- **Non-goals:** Generic callback registries, new scheduler modes, fluid flow,
-  monster movement, runtime Lua, and broad content migration.
+- **Steering priority:** Simulation correctness invariants (Gate A).
+- **Observable outcome:** Representative invalid commands across movement,
+  combat, inventory, equipment, item use, alternate actions, reload, and
+  descent all return an error with `before == after` for the complete `Game`.
+- **Replay/RNG impact:** Gameplay semantics remain `16`; this slice adds no
+  accepted transition and consumes no RNG. The rejection matrix explicitly
+  checks the RNG stream and preserves replay interpretation.
+- **Content-catalog impact:** No content or protocol catalog changes.
+- **Protocol/domain ownership:** The invariant remains core-owned at the
+  transactional `Game::step` boundary; no new protocol surface is introduced.
+- **Evidence boundary:** This is a Rust invariant test slice. Legacy runtime,
+  browser, audio/visual, and external capture comparisons are `NOT_RUN`.
+- **Non-goals:** New commands, scheduler behavior, content migration, replay
+  schema changes, runtime Lua, and broad callback modeling.
 
 ### 2.2 Why this slice supersedes content breadth
 
@@ -71,28 +68,24 @@ At the same time, adding a conventional content family now fans out across
 protocol enums, definitions, validation, replay codecs, assets, documentation,
 and other exhaustive registries. Continuing scalar-only breadth before a
 behavior model is selected would increase both migration debt and change
-amplification. The fluid movement-cost source audit gives this slice a narrow
-terrain-fed action-cost transition, focused scheduling/replay tests, and an
-explicit legacy-scheduler evidence boundary.
+amplification. The rejection matrix instead strengthens the executable
+transactional invariant that gates every future command addition.
 
 Therefore, additional broad scalar-only family additions are temporarily
 blocked by the exit gates in Section 2.8.
 
-### 2.3 Mud terrain contracts
+### 2.3 Gate A rejection matrix contracts
 
-For direct player movement accepted onto Mud, the pure movement-cost transition
-returns `ActionCost::new(1650)`. Mud is walkable and produces no contact damage;
-rejected movement remains transactional and consumes no RNG. Previously
-delivered Acid/Fire damage-type projection remains part of the stable event
-contract.
+For each representative invalid command, `Game::step` must return an error and
+leave the complete cloned `Game` unchanged. The matrix includes at least one
+invalid command from every current command family and compares the full state,
+including deterministic RNG, rather than selected fields.
 
 #### Legacy evidence boundary
 
-Pinned source evidence is recorded in
-[`docs/legacy-behavior/terrain-hazard.md`](docs/legacy-behavior/terrain-hazard.md)
-and the run's movement-cost evidence artifact. The typed Mud movement policy is
-implemented as an integer cost; fractional legacy scheduler details, flow,
-resistance/avoidance, exact runtime comparison, and presentation feedback
+No legacy source claim is needed for this invariant slice. The repository's
+transactional `Game::step` implementation and existing command-atomicity tests
+are the authoritative evidence; external runtime and presentation comparisons
 remain `NOT_RUN`.
 
 ### 2.4 Previous movement and historical correctness contracts
@@ -719,10 +712,10 @@ stress case, typed Acid/Fire damage classification. Its typed transition must:
 - [x] record that resistance/avoidance, running/difficulty modifiers, Mud
   movement, runtime comparison, and exact audiovisual parity remain `NOT_RUN`.
 
-### 2.7m Current Mud terrain delivery target
+### 2.7m Previous Mud terrain delivery target
 
-The bounded implementation target for this revision is the thirteenth stress
-case, typed Mud terrain and movement cost. Its typed transition must:
+The bounded implementation target for the previous revision was the thirteenth
+stress case, typed Mud terrain and movement cost. Its typed transition did:
 
 - [x] expose walkable `Tile::Mud`/`TileKind::Mud` through core, replay,
   scenario, MCP, web, render, and asset projections;
@@ -732,6 +725,20 @@ case, typed Mud terrain and movement cost. Its typed transition must:
   custom-tile replay/scenario behavior;
 - [x] record that flow, fractional scheduler details, modifiers, runtime
   comparison, and exact audiovisual parity remain `NOT_RUN`.
+
+### 2.7n Current Gate A rejection matrix delivery target
+
+The bounded implementation target for this revision is explicit rejection
+coverage across the current command surface. Its invariant must:
+
+- [x] exercise representative invalid Move, melee/ranged combat, pickup/drop,
+  equip/unequip/use/invoke, alternate reload, reload, and descend commands;
+- [x] assert `Game::step` errors preserve exact cloned `Game` state and RNG for
+  every matrix entry;
+- [x] keep gameplay semantics at `16` and introduce no accepted transition or
+  protocol/schema change;
+- [x] record runtime, browser, audio/visual, and external capture comparisons as
+  `NOT_RUN`.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
