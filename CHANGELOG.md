@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.126]
+
+- Added a pinned legacy movement evidence record for direct-player
+  destination-only validation and an integration test protecting diagonal
+  corner cutting into a walkable destination when both cardinal neighbors are
+  walls.
+- Kept monster `MoveTowards` cardinal fallback separate from direct player
+  movement; controlled legacy runtime comparison remains `NOT_RUN`.
+
 ## [0.2.125]
 
 - Added the next Gate C routine projection: ordinary `ItemSpawnKind` inverse

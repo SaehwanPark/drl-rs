@@ -40,6 +40,41 @@ fn test_deterministic_multi_step_scenario() {
 }
 
 #[test]
+fn diagonal_movement_allows_destination_only_corner_cutting() {
+  let mut game = Game::new(2026, 5, 5, Position::new(2, 2))
+    .expect("failed to initialize corner-cutting fixture");
+
+  // The diagonal destination remains floor while both cardinal neighbors are
+  // walls. Direct player movement validates the requested destination only.
+  game
+    .world_mut()
+    .map_mut()
+    .set_tile(Position::new(1, 2), drl_core::Tile::Wall);
+  game
+    .world_mut()
+    .map_mut()
+    .set_tile(Position::new(2, 1), drl_core::Tile::Wall);
+
+  let events = game
+    .step(Command::Move(Direction::NorthWest))
+    .expect("walkable diagonal destination should accept movement");
+
+  assert_eq!(
+    game.world().player().unwrap().position(),
+    Position::new(1, 1)
+  );
+  assert_eq!(game.turn(), Turn::new(1));
+  assert!(events.iter().any(|event| matches!(
+    event,
+    drl_protocol::GameEvent::EntityMoved {
+      from: Position { x: 2, y: 2 },
+      to: Position { x: 1, y: 1 },
+      ..
+    }
+  )));
+}
+
+#[test]
 fn test_replay_verification_identical_state() {
   let mut replay = ReplayLog::new(424242, 15, 15, Position::new(7, 7));
   let script = [
