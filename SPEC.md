@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.126`
+Current project version: `0.2.127`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,15 +25,15 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9/Vertical Fidelity Destination-Only Movement
+## 2. Active Implementation Slice: M9/Vertical Fidelity AI Movement Fallback
 
 ### 2.1 Objective
 
-Close a bounded vertical-fidelity movement gap by pinning the legacy movement
-source and making direct-player diagonal corner cutting an executable Rust
-contract. A walkable diagonal destination is accepted even when both adjacent
-cardinal tiles are walls; destination bounds, terrain, and occupancy remain the
-normal validation boundary.
+Close a bounded vertical-fidelity movement gap by pinning the legacy AI
+movement source and making its bounded candidate order an executable Rust
+contract. A monster first attempts the smoothed direction toward the player;
+when that destination is blocked, it retries the raw direction, then horizontal
+and vertical cardinal components. It does not search all remaining neighbors.
 
 The legacy Pascal/Lua implementation remains the behavioral reference. Its
 architecture, global callback machinery, and runtime Lua object model remain
@@ -43,13 +43,15 @@ non-goals for reproduction.
 
 - **Steering priority:** Vertical canonical fidelity, with Gate E's
   evidence-bounded claims applied to the legacy comparison.
-- **Observable outcome:** The player can move diagonally into a valid target
-  whose two adjacent cardinal neighbors are blocked; the accepted move emits
-  the normal movement event and consumes one turn.
+- **Observable outcome:** A blocked monster diagonal tries horizontal first and
+  then vertical if needed; a blocked smoothed cardinal retries the raw diagonal.
+  If all candidates are blocked, the AI waits rather than searching other
+  directions. Direct player movement remains destination-only.
 - **Replay/RNG impact:** The V1 replay wire format and RNG behavior are
-  unchanged. The accepted movement remains deterministic and consumes no RNG.
-- **Behavior boundary:** Direct player movement remains destination-only;
-  monster `MoveTowards` cardinal fallback is a separate AI policy.
+  unchanged. AI decisions remain deterministic and consume no RNG.
+- **Behavior boundary:** `MonsterAi` owns one-step policy; broad pathfinding,
+  player movement validation, and scheduler/action-cost redesign remain out of
+  scope.
 - **Evidence boundary:** The pinned legacy source supports this rule, while a
   controlled legacy runtime/capture comparison remains `NOT_RUN`.
 - **Non-goals:** New movement modifiers, diagonal cost redesign, AI
@@ -69,15 +71,27 @@ At the same time, adding a conventional content family now fans out across
 protocol enums, definitions, validation, replay codecs, assets, documentation,
 and other exhaustive registries. Continuing scalar-only breadth before a
 behavior model is selected would increase both migration debt and change
-amplification. The movement source audit gives this slice a narrow observable
-rule, a focused test, and an explicit runtime evidence boundary.
+amplification. The movement source audit gives this slice a narrow AI rule, a
+focused end-to-end test, and an explicit runtime evidence boundary.
 
 Therefore, additional broad scalar-only family additions are temporarily
 blocked by the exit gates in Section 2.7.
 
-### 2.3 Movement and historical correctness contracts
+### 2.3 AI movement and historical correctness contracts
 
-#### Movement contract
+#### AI movement contract
+
+For a monster at `(6,6)` and player at `(4,4)`, if the smoothed preferred
+diagonal destination `(5,5)` is blocked and `(5,6)` is open, `MonsterAi` must
+choose `Direction::West`; if horizontal is also blocked and `(6,5)` is open,
+it must choose `Direction::North`. For a strongly skewed target, a blocked
+smoothed cardinal must retry the raw diagonal. If all candidates are blocked,
+it must return `MonsterAction::Wait` even when another neighboring tile is
+open. A same-position target must also wait rather than emitting
+`Direction::None`. The decision must not consume RNG. A fixed-map integration
+test also verifies the selected movement event during a scheduled monster turn.
+
+#### Previous direct-player movement contract
 
 Direct player movement computes one target from the submitted direction and
 validates that destination's bounds, terrain, and occupancy. It does not apply
@@ -112,11 +126,20 @@ core-owned balance data.
 explicit tests for all family round trips, missing loose-ammo counts, and
 unknown-family rejection.
 
-**Current bounded delivery target (`0.2.126`):** The pinned legacy movement
+**Previous bounded delivery target (`0.2.126`):** The pinned legacy movement
 source records destination-only direct player validation. A focused fixed-map
 test proves that a walkable diagonal destination is accepted when both
 adjacent cardinal tiles are walls; a controlled legacy runtime comparison is
 `NOT_RUN`.
+
+**Current bounded delivery target (`0.2.127`):** The pinned legacy AI movement
+source records smoothed preferred, raw retry, horizontal, and vertical
+candidate order. Focused unit and scheduled-turn integration tests prove the
+fallback order, strongly-skewed raw retry, same-position `Wait`,
+blocked-candidate `Wait`, and unchanged RNG; a controlled legacy runtime
+comparison is `NOT_RUN`. The strongly-skewed smoothing ratio is supporting
+evidence from the dirty untracked helper rather than a clean pinned-source
+fact.
 
 **Delivered in `0.2.90` on `codex/fix-equip-rejection-atomicity`:** Equipping a
 non-equippable inventory item must return `CommandError::CannotEquip` without
@@ -308,6 +331,9 @@ State identity on rejection includes, at minimum:
   `Game` equality tests.
 - [x] Record pinned legacy movement evidence and protect destination-only
   diagonal corner cutting with a deterministic integration test.
+- [x] Record pinned legacy AI movement evidence and protect the smoothed/raw,
+  horizontal, vertical, and bounded `Wait` candidate policy with deterministic
+  decision and scheduled-turn tests.
 - [x] Cover missing-item Equip/Drop and no-ground-item Pickup rejection with
   exact `Game` equality tests.
 - [x] Cover out-of-bounds and empty-target ranged rejection with exact `Game`

@@ -53,26 +53,62 @@ impl MonsterAi {
       }
     }
 
-    // 3. Navigate towards the player by choosing the best walkable direction
-    let best_dir = Direction::ALL_8WAY
-      .into_iter()
-      .filter(|&dir| {
-        let target = m_pos + dir;
-        world.map().is_in_bounds(target) && !world.is_cell_blocked(target)
-      })
-      .min_by_key(|&dir| {
-        let target = m_pos + dir;
-        (
-          target.distance_chebyshev(p_pos),
-          target.distance_squared(p_pos),
-        )
-      });
-
-    if let Some(dir) = best_dir {
-      MonsterAction::Move(dir)
-    } else {
-      MonsterAction::Wait
+    // 3. Try the smoothed one-step direction first. Strongly skewed deltas
+    // become cardinal before the legacy path retries the raw diagonal.
+    let dx = p_pos.x - m_pos.x;
+    let dy = p_pos.y - m_pos.y;
+    let Some(preferred_dir) = Self::smooth_direction(dx, dy) else {
+      return MonsterAction::Wait;
+    };
+    if Self::is_open_step(world, m_pos, preferred_dir) {
+      return MonsterAction::Move(preferred_dir);
     }
+
+    // A blocked smoothed step retries the raw sign direction, then tries the
+    // horizontal and vertical cardinal components in that order. No broader
+    // pathfinding search is performed.
+    let Some(raw_dir) = Direction::from_delta(dx, dy) else {
+      return MonsterAction::Wait;
+    };
+    if raw_dir != preferred_dir && Self::is_open_step(world, m_pos, raw_dir) {
+      return MonsterAction::Move(raw_dir);
+    }
+    for fallback_dir in [Direction::from_delta(dx, 0), Direction::from_delta(0, dy)]
+      .into_iter()
+      .flatten()
+      .filter(|&direction| direction != Direction::None && direction != raw_dir)
+    {
+      if Self::is_open_step(world, m_pos, fallback_dir) {
+        return MonsterAction::Move(fallback_dir);
+      }
+    }
+
+    MonsterAction::Wait
+  }
+
+  fn smooth_direction(dx: i32, dy: i32) -> Option<Direction> {
+    if dx == 0 && dy == 0 {
+      return None;
+    }
+    let raw = Direction::from_delta(dx, dy)?;
+    if dx == 0 || dy == 0 {
+      return Some(raw);
+    }
+
+    let abs_dx = i64::from(dx).abs();
+    let abs_dy = i64::from(dy).abs();
+    if abs_dx * 10 >= abs_dy * 19 {
+      Direction::from_delta(dx, 0)
+    } else if abs_dy * 10 >= abs_dx * 19 {
+      Direction::from_delta(0, dy)
+    } else {
+      Some(raw)
+    }
+  }
+
+  fn is_open_step(world: &World, from: Position, direction: Direction) -> bool {
+    let target = from + direction;
+    world.map().is_in_bounds(target) && !world.is_cell_blocked(target)
   }
 }
 
@@ -128,5 +164,72 @@ mod tests {
     let demon = Actor::demon(EntityId::new(10), Position::new(6, 2));
     let action = MonsterAi::decide_action(&demon, &world, player_id);
     assert_eq!(action, MonsterAction::Move(Direction::West));
+  }
+
+  #[test]
+  fn test_blocked_diagonal_uses_horizontal_fallback_first() {
+    let mut map = Map::simple_arena(20, 20);
+    map.set_tile(Position::new(5, 5), Tile::Wall);
+    let mut world = World::new(LevelId::new(1), map);
+    let player_id = world.spawn_player(Position::new(4, 4), "Marine").unwrap();
+
+    let demon = Actor::demon(EntityId::new(10), Position::new(6, 6));
+    let action = MonsterAi::decide_action(&demon, &world, player_id);
+
+    assert_eq!(action, MonsterAction::Move(Direction::West));
+  }
+
+  #[test]
+  fn test_blocked_horizontal_fallback_uses_vertical_fallback() {
+    let mut map = Map::simple_arena(20, 20);
+    map.set_tile(Position::new(5, 5), Tile::Wall);
+    map.set_tile(Position::new(5, 6), Tile::Wall);
+    let mut world = World::new(LevelId::new(1), map);
+    let player_id = world.spawn_player(Position::new(4, 4), "Marine").unwrap();
+
+    let demon = Actor::demon(EntityId::new(10), Position::new(6, 6));
+    let action = MonsterAi::decide_action(&demon, &world, player_id);
+
+    assert_eq!(action, MonsterAction::Move(Direction::North));
+  }
+
+  #[test]
+  fn test_blocked_smoothed_cardinal_retries_raw_diagonal() {
+    let mut map = Map::simple_arena(20, 20);
+    map.set_tile(Position::new(7, 6), Tile::Wall);
+    let mut world = World::new(LevelId::new(1), map);
+    let player_id = world.spawn_player(Position::new(4, 5), "Marine").unwrap();
+
+    let demon = Actor::demon(EntityId::new(10), Position::new(8, 6));
+    let action = MonsterAi::decide_action(&demon, &world, player_id);
+
+    assert_eq!(action, MonsterAction::Move(Direction::NorthWest));
+  }
+
+  #[test]
+  fn test_blocked_diagonal_and_cardinal_fallbacks_wait_without_searching() {
+    let mut map = Map::simple_arena(20, 20);
+    map.set_tile(Position::new(5, 5), Tile::Wall);
+    map.set_tile(Position::new(6, 5), Tile::Wall);
+    map.set_tile(Position::new(5, 6), Tile::Wall);
+    let mut world = World::new(LevelId::new(1), map);
+    let player_id = world.spawn_player(Position::new(4, 4), "Marine").unwrap();
+
+    let demon = Actor::demon(EntityId::new(10), Position::new(6, 6));
+    let action = MonsterAi::decide_action(&demon, &world, player_id);
+
+    assert_eq!(action, MonsterAction::Wait);
+  }
+
+  #[test]
+  fn test_same_position_target_waits_without_move_none() {
+    let map = Map::simple_arena(20, 20);
+    let mut world = World::new(LevelId::new(1), map);
+    let player_id = world.spawn_player(Position::new(6, 6), "Marine").unwrap();
+
+    let demon = Actor::demon(EntityId::new(10), Position::new(6, 6));
+    let action = MonsterAi::decide_action(&demon, &world, player_id);
+
+    assert_eq!(action, MonsterAction::Wait);
   }
 }

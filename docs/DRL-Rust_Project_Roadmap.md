@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.126`
+Current project version: `0.2.127`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.126)
+## 3. Current Progress Summary (`VERSION` 0.2.127)
 
 ### Delivered Foundations
 
@@ -122,6 +122,13 @@ verification item uses explicit status semantics:
   protects diagonal corner cutting into a walkable destination when both
   adjacent cardinal tiles are walls; controlled legacy runtime comparison is
   `NOT_RUN`.
+- **M9/Vertical fidelity AI movement (`0.2.127`)**: Pinned legacy source now
+  drives a bounded `MonsterAi` candidate order: smoothed preferred step, raw
+  retry, horizontal fallback, then vertical fallback. All candidates blocked
+  produce `Wait` rather than broad pathfinding. Unit and scheduled-turn tests
+  cover the order, including same-position `Wait`; gameplay-semantics replay
+  identity advances to `6` and rejects version-5 envelopes until migration.
+  Controlled legacy runtime comparison is `NOT_RUN`.
 - **Gate D first behavior slice:** Medical Powerarmor now has a typed,
   deterministic periodic-repair transition in `drl-core`, accepted-turn
   integration, exact timer/durability/health edge tests, and a typed repair
@@ -646,6 +653,10 @@ scripting.
   validation rule, including corner cutting around two blocked cardinal
   neighbors; AI fallback remains a separate policy and legacy runtime
   comparison is `NOT_RUN`.
+- [x] Monster AI movement preserves the pinned bounded candidate order:
+  smoothed preferred step, raw retry, horizontal fallback, then vertical
+  fallback; all blocked candidates produce `Wait` instead of broad pathfinding;
+  runtime comparison is `NOT_RUN`.
 - [ ] Full migration of legacy monsters, weapons, armor, mods, and consumable
   items.
 - [ ] Full migration of special levels, vaults, and dungeon branches.
