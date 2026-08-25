@@ -51,7 +51,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.118`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.119`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -128,12 +128,12 @@ replays, and regression testing.
     Shotgun, Tristar Blaster, Butcher's Cleaver, Mjollnir, Subtle Knife,
     Trigun, Anti-Freak Jackal, Minigun, Onyx Armor, Phaseshift Armor, and
     Gothic Armor, Malek's Armor, Cybernetic Armor, Necroarmor, Medical
-    Powerarmor, Lava Armor, and Shielded Armor families
-    with replay/atlas coverage;
-    resistance, movement,
-    prepared-slot consumption,
-    dynamic healing, weapon callbacks/effects, and broader legacy item behavior
-    remain staged.
+    Powerarmor, Lava Armor, and Shielded Armor families with replay/atlas
+    coverage;
+    Medical Powerarmor's periodic repair is now behavior-covered through a
+    typed deterministic timer and repair event in the headless core;
+    resistance, movement, prepared-slot consumption, other dynamic healing,
+    weapon callbacks/effects, and broader legacy item behavior remain staged.
   - The service worker reads only the current generated release cache, so stale
     or unrelated Cache Storage namespaces cannot satisfy offline requests;
     registration bypasses browser HTTP caching for worker updates and reports

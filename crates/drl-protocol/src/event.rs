@@ -83,6 +83,15 @@ pub enum GameEvent {
     current_clip: u32,
     max_clip: u32,
   },
+  /// Medical Powerarmor restored one HP and spent one durability point.
+  MedicalPowerarmorRepaired {
+    entity_id: EntityId,
+    item_id: ItemId,
+    healed: u32,
+    remaining_hp: u32,
+    durability_remaining: u32,
+    timer: u32,
+  },
   /// The player descended stairs and transitioned to a new level.
   LevelTransitioned {
     from_level: LevelId,

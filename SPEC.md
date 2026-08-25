@@ -1,7 +1,7 @@
 # Specification
 
-Last reviewed: 2026-08-24
-Current project version: `0.2.118`
+Last reviewed: 2026-08-25
+Current project version: `0.2.119`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,26 +25,40 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M1/M9 Correctness and Behavior Foundation
+## 2. Active Implementation Slice: M9/Gate D Medical Powerarmor Behavior
 
 ### 2.1 Objective
 
-Close correctness and architecture gaps that would otherwise become more
-expensive as legacy content migration accelerates.
-
-This slice establishes four foundations before additional broad item-family
-migration:
-
-1. rejected player commands are transactionally state-identical;
-2. deterministic RNG uses an unbiased bounded sampler with explicit semantics;
-3. replay compatibility distinguishes wire schema from gameplay semantics;
-4. legacy callback-heavy behavior has a typed Rust representation and a single
-   authoritative content-catalog path rather than proliferating manual
-   cross-crate registries.
+Deliver the first Gate D behavior-covered stress case by representing Medical
+Powerarmor's periodic repair as a typed, deterministic Rust transition and
+running it through the headless turn boundary. The preceding M1/M9
+correctness, RNG, replay, and catalog work remains the delivered foundation
+for this slice; its unresolved catalog and additional stress-case criteria are
+tracked below as deferred work rather than silently reactivated.
 
 The legacy Pascal/Lua implementation remains the behavioral reference. Its
 architecture, global callback machinery, and runtime Lua object model remain
 non-goals for reproduction.
+
+### 2.1a Scope and steering gate
+
+- **Steering gate:** Gate D — Behavior model passes hard cases.
+- **Observable outcome:** Equipped Medical Powerarmor ticks once per accepted
+  player command, follows the evidence-backed durability/health/timer rules,
+  mutates only typed core state, and emits a deterministic repair event when a
+  point is restored.
+- **Replay/RNG impact:** The transition consumes no RNG and preserves the V1
+  replay wire format; its gameplay semantics advance to project version
+  `0.2.119` and are not claimed cross-version compatible without matching
+  engine semantics.
+- **Catalog impact:** No new item family or registry is added. The existing
+  typed `ItemArchetype::MedicalPowerarmor` identity selects the behavior.
+- **Protocol/domain ownership:** `GameEvent::MedicalPowerarmorRepaired` is a
+  stable event contract; timer policy, thresholds, and durability mutation
+  remain owned by `drl-core`.
+- **Non-goals:** Subtle Knife, Trigun, generic callback infrastructure, runtime
+  Lua, legacy runtime/capture parity, resistance/movement modifiers, and broad
+  content migration remain open.
 
 ### 2.2 Why this slice supersedes content breadth
 
@@ -330,6 +344,9 @@ insufficient.
 - [ ] Keep genuinely behavioral code explicit and reviewable rather than
   embedding arbitrary callbacks in the catalog.
 - [ ] Define a typed behavior vocabulary that can represent at least:
+  **Partial in `0.2.119`:** the explicit Medical Powerarmor periodic-repair
+  state transition and structured repair event are delivered; the broader
+  vocabulary remains open.
   - passive stat/resistance modifiers;
   - equip/unequip effects and item-set membership;
   - attack/hit/kill effects;
@@ -354,8 +371,8 @@ legacy revision:
 The first selected case is Medical Powerarmor; its source and callback
 decomposition are recorded in
 [`docs/legacy-behavior/medical-powerarmor.md`](docs/legacy-behavior/medical-powerarmor.md).
-Its typed Rust implementation is intentionally not claimed by this evidence
-slice.
+Its typed Rust implementation is delivered in `0.2.119` below; controlled
+legacy runtime cadence and presentation parity remain unclaimed.
 
 The second selected case is Subtle Knife alternate fire; its source and
 callback decomposition are recorded in
@@ -386,6 +403,24 @@ evidence slice.
   rejected/edge path.
 - [ ] Behavior-complete migration is distinguished from scalar-definition
   coverage in roadmap/status language.
+
+### 2.6a Current Medical Powerarmor delivery target
+
+The bounded implementation target for this revision is the first stress case,
+Medical Powerarmor. Its typed transition must:
+
+- [x] keep an armor-owned repair timer in deterministic core state;
+- [x] tick only while the armor is equipped and the owner is below the
+  evidence-backed half-health threshold with durability above `20`;
+- [x] increment the timer once per accepted player command, heal exactly one
+  HP at timer `30`, set the timer to `20`, and spend one armor durability;
+- [x] reset the timer to `0` at or above half health while preserving the
+  source-nested durability guard behavior;
+- [x] leave gameplay state unchanged when no behavior is selected or the
+  durability guard blocks, and emit a typed
+  `GameEvent::MedicalPowerarmorRepaired` only for an actual repair;
+- [x] cover the pure transition, edge cases, accepted-turn integration, and
+  deterministic replay/event ordering with focused tests.
 
 ### 2.7 Exit Gates Before Broad Content Migration Resumes
 

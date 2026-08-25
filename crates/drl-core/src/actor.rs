@@ -1,7 +1,9 @@
 use drl_protocol::{
-  ActionCost, ActorView, EntityId, HitPoints, ItemSpawnKind, MonsterKind, Position, Speed,
+  ActionCost, ActorView, EntityId, HitPoints, ItemArchetype, ItemSpawnKind, MonsterKind, Position,
+  Speed,
 };
 
+use crate::behavior::MedicalRepairOutcome;
 use crate::inventory::{Equipment, Inventory};
 use crate::item::Item;
 
@@ -241,6 +243,33 @@ impl Actor {
       .armor()
       .and_then(|a| a.armor_properties())
       .map_or(0, |p| p.protection)
+  }
+
+  /// Current Medical Powerarmor repair timer for deterministic inspection.
+  #[must_use]
+  pub fn medical_repair_timer(&self) -> u32 {
+    self
+      .equipment
+      .armor()
+      .and_then(Item::armor_properties)
+      .map_or(0, |armor| armor.medical_repair_timer())
+  }
+
+  /// Advances the equipped Medical Powerarmor behavior, when present.
+  ///
+  /// The item archetype selects this dedicated typed transition; no generic
+  /// callback or string-keyed behavior dispatch is involved.
+  pub fn tick_medical_powerarmor(
+    &mut self,
+  ) -> Option<(drl_protocol::ItemId, MedicalRepairOutcome)> {
+    let armor_item = self.equipment.armor()?;
+    if armor_item.archetype() != ItemArchetype::MedicalPowerarmor {
+      return None;
+    }
+    let item_id = armor_item.id();
+    let armor = self.equipment.armor_mut()?.armor_properties_mut()?;
+    let outcome = armor.tick_medical_repair(&mut self.hp);
+    Some((item_id, outcome))
   }
 
   /// Melee damage range `(min, max)`, factoring in equipped weapon.

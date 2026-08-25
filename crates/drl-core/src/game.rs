@@ -5,6 +5,7 @@ use drl_protocol::{
   LevelId, OmniscientObservation, PlayerObservation, Position, Turn,
 };
 
+use crate::behavior::MedicalRepairOutcome;
 use crate::combat::CombatResolver;
 use crate::generator::{LevelGenerator, LevelGeneratorConfig};
 use crate::grid::Map;
@@ -269,6 +270,8 @@ impl Game {
       }
     }
 
+    self.tick_player_medical_powerarmor(player_id, &mut events)?;
+
     // Spend player energy
     if let Some(player) = self.state.world.get_actor_mut(player_id) {
       player.spend_energy(action_cost);
@@ -287,6 +290,40 @@ impl Game {
 
     self.state.turn = self.state.turn.next();
     Ok(events)
+  }
+
+  /// Advances explicit periodic behavior after an accepted player command.
+  fn tick_player_medical_powerarmor(
+    &mut self,
+    player_id: drl_protocol::EntityId,
+    events: &mut Vec<GameEvent>,
+  ) -> Result<(), CommandError> {
+    let player = self
+      .state
+      .world
+      .get_actor_mut(player_id)
+      .ok_or(CommandError::EntityNotFound(player_id))?;
+    let Some((item_id, outcome)) = player.tick_medical_powerarmor() else {
+      return Ok(());
+    };
+
+    if let MedicalRepairOutcome::Repaired { healed, timer, .. } = outcome {
+      let remaining_hp = player.hp().current;
+      let durability_remaining = player
+        .equipment()
+        .armor()
+        .and_then(Item::armor_properties)
+        .map_or(0, |properties| properties.durability);
+      events.push(GameEvent::MedicalPowerarmorRepaired {
+        entity_id: player_id,
+        item_id,
+        healed,
+        remaining_hp,
+        durability_remaining,
+        timer,
+      });
+    }
+    Ok(())
   }
 
   /// Moves the player to a verified target position.

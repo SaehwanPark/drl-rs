@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
-Last reviewed: 2026-08-24
-Current project version: `0.2.118`
+Last reviewed: 2026-08-25
+Current project version: `0.2.119`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.118)
+## 3. Current Progress Summary (`VERSION` 0.2.119)
 
 ### Delivered Foundations
 
@@ -98,9 +98,12 @@ verification item uses explicit status semantics:
   and presentation mappings remain explicitly open. The
   current manual fan-out inventory is recorded in
   `docs/steering/decisions/item-registration-fanout-inventory.md`.
-- **Gate D evidence:** A first callback-heavy stress case is now characterized
-  in `docs/legacy-behavior/medical-powerarmor.md`; implementation and the
-  remaining stress cases remain open, with no runtime parity claim.
+- **Gate D first behavior slice:** Medical Powerarmor now has a typed,
+  deterministic periodic-repair transition in `drl-core`, accepted-turn
+  integration, exact timer/durability/health edge tests, and a typed repair
+  event; gameplay-semantics replay identity `3` rejects older envelopes until
+  migration exists, while legacy runtime parity and the remaining stress cases
+  remain open.
 - **Gate D evidence:** A second callback-heavy stress case is now characterized
   in `docs/legacy-behavior/subtle-knife.md`; typed implementation, runtime
   confirmation, and the remaining stress cases remain open.
@@ -593,6 +596,11 @@ scripting.
 - [x] Typed `umedparmor`, `ulavaarmor`, and `ushieldarmor` preserve pinned
   descriptions, armor values, replay kinds, and shared armor atlas geometry;
   resistance, movement/knockback, no-durability, and callbacks remain open.
+- [x] Medical Powerarmor periodic repair is behavior-covered by an explicit
+  core timer transition: an equipped item ticks once per accepted player
+  command, heals one HP at the evidence-backed interval, spends one
+  durability point, and emits a deterministic repair event. Legacy runtime
+  cadence and exact presentation remain `NOT_RUN`/open.
 - [ ] Full migration of legacy monsters, weapons, armor, mods, and consumable
   items.
 - [ ] Full migration of special levels, vaults, and dungeon branches.

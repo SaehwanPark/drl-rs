@@ -2,8 +2,9 @@
 
 **Domain:** equipped-item periodic behavior
 **Milestone relevance:** M9 / Gate D behavior stress cases
-**Last updated:** 2026-08-24
-**Status:** Partial — evidence captured; Rust behavior not implemented
+**Last updated:** 2026-08-25
+**Status:** Partial — legacy evidence captured; typed Rust behavior covered in
+`0.2.119`; legacy runtime cadence and presentation parity remain `NOT_RUN`
 
 This note is an evidence artifact for the first selected callback-heavy stress
 case. It describes the legacy rule and the current Rust gap without treating
@@ -133,8 +134,19 @@ the legacy callback machinery as a Rust architecture.
   below? Source nesting is clear; intended behavior is not.
 - Does the canonical runtime expose a distinct healing message/effect for this
   perk? Needs: runtime/capture evidence.
-- This slice does not implement Medical Powerarmor, generic periodic effects,
-  other recharge perks, item sets, or any runtime Lua compatibility layer.
+- This slice does not implement generic periodic effects, other recharge perks,
+  item sets, or any runtime Lua compatibility layer.
+
+## Current DRL-Rust delivery evidence
+
+`drl-core::behavior::MedicalRepairState` is the explicit Rust transition for
+this first Gate D case. An equipped `ItemArchetype::MedicalPowerarmor` advances
+its armor-owned timer once per accepted player command; the transition preserves
+the strict durability guard, heals one HP at timer `30`, spends one durability
+point, retains timer `20`, and emits `GameEvent::MedicalPowerarmorRepaired` on
+the repair boundary. Pure transition tests and headless integration/replay
+event determinism tests pass in the `0.2.119` revision. This is behavior
+coverage for the current Rust policy, not a controlled legacy parity claim.
 
 ## Provenance and rights
 
