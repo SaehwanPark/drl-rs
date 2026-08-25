@@ -29,6 +29,7 @@ pub struct Actor {
   accuracy: i32,
   knockback: u32,
   monster_kind: Option<MonsterKind>,
+  is_boss: bool,
   death_drop: Option<ItemSpawnKind>,
   inventory: Inventory,
   equipment: Equipment,
@@ -57,6 +58,7 @@ impl Actor {
       accuracy: 75,
       knockback: 0,
       monster_kind: None,
+      is_boss: false,
       death_drop: None,
       inventory: Inventory::default(),
       equipment: Equipment::new(),
@@ -95,6 +97,24 @@ impl Actor {
   pub fn with_monster_kind(mut self, kind: MonsterKind) -> Self {
     self.monster_kind = Some(kind);
     self
+  }
+
+  /// Marks this actor as a boss for target-dependent item behavior.
+  #[must_use]
+  pub fn with_boss(mut self, is_boss: bool) -> Self {
+    self.is_boss = is_boss;
+    self
+  }
+
+  /// Returns whether this actor has the explicit boss property.
+  #[must_use]
+  pub const fn is_boss(&self) -> bool {
+    self.is_boss
+  }
+
+  /// Sets the explicit boss property for deterministic fixtures.
+  pub fn set_boss(&mut self, is_boss: bool) {
+    self.is_boss = is_boss;
   }
 
   /// Sets the death loot drop specification.
@@ -179,6 +199,11 @@ impl Actor {
   /// Sets score count for deterministic scenarios and replay fixtures.
   pub fn set_score_count(&mut self, score_count: i32) {
     self.score_count = score_count;
+  }
+
+  /// Mutable score-count balance for explicit target-dependent transitions.
+  pub fn score_count_mut(&mut self) -> &mut i32 {
+    &mut self.score_count
   }
 
   /// Spends score count without permitting an underflow.

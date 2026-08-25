@@ -514,6 +514,12 @@ impl Item {
     Self::from_spawn_kind(id, ItemSpawnKind::AcidSpitter)
   }
 
+  /// Factory: Charch's Null Pointer target-dependent on-hit weapon.
+  #[must_use]
+  pub fn null_pointer(id: ItemId) -> Self {
+    Self::from_spawn_kind(id, ItemSpawnKind::NullPointer)
+  }
+
   /// Factory: exotic combat pistol (3d3 damage policy).
   #[must_use]
   pub fn combat_pistol(id: ItemId) -> Self {

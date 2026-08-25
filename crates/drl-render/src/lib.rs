@@ -1365,6 +1365,7 @@ pub fn effects_for_events(events: &[GameEvent]) -> Vec<PresentationEffect> {
       GameEvent::TrigunAltReloaded { .. } => None,
       GameEvent::GrammatonFireModeChanged { .. } => None,
       GameEvent::JackhammerFireModeChanged { .. } => None,
+      GameEvent::NullPointerHit { .. } | GameEvent::NullPointerExplosionScheduled { .. } => None,
       GameEvent::NukeActivated { .. } => None,
       GameEvent::LevelNuked { .. } => None,
       GameEvent::LevelTransitioned { .. } => Some(PresentationEffect::LevelTransition),
@@ -1462,6 +1463,8 @@ fn event_entity_ids(event: &GameEvent) -> [Option<EntityId>; 2] {
     | GameEvent::TrigunAltReloaded { entity_id, .. }
     | GameEvent::GrammatonFireModeChanged { entity_id, .. }
     | GameEvent::JackhammerFireModeChanged { entity_id, .. }
+    | GameEvent::NullPointerHit { entity_id, .. }
+    | GameEvent::NullPointerExplosionScheduled { entity_id, .. }
     | GameEvent::ActorKnockedBack { entity_id, .. } => [Some(*entity_id), None],
     GameEvent::AttackResolved {
       attacker_id,

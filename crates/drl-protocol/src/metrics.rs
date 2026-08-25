@@ -139,6 +139,8 @@ impl EpisodeMetrics {
       | GameEvent::TrigunAltReloaded { .. }
       | GameEvent::GrammatonFireModeChanged { .. }
       | GameEvent::JackhammerFireModeChanged { .. }
+      | GameEvent::NullPointerHit { .. }
+      | GameEvent::NullPointerExplosionScheduled { .. }
       | GameEvent::NukeActivated { .. }
       | GameEvent::LevelNuked { .. }
       | GameEvent::ActorKnockedBack { .. }

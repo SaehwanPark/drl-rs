@@ -203,6 +203,9 @@ fn parse_monster(value: &JsonValue, index: usize) -> Result<MonsterSpawnSpec, St
       required(object, "accuracy")?,
       &format!("{context}.accuracy"),
     )?,
+    is_boss: object.get("is_boss").map_or(Ok(false), |value| {
+      bool_value(value, &format!("{context}.is_boss"))
+    })?,
     death_drop: nullable(object, "death_drop", |value| {
       item_kind(value, &format!("{context}.death_drop"))
     })?,

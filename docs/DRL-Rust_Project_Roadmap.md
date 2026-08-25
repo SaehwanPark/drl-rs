@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.130`
+Current project version: `0.2.131`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.130)
+## 3. Current Progress Summary (`VERSION` 0.2.131)
 
 ### Delivered Foundations
 
@@ -148,6 +148,11 @@ verification item uses explicit status semantics:
   A walkable `Lava` tile, +3 durability clamp, full-armor guard, non-Lava
   interval reset, replay semantics `9`, and deterministic event ordering are
   covered; hazard damage/resistance and runtime/presentation parity remain
+  `NOT_RUN`.
+- **M9/Gate D Null Pointer behavior (`0.2.131`)**: Pinned legacy on-hit
+  evidence now drives a typed target score-count branch and deterministic
+  explosion-schedule event for the catalog-backed weapon. Exact delayed
+  explosion geometry, damage ordering, runtime, and audiovisual parity remain
   `NOT_RUN`.
 - **Gate D first behavior slice:** Medical Powerarmor now has a typed,
   deterministic periodic-repair transition in `drl-core`, accepted-turn
@@ -683,6 +688,10 @@ scripting.
   durability points and emits `LavaArmorRecharged`; full armor and non-Lava
   edge behavior are tested. Hazard damage/resistance and runtime/presentation
   parity remain `NOT_RUN`/open.
+- [x] Null Pointer on-hit behavior is behavior-covered by a typed target
+  score-count transition with boss/non-boss floors, deterministic hit and
+  explosion-schedule events, and replay/MCP projections. Exact delayed area
+  damage, geometry, runtime, and presentation parity remain `NOT_RUN`/open.
 - [x] Direct player diagonal movement preserves the pinned destination-only
   validation rule, including corner cutting around two blocked cardinal
   neighbors; AI fallback remains a separate policy and legacy runtime

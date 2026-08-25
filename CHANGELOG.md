@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.131]
+
+- Added pinned Charch's Null Pointer on-hit evidence and a typed target
+  score-count branch with boss/non-boss floor policy plus deterministic
+  explosion-schedule event/MCP projections.
+- Added catalog-backed Null Pointer replay/scenario coverage; exact delayed
+  explosion geometry/damage, runtime comparison, and audiovisual parity remain
+  `NOT_RUN`.
+
 ## [0.2.130]
 
 - Added pinned Lava Armor recharge evidence and a typed, armor-owned

@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.130`
+Current project version: `0.2.131`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,15 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9/Gate D Lava Armor Recharge
+## 2. Active Implementation Slice: M9/Gate D Null Pointer On-Hit
 
 ### 2.1 Objective
 
-Close one callback-heavy legacy behavior gap by pinning Lava Armor's
-durability-recharge callback and making it an explicit Rust state transition.
-While the armor is equipped, its timer advances on accepted player commands;
-after five eligible ticks on a lava tile it restores up to three durability
-points and resets its timer.
+Close one callback-heavy legacy behavior gap by pinning Charch's Null Pointer
+on-hit callback and making its target-dependent score branch an explicit Rust
+state transition. A successful ranged hit applies the boss/non-boss score
+floor policy and emits a typed deferred-explosion schedule event.
 
 The legacy Pascal/Lua implementation remains the behavioral reference. Its
 architecture, global callback machinery, and runtime Lua object model remain
@@ -43,27 +42,23 @@ non-goals for reproduction.
 
 - **Steering priority:** Typed legacy behavior (Gate D), with Gate E's
   evidence-bounded claims applied to the source comparison.
-- **Observable outcome:** An equipped Lava Armor on a typed `Lava` tile emits a
-  `LavaArmorRecharged` event after five accepted player commands, restores up
-  to three durability points, and resets its armor-owned timer. No recharge is
-  consumed when durability is already full; the callback's non-lava fifth-tick
-  reset is retained.
-- **Replay/RNG impact:** The V1 replay envelope remains backward-compatible;
-  an optional equipped-armor durability fixture field makes the damaged-armor
-  acceptance replay explicit. Gameplay semantics advance from `8` to `9`
-  because a new terrain and armor timer change future command outcomes.
-  Recharge consumes no RNG; rejected commands preserve exact `Game` state.
-- **Content-catalog impact:** No new item family or registration path is added.
-  The existing Lava Armor definition remains the authoritative identity; the
-  typed `Lava` terrain is added to the existing tile contract.
-- **Protocol/domain ownership:** `TileKind::Lava` and the recharge event are
-  stable semantic contracts; timer/recharge policy remains core-owned.
-- **Evidence boundary:** The pinned Lua source supports the strict-durability
-  guard, five-tick interval, lava-position check, +3 clamp, and timer reset.
-  Lava fire/acid damage, resistance equations, and controlled runtime/capture
-  comparison remain `NOT_RUN`.
-- **Non-goals:** Generic callback registries, full hazard damage/resistance,
-  other armor effects, runtime Lua, and broad content migration.
+- **Observable outcome:** A successful Null Pointer ranged hit emits
+  `NullPointerHit` with a boss target losing 1000 score count or an ordinary
+  target losing 2000, both clamped at 1000, followed by a typed
+  `NullPointerExplosionScheduled` event with delay 50, radius 1, and damage 10.
+- **Replay/RNG impact:** Gameplay semantics advance from `9` to `10` because
+  the catalog-backed weapon and target score state change future outcomes. The
+  score transition consumes no RNG beyond the ordinary hit roll; rejected
+  commands preserve exact `Game` state.
+- **Content-catalog impact:** The existing authoritative catalog gains one
+  Null Pointer family with its pinned zero-direct-damage weapon scalars.
+- **Protocol/domain ownership:** Null Pointer hit/schedule events are stable
+  semantic contracts; score policy and actor boss identity remain core-owned.
+- **Evidence boundary:** The pinned Lua source supports the target branch,
+  1000 floor, and delayed range-1/10d1 schedule payload. Exact area damage,
+  geometry, runtime/capture, and audiovisual parity remain `NOT_RUN`.
+- **Non-goals:** Generic callback registries, immediate area-damage simulation,
+  exact explosion geometry/order, runtime Lua, and broad content migration.
 
 ### 2.2 Why this slice supersedes content breadth
 
@@ -78,28 +73,28 @@ At the same time, adding a conventional content family now fans out across
 protocol enums, definitions, validation, replay codecs, assets, documentation,
 and other exhaustive registries. Continuing scalar-only breadth before a
 behavior model is selected would increase both migration debt and change
-amplification. The Lava Armor source audit gives this slice a narrow typed state
-machine, a focused terrain-backed test, and an explicit runtime evidence
-boundary.
+amplification. The Null Pointer source audit gives this slice a narrow typed
+target transition, a focused catalog-backed ranged test, and an explicit
+runtime/effects evidence boundary.
 
 Therefore, additional broad scalar-only family additions are temporarily
 blocked by the exit gates in Section 2.8.
 
-### 2.3 Lava Armor recharge contracts
+### 2.3 Null Pointer on-hit contracts
 
-For an equipped Lava Armor with durability below its maximum, each accepted
-player command increments its armor-owned timer. At timer `5`, the transition
-checks the owner's current tile: lava restores `min(durability + 3,
-max_durability)` and emits one typed event; any other tile restores nothing but
-still resets the timer. A full armor does not increment or reset the timer.
+For an equipped Null Pointer, a ranged hit applies a pure target score-count
+transition: bosses subtract 1000 and ordinary targets subtract 2000, with the
+result clamped to at least 1000. The accepted hit then emits one schedule event
+for the source-backed delay/radius/damage payload. Area damage remains a later
+geometry/effects slice.
 
 #### Legacy evidence boundary
 
 Pinned source evidence is recorded in
-[`docs/legacy-behavior/lava-armor.md`](docs/legacy-behavior/lava-armor.md).
-The source's fire/plasma resistance and no-destroy/no-repair flags remain
-definition-level facts; hazard damage, exact runtime timing, and presentation
-feedback remain `NOT_RUN`.
+[`docs/legacy-behavior/null-pointer.md`](docs/legacy-behavior/null-pointer.md).
+The source's unique/plasma/zero-direct-damage weapon scalars remain definition
+facts; delayed area damage, exact runtime timing, and presentation feedback
+remain `NOT_RUN`.
 
 ### 2.4 Previous movement and historical correctness contracts
 
@@ -602,7 +597,7 @@ Jackhammer alternate fire-mode behavior. Its typed transition must:
 - [x] record that spread/falloff, exact timing, UI text, and controlled runtime
   or presentation parity remain `NOT_RUN`.
 
-### 2.7f Current Lava Armor delivery target
+### 2.7f Previous Lava Armor delivery target
 
 The bounded implementation target for this revision is the sixth stress case,
 Lava Armor periodic recharge. Its typed transition must:
@@ -621,6 +616,23 @@ Lava Armor periodic recharge. Its typed transition must:
   edges, custom-tile replay determinism, and MCP event projection;
 - [x] record that fire/acid hazard damage, resistance equations, controlled
   runtime comparison, and exact presentation parity remain `NOT_RUN`.
+
+### 2.7g Current Null Pointer delivery target
+
+The bounded implementation target for this revision is the seventh stress case,
+Charch's Null Pointer on-hit behavior. Its typed transition must:
+
+- [x] add the catalog-backed zero-direct-damage plasma weapon with the pinned
+  60-cell capacity and accuracy scalars; ordinary Rust action-cost policy
+  remains explicit rather than claiming legacy shot-cost parity;
+- [x] apply a pure boss/non-boss target score-count branch with 1000/2000 costs
+  and a 1000 floor, preserving the explicit actor boss property;
+- [x] emit ordered `NullPointerHit` and
+  `NullPointerExplosionScheduled` events after a successful ranged hit;
+- [x] cover pure branch behavior, accepted ranged integration, replay
+  determinism, and MCP JSON/event projection;
+- [x] record that delayed area damage, exact explosion geometry/order, runtime,
+  and audiovisual parity remain `NOT_RUN`.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 

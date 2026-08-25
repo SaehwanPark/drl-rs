@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.130`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.131`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -137,7 +137,8 @@ replays, and regression testing.
     Launcher, Nuclear Plasma Rifle, Nuclear BFG 9000, BFG 10K, BFG 9000,
     Mega Buster, Grammaton Beretta, Frag Shotgun, chainsaw, chaingun,
     plasma-rifle, rocket-launcher, Revenant's Launcher, Railgun, Acid
-    Spitter, Combat Pistol, Assault Shotgun, Plasma Shotgun, Jackhammer, Super
+    Spitter, Null Pointer, Combat Pistol, Assault Shotgun, Plasma Shotgun,
+    Jackhammer, Super
     Shotgun, Tristar Blaster, Butcher's Cleaver, Mjollnir, Subtle Knife,
     Trigun, Anti-Freak Jackal, Minigun, Onyx Armor, Phaseshift Armor, and
     Gothic Armor, Malek's Armor, Cybernetic Armor, Necroarmor, Medical
@@ -146,7 +147,8 @@ replays, and regression testing.
     Medical Powerarmor's periodic repair, Subtle Knife's alternate invoke,
     Trigun's confirmed alternate reload/nuke transition, Grammaton's typed
     single/burst/auto fire-mode cycle, Jackhammer's typed burst/single
-    fire-mode toggle, and Lava Armor's five-tick Lava recharge are
+    fire-mode toggle, Lava Armor's five-tick Lava recharge, and Null Pointer's
+    target-dependent on-hit score branch are
     behavior-covered through typed
     deterministic transitions and events in the headless core;
     resistance, movement, prepared-slot consumption, explosion/map effects,

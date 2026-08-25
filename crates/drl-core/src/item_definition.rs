@@ -345,6 +345,23 @@ const ACID_SPITTER: ItemDefinition = ItemDefinition {
   },
 };
 
+const NULL_POINTER: ItemDefinition = ItemDefinition {
+  archetype: ItemArchetype::NullPointer,
+  name: "Charch's Null Pointer",
+  description: "It feels extremely unstable... what twisted mind could conceive such a weird device?",
+  kind: ItemDefinitionKind::Weapon {
+    is_ranged: true,
+    ammo_type: Some(AmmoType::Cell),
+    clip_capacity: 60,
+    damage: (0, 0),
+    range: 8,
+    accuracy: 6,
+    knockback: 0,
+    fire_cost: ActionCost::RANGED_ATTACK,
+    reload_cost: ActionCost::STANDARD,
+  },
+};
+
 const COMBAT_PISTOL: ItemDefinition = ItemDefinition {
   archetype: ItemArchetype::CombatPistol,
   name: "Combat Pistol",
@@ -914,6 +931,7 @@ pub const CURRENT_ITEM_DEFINITIONS: &[ItemDefinition] = &[
   REVENANTS_LAUNCHER,
   RAILGUN,
   ACID_SPITTER,
+  NULL_POINTER,
   COMBAT_PISTOL,
   ASSAULT_SHOTGUN,
   PLASMA_SHOTGUN,

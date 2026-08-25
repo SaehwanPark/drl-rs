@@ -191,6 +191,7 @@ fn monster_to_json(monster: &MonsterSpawnSpec) -> JsonValue {
     ),
     ("ranged_range", JsonValue::from(monster.ranged_range)),
     ("accuracy", JsonValue::from(monster.accuracy)),
+    ("is_boss", JsonValue::from(monster.is_boss)),
     (
       "death_drop",
       monster

@@ -94,6 +94,160 @@ fn test_phase_device_pickup_and_replay_determinism() {
 }
 
 #[test]
+fn null_pointer_hit_applies_target_score_branch_and_schedules_explosion() {
+  let mut game = Game::new_arena(901, 12, 12).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let player_position = game.world().player().unwrap().position();
+  let target_position = player_position + Direction::East;
+  let target_id = game
+    .world_mut()
+    .spawn_monster(target_position, "Target", 30, 100, (1, 2))
+    .unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(target_id)
+    .unwrap()
+    .set_score_count(3500);
+
+  let weapon_id = game.world_mut().allocate_item_id();
+  let mut weapon = Item::null_pointer(weapon_id);
+  weapon.weapon_properties_mut().unwrap().accuracy = 100;
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, weapon)
+    .unwrap();
+
+  let events = game.step(Command::AttackRanged(target_position)).unwrap();
+  assert!(events.iter().any(|event| matches!(
+    event,
+    GameEvent::AttackResolved {
+      target_id: resolved_target,
+      outcome: drl_protocol::AttackOutcome::Hit { damage: 0, .. },
+      is_ranged: true,
+      ..
+    } if *resolved_target == target_id
+  )));
+  assert!(events.iter().any(|event| matches!(
+    event,
+    GameEvent::NullPointerHit {
+      entity_id,
+      item_id,
+      target_id: resolved_target,
+      target_is_boss: false,
+      score_count_remaining: 1500,
+    } if *entity_id == player_id && *item_id == weapon_id && *resolved_target == target_id
+  )));
+  assert!(events.iter().any(|event| matches!(
+    event,
+    GameEvent::NullPointerExplosionScheduled {
+      entity_id,
+      target_id: resolved_target,
+      delay: 50,
+      radius: 1,
+      damage: 10,
+    } if *entity_id == player_id && *resolved_target == target_id
+  )));
+  assert_eq!(
+    game.world().get_actor(target_id).unwrap().score_count(),
+    1500
+  );
+}
+
+#[test]
+fn null_pointer_hit_applies_boss_score_branch_and_preserves_event_order() {
+  let mut game = Game::new_arena(901, 12, 12).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let player_position = game.world().player().unwrap().position();
+  let target_position = player_position + Direction::East;
+  let target_id = game
+    .world_mut()
+    .spawn_monster(target_position, "Boss Target", 30, 100, (1, 2))
+    .unwrap();
+  let target = game.world_mut().get_actor_mut(target_id).unwrap();
+  target.set_boss(true);
+  target.set_score_count(3500);
+
+  let weapon_id = game.world_mut().allocate_item_id();
+  let mut weapon = Item::null_pointer(weapon_id);
+  weapon.weapon_properties_mut().unwrap().accuracy = 100;
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, weapon)
+    .unwrap();
+
+  let events = game.step(Command::AttackRanged(target_position)).unwrap();
+  let hit_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::NullPointerHit {
+          entity_id,
+          item_id,
+          target_id: resolved_target,
+          target_is_boss: true,
+          score_count_remaining: 2500,
+        } if *entity_id == player_id && *item_id == weapon_id && *resolved_target == target_id
+      )
+    })
+    .expect("boss Null Pointer hit event must be emitted");
+  let explosion_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::NullPointerExplosionScheduled {
+          entity_id,
+          target_id: resolved_target,
+          delay: 50,
+          radius: 1,
+          damage: 10,
+        } if *entity_id == player_id && *resolved_target == target_id
+      )
+    })
+    .expect("boss Null Pointer explosion schedule must be emitted");
+  assert!(hit_index < explosion_index);
+  assert_eq!(
+    game.world().get_actor(target_id).unwrap().score_count(),
+    2500
+  );
+}
+
+#[test]
+fn null_pointer_replay_is_deterministic() {
+  let mut replay =
+    ReplayLog::new(902, 12, 12, Position::new(5, 5)).with_player_config(PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: Vec::new(),
+      equipped_weapon: Some(ItemSpawnKind::NullPointer),
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    });
+  replay.record_monster(
+    MonsterSpawnSpec::new(Position::new(6, 5), "Target", 30, 100, (1, 2)).with_boss(true),
+  );
+  replay.record_command(Command::AttackRanged(Position::new(6, 5)));
+  let (game, _) = ReplayEngine::run(&replay).unwrap();
+  assert!(
+    game
+      .world()
+      .actors()
+      .values()
+      .find(|actor| actor.name() == "Target")
+      .is_some_and(|actor| actor.is_boss())
+  );
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}
+
+#[test]
 fn medical_powerarmor_repairs_on_the_thirtieth_accepted_command() {
   let mut game = Game::new_arena(777, 12, 12).unwrap();
   let player_id = game.world().player_id().unwrap();

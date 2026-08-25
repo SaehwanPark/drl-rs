@@ -927,6 +927,43 @@ pub fn game_event_to_json(event: &GameEvent) -> JsonValue {
         JsonValue::from(*score_count_remaining),
       );
     }
+    GameEvent::NullPointerHit {
+      entity_id,
+      item_id,
+      target_id,
+      target_is_boss,
+      score_count_remaining,
+    } => {
+      map.insert("type".to_string(), JsonValue::from("NullPointerHit"));
+      map.insert("entity_id".to_string(), JsonValue::from(entity_id.as_u64()));
+      map.insert("item_id".to_string(), JsonValue::from(item_id.as_u64()));
+      map.insert("target_id".to_string(), JsonValue::from(target_id.as_u64()));
+      map.insert(
+        "target_is_boss".to_string(),
+        JsonValue::from(*target_is_boss),
+      );
+      map.insert(
+        "score_count_remaining".to_string(),
+        JsonValue::from(*score_count_remaining),
+      );
+    }
+    GameEvent::NullPointerExplosionScheduled {
+      entity_id,
+      target_id,
+      delay,
+      radius,
+      damage,
+    } => {
+      map.insert(
+        "type".to_string(),
+        JsonValue::from("NullPointerExplosionScheduled"),
+      );
+      map.insert("entity_id".to_string(), JsonValue::from(entity_id.as_u64()));
+      map.insert("target_id".to_string(), JsonValue::from(target_id.as_u64()));
+      map.insert("delay".to_string(), JsonValue::from(*delay));
+      map.insert("radius".to_string(), JsonValue::from(*radius));
+      map.insert("damage".to_string(), JsonValue::from(*damage));
+    }
     GameEvent::NukeActivated {
       level_id,
       countdown,
