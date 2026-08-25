@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.142`
+Current project version: `0.2.143`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.142)
+## 3. Current Progress Summary (`VERSION` 0.2.143)
 
 ### Delivered Foundations
 
@@ -195,6 +195,11 @@ verification item uses explicit status semantics:
   mappings remain explicit.
 - **M9/Gate C catalog order invariant (`0.2.142`)**: Protocol tests now assert
   normalized spawn-family order stays aligned with the stable archetype catalog.
+- **M9/Gate C shared identity/spawn catalog (`0.2.143`)**: One protocol
+  declaration now generates stable archetype and replay spawn variants,
+  normalized `ALL` views, stable names, and archetype mapping. Count-sensitive
+  loose-ammo stack handling, gameplay definitions, and presentation mappings
+  remain explicit.
 - **Gate D first behavior slice:** Medical Powerarmor now has a typed,
   deterministic periodic-repair transition in `drl-core`, accepted-turn
   integration, exact timer/durability/health edge tests, and a typed repair

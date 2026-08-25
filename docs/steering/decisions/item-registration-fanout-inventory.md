@@ -1,6 +1,6 @@
 # Item Registration Fan-out Inventory
 
-**Status:** Verified inventory for project version `0.2.142`
+**Status:** Verified inventory for project version `0.2.143`
 
 **Date:** 2026-08-24
 
@@ -14,8 +14,8 @@ behavioral tests, where an explicit match is an intentional review boundary.
 | Area | Current location | Responsibility | Status and next action |
 | --- | --- | --- | --- |
 | Stable identity catalog | `crates/drl-protocol/src/item.rs` (`ItemArchetype`, `ALL`, `stable_name`) | Stable protocol archetype IDs and canonical wire names | Catalog-backed name/display/parsing and uniqueness tests are delivered. Keep the enum and name projection exhaustive. |
-| Spawn/replay identity | `crates/drl-protocol/src/replay.rs` (`ItemSpawnKind`) | Typed spawn variants, loose-ammo counts, archetype conversion | `archetype`, `stack_count`, and `from_archetype` are typed projections. Keep count-sensitive and `Unknown` handling explicit. |
-| Gameplay family catalog | `crates/drl-protocol/src/replay.rs` (`ItemSpawnKind::ALL`), exposed by `crates/drl-core/src/item_definition.rs` (`CURRENT_ITEM_SPAWN_KINDS`) | Stable representative families and definition-backed structural validation | The stable family list is single-sourced in the protocol spawn contract; core keeps the validation alias and owns balance/behavior. |
+| Spawn/replay identity | `crates/drl-protocol/src/item.rs` (generated `ItemSpawnKind`), re-exported by `crates/drl-protocol/src/replay.rs` | Typed spawn variants, normalized `ALL`, loose-ammo counts, archetype conversion | The same compile-time declaration now generates identity and spawn projections. Keep count-sensitive and `Unknown` handling explicit. |
+| Gameplay family catalog | `crates/drl-protocol/src/item.rs` (`ItemSpawnKind::ALL`), exposed by `crates/drl-core/src/item_definition.rs` (`CURRENT_ITEM_SPAWN_KINDS`) | Stable representative families and definition-backed structural validation | The stable family list is single-sourced in the protocol catalog; core keeps the validation alias and owns balance/behavior. |
 | Gameplay definitions/factory | `crates/drl-core/src/item_definition.rs`, `crates/drl-core/src/item.rs` | Immutable balance, stack policy, item construction, and item views | `CURRENT_ITEM_DEFINITIONS` now owns definition lookup and coverage in catalog order; behavior and balance remain core-owned. |
 | Replay JSON | `crates/drl-mcp/src/replay_json.rs`, `replay_json_decode.rs` | Wire encoding/decoding of stable item names and optional counts | Uses typed spawn projections and protocol stable-name parsing. No independent name table remains. |
 | Atlas descriptors | `crates/drl-assets/src/lib.rs` (`item_sprite`) | Atlas geometry, layers, and evidenced animation metadata | The exhaustive descriptor match remains explicit for compiler coverage. Routine descriptor tests iterate `ItemArchetype::ALL`; geometry still requires a deliberate entry. |
@@ -38,8 +38,9 @@ an exhaustive match or a dedicated test case.
 
 The remaining Gate C work is therefore bounded: identify any routine list not
 covered by the catalog, then migrate that list without collapsing semantic
-boundaries. The stable protocol identity trio (enum, `ALL`, and wire names) now
-comes from one declaration in `0.2.141`, with spawn-family order coupling
-verified in `0.2.142`; broader content and presentation
-catalog convergence remains open. The inventory does not claim that behavior or
-presentation parity is complete; those remain Gate D/E work.
+boundaries. Stable protocol identity and normalized spawn projections now come
+from one declaration in `0.2.143`, with order coupling and count-shape
+invariants verified by protocol tests. Broader gameplay-definition and
+presentation catalog convergence remains intentionally explicit. The inventory
+does not claim that behavior or presentation parity is complete; those remain
+Gate D/E work.

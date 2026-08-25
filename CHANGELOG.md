@@ -3,6 +3,12 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.143]
+
+- Unified stable item identity and normalized replay spawn-family registration
+  in one protocol compile-time catalog; count-sensitive loose-ammo
+  reconstruction remains explicit.
+
 ## [0.2.142]
 
 - Added a deterministic compatibility test tying normalized spawn-family order
