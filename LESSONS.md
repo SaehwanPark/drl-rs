@@ -168,6 +168,21 @@ repository and WASM job has reached a passing terminal state.
 - **Prevention:** Always inspect `git status --short` after repository checks;
   distinguish generated caches from source edits before committing or merging.
 
+## Replay the command under test, not only the setup
+
+- **Context:** A boundary test may build its initial `Game` through a replay
+  and then submit the command directly through a browser or core wrapper.
+- **Symptom:** `ReplayEngine::verify_determinism` passes, but the test has only
+  proved deterministic setup reconstruction; it says nothing about whether the
+  command payload, events, or post-command state survive replay.
+- **Cause:** The replay log was never given the command being compared, so the
+  determinism assertion exercised an empty or setup-only history.
+- **Resolution:** Clone the setup replay, record the exact command, run that
+  replay, and compare replayed events and authoritative state with direct
+  execution. Keep setup construction and command replay as distinct assertions.
+- **Prevention:** Every scenario/browser parity test must verify the command
+  list contains the exercised command before claiming replay preservation.
+
 ## Commit replay sessions only after temporary execution
 
 - **Context:** A canonical replay can be syntactically valid but fail during
