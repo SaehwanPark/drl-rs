@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.131`
+Current project version: `0.2.132`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.131)
+## 3. Current Progress Summary (`VERSION` 0.2.132)
 
 ### Delivered Foundations
 
@@ -154,6 +154,10 @@ verification item uses explicit status semantics:
   explosion-schedule event for the catalog-backed weapon. Exact delayed
   explosion geometry, damage ordering, runtime, and audiovisual parity remain
   `NOT_RUN`.
+- **M9/Gate D Acid Spitter behavior (`0.2.132`)**: Pinned legacy pre-reload
+  evidence now drives a typed Acid-to-Water terrain transition that loads one
+  rocket and spends 1000 score count. Acid hazard damage, runtime, and
+  audiovisual parity remain `NOT_RUN`.
 - **Gate D first behavior slice:** Medical Powerarmor now has a typed,
   deterministic periodic-repair transition in `drl-core`, accepted-turn
   integration, exact timer/durability/health edge tests, and a typed repair

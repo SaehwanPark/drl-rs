@@ -138,6 +138,8 @@ impl ReplayEngine {
         drl_protocol::TileKind::DoorClosed => crate::grid::Tile::DoorClosed,
         drl_protocol::TileKind::DoorOpen => crate::grid::Tile::DoorOpen,
         drl_protocol::TileKind::Lava => crate::grid::Tile::Lava,
+        drl_protocol::TileKind::Acid => crate::grid::Tile::Acid,
+        drl_protocol::TileKind::Water => crate::grid::Tile::Water,
       };
       game.world_mut().map_mut().set_tile(pos, tile);
     }
@@ -319,8 +321,8 @@ mod tests {
   fn test_replay_validation_rejects_incompatible_semantics() {
     let mut replay = ReplayLog::new(1234, 10, 10, Position::new(1, 1));
     // Version 5 predates the AI movement candidate-order change and must not
-    // be interpreted by the version-10 engine without an explicit migration.
-    assert_eq!(drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION, 10);
+    // be interpreted by the version-11 engine without an explicit migration.
+    assert_eq!(drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION, 11);
     replay.metadata.gameplay_semantics_version = 5;
     let error = ReplayEngine::validate(&replay).unwrap_err();
     assert!(error.contains("unsupported gameplay semantics version"));

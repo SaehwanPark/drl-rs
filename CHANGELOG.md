@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.132]
+
+- Pinned Acid Spitter's legacy pre-reload callback at the fixed reference
+  revision and recorded its Acid-only one-rocket load, score cost, and
+  Acid-to-Water transition.
+- Added typed Acid and Water terrain contracts plus deterministic
+  `AcidSpitterReloaded` event projection; acid hazard damage and runtime
+  parity remain `NOT_RUN`.
+
 ## [0.2.131]
 
 - Added pinned Charch's Null Pointer on-hit evidence and a typed target

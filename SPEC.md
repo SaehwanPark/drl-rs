@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.131`
+Current project version: `0.2.132`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9/Gate D Null Pointer On-Hit
+## 2. Active Implementation Slice: M9/Gate D Acid Spitter Reload
 
 ### 2.1 Objective
 
-Close one callback-heavy legacy behavior gap by pinning Charch's Null Pointer
-on-hit callback and making its target-dependent score branch an explicit Rust
-state transition. A successful ranged hit applies the boss/non-boss score
-floor policy and emits a typed deferred-explosion schedule event.
+Close one callback-heavy legacy behavior gap by pinning Acid Spitter's
+pre-reload callback and making its terrain-dependent ammunition transition an
+explicit Rust state transition. A reload on Acid converts that tile to Water,
+loads one rocket, and spends the core-owned score cost.
 
 The legacy Pascal/Lua implementation remains the behavioral reference. Its
 architecture, global callback machinery, and runtime Lua object model remain
@@ -42,23 +42,22 @@ non-goals for reproduction.
 
 - **Steering priority:** Typed legacy behavior (Gate D), with Gate E's
   evidence-bounded claims applied to the source comparison.
-- **Observable outcome:** A successful Null Pointer ranged hit emits
-  `NullPointerHit` with a boss target losing 1000 score count or an ordinary
-  target losing 2000, both clamped at 1000, followed by a typed
-  `NullPointerExplosionScheduled` event with delay 50, radius 1, and damage 10.
-- **Replay/RNG impact:** Gameplay semantics advance from `9` to `10` because
-  the catalog-backed weapon and target score state change future outcomes. The
-  score transition consumes no RNG beyond the ordinary hit roll; rejected
-  commands preserve exact `Game` state.
-- **Content-catalog impact:** The existing authoritative catalog gains one
-  Null Pointer family with its pinned zero-direct-damage weapon scalars.
-- **Protocol/domain ownership:** Null Pointer hit/schedule events are stable
-  semantic contracts; score policy and actor boss identity remain core-owned.
-- **Evidence boundary:** The pinned Lua source supports the target branch,
-  1000 floor, and delayed range-1/10d1 schedule payload. Exact area damage,
-  geometry, runtime/capture, and audiovisual parity remain `NOT_RUN`.
-- **Non-goals:** Generic callback registries, immediate area-damage simulation,
-  exact explosion geometry/order, runtime Lua, and broad content migration.
+- **Observable outcome:** A successful Acid Spitter reload on an Acid tile
+  emits `AcidSpitterReloaded`, loads one rocket up to the ten-round clip cap,
+  changes the tile to Water, and subtracts 1000 score count.
+- **Replay/RNG impact:** Gameplay semantics advance from `10` to `11` because
+  the terrain contract and typed reload transition change future outcomes. The
+  transition consumes no RNG; rejected commands preserve exact `Game` state.
+- **Content-catalog impact:** The existing authoritative Acid Spitter family
+  gains one typed reload behavior without changing its pinned weapon scalars.
+- **Protocol/domain ownership:** Acid/Water tile kinds and the reload event are
+  stable semantic contracts; score policy and reload implementation remain
+  core-owned.
+- **Evidence boundary:** The pinned Lua source supports the Acid-only reload,
+  one-round load, score cost, and Acid-to-Water transition. Acid hazard damage,
+  movement cost, runtime/capture, and audiovisual parity remain `NOT_RUN`.
+- **Non-goals:** Generic callback registries, hazard damage/resistance,
+  runtime Lua, and broad content migration.
 
 ### 2.2 Why this slice supersedes content breadth
 
@@ -73,28 +72,28 @@ At the same time, adding a conventional content family now fans out across
 protocol enums, definitions, validation, replay codecs, assets, documentation,
 and other exhaustive registries. Continuing scalar-only breadth before a
 behavior model is selected would increase both migration debt and change
-amplification. The Null Pointer source audit gives this slice a narrow typed
-target transition, a focused catalog-backed ranged test, and an explicit
-runtime/effects evidence boundary.
+amplification. The Acid Spitter source audit gives this slice a narrow
+terrain-fed reload transition, a focused catalog-backed reload test, and an
+explicit hazard/runtime evidence boundary.
 
 Therefore, additional broad scalar-only family additions are temporarily
 blocked by the exit gates in Section 2.8.
 
-### 2.3 Null Pointer on-hit contracts
+### 2.3 Acid Spitter reload contracts
 
-For an equipped Null Pointer, a ranged hit applies a pure target score-count
-transition: bosses subtract 1000 and ordinary targets subtract 2000, with the
-result clamped to at least 1000. The accepted hit then emits one schedule event
-for the source-backed delay/radius/damage payload. Area damage remains a later
-geometry/effects slice.
+For an equipped Acid Spitter, Reload applies a pure terrain-fed transition:
+full clips and non-Acid tiles are rejected without mutation; on Acid, one
+rocket is loaded, 1000 score count is spent using the Rust saturating signed
+policy, and the tile becomes Water. The accepted reload emits one ordered event.
+Acid hazard damage and fluid movement effects remain a later runtime slice.
 
 #### Legacy evidence boundary
 
 Pinned source evidence is recorded in
-[`docs/legacy-behavior/null-pointer.md`](docs/legacy-behavior/null-pointer.md).
-The source's unique/plasma/zero-direct-damage weapon scalars remain definition
-facts; delayed area damage, exact runtime timing, and presentation feedback
-remain `NOT_RUN`.
+[`docs/legacy-behavior/acid-spitter.md`](docs/legacy-behavior/acid-spitter.md).
+The callback's Acid-to-Water conversion, one-point reload, and score cost are
+implemented facts; Acid hazard damage, fluid movement cost, exact runtime
+comparison, and presentation feedback remain `NOT_RUN`.
 
 ### 2.4 Previous movement and historical correctness contracts
 
@@ -617,7 +616,7 @@ Lava Armor periodic recharge. Its typed transition must:
 - [x] record that fire/acid hazard damage, resistance equations, controlled
   runtime comparison, and exact presentation parity remain `NOT_RUN`.
 
-### 2.7g Current Null Pointer delivery target
+### 2.7g Previous Null Pointer delivery target
 
 The bounded implementation target for this revision is the seventh stress case,
 Charch's Null Pointer on-hit behavior. Its typed transition must:
@@ -633,6 +632,24 @@ Charch's Null Pointer on-hit behavior. Its typed transition must:
   determinism, and MCP JSON/event projection;
 - [x] record that delayed area damage, exact explosion geometry/order, runtime,
   and audiovisual parity remain `NOT_RUN`.
+
+### 2.7h Current Acid Spitter delivery target
+
+The bounded implementation target for this revision is the eighth stress case,
+Acid Spitter terrain-fed reload. Its typed transition must:
+
+- [x] expose walkable `Tile::Acid`/`TileKind::Acid` and `Tile::Water`/
+  `TileKind::Water` terrain contracts without claiming hazard parity;
+- [x] reject a full clip or a non-Acid player tile atomically without changing
+  ammunition, score, terrain, turn, or RNG;
+- [x] on Acid, load one rocket up to the ten-round clip cap, convert the tile to
+  Water, spend 1000 score count with saturating core policy, and emit an ordered
+  `AcidSpitterReloaded` event;
+- [x] cover pure transition behavior, accepted reload integration, replay and
+  scenario tile persistence, deterministic no-RNG behavior, and MCP event
+  projection;
+- [x] record that Acid hazard damage/resistance, fluid movement cost, runtime
+  comparison, and exact presentation parity remain `NOT_RUN`.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 

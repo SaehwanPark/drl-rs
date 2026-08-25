@@ -85,6 +85,16 @@ pub enum GameEvent {
     current_clip: u32,
     max_clip: u32,
   },
+  /// Acid Spitter drew one rocket from an Acid tile and converted it to Water.
+  AcidSpitterReloaded {
+    entity_id: EntityId,
+    item_id: ItemId,
+    position: Position,
+    ammo_loaded: u32,
+    current_clip: u32,
+    max_clip: u32,
+    score_count_remaining: i32,
+  },
   /// A Subtle Knife invoke paid its actor cost and selected visible targets.
   SubtleKnifeInvoked {
     entity_id: EntityId,

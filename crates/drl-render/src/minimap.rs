@@ -111,6 +111,8 @@ const fn tile_kind_order(kind: TileKind) -> u8 {
     TileKind::DoorOpen => 3,
     TileKind::StairsDown => 4,
     TileKind::Lava => 5,
+    TileKind::Acid => 6,
+    TileKind::Water => 7,
   }
 }
 

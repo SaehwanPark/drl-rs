@@ -796,6 +796,27 @@ pub fn game_event_to_json(event: &GameEvent) -> JsonValue {
       map.insert("current_clip".to_string(), JsonValue::from(*current_clip));
       map.insert("max_clip".to_string(), JsonValue::from(*max_clip));
     }
+    GameEvent::AcidSpitterReloaded {
+      entity_id,
+      item_id,
+      position,
+      ammo_loaded,
+      current_clip,
+      max_clip,
+      score_count_remaining,
+    } => {
+      map.insert("type".to_string(), JsonValue::from("AcidSpitterReloaded"));
+      map.insert("entity_id".to_string(), JsonValue::from(entity_id.as_u64()));
+      map.insert("item_id".to_string(), JsonValue::from(item_id.as_u64()));
+      map.insert("position".to_string(), position_to_json(*position));
+      map.insert("ammo_loaded".to_string(), JsonValue::from(*ammo_loaded));
+      map.insert("current_clip".to_string(), JsonValue::from(*current_clip));
+      map.insert("max_clip".to_string(), JsonValue::from(*max_clip));
+      map.insert(
+        "score_count_remaining".to_string(),
+        JsonValue::from(*score_count_remaining),
+      );
+    }
     GameEvent::MedicalPowerarmorRepaired {
       entity_id,
       item_id,
@@ -1485,6 +1506,8 @@ fn replay_log_for_scenario(scenario: &Scenario) -> ReplayLog {
       Tile::DoorClosed => TileKind::DoorClosed,
       Tile::DoorOpen => TileKind::DoorOpen,
       Tile::Lava => TileKind::Lava,
+      Tile::Acid => TileKind::Acid,
+      Tile::Water => TileKind::Water,
     };
     replay.record_tile(position, kind);
   }
@@ -1503,6 +1526,67 @@ fn replay_log_for_scenario(scenario: &Scenario) -> ReplayLog {
 #[cfg(test)]
 mod tests {
   use super::*;
+
+  #[test]
+  fn acid_spitter_reload_event_projects_to_mcp_json() {
+    let value = game_event_to_json(&GameEvent::AcidSpitterReloaded {
+      entity_id: drl_protocol::EntityId::new(1),
+      item_id: ItemId::new(2),
+      position: Position::new(3, 4),
+      ammo_loaded: 1,
+      current_clip: 2,
+      max_clip: 10,
+      score_count_remaining: 500,
+    });
+    let JsonValue::Object(map) = value else {
+      panic!("event projection must be an object");
+    };
+    assert_eq!(
+      map.get("type").and_then(JsonValue::as_str),
+      Some("AcidSpitterReloaded")
+    );
+    assert_eq!(map.get("ammo_loaded").and_then(JsonValue::as_i64), Some(1));
+    assert_eq!(
+      map.get("score_count_remaining").and_then(JsonValue::as_i64),
+      Some(500)
+    );
+    assert_eq!(
+      map
+        .get("position")
+        .and_then(|value| match value {
+          JsonValue::Object(position) => Some(position),
+          _ => None,
+        })
+        .and_then(|position| position.get("x"))
+        .and_then(JsonValue::as_i64),
+      Some(3)
+    );
+  }
+
+  #[test]
+  fn load_scenario_accepts_acid_and_water_glyphs() {
+    let mut session = McpSession::new();
+    let observation = session
+      .load_scenario("\n#######\n#@xw..#\n#######\n", None)
+      .unwrap();
+
+    assert_eq!(
+      observation
+        .visible_tiles
+        .iter()
+        .find(|tile| tile.position == Position::new(2, 1))
+        .map(|tile| tile.kind),
+      Some(TileKind::Acid)
+    );
+    assert_eq!(
+      observation
+        .visible_tiles
+        .iter()
+        .find(|tile| tile.position == Position::new(3, 1))
+        .map(|tile| tile.kind),
+      Some(TileKind::Water)
+    );
+  }
 
   #[test]
   fn test_legal_actions_synthesis() {

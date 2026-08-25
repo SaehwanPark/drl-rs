@@ -1,10 +1,11 @@
 //! Integration tests for special-use consumable items (Phase Device teleportation).
 
 use drl_core::game::Game;
+use drl_core::grid::Tile;
 use drl_core::item::Item;
 use drl_core::replay::ReplayEngine;
 use drl_protocol::{
-  Command, Direction, EquipmentSlot, GameEvent, ItemId, ItemSpawnKind, ItemSpawnSpec,
+  Command, CommandError, Direction, EquipmentSlot, GameEvent, ItemId, ItemSpawnKind, ItemSpawnSpec,
   MonsterSpawnSpec, PlayerSpawnConfig, Position, ReplayLog,
 };
 
@@ -245,6 +246,135 @@ fn null_pointer_replay_is_deterministic() {
       .is_some_and(|actor| actor.is_boss())
   );
   assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}
+
+#[test]
+fn acid_spitter_reload_converts_acid_and_spends_score() {
+  let mut game = Game::new_arena(904, 12, 12).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let player_position = game.world().player().unwrap().position();
+  game
+    .world_mut()
+    .map_mut()
+    .set_tile(player_position, Tile::Acid);
+  let weapon_id = game.world_mut().allocate_item_id();
+  let weapon = Item::acid_spitter(weapon_id);
+  let player = game.world_mut().get_actor_mut(player_id).unwrap();
+  player.set_score_count(1_500);
+  player
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, weapon)
+    .unwrap();
+
+  let events = game.step(Command::Reload).unwrap();
+  assert!(events.iter().any(|event| matches!(
+    event,
+    GameEvent::AcidSpitterReloaded {
+      entity_id,
+      item_id,
+      position,
+      ammo_loaded: 1,
+      current_clip: 1,
+      max_clip: 10,
+      score_count_remaining: 500,
+    } if *entity_id == player_id && *item_id == weapon_id && *position == player_position
+  )));
+  assert_eq!(
+    game.world().map().get_tile(player_position),
+    Some(Tile::Water)
+  );
+  let player = game.world().player().unwrap();
+  assert_eq!(player.score_count(), 500);
+  assert_eq!(
+    player
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .current_clip,
+    1
+  );
+}
+
+#[test]
+fn acid_spitter_reload_rejects_non_acid_atomically() {
+  let mut game = Game::new_arena(905, 12, 12).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let weapon_id = game.world_mut().allocate_item_id();
+  let weapon = Item::acid_spitter(weapon_id);
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, weapon)
+    .unwrap();
+  let before = game.clone();
+
+  assert_eq!(
+    game.step(Command::Reload),
+    Err(CommandError::NoMatchingAmmo)
+  );
+  assert_eq!(game, before);
+}
+
+#[test]
+fn acid_spitter_reload_rejects_full_clip_atomically() {
+  let mut game = Game::new_arena(9051, 12, 12).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let player_position = game.world().player().unwrap().position();
+  game
+    .world_mut()
+    .map_mut()
+    .set_tile(player_position, Tile::Acid);
+  let weapon_id = game.world_mut().allocate_item_id();
+  let mut weapon = Item::acid_spitter(weapon_id);
+  weapon.weapon_properties_mut().unwrap().current_clip = 10;
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, weapon)
+    .unwrap();
+  let before = game.clone();
+
+  assert_eq!(
+    game.step(Command::Reload),
+    Err(CommandError::ClipAlreadyFull)
+  );
+  assert_eq!(game, before);
+}
+
+#[test]
+fn acid_spitter_replay_preserves_custom_terrain_deterministically() {
+  let player_start = Position::new(5, 5);
+  let mut replay =
+    ReplayLog::new(906, 12, 12, player_start).with_player_config(PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: Vec::new(),
+      equipped_weapon: Some(ItemSpawnKind::AcidSpitter),
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    });
+  replay.record_tile(player_start, drl_protocol::TileKind::Acid);
+  replay.record_command(Command::Reload);
+
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+  let (game, events) = ReplayEngine::run(&replay).unwrap();
+  assert!(events.iter().any(|event| matches!(
+    event,
+    GameEvent::AcidSpitterReloaded {
+      ammo_loaded: 1,
+      current_clip: 1,
+      score_count_remaining: -1000,
+      ..
+    }
+  )));
+  assert_eq!(game.world().map().get_tile(player_start), Some(Tile::Water));
 }
 
 #[test]

@@ -1,5 +1,6 @@
 //! Integration tests for declarative scenario fixtures and ASCII map parsing.
 
+use drl_core::grid::Tile;
 use drl_core::scenario::{Scenario, ScenarioRunner};
 use drl_protocol::{
   Command, Direction, ItemSpawnKind, PlayerSpawnConfig, Position, RunOutcome, ScenarioFixture,
@@ -138,5 +139,28 @@ fn test_scenario_from_protocol_fixture() {
   assert_eq!(
     game.world().player().unwrap().position(),
     Position::new(2, 2)
+  );
+}
+
+#[test]
+fn test_ascii_fixture_preserves_acid_and_water_tiles() {
+  let fixture = ScenarioFixture::with_ascii_map(
+    "AcidTerrain",
+    "ASCII fixture exposes the terrain used by Acid Spitter reload",
+    "#######\n#@xw..#\n#######\n",
+  );
+
+  let scenario = Scenario::from_fixture(&fixture).unwrap();
+  assert_eq!(scenario.tiles.get(&Position::new(2, 1)), Some(&Tile::Acid));
+  assert_eq!(scenario.tiles.get(&Position::new(3, 1)), Some(&Tile::Water));
+
+  let game = scenario.instantiate().unwrap();
+  assert_eq!(
+    game.world().map().get_tile(Position::new(2, 1)),
+    Some(Tile::Acid)
+  );
+  assert_eq!(
+    game.world().map().get_tile(Position::new(3, 1)),
+    Some(Tile::Water)
   );
 }

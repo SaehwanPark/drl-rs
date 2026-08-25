@@ -2,15 +2,16 @@
 
 use drl_protocol::{
   ActionCost, AttackOutcome, Command, CommandError, DamageSource, DeathCause, Direction, GameEvent,
-  LevelId, OmniscientObservation, PlayerObservation, Position, Turn,
+  LevelId, OmniscientObservation, PlayerObservation, Position, TileKind, Turn,
 };
 
+use crate::acid_spitter::{ACID_SPITTER_RELOAD_AMOUNT, AcidSpitterReloadError};
 use crate::behavior::{LavaRechargeOutcome, MedicalRepairOutcome};
 use crate::combat::CombatResolver;
 use crate::fov::DEFAULT_VISION_RADIUS;
 use crate::generator::{LevelGenerator, LevelGeneratorConfig};
 use crate::grammaton::{GRAMMATON_MODE_SCORE_COST, GrammatonTransition};
-use crate::grid::Map;
+use crate::grid::{Map, Tile};
 use crate::item::Item;
 use crate::jackhammer::{JACKHAMMER_MODE_SCORE_COST, JackhammerTransition};
 use crate::level_definition::standard_procedural;
@@ -910,6 +911,17 @@ impl Game {
     player_id: drl_protocol::EntityId,
     events: &mut Vec<GameEvent>,
   ) -> Result<ActionCost, CommandError> {
+    let acid_spitter_item_id = self
+      .state
+      .world
+      .get_actor(player_id)
+      .and_then(|player| player.equipment().weapon())
+      .filter(|weapon| weapon.archetype() == drl_protocol::ItemArchetype::AcidSpitter)
+      .map(Item::id);
+    if let Some(item_id) = acid_spitter_item_id {
+      return self.execute_acid_spitter_reload(player_id, item_id, events);
+    }
+
     let player = self
       .state
       .world
@@ -956,6 +968,101 @@ impl Game {
       max_clip,
     });
 
+    Ok(reload_cost)
+  }
+
+  /// Executes Acid Spitter's terrain-fed reload callback as a typed transition.
+  fn execute_acid_spitter_reload(
+    &mut self,
+    player_id: drl_protocol::EntityId,
+    item_id: drl_protocol::ItemId,
+    events: &mut Vec<GameEvent>,
+  ) -> Result<ActionCost, CommandError> {
+    let (position, current_clip, clip_capacity, reload_cost, tile_kind) = {
+      let player = self
+        .state
+        .world
+        .get_actor(player_id)
+        .ok_or(CommandError::EntityNotFound(player_id))?;
+      let weapon = player
+        .equipment()
+        .weapon()
+        .filter(|item| item.id() == item_id)
+        .ok_or(CommandError::NoEquippedWeapon)?;
+      let properties = weapon
+        .weapon_properties()
+        .ok_or(CommandError::NoEquippedWeapon)?;
+      let tile_kind = self
+        .state
+        .world
+        .map()
+        .get_tile(player.position())
+        .ok_or(CommandError::OutOfBounds(player.position()))
+        .map(Tile::to_kind)?;
+      (
+        player.position(),
+        properties.current_clip,
+        properties.clip_capacity,
+        properties.reload_cost,
+        tile_kind,
+      )
+    };
+
+    let outcome = crate::acid_spitter::apply(
+      current_clip,
+      clip_capacity,
+      self
+        .state
+        .world
+        .get_actor(player_id)
+        .map_or(0, |player| player.score_count()),
+      tile_kind,
+    )
+    .map_err(|error| match error {
+      AcidSpitterReloadError::ClipFull => CommandError::ClipAlreadyFull,
+      AcidSpitterReloadError::NotOnAcid => CommandError::NoMatchingAmmo,
+    })?;
+
+    let resulting_tile = match outcome.resulting_tile {
+      TileKind::Water => Tile::Water,
+      _ => return Err(CommandError::NoMatchingAmmo),
+    };
+    if !self
+      .state
+      .world
+      .map_mut()
+      .set_tile(position, resulting_tile)
+    {
+      return Err(CommandError::OutOfBounds(position));
+    }
+
+    let (score_count_remaining, current_clip) = {
+      let player = self
+        .state
+        .world
+        .get_actor_mut(player_id)
+        .ok_or(CommandError::EntityNotFound(player_id))?;
+      player.set_score_count(outcome.score_count_remaining);
+      let weapon = player
+        .equipment_mut()
+        .weapon_mut()
+        .ok_or(CommandError::NoEquippedWeapon)?;
+      weapon.load_ammo_into_clip(ACID_SPITTER_RELOAD_AMOUNT);
+      let current_clip = weapon
+        .weapon_properties()
+        .map_or(outcome.current_clip, |properties| properties.current_clip);
+      (player.score_count(), current_clip)
+    };
+
+    events.push(GameEvent::AcidSpitterReloaded {
+      entity_id: player_id,
+      item_id,
+      position,
+      ammo_loaded: ACID_SPITTER_RELOAD_AMOUNT,
+      current_clip,
+      max_clip: clip_capacity,
+      score_count_remaining,
+    });
     Ok(reload_cost)
   }
 
