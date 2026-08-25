@@ -106,13 +106,15 @@ if step_schema["properties"]["target_x"]["minimum"] != -2147483648:
 if step_schema["properties"]["item_id"]["maximum"] != 9007199254740992:
     raise SystemExit("game_step_action item_id schema lacks JSON-safe maximum")
 conditions = step_schema.get("allOf", [])
-if len(conditions) != 5:
+if len(conditions) != 6:
     raise SystemExit("game_step_action schema lacks action-specific conditions")
 if conditions[0].get("then", {}).get("required") != ["direction"]:
     raise SystemExit("move/melee condition lacks direction requirement")
 if conditions[2].get("then", {}).get("required") != ["item_id"]:
     raise SystemExit("item condition lacks item_id requirement")
-if conditions[3].get("then", {}).get("required") != ["slot"]:
+if conditions[3].get("then", {}).get("required") != ["item_id", "confirmed"]:
+    raise SystemExit("alternate reload condition lacks item_id/confirmed requirements")
+if conditions[4].get("then", {}).get("required") != ["slot"]:
     raise SystemExit("unequip condition lacks slot requirement")
 if conditions[0].get("if", {}).get("anyOf", [])[1].get("not", {}).get("required") != ["action"]:
     raise SystemExit("command condition does not defer to action precedence")
