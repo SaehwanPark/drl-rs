@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.120`
+Current project version: `0.2.121`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,15 +25,17 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9/Gate D Subtle Knife Alternate Invoke
+## 2. Active Implementation Slice: M9/Gate D Trigun Alternate Reload
 
 ### 2.1 Objective
 
-Deliver the second Gate D behavior-covered stress case by representing Subtle
-Knife's alternate invoke as a typed, deterministic Rust transition and running
-it through the headless turn boundary. The preceding Medical Powerarmor slice
-established the first explicit behavior transition; Trigun and the remaining
-behavior vocabulary stay deferred rather than silently reactivated.
+Deliver the third selected Gate D behavior-covered stress case by representing
+Trigun's confirmation-gated alternate reload as a typed, deterministic Rust
+transition. A successful command pays the evidence-backed health and score
+costs, schedules a one-tick level nuke, and resolves that nuke at the accepted
+turn boundary through explicit events. The preceding Medical Powerarmor and
+Subtle Knife slices establish the first two behavior transitions; the remaining
+behavior vocabulary stays deferred rather than silently reactivated.
 
 The legacy Pascal/Lua implementation remains the behavioral reference. Its
 architecture, global callback machinery, and runtime Lua object model remain
@@ -42,22 +44,25 @@ non-goals for reproduction.
 ### 2.1a Scope and steering gate
 
 - **Steering gate:** Gate D — Behavior model passes hard cases.
-- **Observable outcome:** An equipped Subtle Knife accepts a typed invoke
-  command when the actor is not tired, applies the evidence-backed HP/status/
-  score costs, and damages every living non-player actor currently visible to
-  the player in stable order.
+- **Observable outcome:** An equipped Trigun accepts a typed alternate-reload
+  command only after explicit confirmation and when player maximum HP is above
+  the legacy floor. Success reduces maximum/current HP and score count,
+  schedules a one-tick nuke, and resolves the level nuke with internal player
+  damage at the same accepted-turn boundary. The Trigun is not destroyed.
 - **Replay/RNG impact:** The transition consumes no RNG and preserves the V1
   replay wire format; its gameplay semantics advance to project version
-  `0.2.120` and are not claimed cross-version compatible without matching
-  engine semantics.
+  `0.2.121` and are not claimed cross-version compatible without matching
+  engine semantics. Nuke countdown and resolution ordering are part of the
+  typed replay-visible state.
 - **Catalog impact:** No new item family or registry is added. The existing
-  typed `ItemArchetype::SubtleKnife` identity selects the behavior.
-- **Protocol/domain ownership:** `Command::Invoke` and
-  `GameEvent::SubtleKnifeInvoked` are stable semantic contracts; status, cost,
-  target policy, and damage mutation remain owned by `drl-core`.
-- **Non-goals:** Trigun, generic callback/alternate-action infrastructure,
-  runtime Lua, legacy runtime/capture parity, confirmation UI, and broad
-  content migration remain open.
+  typed `ItemArchetype::Trigun` identity selects the behavior.
+- **Protocol/domain ownership:** `Command::AltReload` and the Trigun/nuke
+  events are stable semantic contracts; confirmation policy, health/score
+  costs, timer cadence, and damage mutation remain owned by `drl-core`.
+- **Non-goals:** Subtle Knife changes, generic callback/alternate-action
+  infrastructure, runtime Lua, legacy runtime/capture parity, browser
+  confirmation UI, explosion presentation, and broad content migration remain
+  open.
 
 ### 2.2 Why this slice supersedes content breadth
 
@@ -344,7 +349,8 @@ insufficient.
   embedding arbitrary callbacks in the catalog.
 - [ ] Define a typed behavior vocabulary that can represent at least:
   **Partial in `0.2.120`:** explicit Medical Powerarmor periodic repair and
-  Subtle Knife alternate invoke transitions are delivered; the broader
+  Subtle Knife alternate invoke transitions are delivered; the Trigun
+  alternate-reload transition is the active `0.2.121` target and the broader
   vocabulary remains open.
   - passive stat/resistance modifiers;
   - equip/unequip effects and item-set membership;
@@ -382,8 +388,8 @@ presentation parity remain intentionally unclaimed.
 The third selected case is Trigun alternate reload; its source and callback
 decomposition are recorded in
 [`docs/legacy-behavior/trigun.md`](docs/legacy-behavior/trigun.md). Its typed
-Rust implementation and runtime parity are intentionally not claimed by this
-evidence slice.
+Rust implementation is the active bounded target in this revision; controlled
+legacy runtime and presentation parity remain intentionally unclaimed.
 
 - an equipment set with reversible equip/unequip modifiers;
 - Subtle Knife-style alternate action with health/status cost and visible-target
@@ -436,6 +442,28 @@ Subtle Knife alternate invoke. Its typed transition must:
 - [x] reject invalid or tired invocations atomically without spending a turn;
 - [x] cover pure transition, visibility boundaries, accepted integration,
   rejection rollback, replay determinism, and command/protocol persistence.
+
+### 2.6c Current Trigun delivery target
+
+The bounded implementation target for this revision is the third stress case,
+Trigun alternate reload. Its typed transition must:
+
+- [x] expose an explicit `Command::AltReload { item_id, confirmed }` path for
+  the equipped Trigun;
+- [x] reject a missing/non-Trigun item, low maximum HP, and declined
+  confirmation atomically without spending a turn, RNG, or mutating player
+  resources;
+- [x] on success, reduce maximum HP by five but clamp it to ten, reduce current
+  HP by five but clamp it to one, subtract 1000 score count with explicit
+  signed saturation, and preserve the equipped weapon;
+- [x] schedule a one-tick nuke and resolve it at the accepted-turn boundary,
+  emitting typed activation/level-nuked/damage/death events and applying 6000
+  internal environment damage to the player;
+- [x] cover the pure transition, confirmation and low-HP rejection paths,
+  exact command rollback, nuke event ordering, terminal game-over behavior,
+  replay determinism, and command/protocol persistence;
+- [x] record that explosion geometry, animation timing, confirmation UI, and
+  controlled legacy runtime parity remain `NOT_RUN` or out of scope.
 
 ### 2.7 Exit Gates Before Broad Content Migration Resumes
 

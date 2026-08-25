@@ -307,7 +307,7 @@ fn test_jsonrpc_tools_list_publishes_truthful_input_schemas() {
     .get("allOf")
     .and_then(JsonValue::as_array)
     .expect("action-specific conditions");
-  assert_eq!(conditions.len(), 5);
+  assert_eq!(conditions.len(), 6);
   let then_required = |condition: &JsonValue| {
     condition
       .get("then")
@@ -324,8 +324,12 @@ fn test_jsonrpc_tools_list_publishes_truthful_input_schemas() {
   };
   assert_eq!(then_required(&conditions[0]), vec!["direction".to_string()]);
   assert_eq!(then_required(&conditions[2]), vec!["item_id".to_string()]);
-  assert_eq!(then_required(&conditions[3]), vec!["slot".to_string()]);
-  assert!(then_required(&conditions[4]).is_empty());
+  assert_eq!(
+    then_required(&conditions[3]),
+    vec!["item_id".to_string(), "confirmed".to_string()]
+  );
+  assert_eq!(then_required(&conditions[4]), vec!["slot".to_string()]);
+  assert!(then_required(&conditions[5]).is_empty());
   assert_eq!(
     conditions[0]
       .get("if")

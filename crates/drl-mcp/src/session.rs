@@ -156,6 +156,26 @@ pub fn compute_legal_actions(obs: &PlayerObservation) -> Vec<LegalAction> {
     });
   }
 
+  // 3b. Typed Trigun alternate reload (the caller must explicitly confirm).
+  if let Some(weapon) = obs.equipped_weapon.as_ref()
+    && weapon.archetype == ItemArchetype::Trigun
+    && obs.player_hp.is_some_and(|hp| hp.max > 10)
+  {
+    let mut p = BTreeMap::new();
+    p.insert("action".to_string(), JsonValue::from("alt_reload"));
+    p.insert("item_id".to_string(), JsonValue::from(weapon.id.as_u64()));
+    p.insert("confirmed".to_string(), JsonValue::Bool(true));
+    actions.push(LegalAction {
+      action: "AltReload".to_string(),
+      description: "Confirm the equipped Trigun alternate reload and level nuke".to_string(),
+      command: Command::AltReload {
+        item_id: weapon.id,
+        confirmed: true,
+      },
+      params: JsonValue::Object(p),
+    });
+  }
+
   // 4. Reload weapon (if weapon not full and matching ammo exists in inventory)
   if let Some(ref weapon) = obs.equipped_weapon
     && let Some((loaded, max_clip)) = weapon.clip
@@ -381,6 +401,17 @@ pub fn json_to_command(val: &JsonValue) -> Result<Command, String> {
     "invoke" => {
       let item_id = required_exact_item_id(obj)?;
       Ok(Command::Invoke(ItemId::new(item_id)))
+    }
+    "alt_reload" => {
+      let item_id = required_exact_item_id(obj)?;
+      let confirmed = obj
+        .get("confirmed")
+        .and_then(JsonValue::as_bool)
+        .ok_or_else(|| "Missing or invalid 'confirmed' parameter".to_string())?;
+      Ok(Command::AltReload {
+        item_id: ItemId::new(item_id),
+        confirmed,
+      })
     }
     "reload" => Ok(Command::Reload),
     "descend" => Ok(Command::Descend),
@@ -773,6 +804,36 @@ pub fn game_event_to_json(event: &GameEvent) -> JsonValue {
         "score_count_remaining".to_string(),
         JsonValue::from(*score_count_remaining),
       );
+    }
+    GameEvent::TrigunAltReloaded {
+      entity_id,
+      item_id,
+      remaining_hp,
+      score_count_remaining,
+    } => {
+      map.insert("type".to_string(), JsonValue::from("TrigunAltReloaded"));
+      map.insert("entity_id".to_string(), JsonValue::from(entity_id.as_u64()));
+      map.insert("item_id".to_string(), JsonValue::from(item_id.as_u64()));
+      let mut hp = BTreeMap::new();
+      hp.insert("current".to_string(), JsonValue::from(remaining_hp.current));
+      hp.insert("max".to_string(), JsonValue::from(remaining_hp.max));
+      map.insert("remaining_hp".to_string(), JsonValue::Object(hp));
+      map.insert(
+        "score_count_remaining".to_string(),
+        JsonValue::from(*score_count_remaining),
+      );
+    }
+    GameEvent::NukeActivated {
+      level_id,
+      countdown,
+    } => {
+      map.insert("type".to_string(), JsonValue::from("NukeActivated"));
+      map.insert("level_id".to_string(), JsonValue::from(level_id.0));
+      map.insert("countdown".to_string(), JsonValue::from(*countdown));
+    }
+    GameEvent::LevelNuked { level_id } => {
+      map.insert("type".to_string(), JsonValue::from("LevelNuked"));
+      map.insert("level_id".to_string(), JsonValue::from(level_id.0));
     }
     GameEvent::LevelTransitioned {
       from_level,
@@ -1481,6 +1542,16 @@ mod tests {
     assert_eq!(
       json_to_command(&invoke).unwrap(),
       Command::Invoke(ItemId::new(42))
+    );
+
+    let alt_reload =
+      JsonValue::parse(r#"{"action":"alt_reload","item_id":43,"confirmed":true}"#).unwrap();
+    assert_eq!(
+      json_to_command(&alt_reload).unwrap(),
+      Command::AltReload {
+        item_id: ItemId::new(43),
+        confirmed: true,
+      }
     );
 
     for alias in ["none", "wait", "."] {

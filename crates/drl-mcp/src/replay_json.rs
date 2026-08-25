@@ -246,6 +246,11 @@ fn command_to_json(command: &Command) -> JsonValue {
     ]),
     Command::Use(item_id) => item_action("use", item_id.as_u64()),
     Command::Invoke(item_id) => item_action("invoke", item_id.as_u64()),
+    Command::AltReload { item_id, confirmed } => object([
+      ("action", JsonValue::from("alt_reload")),
+      ("item_id", uint64_to_json(item_id.as_u64())),
+      ("confirmed", JsonValue::Bool(*confirmed)),
+    ]),
     Command::Reload => action("reload"),
     Command::Descend => action("descend"),
   }
@@ -335,6 +340,10 @@ mod tests {
       Command::Unequip(EquipmentSlot::Armor),
       Command::Use(ItemId::new(8)),
       Command::Invoke(ItemId::new(10)),
+      Command::AltReload {
+        item_id: ItemId::new(11),
+        confirmed: true,
+      },
       Command::Reload,
       Command::Descend,
     ];
@@ -356,7 +365,11 @@ mod tests {
       Some("Armor")
     );
     assert_eq!(
-      values[11].get("action").and_then(JsonValue::as_str),
+      values[10].get("confirmed").and_then(JsonValue::as_bool),
+      Some(true)
+    );
+    assert_eq!(
+      values[12].get("action").and_then(JsonValue::as_str),
       Some("descend")
     );
   }

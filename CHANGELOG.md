@@ -3,6 +3,18 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.121]
+
+- Added the third Gate D typed behavior slice: confirmed Trigun alternate
+  reload applies the evidence-backed HP/max-HP/score costs, preserves the
+  weapon, schedules a one-tick typed nuke, and resolves terminal internal
+  player damage with deterministic event ordering.
+- Added `Command::AltReload`, `NukeState`, typed Trigun/nuke events,
+  replay/MCP/browser persistence coverage, and exact rejection-atomicity tests.
+- Advanced the gameplay-semantics replay identifier to `5`; old envelopes are
+  rejected until an explicit migration exists. Explosion/map effects and
+  legacy runtime or presentation parity remain open.
+
 ## [0.2.120]
 
 - Added the second Gate D typed behavior slice: equipped Subtle Knife invoke

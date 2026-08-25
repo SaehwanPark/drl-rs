@@ -7,6 +7,7 @@ use crate::behavior::MedicalRepairOutcome;
 use crate::inventory::{Equipment, Inventory};
 use crate::item::Item;
 use crate::subtle_knife::{SubtleKnifeCost, SubtleKnifeError, SubtleKnifeTransition, TiredStatus};
+use crate::trigun::{TrigunCost, TrigunError, TrigunTransition};
 
 /// Simulation actor instance.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -188,6 +189,11 @@ impl Actor {
   /// Applies the typed Subtle Knife actor-side transition.
   pub fn invoke_subtle_knife(&mut self) -> Result<SubtleKnifeCost, SubtleKnifeError> {
     SubtleKnifeTransition::apply(&mut self.hp, &mut self.tired, &mut self.score_count)
+  }
+
+  /// Applies the typed Trigun alternate-reload actor transition.
+  pub fn alt_reload_trigun(&mut self) -> Result<TrigunCost, TrigunError> {
+    TrigunTransition::apply(&mut self.hp, &mut self.score_count)
   }
 
   /// Returns true if the actor is alive.

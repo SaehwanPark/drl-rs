@@ -22,6 +22,7 @@ pub mod item_definition;
 pub mod level_definition;
 pub mod loot_definition;
 pub mod monster_roll_definition;
+pub mod nuke;
 pub mod replay;
 pub mod rng;
 pub mod scenario;
@@ -29,6 +30,7 @@ pub mod scheduler;
 pub mod special_level_definition;
 pub mod subtle_knife;
 pub mod targeting;
+pub mod trigun;
 pub mod world;
 
 pub use actor::Actor;
@@ -52,6 +54,7 @@ pub use grid::{Map, Tile};
 pub use inventory::{DEFAULT_INVENTORY_CAPACITY, Equipment, Inventory};
 pub use item::Item;
 pub use level_definition::{LEVEL_DEFINITIONS, LevelDefinition, standard_procedural};
+pub use nuke::{NukeError, NukeState};
 pub use replay::ReplayEngine;
 pub use rng::GameRng;
 pub use scenario::{Scenario, ScenarioRunner};
@@ -64,6 +67,10 @@ pub use subtle_knife::{
   SubtleKnifeError, SubtleKnifeTransition, TiredStatus,
 };
 pub use targeting::TargetingSystem;
+pub use trigun::{
+  TRIGUN_HP_COST, TRIGUN_MAX_HP_COST, TRIGUN_MIN_HP, TRIGUN_MIN_MAX_HP, TRIGUN_NUKE_TIMER,
+  TRIGUN_SCORE_COST, TrigunCost, TrigunError, TrigunTransition,
+};
 pub use world::World;
 
 /// Returns the core simulation engine name.

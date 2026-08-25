@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.120`
+Current project version: `0.2.121`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -137,9 +137,12 @@ Presentation Boundary
     transitions: Medical Powerarmor keeps armor-owned timer state and emits
     `GameEvent::MedicalPowerarmorRepaired`, while Subtle Knife invoke applies
     actor cost/status and deterministic visible-target internal damage through
-    `Command::Invoke` and `GameEvent::SubtleKnifeInvoked`. Legacy resistance,
-    movement, prepared-slot consumption, Trigun, and broader item behavior
-    remain explicit gaps, as do weapon callbacks/effects and exact legacy
+    `Command::Invoke` and `GameEvent::SubtleKnifeInvoked`. Trigun alternate
+    reload uses the dedicated `trigun` transition and `NukeState`, preserving
+    explicit confirmation, resource clamps, weapon retention, and terminal
+    internal damage through `Command::AltReload` and typed nuke events. Legacy
+    resistance, movement, prepared-slot consumption, map-cell explosions, and
+    broader item behavior remain explicit gaps, as do exact legacy
     timing/accuracy semantics.
   - Level Generation: `generator` (BFS reachability, room connectivity).
   - Content Definitions: `item_definition`, `loot_definition`,

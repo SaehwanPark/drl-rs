@@ -2,8 +2,9 @@
 
 **Domain:** alternate reload with destructive level action
 **Milestone relevance:** M9 / Gate D behavior stress cases
-**Last updated:** 2026-08-24
-**Status:** Partial — evidence captured; Rust behavior not implemented
+**Last updated:** 2026-08-25
+**Status:** Behavior-covered in DRL-Rust `0.2.121`; controlled legacy runtime
+parity remains `NOT_RUN`
 
 This note is the third selected Gate D stress-case artifact. It records the
 Trigun's alternate reload boundary and the nuke transition it requests without
@@ -136,25 +137,29 @@ turning the legacy Lua callback mechanism into a Rust design requirement.
   but the Pascal protected-call wrapper does not use it as the action result.
   A Rust command should not inherit that ambiguity.
 
-## Candidate DRL-Rust decisions (`drl-rust-decision`, not yet accepted)
+## Accepted DRL-Rust decision (`drl-rust-decision`)
 
-- Model `TrigunAngelArm` as an explicit alternate-reload command with a typed
-  confirmation decision, HP/max-HP/scount costs, a scheduled nuke transition,
+- Model the behavior as `Command::AltReload { item_id, confirmed }` with a
+  typed confirmation decision, HP/max-HP/score costs, a scheduled `NukeState`,
   and a separate weapon-destruction policy (none for the observed Trigun).
-- Require the confirmation and `hpmax > 10` preconditions before mutating any
-  gameplay state; rejected commands should be state-identical apart from a
-  typed feedback event.
-- Make the countdown and resolution order part of replay semantics, including
-  the level-nuked flag, player damage, and `OnNuked`-equivalent event.
+- Require confirmation and `hpmax > 10` before mutation; rejected commands are
+  exact-state atomic and do not spend a turn or RNG.
+- Resolve the one-tick nuke at the accepted command boundary, preserving
+  explicit replay semantics for activation, level-nuked state, raw player
+  damage, and terminal death ordering.
+- Keep explosion geometry, map-cell destruction, animation/audio, confirmation
+  UI, and legacy runtime capture outside this bounded slice.
 
-## Proposed acceptance tests
+## Delivered acceptance tests
 
-1. A pure transition test covers the `hpmax`/HP clamps, `scount` cost, nuke
-   request, and no weapon deletion on the success path.
-2. Rejected, low-max-HP, and declined-confirmation tests prove no gameplay
-   mutation and define whether the command consumes time.
-3. A deterministic scenario advances the nuke countdown and verifies the
-   ordered level-nuked, area-effect, player-damage, and hook/event outcomes.
+1. `crates/drl-core/src/trigun.rs` covers the max-HP/current-HP clamps,
+   signed score cost, and low-health rejection without mutation.
+2. `crates/drl-core/tests/special_items.rs` covers missing-item,
+   low-max-HP, and declined-confirmation rollback, weapon preservation, exact
+   nuke event ordering, terminal rejection, and replay determinism.
+3. The typed nuke state is deterministic and intentionally bounded to the
+   level-nuked event plus internal player damage; explosion/map effects remain
+   open rather than inferred.
 
 ## Open questions and non-goals
 
@@ -165,8 +170,8 @@ turning the legacy Lua callback mechanism into a Rust design requirement.
 - Are the ten nuke explosion positions and exact animation timings part of
   canonical gameplay or presentation-only evidence? Needs: capture and replay
   policy.
-- This slice does not implement Trigun, generic confirmation UI, the nuke
-  system, weapon destruction, or Lua compatibility.
+- This slice does not implement generic confirmation UI, explosion/map effects,
+  weapon destruction, or Lua compatibility.
 
 ## Provenance and rights
 

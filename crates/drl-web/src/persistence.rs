@@ -138,6 +138,9 @@ fn encode_command(command: Command) -> Result<String, SnapshotError> {
     ),
     Command::Use(id) => format!("c{}", id.as_u64()),
     Command::Invoke(id) => format!("v{}", id.as_u64()),
+    Command::AltReload { item_id, confirmed } => {
+      format!("b{}:{}", item_id.as_u64(), u8::from(confirmed))
+    }
     Command::Reload => "l".to_string(),
     Command::Descend => "x".to_string(),
   })
@@ -160,6 +163,18 @@ fn decode_command(token: &str) -> Result<Command, SnapshotError> {
     "u" if rest == "a" => Ok(Command::Unequip(EquipmentSlot::Armor)),
     "c" => Ok(Command::Use(parse_item_id(rest)?)),
     "v" => Ok(Command::Invoke(parse_item_id(rest)?)),
+    "b" => {
+      let (item_id, confirmed) = rest.split_once(':').ok_or(SnapshotError::Malformed)?;
+      let confirmed = match confirmed {
+        "0" => false,
+        "1" => true,
+        _ => return Err(SnapshotError::Malformed),
+      };
+      Ok(Command::AltReload {
+        item_id: parse_item_id(item_id)?,
+        confirmed,
+      })
+    }
     "l" if rest.is_empty() => Ok(Command::Reload),
     "x" if rest.is_empty() => Ok(Command::Descend),
     _ => Err(SnapshotError::Malformed),
@@ -313,5 +328,16 @@ mod tests {
     let record = encode_quarantine_record(&token, &SnapshotError::TooLarge);
     assert!(record.contains("token omitted"));
     assert!(record.len() <= SNAPSHOT_MAX_BYTES);
+  }
+
+  #[test]
+  fn snapshot_roundtrips_trigun_confirmation_command() {
+    let commands = [Command::AltReload {
+      item_id: ItemId::new(43),
+      confirmed: true,
+    }];
+    let token = encode_snapshot(&commands).unwrap();
+    let decoded = decode_snapshot_with_format(&token).unwrap();
+    assert_eq!(decoded.commands, commands);
   }
 }
