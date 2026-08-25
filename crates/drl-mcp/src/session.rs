@@ -723,12 +723,19 @@ pub fn game_event_to_json(event: &GameEvent) -> JsonValue {
       target_id,
       amount,
       remaining_hp,
+      damage_type,
       ..
     } => {
       map.insert("type".to_string(), JsonValue::from("DamageApplied"));
       map.insert("target_id".to_string(), JsonValue::from(target_id.as_u64()));
       map.insert("amount".to_string(), JsonValue::from(*amount));
       map.insert("remaining_hp".to_string(), JsonValue::from(*remaining_hp));
+      if let Some(damage_type) = damage_type {
+        map.insert(
+          "damage_type".to_string(),
+          JsonValue::from(format!("{damage_type:?}")),
+        );
+      }
     }
     GameEvent::ActorDied { entity_id, cause } => {
       map.insert("type".to_string(), JsonValue::from("ActorDied"));
@@ -1560,6 +1567,24 @@ mod tests {
         .and_then(|position| position.get("x"))
         .and_then(JsonValue::as_i64),
       Some(3)
+    );
+  }
+
+  #[test]
+  fn environment_damage_type_projects_to_mcp_json() {
+    let value = game_event_to_json(&GameEvent::DamageApplied {
+      target_id: drl_protocol::EntityId::new(1),
+      amount: 6,
+      remaining_hp: 44,
+      source: drl_protocol::DamageSource::Environment,
+      damage_type: Some(drl_protocol::DamageType::Acid),
+    });
+    let JsonValue::Object(map) = value else {
+      panic!("event projection must be an object");
+    };
+    assert_eq!(
+      map.get("damage_type").and_then(JsonValue::as_str),
+      Some("Acid")
     );
   }
 

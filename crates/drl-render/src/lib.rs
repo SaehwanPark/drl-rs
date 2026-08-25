@@ -2928,6 +2928,7 @@ mod tests {
         amount: 4,
         remaining_hp: 0,
         source: drl_protocol::DamageSource::Actor(EntityId::new(1)),
+        damage_type: None,
       },
       GameEvent::ActorDied {
         entity_id: EntityId::new(999),
@@ -2958,6 +2959,7 @@ mod tests {
         amount: 50,
         remaining_hp: 0,
         source: drl_protocol::DamageSource::Actor(EntityId::new(1)),
+        damage_type: None,
       },
       GameEvent::ActorDied {
         entity_id: player_id,

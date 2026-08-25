@@ -6,7 +6,8 @@ use drl_core::item::Item;
 use drl_core::replay::ReplayEngine;
 use drl_core::scenario::{Scenario, ScenarioRunner};
 use drl_protocol::{
-  ActionCost, Command, DamageSource, Direction, GameEvent, Position, ReplayLog, TileKind,
+  ActionCost, Command, DamageSource, DamageType, Direction, GameEvent, Position, ReplayLog,
+  TileKind,
 };
 use drl_protocol::{EquipmentSlot, ItemId};
 
@@ -35,6 +36,7 @@ fn moving_onto_acid_applies_baseline_damage_without_rng_use() {
           target_id,
           amount: 6,
           source: DamageSource::Environment,
+          damage_type: Some(DamageType::Acid),
           ..
         } if *target_id == game.world().player_id().unwrap()
       )
@@ -149,6 +151,7 @@ fn lethal_lava_contact_emits_environment_death_and_ends_game() {
       amount: 12,
       remaining_hp: 0,
       source: DamageSource::Environment,
+      damage_type: Some(DamageType::Fire),
     } if *target_id == player_id
   )));
   assert!(events.iter().any(|event| matches!(

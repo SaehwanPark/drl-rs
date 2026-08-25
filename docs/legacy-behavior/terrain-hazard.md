@@ -44,9 +44,10 @@ an accepted player move onto the hazard and uses existing
 The core uses its internal-damage path so generic armor protection does not
 silently change the selected raw baseline; this is an explicit DRL-Rust policy,
 not a claim that legacy resistance is absent.
-The stable `DamageApplied` event currently carries source but not `DamageType`;
-the pure transition retains Acid/Fire classification for a future typed
-resistance slice rather than expanding the event contract here.
+The typed `DamageApplied` event now carries optional `DamageType`: environment
+Acid/Fire contact emits `Some(Acid)`/`Some(Fire)`, while actor and unclassified
+environment damage remains explicitly absent. This exposes classification
+without claiming resistance or balance parity.
 Lethal contact records the accepted action cost and turn end while suppressing
 periodic armor and pending-nuke follow-up; scheduled monster turns stop after
 the environment death event.

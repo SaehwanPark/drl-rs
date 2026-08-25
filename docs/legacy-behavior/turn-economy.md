@@ -32,7 +32,8 @@ These behaviors are confirmed by DRL-Rust implementation and test suites.
   has an associated `ActionCost` that is deducted from the actor's energy when
   the command is executed. Most current commands use the standard 1000-unit
   cost; direct player movement onto Acid, Lava, or Water uses the typed
-  1250-unit terrain override delivered in `0.2.135`.
+  1250-unit terrain override delivered in `0.2.135`; its Acid/Fire damage
+  classification is projected by the typed event contract in `0.2.136`.
 - **Dead actors do not act** — an actor with `is_alive == false` is never
   scheduled. Dead actor entries remain in the world until explicitly removed
   (currently they persist until end of level).

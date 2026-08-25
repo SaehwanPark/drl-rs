@@ -3,8 +3,8 @@
 use crate::item::EquipmentSlot;
 use crate::item::WeaponFireMode;
 use crate::types::{
-  ActionCost, AttackOutcome, DamageSource, DeathCause, EntityId, HitPoints, ItemId, LevelId,
-  Position, Turn,
+  ActionCost, AttackOutcome, DamageSource, DamageType, DeathCause, EntityId, HitPoints, ItemId,
+  LevelId, Position, Turn,
 };
 
 /// Game event emitted deterministically by the simulation core.
@@ -36,6 +36,9 @@ pub enum GameEvent {
     amount: u32,
     remaining_hp: u32,
     source: DamageSource,
+    /// Optional typed damage family; populated for bounded environment hazards
+    /// while legacy/actor damage remains intentionally unclassified.
+    damage_type: Option<DamageType>,
   },
   /// An actor was destroyed or killed.
   ActorDied {
