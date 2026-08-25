@@ -2,6 +2,7 @@
 
 use crate::command::{Command, CommandError};
 use crate::item::ItemArchetype;
+pub use crate::item::ItemSpawnKind;
 use crate::observation::TileKind;
 use crate::types::{Position, Turn};
 
@@ -140,201 +141,7 @@ impl core::fmt::Display for ReplayExecutionError {
 
 impl std::error::Error for ReplayExecutionError {}
 
-/// Specification for representative item spawns in replays.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ItemSpawnKind {
-  Pistol,
-  Shotgun,
-  DoubleShotgun,
-  CombatShotgun,
-  Blaster,
-  LaserRifle,
-  MissileLauncher,
-  NuclearPlasmaRifle,
-  NuclearBfg9000,
-  Bfg10k,
-  MegaBuster,
-  GrammatonBeretta,
-  FragShotgun,
-  RevenantsLauncher,
-  Railgun,
-  AcidSpitter,
-  NullPointer,
-  CombatPistol,
-  AssaultShotgun,
-  PlasmaShotgun,
-  Jackhammer,
-  SuperShotgun,
-  TristarBlaster,
-  ButchersCleaver,
-  Mjollnir,
-  SubtleKnife,
-  Trigun,
-  AntiFreakJackal,
-  Minigun,
-  Chaingun,
-  RocketLauncher,
-  PlasmaRifle,
-  Bfg9000,
-  Chainsaw,
-  CombatKnife,
-  Ammo9mm(u32),
-  AmmoShells(u32),
-  AmmoRockets(u32),
-  AmmoCells(u32),
-  AmmoPackRockets,
-  AmmoPackCells,
-  AmmoPack9mm,
-  AmmoPackShells,
-  SmallMedPack,
-  LargeMedPack,
-  GreenArmor,
-  BlueArmor,
-  RedArmor,
-  OnyxArmor,
-  PhaseshiftArmor,
-  GothicArmor,
-  MaleksArmor,
-  CyberneticArmor,
-  Necroarmor,
-  MedicalPowerarmor,
-  LavaArmor,
-  ShieldedArmor,
-  PhaseDevice,
-}
-
 impl ItemSpawnKind {
-  /// All stable spawn families with normalized representative values.
-  ///
-  /// Loose-ammo counts are intentionally zero here; callers own the amount
-  /// for a concrete item instance. Gameplay definitions and balance remain
-  /// core-owned, while this catalog supplies stable family coverage.
-  pub const ALL: &[Self] = &[
-    Self::Pistol,
-    Self::Shotgun,
-    Self::DoubleShotgun,
-    Self::CombatShotgun,
-    Self::Blaster,
-    Self::LaserRifle,
-    Self::MissileLauncher,
-    Self::NuclearPlasmaRifle,
-    Self::NuclearBfg9000,
-    Self::Bfg10k,
-    Self::MegaBuster,
-    Self::GrammatonBeretta,
-    Self::FragShotgun,
-    Self::RevenantsLauncher,
-    Self::Railgun,
-    Self::AcidSpitter,
-    Self::NullPointer,
-    Self::CombatPistol,
-    Self::AssaultShotgun,
-    Self::PlasmaShotgun,
-    Self::Jackhammer,
-    Self::SuperShotgun,
-    Self::TristarBlaster,
-    Self::ButchersCleaver,
-    Self::Mjollnir,
-    Self::SubtleKnife,
-    Self::Trigun,
-    Self::AntiFreakJackal,
-    Self::Minigun,
-    Self::Chaingun,
-    Self::RocketLauncher,
-    Self::PlasmaRifle,
-    Self::Bfg9000,
-    Self::Chainsaw,
-    Self::CombatKnife,
-    Self::Ammo9mm(0),
-    Self::AmmoShells(0),
-    Self::AmmoRockets(0),
-    Self::AmmoCells(0),
-    Self::AmmoPackRockets,
-    Self::AmmoPackCells,
-    Self::AmmoPack9mm,
-    Self::AmmoPackShells,
-    Self::SmallMedPack,
-    Self::LargeMedPack,
-    Self::GreenArmor,
-    Self::BlueArmor,
-    Self::RedArmor,
-    Self::OnyxArmor,
-    Self::PhaseshiftArmor,
-    Self::GothicArmor,
-    Self::MaleksArmor,
-    Self::CyberneticArmor,
-    Self::Necroarmor,
-    Self::MedicalPowerarmor,
-    Self::LavaArmor,
-    Self::ShieldedArmor,
-    Self::PhaseDevice,
-  ];
-
-  /// Returns the stable presentation/replay archetype for this spawn family.
-  #[must_use]
-  pub const fn archetype(self) -> ItemArchetype {
-    match self {
-      Self::Pistol => ItemArchetype::Pistol,
-      Self::Shotgun => ItemArchetype::Shotgun,
-      Self::DoubleShotgun => ItemArchetype::DoubleShotgun,
-      Self::CombatShotgun => ItemArchetype::CombatShotgun,
-      Self::Blaster => ItemArchetype::Blaster,
-      Self::LaserRifle => ItemArchetype::LaserRifle,
-      Self::MissileLauncher => ItemArchetype::MissileLauncher,
-      Self::NuclearPlasmaRifle => ItemArchetype::NuclearPlasmaRifle,
-      Self::NuclearBfg9000 => ItemArchetype::NuclearBfg9000,
-      Self::Bfg10k => ItemArchetype::Bfg10k,
-      Self::MegaBuster => ItemArchetype::MegaBuster,
-      Self::GrammatonBeretta => ItemArchetype::GrammatonBeretta,
-      Self::FragShotgun => ItemArchetype::FragShotgun,
-      Self::RevenantsLauncher => ItemArchetype::RevenantsLauncher,
-      Self::Railgun => ItemArchetype::Railgun,
-      Self::AcidSpitter => ItemArchetype::AcidSpitter,
-      Self::NullPointer => ItemArchetype::NullPointer,
-      Self::CombatPistol => ItemArchetype::CombatPistol,
-      Self::AssaultShotgun => ItemArchetype::AssaultShotgun,
-      Self::PlasmaShotgun => ItemArchetype::PlasmaShotgun,
-      Self::Jackhammer => ItemArchetype::Jackhammer,
-      Self::SuperShotgun => ItemArchetype::SuperShotgun,
-      Self::TristarBlaster => ItemArchetype::TristarBlaster,
-      Self::ButchersCleaver => ItemArchetype::ButchersCleaver,
-      Self::Mjollnir => ItemArchetype::Mjollnir,
-      Self::SubtleKnife => ItemArchetype::SubtleKnife,
-      Self::Trigun => ItemArchetype::Trigun,
-      Self::AntiFreakJackal => ItemArchetype::AntiFreakJackal,
-      Self::Minigun => ItemArchetype::Minigun,
-      Self::Chaingun => ItemArchetype::Chaingun,
-      Self::RocketLauncher => ItemArchetype::RocketLauncher,
-      Self::PlasmaRifle => ItemArchetype::PlasmaRifle,
-      Self::Bfg9000 => ItemArchetype::Bfg9000,
-      Self::Chainsaw => ItemArchetype::Chainsaw,
-      Self::CombatKnife => ItemArchetype::CombatKnife,
-      Self::Ammo9mm(_) => ItemArchetype::Ammo9mm,
-      Self::AmmoShells(_) => ItemArchetype::AmmoShells,
-      Self::AmmoRockets(_) => ItemArchetype::AmmoRockets,
-      Self::AmmoCells(_) => ItemArchetype::AmmoCells,
-      Self::AmmoPackRockets => ItemArchetype::AmmoPackRockets,
-      Self::AmmoPackCells => ItemArchetype::AmmoPackCells,
-      Self::AmmoPack9mm => ItemArchetype::AmmoPack9mm,
-      Self::AmmoPackShells => ItemArchetype::AmmoPackShells,
-      Self::SmallMedPack => ItemArchetype::SmallMedPack,
-      Self::LargeMedPack => ItemArchetype::LargeMedPack,
-      Self::GreenArmor => ItemArchetype::GreenArmor,
-      Self::BlueArmor => ItemArchetype::BlueArmor,
-      Self::RedArmor => ItemArchetype::RedArmor,
-      Self::OnyxArmor => ItemArchetype::OnyxArmor,
-      Self::PhaseshiftArmor => ItemArchetype::PhaseshiftArmor,
-      Self::GothicArmor => ItemArchetype::GothicArmor,
-      Self::MaleksArmor => ItemArchetype::MaleksArmor,
-      Self::CyberneticArmor => ItemArchetype::CyberneticArmor,
-      Self::Necroarmor => ItemArchetype::Necroarmor,
-      Self::MedicalPowerarmor => ItemArchetype::MedicalPowerarmor,
-      Self::LavaArmor => ItemArchetype::LavaArmor,
-      Self::ShieldedArmor => ItemArchetype::ShieldedArmor,
-      Self::PhaseDevice => ItemArchetype::PhaseDevice,
-    }
-  }
-
   /// Returns the explicit stack count carried by a loose-ammo spawn.
   #[must_use]
   pub const fn stack_count(self) -> Option<u32> {
@@ -602,6 +409,11 @@ mod tests {
     for &kind in ItemSpawnKind::ALL {
       let archetype = kind.archetype();
       assert_ne!(archetype, ItemArchetype::Unknown);
+      assert_eq!(
+        archetype.requires_stack_count(),
+        kind.stack_count().is_some(),
+        "catalog stack-shape mismatch for {archetype:?}"
+      );
       assert!(
         !archetypes.contains(&archetype),
         "duplicate spawn catalog archetype: {archetype:?}"

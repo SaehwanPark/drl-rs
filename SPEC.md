@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.142`
+Current project version: `0.2.143`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -41,9 +41,10 @@ non-goals for reproduction.
 ### 2.1a Scope and steering gate
 
 - **Steering priority:** Content-model scalability (Gate C).
-- **Observable outcome:** `ItemArchetype` variants, stable names, and catalog
-  order have one compile-time declaration; existing replay, asset, and parsing
-  projections continue to consume the same `ALL` view.
+- **Observable outcome:** `ItemArchetype` and `ItemSpawnKind` variants,
+  normalized catalog order, stable names, and routine spawn projections have
+  one compile-time declaration; existing replay, asset, and parsing projections
+  continue to consume the same stable views.
 - **Gameplay/replay impact:** No item balance, spawn payload, command, replay
   schema, or RNG behavior changes.
 - **Protocol/domain ownership:** `drl-protocol` owns stable identity and wire
@@ -51,14 +52,16 @@ non-goals for reproduction.
 - **Evidence boundary:** This is a Rust catalog/invariant slice. Legacy runtime,
   browser, audio/visual, and external capture comparisons are `NOT_RUN`.
 - **Non-goals:** Broad content migration, behavior vocabulary, gameplay
-  definitions, count-sensitive spawn changes, and presentation parity.
+  definitions, count-sensitive spawn reconstruction changes, and presentation
+  parity.
 
 ### 2.2 Why this slice is bounded
 
-The existing Gate C work already centralizes spawn families, core definitions,
-replay projections, and coverage. The remaining routine identity duplication is
-the protocol enum/`ALL`/stable-name trio. This slice removes that duplication
-without broadening gameplay or behavior claims.
+The existing Gate C work already centralizes core definitions, replay
+projections, and coverage. This slice removes the remaining routine duplication
+between the stable archetype and replay spawn-family declarations without
+broadening gameplay or behavior claims. Count-sensitive reconstruction remains
+an explicit replay boundary because the normalized catalog stores zero counts.
 
 Behavioral and presentation mappings remain explicit by design. The catalog
 therefore improves routine identity registration while preserving compiler
@@ -67,13 +70,15 @@ exhaustiveness at semantic boundaries.
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
 
-### 2.3 Gate C item identity contracts
+### 2.3 Gate C item identity and spawn contracts
 
-The catalog declaration is the only routine source for `ItemArchetype` variants,
-ordered `ALL`, and stable wire names. `from_stable_name` must round-trip every
-catalog entry, names must be unique, and existing consumers must continue to
-iterate the same order. Count-sensitive loose-ammo reconstruction and semantic
-definition/presentation mappings remain explicit.
+The catalog declaration is the only routine source for `ItemArchetype` and
+`ItemSpawnKind` variants, ordered `ALL` views, stable wire names, normalized
+spawn values, and archetype mapping.
+`from_stable_name` must round-trip every archetype, names must be unique, and
+existing consumers must continue to iterate the same order. Count-sensitive
+loose-ammo reconstruction and semantic definition/presentation mappings remain
+explicit.
 
 #### Legacy evidence boundary
 
@@ -412,16 +417,18 @@ insufficient.
 
 - [x] Inventory all current manual fan-out points for adding an item archetype;
   see [the verified inventory](docs/steering/decisions/item-registration-fanout-inventory.md).
-- [ ] Establish one authoritative compile-time item/content catalog or
-  equivalent source of truth. **Partial in `0.2.118`:** stable spawn-family
-  identity, definition coverage, replay JSON encode/decode and completeness
-  fixtures, stable-name parsing/display, and routine descriptor coverage tests
-  now derive from typed catalogs/projections; core structural validation uses
-  the protocol catalog through `CURRENT_ITEM_SPAWN_KINDS`; behavioral and
-  presentation mappings remain explicit.
-- [ ] Generate or mechanically derive routine projections such as stable IDs,
-  display strings, validation coverage, replay names, and presentation lookup
-  where doing so does not weaken type safety.
+- [x] Establish one authoritative compile-time item/content catalog or
+  equivalent source of truth for routine stable identity and normalized spawn
+  registration. Stable spawn-family identity, definition coverage, replay JSON
+  encode/decode and completeness fixtures, stable-name parsing/display, and
+  routine descriptor coverage tests derive from typed catalogs/projections;
+  core structural validation uses the protocol catalog through
+  `CURRENT_ITEM_SPAWN_KINDS`; behavioral and presentation mappings remain
+  explicit.
+- [x] Generate or mechanically derive routine projections such as stable IDs,
+  display strings, validation coverage, replay names, and normalized spawn
+  lookup where doing so does not weaken type safety. Count-sensitive payload
+  reconstruction remains explicit.
 - [x] Derive the replay loose-ammo count requirement from the protocol
   archetype catalog and remove the duplicate MCP decoder variant list.
 - [x] Resolve core item definitions through a single catalog ordered to the
@@ -763,9 +770,11 @@ sampling identity in replay metadata. Its transition did:
 The bounded implementation target for this revision is one compile-time source
 for routine stable item identity projections. Its transition must:
 
-- [x] generate `ItemArchetype`, ordered `ALL`, and stable wire names from one
-  protocol declaration;
-- [x] preserve stable-name uniqueness, round-trip parsing, and catalog order;
+- [x] generate `ItemArchetype` and `ItemSpawnKind`, ordered `ALL` views, stable
+  wire names, normalized spawn values, and archetype mapping from one protocol
+  declaration;
+- [x] preserve stable-name uniqueness, round-trip parsing, spawn-family
+  round-trips, and catalog order;
 - [x] keep count-sensitive spawn reconstruction, gameplay definitions, and
   presentation mappings explicit;
 - [x] record legacy runtime, behavior, browser, and audiovisual comparisons as
@@ -781,8 +790,10 @@ All of the following are required:
   declared in replay metadata.
 - [x] Replays declare gameplay/RNG semantics compatibility and reject
   incompatible interpretation.
-- [ ] Routine content registration has one authoritative catalog path with
-  materially reduced manual fan-out.
+- [x] Routine stable identity and normalized spawn registration have one
+  authoritative catalog path with materially reduced manual fan-out; gameplay
+  balance, count-sensitive reconstruction, behavior, and presentation remain
+  explicitly owned elsewhere.
 - [ ] The typed behavior model passes the selected legacy stress cases.
 - [ ] `drl-protocol` contains stable semantic contracts but no longer owns
   mutable gameplay balance merely because a type crosses a boundary.
