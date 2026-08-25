@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.127`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.128`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -143,9 +143,10 @@ replays, and regression testing.
     Gothic Armor, Malek's Armor, Cybernetic Armor, Necroarmor, Medical
     Powerarmor, Lava Armor, and Shielded Armor families with replay/atlas
     coverage;
-    Medical Powerarmor's periodic repair, Subtle Knife's alternate invoke, and
-    Trigun's confirmed alternate reload/nuke transition are behavior-covered
-    through typed deterministic transitions and events in the headless core;
+    Medical Powerarmor's periodic repair, Subtle Knife's alternate invoke,
+    Trigun's confirmed alternate reload/nuke transition, and Grammaton's typed
+    single/burst/auto fire-mode cycle are behavior-covered through typed
+    deterministic transitions and events in the headless core;
     resistance, movement, prepared-slot consumption, explosion/map effects,
     other dynamic healing, weapon callbacks/effects, and broader legacy item
     behavior remain staged.

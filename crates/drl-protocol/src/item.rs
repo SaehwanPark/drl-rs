@@ -63,6 +63,17 @@ pub enum ItemCategory {
   PhaseDevice,
 }
 
+/// Typed fire mode for the Grammaton Cleric Beretta.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum WeaponFireMode {
+  /// One round using the single-fire profile.
+  Single,
+  /// Three-round burst profile.
+  Burst,
+  /// Six-round full-auto profile.
+  Auto,
+}
+
 /// Stable presentation identifier for an item family.
 ///
 /// Unlike the display name, this identifier is safe to use in asset lookup

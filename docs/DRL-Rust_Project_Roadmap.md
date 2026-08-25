@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.127`
+Current project version: `0.2.128`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.127)
+## 3. Current Progress Summary (`VERSION` 0.2.128)
 
 ### Delivered Foundations
 
@@ -129,6 +129,13 @@ verification item uses explicit status semantics:
   cover the order, including same-position `Wait`; gameplay-semantics replay
   identity advances to `6` and rejects version-5 envelopes until migration.
   Controlled legacy runtime comparison is `NOT_RUN`.
+- **M9/Gate D Grammaton behavior (`0.2.128`)**: Pinned legacy source now
+  drives a typed Grammaton fire-mode cycle (`Single -> Burst -> Auto`) with
+  mode-specific damage/shot profiles, a 200 score-count cost, deterministic
+  multi-shot ranged resolution, and an ordered mode-change event. Partial
+  bursts reject before clip/RNG mutation; gameplay-semantics replay identity
+  advances to `7` and rejects older envelopes until migration. Legacy runtime
+  accuracy-equation and presentation comparison remain `NOT_RUN`.
 - **Gate D first behavior slice:** Medical Powerarmor now has a typed,
   deterministic periodic-repair transition in `drl-core`, accepted-turn
   integration, exact timer/durability/health edge tests, and a typed repair
@@ -649,6 +656,11 @@ scripting.
   nuke transition, terminal internal damage, and ordered events without
   destroying the weapon. Legacy runtime, explosion/map effects, and
   presentation parity remain `NOT_RUN`/open.
+- [x] Grammaton Cleric Beretta alternate reload is behavior-covered by a typed
+  fire-mode cycle with deterministic single/burst/auto profiles, a bounded
+  200 score-count cost, ordered multi-shot resolution, and replay/MCP event
+  projection. Legacy accuracy-equation and presentation parity remain
+  `NOT_RUN`/open.
 - [x] Direct player diagonal movement preserves the pinned destination-only
   validation rule, including corner cutting around two blocked cardinal
   neighbors; AI fallback remains a separate policy and legacy runtime

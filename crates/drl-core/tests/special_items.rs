@@ -695,3 +695,290 @@ fn trigun_alt_reload_replay_is_deterministic() {
       .any(|event| matches!(event, GameEvent::LevelNuked { .. }))
   );
 }
+
+#[test]
+fn grammaton_alt_reload_cycles_modes_and_resolves_shot_counts() {
+  let mut game = Game::new_arena(794, 20, 20).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let grammaton_id = game.world_mut().allocate_item_id();
+  let player = game.world_mut().get_actor_mut(player_id).unwrap();
+  player.set_score_count(1_000);
+  player
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, Item::grammaton_beretta(grammaton_id))
+    .unwrap();
+  let target_id = game
+    .world_mut()
+    .spawn_monster(Position::new(12, 10), "Target", 200, 1, (1, 1))
+    .unwrap();
+
+  let events = game
+    .step(Command::AltReload {
+      item_id: grammaton_id,
+      confirmed: false,
+    })
+    .unwrap();
+  assert!(events.iter().any(|event| matches!(
+    event,
+    GameEvent::GrammatonFireModeChanged {
+      entity_id,
+      item_id,
+      mode: drl_protocol::WeaponFireMode::Burst,
+      score_count_remaining: 800,
+    } if *entity_id == player_id && *item_id == grammaton_id
+  )));
+  let weapon = game.world().player().unwrap().equipment().weapon().unwrap();
+  assert_eq!(
+    weapon.weapon_properties().unwrap().fire_mode,
+    drl_protocol::WeaponFireMode::Burst
+  );
+  assert_eq!(weapon.weapon_properties().unwrap().damage, (1, 8));
+
+  let events = game
+    .step(Command::AttackRanged(Position::new(12, 10)))
+    .unwrap();
+  assert_eq!(
+    events
+      .iter()
+      .filter(|event| matches!(
+        event,
+        GameEvent::AttackResolved {
+          attacker_id,
+          target_id: observed,
+          is_ranged: true,
+          ..
+        } if *attacker_id == player_id && *observed == target_id
+      ))
+      .count(),
+    3
+  );
+  assert_eq!(
+    game
+      .world()
+      .player()
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .current_clip,
+    15
+  );
+
+  game
+    .step(Command::AltReload {
+      item_id: grammaton_id,
+      confirmed: true,
+    })
+    .unwrap();
+  assert_eq!(
+    game
+      .world()
+      .player()
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .fire_mode,
+    drl_protocol::WeaponFireMode::Auto
+  );
+  let events = game
+    .step(Command::AttackRanged(Position::new(12, 10)))
+    .unwrap();
+  assert_eq!(
+    events
+      .iter()
+      .filter(|event| matches!(
+        event,
+        GameEvent::AttackResolved {
+          attacker_id,
+          target_id: observed,
+          is_ranged: true,
+          ..
+        } if *attacker_id == player_id && *observed == target_id
+      ))
+      .count(),
+    6
+  );
+  assert_eq!(game.world().player().unwrap().score_count(), 600);
+}
+
+#[test]
+fn grammaton_partial_burst_rejection_preserves_game_and_rng() {
+  let mut game = Game::new_arena(795, 20, 20).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let grammaton_id = game.world_mut().allocate_item_id();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, Item::grammaton_beretta(grammaton_id))
+    .unwrap();
+  game
+    .step(Command::AltReload {
+      item_id: grammaton_id,
+      confirmed: true,
+    })
+    .unwrap();
+  game
+    .step(Command::AltReload {
+      item_id: grammaton_id,
+      confirmed: true,
+    })
+    .unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 5;
+  let target_id = game
+    .world_mut()
+    .spawn_monster(Position::new(12, 10), "Target", 200, 1, (1, 1))
+    .unwrap();
+  let before = game.clone();
+
+  assert_eq!(
+    game
+      .step(Command::AttackRanged(Position::new(12, 10)))
+      .unwrap_err(),
+    drl_protocol::CommandError::NoAmmoInClip
+  );
+  assert_eq!(game, before);
+  assert!(game.world().get_actor(target_id).unwrap().is_alive());
+}
+
+#[test]
+fn grammaton_burst_stops_on_lethal_hit_and_drops_once() {
+  let mut game = Game::new_arena(797, 20, 20).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let grammaton_id = game.world_mut().allocate_item_id();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, Item::grammaton_beretta(grammaton_id))
+    .unwrap();
+  game
+    .step(Command::AltReload {
+      item_id: grammaton_id,
+      confirmed: true,
+    })
+    .unwrap();
+  let target_position = Position::new(12, 10);
+  let target_id = game
+    .world_mut()
+    .spawn_monster(target_position, "Dropper", 1, 1, (1, 1))
+    .unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(target_id)
+    .unwrap()
+    .set_death_drop(Some(ItemSpawnKind::SmallMedPack));
+
+  let events = game.step(Command::AttackRanged(target_position)).unwrap();
+
+  assert_eq!(
+    events
+      .iter()
+      .filter(|event| matches!(
+        event,
+        GameEvent::AttackResolved {
+          target_id: observed,
+          is_ranged: true,
+          ..
+        } if *observed == target_id
+      ))
+      .count(),
+    1,
+    "the burst must stop after the first lethal shot"
+  );
+  let death_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::ActorDied { entity_id, .. } if *entity_id == target_id
+      )
+    })
+    .unwrap();
+  let drop_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::ItemDropped { entity_id, .. } if *entity_id == target_id
+      )
+    })
+    .unwrap();
+  assert!(death_index < drop_index);
+  assert_eq!(
+    events
+      .iter()
+      .filter(
+        |event| matches!(event, GameEvent::ItemDropped { entity_id, .. } if *entity_id == target_id)
+      )
+      .count(),
+    1
+  );
+  assert_eq!(game.world().ground_items_at(target_position).len(), 1);
+  assert!(!game.world().get_actor(target_id).unwrap().is_alive());
+  assert_eq!(
+    game
+      .world()
+      .player()
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .current_clip,
+    15,
+    "the selected three-round clip cost is committed even when the first shot kills"
+  );
+}
+
+#[test]
+fn grammaton_mode_replay_is_deterministic() {
+  let mut replay =
+    ReplayLog::new(796, 20, 20, Position::new(10, 10)).with_player_config(PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: Vec::new(),
+      equipped_weapon: Some(ItemSpawnKind::GrammatonBeretta),
+      equipped_armor: None,
+    });
+  replay.record_monster(MonsterSpawnSpec::new(
+    Position::new(12, 10),
+    "Target",
+    200,
+    1,
+    (1, 1),
+  ));
+  replay.record_command(Command::AltReload {
+    item_id: ItemId::new(4),
+    confirmed: true,
+  });
+  replay.record_command(Command::AttackRanged(Position::new(12, 10)));
+
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+  let (_game, events) = ReplayEngine::run(&replay).unwrap();
+  assert!(events.iter().any(|event| matches!(
+    event,
+    GameEvent::GrammatonFireModeChanged {
+      mode: drl_protocol::WeaponFireMode::Burst,
+      ..
+    }
+  )));
+}

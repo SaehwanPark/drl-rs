@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.127`
+Current project version: `0.2.128`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -104,7 +104,8 @@ Presentation Boundary
     `LevelId`.
   - Commands & Errors: `Command`, `CommandError`.
   - Observations: `PlayerObservation`, `TileView`, `ActorView`, `ItemView`.
-  - Events: `GameEvent` stream (combat, movement, items, levels).
+  - Events: `GameEvent` stream (combat, movement, items, levels, and typed
+    alternate-behavior transitions such as Grammaton fire-mode changes).
   - Current residual typed-content helpers include `MonsterKind::definition()`
     and `TileKind::definition()`; their gameplay-policy ownership is a tracked
     boundary-cleanup item, not a pattern for further expansion.
@@ -146,6 +147,9 @@ Presentation Boundary
     reload uses the dedicated `trigun` transition and `NukeState`, preserving
     explicit confirmation, resource clamps, weapon retention, and terminal
     internal damage through `Command::AltReload` and typed nuke events. Legacy
+    Grammaton mode cycling uses the dedicated `grammaton` transition and a
+    typed `WeaponFireMode`; mode-specific multi-shot resolution preflights
+    clip capacity before consuming RNG and emits ordered shot events. Legacy
     resistance, movement, prepared-slot consumption, map-cell explosions, and
     broader item behavior remain explicit gaps, as do exact legacy
     timing/accuracy semantics.

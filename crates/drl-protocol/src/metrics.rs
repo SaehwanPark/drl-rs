@@ -136,6 +136,7 @@ impl EpisodeMetrics {
       | GameEvent::MedicalPowerarmorRepaired { .. }
       | GameEvent::SubtleKnifeInvoked { .. }
       | GameEvent::TrigunAltReloaded { .. }
+      | GameEvent::GrammatonFireModeChanged { .. }
       | GameEvent::NukeActivated { .. }
       | GameEvent::LevelNuked { .. }
       | GameEvent::ActorKnockedBack { .. }
