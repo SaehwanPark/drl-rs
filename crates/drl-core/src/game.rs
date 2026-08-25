@@ -15,6 +15,10 @@ use crate::item::Item;
 use crate::jackhammer::{JACKHAMMER_MODE_SCORE_COST, JackhammerTransition};
 use crate::level_definition::standard_procedural;
 use crate::nuke::NukeState;
+use crate::null_pointer::{
+  NULL_POINTER_EXPLOSION_DAMAGE, NULL_POINTER_EXPLOSION_DELAY, NULL_POINTER_EXPLOSION_RADIUS,
+  NullPointerHitTransition,
+};
 use crate::rng::GameRng;
 use crate::scheduler::{ACTION_THRESHOLD, Scheduler};
 use crate::subtle_knife::{SUBTLE_KNIFE_TARGET_DAMAGE, SubtleKnifeError};
@@ -1136,7 +1140,7 @@ impl Game {
     let distance = p_pos.distance_chebyshev(target_pos);
 
     // Prepare the full validation boundary before consuming ammo or RNG.
-    let (fire_cost, shot_count) = {
+    let (fire_cost, shot_count, null_pointer_item_id) = {
       let player = self
         .state
         .world
@@ -1164,7 +1168,9 @@ impl Game {
         return Err(CommandError::NoAmmoInClip);
       }
 
-      (props.fire_cost, shot_count)
+      let null_pointer_item_id =
+        (weapon.archetype() == drl_protocol::ItemArchetype::NullPointer).then_some(weapon.id());
+      (props.fire_cost, shot_count, null_pointer_item_id)
     };
 
     // Keep all ordinary command validation ahead of the death-drop preflight,
@@ -1228,6 +1234,12 @@ impl Game {
         is_ranged: true,
       });
 
+      if let AttackOutcome::Hit { .. } = outcome
+        && let Some(item_id) = null_pointer_item_id
+      {
+        self.execute_null_pointer_hit(player_id, item_id, target_monster_id, events)?;
+      }
+
       if damage == 0 {
         continue;
       }
@@ -1284,6 +1296,44 @@ impl Game {
     }
 
     Ok(fire_cost)
+  }
+
+  /// Applies Null Pointer's typed target branch and records its deferred blast.
+  fn execute_null_pointer_hit(
+    &mut self,
+    entity_id: drl_protocol::EntityId,
+    item_id: drl_protocol::ItemId,
+    target_id: drl_protocol::EntityId,
+    events: &mut Vec<GameEvent>,
+  ) -> Result<(), CommandError> {
+    let target_is_boss = self
+      .state
+      .world
+      .get_actor(target_id)
+      .ok_or(CommandError::EntityNotFound(target_id))?
+      .is_boss();
+    let target = self
+      .state
+      .world
+      .get_actor_mut(target_id)
+      .ok_or(CommandError::EntityNotFound(target_id))?;
+    let score_count_remaining =
+      NullPointerHitTransition::apply(target.score_count_mut(), target_is_boss);
+    events.push(GameEvent::NullPointerHit {
+      entity_id,
+      item_id,
+      target_id,
+      target_is_boss,
+      score_count_remaining,
+    });
+    events.push(GameEvent::NullPointerExplosionScheduled {
+      entity_id,
+      target_id,
+      delay: NULL_POINTER_EXPLOSION_DELAY,
+      radius: NULL_POINTER_EXPLOSION_RADIUS,
+      damage: NULL_POINTER_EXPLOSION_DAMAGE,
+    });
+    Ok(())
   }
 
   /// Spawns a loot drop on the ground when a monster dies.

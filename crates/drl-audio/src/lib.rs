@@ -66,6 +66,8 @@ pub fn cues_for_events(events: &[GameEvent]) -> Vec<AudioCue> {
       | GameEvent::TrigunAltReloaded { .. }
       | GameEvent::GrammatonFireModeChanged { .. }
       | GameEvent::JackhammerFireModeChanged { .. }
+      | GameEvent::NullPointerHit { .. }
+      | GameEvent::NullPointerExplosionScheduled { .. }
       | GameEvent::NukeActivated { .. }
       | GameEvent::LevelNuked { .. }
       | GameEvent::TurnEnded { .. } => {}

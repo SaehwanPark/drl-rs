@@ -329,7 +329,8 @@ impl Scenario {
           monster.ranged_range,
           monster.accuracy,
         )
-        .with_death_drop(monster.death_drop);
+        .with_death_drop(monster.death_drop)
+        .with_boss(monster.is_boss);
       game.world_mut().actors_mut().insert(id, actor);
     }
 

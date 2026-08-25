@@ -15,10 +15,10 @@ pub enum ReplayVersion {
 /// Gameplay semantics identifier expected by the current replay engine.
 ///
 /// This advances independently from the wire/schema version when deterministic
-/// sampling or other simulation rules change. Version `9` includes the typed
-/// Grammaton and Jackhammer fire-mode transitions plus Lava Armor recharge and
-/// the Lava terrain contract.
-pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 9;
+/// sampling or other simulation rules change. Version `10` includes typed
+/// Grammaton and Jackhammer fire modes, Lava Armor recharge, and the bounded
+/// Null Pointer on-hit score branch.
+pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 10;
 
 /// Procedural-generation semantics identifier expected for replays that carry
 /// a procedural generation configuration. Version 2 includes the exact
@@ -38,7 +38,7 @@ pub struct ReplayMetadata {
   /// Engine crate version string.
   pub engine_version: String,
   /// Gameplay semantics version required to interpret the command history.
-  /// Version 9 includes typed fire-mode transitions and Lava Armor recharge.
+  /// Version 10 includes typed fire modes, Lava Armor recharge, and Null Pointer.
   pub gameplay_semantics_version: u32,
   /// Procedural-generation semantics required when reconstructing generated maps.
   pub generator_semantics_version: u32,
@@ -152,6 +152,7 @@ pub enum ItemSpawnKind {
   RevenantsLauncher,
   Railgun,
   AcidSpitter,
+  NullPointer,
   CombatPistol,
   AssaultShotgun,
   PlasmaShotgun,
@@ -218,6 +219,7 @@ impl ItemSpawnKind {
     Self::RevenantsLauncher,
     Self::Railgun,
     Self::AcidSpitter,
+    Self::NullPointer,
     Self::CombatPistol,
     Self::AssaultShotgun,
     Self::PlasmaShotgun,
@@ -281,6 +283,7 @@ impl ItemSpawnKind {
       Self::RevenantsLauncher => ItemArchetype::RevenantsLauncher,
       Self::Railgun => ItemArchetype::Railgun,
       Self::AcidSpitter => ItemArchetype::AcidSpitter,
+      Self::NullPointer => ItemArchetype::NullPointer,
       Self::CombatPistol => ItemArchetype::CombatPistol,
       Self::AssaultShotgun => ItemArchetype::AssaultShotgun,
       Self::PlasmaShotgun => ItemArchetype::PlasmaShotgun,
@@ -384,6 +387,8 @@ pub struct MonsterSpawnSpec {
   pub ranged_range: u32,
   pub accuracy: i32,
   pub death_drop: Option<ItemSpawnKind>,
+  /// Whether this target is a boss for target-dependent item behavior.
+  pub is_boss: bool,
 }
 
 impl MonsterSpawnSpec {
@@ -406,6 +411,7 @@ impl MonsterSpawnSpec {
       ranged_range: 0,
       accuracy: 65,
       death_drop: None,
+      is_boss: false,
     }
   }
 
@@ -422,6 +428,13 @@ impl MonsterSpawnSpec {
   #[must_use]
   pub fn with_death_drop(mut self, drop: Option<ItemSpawnKind>) -> Self {
     self.death_drop = drop;
+    self
+  }
+
+  /// Marks this monster as a boss for target-dependent item behavior.
+  #[must_use]
+  pub const fn with_boss(mut self, is_boss: bool) -> Self {
+    self.is_boss = is_boss;
     self
   }
 }

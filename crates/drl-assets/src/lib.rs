@@ -710,6 +710,12 @@ pub const fn item_sprite(archetype: ItemArchetype) -> SpriteDescriptor {
       layers: ITEM_LAYERS,
       animation: TWO_FRAME_ANIMATION,
     },
+    ItemArchetype::NullPointer => SpriteDescriptor {
+      atlas: AtlasId::GunsAndPickups,
+      rect: legacy_slot(10),
+      layers: ITEM_LAYERS,
+      animation: TWO_FRAME_ANIMATION,
+    },
     ItemArchetype::AmmoPackRockets => SpriteDescriptor {
       atlas: AtlasId::GunsAndPickups,
       rect: legacy_slot(SPRITE_COLUMNS + 12),

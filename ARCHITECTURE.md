@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.130`
+Current project version: `0.2.131`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -153,6 +153,9 @@ Presentation Boundary
     `grammaton` transition and a
     typed `WeaponFireMode`; mode-specific multi-shot resolution preflights
     clip capacity before consuming RNG and emits ordered shot events. Legacy
+    Null Pointer target score branching uses the dedicated `null_pointer`
+    transition and emits a typed hit plus deferred-explosion schedule event;
+    exact area damage remains an explicit gap. Legacy
     resistance, movement, prepared-slot consumption, map-cell explosions, and
     broader item behavior remain explicit gaps, as do exact legacy
     timing/accuracy semantics.

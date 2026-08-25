@@ -114,6 +114,22 @@ pub enum GameEvent {
     mode: WeaponFireMode,
     score_count_remaining: i32,
   },
+  /// Null Pointer hit a target and applied its target-dependent score branch.
+  NullPointerHit {
+    entity_id: EntityId,
+    item_id: ItemId,
+    target_id: EntityId,
+    target_is_boss: bool,
+    score_count_remaining: i32,
+  },
+  /// Null Pointer scheduled its evidence-backed deferred splash explosion.
+  NullPointerExplosionScheduled {
+    entity_id: EntityId,
+    target_id: EntityId,
+    delay: u32,
+    radius: u32,
+    damage: u32,
+  },
   /// A typed level nuke was scheduled at an accepted command boundary.
   NukeActivated { level_id: LevelId, countdown: u32 },
   /// The scheduled level nuke resolved before its internal player damage.

@@ -4,7 +4,7 @@
 //! It intentionally does not compare values with legacy Lua, balance targets,
 //! or external captures.
 
-use drl_protocol::{MonsterDefinition, MonsterKind};
+use drl_protocol::{ItemArchetype, MonsterDefinition, MonsterKind};
 
 use crate::item_definition::{
   CURRENT_ITEM_SPAWN_KINDS, ItemDefinition, ItemDefinitionKind, definition_for_spawn_kind,
@@ -125,7 +125,12 @@ fn validate_item_definition(definition: &ItemDefinition) -> Result<(), ContentVa
       accuracy,
       ..
     } => {
-      require_range("item", key, "damage", damage)?;
+      if definition.archetype == ItemArchetype::NullPointer && damage == (0, 0) {
+        // Null Pointer's direct hit has no damage; its typed on-hit behavior
+        // owns the target branch and deferred explosion schedule.
+      } else {
+        require_range("item", key, "damage", damage)?;
+      }
       if !(0..=100).contains(&accuracy) {
         return Err(ContentValidationError::InvalidAccuracy { key, accuracy });
       }

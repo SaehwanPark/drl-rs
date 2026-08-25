@@ -25,6 +25,7 @@ pub mod level_definition;
 pub mod loot_definition;
 pub mod monster_roll_definition;
 pub mod nuke;
+pub mod null_pointer;
 pub mod replay;
 pub mod rng;
 pub mod scenario;
