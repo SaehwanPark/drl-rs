@@ -12,6 +12,8 @@ pub enum Tile {
   DoorOpen,
   StairsDown,
   Lava,
+  Acid,
+  Water,
 }
 
 impl Tile {
@@ -31,6 +33,8 @@ impl Tile {
       Self::DoorOpen => TileKind::DoorOpen,
       Self::StairsDown => TileKind::StairsDown,
       Self::Lava => TileKind::Lava,
+      Self::Acid => TileKind::Acid,
+      Self::Water => TileKind::Water,
     }
   }
 
@@ -188,6 +192,8 @@ mod tests {
       (Tile::DoorOpen, TileKind::DoorOpen, true, true),
       (Tile::StairsDown, TileKind::StairsDown, true, true),
       (Tile::Lava, TileKind::Lava, true, true),
+      (Tile::Acid, TileKind::Acid, true, true),
+      (Tile::Water, TileKind::Water, true, true),
     ];
 
     for (tile, kind, is_walkable, is_transparent) in expected {

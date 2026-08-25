@@ -792,7 +792,13 @@ impl Item {
         is_ranged,
         ammo_type,
         clip_capacity,
-        current_clip: clip_capacity,
+        // Acid Spitter's legacy OnCreate callback starts it empty so its
+        // terrain-fed reload behavior is observable from the first use.
+        current_clip: if definition.archetype == ItemArchetype::AcidSpitter {
+          0
+        } else {
+          clip_capacity
+        },
         damage,
         range,
         accuracy,

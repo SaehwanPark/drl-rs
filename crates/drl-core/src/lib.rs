@@ -5,6 +5,7 @@
 //! It remains strictly independent of rendering, audio, OS APIs, filesystem IO,
 //! and MCP transports.
 
+pub mod acid_spitter;
 pub mod actor;
 pub mod agent;
 pub mod ai;

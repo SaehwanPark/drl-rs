@@ -49,6 +49,8 @@ impl Scenario {
   /// - `'@'`: Player start (sets floor tile under player)
   /// - `'>'`: Down stairs (sets `Tile::StairsDown`)
   /// - `'='`: Lava tile (sets `Tile::Lava`)
+  /// - `'x'`: Acid tile (sets `Tile::Acid`)
+  /// - `'w'`: Water tile (sets `Tile::Water`)
   /// - `'h'`: Former Human monster
   /// - `'s'`: Former Sergeant monster
   /// - `'i'`: Imp monster
@@ -107,6 +109,12 @@ impl Scenario {
           }
           '=' => {
             tiles.insert(pos, Tile::Lava);
+          }
+          'x' => {
+            tiles.insert(pos, Tile::Acid);
+          }
+          'w' => {
+            tiles.insert(pos, Tile::Water);
           }
           'h' => {
             tiles.insert(pos, Tile::Floor);
@@ -393,6 +401,8 @@ impl ScenarioRunner {
         Tile::DoorClosed => drl_protocol::TileKind::DoorClosed,
         Tile::DoorOpen => drl_protocol::TileKind::DoorOpen,
         Tile::Lava => drl_protocol::TileKind::Lava,
+        Tile::Acid => drl_protocol::TileKind::Acid,
+        Tile::Water => drl_protocol::TileKind::Water,
       };
       replay.record_tile(pos, kind);
     }
@@ -482,6 +492,8 @@ impl ScenarioRunner {
         Tile::DoorClosed => drl_protocol::TileKind::DoorClosed,
         Tile::DoorOpen => drl_protocol::TileKind::DoorOpen,
         Tile::Lava => drl_protocol::TileKind::Lava,
+        Tile::Acid => drl_protocol::TileKind::Acid,
+        Tile::Water => drl_protocol::TileKind::Water,
       };
       replay.record_tile(pos, kind);
     }

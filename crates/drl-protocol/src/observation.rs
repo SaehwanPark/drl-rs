@@ -13,6 +13,8 @@ pub enum TileKind {
   DoorOpen,
   StairsDown,
   Lava,
+  Acid,
+  Water,
 }
 
 /// Immutable semantic metadata for one current tile kind.
@@ -24,7 +26,7 @@ pub struct TileDefinition {
   pub is_transparent: bool,
 }
 
-const TILE_DEFINITIONS: [TileDefinition; 6] = [
+const TILE_DEFINITIONS: [TileDefinition; 8] = [
   TileDefinition {
     kind: TileKind::Floor,
     name: "Floor",
@@ -61,6 +63,18 @@ const TILE_DEFINITIONS: [TileDefinition; 6] = [
     is_walkable: true,
     is_transparent: true,
   },
+  TileDefinition {
+    kind: TileKind::Acid,
+    name: "Acid",
+    is_walkable: true,
+    is_transparent: true,
+  },
+  TileDefinition {
+    kind: TileKind::Water,
+    name: "Water",
+    is_walkable: true,
+    is_transparent: true,
+  },
 ];
 
 impl TileKind {
@@ -74,6 +88,8 @@ impl TileKind {
       Self::DoorOpen => TILE_DEFINITIONS[3],
       Self::StairsDown => TILE_DEFINITIONS[4],
       Self::Lava => TILE_DEFINITIONS[5],
+      Self::Acid => TILE_DEFINITIONS[6],
+      Self::Water => TILE_DEFINITIONS[7],
     }
   }
 
@@ -163,6 +179,8 @@ mod tests {
       (TileKind::DoorOpen, "Door Open", true, true),
       (TileKind::StairsDown, "Stairs Down", true, true),
       (TileKind::Lava, "Lava", true, true),
+      (TileKind::Acid, "Acid", true, true),
+      (TileKind::Water, "Water", true, true),
     ];
 
     for (kind, name, is_walkable, is_transparent) in expected {

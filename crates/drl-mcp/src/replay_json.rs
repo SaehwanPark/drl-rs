@@ -226,6 +226,8 @@ fn tile_kind_to_json(kind: TileKind) -> JsonValue {
     TileKind::DoorOpen => "door_open",
     TileKind::StairsDown => "stairs_down",
     TileKind::Lava => "lava",
+    TileKind::Acid => "acid",
+    TileKind::Water => "water",
   })
 }
 

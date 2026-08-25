@@ -15,10 +15,9 @@ pub enum ReplayVersion {
 /// Gameplay semantics identifier expected by the current replay engine.
 ///
 /// This advances independently from the wire/schema version when deterministic
-/// sampling or other simulation rules change. Version `10` includes typed
-/// Grammaton and Jackhammer fire modes, Lava Armor recharge, and the bounded
-/// Null Pointer on-hit score branch.
-pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 10;
+/// sampling or other simulation rules change. Version `11` includes typed
+/// Acid/Water terrain and the Acid Spitter reload transition.
+pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 11;
 
 /// Procedural-generation semantics identifier expected for replays that carry
 /// a procedural generation configuration. Version 2 includes the exact
@@ -38,7 +37,7 @@ pub struct ReplayMetadata {
   /// Engine crate version string.
   pub engine_version: String,
   /// Gameplay semantics version required to interpret the command history.
-  /// Version 10 includes typed fire modes, Lava Armor recharge, and Null Pointer.
+  /// Version 11 includes Acid/Water terrain and Acid Spitter reload behavior.
   pub gameplay_semantics_version: u32,
   /// Procedural-generation semantics required when reconstructing generated maps.
   pub generator_semantics_version: u32,

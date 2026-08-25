@@ -325,6 +325,8 @@ fn tile_kind(value: &JsonValue, context: &str) -> Result<TileKind, String> {
     "door_open" => Ok(TileKind::DoorOpen),
     "stairs_down" => Ok(TileKind::StairsDown),
     "lava" => Ok(TileKind::Lava),
+    "acid" => Ok(TileKind::Acid),
+    "water" => Ok(TileKind::Water),
     _ => Err(format!("{context} has unsupported tile kind '{kind}'")),
   }
 }

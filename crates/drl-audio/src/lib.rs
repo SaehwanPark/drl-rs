@@ -53,7 +53,9 @@ pub fn cues_for_events(events: &[GameEvent]) -> Vec<AudioCue> {
         cues.push(AudioCue::Equip)
       }
       GameEvent::ItemUsed { .. } => cues.push(AudioCue::Use),
-      GameEvent::WeaponReloaded { .. } => cues.push(AudioCue::Reload),
+      GameEvent::WeaponReloaded { .. } | GameEvent::AcidSpitterReloaded { .. } => {
+        cues.push(AudioCue::Reload)
+      }
       GameEvent::LevelTransitioned { .. } => cues.push(AudioCue::LevelTransition),
       GameEvent::PlayerTeleported { .. } => cues.push(AudioCue::Teleport),
       GameEvent::ActorKnockedBack { .. } => cues.push(AudioCue::Knockback),

@@ -47,6 +47,8 @@ pub const fn tile_colorization_tint(tile: TileKind) -> [u8; 4] {
   match tile {
     TileKind::StairsDown => [255, 255, 0, 255],
     TileKind::Lava => [255, 80, 0, 255],
+    TileKind::Acid => [80, 255, 80, 255],
+    TileKind::Water => [80, 160, 255, 255],
     _ => NEUTRAL_COLORIZATION_TINT,
   }
 }
@@ -1358,7 +1360,9 @@ pub fn effects_for_events(events: &[GameEvent]) -> Vec<PresentationEffect> {
         Some(PresentationEffect::Equip)
       }
       GameEvent::ItemUsed { .. } => Some(PresentationEffect::Use),
-      GameEvent::WeaponReloaded { .. } => Some(PresentationEffect::Reload),
+      GameEvent::WeaponReloaded { .. } | GameEvent::AcidSpitterReloaded { .. } => {
+        Some(PresentationEffect::Reload)
+      }
       GameEvent::MedicalPowerarmorRepaired { .. } => None,
       GameEvent::LavaArmorRecharged { .. } => None,
       GameEvent::SubtleKnifeInvoked { .. } => None,
@@ -1457,6 +1461,7 @@ fn event_entity_ids(event: &GameEvent) -> [Option<EntityId>; 2] {
     | GameEvent::ItemUnequipped { entity_id, .. }
     | GameEvent::ItemUsed { entity_id, .. }
     | GameEvent::WeaponReloaded { entity_id, .. }
+    | GameEvent::AcidSpitterReloaded { entity_id, .. }
     | GameEvent::MedicalPowerarmorRepaired { entity_id, .. }
     | GameEvent::LavaArmorRecharged { entity_id, .. }
     | GameEvent::SubtleKnifeInvoked { entity_id, .. }
