@@ -9,6 +9,7 @@ pub mod actor;
 pub mod agent;
 pub mod ai;
 pub mod batch;
+pub mod behavior;
 pub mod combat;
 pub mod content_validation;
 pub mod fov;
@@ -36,6 +37,10 @@ pub use batch::{
   BatchRunner, CohortComparison, CohortConfig, CohortDepthBucket, CohortDepthDistribution,
   CohortOutcomeComparison, CohortOutcomeDistribution, CohortOutcomeTolerances, CohortReport,
   CohortReportError, CohortTolerances, EpisodeRecord,
+};
+pub use behavior::{
+  MEDICAL_REPAIR_INTERVAL, MEDICAL_REPAIR_MIN_DURABILITY_EXCLUSIVE,
+  MEDICAL_REPAIR_TIMER_AFTER_REPAIR, MedicalRepairOutcome, MedicalRepairState,
 };
 pub use combat::CombatResolver;
 pub use content_validation::{ContentValidationError, validate_current_content};

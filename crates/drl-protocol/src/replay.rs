@@ -15,8 +15,9 @@ pub enum ReplayVersion {
 /// Gameplay semantics identifier expected by the current replay engine.
 ///
 /// This advances independently from the wire/schema version when deterministic
-/// sampling or other simulation rules change.
-pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 2;
+/// sampling or other simulation rules change. Version `3` includes the
+/// accepted-turn Medical Powerarmor repair transition.
+pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 3;
 
 /// Procedural-generation semantics identifier expected for replays that carry
 /// a procedural generation configuration. Version 2 includes the exact

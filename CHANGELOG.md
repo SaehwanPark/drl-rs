@@ -3,6 +3,18 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.119]
+
+- Added the first Gate D typed behavior slice: equipped Medical Powerarmor
+  advances a deterministic armor-owned repair timer once per accepted player
+  command, heals one HP after the evidence-backed interval, spends one
+  durability point, and emits a structured `MedicalPowerarmorRepaired` event.
+- Added pure transition, durability/health edge, accepted-turn integration,
+  and deterministic event-stream tests; legacy runtime cadence and broader
+  item behavior remain explicitly open.
+- Advanced the gameplay-semantics replay identifier to `3`; old envelopes are
+  rejected until an explicit migration exists.
+
 ## [0.2.118]
 
 - Routed replay completeness fixture coverage through `ItemSpawnKind::ALL`

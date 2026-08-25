@@ -1,9 +1,11 @@
 //! Item domain models, weapon properties, armor, ammunition, and consumables.
 
 use drl_protocol::{
-  ActionCost, AmmoType, EquipmentSlot, ItemArchetype, ItemCategory, ItemId, ItemSpawnKind, ItemView,
+  ActionCost, AmmoType, EquipmentSlot, HitPoints, ItemArchetype, ItemCategory, ItemId,
+  ItemSpawnKind, ItemView,
 };
 
+use crate::behavior::{MedicalRepairOutcome, MedicalRepairState};
 use crate::item_definition::{ItemDefinitionKind, definition_for_spawn_kind};
 
 /// Physical properties for a weapon instance.
@@ -27,6 +29,31 @@ pub struct ArmorProperties {
   pub protection: u32,
   pub durability: u32,
   pub max_durability: u32,
+  medical_repair: MedicalRepairState,
+}
+
+impl ArmorProperties {
+  /// Constructs armor with a fresh typed behavior state.
+  #[must_use]
+  pub const fn new(protection: u32, durability: u32, max_durability: u32) -> Self {
+    Self {
+      protection,
+      durability,
+      max_durability,
+      medical_repair: MedicalRepairState::new(),
+    }
+  }
+
+  /// Returns the armor-owned Medical Powerarmor timer.
+  #[must_use]
+  pub const fn medical_repair_timer(&self) -> u32 {
+    self.medical_repair.timer()
+  }
+
+  /// Advances the armor-owned Medical Powerarmor transition.
+  pub fn tick_medical_repair(&mut self, hit_points: &mut HitPoints) -> MedicalRepairOutcome {
+    self.medical_repair.tick(hit_points, &mut self.durability)
+  }
 }
 
 /// Physical properties for consumable medical supplies.
@@ -208,6 +235,14 @@ impl Item {
   #[must_use]
   pub const fn armor_properties(&self) -> Option<&ArmorProperties> {
     match &self.kind {
+      ItemKind::Armor(props) => Some(props),
+      _ => None,
+    }
+  }
+
+  /// Mutable armor properties for explicit core-owned behavior transitions.
+  pub fn armor_properties_mut(&mut self) -> Option<&mut ArmorProperties> {
+    match &mut self.kind {
       ItemKind::Armor(props) => Some(props),
       _ => None,
     }
@@ -753,11 +788,7 @@ impl Item {
         protection,
         durability,
         max_durability,
-      } => ItemKind::Armor(ArmorProperties {
-        protection,
-        durability,
-        max_durability,
-      }),
+      } => ItemKind::Armor(ArmorProperties::new(protection, durability, max_durability)),
       ItemDefinitionKind::PhaseDevice => ItemKind::PhaseDevice,
     };
     Self::new(id, definition.name, definition.description, item_kind)

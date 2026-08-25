@@ -1,7 +1,7 @@
 # Architecture
 
-Last reviewed: 2026-08-24
-Current project version: `0.2.118`
+Last reviewed: 2026-08-25
+Current project version: `0.2.119`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -132,10 +132,13 @@ Presentation Boundary
     current range, accuracy, and timing are Rust policy.
     Blue and red armor preserve protection, descriptions, the shared sprite
     slot, and their presentation tints; med-pack definitions preserve pinned
-    descriptions while fixed healing remains Rust policy. Legacy resistance,
-    movement, dynamic healing, prepared-slot consumption, and broader item
-    behavior remain explicit gaps, as do weapon callbacks/effects and exact
-    legacy timing/accuracy semantics.
+    descriptions while fixed healing remains Rust policy. The explicit
+    `behavior` module now owns a typed Medical Powerarmor repair transition:
+    armor-owned timer state is advanced once per accepted player command and
+    emits `GameEvent::MedicalPowerarmorRepaired` only when one HP and one
+    durability point are actually exchanged. Legacy resistance, movement,
+    prepared-slot consumption, and broader item behavior remain explicit gaps,
+    as do weapon callbacks/effects and exact legacy timing/accuracy semantics.
   - Level Generation: `generator` (BFS reachability, room connectivity).
   - Content Definitions: `item_definition`, `loot_definition`,
     `monster_roll_definition`, `level_definition`, and descriptive

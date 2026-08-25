@@ -708,6 +708,28 @@ pub fn game_event_to_json(event: &GameEvent) -> JsonValue {
       map.insert("current_clip".to_string(), JsonValue::from(*current_clip));
       map.insert("max_clip".to_string(), JsonValue::from(*max_clip));
     }
+    GameEvent::MedicalPowerarmorRepaired {
+      entity_id,
+      item_id,
+      healed,
+      remaining_hp,
+      durability_remaining,
+      timer,
+    } => {
+      map.insert(
+        "type".to_string(),
+        JsonValue::from("MedicalPowerarmorRepaired"),
+      );
+      map.insert("entity_id".to_string(), JsonValue::from(entity_id.as_u64()));
+      map.insert("item_id".to_string(), JsonValue::from(item_id.as_u64()));
+      map.insert("healed".to_string(), JsonValue::from(*healed));
+      map.insert("remaining_hp".to_string(), JsonValue::from(*remaining_hp));
+      map.insert(
+        "durability_remaining".to_string(),
+        JsonValue::from(*durability_remaining),
+      );
+      map.insert("timer".to_string(), JsonValue::from(*timer));
+    }
     GameEvent::LevelTransitioned {
       from_level,
       to_level,
