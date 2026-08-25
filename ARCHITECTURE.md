@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.125`
+Current project version: `0.2.126`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -66,6 +66,9 @@ Presentation Boundary
 2. **Simulation Authority**: `drl-core` is the sole authority for world state,
    action legality, action costs, energy scheduling, PRNG consumption, and
    event emission.
+   Direct player diagonal movement validates the requested destination only;
+   adjacent-cardinal corner checks are not part of that command path. Monster
+   `MoveTowards` fallback remains a separate AI policy.
 3. **One-Way Presentation**: Presentation layers (`drl-render`, `drl-audio`,
    `drl-web`) consume observations and events only. Rendering, animation, audio,
    tab visibility, viewport resize, or GPU device loss **never** advance the

@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.125`
+Current project version: `0.2.126`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,15 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9/Gate C Catalog-Owned Inverse Spawn Projection
+## 2. Active Implementation Slice: M9/Vertical Fidelity Destination-Only Movement
 
 ### 2.1 Objective
 
-Close a bounded Gate C routine-projection gap by deriving ordinary inverse spawn
-lookup from the stable `ItemSpawnKind::ALL` catalog. Loose-ammo counts remain an
-explicit typed exception because normalized catalog entries do not carry a
-concrete amount; missing counts and unknown archetypes must continue to reject.
+Close a bounded vertical-fidelity movement gap by pinning the legacy movement
+source and making direct-player diagonal corner cutting an executable Rust
+contract. A walkable diagonal destination is accepted even when both adjacent
+cardinal tiles are walls; destination bounds, terrain, and occupancy remain the
+normal validation boundary.
 
 The legacy Pascal/Lua implementation remains the behavioral reference. Its
 architecture, global callback machinery, and runtime Lua object model remain
@@ -40,41 +41,58 @@ non-goals for reproduction.
 
 ### 2.1a Scope and steering gate
 
-- **Steering gate:** Gate C — Content registration is not shotgun surgery.
-- **Observable outcome:** Every ordinary archetype in `ItemSpawnKind::ALL`
-  resolves to its catalog family; all four loose-ammo archetypes require an
-  explicit count, while non-ammo counts remain ignored and unknown families
-  remain rejected.
-- **Replay/RNG impact:** The V1 replay wire format, gameplay semantics, and RNG
-  behavior are unchanged. This only changes the typed inverse projection path.
-- **Catalog impact:** `ItemSpawnKind::ALL` is the authoritative family list;
-  only count-sensitive loose-ammo reconstruction remains explicit.
-- **Protocol/domain ownership:** `drl-protocol` owns stable family identity and
-  replay reconstruction; core balance and definition lookup remain separate.
-- **Non-goals:** New item families, generic registries, runtime Lua, legacy
-  runtime/capture parity, browser presentation, and broad content migration.
+- **Steering priority:** Vertical canonical fidelity, with Gate E's
+  evidence-bounded claims applied to the legacy comparison.
+- **Observable outcome:** The player can move diagonally into a valid target
+  whose two adjacent cardinal neighbors are blocked; the accepted move emits
+  the normal movement event and consumes one turn.
+- **Replay/RNG impact:** The V1 replay wire format and RNG behavior are
+  unchanged. The accepted movement remains deterministic and consumes no RNG.
+- **Behavior boundary:** Direct player movement remains destination-only;
+  monster `MoveTowards` cardinal fallback is a separate AI policy.
+- **Evidence boundary:** The pinned legacy source supports this rule, while a
+  controlled legacy runtime/capture comparison remains `NOT_RUN`.
+- **Non-goals:** New movement modifiers, diagonal cost redesign, AI
+  pathfinding changes, runtime Lua, browser presentation, and broad content
+  migration.
 
 ### 2.2 Why this slice supersedes content breadth
 
 The preceding M9 work successfully established provenance-aware immutable
-content definitions and replay-visible item families. It also intentionally left
-many legacy behaviors open: callbacks, resistances, movement modifiers,
-alternate actions, recharge, set effects, exact weapon timing, and other
-special-case semantics. The Gate A correction is narrower: it removes a known
-late-failure window without broadening those behavior claims.
+content definitions, replay-visible item families, and typed Gate D stress
+cases. It also intentionally left many legacy behaviors open: callbacks,
+resistances, movement modifiers, alternate actions, recharge, set effects,
+exact weapon timing, and other special-case semantics. This slice takes the
+next eligible vertical-fidelity step without broadening those behavior claims.
 
 At the same time, adding a conventional content family now fans out across
 protocol enums, definitions, validation, replay codecs, assets, documentation,
 and other exhaustive registries. Continuing scalar-only breadth before a
 behavior model is selected would increase both migration debt and change
-amplification.
+amplification. The movement source audit gives this slice a narrow observable
+rule, a focused test, and an explicit runtime evidence boundary.
 
 Therefore, additional broad scalar-only family additions are temporarily
 blocked by the exit gates in Section 2.7.
 
-### 2.3 Transactional Command Contract
+### 2.3 Movement and historical correctness contracts
 
-#### Gate C evidence inventory
+#### Movement contract
+
+Direct player movement computes one target from the submitted direction and
+validates that destination's bounds, terrain, and occupancy. It does not apply
+an adjacent-cardinal corner check. For a fixed 5×5 map with the player at
+`(2,2)`, walls at `(1,2)` and `(2,1)`, and a walkable destination at `(1,1)`,
+`Command::Move(Direction::NorthWest)` must succeed, emit `EntityMoved`, place
+the player at `(1,1)`, and advance exactly one accepted turn. The move consumes
+no RNG. Monster `MoveTowards` fallback remains outside this direct-player
+contract.
+
+#### Historical Gate A/C evidence inventory
+
+The following entries remain historical evidence for already-delivered
+correctness and catalog work; they are retained here so the active slice does
+not erase the project's verified contracts.
 
 **Delivered in `0.2.122`:** Death-drop terrain preflight runs before player
 melee/ranged and Subtle Knife mutations, with focused tests proving exact
@@ -89,10 +107,16 @@ count-shape projection consumed by MCP replay JSON decoding.
 `definition_for_spawn_kind` registration match while preserving explicit
 core-owned balance data.
 
-**Current bounded delivery target (`0.2.125`):** Ordinary
+**Previous bounded delivery target (`0.2.125`):** Ordinary
 `ItemSpawnKind::from_archetype` lookup derives from `ItemSpawnKind::ALL`, with
 explicit tests for all family round trips, missing loose-ammo counts, and
 unknown-family rejection.
+
+**Current bounded delivery target (`0.2.126`):** The pinned legacy movement
+source records destination-only direct player validation. A focused fixed-map
+test proves that a walkable diagonal destination is accepted when both
+adjacent cardinal tiles are walls; a controlled legacy runtime comparison is
+`NOT_RUN`.
 
 **Delivered in `0.2.90` on `codex/fix-equip-rejection-atomicity`:** Equipping a
 non-equippable inventory item must return `CommandError::CannotEquip` without
@@ -282,6 +306,8 @@ State identity on rejection includes, at minimum:
   `Game` equality tests.
 - [x] Cover invalid-direction and empty-target melee rejection with exact
   `Game` equality tests.
+- [x] Record pinned legacy movement evidence and protect destination-only
+  diagonal corner cutting with a deterministic integration test.
 - [x] Cover missing-item Equip/Drop and no-ground-item Pickup rejection with
   exact `Game` equality tests.
 - [x] Cover out-of-bounds and empty-target ranged rejection with exact `Game`

@@ -35,6 +35,10 @@ replays, and regression testing.
     phase-device failure with no destination and post-game-over commands are
     atomic too; pickup validates out-of-bounds positions before touching ground
     items.
+  - Direct player diagonal movement validates the requested destination only:
+    a walkable diagonal tile remains enterable when both adjacent cardinal
+    tiles are walls. AI fallback movement stays a separate policy, and the
+    pinned legacy runtime comparison remains `NOT_RUN`.
   - Fixed-seed cohort reports preserve sample definitions, policy identity,
     aggregate metrics, and per-seed replay evidence for evaluation.
   - Cohort regression math applies explicit win-rate and average-turn
@@ -53,7 +57,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.125`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.126`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
