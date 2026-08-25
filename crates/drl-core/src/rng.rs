@@ -12,9 +12,11 @@ pub struct GameRng {
 
 /// Version of the deterministic sampling algorithms layered on raw PRNG output.
 ///
-/// Procedural replay metadata carries its own generator-semantics identifier;
-/// this sampler version remains an implementation contract for that identity.
-pub const RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
+/// Replay metadata persists this sampler identity independently from gameplay
+/// and procedural-generator semantics so bounded random choices cannot be
+/// silently reinterpreted.
+pub const RNG_SAMPLING_SEMANTICS_VERSION: u32 =
+  drl_protocol::CURRENT_RNG_SAMPLING_SEMANTICS_VERSION;
 
 impl GameRng {
   /// Creates a new RNG seeded deterministically from a 64-bit integer.

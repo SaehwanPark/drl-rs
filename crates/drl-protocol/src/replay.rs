@@ -10,13 +10,18 @@ use crate::types::{Position, Turn};
 pub enum ReplayVersion {
   /// Initial stable schema format.
   V1 = 1,
+  /// Schema format with explicit RNG sampling semantics metadata.
+  V2 = 2,
 }
+
+/// Version of the bounded RNG sampling algorithms required by a replay.
+pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 
 /// Gameplay semantics identifier expected by the current replay engine.
 ///
-/// This advances independently from the wire/schema version when deterministic
-/// sampling or other simulation rules change. Version `16` includes typed Mud
-/// terrain and its 1.65 movement cost.
+/// This advances independently from the wire/schema and RNG-sampling versions
+/// when other deterministic simulation rules change. Version `16` includes
+/// typed Mud terrain and its 1.65 movement cost.
 pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 16;
 
 /// Procedural-generation semantics identifier expected for replays that carry
@@ -39,6 +44,8 @@ pub struct ReplayMetadata {
   /// Gameplay semantics version required to interpret the command history.
   /// Version 16 includes typed Mud terrain and movement cost.
   pub gameplay_semantics_version: u32,
+  /// RNG sampling semantics required to reproduce bounded random choices.
+  pub rng_sampling_semantics_version: u32,
   /// Procedural-generation semantics required when reconstructing generated maps.
   pub generator_semantics_version: u32,
   /// Ruleset/content identity required to reconstruct initial state and policy.
@@ -48,10 +55,11 @@ pub struct ReplayMetadata {
 impl Default for ReplayMetadata {
   fn default() -> Self {
     Self {
-      version: ReplayVersion::V1,
+      version: ReplayVersion::V2,
       engine_name: "DRL-Rust".to_string(),
       engine_version: env!("CARGO_PKG_VERSION").to_string(),
       gameplay_semantics_version: CURRENT_GAMEPLAY_SEMANTICS_VERSION,
+      rng_sampling_semantics_version: CURRENT_RNG_SAMPLING_SEMANTICS_VERSION,
       generator_semantics_version: CURRENT_GENERATOR_SEMANTICS_VERSION,
       ruleset_id: CURRENT_RULESET_ID.to_string(),
     }
@@ -476,7 +484,7 @@ impl ReplayLog {
   #[must_use]
   pub fn new(seed: u64, width: u32, height: u32, player_start: Position) -> Self {
     Self {
-      version: ReplayVersion::V1,
+      version: ReplayVersion::V2,
       metadata: ReplayMetadata::default(),
       player_config: None,
       procedural_config: None,

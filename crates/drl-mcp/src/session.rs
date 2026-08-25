@@ -1266,7 +1266,7 @@ impl McpSession {
     }
   }
 
-  /// Restores a canonical V1 replay transactionally into the current session.
+  /// Restores a canonical V2 replay transactionally into the current session.
   ///
   /// Replay execution builds a temporary core game and metrics first. The live
   /// session is replaced only after the decoder and complete command sequence

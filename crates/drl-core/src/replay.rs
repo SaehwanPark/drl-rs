@@ -24,6 +24,15 @@ impl ReplayEngine {
         drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION
       ));
     }
+    if replay.metadata.rng_sampling_semantics_version
+      != drl_protocol::CURRENT_RNG_SAMPLING_SEMANTICS_VERSION
+    {
+      return Err(format!(
+        "unsupported RNG sampling semantics version {}; expected {}",
+        replay.metadata.rng_sampling_semantics_version,
+        drl_protocol::CURRENT_RNG_SAMPLING_SEMANTICS_VERSION
+      ));
+    }
     if replay.metadata.ruleset_id != drl_protocol::CURRENT_RULESET_ID {
       return Err(format!(
         "unsupported replay ruleset {:?}; expected {:?}",
@@ -324,6 +333,10 @@ mod tests {
     // Version 5 predates the AI movement candidate-order change and must not
     // be interpreted by the version-16 engine without an explicit migration.
     assert_eq!(drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION, 16);
+    assert_eq!(
+      drl_protocol::CURRENT_RNG_SAMPLING_SEMANTICS_VERSION,
+      crate::rng::RNG_SAMPLING_SEMANTICS_VERSION
+    );
     replay.metadata.gameplay_semantics_version = 5;
     let error = ReplayEngine::validate(&replay).unwrap_err();
     assert!(error.contains("unsupported gameplay semantics version"));

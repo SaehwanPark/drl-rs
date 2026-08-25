@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.139`
+Current project version: `0.2.140`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -29,10 +29,10 @@ contracts, acceptance criteria, and verification boundaries.
 
 ### 2.1 Objective
 
-Strengthen the Gate B replay contract with one explicit metadata-compatibility
-matrix. Gameplay semantics, ruleset identity, and procedural-generation
-semantics must be validated before replay execution; fixed-map replays must not
-be coupled to generator semantics they do not use.
+Close the remaining Gate B replay/RNG contract gap by declaring the bounded RNG
+sampling semantics version in replay metadata and the canonical MCP V2 envelope.
+Stale RNG identities must reject before replay execution alongside gameplay,
+ruleset, and conditional generator identities.
 
 The legacy Pascal/Lua implementation remains the behavioral reference. Its
 architecture, global callback machinery, and runtime Lua object model remain
@@ -41,18 +41,20 @@ non-goals for reproduction.
 ### 2.1a Scope and steering gate
 
 - **Steering priority:** Deterministic semantics stability (Gate B).
-- **Observable outcome:** Current gameplay/ruleset metadata validates; stale
-  gameplay or ruleset values reject before simulation; procedural replays also
-  reject stale generator semantics, while fixed-map replays remain independent.
+- **Observable outcome:** Current gameplay/ruleset/RNG metadata validates; stale
+  gameplay, RNG, or ruleset values reject before simulation; procedural replays
+  also reject stale generator semantics, while fixed-map replays remain
+  independent.
 - **Replay/RNG impact:** Gameplay semantics remain `16`; no command executes
   during metadata rejection and no RNG is consumed.
 - **Content-catalog impact:** No content or protocol catalog changes.
-- **Protocol/domain ownership:** Replay metadata owns compatibility identity;
-  core `ReplayEngine` owns validation policy.
+- **Protocol/domain ownership:** Replay metadata owns compatibility identity,
+  including RNG sampling; core `ReplayEngine` and MCP decoder own validation
+  policy.
 - **Evidence boundary:** This is a Rust invariant test slice. Legacy runtime,
   browser, audio/visual, and external capture comparisons are `NOT_RUN`.
-- **Non-goals:** Migration tooling, accepted gameplay changes, schema version
-  changes, runtime comparison, and presentation parity.
+- **Non-goals:** Migration tooling, accepted gameplay changes, runtime
+  comparison, and presentation parity.
 
 ### 2.2 Why this slice supersedes content breadth
 
@@ -76,10 +78,10 @@ blocked by the exit gates in Section 2.8.
 ### 2.3 Gate B replay compatibility contracts
 
 For a replay with current metadata, `ReplayEngine::validate` succeeds. A stale
-gameplay semantics version or ruleset identity rejects before map construction
-or command execution. A procedural replay with stale generator semantics also
+gameplay, RNG sampling, or ruleset identity rejects before map construction or
+command execution. A procedural replay with stale generator semantics also
 rejects; a fixed-map replay with that field changed remains valid because no
-procedural generator is involved.
+procedural generator is involved. MCP V2 imports apply the same checks.
 
 #### Legacy evidence boundary
 
@@ -264,9 +266,9 @@ does not yet carry the sampler identifier; replay semantics versioning remains
 follow-up work.
 
 **Delivered in `0.2.106`:** Replay metadata now carries a gameplay-semantics
-version and ruleset/content identity independently from wire schema V1. Core and
-MCP replay validation reject unsupported values before simulation, avoiding
-silent reinterpretation through current rules.
+version and ruleset/content identity independently from historical wire schema
+V1. Core and MCP replay validation reject unsupported values before simulation,
+avoiding silent reinterpretation through current rules.
 
 **Delivered in `0.2.107`:** Core probability rules use `GameRng::gen_bool_ratio`
 with unbiased integer-domain sampling. Procedural room decoration now expresses
@@ -739,10 +741,10 @@ rejection coverage across the current command surface. Its invariant did:
 - [x] record runtime, browser, audio/visual, and external capture comparisons as
   `NOT_RUN`.
 
-### 2.7o Current Gate B replay compatibility delivery target
+### 2.7o Previous Gate B replay compatibility delivery target
 
-The bounded implementation target for this revision is replay metadata
-compatibility coverage. Its matrix must:
+The bounded implementation target for the previous revision was replay
+metadata compatibility coverage. Its matrix did:
 
 - [x] accept current gameplay semantics and ruleset metadata;
 - [x] reject stale gameplay semantics and ruleset values before execution;
@@ -751,15 +753,29 @@ compatibility coverage. Its matrix must:
 - [x] preserve gameplay semantics `16` and record migration/runtime/browser/
   audiovisual comparisons as `NOT_RUN`.
 
+### 2.7p Current Gate B RNG sampling semantics delivery target
+
+The bounded implementation target for this revision is explicit RNG sampling
+identity in replay metadata. Its transition must:
+
+- [x] declare the current RNG sampling semantics version in protocol metadata
+  and the canonical MCP V2 envelope;
+- [x] reject stale RNG sampling versions before map construction or command
+  execution in core and MCP replay validation;
+- [x] retain raw/bounded/probability golden vectors and keep gameplay semantics
+  at `16` without changing accepted command behavior;
+- [x] record migration/runtime/browser/audiovisual comparisons as `NOT_RUN`.
+
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
 All of the following are required:
 
 - [x] Rejected commands are state-identical across the audited command surface,
   including late death-drop terrain failures and the typed alternate commands.
-- [ ] RNG sampling semantics are unbiased, golden-tested, and versioned.
-- [ ] Replays declare gameplay semantics compatibility and reject incompatible
-  interpretation.
+- [x] RNG sampling semantics are unbiased, golden-tested, versioned, and
+  declared in replay metadata.
+- [x] Replays declare gameplay/RNG semantics compatibility and reject
+  incompatible interpretation.
 - [ ] Routine content registration has one authoritative catalog path with
   materially reduced manual fan-out.
 - [ ] The typed behavior model passes the selected legacy stress cases.

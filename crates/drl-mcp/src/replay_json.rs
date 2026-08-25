@@ -1,4 +1,4 @@
-//! Stable, complete JSON projection for the in-memory V1 replay log.
+//! Stable, complete JSON projection for the in-memory V2 replay log.
 
 use crate::json::JsonValue;
 use drl_protocol::{
@@ -9,14 +9,14 @@ use std::collections::BTreeMap;
 
 pub use crate::replay_json_decode::from_json_value;
 
-const FORMAT: &str = "drl-rust-replay-v1";
-const SCHEMA_VERSION: u32 = 1;
+const FORMAT: &str = "drl-rust-replay-v2";
+const SCHEMA_VERSION: u32 = 2;
 pub(crate) const MAX_REPLAY_DIMENSION: u32 = 512;
 pub(crate) const MAX_PROCEDURAL_ROOMS: u32 = 64;
 pub(crate) const MAX_ROOM_SIZE: u32 = 64;
 pub(crate) const MAX_CONTENT_PER_ROOM: u32 = 64;
 
-/// Converts every field of a V1 replay log to a deterministic JSON envelope.
+/// Converts every field of a V2 replay log to a deterministic JSON envelope.
 ///
 /// Objects use `BTreeMap` ordering and the projection contains no timestamps,
 /// generated identifiers, or other process-local values. This is an export
@@ -115,6 +115,10 @@ fn metadata_to_json(metadata: &ReplayMetadata) -> JsonValue {
     (
       "gameplay_semantics_version",
       JsonValue::from(metadata.gameplay_semantics_version),
+    ),
+    (
+      "rng_sampling_semantics_version",
+      JsonValue::from(metadata.rng_sampling_semantics_version),
     ),
     (
       "generator_semantics_version",
@@ -410,10 +414,11 @@ mod tests {
       })
       .with_player_config(player_config)
       .with_metadata(ReplayMetadata {
-        version: drl_protocol::ReplayVersion::V1,
+        version: drl_protocol::ReplayVersion::V2,
         engine_name: "fixture-engine".to_string(),
         engine_version: "test".to_string(),
         gameplay_semantics_version: drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION,
+        rng_sampling_semantics_version: drl_protocol::CURRENT_RNG_SAMPLING_SEMANTICS_VERSION,
         generator_semantics_version: drl_protocol::CURRENT_GENERATOR_SEMANTICS_VERSION,
         ruleset_id: drl_protocol::CURRENT_RULESET_ID.to_string(),
       });
@@ -530,6 +535,21 @@ mod tests {
       );
     let error = from_json_value(&incompatible_semantics).unwrap_err();
     assert!(error.contains("unsupported gameplay semantics version"));
+
+    let mut incompatible_rng = to_json_value(&replay);
+    incompatible_rng
+      .as_object_mut()
+      .unwrap()
+      .get_mut("metadata")
+      .unwrap()
+      .as_object_mut()
+      .unwrap()
+      .insert(
+        "rng_sampling_semantics_version".to_string(),
+        JsonValue::from(drl_protocol::CURRENT_RNG_SAMPLING_SEMANTICS_VERSION - 1),
+      );
+    let error = from_json_value(&incompatible_rng).unwrap_err();
+    assert!(error.contains("unsupported RNG sampling semantics version"));
 
     let mut incompatible_ruleset = to_json_value(&replay);
     incompatible_ruleset

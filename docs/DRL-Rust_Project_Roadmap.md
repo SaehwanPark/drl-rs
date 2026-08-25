@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.139`
+Current project version: `0.2.140`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.139)
+## 3. Current Progress Summary (`VERSION` 0.2.140)
 
 ### Delivered Foundations
 
@@ -186,6 +186,9 @@ verification item uses explicit status semantics:
 - **M2/Gate B replay compatibility (`0.2.139`)**: Replay metadata tests now
   reject stale gameplay, ruleset, and procedural-generator identities before
   execution while preserving fixed-map independence from generator metadata.
+- **M2/Gate B RNG sampling semantics (`0.2.140`)**: Replay metadata now
+  declares the bounded RNG sampling version; stale RNG identities reject before
+  simulation, and the canonical MCP replay envelope is versioned as V2.
 - **Gate D first behavior slice:** Medical Powerarmor now has a typed,
   deterministic periodic-repair transition in `drl-core`, accepted-turn
   integration, exact timer/durability/health edge tests, and a typed repair
@@ -206,7 +209,7 @@ verification item uses explicit status semantics:
   in `docs/legacy-behavior/trigun.md`; the evidence set and typed
   implementation are complete for the initial three-case target, while runtime
   confirmation and presentation parity remain open.
-- **Tooling & Replays (M5, M6)**: Versioned replay engine (`V1`), declarative
+- **Tooling & Replays (M5, M6)**: Versioned replay engine (`V2`), declarative
   ASCII scenario runners, scripted bots, batch sweep runners, and a pure Rust
   zero-dependency MCP server.
 - **Asset Pipeline (M3)**: Tracked CC BY-SA 4.0 legacy graphics import from
@@ -245,7 +248,7 @@ verification item uses explicit status semantics:
 ### Active & Open Work
 
 - **Latest Delivered Milestone Slice (M5/M6/M13)**: `game_load_replay` transactionally
-  restores the exact canonical V1 replay envelope by executing it in temporary
+  restores the exact canonical V2 replay envelope by executing it in temporary
   core state before replacing the session. The imported replay remains the
   reset source, optional turn limits preserve terminal outcomes, subsequent
   valid actions append to its log, and terminal loads expose no legal actions.
@@ -255,7 +258,7 @@ verification item uses explicit status semantics:
   `resources/list` pagination and tool-execution error-result contracts remain
   delivered. Replay-file IO, migrations, cross-version/external schemas,
   reconnect/resume, and broader MCP compatibility remain open.
-  `game_verify_replay` accepts an exact `drl-rust-replay-v1` JSON envelope and
+  `game_verify_replay` accepts an exact `drl-rust-replay-v2` JSON envelope and
   verifies it read-only, including without an active session. The preceding
   0.2.56 export emits every in-memory V1 `ReplayLog` field with deterministic
   typed commands and byte-identical repeats. The fair
@@ -281,7 +284,7 @@ verification item uses explicit status semantics:
   envelopes reject non-object params/arguments before execution; stateful tool
   arguments now reject wrong-typed optional integers before mutation, and
   `game_verify_replay` exposes deterministic in-memory and supplied canonical
-  V1 replay verification without mutating sessions; `game_step_action` now rejects unsafe numeric
+  V2 replay verification without mutating sessions; `game_step_action` now rejects unsafe numeric
   coordinates and item IDs before mutation. Hidden-state search, unbounded
   candidate generation, and external-client compatibility remain open.
 - **M9 Content Evidence**: Base, expansion, user-item, being, terrain-cell,
@@ -422,7 +425,7 @@ progression.
 Build headless infrastructure for testing, bot exploration, and scenario
 validation.
 
-- [x] Versioned replay log schema (`ReplayVersion::V1`) with diagnostic error
+- [x] Versioned replay log schema (`ReplayVersion::V2`) with diagnostic error
   locations.
 - [x] Replay consistency validation (`ReplayEngine::validate`).
 - [x] Declarative ASCII scenario fixture framework (`Scenario`,
@@ -454,10 +457,10 @@ tooling.
   requirements, while retaining unknown-field tolerance.
 - [x] `game_verify_replay` verifies complete in-memory procedural and scenario
   replays without mutating sessions.
-- [x] `game_save_replay` exports complete V1 replay metadata, initial-state
+- [x] `game_save_replay` exports complete V2 replay metadata, initial-state
   containers, and typed command variants through a deterministic JSON envelope;
   replay-file IO, migration, and external interchange remain open.
-- [x] `game_verify_replay` decodes and verifies a supplied canonical V1 replay
+- [x] `game_verify_replay` decodes and verifies a supplied canonical V2 replay
   read-only, including inactive-session verification and fail-closed malformed
   input handling. MCP session creation enforces bounded dimensions and
   procedural parameters before export; same-version object loading is
@@ -471,7 +474,7 @@ tooling.
   malformed envelopes/arguments, malformed supplied replay input, and unknown
   methods/tools retain JSON-RPC errors; notifications, batches, and state safety
   remain deterministic.
-- [x] `game_load_replay` restores a required canonical V1 replay object only
+- [x] `game_load_replay` restores a required canonical V2 replay object only
   after bounded decode and complete `ReplayEngine` execution succeed; it
   exposes `ReplayLoaded`, preserves the imported log and optional turn limit
   for appended commands/reset, restores turn-limit terminal state, and leaves
@@ -881,8 +884,8 @@ Final release readiness, documentation, and static distribution.
   payloads, and pre-dispatch admission; recognized omitted commands return
   `-32001` without mutating turn, metrics, recent events, replay, or
   observation, while malformed input remains `-32602`.
-- [x] `game_save_replay` exports every in-memory V1 `ReplayLog` field through a
-  deterministic `drl-rust-replay-v1` envelope with complete initial-state
+- [x] `game_save_replay` exports every in-memory V2 `ReplayLog` field through a
+  deterministic `drl-rust-replay-v2` envelope with complete initial-state
   containers and typed semantic command objects; import/load, validation,
   migration, and external replay interchange remain open.
 - [ ] Complete deterministic headless/MCP agent tooling suite and external

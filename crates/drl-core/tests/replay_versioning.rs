@@ -9,8 +9,8 @@ use drl_protocol::{
 #[test]
 fn test_replay_version_and_metadata_headers() {
   let mut replay = ReplayLog::new(42, 20, 20, Position::new(5, 5));
-  assert_eq!(replay.version, ReplayVersion::V1);
-  assert_eq!(replay.metadata.version, ReplayVersion::V1);
+  assert_eq!(replay.version, ReplayVersion::V2);
+  assert_eq!(replay.metadata.version, ReplayVersion::V2);
   assert_eq!(replay.metadata.engine_name, "DRL-Rust");
   assert_eq!(
     replay.metadata.gameplay_semantics_version,
@@ -23,10 +23,11 @@ fn test_replay_version_and_metadata_headers() {
   assert_eq!(replay.metadata.ruleset_id, drl_protocol::CURRENT_RULESET_ID);
 
   replay = replay.with_metadata(ReplayMetadata {
-    version: ReplayVersion::V1,
+    version: ReplayVersion::V2,
     engine_name: "DRL-Rust-TestHarness".to_string(),
     engine_version: "0.1.0".to_string(),
     gameplay_semantics_version: drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION,
+    rng_sampling_semantics_version: drl_protocol::CURRENT_RNG_SAMPLING_SEMANTICS_VERSION,
     generator_semantics_version: drl_protocol::CURRENT_GENERATOR_SEMANTICS_VERSION,
     ruleset_id: drl_protocol::CURRENT_RULESET_ID.to_string(),
   });
@@ -44,6 +45,12 @@ fn replay_metadata_compatibility_matrix_is_explicit() {
     drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION.saturating_sub(1);
   let error = ReplayEngine::validate(&stale_gameplay).unwrap_err();
   assert!(error.contains("unsupported gameplay semantics version"));
+
+  let mut stale_rng = current.clone();
+  stale_rng.metadata.rng_sampling_semantics_version =
+    drl_protocol::CURRENT_RNG_SAMPLING_SEMANTICS_VERSION.saturating_sub(1);
+  let error = ReplayEngine::validate(&stale_rng).unwrap_err();
+  assert!(error.contains("unsupported RNG sampling semantics version"));
 
   let mut stale_ruleset = current.clone();
   stale_ruleset.metadata.ruleset_id = "legacy-ruleset".to_string();
