@@ -74,234 +74,131 @@ pub enum WeaponFireMode {
   Auto,
 }
 
-/// Stable presentation identifier for an item family.
+/// Declares the routine stable item identity projections from one source.
 ///
-/// Unlike the display name, this identifier is safe to use in asset lookup
-/// tables and remains stable when localized or reformatted text changes.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
-pub enum ItemArchetype {
-  #[default]
-  Unknown,
-  Pistol,
-  Shotgun,
-  DoubleShotgun,
-  CombatShotgun,
-  Blaster,
-  LaserRifle,
-  MissileLauncher,
-  NuclearPlasmaRifle,
-  NuclearBfg9000,
-  Bfg10k,
-  MegaBuster,
-  GrammatonBeretta,
-  FragShotgun,
-  RevenantsLauncher,
-  Railgun,
-  AcidSpitter,
-  NullPointer,
-  CombatPistol,
-  AssaultShotgun,
-  PlasmaShotgun,
-  Jackhammer,
-  SuperShotgun,
-  TristarBlaster,
-  ButchersCleaver,
-  Mjollnir,
-  SubtleKnife,
-  Trigun,
-  AntiFreakJackal,
-  Minigun,
-  Chaingun,
-  RocketLauncher,
-  PlasmaRifle,
-  Bfg9000,
-  Chainsaw,
-  CombatKnife,
-  Ammo9mm,
-  AmmoShells,
-  AmmoRockets,
-  AmmoCells,
-  AmmoPackRockets,
-  AmmoPackCells,
-  AmmoPack9mm,
-  AmmoPackShells,
-  SmallMedPack,
-  LargeMedPack,
-  GreenArmor,
-  BlueArmor,
-  RedArmor,
-  OnyxArmor,
-  PhaseshiftArmor,
-  GothicArmor,
-  MaleksArmor,
-  CyberneticArmor,
-  Necroarmor,
-  MedicalPowerarmor,
-  LavaArmor,
-  ShieldedArmor,
-  PhaseDevice,
+/// Gameplay definitions, count-sensitive spawn payloads, and presentation
+/// policy remain explicit in their owning crates.
+macro_rules! define_item_archetypes {
+  (
+    $unknown:ident => $unknown_name:literal,
+    $( $variant:ident => $stable_name:literal ),+ $(,)?
+  ) => {
+    /// Stable presentation identifier for an item family.
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+    pub enum ItemArchetype {
+      #[default]
+      $unknown,
+      $( $variant, )+
+    }
+
+    impl ItemArchetype {
+      /// All stable item archetypes currently registered by the protocol.
+      ///
+      /// This is a presentation/contract catalog, not a gameplay definition
+      /// table. Core definitions remain authoritative for balance and behavior.
+      pub const ALL: &[Self] = &[
+        Self::$unknown,
+        $( Self::$variant, )+
+      ];
+
+      /// Returns the stable wire identifier for this archetype.
+      #[must_use]
+      pub const fn stable_name(self) -> &'static str {
+        match self {
+          Self::$unknown => $unknown_name,
+          $( Self::$variant => $stable_name, )+
+        }
+      }
+
+      /// Parses the stable wire identifier emitted by `Display`.
+      #[must_use]
+      pub fn from_stable_name(name: &str) -> Option<Self> {
+        Self::ALL
+          .iter()
+          .copied()
+          .find(|archetype| archetype.stable_name() == name)
+      }
+
+      /// Returns whether replay JSON must carry an explicit loose-ammo count.
+      ///
+      /// This routine wire-shape projection belongs to the stable archetype
+      /// catalog so decoders do not maintain a second ammo-family list.
+      #[must_use]
+      pub const fn requires_stack_count(self) -> bool {
+        matches!(
+          self,
+          Self::Ammo9mm | Self::AmmoShells | Self::AmmoRockets | Self::AmmoCells
+        )
+      }
+    }
+  };
 }
 
-impl ItemArchetype {
-  /// All stable item archetypes currently registered by the protocol.
-  ///
-  /// This is a presentation/contract catalog, not a gameplay definition
-  /// table. Core definitions remain authoritative for balance and behavior.
-  pub const ALL: &[Self] = &[
-    Self::Unknown,
-    Self::Pistol,
-    Self::Shotgun,
-    Self::DoubleShotgun,
-    Self::CombatShotgun,
-    Self::Blaster,
-    Self::LaserRifle,
-    Self::MissileLauncher,
-    Self::NuclearPlasmaRifle,
-    Self::NuclearBfg9000,
-    Self::Bfg10k,
-    Self::MegaBuster,
-    Self::GrammatonBeretta,
-    Self::FragShotgun,
-    Self::RevenantsLauncher,
-    Self::Railgun,
-    Self::AcidSpitter,
-    Self::NullPointer,
-    Self::CombatPistol,
-    Self::AssaultShotgun,
-    Self::PlasmaShotgun,
-    Self::Jackhammer,
-    Self::SuperShotgun,
-    Self::TristarBlaster,
-    Self::ButchersCleaver,
-    Self::Mjollnir,
-    Self::SubtleKnife,
-    Self::Trigun,
-    Self::AntiFreakJackal,
-    Self::Minigun,
-    Self::Chaingun,
-    Self::RocketLauncher,
-    Self::PlasmaRifle,
-    Self::Bfg9000,
-    Self::Chainsaw,
-    Self::CombatKnife,
-    Self::Ammo9mm,
-    Self::AmmoShells,
-    Self::AmmoRockets,
-    Self::AmmoCells,
-    Self::AmmoPackRockets,
-    Self::AmmoPackCells,
-    Self::AmmoPack9mm,
-    Self::AmmoPackShells,
-    Self::SmallMedPack,
-    Self::LargeMedPack,
-    Self::GreenArmor,
-    Self::BlueArmor,
-    Self::RedArmor,
-    Self::OnyxArmor,
-    Self::PhaseshiftArmor,
-    Self::GothicArmor,
-    Self::MaleksArmor,
-    Self::CyberneticArmor,
-    Self::Necroarmor,
-    Self::MedicalPowerarmor,
-    Self::LavaArmor,
-    Self::ShieldedArmor,
-    Self::PhaseDevice,
-  ];
-
-  /// Returns whether replay JSON must carry an explicit loose-ammo count.
-  ///
-  /// This routine wire-shape projection belongs to the stable archetype
-  /// catalog so decoders do not maintain a second ammo-family list.
-  #[must_use]
-  pub const fn requires_stack_count(self) -> bool {
-    matches!(
-      self,
-      Self::Ammo9mm | Self::AmmoShells | Self::AmmoRockets | Self::AmmoCells
-    )
-  }
+define_item_archetypes! {
+  Unknown => "unknown",
+  Pistol => "pistol",
+  Shotgun => "shotgun",
+  DoubleShotgun => "double_shotgun",
+  CombatShotgun => "combat_shotgun",
+  Blaster => "blaster",
+  LaserRifle => "laser_rifle",
+  MissileLauncher => "missile_launcher",
+  NuclearPlasmaRifle => "nuclear_plasma_rifle",
+  NuclearBfg9000 => "nuclear_bfg9000",
+  Bfg10k => "bfg_10k",
+  MegaBuster => "mega_buster",
+  GrammatonBeretta => "grammaton_beretta",
+  FragShotgun => "frag_shotgun",
+  RevenantsLauncher => "revenants_launcher",
+  Railgun => "railgun",
+  AcidSpitter => "acid_spitter",
+  NullPointer => "null_pointer",
+  CombatPistol => "combat_pistol",
+  AssaultShotgun => "assault_shotgun",
+  PlasmaShotgun => "plasma_shotgun",
+  Jackhammer => "jackhammer",
+  SuperShotgun => "super_shotgun",
+  TristarBlaster => "tristar_blaster",
+  ButchersCleaver => "butchers_cleaver",
+  Mjollnir => "mjollnir",
+  SubtleKnife => "subtle_knife",
+  Trigun => "trigun",
+  AntiFreakJackal => "anti_freak_jackal",
+  Minigun => "minigun",
+  Chaingun => "chaingun",
+  RocketLauncher => "rocket_launcher",
+  PlasmaRifle => "plasma_rifle",
+  Bfg9000 => "bfg9000",
+  Chainsaw => "chainsaw",
+  CombatKnife => "combat_knife",
+  Ammo9mm => "ammo_9mm",
+  AmmoShells => "ammo_shells",
+  AmmoRockets => "ammo_rockets",
+  AmmoCells => "ammo_cells",
+  AmmoPackRockets => "ammo_pack_rockets",
+  AmmoPackCells => "ammo_pack_cells",
+  AmmoPack9mm => "ammo_pack_9mm",
+  AmmoPackShells => "ammo_pack_shells",
+  SmallMedPack => "small_medpack",
+  LargeMedPack => "large_medpack",
+  GreenArmor => "green_armor",
+  BlueArmor => "blue_armor",
+  RedArmor => "red_armor",
+  OnyxArmor => "onyx_armor",
+  PhaseshiftArmor => "phaseshift_armor",
+  GothicArmor => "gothic_armor",
+  MaleksArmor => "maleks_armor",
+  CyberneticArmor => "cybernetic_armor",
+  Necroarmor => "necroarmor",
+  MedicalPowerarmor => "medical_powerarmor",
+  LavaArmor => "lava_armor",
+  ShieldedArmor => "shielded_armor",
+  PhaseDevice => "phase_device",
 }
 
 impl fmt::Display for ItemArchetype {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     f.write_str(self.stable_name())
-  }
-}
-
-impl ItemArchetype {
-  /// Returns the stable wire identifier for this archetype.
-  #[must_use]
-  pub const fn stable_name(self) -> &'static str {
-    match self {
-      Self::Unknown => "unknown",
-      Self::Pistol => "pistol",
-      Self::Shotgun => "shotgun",
-      Self::DoubleShotgun => "double_shotgun",
-      Self::CombatShotgun => "combat_shotgun",
-      Self::Blaster => "blaster",
-      Self::LaserRifle => "laser_rifle",
-      Self::MissileLauncher => "missile_launcher",
-      Self::NuclearPlasmaRifle => "nuclear_plasma_rifle",
-      Self::NuclearBfg9000 => "nuclear_bfg9000",
-      Self::Bfg10k => "bfg_10k",
-      Self::MegaBuster => "mega_buster",
-      Self::GrammatonBeretta => "grammaton_beretta",
-      Self::FragShotgun => "frag_shotgun",
-      Self::RevenantsLauncher => "revenants_launcher",
-      Self::Railgun => "railgun",
-      Self::AcidSpitter => "acid_spitter",
-      Self::NullPointer => "null_pointer",
-      Self::CombatPistol => "combat_pistol",
-      Self::AssaultShotgun => "assault_shotgun",
-      Self::PlasmaShotgun => "plasma_shotgun",
-      Self::Jackhammer => "jackhammer",
-      Self::SuperShotgun => "super_shotgun",
-      Self::TristarBlaster => "tristar_blaster",
-      Self::ButchersCleaver => "butchers_cleaver",
-      Self::Mjollnir => "mjollnir",
-      Self::SubtleKnife => "subtle_knife",
-      Self::Trigun => "trigun",
-      Self::AntiFreakJackal => "anti_freak_jackal",
-      Self::Minigun => "minigun",
-      Self::Chaingun => "chaingun",
-      Self::RocketLauncher => "rocket_launcher",
-      Self::PlasmaRifle => "plasma_rifle",
-      Self::Bfg9000 => "bfg9000",
-      Self::Chainsaw => "chainsaw",
-      Self::CombatKnife => "combat_knife",
-      Self::Ammo9mm => "ammo_9mm",
-      Self::AmmoShells => "ammo_shells",
-      Self::AmmoRockets => "ammo_rockets",
-      Self::AmmoCells => "ammo_cells",
-      Self::AmmoPackRockets => "ammo_pack_rockets",
-      Self::AmmoPackCells => "ammo_pack_cells",
-      Self::AmmoPack9mm => "ammo_pack_9mm",
-      Self::AmmoPackShells => "ammo_pack_shells",
-      Self::SmallMedPack => "small_medpack",
-      Self::LargeMedPack => "large_medpack",
-      Self::GreenArmor => "green_armor",
-      Self::BlueArmor => "blue_armor",
-      Self::RedArmor => "red_armor",
-      Self::OnyxArmor => "onyx_armor",
-      Self::PhaseshiftArmor => "phaseshift_armor",
-      Self::GothicArmor => "gothic_armor",
-      Self::MaleksArmor => "maleks_armor",
-      Self::CyberneticArmor => "cybernetic_armor",
-      Self::Necroarmor => "necroarmor",
-      Self::MedicalPowerarmor => "medical_powerarmor",
-      Self::LavaArmor => "lava_armor",
-      Self::ShieldedArmor => "shielded_armor",
-      Self::PhaseDevice => "phase_device",
-    }
-  }
-
-  /// Parses the stable wire identifier emitted by `Display`.
-  #[must_use]
-  pub fn from_stable_name(name: &str) -> Option<Self> {
-    Self::ALL
-      .iter()
-      .copied()
-      .find(|archetype| archetype.stable_name() == name)
   }
 }
 

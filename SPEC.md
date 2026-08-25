@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.140`
+Current project version: `0.2.141`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M2/Gate B Replay Compatibility Matrix
+## 2. Active Implementation Slice: M9/Gate C Item Identity Catalog
 
 ### 2.1 Objective
 
-Close the remaining Gate B replay/RNG contract gap by declaring the bounded RNG
-sampling semantics version in replay metadata and the canonical MCP V2 envelope.
-Stale RNG identities must reject before replay execution alongside gameplay,
-ruleset, and conditional generator identities.
+Centralize routine item identity registration in one protocol-owned compile-time
+catalog. The declaration must generate the stable `ItemArchetype` enum, ordered
+`ALL` view, and canonical wire names without changing gameplay or presentation
+policy.
 
 The legacy Pascal/Lua implementation remains the behavioral reference. Its
 architecture, global callback machinery, and runtime Lua object model remain
@@ -40,54 +40,46 @@ non-goals for reproduction.
 
 ### 2.1a Scope and steering gate
 
-- **Steering priority:** Deterministic semantics stability (Gate B).
-- **Observable outcome:** Current gameplay/ruleset/RNG metadata validates; stale
-  gameplay, RNG, or ruleset values reject before simulation; procedural replays
-  also reject stale generator semantics, while fixed-map replays remain
-  independent.
-- **Replay/RNG impact:** Gameplay semantics remain `16`; no command executes
-  during metadata rejection and no RNG is consumed.
-- **Content-catalog impact:** No content or protocol catalog changes.
-- **Protocol/domain ownership:** Replay metadata owns compatibility identity,
-  including RNG sampling; core `ReplayEngine` and MCP decoder own validation
-  policy.
-- **Evidence boundary:** This is a Rust invariant test slice. Legacy runtime,
+- **Steering priority:** Content-model scalability (Gate C).
+- **Observable outcome:** `ItemArchetype` variants, stable names, and catalog
+  order have one compile-time declaration; existing replay, asset, and parsing
+  projections continue to consume the same `ALL` view.
+- **Gameplay/replay impact:** No item balance, spawn payload, command, replay
+  schema, or RNG behavior changes.
+- **Protocol/domain ownership:** `drl-protocol` owns stable identity and wire
+  names; core owns definitions and behavior; assets/render/web own presentation.
+- **Evidence boundary:** This is a Rust catalog/invariant slice. Legacy runtime,
   browser, audio/visual, and external capture comparisons are `NOT_RUN`.
-- **Non-goals:** Migration tooling, accepted gameplay changes, runtime
-  comparison, and presentation parity.
+- **Non-goals:** Broad content migration, behavior vocabulary, gameplay
+  definitions, count-sensitive spawn changes, and presentation parity.
 
-### 2.2 Why this slice supersedes content breadth
+### 2.2 Why this slice is bounded
 
-The preceding M9 work successfully established provenance-aware immutable
-content definitions, replay-visible item families, and typed Gate D stress
-cases. It also intentionally left many legacy behaviors open: callbacks,
-resistances, movement modifiers, alternate actions, recharge, set effects,
-exact weapon timing, and other special-case semantics. This slice takes the
-next eligible vertical-fidelity step without broadening those behavior claims.
+The existing Gate C work already centralizes spawn families, core definitions,
+replay projections, and coverage. The remaining routine identity duplication is
+the protocol enum/`ALL`/stable-name trio. This slice removes that duplication
+without broadening gameplay or behavior claims.
 
-At the same time, adding a conventional content family now fans out across
-protocol enums, definitions, validation, replay codecs, assets, documentation,
-and other exhaustive registries. Continuing scalar-only breadth before a
-behavior model is selected would increase both migration debt and change
-amplification. The replay matrix instead strengthens the executable semantic
-identity boundary that gates every future replay-visible change.
+Behavioral and presentation mappings remain explicit by design. The catalog
+therefore improves routine identity registration while preserving compiler
+exhaustiveness at semantic boundaries.
 
-Therefore, additional broad scalar-only family additions are temporarily
-blocked by the exit gates in Section 2.8.
+Additional broad scalar-only family additions remain gated by the open behavior
+and evidence criteria in Section 2.8.
 
-### 2.3 Gate B replay compatibility contracts
+### 2.3 Gate C item identity contracts
 
-For a replay with current metadata, `ReplayEngine::validate` succeeds. A stale
-gameplay, RNG sampling, or ruleset identity rejects before map construction or
-command execution. A procedural replay with stale generator semantics also
-rejects; a fixed-map replay with that field changed remains valid because no
-procedural generator is involved. MCP V2 imports apply the same checks.
+The catalog declaration is the only routine source for `ItemArchetype` variants,
+ordered `ALL`, and stable wire names. `from_stable_name` must round-trip every
+catalog entry, names must be unique, and existing consumers must continue to
+iterate the same order. Count-sensitive loose-ammo reconstruction and semantic
+definition/presentation mappings remain explicit.
 
 #### Legacy evidence boundary
 
-No legacy source claim is needed for this compatibility slice. The repository's
-`ReplayEngine::validate` implementation and versioning tests are authoritative;
-external runtime and presentation comparisons remain `NOT_RUN`.
+No legacy source claim is needed for this registration slice. Protocol and asset
+catalog tests are authoritative; external runtime and presentation comparisons
+remain `NOT_RUN`.
 
 ### 2.4 Previous movement and historical correctness contracts
 
@@ -753,10 +745,10 @@ metadata compatibility coverage. Its matrix did:
 - [x] preserve gameplay semantics `16` and record migration/runtime/browser/
   audiovisual comparisons as `NOT_RUN`.
 
-### 2.7p Current Gate B RNG sampling semantics delivery target
+### 2.7p Previous Gate B RNG sampling semantics delivery target
 
-The bounded implementation target for this revision is explicit RNG sampling
-identity in replay metadata. Its transition must:
+The bounded implementation target for the previous revision was explicit RNG
+sampling identity in replay metadata. Its transition did:
 
 - [x] declare the current RNG sampling semantics version in protocol metadata
   and the canonical MCP V2 envelope;
@@ -765,6 +757,19 @@ identity in replay metadata. Its transition must:
 - [x] retain raw/bounded/probability golden vectors and keep gameplay semantics
   at `16` without changing accepted command behavior;
 - [x] record migration/runtime/browser/audiovisual comparisons as `NOT_RUN`.
+
+### 2.7q Current Gate C item identity catalog delivery target
+
+The bounded implementation target for this revision is one compile-time source
+for routine stable item identity projections. Its transition must:
+
+- [x] generate `ItemArchetype`, ordered `ALL`, and stable wire names from one
+  protocol declaration;
+- [x] preserve stable-name uniqueness, round-trip parsing, and catalog order;
+- [x] keep count-sensitive spawn reconstruction, gameplay definitions, and
+  presentation mappings explicit;
+- [x] record legacy runtime, behavior, browser, and audiovisual comparisons as
+  `NOT_RUN`.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 

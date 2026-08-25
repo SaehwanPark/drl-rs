@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.140`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.141`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -70,6 +70,8 @@ replays, and regression testing.
   - Replay metadata carries gameplay-semantics and ruleset identities, plus a
     separate generator-semantics version for procedural maps; imports reject
     unsupported values before simulation.
+  - Stable item identity, names, and catalog order derive from one protocol
+    declaration; gameplay definitions and presentation policy remain explicit.
   - Rejected `Game::step` commands restore turn, world, and RNG state through a
     bounded transaction guard; focused command-atomicity tests cover the
     invariant.

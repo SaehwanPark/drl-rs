@@ -1,6 +1,6 @@
 # Item Registration Fan-out Inventory
 
-**Status:** Verified inventory for project version `0.2.124`
+**Status:** Verified inventory for project version `0.2.141`
 
 **Date:** 2026-08-24
 
@@ -38,5 +38,7 @@ an exhaustive match or a dedicated test case.
 
 The remaining Gate C work is therefore bounded: identify any routine list not
 covered by the catalog, then migrate that list without collapsing semantic
-boundaries. The inventory does not claim that behavior or presentation parity
-is complete; those remain Gate D/E work.
+boundaries. The stable protocol identity trio (enum, `ALL`, and wire names) now
+comes from one declaration in `0.2.141`; broader content and presentation
+catalog convergence remains open. The inventory does not claim that behavior or
+presentation parity is complete; those remain Gate D/E work.

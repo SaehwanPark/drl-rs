@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.140`
+Current project version: `0.2.141`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.140)
+## 3. Current Progress Summary (`VERSION` 0.2.141)
 
 ### Delivered Foundations
 
@@ -189,6 +189,10 @@ verification item uses explicit status semantics:
 - **M2/Gate B RNG sampling semantics (`0.2.140`)**: Replay metadata now
   declares the bounded RNG sampling version; stale RNG identities reject before
   simulation, and the canonical MCP replay envelope is versioned as V2.
+- **M9/Gate C item identity catalog (`0.2.141`)**: One protocol declaration
+  now generates the stable `ItemArchetype` enum, ordered `ALL` view, and wire
+  names; count-sensitive spawn payloads, gameplay definitions, and presentation
+  mappings remain explicit.
 - **Gate D first behavior slice:** Medical Powerarmor now has a typed,
   deterministic periodic-repair transition in `drl-core`, accepted-turn
   integration, exact timer/durability/health edge tests, and a typed repair
