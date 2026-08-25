@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.136`
+Current project version: `0.2.137`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,15 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9/Gate D Damage-Type Projection
+## 2. Active Implementation Slice: M9/Gate D Mud Terrain
 
 ### 2.1 Objective
 
-Close one protocol/domain behavior gap by projecting the pure Acid/Fire hazard
-classification through `DamageApplied` events and MCP JSON. Acid and Lava
-contact retain their typed `DamageType`; actor and otherwise-unclassified
-environment damage explicitly carries no type. The existing Acid/Lava/Water
-1250 movement-cost policy remains unchanged.
+Close one terrain behavior gap by adding the pinned legacy Mud cell as a typed
+walkable Rust tile. Direct movement onto Mud costs 1650 units (the source-backed
+1.65 ratio); Acid/Lava/Water retain their existing typed movement costs and Mud
+has no contact damage in this bounded policy.
 
 The legacy Pascal/Lua implementation remains the behavioral reference. Its
 architecture, global callback machinery, and runtime Lua object model remain
@@ -43,21 +42,19 @@ non-goals for reproduction.
 
 - **Steering priority:** Typed legacy behavior (Gate D), with Gate E's
   evidence-bounded claims applied to the source comparison.
-- **Observable outcome:** A successful player move onto Acid emits
-  `DamageApplied { damage_type: Some(Acid) }`; Lava emits
-  `Some(Fire)`; Water emits no damage event. MCP JSON includes the optional
-  `damage_type` string when present.
-- **Replay/RNG impact:** Gameplay semantics advance from `14` to `15` because
-  event projections change. The transition consumes no RNG; rejected commands
-  preserve exact `Game` state.
-- **Content-catalog impact:** Existing typed terrain contracts gain no new
-  content family or registry entries.
-- **Protocol/domain ownership:** `DamageType` is a stable optional event
-  classification; resistance and balance remain core-owned future policy.
-- **Evidence boundary:** Pinned Lua source supports Acid/Fire classification on
-  the implemented contact paths. Resistance/avoidance, running/difficulty
-  modifiers, Mud movement, runtime/capture, and audiovisual parity remain
-  `NOT_RUN`.
+- **Observable outcome:** A successful player move onto Mud pays
+  `ActionCost::new(1650)` and emits no hazard damage; existing Acid/Fire event
+  projection remains stable.
+- **Replay/RNG impact:** Gameplay semantics advance from `15` to `16` because
+  Mud terrain and movement cost change future scheduling. The transition
+  consumes no RNG; rejected commands preserve exact `Game` state.
+- **Content-catalog impact:** The typed Mud terrain is added to existing
+  exhaustive terrain projections; no item family or registry is added.
+- **Protocol/domain ownership:** `TileKind::Mud` and `ActionCost` remain stable
+  protocol contracts; Mud balance and flow policy remain core-owned.
+- **Evidence boundary:** Pinned Lua source supports Mud `move_cost=1.65` and a
+  neutral liquid cell. Flow, running/difficulty modifiers, resistance/avoidance,
+  runtime/capture, and audiovisual parity remain `NOT_RUN`.
 - **Non-goals:** Generic callback registries, new scheduler modes, fluid flow,
   monster movement, runtime Lua, and broad content migration.
 
@@ -81,23 +78,22 @@ explicit legacy-scheduler evidence boundary.
 Therefore, additional broad scalar-only family additions are temporarily
 blocked by the exit gates in Section 2.8.
 
-### 2.3 Damage-type projection contracts
+### 2.3 Mud terrain contracts
 
-For direct player movement accepted onto Acid or Lava, the pure environment
-transition retains `DamageType::Acid` or `DamageType::Fire` and the emitted
-`DamageApplied` event carries it as `Some`. Actor damage and unclassified
-environment damage carry `None`; Water movement still pays
-`ActionCost::new(1250)` without contact damage. Rejected movement remains
-transactional and consumes no RNG.
+For direct player movement accepted onto Mud, the pure movement-cost transition
+returns `ActionCost::new(1650)`. Mud is walkable and produces no contact damage;
+rejected movement remains transactional and consumes no RNG. Previously
+delivered Acid/Fire damage-type projection remains part of the stable event
+contract.
 
 #### Legacy evidence boundary
 
 Pinned source evidence is recorded in
 [`docs/legacy-behavior/terrain-hazard.md`](docs/legacy-behavior/terrain-hazard.md)
-and the run's movement-cost evidence artifact. The typed event projection is
-implemented for Acid/Fire only; resistance, running/difficulty modifiers, Mud
-movement cost, fractional scheduler details, flow, exact runtime comparison,
-and presentation feedback remain `NOT_RUN`.
+and the run's movement-cost evidence artifact. The typed Mud movement policy is
+implemented as an integer cost; fractional legacy scheduler details, flow,
+resistance/avoidance, exact runtime comparison, and presentation feedback
+remain `NOT_RUN`.
 
 ### 2.4 Previous movement and historical correctness contracts
 
@@ -709,10 +705,10 @@ stress case, Water fluid movement cost. Its typed transition must:
   Mud movement cost, fluid flow, resistance/avoidance, monster movement,
   runtime comparison, and exact presentation parity remain `NOT_RUN`.
 
-### 2.7l Current damage-type projection delivery target
+### 2.7l Previous damage-type projection delivery target
 
-The bounded implementation target for this revision is the twelfth stress case,
-typed Acid/Fire damage classification. Its typed transition must:
+The bounded implementation target for the previous revision was the twelfth
+stress case, typed Acid/Fire damage classification. Its typed transition must:
 
 - [x] carry optional `DamageType` on `DamageApplied` without changing amount,
   source, HP, or event ordering contracts;
@@ -722,6 +718,20 @@ typed Acid/Fire damage classification. Its typed transition must:
   determinism, rollback identity, and existing render/audio behavior;
 - [x] record that resistance/avoidance, running/difficulty modifiers, Mud
   movement, runtime comparison, and exact audiovisual parity remain `NOT_RUN`.
+
+### 2.7m Current Mud terrain delivery target
+
+The bounded implementation target for this revision is the thirteenth stress
+case, typed Mud terrain and movement cost. Its typed transition must:
+
+- [x] expose walkable `Tile::Mud`/`TileKind::Mud` through core, replay,
+  scenario, MCP, web, render, and asset projections;
+- [x] return `ActionCost::new(1650)` for direct player movement onto Mud while
+  leaving contact damage and ordinary movement policy unchanged;
+- [x] preserve exact rejected-command state/RNG identity and deterministic
+  custom-tile replay/scenario behavior;
+- [x] record that flow, fractional scheduler details, modifiers, runtime
+  comparison, and exact audiovisual parity remain `NOT_RUN`.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 

@@ -14,6 +14,7 @@ pub enum Tile {
   Lava,
   Acid,
   Water,
+  Mud,
 }
 
 impl Tile {
@@ -35,6 +36,7 @@ impl Tile {
       Self::Lava => TileKind::Lava,
       Self::Acid => TileKind::Acid,
       Self::Water => TileKind::Water,
+      Self::Mud => TileKind::Mud,
     }
   }
 
@@ -194,6 +196,7 @@ mod tests {
       (Tile::Lava, TileKind::Lava, true, true),
       (Tile::Acid, TileKind::Acid, true, true),
       (Tile::Water, TileKind::Water, true, true),
+      (Tile::Mud, TileKind::Mud, true, true),
     ];
 
     for (tile, kind, is_walkable, is_transparent) in expected {

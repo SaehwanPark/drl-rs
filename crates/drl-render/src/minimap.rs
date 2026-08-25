@@ -113,6 +113,7 @@ const fn tile_kind_order(kind: TileKind) -> u8 {
     TileKind::Lava => 5,
     TileKind::Acid => 6,
     TileKind::Water => 7,
+    TileKind::Mud => 8,
   }
 }
 

@@ -89,6 +89,7 @@ fn minimap_markup(state: &MinimapState) -> String {
         drl_protocol::TileKind::Lava => '=',
         drl_protocol::TileKind::Acid => 'a',
         drl_protocol::TileKind::Water => '~',
+        drl_protocol::TileKind::Mud => 'u',
       },
     };
     glyphs[y * width + x] = glyph;
@@ -1189,6 +1190,7 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
         drl_protocol::TileKind::Lava => [0.45, 0.12, 0.04, 1.0],
         drl_protocol::TileKind::Acid => [0.12, 0.45, 0.12, 1.0],
         drl_protocol::TileKind::Water => [0.12, 0.28, 0.55, 1.0],
+        drl_protocol::TileKind::Mud => [0.38, 0.26, 0.16, 1.0],
         drl_protocol::TileKind::Floor => [0.16, 0.18, 0.22, 1.0],
       };
       let color = shade_color(color, tile.lighting_band());

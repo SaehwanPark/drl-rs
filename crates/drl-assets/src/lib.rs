@@ -360,7 +360,7 @@ pub const fn tile_sprite(tile: TileKind) -> SpriteDescriptor {
       layers: LEVEL_LAYERS,
       animation: STATIC_ANIMATION,
     },
-    TileKind::Acid | TileKind::Water => SpriteDescriptor {
+    TileKind::Acid | TileKind::Water | TileKind::Mud => SpriteDescriptor {
       atlas: AtlasId::Levels,
       rect: legacy_slot(1),
       layers: LEVEL_LAYERS,
@@ -791,6 +791,7 @@ mod tests {
       TileKind::Lava,
       TileKind::Acid,
       TileKind::Water,
+      TileKind::Mud,
     ] {
       let descriptor = tile_sprite(tile);
       assert!(descriptor.rect.width > 0);
@@ -1134,6 +1135,7 @@ mod tests {
       TileKind::Lava,
       TileKind::Acid,
       TileKind::Water,
+      TileKind::Mud,
     ] {
       let descriptor = tile_sprite(tile);
       assert_eq!(descriptor.animation, None);

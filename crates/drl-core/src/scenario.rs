@@ -51,6 +51,7 @@ impl Scenario {
   /// - `'='`: Lava tile (sets `Tile::Lava`)
   /// - `'x'`: Acid tile (sets `Tile::Acid`)
   /// - `'w'`: Water tile (sets `Tile::Water`)
+  /// - `'u'`: Mud tile (sets `Tile::Mud`)
   /// - `'h'`: Former Human monster
   /// - `'s'`: Former Sergeant monster
   /// - `'i'`: Imp monster
@@ -115,6 +116,9 @@ impl Scenario {
           }
           'w' => {
             tiles.insert(pos, Tile::Water);
+          }
+          'u' => {
+            tiles.insert(pos, Tile::Mud);
           }
           'h' => {
             tiles.insert(pos, Tile::Floor);
@@ -403,6 +407,7 @@ impl ScenarioRunner {
         Tile::Lava => drl_protocol::TileKind::Lava,
         Tile::Acid => drl_protocol::TileKind::Acid,
         Tile::Water => drl_protocol::TileKind::Water,
+        Tile::Mud => drl_protocol::TileKind::Mud,
       };
       replay.record_tile(pos, kind);
     }
@@ -494,6 +499,7 @@ impl ScenarioRunner {
         Tile::Lava => drl_protocol::TileKind::Lava,
         Tile::Acid => drl_protocol::TileKind::Acid,
         Tile::Water => drl_protocol::TileKind::Water,
+        Tile::Mud => drl_protocol::TileKind::Mud,
       };
       replay.record_tile(pos, kind);
     }

@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.136`
+Current project version: `0.2.137`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.136)
+## 3. Current Progress Summary (`VERSION` 0.2.137)
 
 ### Delivered Foundations
 
@@ -176,6 +176,10 @@ verification item uses explicit status semantics:
   classifications now travel through typed `DamageApplied` events and MCP JSON
   while actor/unclassified damage remains explicitly absent; resistance and
   balance modifiers remain `NOT_RUN`.
+- **M9/Gate D Mud terrain (`0.2.137`)**: Pinned Mud terrain is now a typed
+  walkable tile with replay/scenario/MCP/browser projections and deterministic
+  1650-unit direct movement cost. Flow, runtime, and exact presentation parity
+  remain `NOT_RUN`.
 - **Gate D first behavior slice:** Medical Powerarmor now has a typed,
   deterministic periodic-repair transition in `drl-core`, accepted-turn
   integration, exact timer/durability/health edge tests, and a typed repair

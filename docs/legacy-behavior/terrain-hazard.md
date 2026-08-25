@@ -27,8 +27,8 @@ claim full hazard parity.
 - Lava declares `move_cost = 1.25` for fluid movement.
 - Water also declares `move_cost = 1.25` in the pinned source (`cells.lua` lines
   387-397), while Mud declares `move_cost = 1.65` (lines 399-409). The current
-  Acid/Lava/Water movement-cost slice covers Water's ratio; Mud remains
-  deferred because it is not yet a Rust tile.
+  Acid/Lava/Water/Mud movement-cost slice covers both ratios; Mud is modeled as
+  a neutral walkable terrain with no contact damage in this Rust policy.
 - Both callbacks halve damage on Easy difficulty and while the player is using
   the legacy `running` perk. Player-facing messages and periodic hit sounds are
   presentation effects, not part of this slice.
@@ -53,9 +53,10 @@ periodic armor and pending-nuke follow-up; scheduled monster turns stop after
 the environment death event.
 
 The follow-up movement-cost slice represents the Acid/Lava/Water `1.25` ratio as
-integer `ActionCost::new(1250)` for direct player movement; ordinary walkable
-movement remains 1000. Mud movement remains deferred, and fractional legacy
-scheduler behavior and fluid flow are not claimed.
+integer `ActionCost::new(1250)` and Mud's `1.65` ratio as
+`ActionCost::new(1650)` for direct player movement; ordinary walkable movement
+remains 1000. Fractional legacy scheduler behavior and fluid flow are not
+claimed.
 
 Difficulty, running, resistance, avoidance, monster hazard contact, runtime
 comparison, and exact audio/visual parity remain
