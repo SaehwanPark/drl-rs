@@ -435,7 +435,7 @@ insufficient.
   protocol spawn-family catalog, with length, uniqueness, and order coverage.
 - [x] Derive ordinary inverse spawn lookup from `ItemSpawnKind::ALL` while
   retaining explicit loose-ammo count reconstruction and rejection coverage.
-- [ ] Keep genuinely behavioral code explicit and reviewable rather than
+- [x] Keep genuinely behavioral code explicit and reviewable rather than
   embedding arbitrary callbacks in the catalog.
 - [ ] Define a typed behavior vocabulary that can represent at least:
   **Partial in `0.2.120`:** explicit Medical Powerarmor periodic repair and
@@ -449,9 +449,9 @@ insufficient.
   - recharge or periodic effects;
   - explicit costs such as HP, energy, ammo, or status;
   - deterministic target selection over fair/current simulation state.
-- [ ] Avoid a generic string-keyed event bus or unconstrained dynamic callback
+- [x] Avoid a generic string-keyed event bus or unconstrained dynamic callback
   registry in `drl-core`.
-- [ ] Keep runtime Lua absent from the shipped game.
+- [x] Keep runtime Lua absent from the shipped game.
 
 ### 2.7 Behavior Stress Cases
 
@@ -490,14 +490,15 @@ presentation parity remain intentionally unclaimed.
 
 #### Acceptance criteria
 
-- [ ] Each selected stress case has a legacy evidence note identifying scalar
+- [x] Each selected stress case has a legacy evidence note identifying scalar
   fields, callback behavior, ordering assumptions, and unresolved ambiguity.
-- [ ] Each behavior is represented using the typed model without adding a
+- [x] Each behavior is represented using the typed model without adding a
   one-off global hook framework.
-- [ ] Deterministic scenario tests exercise successful behavior and at least one
-  rejected/edge path.
-- [ ] Behavior-complete migration is distinguished from scalar-definition
-  coverage in roadmap/status language.
+- [x] Deterministic scenario/tests exercise successful behavior and at least
+  one rejected or edge path for each selected case.
+- [x] Behavior-complete migration is distinguished from scalar-definition
+  coverage in roadmap/status language; the selected three-case model is
+  covered while broader vocabulary and parity remain open.
 
 ### 2.7a Current Medical Powerarmor delivery target
 
@@ -794,7 +795,9 @@ All of the following are required:
   authoritative catalog path with materially reduced manual fan-out; gameplay
   balance, count-sensitive reconstruction, behavior, and presentation remain
   explicitly owned elsewhere.
-- [ ] The typed behavior model passes the selected legacy stress cases.
+- [x] The typed behavior model passes the selected legacy stress cases
+  (Medical Powerarmor, Subtle Knife, and Trigun); broader behavior vocabulary
+  and controlled legacy runtime parity remain open.
 - [ ] `drl-protocol` contains stable semantic contracts but no longer owns
   mutable gameplay balance merely because a type crosses a boundary.
 - [ ] Large implementation modules touched by this work are split only where

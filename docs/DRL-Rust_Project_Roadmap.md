@@ -220,6 +220,10 @@ verification item uses explicit status semantics:
   in `docs/legacy-behavior/trigun.md`; the evidence set and typed
   implementation are complete for the initial three-case target, while runtime
   confirmation and presentation parity remain open.
+- **Gate D selected-case acceptance reconciliation:** `SPEC.md` now records
+  the initial Medical Powerarmor, Subtle Knife, and Trigun stress-case gate as
+  verified from their evidence notes and deterministic Rust tests; broader
+  behavior vocabulary and controlled legacy runtime parity remain open.
 - **Tooling & Replays (M5, M6)**: Versioned replay engine (`V2`), declarative
   ASCII scenario runners, scripted bots, batch sweep runners, and a pure Rust
   zero-dependency MCP server.
