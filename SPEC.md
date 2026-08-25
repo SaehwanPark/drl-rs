@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.123`
+Current project version: `0.2.124`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,15 +25,15 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9/Gate C Catalog-Owned Replay Count Shape
+## 2. Active Implementation Slice: M9/Gate C Catalog-Owned Definition Lookup
 
 ### 2.1 Objective
 
-Close a bounded Gate C routine-projection gap by moving replay JSON's
-loose-ammo count requirement into the stable protocol archetype catalog. The
-decoder must consume that typed projection rather than maintaining a duplicate
-ammo-family list, while gameplay definitions and count values remain owned by
-their existing domains.
+Close a bounded Gate C routine-projection gap by moving core item-definition
+lookup onto one core-owned catalog ordered by the stable protocol spawn-family
+catalog. The factory and validation paths must consume that typed definition
+catalog rather than maintaining a duplicate spawn-kind registration match,
+while gameplay balance and behavior remain core-owned.
 
 The legacy Pascal/Lua implementation remains the behavioral reference. Its
 architecture, global callback machinery, and runtime Lua object model remain
@@ -42,19 +42,17 @@ non-goals for reproduction.
 ### 2.1a Scope and steering gate
 
 - **Steering gate:** Gate C — Content registration is not shotgun surgery.
-- **Observable outcome:** Replay JSON decoding requires `count` only for the
-  four loose-ammo archetypes identified by the protocol catalog; packs, weapons,
-  armor, and consumables continue to reject or ignore counts according to the
-  existing typed spawn conversion contract.
-- **Replay/RNG impact:** The V1 replay wire format and gameplay semantics are
-  unchanged. This removes a duplicate decoder list without changing encoded
-  names, counts, or RNG behavior.
-- **Catalog impact:** `ItemArchetype::requires_stack_count` is a stable typed
-  projection of the protocol catalog; core balance and `ItemSpawnKind` count
-  reconstruction remain explicit.
-- **Protocol/domain ownership:** Wire-shape identity belongs to
-  `drl-protocol`; MCP only consumes the projection and `drl-core` remains the
-  gameplay-definition authority.
+- **Observable outcome:** Every current `ItemSpawnKind` resolves to exactly one
+  non-unknown `ItemDefinition` through `CURRENT_ITEM_DEFINITIONS`; factory and
+  validation behavior remain unchanged.
+- **Replay/RNG impact:** The V1 replay wire format, gameplay semantics, and RNG
+  behavior are unchanged. This only changes the in-memory definition lookup
+  path.
+- **Catalog impact:** `CURRENT_ITEM_DEFINITIONS` is a core-owned balance table
+  ordered to the protocol spawn-family catalog; stable identity remains
+  protocol-owned.
+- **Protocol/domain ownership:** `drl-protocol` owns stable family identity;
+  `drl-core` owns balance and definition lookup without a generic registry.
 - **Non-goals:** New item families, generic registries, runtime Lua, legacy
   runtime/capture parity, browser presentation, and broad content migration.
 
@@ -85,9 +83,13 @@ melee/ranged and Subtle Knife mutations, with focused tests proving exact
 rejection identity and ranged clip/RNG restoration. This remains part of the
 verified Gate A baseline for the current command surface.
 
-**Current bounded delivery target (`0.2.123`):** The protocol archetype
-catalog owns the loose-ammo count-shape projection consumed by MCP replay JSON
-decoding.
+**Delivered in `0.2.123`:** The protocol archetype catalog owns the loose-ammo
+count-shape projection consumed by MCP replay JSON decoding.
+
+**Current bounded delivery target (`0.2.124`):** Core definition lookup uses
+`CURRENT_ITEM_DEFINITIONS` in stable spawn-family order, removing the duplicate
+`definition_for_spawn_kind` registration match while preserving explicit
+core-owned balance data.
 
 **Delivered in `0.2.90` on `codex/fix-equip-rejection-atomicity`:** Equipping a
 non-equippable inventory item must return `CommandError::CannotEquip` without
@@ -356,6 +358,8 @@ insufficient.
   where doing so does not weaken type safety.
 - [x] Derive the replay loose-ammo count requirement from the protocol
   archetype catalog and remove the duplicate MCP decoder variant list.
+- [x] Resolve core item definitions through a single catalog ordered to the
+  protocol spawn-family catalog, with length, uniqueness, and order coverage.
 - [ ] Keep genuinely behavioral code explicit and reviewable rather than
   embedding arbitrary callbacks in the catalog.
 - [ ] Define a typed behavior vocabulary that can represent at least:

@@ -3,6 +3,12 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.124]
+
+- Added the next Gate C routine projection: core item definition lookup now
+  consumes the single `CURRENT_ITEM_DEFINITIONS` balance catalog instead of a
+  duplicate spawn-kind registration match, with catalog-order coverage tests.
+
 ## [0.2.123]
 
 - Added the next Gate C routine projection: the protocol archetype catalog now

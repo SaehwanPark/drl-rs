@@ -892,68 +892,78 @@ const PHASE_DEVICE: ItemDefinition = ItemDefinition {
   kind: ItemDefinitionKind::PhaseDevice,
 };
 
+/// Definitions for every stable item spawn family, in catalog order.
+///
+/// This is the core-owned balance table. The protocol catalog supplies stable
+/// family identity; keeping definitions in one slice makes routine lookup and
+/// coverage derive from that identity without a second registration match.
+pub const CURRENT_ITEM_DEFINITIONS: &[ItemDefinition] = &[
+  PISTOL,
+  SHOTGUN,
+  DOUBLE_SHOTGUN,
+  COMBAT_SHOTGUN,
+  BLASTER,
+  LASER_RIFLE,
+  MISSILE_LAUNCHER,
+  NUCLEAR_PLASMA_RIFLE,
+  NUCLEAR_BFG_9000,
+  BFG_10K,
+  MEGA_BUSTER,
+  GRAMMATON_BERETTA,
+  FRAG_SHOTGUN,
+  REVENANTS_LAUNCHER,
+  RAILGUN,
+  ACID_SPITTER,
+  COMBAT_PISTOL,
+  ASSAULT_SHOTGUN,
+  PLASMA_SHOTGUN,
+  JACKHAMMER,
+  SUPER_SHOTGUN,
+  TRISTAR_BLASTER,
+  BUTCHERS_CLEAVER,
+  MJOLLNIR,
+  SUBTLE_KNIFE,
+  TRIGUN,
+  ANTI_FREAK_JACKAL,
+  MINIGUN,
+  CHAINGUN,
+  ROCKET_LAUNCHER,
+  PLASMA_RIFLE,
+  BFG_9000,
+  CHAINSAW,
+  COMBAT_KNIFE,
+  AMMO_9MM,
+  AMMO_SHELLS,
+  AMMO_ROCKETS,
+  AMMO_CELLS,
+  AMMO_PACK_ROCKETS,
+  AMMO_PACK_CELLS,
+  AMMO_PACK_9MM,
+  AMMO_PACK_SHELLS,
+  SMALL_MEDPACK,
+  LARGE_MEDPACK,
+  GREEN_ARMOR,
+  BLUE_ARMOR,
+  RED_ARMOR,
+  ONYX_ARMOR,
+  PHASESHIFT_ARMOR,
+  GOTHIC_ARMOR,
+  MALEKS_ARMOR,
+  CYBERNETIC_ARMOR,
+  NECROARMOR,
+  MEDICAL_POWERARMOR,
+  LAVA_ARMOR,
+  SHIELDED_ARMOR,
+  PHASE_DEVICE,
+];
+
 /// Returns the immutable definition for one current spawn family.
 #[must_use]
-pub const fn definition_for_spawn_kind(kind: ItemSpawnKind) -> &'static ItemDefinition {
-  match kind {
-    ItemSpawnKind::Pistol => &PISTOL,
-    ItemSpawnKind::Shotgun => &SHOTGUN,
-    ItemSpawnKind::DoubleShotgun => &DOUBLE_SHOTGUN,
-    ItemSpawnKind::CombatShotgun => &COMBAT_SHOTGUN,
-    ItemSpawnKind::Blaster => &BLASTER,
-    ItemSpawnKind::LaserRifle => &LASER_RIFLE,
-    ItemSpawnKind::MissileLauncher => &MISSILE_LAUNCHER,
-    ItemSpawnKind::NuclearPlasmaRifle => &NUCLEAR_PLASMA_RIFLE,
-    ItemSpawnKind::NuclearBfg9000 => &NUCLEAR_BFG_9000,
-    ItemSpawnKind::Bfg10k => &BFG_10K,
-    ItemSpawnKind::MegaBuster => &MEGA_BUSTER,
-    ItemSpawnKind::GrammatonBeretta => &GRAMMATON_BERETTA,
-    ItemSpawnKind::FragShotgun => &FRAG_SHOTGUN,
-    ItemSpawnKind::RevenantsLauncher => &REVENANTS_LAUNCHER,
-    ItemSpawnKind::Railgun => &RAILGUN,
-    ItemSpawnKind::AcidSpitter => &ACID_SPITTER,
-    ItemSpawnKind::CombatPistol => &COMBAT_PISTOL,
-    ItemSpawnKind::AssaultShotgun => &ASSAULT_SHOTGUN,
-    ItemSpawnKind::PlasmaShotgun => &PLASMA_SHOTGUN,
-    ItemSpawnKind::Jackhammer => &JACKHAMMER,
-    ItemSpawnKind::SuperShotgun => &SUPER_SHOTGUN,
-    ItemSpawnKind::TristarBlaster => &TRISTAR_BLASTER,
-    ItemSpawnKind::ButchersCleaver => &BUTCHERS_CLEAVER,
-    ItemSpawnKind::Mjollnir => &MJOLLNIR,
-    ItemSpawnKind::SubtleKnife => &SUBTLE_KNIFE,
-    ItemSpawnKind::Trigun => &TRIGUN,
-    ItemSpawnKind::AntiFreakJackal => &ANTI_FREAK_JACKAL,
-    ItemSpawnKind::Minigun => &MINIGUN,
-    ItemSpawnKind::Chaingun => &CHAINGUN,
-    ItemSpawnKind::PlasmaRifle => &PLASMA_RIFLE,
-    ItemSpawnKind::RocketLauncher => &ROCKET_LAUNCHER,
-    ItemSpawnKind::Bfg9000 => &BFG_9000,
-    ItemSpawnKind::Chainsaw => &CHAINSAW,
-    ItemSpawnKind::CombatKnife => &COMBAT_KNIFE,
-    ItemSpawnKind::Ammo9mm(_) => &AMMO_9MM,
-    ItemSpawnKind::AmmoShells(_) => &AMMO_SHELLS,
-    ItemSpawnKind::AmmoRockets(_) => &AMMO_ROCKETS,
-    ItemSpawnKind::AmmoCells(_) => &AMMO_CELLS,
-    ItemSpawnKind::AmmoPackRockets => &AMMO_PACK_ROCKETS,
-    ItemSpawnKind::AmmoPackCells => &AMMO_PACK_CELLS,
-    ItemSpawnKind::AmmoPack9mm => &AMMO_PACK_9MM,
-    ItemSpawnKind::AmmoPackShells => &AMMO_PACK_SHELLS,
-    ItemSpawnKind::SmallMedPack => &SMALL_MEDPACK,
-    ItemSpawnKind::LargeMedPack => &LARGE_MEDPACK,
-    ItemSpawnKind::GreenArmor => &GREEN_ARMOR,
-    ItemSpawnKind::BlueArmor => &BLUE_ARMOR,
-    ItemSpawnKind::RedArmor => &RED_ARMOR,
-    ItemSpawnKind::OnyxArmor => &ONYX_ARMOR,
-    ItemSpawnKind::PhaseshiftArmor => &PHASESHIFT_ARMOR,
-    ItemSpawnKind::GothicArmor => &GOTHIC_ARMOR,
-    ItemSpawnKind::MaleksArmor => &MALEKS_ARMOR,
-    ItemSpawnKind::CyberneticArmor => &CYBERNETIC_ARMOR,
-    ItemSpawnKind::Necroarmor => &NECROARMOR,
-    ItemSpawnKind::MedicalPowerarmor => &MEDICAL_POWERARMOR,
-    ItemSpawnKind::LavaArmor => &LAVA_ARMOR,
-    ItemSpawnKind::ShieldedArmor => &SHIELDED_ARMOR,
-    ItemSpawnKind::PhaseDevice => &PHASE_DEVICE,
-  }
+pub fn definition_for_spawn_kind(kind: ItemSpawnKind) -> &'static ItemDefinition {
+  CURRENT_ITEM_DEFINITIONS
+    .iter()
+    .find(|definition| definition.archetype == kind.archetype())
+    .expect("every current item spawn family must have a definition")
 }
 
 #[cfg(test)]
@@ -962,6 +972,10 @@ mod tests {
 
   #[test]
   fn current_spawn_catalog_is_unique_and_definition_backed() {
+    assert_eq!(
+      CURRENT_ITEM_DEFINITIONS.len(),
+      CURRENT_ITEM_SPAWN_KINDS.len()
+    );
     for (index, &kind) in CURRENT_ITEM_SPAWN_KINDS.iter().enumerate() {
       assert!(
         !CURRENT_ITEM_SPAWN_KINDS[..index].contains(&kind),
@@ -996,6 +1010,13 @@ mod tests {
       archetypes.push(definition.archetype);
     }
     assert_eq!(archetypes.len(), CURRENT_ITEM_SPAWN_KINDS.len());
+    assert_eq!(
+      CURRENT_ITEM_DEFINITIONS
+        .iter()
+        .map(|definition| definition.archetype)
+        .collect::<Vec<_>>(),
+      archetypes
+    );
   }
 
   #[test]
