@@ -1,9 +1,11 @@
 //! Integration tests for declarative scenario fixtures and ASCII map parsing.
 
 use drl_core::grid::Tile;
+use drl_core::replay::ReplayEngine;
 use drl_core::scenario::{Scenario, ScenarioRunner};
 use drl_protocol::{
-  Command, Direction, ItemSpawnKind, PlayerSpawnConfig, Position, RunOutcome, ScenarioFixture,
+  Command, Direction, GameEvent, ItemId, ItemSpawnKind, PlayerSpawnConfig, Position, RunOutcome,
+  ScenarioFixture,
 };
 
 #[test]
@@ -168,4 +170,84 @@ fn test_ascii_fixture_preserves_acid_water_and_mud_tiles() {
     game.world().map().get_tile(Position::new(4, 1)),
     Some(Tile::Mud)
   );
+}
+
+#[test]
+fn subtle_knife_vertical_scenario_preserves_visibility_and_replay() {
+  let ascii = "############\n#@..i...#i##\n#..........#\n############\n";
+  let mut scenario = Scenario::from_ascii(
+    "SubtleKnifeVertical",
+    "Visible and occluded targets for the typed Subtle Knife encounter",
+    ascii,
+  )
+  .unwrap();
+  scenario.player_config = Some(PlayerSpawnConfig {
+    hp: 50,
+    max_hp: 50,
+    speed: 100,
+    initial_items: Vec::new(),
+    equipped_weapon: Some(ItemSpawnKind::SubtleKnife),
+    equipped_armor: None,
+    equipped_armor_durability: None,
+  });
+
+  let (game, events, _metrics, replay) =
+    ScenarioRunner::run_commands(&scenario, &[Command::Invoke(ItemId::new(4))]).unwrap();
+  let visible_id = game
+    .world()
+    .actors()
+    .values()
+    .find(|actor| actor.position() == Position::new(4, 1))
+    .unwrap()
+    .id();
+  let hidden_id = game
+    .world()
+    .actors()
+    .values()
+    .find(|actor| actor.position() == Position::new(9, 1))
+    .unwrap()
+    .id();
+
+  let invoke_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::SubtleKnifeInvoked {
+          item_id,
+          targets,
+          remaining_hp: 45,
+          ..
+        } if *item_id == ItemId::new(4) && targets == &[visible_id]
+      )
+    })
+    .expect("vertical invoke event must name only the visible target");
+  let damage_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::DamageApplied { target_id, amount: 15, .. }
+          if *target_id == visible_id
+      )
+    })
+    .expect("visible target damage event must be emitted");
+  let cost_index = events
+    .iter()
+    .position(|event| matches!(event, GameEvent::ActionCostPaid { .. }))
+    .expect("accepted invoke must pay its action cost");
+  let turn_end_index = events
+    .iter()
+    .position(|event| matches!(event, GameEvent::TurnEnded { .. }))
+    .expect("accepted invoke must end its turn");
+
+  assert!(invoke_index < damage_index);
+  assert!(damage_index < cost_index);
+  assert!(cost_index < turn_end_index);
+  assert_eq!(game.world().get_actor(visible_id).unwrap().hp().current, 5);
+  assert_eq!(game.world().get_actor(hidden_id).unwrap().hp().current, 20);
+  assert_eq!(game.world().player().unwrap().hp().current, 45);
+  assert!(game.world().player().unwrap().is_tired());
+  assert_eq!(replay.commands, vec![Command::Invoke(ItemId::new(4))]);
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
 }

@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.144]
+
+- Added a bounded vertical Subtle Knife encounter check spanning declarative
+  scenario execution, deterministic replay, and the browser presentation
+  boundary. The slice compares browser-session events, observations, pure
+  effects, and scene derivation with direct core execution without changing
+  gameplay semantics or balance.
+
 ## [0.2.143]
 
 - Unified stable item identity and normalized replay spawn-family registration
