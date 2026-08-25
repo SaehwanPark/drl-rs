@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.122`
+Current project version: `0.2.123`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,15 +25,15 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M1/Gate A Late Death-Drop Rejection Audit
+## 2. Active Implementation Slice: M9/Gate C Catalog-Owned Replay Count Shape
 
 ### 2.1 Objective
 
-Close a bounded Gate A correctness gap in which a death-drop destination could
-reject after combat or typed behavior effects had already mutated the game. The
-current command surface must validate every expected death-drop terrain failure
-before paying costs, consuming RNG, or applying damage, while preserving the
-outer exact-state rollback invariant as a backstop.
+Close a bounded Gate C routine-projection gap by moving replay JSON's
+loose-ammo count requirement into the stable protocol archetype catalog. The
+decoder must consume that typed projection rather than maintaining a duplicate
+ammo-family list, while gameplay definitions and count values remain owned by
+their existing domains.
 
 The legacy Pascal/Lua implementation remains the behavioral reference. Its
 architecture, global callback machinery, and runtime Lua object model remain
@@ -41,20 +41,22 @@ non-goals for reproduction.
 
 ### 2.1a Scope and steering gate
 
-- **Steering gate:** Gate A — Rejected commands are atomic.
-- **Observable outcome:** Player melee, ranged, and Subtle Knife commands with
-  a death drop on a non-walkable target tile reject with the documented terrain
-  error before combat, HP/status/score costs, ammo, or RNG change. `Invoke` and
-  `AltReload` invalid-command paths have direct exact-state evidence as well.
-- **Replay/RNG impact:** Rejected commands consume no RNG and preserve turn,
-  clip, actor, inventory, ground-item, and typed behavior state. The V1 replay
-  wire format and gameplay semantics remain unchanged by this audit.
-- **Catalog impact:** No content family or registry changes.
-- **Protocol/domain ownership:** Terrain preflight remains a `drl-core`
-  validation concern; semantic command and error contracts remain in
-  `drl-protocol`.
-- **Non-goals:** New combat behavior, runtime Lua, legacy runtime/capture
-  parity, browser presentation, and broad content migration remain open.
+- **Steering gate:** Gate C — Content registration is not shotgun surgery.
+- **Observable outcome:** Replay JSON decoding requires `count` only for the
+  four loose-ammo archetypes identified by the protocol catalog; packs, weapons,
+  armor, and consumables continue to reject or ignore counts according to the
+  existing typed spawn conversion contract.
+- **Replay/RNG impact:** The V1 replay wire format and gameplay semantics are
+  unchanged. This removes a duplicate decoder list without changing encoded
+  names, counts, or RNG behavior.
+- **Catalog impact:** `ItemArchetype::requires_stack_count` is a stable typed
+  projection of the protocol catalog; core balance and `ItemSpawnKind` count
+  reconstruction remain explicit.
+- **Protocol/domain ownership:** Wire-shape identity belongs to
+  `drl-protocol`; MCP only consumes the projection and `drl-core` remains the
+  gameplay-definition authority.
+- **Non-goals:** New item families, generic registries, runtime Lua, legacy
+  runtime/capture parity, browser presentation, and broad content migration.
 
 ### 2.2 Why this slice supersedes content breadth
 
@@ -76,11 +78,16 @@ blocked by the exit gates in Section 2.7.
 
 ### 2.3 Transactional Command Contract
 
-#### Gate A evidence inventory
+#### Gate C evidence inventory
 
-**Current bounded delivery target (`0.2.122`):** Death-drop terrain
-preflight runs before player melee/ranged and Subtle Knife mutations, with
-focused tests proving exact rejection identity and ranged clip/RNG restoration.
+**Delivered in `0.2.122`:** Death-drop terrain preflight runs before player
+melee/ranged and Subtle Knife mutations, with focused tests proving exact
+rejection identity and ranged clip/RNG restoration. This remains part of the
+verified Gate A baseline for the current command surface.
+
+**Current bounded delivery target (`0.2.123`):** The protocol archetype
+catalog owns the loose-ammo count-shape projection consumed by MCP replay JSON
+decoding.
 
 **Delivered in `0.2.90` on `codex/fix-equip-rejection-atomicity`:** Equipping a
 non-equippable inventory item must return `CommandError::CannotEquip` without
@@ -347,6 +354,8 @@ insufficient.
 - [ ] Generate or mechanically derive routine projections such as stable IDs,
   display strings, validation coverage, replay names, and presentation lookup
   where doing so does not weaken type safety.
+- [x] Derive the replay loose-ammo count requirement from the protocol
+  archetype catalog and remove the duplicate MCP decoder variant list.
 - [ ] Keep genuinely behavioral code explicit and reviewable rather than
   embedding arbitrary callbacks in the catalog.
 - [ ] Define a typed behavior vocabulary that can represent at least:

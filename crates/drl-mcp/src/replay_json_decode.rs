@@ -294,15 +294,13 @@ fn item_kind(value: &JsonValue, context: &str) -> Result<ItemSpawnKind, String> 
   let kind = string(required(object, "kind")?, &format!("{context}.kind"))?;
   let archetype = ItemArchetype::from_stable_name(kind)
     .ok_or_else(|| format!("{context}.kind has unsupported item kind '{kind}'"))?;
-  let count = match archetype {
-    ItemArchetype::Ammo9mm
-    | ItemArchetype::AmmoShells
-    | ItemArchetype::AmmoRockets
-    | ItemArchetype::AmmoCells => Some(u32_value(
+  let count = if archetype.requires_stack_count() {
+    Some(u32_value(
       required(object, "count")?,
       &format!("{context}.count"),
-    )?),
-    _ => None,
+    )?)
+  } else {
+    None
   };
   ItemSpawnKind::from_archetype(archetype, count)
     .ok_or_else(|| format!("{context}.kind does not identify a reconstructible item spawn"))
