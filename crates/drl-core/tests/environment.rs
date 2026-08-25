@@ -105,6 +105,30 @@ fn moving_onto_water_uses_fluid_movement_cost_without_damage() {
 }
 
 #[test]
+fn moving_onto_mud_uses_pinned_movement_cost_without_damage() {
+  let mut game = Game::new_arena(1_340, 12, 12).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let mud_position = game.world().player().unwrap().position() + Direction::East;
+  game.world_mut().map_mut().set_tile(mud_position, Tile::Mud);
+
+  let events = game.step(Command::Move(Direction::East)).unwrap();
+
+  assert!(events.iter().any(|event| matches!(
+    event,
+    GameEvent::ActionCostPaid {
+      entity_id,
+      cost: ActionCost(1_650),
+    } if *entity_id == player_id
+  )));
+  assert!(
+    !events
+      .iter()
+      .any(|event| matches!(event, GameEvent::DamageApplied { .. }))
+  );
+  assert_eq!(game.world().player().unwrap().hp().current, 50);
+}
+
+#[test]
 fn lethal_lava_contact_emits_environment_death_and_ends_game() {
   let mut game = Game::new_arena(1_332, 12, 12).unwrap();
   let player_id = game.world().player_id().unwrap();
@@ -301,6 +325,25 @@ fn replay_preserves_water_fluid_movement_cost_deterministically() {
 }
 
 #[test]
+fn replay_preserves_mud_movement_cost_deterministically() {
+  let start = Position::new(5, 5);
+  let mut replay = ReplayLog::new(1_341, 12, 12, start);
+  replay.record_tile(start + Direction::East, TileKind::Mud);
+  replay.record_command(Command::Move(Direction::East));
+
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+  let (game, events) = ReplayEngine::run(&replay).unwrap();
+  assert_eq!(game.world().player().unwrap().hp().current, 50);
+  assert!(events.iter().any(|event| matches!(
+    event,
+    GameEvent::ActionCostPaid {
+      cost: ActionCost(1_650),
+      ..
+    }
+  )));
+}
+
+#[test]
 fn rejected_move_preserves_hazard_game_state_and_rng() {
   let mut game = Game::new_arena(1_336, 12, 12).unwrap();
   let player_position = game.world().player().unwrap().position();
@@ -366,6 +409,27 @@ fn ascii_scenario_replays_water_movement_cost_policy() {
     event,
     GameEvent::ActionCostPaid {
       cost: ActionCost(1_250),
+      ..
+    }
+  )));
+}
+
+#[test]
+fn ascii_scenario_replays_mud_movement_cost_policy() {
+  let scenario = Scenario::from_ascii(
+    "MudMovement",
+    "Player enters a Mud cell",
+    "#####\n#@u.#\n#####\n",
+  )
+  .unwrap();
+  let (game, events, _, _) =
+    ScenarioRunner::run_commands(&scenario, &[Command::Move(Direction::East)]).unwrap();
+
+  assert_eq!(game.world().player().unwrap().hp().current, 50);
+  assert!(events.iter().any(|event| matches!(
+    event,
+    GameEvent::ActionCostPaid {
+      cost: ActionCost(1_650),
       ..
     }
   )));

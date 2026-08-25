@@ -52,7 +52,9 @@ pub use behavior::{
 };
 pub use combat::CombatResolver;
 pub use content_validation::{ContentValidationError, validate_current_content};
-pub use environment::{FLUID_MOVEMENT_COST, HazardDamage, entered_tile_damage, movement_cost};
+pub use environment::{
+  FLUID_MOVEMENT_COST, HazardDamage, MUD_MOVEMENT_COST, entered_tile_damage, movement_cost,
+};
 pub use fov::{DEFAULT_VISION_RADIUS, compute_fov, has_line_of_sight, line_points};
 pub use game::{Game, GameState};
 pub use generator::{GeneratedLevel, LevelGenerator, LevelGeneratorConfig, MonsterSpawn, Room};

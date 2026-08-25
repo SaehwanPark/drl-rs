@@ -49,6 +49,7 @@ pub const fn tile_colorization_tint(tile: TileKind) -> [u8; 4] {
     TileKind::Lava => [255, 80, 0, 255],
     TileKind::Acid => [80, 255, 80, 255],
     TileKind::Water => [80, 160, 255, 255],
+    TileKind::Mud => [150, 110, 70, 255],
     _ => NEUTRAL_COLORIZATION_TINT,
   }
 }

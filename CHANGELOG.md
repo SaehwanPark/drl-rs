@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.137]
+
+- Added a typed walkable Mud terrain across core, replay, scenario, MCP, web,
+  render, and asset projections; direct movement onto Mud now pays the pinned
+  integer `ActionCost::new(1650)` ratio. Flow, runtime, and exact presentation
+  parity remain deferred.
+
 ## [0.2.136]
 
 - Projected the typed Acid/Fire classification from environment damage into

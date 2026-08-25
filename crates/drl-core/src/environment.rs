@@ -5,6 +5,9 @@ use drl_protocol::{ActionCost, DamageType, TileKind};
 /// Integer action cost representing the legacy `move_cost=1.25` fluid ratio.
 pub const FLUID_MOVEMENT_COST: ActionCost = ActionCost::new(1_250);
 
+/// Integer action cost representing the legacy `move_cost=1.65` Mud ratio.
+pub const MUD_MOVEMENT_COST: ActionCost = ActionCost::new(1_650);
+
 /// Fixed baseline damage produced when a player enters a hazardous tile.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct HazardDamage {
@@ -39,6 +42,7 @@ pub const fn entered_tile_damage(tile: TileKind) -> Option<HazardDamage> {
 pub const fn movement_cost(tile: TileKind) -> ActionCost {
   match tile {
     TileKind::Acid | TileKind::Lava | TileKind::Water => FLUID_MOVEMENT_COST,
+    TileKind::Mud => MUD_MOVEMENT_COST,
     _ => ActionCost::MOVE,
   }
 }
@@ -78,5 +82,6 @@ mod tests {
     assert_eq!(movement_cost(TileKind::Lava), FLUID_MOVEMENT_COST);
     assert_eq!(movement_cost(TileKind::Floor), ActionCost::MOVE);
     assert_eq!(movement_cost(TileKind::Water), FLUID_MOVEMENT_COST);
+    assert_eq!(movement_cost(TileKind::Mud), MUD_MOVEMENT_COST);
   }
 }

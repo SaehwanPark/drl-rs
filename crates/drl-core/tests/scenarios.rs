@@ -143,16 +143,17 @@ fn test_scenario_from_protocol_fixture() {
 }
 
 #[test]
-fn test_ascii_fixture_preserves_acid_and_water_tiles() {
+fn test_ascii_fixture_preserves_acid_water_and_mud_tiles() {
   let fixture = ScenarioFixture::with_ascii_map(
     "AcidTerrain",
     "ASCII fixture exposes the terrain used by Acid Spitter reload",
-    "#######\n#@xw..#\n#######\n",
+    "#######\n#@xwu.#\n#######\n",
   );
 
   let scenario = Scenario::from_fixture(&fixture).unwrap();
   assert_eq!(scenario.tiles.get(&Position::new(2, 1)), Some(&Tile::Acid));
   assert_eq!(scenario.tiles.get(&Position::new(3, 1)), Some(&Tile::Water));
+  assert_eq!(scenario.tiles.get(&Position::new(4, 1)), Some(&Tile::Mud));
 
   let game = scenario.instantiate().unwrap();
   assert_eq!(
@@ -162,5 +163,9 @@ fn test_ascii_fixture_preserves_acid_and_water_tiles() {
   assert_eq!(
     game.world().map().get_tile(Position::new(3, 1)),
     Some(Tile::Water)
+  );
+  assert_eq!(
+    game.world().map().get_tile(Position::new(4, 1)),
+    Some(Tile::Mud)
   );
 }

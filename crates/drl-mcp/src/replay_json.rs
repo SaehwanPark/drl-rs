@@ -228,6 +228,7 @@ fn tile_kind_to_json(kind: TileKind) -> JsonValue {
     TileKind::Lava => "lava",
     TileKind::Acid => "acid",
     TileKind::Water => "water",
+    TileKind::Mud => "mud",
   })
 }
 
@@ -432,6 +433,10 @@ mod tests {
       (Position::new(3, 1), TileKind::DoorClosed),
       (Position::new(4, 1), TileKind::DoorOpen),
       (Position::new(5, 1), TileKind::StairsDown),
+      (Position::new(6, 1), TileKind::Lava),
+      (Position::new(7, 1), TileKind::Acid),
+      (Position::new(8, 1), TileKind::Water),
+      (Position::new(9, 1), TileKind::Mud),
     ] {
       replay.record_tile(position, kind);
     }

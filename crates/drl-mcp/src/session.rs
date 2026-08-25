@@ -1515,6 +1515,7 @@ fn replay_log_for_scenario(scenario: &Scenario) -> ReplayLog {
       Tile::Lava => TileKind::Lava,
       Tile::Acid => TileKind::Acid,
       Tile::Water => TileKind::Water,
+      Tile::Mud => TileKind::Mud,
     };
     replay.record_tile(position, kind);
   }
@@ -1589,10 +1590,10 @@ mod tests {
   }
 
   #[test]
-  fn load_scenario_accepts_acid_and_water_glyphs() {
+  fn load_scenario_accepts_acid_water_and_mud_glyphs() {
     let mut session = McpSession::new();
     let observation = session
-      .load_scenario("\n#######\n#@xw..#\n#######\n", None)
+      .load_scenario("\n#######\n#@xwu.#\n#######\n", None)
       .unwrap();
 
     assert_eq!(
@@ -1610,6 +1611,14 @@ mod tests {
         .find(|tile| tile.position == Position::new(3, 1))
         .map(|tile| tile.kind),
       Some(TileKind::Water)
+    );
+    assert_eq!(
+      observation
+        .visible_tiles
+        .iter()
+        .find(|tile| tile.position == Position::new(4, 1))
+        .map(|tile| tile.kind),
+      Some(TileKind::Mud)
     );
   }
 
