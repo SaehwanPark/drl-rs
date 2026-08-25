@@ -1,4 +1,4 @@
-//! Exact decoder for the canonical in-memory V1 replay JSON envelope.
+//! Exact decoder for the canonical in-memory V2 replay JSON envelope.
 
 use crate::json::JsonValue;
 use crate::replay_json::{
@@ -11,7 +11,7 @@ use drl_protocol::{
 };
 use std::collections::BTreeMap;
 
-const FORMAT: &str = "drl-rust-replay-v1";
+const FORMAT: &str = "drl-rust-replay-v2";
 const MAX_INITIAL_ENTITIES: usize = 4_096;
 const MAX_CUSTOM_TILES: usize = 65_536;
 const MAX_COMMANDS: usize = 100_000;
@@ -24,13 +24,13 @@ const MAX_COMMANDS: usize = 100_000;
 pub fn from_json_value(value: &JsonValue) -> Result<ReplayLog, String> {
   let object = object(value, "replay envelope")?;
   if string(required(object, "format")?, "format")? != FORMAT {
-    return Err("replay format must be drl-rust-replay-v1".to_string());
+    return Err("replay format must be drl-rust-replay-v2".to_string());
   }
-  if u64_value(required(object, "schema_version")?, "schema_version")? != 1 {
-    return Err("replay schema_version must be 1".to_string());
+  if u64_value(required(object, "schema_version")?, "schema_version")? != 2 {
+    return Err("replay schema_version must be 2".to_string());
   }
-  if replay_version(required(object, "version")?, "version")? != ReplayVersion::V1 {
-    return Err("replay version must be V1".to_string());
+  if replay_version(required(object, "version")?, "version")? != ReplayVersion::V2 {
+    return Err("replay version must be V2".to_string());
   }
 
   let metadata = parse_metadata(required(object, "metadata")?)?;
@@ -78,7 +78,7 @@ pub fn from_json_value(value: &JsonValue) -> Result<ReplayLog, String> {
     .collect::<Result<Vec<_>, _>>()?;
 
   let replay = ReplayLog {
-    version: ReplayVersion::V1,
+    version: ReplayVersion::V2,
     metadata,
     player_config,
     procedural_config,
@@ -110,6 +110,10 @@ fn parse_metadata(value: &JsonValue) -> Result<ReplayMetadata, String> {
     gameplay_semantics_version: u32_value(
       required(object, "gameplay_semantics_version")?,
       "metadata.gameplay_semantics_version",
+    )?,
+    rng_sampling_semantics_version: u32_value(
+      required(object, "rng_sampling_semantics_version")?,
+      "metadata.rng_sampling_semantics_version",
     )?,
     generator_semantics_version: u32_value(
       required(object, "generator_semantics_version")?,
@@ -375,8 +379,8 @@ fn parse_position(value: &JsonValue, context: &str) -> Result<Position, String> 
 
 fn replay_version(value: &JsonValue, context: &str) -> Result<ReplayVersion, String> {
   match u64_value(value, context)? {
-    1 => Ok(ReplayVersion::V1),
-    _ => Err(format!("{context} must be replay version V1")),
+    2 => Ok(ReplayVersion::V2),
+    _ => Err(format!("{context} must be replay version V2")),
   }
 }
 
@@ -467,6 +471,15 @@ fn validate_replay_safety(replay: &ReplayLog) -> Result<(), String> {
       "unsupported gameplay semantics version {}; expected {}",
       replay.metadata.gameplay_semantics_version,
       drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION
+    ));
+  }
+  if replay.metadata.rng_sampling_semantics_version
+    != drl_protocol::CURRENT_RNG_SAMPLING_SEMANTICS_VERSION
+  {
+    return Err(format!(
+      "unsupported RNG sampling semantics version {}; expected {}",
+      replay.metadata.rng_sampling_semantics_version,
+      drl_protocol::CURRENT_RNG_SAMPLING_SEMANTICS_VERSION
     ));
   }
   if replay.metadata.ruleset_id != drl_protocol::CURRENT_RULESET_ID {

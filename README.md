@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.139`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.140`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -198,11 +198,12 @@ The `cohort` command emits stable line-oriented outcome, telemetry, and
 deepest-level fields for reproducible descriptive studies; it does not claim
 balance, a canonical difficulty curve, or statistical significance.
 
-The MCP semantic tool suite exports a complete deterministic in-memory V1
+The MCP semantic tool suite exports a complete deterministic in-memory V2
 replay envelope through `game_save_replay`, including initial-state metadata
-and typed semantic commands. `game_verify_replay` verifies either the active
+and gameplay/RNG/generator/ruleset compatibility identities plus typed semantic
+commands. `game_verify_replay` verifies either the active
 session replay or a supplied canonical envelope read-only, while
-`game_load_replay` transactionally restores that exact V1 envelope into a
+`game_load_replay` transactionally restores that exact V2 envelope into a
 session, retains it for appended commands, and reruns it deterministically on
 reset. MCP-created envelopes use bounded session dimensions and generator
 parameters enforced at `game_start`; replay-file IO, migrations, cross-version

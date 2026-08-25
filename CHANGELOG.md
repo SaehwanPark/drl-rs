@@ -3,6 +3,12 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.140]
+
+- Added explicit RNG sampling semantics to replay metadata and advanced the
+  canonical replay JSON envelope to V2; stale RNG versions now reject before
+  simulation while current fixed/procedural replay boundaries remain intact.
+
 ## [0.2.139]
 
 - Added replay metadata compatibility coverage for gameplay semantics, ruleset

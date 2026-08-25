@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.139`
+Current project version: `0.2.140`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -109,7 +109,8 @@ Presentation Boundary
   - Current residual typed-content helpers include `MonsterKind::definition()`
     and `TileKind::definition()`; their gameplay-policy ownership is a tracked
     boundary-cleanup item, not a pattern for further expansion.
-  - Replay contracts: `ReplayVersion::V1`, `ReplayLog`.
+  - Replay contracts: `ReplayVersion::V2`, `ReplayLog`, and explicit RNG
+    sampling semantics metadata.
 - **Dependencies**: Pure `std` only; zero dependencies on any other workspace
   crate.
 
@@ -255,24 +256,24 @@ Presentation Boundary
   - Semantic tools for game control, observation, action enumeration, and
     replays, including state-safe deterministic replay verification.
   - `game_verify_replay` verifies either the complete in-memory replay or a
-    supplied canonical V1 JSON envelope without mutating session state,
+    supplied canonical V2 JSON envelope without mutating session state,
     including recorded procedural generator parameters. This establishes
     repeatability under the current compatible engine semantics; replay wire
     acceptance alone is not a cross-version gameplay-compatibility promise.
     MCP session creation enforces bounded dimensions and generator parameters
     before export; replay file IO, migration, and cross-version interchange
     remain outside this boundary.
-  - `game_load_replay` decodes the exact canonical V1 envelope, executes it in
+  - `game_load_replay` decodes the exact canonical V2 envelope, executes it in
     a temporary `ReplayEngine` state, and commits the game/metrics/replay log
     only after success. The imported log and optional MCP turn limit remain the
     reset source and accept later commands when non-terminal. Existing
     `ReplayEngine` terminal-prefix behavior remains authoritative for supplied
     logs; filesystem or network replay IO and migrations remain outside this
     boundary.
-  - `game_save_replay` projects every V1 `ReplayLog` field through the
-    deterministic `replay_json` envelope (`drl-rust-replay-v1`) with structured
+  - `game_save_replay` projects every V2 `ReplayLog` field through the
+    deterministic `replay_json` envelope (`drl-rust-replay-v2`) with structured
     semantic command objects, complete initial-state containers, and explicit
-    nulls for absent optional values. `replay_json` also decodes this exact V1
+    nulls for absent optional values. `replay_json` also decodes this exact V2
     envelope for read-only verification; it does not activate sessions, migrate
     versions, perform file IO, or claim external replay interchange.
   - `tools/list` and `resources/list` slice stable registries into fixed-size
@@ -369,8 +370,8 @@ Presentation Boundary
   thread-local RNG is permitted. Bounded integer sampling uses documented
   rejection sampling under `RNG_SAMPLING_SEMANTICS_VERSION`; core rules use
   exact integer probability ratios, and replay metadata separately records and
-  validates gameplay-semantics, generator-semantics (for procedural replays),
-  and ruleset identities.
+  validates gameplay-semantics, RNG-sampling, generator-semantics (for
+  procedural replays), and ruleset identities.
 - **Combat Resolution**: `CombatResolver` evaluates melee bump attacks and
   targeted ranged attacks with explicit distance accuracy scaling, uniform
   damage rolls, armor protection mitigation, and health clamping.
@@ -468,7 +469,7 @@ Presentation Boundary
   behind base pixels with tested straight-alpha weights.
 
 ### 4.7 Replays, Cohorts & Evaluation
-- **Replay V1 Engine**: `ReplayEngine` records and executes versioned replay
+- **Replay V2 Engine**: `ReplayEngine` records and executes versioned replay
   logs with exact initial spawn metadata and command streams. Current
   verification proves deterministic reproduction under the implementation and
   semantics that interpret that log; it does not by itself define archival

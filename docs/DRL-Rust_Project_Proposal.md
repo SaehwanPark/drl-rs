@@ -65,8 +65,9 @@ WASM boot and semantic input; authoritative gameplay state remains in Rust.
 Keep the existing `drl-core` deterministic kernel, `drl-protocol` commands,
 events, observations, scenarios, and replay schema. Add only additive fair
 frontend fields: map width/height, player HP, actor `MonsterKind`, and stable
-`ItemArchetype`. MCP JSON remains the existing wire shape and replay V1 stays
-bit-compatible.
+`ItemArchetype`. MCP JSON remains a deterministic semantic wire shape; replay
+V2 explicitly declares gameplay, RNG-sampling, generator, and ruleset/content
+identities.
 
 ### Assets and content
 

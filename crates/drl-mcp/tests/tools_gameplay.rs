@@ -132,13 +132,13 @@ fn test_mcp_procedural_gameplay_tools() {
   assert_eq!(cmds.len(), 2);
   assert_eq!(
     replay_data.get("format").and_then(JsonValue::as_str),
-    Some("drl-rust-replay-v1")
+    Some("drl-rust-replay-v2")
   );
   assert_eq!(
     replay_data
       .get("schema_version")
       .and_then(JsonValue::as_u64),
-    Some(1)
+    Some(2)
   );
   assert_eq!(
     cmds[0].get("action").and_then(JsonValue::as_str),

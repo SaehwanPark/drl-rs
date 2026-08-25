@@ -30,7 +30,7 @@ pub fn get_all_tool_definitions() -> Vec<ToolDefinition> {
     },
     ToolDefinition {
       name: "game_load_replay".to_string(),
-      description: "Restore a canonical V1 replay into the session transactionally.".to_string(),
+      description: "Restore a canonical V2 replay into the session transactionally.".to_string(),
       input_schema: game_load_replay_schema(),
     },
     ToolDefinition {
@@ -65,7 +65,7 @@ pub fn get_all_tool_definitions() -> Vec<ToolDefinition> {
     },
     ToolDefinition {
       name: "game_verify_replay".to_string(),
-      description: "Verify the current session's replay, or a supplied canonical V1 replay, without changing game state.".to_string(),
+      description: "Verify the current session's replay, or a supplied canonical V2 replay, without changing game state.".to_string(),
       input_schema: game_verify_replay_schema(),
     },
     ToolDefinition {
