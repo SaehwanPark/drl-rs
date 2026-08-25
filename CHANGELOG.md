@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.122]
+
+- Closed the current Gate A late-failure gap by preflighting death-drop map
+  destinations before melee, ranged, and Subtle Knife combat mutations.
+- Added exact rejection-atomicity coverage for `Invoke`, `AltReload`, and
+  blocked death drops, including ranged clip/RNG restoration and no partial
+  ground-item creation.
+
 ## [0.2.121]
 
 - Added the third Gate D typed behavior slice: confirmed Trigun alternate

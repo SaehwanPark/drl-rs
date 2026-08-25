@@ -1,7 +1,7 @@
 //! Rejected command invariants for the deterministic simulation kernel.
 
 use drl_core::{Game, Item, Tile};
-use drl_protocol::{Command, CommandError, ItemCategory, Position};
+use drl_protocol::{Command, CommandError, ItemCategory, ItemSpawnKind, Position};
 
 fn assert_rejected_command_is_atomic(
   game: &mut Game,
@@ -504,6 +504,124 @@ fn phase_device_without_destination_preserves_game_state() {
     Command::Use(phase_device_id),
     CommandError::InvalidCommand("no valid teleport destination available".to_string()),
   );
+}
+
+#[test]
+fn invoke_rejection_preserves_game_state() {
+  let mut game = Game::new(28, 10, 10, Position::new(2, 2)).unwrap();
+  let missing_item_id = drl_protocol::ItemId::new(u64::MAX);
+
+  assert_rejected_command_is_atomic(
+    &mut game,
+    Command::Invoke(missing_item_id),
+    CommandError::CannotInvoke(missing_item_id),
+  );
+}
+
+#[test]
+fn alternate_reload_rejection_preserves_game_state() {
+  let mut game = Game::new(29, 10, 10, Position::new(2, 2)).unwrap();
+  let missing_item_id = drl_protocol::ItemId::new(u64::MAX);
+
+  assert_rejected_command_is_atomic(
+    &mut game,
+    Command::AltReload {
+      item_id: missing_item_id,
+      confirmed: true,
+    },
+    CommandError::CannotAltReload(missing_item_id),
+  );
+}
+
+#[test]
+fn subtle_knife_late_death_drop_rejection_is_atomic() {
+  let mut game = Game::new_arena(30, 20, 20).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let knife_id = game.world_mut().allocate_item_id();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .equip(
+      drl_protocol::EquipmentSlot::Weapon,
+      Item::subtle_knife(knife_id),
+    )
+    .unwrap();
+
+  let target_position = Position::new(11, 10);
+  let target_id = game
+    .world_mut()
+    .spawn_monster(target_position, "Dropper", 1, 0, (1, 1))
+    .unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(target_id)
+    .unwrap()
+    .set_death_drop(Some(ItemSpawnKind::SmallMedPack));
+  game
+    .world_mut()
+    .map_mut()
+    .set_tile(target_position, Tile::Wall);
+
+  assert_rejected_command_is_atomic(
+    &mut game,
+    Command::Invoke(knife_id),
+    CommandError::BlockedByTerrain(target_position),
+  );
+  assert!(game.world().ground_items().is_empty());
+}
+
+#[test]
+fn melee_late_death_drop_rejection_is_atomic() {
+  let mut game = Game::new_arena(31, 20, 20).unwrap();
+  let target_position = Position::new(11, 10);
+  let target_id = game
+    .world_mut()
+    .spawn_monster(target_position, "Dropper", 1, 0, (1, 1))
+    .unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(target_id)
+    .unwrap()
+    .set_death_drop(Some(ItemSpawnKind::SmallMedPack));
+  game
+    .world_mut()
+    .map_mut()
+    .set_tile(target_position, Tile::Wall);
+
+  assert_rejected_command_is_atomic(
+    &mut game,
+    Command::AttackMelee(drl_protocol::Direction::East),
+    CommandError::BlockedByTerrain(target_position),
+  );
+  assert!(game.world().ground_items().is_empty());
+}
+
+#[test]
+fn ranged_late_death_drop_rejection_restores_clip_and_rng() {
+  let mut game = Game::new_arena(3, 20, 20).unwrap();
+  let target_position = Position::new(11, 10);
+  let target_id = game
+    .world_mut()
+    .spawn_monster(target_position, "Dropper", 1, 0, (1, 1))
+    .unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(target_id)
+    .unwrap()
+    .set_death_drop(Some(ItemSpawnKind::SmallMedPack));
+  game
+    .world_mut()
+    .map_mut()
+    .set_tile(target_position, Tile::Wall);
+
+  assert_rejected_command_is_atomic(
+    &mut game,
+    Command::AttackRanged(target_position),
+    CommandError::BlockedByTerrain(target_position),
+  );
+  assert!(game.world().ground_items().is_empty());
 }
 
 #[test]

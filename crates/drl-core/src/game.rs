@@ -344,6 +344,19 @@ impl Game {
     .collect();
     target_ids.sort_unstable();
 
+    // Validate every possible death-drop destination before paying the invoke
+    // cost or applying damage. The drop is committed only after the target's
+    // death, so this preflight keeps a late world error outside the mutation
+    // boundary instead of relying solely on the command rollback guard.
+    for target_id in &target_ids {
+      let Some(target) = self.state.world.get_actor(*target_id) else {
+        continue;
+      };
+      if target.death_drop().is_some() {
+        self.validate_death_drop_position(target.position())?;
+      }
+    }
+
     let cost = self
       .state
       .world
@@ -904,6 +917,12 @@ impl Game {
     target_id: drl_protocol::EntityId,
     events: &mut Vec<GameEvent>,
   ) -> Result<(), CommandError> {
+    if let Some(target) = self.state.world.get_actor(target_id)
+      && target.death_drop().is_some()
+    {
+      self.validate_death_drop_position(target.position())?;
+    }
+
     let (outcome, is_lethal, damage) = {
       let attacker = self
         .state
@@ -1046,6 +1065,17 @@ impl Game {
       props.fire_cost
     };
 
+    // Keep all ordinary command validation ahead of the death-drop preflight,
+    // then reject an impossible drop before consuming clip state or combat RNG.
+    if self
+      .state
+      .world
+      .get_actor(target_monster_id)
+      .is_some_and(|target| target.death_drop().is_some())
+    {
+      self.validate_death_drop_position(target_pos)?;
+    }
+
     // Commit the prepared shot only after every fallible validation succeeds.
     {
       let player = self
@@ -1154,6 +1184,7 @@ impl Game {
     kind: drl_protocol::ItemSpawnKind,
     events: &mut Vec<GameEvent>,
   ) -> Result<(), CommandError> {
+    self.validate_death_drop_position(pos)?;
     let item_id = self.state.world.allocate_item_id();
     let item = Item::from_spawn_kind(item_id, kind);
     let item_name = item.name().to_string();
@@ -1164,6 +1195,17 @@ impl Game {
       item_name,
       position: pos,
     });
+    Ok(())
+  }
+
+  /// Validates the map destination used by a typed death drop.
+  fn validate_death_drop_position(&self, pos: Position) -> Result<(), CommandError> {
+    if !self.state.world.map().is_in_bounds(pos) {
+      return Err(CommandError::OutOfBounds(pos));
+    }
+    if !self.state.world.map().is_walkable(pos) {
+      return Err(CommandError::BlockedByTerrain(pos));
+    }
     Ok(())
   }
 
