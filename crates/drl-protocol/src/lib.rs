@@ -14,7 +14,9 @@ pub mod types;
 
 pub use command::{Command, CommandError};
 pub use event::GameEvent;
-pub use item::{AmmoType, EquipmentSlot, GroundItemView, ItemArchetype, ItemCategory, ItemView};
+pub use item::{
+  AmmoType, EquipmentSlot, GroundItemView, ItemArchetype, ItemCategory, ItemView, WeaponFireMode,
+};
 pub use metrics::{BatchSummary, EpisodeMetrics, RunOutcome};
 pub use observation::{
   ActorView, Observation, OmniscientObservation, PlayerObservation, TileDefinition, TileKind,

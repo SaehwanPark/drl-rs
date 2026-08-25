@@ -1,6 +1,7 @@
 //! Simulation game events emitted during turn processing.
 
 use crate::item::EquipmentSlot;
+use crate::item::WeaponFireMode;
 use crate::types::{
   ActionCost, AttackOutcome, DamageSource, DeathCause, EntityId, HitPoints, ItemId, LevelId,
   Position, Turn,
@@ -97,6 +98,13 @@ pub enum GameEvent {
     entity_id: EntityId,
     item_id: ItemId,
     remaining_hp: HitPoints,
+    score_count_remaining: i32,
+  },
+  /// A Grammaton alternate reload cycled its typed fire mode.
+  GrammatonFireModeChanged {
+    entity_id: EntityId,
+    item_id: ItemId,
+    mode: WeaponFireMode,
     score_count_remaining: i32,
   },
   /// A typed level nuke was scheduled at an accepted command boundary.

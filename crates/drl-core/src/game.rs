@@ -9,6 +9,7 @@ use crate::behavior::MedicalRepairOutcome;
 use crate::combat::CombatResolver;
 use crate::fov::DEFAULT_VISION_RADIUS;
 use crate::generator::{LevelGenerator, LevelGeneratorConfig};
+use crate::grammaton::{GRAMMATON_MODE_SCORE_COST, GrammatonTransition};
 use crate::grid::Map;
 use crate::item::Item;
 use crate::level_definition::standard_procedural;
@@ -424,10 +425,6 @@ impl Game {
     confirmed: bool,
     events: &mut Vec<GameEvent>,
   ) -> Result<(), CommandError> {
-    if !confirmed {
-      return Err(CommandError::AltReloadNotConfirmed(item_id));
-    }
-
     let player = self
       .state
       .world
@@ -437,38 +434,66 @@ impl Game {
       .equipment()
       .weapon()
       .filter(|item| item.id() == item_id)
-      .filter(|item| item.archetype() == drl_protocol::ItemArchetype::Trigun)
       .ok_or(CommandError::CannotAltReload(item_id))?;
-    let _ = weapon;
-
-    let cost = self
-      .state
-      .world
-      .get_actor_mut(player_id)
-      .ok_or(CommandError::EntityNotFound(player_id))?
-      .alt_reload_trigun()
-      .map_err(|error| match error {
-        TrigunError::MaximumHealthTooLow | TrigunError::Dead => {
-          CommandError::CannotAltReload(item_id)
+    match weapon.archetype() {
+      drl_protocol::ItemArchetype::GrammatonBeretta => {
+        let mode = self
+          .state
+          .world
+          .get_actor_mut(player_id)
+          .and_then(|actor| actor.equipment_mut().weapon_mut())
+          .and_then(|item| item.weapon_properties_mut())
+          .map(GrammatonTransition::cycle)
+          .ok_or(CommandError::CannotAltReload(item_id))?;
+        let score_count_remaining = self
+          .state
+          .world
+          .get_actor_mut(player_id)
+          .ok_or(CommandError::EntityNotFound(player_id))?
+          .spend_score_count(GRAMMATON_MODE_SCORE_COST);
+        events.push(GameEvent::GrammatonFireModeChanged {
+          entity_id: player_id,
+          item_id,
+          mode,
+          score_count_remaining,
+        });
+        Ok(())
+      }
+      drl_protocol::ItemArchetype::Trigun => {
+        if !confirmed {
+          return Err(CommandError::AltReloadNotConfirmed(item_id));
         }
-      })?;
+        let cost = self
+          .state
+          .world
+          .get_actor_mut(player_id)
+          .ok_or(CommandError::EntityNotFound(player_id))?
+          .alt_reload_trigun()
+          .map_err(|error| match error {
+            TrigunError::MaximumHealthTooLow | TrigunError::Dead => {
+              CommandError::CannotAltReload(item_id)
+            }
+          })?;
 
-    self
-      .state
-      .nuke
-      .activate(TRIGUN_NUKE_TIMER)
-      .map_err(|_| CommandError::CannotAltReload(item_id))?;
-    events.push(GameEvent::TrigunAltReloaded {
-      entity_id: player_id,
-      item_id,
-      remaining_hp: cost.remaining_hp,
-      score_count_remaining: cost.score_count_remaining,
-    });
-    events.push(GameEvent::NukeActivated {
-      level_id: self.state.world.level_id(),
-      countdown: TRIGUN_NUKE_TIMER,
-    });
-    Ok(())
+        self
+          .state
+          .nuke
+          .activate(TRIGUN_NUKE_TIMER)
+          .map_err(|_| CommandError::CannotAltReload(item_id))?;
+        events.push(GameEvent::TrigunAltReloaded {
+          entity_id: player_id,
+          item_id,
+          remaining_hp: cost.remaining_hp,
+          score_count_remaining: cost.score_count_remaining,
+        });
+        events.push(GameEvent::NukeActivated {
+          level_id: self.state.world.level_id(),
+          countdown: TRIGUN_NUKE_TIMER,
+        });
+        Ok(())
+      }
+      _ => Err(CommandError::CannotAltReload(item_id)),
+    }
   }
 
   /// Resolves a pending nuke at the accepted command boundary.
@@ -1038,7 +1063,7 @@ impl Game {
     let distance = p_pos.distance_chebyshev(target_pos);
 
     // Prepare the full validation boundary before consuming ammo or RNG.
-    let fire_cost = {
+    let (fire_cost, shot_count) = {
       let player = self
         .state
         .world
@@ -1061,8 +1086,12 @@ impl Game {
       if distance > props.range {
         return Err(CommandError::TargetOutOfRange(target_pos));
       }
+      let shot_count = GrammatonTransition::shot_count(props.fire_mode);
+      if props.current_clip < shot_count {
+        return Err(CommandError::NoAmmoInClip);
+      }
 
-      props.fire_cost
+      (props.fire_cost, shot_count)
     };
 
     // Keep all ordinary command validation ahead of the death-drop preflight,
@@ -1090,54 +1119,56 @@ impl Game {
       let props = weapon
         .weapon_properties_mut()
         .ok_or(CommandError::NoEquippedWeapon)?;
-      props.current_clip -= 1;
+      props.current_clip -= shot_count;
     }
 
-    let (outcome, is_lethal, damage) = {
-      let player = self
-        .state
-        .world
-        .get_actor(player_id)
-        .ok_or(CommandError::EntityNotFound(player_id))?;
-      let target_monster = self
-        .state
-        .world
-        .get_actor(target_monster_id)
-        .ok_or(CommandError::EntityNotFound(target_monster_id))?;
+    for _ in 0..shot_count {
+      let (outcome, damage) = {
+        let player = self
+          .state
+          .world
+          .get_actor(player_id)
+          .ok_or(CommandError::EntityNotFound(player_id))?;
+        let target_monster = self
+          .state
+          .world
+          .get_actor(target_monster_id)
+          .ok_or(CommandError::EntityNotFound(target_monster_id))?;
 
-      let outcome = CombatResolver::resolve_ranged_attack(
-        player,
-        target_monster,
-        distance,
-        &mut self.state.rng,
-      );
-      let (is_lethal, damage) = match outcome {
-        AttackOutcome::Hit { damage, is_lethal } => (is_lethal, damage),
-        _ => (false, 0),
+        let outcome = CombatResolver::resolve_ranged_attack(
+          player,
+          target_monster,
+          distance,
+          &mut self.state.rng,
+        );
+        let damage = match outcome {
+          AttackOutcome::Hit { damage, .. } => damage,
+          _ => 0,
+        };
+        (outcome, damage)
       };
-      (outcome, is_lethal, damage)
-    };
 
-    events.push(GameEvent::AttackResolved {
-      attacker_id: player_id,
-      target_id: target_monster_id,
-      outcome,
-      is_ranged: true,
-    });
+      events.push(GameEvent::AttackResolved {
+        attacker_id: player_id,
+        target_id: target_monster_id,
+        outcome,
+        is_ranged: true,
+      });
 
-    if damage > 0 {
-      let (taken, _, _) =
+      if damage == 0 {
+        continue;
+      }
+
+      let (taken, actual_lethal, death_cause) =
         self
           .state
           .world
           .apply_damage(target_monster_id, damage, DamageSource::Actor(player_id))?;
-
       let remaining = self
         .state
         .world
         .get_actor(target_monster_id)
         .map_or(0, |a| a.hp().current);
-
       events.push(GameEvent::DamageApplied {
         target_id: target_monster_id,
         amount: taken,
@@ -1145,31 +1176,37 @@ impl Game {
         source: DamageSource::Actor(player_id),
       });
 
-      if is_lethal {
+      if actual_lethal {
         let death_drop = self
           .state
           .world
           .get_actor(target_monster_id)
           .and_then(|a| a.death_drop());
-        events.push(GameEvent::ActorDied {
-          entity_id: target_monster_id,
-          cause: DeathCause::RangedAttack {
-            attacker_id: player_id,
-          },
-        });
-
-        if let Some(drop_kind) = death_drop {
-          self.spawn_death_drop(target_monster_id, target_pos, drop_kind, events)?;
-        }
-      } else {
-        let player_kb = self
+        let death_position = self
           .state
           .world
-          .get_actor(player_id)
-          .map_or(0, |a| a.knockback());
-        if player_kb > 0 {
-          self.apply_knockback(player_id, target_monster_id, player_kb, events)?;
+          .get_actor(target_monster_id)
+          .map(|a| a.position())
+          .unwrap_or(target_pos);
+        events.push(GameEvent::ActorDied {
+          entity_id: target_monster_id,
+          cause: death_cause.unwrap_or(DeathCause::RangedAttack {
+            attacker_id: player_id,
+          }),
+        });
+        if let Some(drop_kind) = death_drop {
+          self.spawn_death_drop(target_monster_id, death_position, drop_kind, events)?;
         }
+        break;
+      }
+
+      let player_kb = self
+        .state
+        .world
+        .get_actor(player_id)
+        .map_or(0, |a| a.knockback());
+      if player_kb > 0 {
+        self.apply_knockback(player_id, target_monster_id, player_kb, events)?;
       }
     }
 

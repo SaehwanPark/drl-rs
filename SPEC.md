@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.127`
+Current project version: `0.2.128`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,15 +25,15 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9/Vertical Fidelity AI Movement Fallback
+## 2. Active Implementation Slice: M9/Gate D Grammaton Fire-Mode Behavior
 
 ### 2.1 Objective
 
-Close a bounded vertical-fidelity movement gap by pinning the legacy AI
-movement source and making its bounded candidate order an executable Rust
-contract. A monster first attempts the smoothed direction toward the player;
-when that destination is blocked, it retries the raw direction, then horizontal
-and vertical cardinal components. It does not search all remaining neighbors.
+Close one callback-heavy legacy behavior gap by pinning the Grammaton Cleric
+Beretta's alternate-reload mode cycle and making it an explicit Rust state
+transition. The equipped weapon cycles through single, burst, and full-auto
+modes in that order, with mode-specific damage and shot-count policies, and
+the cycle costs 200 score count.
 
 The legacy Pascal/Lua implementation remains the behavioral reference. Its
 architecture, global callback machinery, and runtime Lua object model remain
@@ -41,22 +41,28 @@ non-goals for reproduction.
 
 ### 2.1a Scope and steering gate
 
-- **Steering priority:** Vertical canonical fidelity, with Gate E's
-  evidence-bounded claims applied to the legacy comparison.
-- **Observable outcome:** A blocked monster diagonal tries horizontal first and
-  then vertical if needed; a blocked smoothed cardinal retries the raw diagonal.
-  If all candidates are blocked, the AI waits rather than searching other
-  directions. Direct player movement remains destination-only.
-- **Replay/RNG impact:** The V1 replay wire format and RNG behavior are
-  unchanged. AI decisions remain deterministic and consume no RNG.
-- **Behavior boundary:** `MonsterAi` owns one-step policy; broad pathfinding,
-  player movement validation, and scheduler/action-cost redesign remain out of
-  scope.
-- **Evidence boundary:** The pinned legacy source supports this rule, while a
-  controlled legacy runtime/capture comparison remains `NOT_RUN`.
-- **Non-goals:** New movement modifiers, diagonal cost redesign, AI
-  pathfinding changes, runtime Lua, browser presentation, and broad content
-  migration.
+- **Steering priority:** Typed legacy behavior (Gate D), with Gate E's
+  evidence-bounded claims applied to the source comparison.
+- **Observable outcome:** `Command::AltReload` on an equipped Grammaton cycles
+  `Single -> Burst -> Auto -> Single`, updates the typed weapon damage and shot
+  count, emits a `GrammatonFireModeChanged` event, and spends 200 score count.
+  Ranged attacks consume the mode's shot count atomically and emit one ordered
+  attack/damage sequence per shot, stopping after a lethal shot.
+- **Replay/RNG impact:** The V1 wire format remains unchanged, but gameplay
+  semantics advance from `6` to `7` because mode state changes future command
+  outcomes. The transition and burst resolution consume no RNG until all
+  command validation succeeds; rejected commands preserve exact `Game` state.
+- **Content-catalog impact:** No new item family or registration path is added.
+  The existing Grammaton definition remains the authoritative identity.
+- **Protocol/domain ownership:** `WeaponFireMode` and the mode-change event are
+  stable semantic protocol contracts; mode profiles, score cost, and shot
+  resolution remain core-owned policy.
+- **Evidence boundary:** The pinned Lua source supports the cycle, mode
+  profiles, and score cost. Controlled legacy runtime/capture comparison is
+  `NOT_RUN`.
+- **Non-goals:** Generic burst-fire infrastructure, other weapon alt-reloads,
+  legacy confirmation/UI behavior, runtime Lua, explosion effects, and broad
+  content migration.
 
 ### 2.2 Why this slice supersedes content breadth
 
@@ -71,13 +77,33 @@ At the same time, adding a conventional content family now fans out across
 protocol enums, definitions, validation, replay codecs, assets, documentation,
 and other exhaustive registries. Continuing scalar-only breadth before a
 behavior model is selected would increase both migration debt and change
-amplification. The movement source audit gives this slice a narrow AI rule, a
-focused end-to-end test, and an explicit runtime evidence boundary.
+amplification. The Grammaton source audit gives this slice a narrow typed state
+machine, a focused end-to-end test, and an explicit runtime evidence boundary.
 
 Therefore, additional broad scalar-only family additions are temporarily
-blocked by the exit gates in Section 2.7.
+blocked by the exit gates in Section 2.8.
 
-### 2.3 AI movement and historical correctness contracts
+### 2.3 Grammaton fire-mode contracts
+
+For an equipped Grammaton with a loaded clip, each accepted alternate reload
+must cycle the mode and subtract exactly 200 score count using saturating core
+policy. Single mode uses one shot with the base `2d6` profile; burst uses three
+shots of `1d8`; full-auto uses six shots of `1d7`. The mode transition itself
+does not consume RNG. A ranged command must reject before clip/RNG mutation when
+the current clip contains fewer rounds than the selected shot count. Successful
+shots resolve in deterministic order against the originally selected target;
+lethal resolution stops the sequence and commits one death drop at most.
+
+#### Legacy evidence boundary
+
+Pinned source evidence is recorded in
+[`docs/legacy-behavior/grammaton-beretta.md`](docs/legacy-behavior/grammaton-beretta.md).
+The source callback's raw accuracy values are retained as evidence, while
+DRL-Rust maps them to its existing percentage policy (`80`, `75`, `70`) until
+the legacy accuracy equation is audited. Runtime parity and presentation
+feedback remain `NOT_RUN`.
+
+### 2.4 Previous movement and historical correctness contracts
 
 #### AI movement contract
 
@@ -140,6 +166,13 @@ blocked-candidate `Wait`, and unchanged RNG; a controlled legacy runtime
 comparison is `NOT_RUN`. The strongly-skewed smoothing ratio is supporting
 evidence from the dirty untracked helper rather than a clean pinned-source
 fact.
+
+**Current bounded delivery target (`0.2.128`):** The pinned legacy Grammaton
+source records the single/burst/auto cycle, `2d6`/`1d8`/`1d7` profiles,
+three-/six-shot counts, and 200 score-count cost. Typed transition, ordered
+multi-shot, partial-clip rejection, replay, and MCP projections are covered;
+the legacy accuracy equation and controlled runtime/presentation comparison
+remain `NOT_RUN`.
 
 **Delivered in `0.2.90` on `codex/fix-equip-rejection-atomicity`:** Equipping a
 non-equippable inventory item must return `CommandError::CannotEquip` without
@@ -361,7 +394,7 @@ State identity on rejection includes, at minimum:
 - [x] Cover invalid `Invoke` and `AltReload` commands plus blocked late
   death-drop failures with exact `Game` equality and no ground-item creation.
 
-### 2.4 RNG and Replay Semantics Contract
+### 2.5 RNG and Replay Semantics Contract
 
 Determinism means more than running the current implementation twice. A replay
 must state which gameplay semantics it expects, and random sampling behavior
@@ -386,7 +419,7 @@ must be intentional because changing it changes deterministic histories.
   implemented; do not silently reinterpret an old replay through current item
   definitions.
 
-### 2.5 Typed Content and Behavior Architecture Contract
+### 2.6 Typed Content and Behavior Architecture Contract
 
 The project must retain compile-time exhaustiveness without requiring every new
 ordinary content archetype to be manually synchronized across many independent
@@ -435,7 +468,7 @@ insufficient.
   registry in `drl-core`.
 - [ ] Keep runtime Lua absent from the shipped game.
 
-### 2.6 Behavior Stress Cases
+### 2.7 Behavior Stress Cases
 
 The behavior model is not accepted based on toy examples alone. Demonstrate it
 using a small set of deliberately difficult legacy cases selected to exercise
@@ -481,7 +514,7 @@ presentation parity remain intentionally unclaimed.
 - [ ] Behavior-complete migration is distinguished from scalar-definition
   coverage in roadmap/status language.
 
-### 2.6a Current Medical Powerarmor delivery target
+### 2.7a Current Medical Powerarmor delivery target
 
 The bounded implementation target for this revision is the first stress case,
 Medical Powerarmor. Its typed transition must:
@@ -499,7 +532,7 @@ Medical Powerarmor. Its typed transition must:
 - [x] cover the pure transition, edge cases, accepted-turn integration, and
   deterministic replay/event ordering with focused tests.
 
-### 2.6b Current Subtle Knife delivery target
+### 2.7b Current Subtle Knife delivery target
 
 The bounded implementation target for this revision is the second stress case,
 Subtle Knife alternate invoke. Its typed transition must:
@@ -515,7 +548,7 @@ Subtle Knife alternate invoke. Its typed transition must:
 - [x] cover pure transition, visibility boundaries, accepted integration,
   rejection rollback, replay determinism, and command/protocol persistence.
 
-### 2.6c Current Trigun delivery target
+### 2.7c Current Trigun delivery target
 
 The bounded implementation target for this revision is the third stress case,
 Trigun alternate reload. Its typed transition must:
@@ -537,7 +570,23 @@ Trigun alternate reload. Its typed transition must:
 - [x] record that explosion geometry, animation timing, confirmation UI, and
   controlled legacy runtime parity remain `NOT_RUN` or out of scope.
 
-### 2.7 Exit Gates Before Broad Content Migration Resumes
+### 2.7d Current Grammaton delivery target
+
+The bounded implementation target for this revision is the fourth stress case,
+Grammaton Cleric Beretta fire-mode behavior. Its typed transition must:
+
+- [x] expose `WeaponFireMode` and cycle the equipped weapon through single,
+  burst, and full-auto profiles in the pinned order;
+- [x] apply the evidence-backed `2d6`/`1d8`/`1d7` damage profiles, one/three/
+  six-shot counts, and a bounded 200 score-count cost;
+- [x] preflight the selected shot count before clip or RNG mutation, emit
+  ordered mode/shot/damage events, and stop at the first actual lethal result;
+- [x] cover partial-clip rollback, pure transition behavior, replay
+  determinism, and MCP legal-action/event projection;
+- [x] record that the legacy accuracy equation and controlled runtime or
+  presentation parity remain `NOT_RUN`.
+
+### 2.8 Exit Gates Before Broad Content Migration Resumes
 
 All of the following are required:
 
@@ -560,7 +609,7 @@ All of the following are required:
 Once these gates pass, the next active slice should be a **vertical canonical
 fidelity slice**, not another scalar-only family batch.
 
-### 2.8 Vertical Fidelity Successor Slice
+### 2.9 Vertical Fidelity Successor Slice
 
 The successor slice should select one bounded canonical progression or encounter
 and migrate it end-to-end, including relevant interactions among:
@@ -577,7 +626,7 @@ Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity
 proof.
 
-### 2.9 Explicit Non-Goals
+### 2.10 Explicit Non-Goals
 
 This active slice does **not** include:
 

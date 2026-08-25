@@ -2,7 +2,7 @@
 
 use drl_protocol::{
   ActionCost, AmmoType, EquipmentSlot, HitPoints, ItemArchetype, ItemCategory, ItemId,
-  ItemSpawnKind, ItemView,
+  ItemSpawnKind, ItemView, WeaponFireMode,
 };
 
 use crate::behavior::{MedicalRepairOutcome, MedicalRepairState};
@@ -21,6 +21,8 @@ pub struct WeaponProperties {
   pub knockback: u32,
   pub fire_cost: ActionCost,
   pub reload_cost: ActionCost,
+  /// Typed alternate-fire mode; non-Grammaton weapons remain `Single`.
+  pub fire_mode: WeaponFireMode,
 }
 
 /// Physical properties for wearable body armor.
@@ -762,6 +764,7 @@ impl Item {
         knockback,
         fire_cost,
         reload_cost,
+        fire_mode: WeaponFireMode::Single,
       }),
       ItemDefinitionKind::Ammo {
         ammo_type,

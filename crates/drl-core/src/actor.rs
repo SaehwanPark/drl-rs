@@ -182,8 +182,9 @@ impl Actor {
   }
 
   /// Spends score count without permitting an underflow.
-  pub fn spend_score_count(&mut self, amount: i32) {
+  pub fn spend_score_count(&mut self, amount: i32) -> i32 {
     self.score_count = self.score_count.saturating_sub(amount);
+    self.score_count
   }
 
   /// Applies the typed Subtle Knife actor-side transition.

@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.128]
+
+- Added pinned Grammaton Cleric Beretta behavior evidence and a typed
+  `WeaponFireMode` cycle through single, burst, and full-auto profiles.
+- Added deterministic multi-shot ranged resolution with preflighted clip/RNG
+  validation, ordered mode-change events, and MCP legal-action/event output.
+- Advanced gameplay-semantics replay identity to `7`; legacy accuracy-equation
+  and runtime/presentation parity remain `NOT_RUN`.
+
 ## [0.2.127]
 
 - Aligned `MonsterAi` with pinned legacy `MoveTowards` candidate semantics:
