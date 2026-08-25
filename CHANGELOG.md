@@ -3,6 +3,16 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.127]
+
+- Aligned `MonsterAi` with pinned legacy `MoveTowards` candidate semantics:
+  smoothed preferred steps retry raw direction, then horizontal and vertical
+  candidates, while all blocked candidates wait instead of broad pathfinding.
+- Added deterministic decision and scheduled-turn coverage; controlled legacy
+  runtime comparison remains `NOT_RUN`.
+- Advanced the gameplay-semantics replay identity to `6`; version-5 envelopes
+  are rejected until an explicit migration exists.
+
 ## [0.2.126]
 
 - Added a pinned legacy movement evidence record for direct-player

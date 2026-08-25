@@ -57,9 +57,11 @@ These behaviors are confirmed by DRL-Rust implementation and test suites.
   target's bounds, blocking flags/items, hazards, and occupancy. It does not
   inspect the two cardinal neighbors of a diagonal target. The pinned source
   therefore permits corner cutting when the diagonal destination is valid.
-- **AI movement is separate** — `MoveTowards` tries a smooth diagonal and then
-  falls back to cardinal directions after a blocked result. That fallback is
-  not a direct-player diagonal restriction.
+- **AI movement is separate** — `MoveTowards` tries a smoothed preferred step,
+  retries the raw direction after a block, then tries horizontal and vertical
+  cardinal candidates in that order. It does not search every remaining
+  neighbor, and the fallback is not a direct-player diagonal restriction. The
+  bounded AI behavior is documented in `ai.md`.
 - **8-directional movement** — the source accepts a direction computed from
   input, and DRL-Rust's eight-direction command contract is consistent with
   the inspected movement paths. Controlled runtime confirmation is pending.
@@ -71,8 +73,9 @@ These behaviors are confirmed by DRL-Rust implementation and test suites.
 
 ## Legacy Implementation Artifacts
 
-- `MoveTowards`'s cardinal fallback is an AI/pathing implementation detail,
-  not evidence for adding corner-cutting restrictions to direct player input.
+- `MoveTowards`'s bounded candidate order is an AI/pathing implementation
+  detail, not evidence for adding corner-cutting restrictions to direct player
+  input.
 
 ---
 
@@ -107,7 +110,8 @@ These behaviors are confirmed by DRL-Rust implementation and test suites.
 
 ## Non-Goals
 
-- Pathfinding AI movement — covered in `ai.md` (not yet created).
+- Monster AI movement policy — covered in `ai.md`; broad pathfinding remains
+  out of scope.
 - Targeting and line-of-sight — see `targeting` module documentation and
   planned `targeting.md`.
 - Level generation and room/corridor layout — deferred to generation domain

@@ -71,6 +71,32 @@ fn test_blocked_monster_closes_distance_to_player() {
 }
 
 #[test]
+fn test_blocked_diagonal_monster_uses_legacy_cardinal_fallback() {
+  let mut game = Game::new(12345, 20, 20, Position::new(4, 4)).unwrap();
+  let monster_id = game
+    .world_mut()
+    .spawn_monster_kind(Position::new(6, 6), MonsterKind::Demon)
+    .unwrap();
+  game
+    .world_mut()
+    .map_mut()
+    .set_tile(Position::new(5, 5), Tile::Wall);
+  let before_rng = game.rng().clone();
+
+  let events = game.step(Command::Wait).unwrap();
+
+  assert!(events.iter().any(|event| matches!(
+    event,
+    GameEvent::EntityMoved {
+      entity_id,
+      from: Position { x: 6, y: 6 },
+      to: Position { x: 5, y: 6 },
+    } if *entity_id == monster_id
+  )));
+  assert_eq!(game.rng(), &before_rng);
+}
+
+#[test]
 fn test_monster_death_spawns_configured_loot_drop() {
   let mut game = Game::new(12345, 20, 20, Position::new(2, 2)).unwrap();
 

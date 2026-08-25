@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.126`
+Current project version: `0.2.127`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -68,7 +68,9 @@ Presentation Boundary
    event emission.
    Direct player diagonal movement validates the requested destination only;
    adjacent-cardinal corner checks are not part of that command path. Monster
-   `MoveTowards` fallback remains a separate AI policy.
+   `MoveTowards` uses smoothed preferred, raw retry, horizontal, and vertical
+   candidates in a bounded order, then waits when all are blocked; it does not
+   perform broad pathfinding.
 3. **One-Way Presentation**: Presentation layers (`drl-render`, `drl-audio`,
    `drl-web`) consume observations and events only. Rendering, animation, audio,
    tab visibility, viewport resize, or GPU device loss **never** advance the
