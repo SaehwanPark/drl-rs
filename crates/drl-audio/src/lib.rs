@@ -61,6 +61,7 @@ pub fn cues_for_events(events: &[GameEvent]) -> Vec<AudioCue> {
       | GameEvent::ActionCostPaid { .. }
       | GameEvent::DamageApplied { .. }
       | GameEvent::MedicalPowerarmorRepaired { .. }
+      | GameEvent::SubtleKnifeInvoked { .. }
       | GameEvent::TurnEnded { .. } => {}
     }
   }

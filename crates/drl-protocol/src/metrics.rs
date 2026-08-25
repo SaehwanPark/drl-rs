@@ -134,6 +134,7 @@ impl EpisodeMetrics {
       | GameEvent::ItemUnequipped { .. }
       | GameEvent::WeaponReloaded { .. }
       | GameEvent::MedicalPowerarmorRepaired { .. }
+      | GameEvent::SubtleKnifeInvoked { .. }
       | GameEvent::ActorKnockedBack { .. }
       | GameEvent::TurnEnded { .. } => {}
     }

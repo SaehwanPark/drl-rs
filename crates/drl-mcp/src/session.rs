@@ -7,9 +7,9 @@ use drl_core::grid::Tile;
 use drl_core::scenario::Scenario;
 use drl_core::{Game, ReplayEngine};
 use drl_protocol::{
-  Command, Direction, EpisodeMetrics, EquipmentSlot, GameEvent, ItemCategory, ItemId, ItemView,
-  OmniscientObservation, PlayerObservation, Position, ProceduralGenerationConfig, ReplayLog,
-  RunOutcome, TileKind,
+  Command, Direction, EpisodeMetrics, EquipmentSlot, GameEvent, ItemArchetype, ItemCategory,
+  ItemId, ItemView, OmniscientObservation, PlayerObservation, Position, ProceduralGenerationConfig,
+  ReplayLog, RunOutcome, TileKind,
 };
 use std::collections::BTreeMap;
 
@@ -139,6 +139,21 @@ pub fn compute_legal_actions(obs: &PlayerObservation) -> Vec<LegalAction> {
         }
       }
     }
+  }
+
+  // 3a. Typed Subtle Knife alternate invoke.
+  if let Some(weapon) = obs.equipped_weapon.as_ref()
+    && weapon.archetype == ItemArchetype::SubtleKnife
+  {
+    let mut p = BTreeMap::new();
+    p.insert("action".to_string(), JsonValue::from("invoke"));
+    p.insert("item_id".to_string(), JsonValue::from(weapon.id.as_u64()));
+    actions.push(LegalAction {
+      action: "Invoke".to_string(),
+      description: "Invoke the equipped Subtle Knife against visible targets".to_string(),
+      command: Command::Invoke(weapon.id),
+      params: JsonValue::Object(p),
+    });
   }
 
   // 4. Reload weapon (if weapon not full and matching ammo exists in inventory)
@@ -362,6 +377,10 @@ pub fn json_to_command(val: &JsonValue) -> Result<Command, String> {
     "use" => {
       let item_id = required_exact_item_id(obj)?;
       Ok(Command::Use(ItemId::new(item_id)))
+    }
+    "invoke" => {
+      let item_id = required_exact_item_id(obj)?;
+      Ok(Command::Invoke(ItemId::new(item_id)))
     }
     "reload" => Ok(Command::Reload),
     "descend" => Ok(Command::Descend),
@@ -729,6 +748,31 @@ pub fn game_event_to_json(event: &GameEvent) -> JsonValue {
         JsonValue::from(*durability_remaining),
       );
       map.insert("timer".to_string(), JsonValue::from(*timer));
+    }
+    GameEvent::SubtleKnifeInvoked {
+      entity_id,
+      item_id,
+      targets,
+      remaining_hp,
+      score_count_remaining,
+    } => {
+      map.insert("type".to_string(), JsonValue::from("SubtleKnifeInvoked"));
+      map.insert("entity_id".to_string(), JsonValue::from(entity_id.as_u64()));
+      map.insert("item_id".to_string(), JsonValue::from(item_id.as_u64()));
+      map.insert(
+        "targets".to_string(),
+        JsonValue::Array(
+          targets
+            .iter()
+            .map(|target| JsonValue::from(target.as_u64()))
+            .collect(),
+        ),
+      );
+      map.insert("remaining_hp".to_string(), JsonValue::from(*remaining_hp));
+      map.insert(
+        "score_count_remaining".to_string(),
+        JsonValue::from(*score_count_remaining),
+      );
     }
     GameEvent::LevelTransitioned {
       from_level,
@@ -1431,6 +1475,12 @@ mod tests {
     assert_eq!(
       json_to_command(&item_boundary).unwrap(),
       Command::Use(ItemId::new(9_007_199_254_740_992))
+    );
+
+    let invoke = JsonValue::parse(r#"{"action":"invoke","item_id":42}"#).unwrap();
+    assert_eq!(
+      json_to_command(&invoke).unwrap(),
+      Command::Invoke(ItemId::new(42))
     );
 
     for alias in ["none", "wait", "."] {

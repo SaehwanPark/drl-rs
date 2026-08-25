@@ -137,6 +137,7 @@ fn encode_command(command: Command) -> Result<String, SnapshotError> {
       }
     ),
     Command::Use(id) => format!("c{}", id.as_u64()),
+    Command::Invoke(id) => format!("v{}", id.as_u64()),
     Command::Reload => "l".to_string(),
     Command::Descend => "x".to_string(),
   })
@@ -158,6 +159,7 @@ fn decode_command(token: &str) -> Result<Command, SnapshotError> {
     "u" if rest == "w" => Ok(Command::Unequip(EquipmentSlot::Weapon)),
     "u" if rest == "a" => Ok(Command::Unequip(EquipmentSlot::Armor)),
     "c" => Ok(Command::Use(parse_item_id(rest)?)),
+    "v" => Ok(Command::Invoke(parse_item_id(rest)?)),
     "l" if rest.is_empty() => Ok(Command::Reload),
     "x" if rest.is_empty() => Ok(Command::Descend),
     _ => Err(SnapshotError::Malformed),

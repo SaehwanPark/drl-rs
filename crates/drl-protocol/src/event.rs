@@ -83,6 +83,14 @@ pub enum GameEvent {
     current_clip: u32,
     max_clip: u32,
   },
+  /// A Subtle Knife invoke paid its actor cost and selected visible targets.
+  SubtleKnifeInvoked {
+    entity_id: EntityId,
+    item_id: ItemId,
+    targets: Vec<EntityId>,
+    remaining_hp: u32,
+    score_count_remaining: i32,
+  },
   /// Medical Powerarmor restored one HP and spent one durability point.
   MedicalPowerarmorRepaired {
     entity_id: EntityId,

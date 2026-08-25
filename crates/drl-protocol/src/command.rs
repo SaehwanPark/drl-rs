@@ -25,6 +25,8 @@ pub enum Command {
   Unequip(EquipmentSlot),
   /// Use/consume an item from inventory (e.g. MedPack).
   Use(ItemId),
+  /// Invoke a typed alternate action on an equipped item (e.g. Subtle Knife).
+  Invoke(ItemId),
   /// Reload the equipped ranged weapon from inventory ammo stacks.
   Reload,
   /// Descend stairs at the current position to transition to the next level.
@@ -65,6 +67,8 @@ pub enum CommandError {
   CannotEquip(ItemId),
   /// Item cannot be used or consumed.
   CannotUse(ItemId),
+  /// Item cannot perform its requested alternate action.
+  CannotInvoke(ItemId),
   /// Equipment slot is already empty.
   SlotEmpty(EquipmentSlot),
   /// Action requires an equipped weapon, but none is equipped.
@@ -131,6 +135,7 @@ impl fmt::Display for CommandError {
       }
       Self::CannotEquip(id) => write!(f, "item {} cannot be equipped", id.as_u64()),
       Self::CannotUse(id) => write!(f, "item {} cannot be used", id.as_u64()),
+      Self::CannotInvoke(id) => write!(f, "item {} cannot be invoked", id.as_u64()),
       Self::SlotEmpty(slot) => write!(f, "{slot} slot is empty"),
       Self::NoEquippedWeapon => write!(f, "no weapon equipped"),
       Self::NoAmmoInClip => write!(f, "weapon clip is empty - reload required"),

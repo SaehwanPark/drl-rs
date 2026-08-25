@@ -459,6 +459,32 @@ impl World {
     Ok((taken, lethal, death_cause))
   }
 
+  /// Applies fixed internal damage without armor mitigation.
+  pub fn apply_internal_damage(
+    &mut self,
+    target_id: EntityId,
+    amount: u32,
+    source: drl_protocol::DamageSource,
+  ) -> Result<(u32, bool, Option<drl_protocol::DeathCause>), CommandError> {
+    let target = self
+      .actors
+      .get_mut(&target_id)
+      .ok_or(CommandError::EntityNotFound(target_id))?;
+
+    let (taken, lethal) = target.take_internal_damage(amount);
+    let death_cause = if lethal {
+      match source {
+        drl_protocol::DamageSource::Actor(attacker_id) => {
+          Some(drl_protocol::DeathCause::MeleeAttack { attacker_id })
+        }
+        drl_protocol::DamageSource::Environment => Some(drl_protocol::DeathCause::Environment),
+      }
+    } else {
+      None
+    };
+    Ok((taken, lethal, death_cause))
+  }
+
   /// Creates a player observation snapshot.
   #[must_use]
   pub fn create_player_observation(&self, turn: Turn) -> PlayerObservation {

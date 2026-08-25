@@ -27,6 +27,7 @@ pub mod rng;
 pub mod scenario;
 pub mod scheduler;
 pub mod special_level_definition;
+pub mod subtle_knife;
 pub mod targeting;
 pub mod world;
 
@@ -57,6 +58,10 @@ pub use scenario::{Scenario, ScenarioRunner};
 pub use scheduler::{ACTION_THRESHOLD, Scheduler};
 pub use special_level_definition::{
   SPECIAL_LEVEL_DEFINITIONS, SpecialLevelDefinition, at_legacy_depth, by_id,
+};
+pub use subtle_knife::{
+  SUBTLE_KNIFE_HP_COST, SUBTLE_KNIFE_SCORE_COST, SUBTLE_KNIFE_TARGET_DAMAGE, SubtleKnifeCost,
+  SubtleKnifeError, SubtleKnifeTransition, TiredStatus,
 };
 pub use targeting::TargetingSystem;
 pub use world::World;

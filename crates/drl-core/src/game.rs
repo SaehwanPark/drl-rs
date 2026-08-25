@@ -7,12 +7,15 @@ use drl_protocol::{
 
 use crate::behavior::MedicalRepairOutcome;
 use crate::combat::CombatResolver;
+use crate::fov::DEFAULT_VISION_RADIUS;
 use crate::generator::{LevelGenerator, LevelGeneratorConfig};
 use crate::grid::Map;
 use crate::item::Item;
 use crate::level_definition::standard_procedural;
 use crate::rng::GameRng;
 use crate::scheduler::{ACTION_THRESHOLD, Scheduler};
+use crate::subtle_knife::{SUBTLE_KNIFE_TARGET_DAMAGE, SubtleKnifeError};
+use crate::targeting::TargetingSystem;
 use crate::world::World;
 
 /// Complete snapshot of the simulation state at a specific turn.
@@ -262,6 +265,9 @@ impl Game {
       Command::Use(item_id) => {
         self.execute_player_use(player_id, item_id, &mut events)?;
       }
+      Command::Invoke(item_id) => {
+        self.execute_player_invoke(player_id, item_id, &mut events)?;
+      }
       Command::Reload => {
         action_cost = self.execute_player_reload(player_id, &mut events)?;
       }
@@ -290,6 +296,95 @@ impl Game {
 
     self.state.turn = self.state.turn.next();
     Ok(events)
+  }
+
+  /// Executes the typed Subtle Knife alternate invoke action.
+  fn execute_player_invoke(
+    &mut self,
+    player_id: drl_protocol::EntityId,
+    item_id: drl_protocol::ItemId,
+    events: &mut Vec<GameEvent>,
+  ) -> Result<(), CommandError> {
+    let player = self
+      .state
+      .world
+      .get_actor(player_id)
+      .ok_or(CommandError::EntityNotFound(player_id))?;
+    let weapon = player
+      .equipment()
+      .weapon()
+      .filter(|item| item.id() == item_id)
+      .filter(|item| item.archetype() == drl_protocol::ItemArchetype::SubtleKnife)
+      .ok_or(CommandError::CannotInvoke(item_id))?;
+    let _ = weapon;
+    let player_position = player.position();
+    let mut target_ids: Vec<_> = TargetingSystem::find_visible_targets(
+      &self.state.world,
+      player_position,
+      DEFAULT_VISION_RADIUS,
+    )
+    .into_iter()
+    .map(|(target_id, _, _)| target_id)
+    .collect();
+    target_ids.sort_unstable();
+
+    let cost = self
+      .state
+      .world
+      .get_actor_mut(player_id)
+      .ok_or(CommandError::EntityNotFound(player_id))?
+      .invoke_subtle_knife()
+      .map_err(|SubtleKnifeError::Tired| CommandError::CannotInvoke(item_id))?;
+
+    events.push(GameEvent::SubtleKnifeInvoked {
+      entity_id: player_id,
+      item_id,
+      targets: target_ids.clone(),
+      remaining_hp: cost.remaining_hp,
+      score_count_remaining: cost.score_count_remaining,
+    });
+
+    for target_id in target_ids {
+      let (taken, is_lethal, death_cause) = self.state.world.apply_internal_damage(
+        target_id,
+        SUBTLE_KNIFE_TARGET_DAMAGE,
+        DamageSource::Actor(player_id),
+      )?;
+      let remaining_hp = self
+        .state
+        .world
+        .get_actor(target_id)
+        .map_or(0, |actor| actor.hp().current);
+      events.push(GameEvent::DamageApplied {
+        target_id,
+        amount: taken,
+        remaining_hp,
+        source: DamageSource::Actor(player_id),
+      });
+
+      if is_lethal {
+        let death_drop = self
+          .state
+          .world
+          .get_actor(target_id)
+          .and_then(|actor| actor.death_drop());
+        let drop_pos = self
+          .state
+          .world
+          .get_actor(target_id)
+          .map(|actor| actor.position());
+        events.push(GameEvent::ActorDied {
+          entity_id: target_id,
+          cause: death_cause.unwrap_or(DeathCause::MeleeAttack {
+            attacker_id: player_id,
+          }),
+        });
+        if let (Some(drop_kind), Some(position)) = (death_drop, drop_pos) {
+          self.spawn_death_drop(target_id, position, drop_kind, events)?;
+        }
+      }
+    }
+    Ok(())
   }
 
   /// Advances explicit periodic behavior after an accepted player command.

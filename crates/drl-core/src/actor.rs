@@ -6,6 +6,7 @@ use drl_protocol::{
 use crate::behavior::MedicalRepairOutcome;
 use crate::inventory::{Equipment, Inventory};
 use crate::item::Item;
+use crate::subtle_knife::{SubtleKnifeCost, SubtleKnifeError, SubtleKnifeTransition, TiredStatus};
 
 /// Simulation actor instance.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -16,6 +17,8 @@ pub struct Actor {
   is_player: bool,
   blocks_movement: bool,
   hp: HitPoints,
+  tired: TiredStatus,
+  score_count: i32,
   speed: Speed,
   energy: i32,
   is_alive: bool,
@@ -42,6 +45,8 @@ impl Actor {
       is_player,
       blocks_movement: true,
       hp: HitPoints::full(max_hp),
+      tired: TiredStatus::Ready,
+      score_count: 0,
       speed: Speed::NORMAL,
       energy: 0,
       is_alive: true,
@@ -149,6 +154,42 @@ impl Actor {
     &mut self.hp
   }
 
+  /// Returns whether the actor has the one-use-per-perk tired condition.
+  #[must_use]
+  pub const fn is_tired(&self) -> bool {
+    matches!(self.tired, TiredStatus::Tired)
+  }
+
+  /// Adds the typed tired condition used by Subtle Knife invoke.
+  pub fn set_tired(&mut self, tired: bool) {
+    self.tired = if tired {
+      TiredStatus::Tired
+    } else {
+      TiredStatus::Ready
+    };
+  }
+
+  /// Current score-count balance used by callback-derived item behaviors.
+  #[must_use]
+  pub const fn score_count(&self) -> i32 {
+    self.score_count
+  }
+
+  /// Sets score count for deterministic scenarios and replay fixtures.
+  pub fn set_score_count(&mut self, score_count: i32) {
+    self.score_count = score_count;
+  }
+
+  /// Spends score count without permitting an underflow.
+  pub fn spend_score_count(&mut self, amount: i32) {
+    self.score_count = self.score_count.saturating_sub(amount);
+  }
+
+  /// Applies the typed Subtle Knife actor-side transition.
+  pub fn invoke_subtle_knife(&mut self) -> Result<SubtleKnifeCost, SubtleKnifeError> {
+    SubtleKnifeTransition::apply(&mut self.hp, &mut self.tired, &mut self.score_count)
+  }
+
   /// Returns true if the actor is alive.
   #[must_use]
   pub const fn is_alive(&self) -> bool {
@@ -164,6 +205,21 @@ impl Actor {
     let armor_prot = self.armor_protection();
     let net_amount = raw_amount.saturating_sub(armor_prot).max(1);
     let taken = self.hp.take_damage(net_amount);
+    if self.hp.is_dead() {
+      self.is_alive = false;
+      self.blocks_movement = false;
+      (taken, true)
+    } else {
+      (taken, false)
+    }
+  }
+
+  /// Applies fixed internal damage without armor mitigation.
+  pub fn take_internal_damage(&mut self, amount: u32) -> (u32, bool) {
+    if !self.is_alive {
+      return (0, false);
+    }
+    let taken = self.hp.take_damage(amount);
     if self.hp.is_dead() {
       self.is_alive = false;
       self.blocks_movement = false;

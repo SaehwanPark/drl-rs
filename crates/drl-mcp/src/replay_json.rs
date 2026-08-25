@@ -245,6 +245,7 @@ fn command_to_json(command: &Command) -> JsonValue {
       ),
     ]),
     Command::Use(item_id) => item_action("use", item_id.as_u64()),
+    Command::Invoke(item_id) => item_action("invoke", item_id.as_u64()),
     Command::Reload => action("reload"),
     Command::Descend => action("descend"),
   }
@@ -333,6 +334,7 @@ mod tests {
       Command::Equip(ItemId::new(7)),
       Command::Unequip(EquipmentSlot::Armor),
       Command::Use(ItemId::new(8)),
+      Command::Invoke(ItemId::new(10)),
       Command::Reload,
       Command::Descend,
     ];
@@ -354,7 +356,7 @@ mod tests {
       Some("Armor")
     );
     assert_eq!(
-      values[10].get("action").and_then(JsonValue::as_str),
+      values[11].get("action").and_then(JsonValue::as_str),
       Some("descend")
     );
   }
@@ -419,6 +421,7 @@ mod tests {
       Command::Equip(drl_protocol::ItemId::new(2)),
       Command::Unequip(drl_protocol::EquipmentSlot::Armor),
       Command::Use(drl_protocol::ItemId::new(3)),
+      Command::Invoke(drl_protocol::ItemId::new(4)),
       Command::Reload,
       Command::Descend,
     ];
@@ -444,7 +447,7 @@ mod tests {
         .get("commands")
         .and_then(JsonValue::as_array)
         .map(Vec::len),
-      Some(11)
+      Some(12)
     );
   }
 

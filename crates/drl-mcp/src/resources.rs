@@ -71,17 +71,19 @@ DRL-Rust is a deterministic, headless, turn-based roguelike simulation of Doom t
    - Fire equipped ranged weapon at target grid coordinates.
 5. `reload`
    - Reload equipped ranged weapon from inventory ammunition.
-6. `pickup`
+6. `invoke` (`item_id`: int)
+   - Invoke the equipped Subtle Knife alternate action against visible targets.
+7. `pickup`
    - Pick up an item lying on the current ground tile into backpack.
-7. `use` (`item_id`: int)
+8. `use` (`item_id`: int)
    - Consume or activate an inventory item (e.g. MedPack or Phase Device).
-8. `equip` (`item_id`: int, `slot`: "Weapon" | "Armor")
+9. `equip` (`item_id`: int, `slot`: "Weapon" | "Armor")
    - Equip an item from backpack into active gear slot.
-9. `unequip` (`slot`: "Weapon" | "Armor")
+10. `unequip` (`slot`: "Weapon" | "Armor")
    - Unequip gear back into backpack inventory.
-10. `drop` (`item_id`: int)
+11. `drop` (`item_id`: int)
    - Drop an inventory item onto the current floor tile.
-11. `descend`
+12. `descend`
    - Descend down-stairs to enter the next dungeon depth.
 "#;
       Ok(wrap_resource_content(uri, "text/markdown", text))

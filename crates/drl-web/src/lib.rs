@@ -2385,6 +2385,7 @@ mod tests {
       Command::Unequip(drl_protocol::EquipmentSlot::Weapon),
       Command::Unequip(drl_protocol::EquipmentSlot::Armor),
       Command::Use(ItemId::new(6)),
+      Command::Invoke(ItemId::new(7)),
       Command::Reload,
       Command::Descend,
     ];
