@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.134`
+Current project version: `0.2.135`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9/Gate D Fluid Movement Cost
+## 2. Active Implementation Slice: M9/Gate D Water Fluid Movement Cost
 
 ### 2.1 Objective
 
-Close one terrain behavior gap by pinning the legacy Acid/Lava movement-cost
-fields and making their fluid action cost an explicit Rust policy. Moving onto
-Acid or Lava costs 1250 units (the source-backed 1.25 ratio); ordinary walkable
-tiles retain the 1000-unit movement cost.
+Close one terrain behavior gap by extending the pinned legacy Acid/Lava/Water
+movement-cost fields into an explicit Rust policy. Moving onto Acid, Lava, or
+Water costs 1250 units (the source-backed 1.25 ratio); ordinary walkable tiles
+retain the 1000-unit movement cost.
 
 The legacy Pascal/Lua implementation remains the behavioral reference. Its
 architecture, global callback machinery, and runtime Lua object model remain
@@ -42,21 +42,22 @@ non-goals for reproduction.
 
 - **Steering priority:** Typed legacy behavior (Gate D), with Gate E's
   evidence-bounded claims applied to the source comparison.
-- **Observable outcome:** A successful player move onto Acid or Lava emits the
-  existing movement/hazard events and pays `ActionCost::new(1250)`; movement
-  onto ordinary walkable tiles pays `ActionCost::MOVE` (1000).
-- **Replay/RNG impact:** Gameplay semantics advance from `12` to `13` because
+- **Observable outcome:** A successful player move onto Acid, Lava, or Water
+  emits the existing movement/hazard events and pays
+  `ActionCost::new(1250)`; movement onto ordinary walkable tiles pays
+  `ActionCost::MOVE` (1000).
+- **Replay/RNG impact:** Gameplay semantics advance from `13` to `14` because
   terrain movement costs change future scheduling outcomes. The transition consumes no RNG;
   rejected commands preserve exact `Game` state.
-- **Content-catalog impact:** Existing typed Lava/Acid terrain contracts gain
-  one explicit core movement-cost policy; no new item family or registry is
-  added.
+- **Content-catalog impact:** Existing typed Acid/Lava/Water terrain contracts
+  gain one explicit core movement-cost policy; no new item family or registry
+  is added.
 - **Protocol/domain ownership:** `ActionCost` remains a stable semantic
   contract; the 1250 terrain policy remains core-owned.
-- **Evidence boundary:** Pinned Lua source supports `move_cost=1.25` for Acid
-  and Lava. Water's source movement cost and Mud's source movement cost are
-  explicitly deferred; Running/NORUN, fractional scheduler details, fluid flow,
-  resistance/avoidance, runtime/capture, and audiovisual parity remain
+- **Evidence boundary:** Pinned Lua source supports `move_cost=1.25` for Acid,
+  Lava, and Water. Mud's source movement cost is explicitly deferred because no
+  Rust Mud tile exists; Running/NORUN, fractional scheduler details, fluid
+  flow, resistance/avoidance, runtime/capture, and audiovisual parity remain
   `NOT_RUN`.
 - **Non-goals:** Generic callback registries, new scheduler modes, fluid flow,
   monster movement, runtime Lua, and broad content migration.
@@ -83,20 +84,21 @@ blocked by the exit gates in Section 2.8.
 
 ### 2.3 Fluid movement-cost contracts
 
-For direct player movement accepted onto Acid or Lava, the pure movement-cost
-transition returns `ActionCost::new(1250)`. Floor, Water, stairs, and other
-walkable tiles return `ActionCost::MOVE`. The accepted move still applies the
-previously delivered baseline contact policy; rejected movement remains
-transactional and consumes no RNG.
+For direct player movement accepted onto Acid, Lava, or Water, the pure
+movement-cost transition returns `ActionCost::new(1250)`. Floor, stairs, and
+other ordinary walkable tiles return `ActionCost::MOVE`. The accepted move
+still applies the previously delivered baseline contact policy; rejected
+movement remains transactional and consumes no RNG. Mud movement cost is
+deferred until a typed Rust Mud tile exists.
 
 #### Legacy evidence boundary
 
 Pinned source evidence is recorded in
 [`docs/legacy-behavior/terrain-hazard.md`](docs/legacy-behavior/terrain-hazard.md)
-and the run's movement-cost evidence artifact. The 1.25 ratio is implemented
-as a 1250 integer action cost; running/NORUN restrictions, fractional scheduler
-details, flow, exact runtime comparison, and presentation feedback remain
-`NOT_RUN`.
+and the run's movement-cost evidence artifact. The 1.25 ratio is implemented as
+a 1250 integer action cost for Acid, Lava, and Water; Mud movement cost,
+running/NORUN restrictions, fractional scheduler details, flow, exact runtime
+comparison, and presentation feedback remain `NOT_RUN`.
 
 ### 2.4 Previous movement and historical correctness contracts
 
@@ -672,10 +674,10 @@ baseline Lava and Acid entered-cell contact damage. Its typed transition must:
   movement cost, monster contact, runtime comparison, and exact presentation
   parity remain `NOT_RUN`.
 
-### 2.7j Current fluid movement-cost delivery target
+### 2.7j Previous Acid/Lava fluid movement-cost delivery target
 
-The bounded implementation target for this revision is the tenth stress case,
-Acid and Lava fluid movement cost. Its typed transition must:
+The bounded implementation target for the previous revision was the tenth
+stress case, Acid and Lava fluid movement cost. Its typed transition must:
 
 - [x] expose pure `ActionCost::new(1250)` outcomes for Acid/Lava and retain
   `ActionCost::MOVE` for ordinary walkable tiles;
@@ -687,8 +689,26 @@ Acid and Lava fluid movement cost. Its typed transition must:
   rejected-state rollback, custom-tile replay/scenario determinism, and retain
   the existing render/audio/MCP projection contracts;
 - [x] record that running/NORUN restrictions, fractional scheduler details,
-  Water/Mud movement-cost parity, fluid flow, resistance/avoidance, monster
+  Mud movement-cost parity, fluid flow, resistance/avoidance, monster
   movement, runtime comparison, and exact presentation parity remain `NOT_RUN`.
+
+### 2.7k Current Water fluid movement-cost delivery target
+
+The bounded implementation target for this revision is the eleventh stress
+case, Water fluid movement cost. Its typed transition must:
+
+- [x] expose pure `ActionCost::new(1250)` outcomes for Acid/Lava/Water and
+  retain `ActionCost::MOVE` for ordinary walkable tiles;
+- [x] apply the cost only after an accepted direct player move, preserving the
+  previously delivered hazard/no-damage events and consuming no RNG;
+- [x] preserve exact game/replay state on rejected movement and keep Mud
+  movement-cost parity explicitly deferred until a Rust Mud tile exists;
+- [x] cover pure transition behavior, accepted Water/no-damage scheduling,
+  rejected-state rollback, custom-tile replay/scenario determinism, and retain
+  the existing render/audio/MCP projection contracts;
+- [x] record that running/NORUN restrictions, fractional scheduler details,
+  Mud movement cost, fluid flow, resistance/avoidance, monster movement,
+  runtime comparison, and exact presentation parity remain `NOT_RUN`.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 

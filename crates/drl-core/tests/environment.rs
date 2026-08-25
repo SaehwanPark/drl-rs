@@ -1,4 +1,4 @@
-//! Integration tests for deterministic entered-cell environmental hazards.
+//! Integration tests for deterministic entered-cell environmental terrain rules.
 
 use drl_core::game::Game;
 use drl_core::grid::Tile;
@@ -65,6 +65,33 @@ fn moving_onto_floor_retains_standard_movement_cost() {
     GameEvent::ActionCostPaid {
       entity_id,
       cost: ActionCost::MOVE,
+    } if *entity_id == player_id
+  )));
+  assert!(
+    !events
+      .iter()
+      .any(|event| matches!(event, GameEvent::DamageApplied { .. }))
+  );
+  assert_eq!(game.world().player().unwrap().hp().current, 50);
+}
+
+#[test]
+fn moving_onto_water_uses_fluid_movement_cost_without_damage() {
+  let mut game = Game::new_arena(1_338, 12, 12).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let water_position = game.world().player().unwrap().position() + Direction::East;
+  game
+    .world_mut()
+    .map_mut()
+    .set_tile(water_position, Tile::Water);
+
+  let events = game.step(Command::Move(Direction::East)).unwrap();
+
+  assert!(events.iter().any(|event| matches!(
+    event,
+    GameEvent::ActionCostPaid {
+      entity_id,
+      cost: ActionCost(1_250),
     } if *entity_id == player_id
   )));
   assert!(
@@ -252,6 +279,25 @@ fn replay_preserves_lava_contact_deterministically() {
 }
 
 #[test]
+fn replay_preserves_water_fluid_movement_cost_deterministically() {
+  let start = Position::new(5, 5);
+  let mut replay = ReplayLog::new(1_339, 12, 12, start);
+  replay.record_tile(start + Direction::East, TileKind::Water);
+  replay.record_command(Command::Move(Direction::East));
+
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+  let (game, events) = ReplayEngine::run(&replay).unwrap();
+  assert_eq!(game.world().player().unwrap().hp().current, 50);
+  assert!(events.iter().any(|event| matches!(
+    event,
+    GameEvent::ActionCostPaid {
+      cost: ActionCost(1_250),
+      ..
+    }
+  )));
+}
+
+#[test]
 fn rejected_move_preserves_hazard_game_state_and_rng() {
   let mut game = Game::new_arena(1_336, 12, 12).unwrap();
   let player_position = game.world().player().unwrap().position();
@@ -292,6 +338,27 @@ fn ascii_scenario_replays_lava_contact_policy() {
       ..
     }
   )));
+  assert!(events.iter().any(|event| matches!(
+    event,
+    GameEvent::ActionCostPaid {
+      cost: ActionCost(1_250),
+      ..
+    }
+  )));
+}
+
+#[test]
+fn ascii_scenario_replays_water_movement_cost_policy() {
+  let scenario = Scenario::from_ascii(
+    "WaterMovement",
+    "Player enters a Water cell",
+    "#####\n#@w.#\n#####\n",
+  )
+  .unwrap();
+  let (game, events, _, _) =
+    ScenarioRunner::run_commands(&scenario, &[Command::Move(Direction::East)]).unwrap();
+
+  assert_eq!(game.world().player().unwrap().hp().current, 50);
   assert!(events.iter().any(|event| matches!(
     event,
     GameEvent::ActionCostPaid {

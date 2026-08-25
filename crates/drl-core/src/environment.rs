@@ -1,4 +1,4 @@
-//! Pure deterministic environmental hazard transitions.
+//! Pure deterministic environmental terrain transitions.
 
 use drl_protocol::{ActionCost, DamageType, TileKind};
 
@@ -38,7 +38,7 @@ pub const fn entered_tile_damage(tile: TileKind) -> Option<HazardDamage> {
 #[must_use]
 pub const fn movement_cost(tile: TileKind) -> ActionCost {
   match tile {
-    TileKind::Acid | TileKind::Lava => FLUID_MOVEMENT_COST,
+    TileKind::Acid | TileKind::Lava | TileKind::Water => FLUID_MOVEMENT_COST,
     _ => ActionCost::MOVE,
   }
 }
@@ -77,6 +77,6 @@ mod tests {
     assert_eq!(movement_cost(TileKind::Acid), FLUID_MOVEMENT_COST);
     assert_eq!(movement_cost(TileKind::Lava), FLUID_MOVEMENT_COST);
     assert_eq!(movement_cost(TileKind::Floor), ActionCost::MOVE);
-    assert_eq!(movement_cost(TileKind::Water), ActionCost::MOVE);
+    assert_eq!(movement_cost(TileKind::Water), FLUID_MOVEMENT_COST);
   }
 }
