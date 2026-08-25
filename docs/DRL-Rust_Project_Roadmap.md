@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.137`
+Current project version: `0.2.138`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.137)
+## 3. Current Progress Summary (`VERSION` 0.2.138)
 
 ### Delivered Foundations
 
@@ -180,6 +180,9 @@ verification item uses explicit status semantics:
   walkable tile with replay/scenario/MCP/browser projections and deterministic
   1650-unit direct movement cost. Flow, runtime, and exact presentation parity
   remain `NOT_RUN`.
+- **M1/Gate A rejection matrix (`0.2.138`)**: Representative invalid commands
+  across the current command surface now assert exact cloned `Game` and RNG
+  identity on rejection; no gameplay semantics or protocol schema changed.
 - **Gate D first behavior slice:** Medical Powerarmor now has a typed,
   deterministic periodic-repair transition in `drl-core`, accepted-turn
   integration, exact timer/durability/health edge tests, and a typed repair

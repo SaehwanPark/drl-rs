@@ -1,7 +1,7 @@
 //! Rejected command invariants for the deterministic simulation kernel.
 
 use drl_core::{Game, Item, Tile};
-use drl_protocol::{Command, CommandError, ItemCategory, ItemSpawnKind, Position};
+use drl_protocol::{Command, CommandError, Direction, ItemCategory, ItemSpawnKind, Position};
 
 fn assert_rejected_command_is_atomic(
   game: &mut Game,
@@ -16,6 +16,66 @@ fn assert_rejected_command_is_atomic(
     game, &before,
     "rejected commands must not mutate Game state"
   );
+}
+
+#[test]
+fn representative_rejection_matrix_preserves_exact_game_and_rng() {
+  let mut game = Game::new(3_200, 5, 5, Position::new(1, 1)).unwrap();
+  let missing_item_id = drl_protocol::ItemId::new(u64::MAX);
+  let cases = [
+    (
+      Command::Move(Direction::North),
+      CommandError::BlockedByTerrain(Position::new(1, 0)),
+    ),
+    (
+      Command::AttackMelee(Direction::None),
+      CommandError::InvalidDirection(Direction::None),
+    ),
+    (
+      Command::AttackRanged(Position::new(-1, 1)),
+      CommandError::OutOfBounds(Position::new(-1, 1)),
+    ),
+    (
+      Command::Pickup,
+      CommandError::NoItemAtPosition(Position::new(1, 1)),
+    ),
+    (
+      Command::Drop(missing_item_id),
+      CommandError::ItemNotFound(missing_item_id),
+    ),
+    (
+      Command::Equip(missing_item_id),
+      CommandError::ItemNotFound(missing_item_id),
+    ),
+    (
+      Command::Unequip(drl_protocol::EquipmentSlot::Armor),
+      CommandError::SlotEmpty(drl_protocol::EquipmentSlot::Armor),
+    ),
+    (
+      Command::Use(missing_item_id),
+      CommandError::ItemNotFound(missing_item_id),
+    ),
+    (
+      Command::Invoke(missing_item_id),
+      CommandError::CannotInvoke(missing_item_id),
+    ),
+    (
+      Command::AltReload {
+        item_id: missing_item_id,
+        confirmed: true,
+      },
+      CommandError::CannotAltReload(missing_item_id),
+    ),
+    (Command::Reload, CommandError::ClipAlreadyFull),
+    (
+      Command::Descend,
+      CommandError::NotOnStairs(Position::new(1, 1)),
+    ),
+  ];
+
+  for (command, expected_error) in cases {
+    assert_rejected_command_is_atomic(&mut game, command, expected_error);
+  }
 }
 
 #[test]

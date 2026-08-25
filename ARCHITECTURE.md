@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.137`
+Current project version: `0.2.138`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -363,7 +363,8 @@ Presentation Boundary
 - **Transactional command boundary**: `Game::step` snapshots and restores the
   complete state on any rejection, including turn, world, and RNG. Command
   handlers still use prepare/commit validation where practical; the bounded
-  rollback guard protects later fallible substeps until the audit is complete.
+  rollback guard protects later fallible substeps. A representative rejection
+  matrix covers every current command family and compares exact cloned state.
 - **Deterministic PRNG**: All randomness flows through `GameRng`. No ambient or
   thread-local RNG is permitted. Bounded integer sampling uses documented
   rejection sampling under `RNG_SAMPLING_SEMANTICS_VERSION`; core rules use
