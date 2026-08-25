@@ -166,6 +166,7 @@ fn medical_powerarmor_replay_events_are_deterministic() {
       initial_items: Vec::new(),
       equipped_weapon: Some(ItemSpawnKind::Pistol),
       equipped_armor: Some(ItemSpawnKind::MedicalPowerarmor),
+      equipped_armor_durability: None,
     });
   for _ in 0..30 {
     replay.record_command(Command::Wait);
@@ -204,6 +205,169 @@ fn medical_powerarmor_replay_events_are_deterministic() {
       ..
     }
   ));
+}
+
+#[test]
+fn lava_armor_recharges_on_lava_after_five_accepted_commands() {
+  let mut game = Game::new_arena(779, 12, 12).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let player_position = game.world().player().unwrap().position();
+  game
+    .world_mut()
+    .map_mut()
+    .set_tile(player_position, drl_core::Tile::Lava);
+
+  let armor_id = game.world_mut().allocate_item_id();
+  let armor = Item::lava_armor(armor_id);
+  let player = game.world_mut().get_actor_mut(player_id).unwrap();
+  player
+    .equipment_mut()
+    .equip(EquipmentSlot::Armor, armor)
+    .unwrap();
+  player
+    .equipment_mut()
+    .armor_mut()
+    .unwrap()
+    .armor_properties_mut()
+    .unwrap()
+    .durability = 10;
+
+  for _ in 0..4 {
+    let events = game.step(Command::Wait).unwrap();
+    assert!(
+      !events
+        .iter()
+        .any(|event| matches!(event, GameEvent::LavaArmorRecharged { .. }))
+    );
+  }
+  assert_eq!(game.world().player().unwrap().lava_recharge_timer(), 4);
+
+  let events = game.step(Command::Wait).unwrap();
+  let recharge_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::LavaArmorRecharged {
+          entity_id,
+          item_id,
+          durability_restored: 3,
+          durability_remaining: 13,
+          timer: 0,
+        } if *entity_id == player_id && *item_id == armor_id
+      )
+    })
+    .expect("lava recharge event must be emitted");
+  assert_eq!(recharge_index, 2);
+  assert_eq!(game.world().player().unwrap().lava_recharge_timer(), 0);
+}
+
+#[test]
+fn lava_armor_non_lava_interval_resets_without_recharge() {
+  let mut game = Game::new_arena(780, 12, 12).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let armor_id = game.world_mut().allocate_item_id();
+  let player = game.world_mut().get_actor_mut(player_id).unwrap();
+  player
+    .equipment_mut()
+    .equip(EquipmentSlot::Armor, Item::lava_armor(armor_id))
+    .unwrap();
+  player
+    .equipment_mut()
+    .armor_mut()
+    .unwrap()
+    .armor_properties_mut()
+    .unwrap()
+    .durability = 10;
+
+  for _ in 0..5 {
+    let events = game.step(Command::Wait).unwrap();
+    assert!(
+      !events
+        .iter()
+        .any(|event| matches!(event, GameEvent::LavaArmorRecharged { .. }))
+    );
+  }
+  let player = game.world().player().unwrap();
+  assert_eq!(player.lava_recharge_timer(), 0);
+  assert_eq!(
+    player
+      .equipment()
+      .armor()
+      .unwrap()
+      .armor_properties()
+      .unwrap()
+      .durability,
+    10
+  );
+}
+
+#[test]
+fn lava_armor_replay_with_custom_lava_tile_is_deterministic() {
+  let player_start = Position::new(2, 2);
+  let mut replay = ReplayLog::new(781, 8, 8, player_start).with_player_config(PlayerSpawnConfig {
+    hp: 50,
+    max_hp: 50,
+    speed: 100,
+    initial_items: Vec::new(),
+    equipped_weapon: Some(ItemSpawnKind::Pistol),
+    equipped_armor: Some(ItemSpawnKind::LavaArmor),
+    equipped_armor_durability: Some(97),
+  });
+  replay.record_tile(player_start, drl_protocol::TileKind::Lava);
+  for _ in 0..5 {
+    replay.record_command(Command::Wait);
+  }
+
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+  let (_game, events) = ReplayEngine::run(&replay).unwrap();
+  assert!(events.iter().any(|event| matches!(
+    event,
+    GameEvent::LavaArmorRecharged {
+      durability_restored: 3,
+      durability_remaining: 100,
+      timer: 0,
+      ..
+    }
+  )));
+}
+
+#[test]
+fn rejected_commands_roll_back_lava_recharge_state() {
+  let mut game = Game::new(782, 5, 5, Position::new(1, 1)).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let player_position = game.world().player().unwrap().position();
+  game
+    .world_mut()
+    .map_mut()
+    .set_tile(player_position, drl_core::Tile::Lava);
+  let armor_id = game.world_mut().allocate_item_id();
+  let player = game.world_mut().get_actor_mut(player_id).unwrap();
+  player
+    .equipment_mut()
+    .equip(EquipmentSlot::Armor, Item::lava_armor(armor_id))
+    .unwrap();
+  player
+    .equipment_mut()
+    .armor_mut()
+    .unwrap()
+    .armor_properties_mut()
+    .unwrap()
+    .durability = 10;
+  for _ in 0..4 {
+    game.step(Command::Wait).unwrap();
+  }
+
+  let before = game.clone();
+  assert!(game.step(Command::Move(Direction::West)).is_err());
+  assert_eq!(game, before);
+
+  let events = game.step(Command::Wait).unwrap();
+  assert!(
+    events
+      .iter()
+      .any(|event| matches!(event, GameEvent::LavaArmorRecharged { .. }))
+  );
 }
 
 #[test]
@@ -472,6 +636,7 @@ fn subtle_knife_replay_with_player_config_is_deterministic() {
       initial_items: Vec::new(),
       equipped_weapon: Some(ItemSpawnKind::SubtleKnife),
       equipped_armor: None,
+      equipped_armor_durability: None,
     });
   replay.record_monster(MonsterSpawnSpec::new(
     Position::new(16, 15),
@@ -681,6 +846,7 @@ fn trigun_alt_reload_replay_is_deterministic() {
       initial_items: Vec::new(),
       equipped_weapon: Some(ItemSpawnKind::Trigun),
       equipped_armor: None,
+      equipped_armor_durability: None,
     });
   replay.record_command(Command::AltReload {
     item_id: ItemId::new(4),
@@ -958,6 +1124,7 @@ fn grammaton_mode_replay_is_deterministic() {
       initial_items: Vec::new(),
       equipped_weapon: Some(ItemSpawnKind::GrammatonBeretta),
       equipped_armor: None,
+      equipped_armor_durability: None,
     });
   replay.record_monster(MonsterSpawnSpec::new(
     Position::new(12, 10),
@@ -1214,6 +1381,7 @@ fn jackhammer_mode_replay_is_deterministic() {
       initial_items: Vec::new(),
       equipped_weapon: Some(ItemSpawnKind::Jackhammer),
       equipped_armor: None,
+      equipped_armor_durability: None,
     });
   replay.record_monster(MonsterSpawnSpec::new(
     Position::new(12, 10),

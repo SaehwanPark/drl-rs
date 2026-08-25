@@ -151,6 +151,12 @@ fn player_config_to_json(config: &PlayerSpawnConfig) -> JsonValue {
         .equipped_armor
         .map_or(JsonValue::Null, item_kind_to_json),
     ),
+    (
+      "equipped_armor_durability",
+      config
+        .equipped_armor_durability
+        .map_or(JsonValue::Null, JsonValue::from),
+    ),
   ])
 }
 
@@ -218,6 +224,7 @@ fn tile_kind_to_json(kind: TileKind) -> JsonValue {
     TileKind::DoorClosed => "door_closed",
     TileKind::DoorOpen => "door_open",
     TileKind::StairsDown => "stairs_down",
+    TileKind::Lava => "lava",
   })
 }
 
@@ -387,6 +394,7 @@ mod tests {
         .collect(),
       equipped_weapon: Some(ItemSpawnKind::Shotgun),
       equipped_armor: Some(ItemSpawnKind::GreenArmor),
+      equipped_armor_durability: None,
     };
     let mut replay = ReplayLog::new(42, 12, 10, Position::new(1, 2))
       .with_procedural_config(ProceduralGenerationConfig {

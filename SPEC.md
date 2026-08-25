@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.129`
+Current project version: `0.2.130`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,15 +25,15 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9/Gate D Jackhammer Fire-Mode Behavior
+## 2. Active Implementation Slice: M9/Gate D Lava Armor Recharge
 
 ### 2.1 Objective
 
-Close one callback-heavy legacy behavior gap by pinning the Jackhammer's
-alternate-reload mode cycle and making it an explicit Rust state transition.
-The equipped shotgun toggles between its default three-shot burst and a
-single-shot mode, preserving the existing shotgun damage profile and charging
-one score count for the cycle.
+Close one callback-heavy legacy behavior gap by pinning Lava Armor's
+durability-recharge callback and making it an explicit Rust state transition.
+While the armor is equipped, its timer advances on accepted player commands;
+after five eligible ticks on a lava tile it restores up to three durability
+points and resets its timer.
 
 The legacy Pascal/Lua implementation remains the behavioral reference. Its
 architecture, global callback machinery, and runtime Lua object model remain
@@ -43,26 +43,27 @@ non-goals for reproduction.
 
 - **Steering priority:** Typed legacy behavior (Gate D), with Gate E's
   evidence-bounded claims applied to the source comparison.
-- **Observable outcome:** `Command::AltReload` on an equipped Jackhammer
-  toggles `Burst -> Single -> Burst`, emits a typed
-  `JackhammerFireModeChanged` event, and spends one score count. Ranged
-  attacks consume the selected one- or three-shell count atomically and retain
-  the pinned `8d3` shotgun damage profile.
-- **Replay/RNG impact:** The V1 wire format remains unchanged, but gameplay
-  semantics advance from `7` to `8` because mode state changes future command
-  outcomes. The transition and shot-count validation consume no RNG until all
-  command validation succeeds; rejected commands preserve exact `Game` state.
+- **Observable outcome:** An equipped Lava Armor on a typed `Lava` tile emits a
+  `LavaArmorRecharged` event after five accepted player commands, restores up
+  to three durability points, and resets its armor-owned timer. No recharge is
+  consumed when durability is already full; the callback's non-lava fifth-tick
+  reset is retained.
+- **Replay/RNG impact:** The V1 replay envelope remains backward-compatible;
+  an optional equipped-armor durability fixture field makes the damaged-armor
+  acceptance replay explicit. Gameplay semantics advance from `8` to `9`
+  because a new terrain and armor timer change future command outcomes.
+  Recharge consumes no RNG; rejected commands preserve exact `Game` state.
 - **Content-catalog impact:** No new item family or registration path is added.
-  The existing Jackhammer definition remains the authoritative identity.
-- **Protocol/domain ownership:** `WeaponFireMode` and the mode-change event are
-  stable semantic protocol contracts; Jackhammer cycle policy, score cost, and
-  shot resolution remain core-owned.
-- **Evidence boundary:** The pinned Lua source supports the 3/1 cycle, the
-  default three-shot profile, and the one-score-count cost. Controlled legacy
-  runtime/capture comparison is `NOT_RUN`.
-- **Non-goals:** Generic callback or burst registries, other weapon
-  alt-reloads, spread/falloff parity, legacy UI text, runtime Lua, and broad
-  content migration.
+  The existing Lava Armor definition remains the authoritative identity; the
+  typed `Lava` terrain is added to the existing tile contract.
+- **Protocol/domain ownership:** `TileKind::Lava` and the recharge event are
+  stable semantic contracts; timer/recharge policy remains core-owned.
+- **Evidence boundary:** The pinned Lua source supports the strict-durability
+  guard, five-tick interval, lava-position check, +3 clamp, and timer reset.
+  Lava fire/acid damage, resistance equations, and controlled runtime/capture
+  comparison remain `NOT_RUN`.
+- **Non-goals:** Generic callback registries, full hazard damage/resistance,
+  other armor effects, runtime Lua, and broad content migration.
 
 ### 2.2 Why this slice supersedes content breadth
 
@@ -77,29 +78,28 @@ At the same time, adding a conventional content family now fans out across
 protocol enums, definitions, validation, replay codecs, assets, documentation,
 and other exhaustive registries. Continuing scalar-only breadth before a
 behavior model is selected would increase both migration debt and change
-amplification. The Jackhammer source audit gives this slice a narrow typed state
-machine, a focused end-to-end test, and an explicit runtime evidence boundary.
+amplification. The Lava Armor source audit gives this slice a narrow typed state
+machine, a focused terrain-backed test, and an explicit runtime evidence
+boundary.
 
 Therefore, additional broad scalar-only family additions are temporarily
 blocked by the exit gates in Section 2.8.
 
-### 2.3 Jackhammer fire-mode contracts
+### 2.3 Lava Armor recharge contracts
 
-For an equipped Jackhammer with a loaded clip, each accepted alternate reload
-must toggle the mode and subtract exactly one score count using saturating core
-policy. Burst mode resolves three shells and single mode resolves one shell;
-both use the existing `8d3` weapon profile. The mode transition itself does
-not consume RNG. A ranged command must reject before clip/RNG mutation when
-the current clip contains fewer rounds than the selected shot count. Successful
-shots resolve in deterministic order against the originally selected target;
-lethal resolution stops the sequence and commits one death drop at most.
+For an equipped Lava Armor with durability below its maximum, each accepted
+player command increments its armor-owned timer. At timer `5`, the transition
+checks the owner's current tile: lava restores `min(durability + 3,
+max_durability)` and emits one typed event; any other tile restores nothing but
+still resets the timer. A full armor does not increment or reset the timer.
 
 #### Legacy evidence boundary
 
 Pinned source evidence is recorded in
-[`docs/legacy-behavior/jackhammer.md`](docs/legacy-behavior/jackhammer.md).
-The source callback's UI text and exact shot timing remain evidence-only.
-Runtime parity, spread/falloff, and presentation feedback remain `NOT_RUN`.
+[`docs/legacy-behavior/lava-armor.md`](docs/legacy-behavior/lava-armor.md).
+The source's fire/plasma resistance and no-destroy/no-repair flags remain
+definition-level facts; hazard damage, exact runtime timing, and presentation
+feedback remain `NOT_RUN`.
 
 ### 2.4 Previous movement and historical correctness contracts
 
@@ -156,7 +156,7 @@ test proves that a walkable diagonal destination is accepted when both
 adjacent cardinal tiles are walls; a controlled legacy runtime comparison is
 `NOT_RUN`.
 
-**Current bounded delivery target (`0.2.127`):** The pinned legacy AI movement
+**Previous bounded delivery target (`0.2.127`):** The pinned legacy AI movement
 source records smoothed preferred, raw retry, horizontal, and vertical
 candidate order. Focused unit and scheduled-turn integration tests prove the
 fallback order, strongly-skewed raw retry, same-position `Wait`,
@@ -584,7 +584,7 @@ Grammaton Cleric Beretta fire-mode behavior. Its typed transition must:
 - [x] record that the legacy accuracy equation and controlled runtime or
   presentation parity remain `NOT_RUN`.
 
-### 2.7e Current Jackhammer delivery target
+### 2.7e Previous Jackhammer delivery target
 
 The bounded implementation target for this revision is the fifth stress case,
 Jackhammer alternate fire-mode behavior. Its typed transition must:
@@ -601,6 +601,26 @@ Jackhammer alternate fire-mode behavior. Its typed transition must:
   determinism, and MCP legal-action/event projection;
 - [x] record that spread/falloff, exact timing, UI text, and controlled runtime
   or presentation parity remain `NOT_RUN`.
+
+### 2.7f Current Lava Armor delivery target
+
+The bounded implementation target for this revision is the sixth stress case,
+Lava Armor periodic recharge. Its typed transition must:
+
+- [x] expose a walkable `Tile::Lava`/`TileKind::Lava` terrain contract without
+  claiming hazard damage parity;
+- [x] keep an armor-owned recharge timer and tick it once per accepted player
+  command only while durability is below maximum;
+- [x] restore up to three durability points on the fifth tick while standing
+  on Lava, clamp to maximum, and reset the timer;
+- [x] reset the timer on a non-Lava fifth tick while preserving durability, and
+  preserve the timer when armor is already full;
+- [x] emit `GameEvent::LavaArmorRecharged` only for an actual durability
+  increase, with deterministic event ordering and no RNG consumption;
+- [x] cover pure transition, accepted-turn integration, non-Lava/full/clamp
+  edges, custom-tile replay determinism, and MCP event projection;
+- [x] record that fire/acid hazard damage, resistance equations, controlled
+  runtime comparison, and exact presentation parity remain `NOT_RUN`.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 

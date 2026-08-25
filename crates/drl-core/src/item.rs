@@ -5,7 +5,9 @@ use drl_protocol::{
   ItemSpawnKind, ItemView, WeaponFireMode,
 };
 
-use crate::behavior::{MedicalRepairOutcome, MedicalRepairState};
+use crate::behavior::{
+  LavaRechargeOutcome, LavaRechargeState, MedicalRepairOutcome, MedicalRepairState,
+};
 use crate::item_definition::{ItemDefinitionKind, definition_for_spawn_kind};
 
 /// Physical properties for a weapon instance.
@@ -44,6 +46,7 @@ pub struct ArmorProperties {
   pub durability: u32,
   pub max_durability: u32,
   medical_repair: MedicalRepairState,
+  lava_recharge: LavaRechargeState,
 }
 
 impl ArmorProperties {
@@ -55,6 +58,7 @@ impl ArmorProperties {
       durability,
       max_durability,
       medical_repair: MedicalRepairState::new(),
+      lava_recharge: LavaRechargeState::new(),
     }
   }
 
@@ -67,6 +71,19 @@ impl ArmorProperties {
   /// Advances the armor-owned Medical Powerarmor transition.
   pub fn tick_medical_repair(&mut self, hit_points: &mut HitPoints) -> MedicalRepairOutcome {
     self.medical_repair.tick(hit_points, &mut self.durability)
+  }
+
+  /// Returns the armor-owned Lava Armor timer.
+  #[must_use]
+  pub const fn lava_recharge_timer(&self) -> u32 {
+    self.lava_recharge.timer()
+  }
+
+  /// Advances the armor-owned Lava Armor transition.
+  pub fn tick_lava_recharge(&mut self, on_lava: bool) -> LavaRechargeOutcome {
+    self
+      .lava_recharge
+      .tick(on_lava, &mut self.durability, self.max_durability)
   }
 }
 

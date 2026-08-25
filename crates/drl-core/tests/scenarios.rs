@@ -68,6 +68,7 @@ fn test_scenario_custom_player_spawn_config() {
     initial_items: vec![ItemSpawnKind::AmmoShells(25), ItemSpawnKind::LargeMedPack],
     equipped_weapon: Some(ItemSpawnKind::Shotgun),
     equipped_armor: Some(ItemSpawnKind::GreenArmor),
+    equipped_armor_durability: None,
   });
 
   let game = scenario.instantiate().unwrap();

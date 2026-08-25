@@ -818,6 +818,26 @@ pub fn game_event_to_json(event: &GameEvent) -> JsonValue {
       );
       map.insert("timer".to_string(), JsonValue::from(*timer));
     }
+    GameEvent::LavaArmorRecharged {
+      entity_id,
+      item_id,
+      durability_restored,
+      durability_remaining,
+      timer,
+    } => {
+      map.insert("type".to_string(), JsonValue::from("LavaArmorRecharged"));
+      map.insert("entity_id".to_string(), JsonValue::from(entity_id.as_u64()));
+      map.insert("item_id".to_string(), JsonValue::from(item_id.as_u64()));
+      map.insert(
+        "durability_restored".to_string(),
+        JsonValue::from(*durability_restored),
+      );
+      map.insert(
+        "durability_remaining".to_string(),
+        JsonValue::from(*durability_remaining),
+      );
+      map.insert("timer".to_string(), JsonValue::from(*timer));
+    }
     GameEvent::SubtleKnifeInvoked {
       entity_id,
       item_id,
@@ -1427,6 +1447,7 @@ fn replay_log_for_scenario(scenario: &Scenario) -> ReplayLog {
       Tile::StairsDown => TileKind::StairsDown,
       Tile::DoorClosed => TileKind::DoorClosed,
       Tile::DoorOpen => TileKind::DoorOpen,
+      Tile::Lava => TileKind::Lava,
     };
     replay.record_tile(position, kind);
   }

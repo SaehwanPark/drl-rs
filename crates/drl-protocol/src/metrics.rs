@@ -134,6 +134,7 @@ impl EpisodeMetrics {
       | GameEvent::ItemUnequipped { .. }
       | GameEvent::WeaponReloaded { .. }
       | GameEvent::MedicalPowerarmorRepaired { .. }
+      | GameEvent::LavaArmorRecharged { .. }
       | GameEvent::SubtleKnifeInvoked { .. }
       | GameEvent::TrigunAltReloaded { .. }
       | GameEvent::GrammatonFireModeChanged { .. }

@@ -352,6 +352,14 @@ pub const fn tile_sprite(tile: TileKind) -> SpriteDescriptor {
       layers: DOOR_LAYERS,
       animation: STATIC_ANIMATION,
     },
+    // No new licensed atlas asset is introduced for Lava in this slice; the
+    // frontend applies a semantic tint to generic level-floor geometry.
+    TileKind::Lava => SpriteDescriptor {
+      atlas: AtlasId::Levels,
+      rect: legacy_slot(1),
+      layers: LEVEL_LAYERS,
+      animation: STATIC_ANIMATION,
+    },
   }
 }
 

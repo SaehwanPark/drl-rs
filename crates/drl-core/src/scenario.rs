@@ -48,6 +48,7 @@ impl Scenario {
   /// - `'.'`: Floor tile
   /// - `'@'`: Player start (sets floor tile under player)
   /// - `'>'`: Down stairs (sets `Tile::StairsDown`)
+  /// - `'='`: Lava tile (sets `Tile::Lava`)
   /// - `'h'`: Former Human monster
   /// - `'s'`: Former Sergeant monster
   /// - `'i'`: Imp monster
@@ -103,6 +104,9 @@ impl Scenario {
           '>' => {
             tiles.insert(pos, Tile::StairsDown);
             stairs = Some(pos);
+          }
+          '=' => {
+            tiles.insert(pos, Tile::Lava);
           }
           'h' => {
             tiles.insert(pos, Tile::Floor);
@@ -301,6 +305,14 @@ impl Scenario {
         let armor = Item::from_spawn_kind(item_id, armor_kind);
         if let Some(player) = game.world_mut().get_actor_mut(player_id) {
           let _ = player.equipment_mut().equip(EquipmentSlot::Armor, armor);
+          if let Some(durability) = config.equipped_armor_durability
+            && let Some(properties) = player
+              .equipment_mut()
+              .armor_mut()
+              .and_then(Item::armor_properties_mut)
+          {
+            properties.durability = durability.min(properties.max_durability);
+          }
         }
       }
     }
@@ -379,6 +391,7 @@ impl ScenarioRunner {
         Tile::StairsDown => drl_protocol::TileKind::StairsDown,
         Tile::DoorClosed => drl_protocol::TileKind::DoorClosed,
         Tile::DoorOpen => drl_protocol::TileKind::DoorOpen,
+        Tile::Lava => drl_protocol::TileKind::Lava,
       };
       replay.record_tile(pos, kind);
     }
@@ -467,6 +480,7 @@ impl ScenarioRunner {
         Tile::StairsDown => drl_protocol::TileKind::StairsDown,
         Tile::DoorClosed => drl_protocol::TileKind::DoorClosed,
         Tile::DoorOpen => drl_protocol::TileKind::DoorOpen,
+        Tile::Lava => drl_protocol::TileKind::Lava,
       };
       replay.record_tile(pos, kind);
     }

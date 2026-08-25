@@ -13,6 +13,76 @@ pub const MEDICAL_REPAIR_INTERVAL: u32 = 30;
 /// Timer value retained after a successful repair.
 pub const MEDICAL_REPAIR_TIMER_AFTER_REPAIR: u32 = 20;
 
+/// Number of accepted commands between Lava Armor recharge checks.
+pub const LAVA_RECHARGE_INTERVAL: u32 = 5;
+/// Maximum durability restored by one Lava Armor recharge.
+pub const LAVA_RECHARGE_AMOUNT: u32 = 3;
+
+/// Armor-owned state for Lava Armor's periodic durability behavior.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct LavaRechargeState {
+  timer: u32,
+}
+
+impl LavaRechargeState {
+  /// Creates a fresh recharge timer.
+  #[must_use]
+  pub const fn new() -> Self {
+    Self { timer: 0 }
+  }
+
+  /// Returns the current deterministic recharge timer.
+  #[must_use]
+  pub const fn timer(self) -> u32 {
+    self.timer
+  }
+
+  /// Advances one accepted-command Lava Armor tick.
+  pub fn tick(
+    &mut self,
+    on_lava: bool,
+    durability: &mut u32,
+    max_durability: u32,
+  ) -> LavaRechargeOutcome {
+    if *durability >= max_durability {
+      return LavaRechargeOutcome::Full { timer: self.timer };
+    }
+
+    self.timer = self.timer.saturating_add(1);
+    if self.timer < LAVA_RECHARGE_INTERVAL {
+      return LavaRechargeOutcome::Waiting { timer: self.timer };
+    }
+
+    self.timer = 0;
+    if !on_lava {
+      return LavaRechargeOutcome::NotOnLava { timer: self.timer };
+    }
+
+    let restored = LAVA_RECHARGE_AMOUNT.min(max_durability.saturating_sub(*durability));
+    *durability = durability.saturating_add(restored).min(max_durability);
+    LavaRechargeOutcome::Recharged {
+      durability_restored: restored,
+      timer: self.timer,
+    }
+  }
+}
+
+/// Observable result of a typed Lava Armor transition.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LavaRechargeOutcome {
+  /// Armor is already full; source behavior leaves the timer untouched.
+  Full { timer: u32 },
+  /// Interval has not yet elapsed.
+  Waiting { timer: u32 },
+  /// Interval elapsed on Lava and durability was restored.
+  Recharged {
+    durability_restored: u32,
+    timer: u32,
+  },
+  /// Interval elapsed away from Lava; timer resets without repair.
+  NotOnLava { timer: u32 },
+}
+
 /// Armor-owned state for the Medical Powerarmor periodic behavior.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct MedicalRepairState {
@@ -186,5 +256,65 @@ mod tests {
     );
     assert_eq!(hp, HitPoints::full(50));
     assert_eq!(durability, 100);
+  }
+
+  #[test]
+  fn lava_recharge_waits_five_ticks_then_restores_three() {
+    let mut state = LavaRechargeState::default();
+    let mut durability = 10;
+
+    for expected_timer in 1..LAVA_RECHARGE_INTERVAL {
+      assert_eq!(
+        state.tick(true, &mut durability, 20),
+        LavaRechargeOutcome::Waiting {
+          timer: expected_timer,
+        }
+      );
+    }
+    assert_eq!(
+      state.tick(true, &mut durability, 20),
+      LavaRechargeOutcome::Recharged {
+        durability_restored: 3,
+        timer: 0,
+      }
+    );
+    assert_eq!(durability, 13);
+  }
+
+  #[test]
+  fn lava_recharge_clamps_and_non_lava_resets_interval() {
+    let mut state = LavaRechargeState {
+      timer: LAVA_RECHARGE_INTERVAL - 1,
+    };
+    let mut durability = 19;
+    assert_eq!(
+      state.tick(true, &mut durability, 20),
+      LavaRechargeOutcome::Recharged {
+        durability_restored: 1,
+        timer: 0,
+      }
+    );
+    assert_eq!(durability, 20);
+
+    let mut state = LavaRechargeState {
+      timer: LAVA_RECHARGE_INTERVAL - 1,
+    };
+    let mut durability = 10;
+    assert_eq!(
+      state.tick(false, &mut durability, 20),
+      LavaRechargeOutcome::NotOnLava { timer: 0 }
+    );
+    assert_eq!(durability, 10);
+  }
+
+  #[test]
+  fn full_lava_armor_preserves_timer_without_sampling_tile() {
+    let mut state = LavaRechargeState { timer: 4 };
+    let mut durability = 20;
+    assert_eq!(
+      state.tick(true, &mut durability, 20),
+      LavaRechargeOutcome::Full { timer: 4 }
+    );
+    assert_eq!(state.timer(), 4);
   }
 }

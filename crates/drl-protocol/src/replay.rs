@@ -15,10 +15,10 @@ pub enum ReplayVersion {
 /// Gameplay semantics identifier expected by the current replay engine.
 ///
 /// This advances independently from the wire/schema version when deterministic
-/// sampling or other simulation rules change. Version `8` includes the typed
-/// Grammaton and Jackhammer fire-mode transitions and mode-resolved ranged
-/// commands.
-pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 8;
+/// sampling or other simulation rules change. Version `9` includes the typed
+/// Grammaton and Jackhammer fire-mode transitions plus Lava Armor recharge and
+/// the Lava terrain contract.
+pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 9;
 
 /// Procedural-generation semantics identifier expected for replays that carry
 /// a procedural generation configuration. Version 2 includes the exact
@@ -38,7 +38,7 @@ pub struct ReplayMetadata {
   /// Engine crate version string.
   pub engine_version: String,
   /// Gameplay semantics version required to interpret the command history.
-  /// Version 8 includes the typed Grammaton and Jackhammer fire-mode transitions.
+  /// Version 9 includes typed fire-mode transitions and Lava Armor recharge.
   pub gameplay_semantics_version: u32,
   /// Procedural-generation semantics required when reconstructing generated maps.
   pub generator_semantics_version: u32,
@@ -74,6 +74,9 @@ pub struct PlayerSpawnConfig {
   pub equipped_weapon: Option<ItemSpawnKind>,
   /// Armor equipped in active armor slot.
   pub equipped_armor: Option<ItemSpawnKind>,
+  /// Optional initial durability for the equipped armor in deterministic
+  /// fixtures; omitted means the factory's default durability.
+  pub equipped_armor_durability: Option<u32>,
 }
 
 /// Procedural generator parameters needed to reconstruct an MCP replay.
@@ -100,6 +103,7 @@ impl Default for PlayerSpawnConfig {
       initial_items: Vec::new(),
       equipped_weapon: Some(ItemSpawnKind::Pistol),
       equipped_armor: None,
+      equipped_armor_durability: None,
     }
   }
 }
