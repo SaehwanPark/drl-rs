@@ -21,6 +21,22 @@ truth.
   environment, and the narrow claim it supports. Never turn source similarity
   into a numeric, visual, or balance-parity claim without a controlled probe.
 
+## Advance replay semantics for deterministic policy changes
+
+- **Context:** Replay compatibility covers every deterministic gameplay rule,
+  not only random-number streams.
+- **Symptom:** A movement-policy correction can make an old command history
+  produce different actor positions even when the AI decision consumes no RNG.
+- **Cause:** Replay execution reinterprets the command history under the
+  current policy unless the gameplay-semantics identity distinguishes the two
+  rule sets.
+- **Resolution:** Advance `CURRENT_GAMEPLAY_SEMANTICS_VERSION` for the policy
+  change and add a cross-version rejection test with the previous value. Keep
+  the wire/schema version separate from gameplay semantics.
+- **Prevention:** For every deterministic behavior change, inspect replay
+  metadata before merging; document the new identity in `crates/drl-protocol`
+  and reject older envelopes until an explicit migration exists.
+
 ## Do not confuse callback results with dispatch success
 
 - **Context:** Legacy Lua perks can return `true` or `false` from action hooks
