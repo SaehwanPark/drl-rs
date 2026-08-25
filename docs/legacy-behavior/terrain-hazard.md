@@ -21,8 +21,14 @@ claim full hazard parity.
 
 - Acid is a liquid hazard. Its `OnEnter` callback applies base damage `6` with
   `DAMAGE_ACID` unless fluid contact is avoided or acid resistance is complete.
+- Acid declares `move_cost = 1.25` for fluid movement.
 - Lava is a liquid hazard. Its `OnEnter` callback applies base damage `12` with
   `DAMAGE_FIRE` unless fluid contact is avoided or fire resistance is complete.
+- Lava declares `move_cost = 1.25` for fluid movement.
+- Water also declares `move_cost = 1.25` in the pinned source (`cells.lua` lines
+  387-397), while Mud declares `move_cost = 1.65` (lines 399-409). The current
+  Acid/Lava slice does not claim either deferred movement-cost behavior; Mud is
+  not yet a Rust tile, and Rust Water retains the standard 1000-unit cost.
 - Both callbacks halve damage on Easy difficulty and while the player is using
   the legacy `running` perk. Player-facing messages and periodic hit sounds are
   presentation effects, not part of this slice.
@@ -45,6 +51,11 @@ Lethal contact records the accepted action cost and turn end while suppressing
 periodic armor and pending-nuke follow-up; scheduled monster turns stop after
 the environment death event.
 
-Difficulty, running, resistance, avoidance, fluid movement cost, monster
-hazard contact, runtime comparison, and exact audio/visual parity remain
+The follow-up movement-cost slice represents the Acid/Lava `1.25` ratio as
+integer `ActionCost::new(1250)` for direct player movement; ordinary walkable
+movement remains 1000. Water's source ratio and Mud movement are deferred, and
+fractional legacy scheduler behavior and fluid flow are not claimed.
+
+Difficulty, running, resistance, avoidance, monster hazard contact, runtime
+comparison, and exact audio/visual parity remain
 `NOT_RUN`.

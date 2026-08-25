@@ -1,6 +1,9 @@
 //! Pure deterministic environmental hazard transitions.
 
-use drl_protocol::{DamageType, TileKind};
+use drl_protocol::{ActionCost, DamageType, TileKind};
+
+/// Integer action cost representing the legacy `move_cost=1.25` fluid ratio.
+pub const FLUID_MOVEMENT_COST: ActionCost = ActionCost::new(1_250);
 
 /// Fixed baseline damage produced when a player enters a hazardous tile.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -31,6 +34,15 @@ pub const fn entered_tile_damage(tile: TileKind) -> Option<HazardDamage> {
   }
 }
 
+/// Returns the direct-player movement cost for an entered tile.
+#[must_use]
+pub const fn movement_cost(tile: TileKind) -> ActionCost {
+  match tile {
+    TileKind::Acid | TileKind::Lava => FLUID_MOVEMENT_COST,
+    _ => ActionCost::MOVE,
+  }
+}
+
 #[cfg(test)]
 mod tests {
   use super::*;
@@ -58,5 +70,13 @@ mod tests {
     assert_eq!(entered_tile_damage(TileKind::Floor), None);
     assert_eq!(entered_tile_damage(TileKind::Water), None);
     assert_eq!(entered_tile_damage(TileKind::StairsDown), None);
+  }
+
+  #[test]
+  fn fluid_tiles_use_the_pinned_integer_movement_cost() {
+    assert_eq!(movement_cost(TileKind::Acid), FLUID_MOVEMENT_COST);
+    assert_eq!(movement_cost(TileKind::Lava), FLUID_MOVEMENT_COST);
+    assert_eq!(movement_cost(TileKind::Floor), ActionCost::MOVE);
+    assert_eq!(movement_cost(TileKind::Water), ActionCost::MOVE);
   }
 }

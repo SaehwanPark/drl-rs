@@ -27,11 +27,12 @@ These behaviors are confirmed by DRL-Rust implementation and test suites.
 - **Player turn first** — when multiple actors are eligible to act in the same
   tick, the player acts before monsters. Monster ordering within a tick is
   deterministic (BTreeMap key order by `EntityId`).
-- **Action costs are fixed per command type** — each command type (`Move`,
-  `Wait`, `AttackMelee`, `AttackRanged`, `Reload`, `Pickup`, etc.) has an
-  associated `ActionCost` that is deducted from the actor's energy when the
-  command is executed. Current costs are uniform (1 unit) across most
-  commands in the current implementation.
+- **Action costs use a standard default with typed overrides** — each command
+  type (`Move`, `Wait`, `AttackMelee`, `AttackRanged`, `Reload`, `Pickup`, etc.)
+  has an associated `ActionCost` that is deducted from the actor's energy when
+  the command is executed. Most current commands use the standard 1000-unit
+  cost; direct player movement onto Acid or Lava uses the typed 1250-unit
+  terrain override delivered in `0.2.134`.
 - **Dead actors do not act** — an actor with `is_alive == false` is never
   scheduled. Dead actor entries remain in the world until explicitly removed
   (currently they persist until end of level).
@@ -80,10 +81,11 @@ revision against legacy Pascal source evidence.
 
 ## Deliberate DRL-Rust Decisions
 
-- **Uniform action costs** — all command types currently cost 1 energy unit.
-  If the legacy game applies different costs per action type (e.g., moving
-  diagonally costs more, reloading costs more than firing), this must be
-  updated from legacy evidence before M9 gameplay breadth work.
+- **Standard action costs with bounded overrides** — commands currently use the
+  standard 1000-unit cost unless a delivered typed rule overrides it (currently
+  direct player movement onto Acid or Lava costs 1250). Additional legacy
+  action-cost differentiation (for example, diagonal movement or reload
+  timing) remains open until supported by source evidence.
 
 ---
 

@@ -3,6 +3,16 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.134]
+
+- Pinned Acid/Lava `move_cost=1.25` evidence and represented it as a
+  deterministic `ActionCost::new(1250)` for direct player movement onto those
+  tiles; ordinary walkable movement remains 1000.
+- Legacy Water (`1.25`) and Mud (`1.65`) movement-cost parity remains deferred
+  from this Acid/Lava-only slice.
+- Fractional legacy scheduler details, running/NORUN restrictions, fluid flow,
+  runtime comparison, and audiovisual parity remain `NOT_RUN`.
+
 ## [0.2.133]
 
 - Pinned legacy Acid/Lava entered-cell callbacks and added a pure baseline
