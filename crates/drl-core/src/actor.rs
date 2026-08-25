@@ -3,7 +3,7 @@ use drl_protocol::{
   Speed,
 };
 
-use crate::behavior::MedicalRepairOutcome;
+use crate::behavior::{LavaRechargeOutcome, MedicalRepairOutcome};
 use crate::inventory::{Equipment, Inventory};
 use crate::item::Item;
 use crate::subtle_knife::{SubtleKnifeCost, SubtleKnifeError, SubtleKnifeTransition, TiredStatus};
@@ -332,6 +332,31 @@ impl Actor {
     let item_id = armor_item.id();
     let armor = self.equipment.armor_mut()?.armor_properties_mut()?;
     let outcome = armor.tick_medical_repair(&mut self.hp);
+    Some((item_id, outcome))
+  }
+
+  /// Current Lava Armor recharge timer for deterministic inspection.
+  #[must_use]
+  pub fn lava_recharge_timer(&self) -> u32 {
+    self
+      .equipment
+      .armor()
+      .and_then(Item::armor_properties)
+      .map_or(0, |armor| armor.lava_recharge_timer())
+  }
+
+  /// Advances the equipped Lava Armor behavior, when present.
+  pub fn tick_lava_armor(
+    &mut self,
+    on_lava: bool,
+  ) -> Option<(drl_protocol::ItemId, LavaRechargeOutcome)> {
+    let armor_item = self.equipment.armor()?;
+    if armor_item.archetype() != ItemArchetype::LavaArmor {
+      return None;
+    }
+    let item_id = armor_item.id();
+    let armor = self.equipment.armor_mut()?.armor_properties_mut()?;
+    let outcome = armor.tick_lava_recharge(on_lava);
     Some((item_id, outcome))
   }
 

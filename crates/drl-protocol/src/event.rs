@@ -127,6 +127,14 @@ pub enum GameEvent {
     durability_remaining: u32,
     timer: u32,
   },
+  /// Lava Armor restored durability after its lava recharge interval.
+  LavaArmorRecharged {
+    entity_id: EntityId,
+    item_id: ItemId,
+    durability_restored: u32,
+    durability_remaining: u32,
+    timer: u32,
+  },
   /// The player descended stairs and transitioned to a new level.
   LevelTransitioned {
     from_level: LevelId,

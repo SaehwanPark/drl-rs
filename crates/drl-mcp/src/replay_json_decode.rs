@@ -141,6 +141,13 @@ fn parse_player_config(value: &JsonValue) -> Result<PlayerSpawnConfig, String> {
     equipped_armor: nullable(object, "equipped_armor", |value| {
       item_kind(value, "player_config.equipped_armor")
     })?,
+    equipped_armor_durability: object.get("equipped_armor_durability").map_or(
+      Ok(None),
+      |value| match value {
+        JsonValue::Null => Ok(None),
+        value => u32_value(value, "player_config.equipped_armor_durability").map(Some),
+      },
+    )?,
   })
 }
 
@@ -314,6 +321,7 @@ fn tile_kind(value: &JsonValue, context: &str) -> Result<TileKind, String> {
     "door_closed" => Ok(TileKind::DoorClosed),
     "door_open" => Ok(TileKind::DoorOpen),
     "stairs_down" => Ok(TileKind::StairsDown),
+    "lava" => Ok(TileKind::Lava),
     _ => Err(format!("{context} has unsupported tile kind '{kind}'")),
   }
 }

@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.129`
+Current project version: `0.2.130`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.129)
+## 3. Current Progress Summary (`VERSION` 0.2.130)
 
 ### Delivered Foundations
 
@@ -143,6 +143,12 @@ verification item uses explicit status semantics:
   gameplay-semantics replay identity advances to `8` and rejects older
   envelopes until migration. Legacy spread/falloff, timing, runtime, and
   presentation comparison remain `NOT_RUN`.
+- **M9/Gate D Lava Armor behavior (`0.2.130`)**: Pinned legacy callback
+  evidence now drives a typed five-accepted-command Lava recharge transition.
+  A walkable `Lava` tile, +3 durability clamp, full-armor guard, non-Lava
+  interval reset, replay semantics `9`, and deterministic event ordering are
+  covered; hazard damage/resistance and runtime/presentation parity remain
+  `NOT_RUN`.
 - **Gate D first behavior slice:** Medical Powerarmor now has a typed,
   deterministic periodic-repair transition in `drl-core`, accepted-turn
   integration, exact timer/durability/health edge tests, and a typed repair
@@ -672,6 +678,11 @@ scripting.
   fire-mode toggle with one score-count cost, ordered selected-shell
   resolution, replay coverage, and MCP event projection. Legacy spread/falloff,
   timing, runtime, and presentation parity remain `NOT_RUN`/open.
+- [x] Lava Armor periodic recharge is behavior-covered by a typed armor-owned
+  timer: after five accepted commands on a `Lava` tile it restores up to three
+  durability points and emits `LavaArmorRecharged`; full armor and non-Lava
+  edge behavior are tested. Hazard damage/resistance and runtime/presentation
+  parity remain `NOT_RUN`/open.
 - [x] Direct player diagonal movement preserves the pinned destination-only
   validation rule, including corner cutting around two blocked cardinal
   neighbors; AI fallback remains a separate policy and legacy runtime

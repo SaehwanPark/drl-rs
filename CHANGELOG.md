@@ -3,6 +3,18 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.130]
+
+- Added pinned Lava Armor recharge evidence and a typed, armor-owned
+  five-accepted-command transition on the new `Lava` terrain contract.
+- Added +3 durability restoration with max clamp, full-armor timer preservation,
+  non-Lava interval reset, replay semantics `9`, and deterministic
+  `LavaArmorRecharged` event/MCP projections. Replay fixtures may optionally
+  seed equipped armor durability so the recharge path is replay-tested.
+- Lava hazard damage, resistance equations, controlled runtime comparison, and
+  presentation parity remain `NOT_RUN`; the browser slice uses a bounded lava
+  tint over existing licensed floor geometry.
+
 ## [0.2.129]
 
 - Added pinned Jackhammer alternate-reload evidence and a typed burst/single

@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.129`
+Current project version: `0.2.130`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -147,7 +147,10 @@ Presentation Boundary
     reload uses the dedicated `trigun` transition and `NukeState`, preserving
     explicit confirmation, resource clamps, weapon retention, and terminal
     internal damage through `Command::AltReload` and typed nuke events. Legacy
-    Grammaton mode cycling uses the dedicated `grammaton` transition and a
+    Lava Armor recharge uses the dedicated `behavior` transition and a
+    typed `Tile::Lava` terrain check; successful intervals emit
+    `GameEvent::LavaArmorRecharged`. Grammaton mode cycling uses the dedicated
+    `grammaton` transition and a
     typed `WeaponFireMode`; mode-specific multi-shot resolution preflights
     clip capacity before consuming RNG and emits ordered shot events. Legacy
     resistance, movement, prepared-slot consumption, map-cell explosions, and

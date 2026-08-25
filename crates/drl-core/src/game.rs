@@ -5,7 +5,7 @@ use drl_protocol::{
   LevelId, OmniscientObservation, PlayerObservation, Position, Turn,
 };
 
-use crate::behavior::MedicalRepairOutcome;
+use crate::behavior::{LavaRechargeOutcome, MedicalRepairOutcome};
 use crate::combat::CombatResolver;
 use crate::fov::DEFAULT_VISION_RADIUS;
 use crate::generator::{LevelGenerator, LevelGeneratorConfig};
@@ -293,6 +293,7 @@ impl Game {
     }
 
     self.tick_player_medical_powerarmor(player_id, &mut events)?;
+    self.tick_player_lava_armor(player_id, &mut events)?;
 
     // Spend player energy
     if let Some(player) = self.state.world.get_actor_mut(player_id) {
@@ -585,6 +586,54 @@ impl Game {
         item_id,
         healed,
         remaining_hp,
+        durability_remaining,
+        timer,
+      });
+    }
+    Ok(())
+  }
+
+  /// Advances Lava Armor after an accepted command using the owner's tile.
+  fn tick_player_lava_armor(
+    &mut self,
+    player_id: drl_protocol::EntityId,
+    events: &mut Vec<GameEvent>,
+  ) -> Result<(), CommandError> {
+    let position = self
+      .state
+      .world
+      .get_actor(player_id)
+      .ok_or(CommandError::EntityNotFound(player_id))?
+      .position();
+    let on_lava = self
+      .state
+      .world
+      .map()
+      .get_tile(position)
+      .is_some_and(|tile| tile == crate::grid::Tile::Lava);
+    let player = self
+      .state
+      .world
+      .get_actor_mut(player_id)
+      .ok_or(CommandError::EntityNotFound(player_id))?;
+    let Some((item_id, outcome)) = player.tick_lava_armor(on_lava) else {
+      return Ok(());
+    };
+
+    if let LavaRechargeOutcome::Recharged {
+      durability_restored,
+      timer,
+    } = outcome
+    {
+      let durability_remaining = player
+        .equipment()
+        .armor()
+        .and_then(Item::armor_properties)
+        .map_or(0, |properties| properties.durability);
+      events.push(GameEvent::LavaArmorRecharged {
+        entity_id: player_id,
+        item_id,
+        durability_restored,
         durability_remaining,
         timer,
       });

@@ -137,6 +137,7 @@ impl ReplayEngine {
         drl_protocol::TileKind::StairsDown => crate::grid::Tile::StairsDown,
         drl_protocol::TileKind::DoorClosed => crate::grid::Tile::DoorClosed,
         drl_protocol::TileKind::DoorOpen => crate::grid::Tile::DoorOpen,
+        drl_protocol::TileKind::Lava => crate::grid::Tile::Lava,
       };
       game.world_mut().map_mut().set_tile(pos, tile);
     }
@@ -185,6 +186,14 @@ impl ReplayEngine {
         let armor = Item::from_spawn_kind(item_id, armor_kind);
         if let Some(player) = game.world_mut().get_actor_mut(player_id) {
           let _ = player.equipment_mut().equip(EquipmentSlot::Armor, armor);
+          if let Some(durability) = config.equipped_armor_durability
+            && let Some(properties) = player
+              .equipment_mut()
+              .armor_mut()
+              .and_then(Item::armor_properties_mut)
+          {
+            properties.durability = durability.min(properties.max_durability);
+          }
         }
       }
     }
@@ -309,8 +318,8 @@ mod tests {
   fn test_replay_validation_rejects_incompatible_semantics() {
     let mut replay = ReplayLog::new(1234, 10, 10, Position::new(1, 1));
     // Version 5 predates the AI movement candidate-order change and must not
-    // be interpreted by the version-8 engine without an explicit migration.
-    assert_eq!(drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION, 8);
+    // be interpreted by the version-9 engine without an explicit migration.
+    assert_eq!(drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION, 9);
     replay.metadata.gameplay_semantics_version = 5;
     let error = ReplayEngine::validate(&replay).unwrap_err();
     assert!(error.contains("unsupported gameplay semantics version"));
