@@ -798,13 +798,15 @@ All of the following are required:
 - [x] The typed behavior model passes the selected legacy stress cases
   (Medical Powerarmor, Subtle Knife, and Trigun); broader behavior vocabulary
   and controlled legacy runtime parity remain open.
-- [ ] `drl-protocol` contains stable semantic contracts but no longer owns
-  mutable gameplay balance merely because a type crosses a boundary.
-- [ ] Large implementation modules touched by this work are split only where
-  there are clear independent reasons to change; no new crate is introduced
-  solely to reduce file size.
-- [ ] Repository, deterministic scenario, replay, and supported browser checks
-  pass for the resulting revision.
+- [x] `drl-protocol` contains stable semantic contracts but no longer owns
+  mutable gameplay balance merely because a type crosses a boundary; the
+  catalog slice keeps balance and typed behavior in `drl-core`.
+- [x] Large implementation modules touched by this work are split only where
+  there are clear independent reasons to change; the catalog slice required no
+  new crate or unrelated file-size refactor.
+- [x] Repository, deterministic scenario, replay, and supported browser checks
+  pass for the resulting revision, with local harness evidence and merged PR
+  #243 repository/WASM checks.
 
 Once these gates pass, the next active slice should be a **vertical canonical
 fidelity slice**, not another scalar-only family batch.
