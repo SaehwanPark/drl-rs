@@ -159,6 +159,7 @@ pub fn compute_legal_actions(obs: &PlayerObservation) -> Vec<LegalAction> {
   // 3b. Typed Trigun alternate reload (the caller must explicitly confirm).
   if let Some(weapon) = obs.equipped_weapon.as_ref()
     && weapon.archetype == ItemArchetype::Trigun
+    && obs.player_hp.is_some_and(|hp| hp.max > 10)
   {
     let mut p = BTreeMap::new();
     p.insert("action".to_string(), JsonValue::from("alt_reload"));
