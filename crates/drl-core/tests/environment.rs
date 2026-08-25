@@ -5,7 +5,9 @@ use drl_core::grid::Tile;
 use drl_core::item::Item;
 use drl_core::replay::ReplayEngine;
 use drl_core::scenario::{Scenario, ScenarioRunner};
-use drl_protocol::{Command, DamageSource, Direction, GameEvent, Position, ReplayLog, TileKind};
+use drl_protocol::{
+  ActionCost, Command, DamageSource, Direction, GameEvent, Position, ReplayLog, TileKind,
+};
 use drl_protocol::{EquipmentSlot, ItemId};
 
 #[test]
@@ -41,8 +43,36 @@ fn moving_onto_acid_applies_baseline_damage_without_rng_use() {
 
   assert!(move_index < damage_index);
   assert_eq!(game.world().player().unwrap().hp().current, 44);
+  assert!(events.iter().any(|event| matches!(
+    event,
+    GameEvent::ActionCostPaid {
+      entity_id,
+      cost,
+    } if *entity_id == game.world().player_id().unwrap() && *cost == ActionCost::new(1_250)
+  )));
   assert_eq!(game.rng(), &rng_before);
   assert!(!game.is_game_over());
+}
+
+#[test]
+fn moving_onto_floor_retains_standard_movement_cost() {
+  let mut game = Game::new_arena(1_337, 12, 12).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let events = game.step(Command::Move(Direction::East)).unwrap();
+
+  assert!(events.iter().any(|event| matches!(
+    event,
+    GameEvent::ActionCostPaid {
+      entity_id,
+      cost: ActionCost::MOVE,
+    } if *entity_id == player_id
+  )));
+  assert!(
+    !events
+      .iter()
+      .any(|event| matches!(event, GameEvent::DamageApplied { .. }))
+  );
+  assert_eq!(game.world().player().unwrap().hp().current, 50);
 }
 
 #[test]
@@ -122,6 +152,13 @@ fn lethal_lava_contact_emits_environment_death_and_ends_game() {
   assert!(damage_index < death_index);
   assert!(death_index < cost_index);
   assert!(cost_index < ended_index);
+  assert!(matches!(
+    events[cost_index],
+    GameEvent::ActionCostPaid {
+      cost: ActionCost(1_250),
+      ..
+    }
+  ));
   assert!(
     !events
       .iter()
@@ -205,6 +242,13 @@ fn replay_preserves_lava_contact_deterministically() {
       ..
     }
   )));
+  assert!(events.iter().any(|event| matches!(
+    event,
+    GameEvent::ActionCostPaid {
+      cost: ActionCost(1_250),
+      ..
+    }
+  )));
 }
 
 #[test]
@@ -245,6 +289,13 @@ fn ascii_scenario_replays_lava_contact_policy() {
     GameEvent::DamageApplied {
       amount: 12,
       source: DamageSource::Environment,
+      ..
+    }
+  )));
+  assert!(events.iter().any(|event| matches!(
+    event,
+    GameEvent::ActionCostPaid {
+      cost: ActionCost(1_250),
       ..
     }
   )));

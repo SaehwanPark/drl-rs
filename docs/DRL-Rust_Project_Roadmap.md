@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.133`
+Current project version: `0.2.134`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.133)
+## 3. Current Progress Summary (`VERSION` 0.2.134)
 
 ### Delivered Foundations
 
@@ -163,6 +163,11 @@ verification item uses explicit status semantics:
   on Lava after accepted movement, with deterministic environment damage/death
   events. Resistance, difficulty/running modifiers, fluid movement cost,
   runtime comparison, and audiovisual parity remain `NOT_RUN`.
+- **M9/Gate D fluid movement-cost behavior (`0.2.134`)**: Pinned legacy cell
+  movement costs now drive an integer 1250 action cost for direct player moves
+  onto Acid/Lava while ordinary walkable movement remains 1000. Running/NORUN,
+  fractional scheduler details, fluid flow, runtime comparison, and
+  audiovisual parity remain `NOT_RUN`.
 - **Gate D first behavior slice:** Medical Powerarmor now has a typed,
   deterministic periodic-repair transition in `drl-core`, accepted-turn
   integration, exact timer/durability/health edge tests, and a typed repair

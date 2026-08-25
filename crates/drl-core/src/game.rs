@@ -8,7 +8,7 @@ use drl_protocol::{
 use crate::acid_spitter::{ACID_SPITTER_RELOAD_AMOUNT, AcidSpitterReloadError};
 use crate::behavior::{LavaRechargeOutcome, MedicalRepairOutcome};
 use crate::combat::CombatResolver;
-use crate::environment::entered_tile_damage;
+use crate::environment::{entered_tile_damage, movement_cost};
 use crate::fov::DEFAULT_VISION_RADIUS;
 use crate::generator::{LevelGenerator, LevelGeneratorConfig};
 use crate::grammaton::{GRAMMATON_MODE_SCORE_COST, GrammatonTransition};
@@ -234,7 +234,7 @@ impl Game {
             }
           } else if self.state.world.map().is_walkable(target_pos) {
             // Unoccupied walkable tile -> step move
-            self.execute_player_move_to(player_id, p_pos, target_pos, &mut events)?;
+            action_cost = self.execute_player_move_to(player_id, p_pos, target_pos, &mut events)?;
           } else {
             return Err(CommandError::BlockedByTerrain(target_pos));
           }
@@ -658,7 +658,13 @@ impl Game {
     from: Position,
     to: Position,
     events: &mut Vec<GameEvent>,
-  ) -> Result<(), CommandError> {
+  ) -> Result<ActionCost, CommandError> {
+    let target_tile = self
+      .state
+      .world
+      .map()
+      .get_tile(to)
+      .ok_or(CommandError::OutOfBounds(to))?;
     let player = self
       .state
       .world
@@ -675,7 +681,7 @@ impl Game {
     });
 
     self.apply_player_hazard_contact(player_id, to, events)?;
-    Ok(())
+    Ok(movement_cost(target_tile.to_kind()))
   }
 
   /// Applies the bounded entered-cell hazard policy after a successful move.

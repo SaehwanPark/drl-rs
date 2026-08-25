@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.133`
+Current project version: `0.2.134`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -353,7 +353,8 @@ Presentation Boundary
 ### 4.1 Simulation & Turn Economy
 - **Energy-Based Scheduler**: Actors accumulate energy based on their `Speed`.
   When an actor reaches the action threshold, it executes one action costing
-  standard energy units.
+  the standard 1000 energy units by default; typed terrain movement rules may
+  override that cost (currently Acid/Lava direct movement uses 1250).
 - **Transactional command boundary**: `Game::step` snapshots and restores the
   complete state on any rejection, including turn, world, and RNG. Command
   handlers still use prepare/commit validation where practical; the bounded

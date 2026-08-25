@@ -15,9 +15,9 @@ pub enum ReplayVersion {
 /// Gameplay semantics identifier expected by the current replay engine.
 ///
 /// This advances independently from the wire/schema version when deterministic
-/// sampling or other simulation rules change. Version `12` includes baseline
-/// Acid/Lava entered-cell contact damage.
-pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 12;
+/// sampling or other simulation rules change. Version `13` includes baseline
+/// Acid/Lava entered-cell contact damage and fluid movement cost.
+pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 13;
 
 /// Procedural-generation semantics identifier expected for replays that carry
 /// a procedural generation configuration. Version 2 includes the exact
@@ -37,7 +37,7 @@ pub struct ReplayMetadata {
   /// Engine crate version string.
   pub engine_version: String,
   /// Gameplay semantics version required to interpret the command history.
-  /// Version 12 includes baseline Acid/Lava entered-cell hazard behavior.
+  /// Version 13 includes Acid/Lava fluid movement cost.
   pub gameplay_semantics_version: u32,
   /// Procedural-generation semantics required when reconstructing generated maps.
   pub generator_semantics_version: u32,
