@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.138`
+Current project version: `0.2.139`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M1/Gate A Rejection Matrix
+## 2. Active Implementation Slice: M2/Gate B Replay Compatibility Matrix
 
 ### 2.1 Objective
 
-Strengthen the Gate A command-atomicity invariant with one explicit rejection
-matrix spanning the current command surface. Each representative invalid
-command must return an error while preserving exact `Game` state, including the
-RNG stream, turn, world, inventory, equipment, and terminal flags.
+Strengthen the Gate B replay contract with one explicit metadata-compatibility
+matrix. Gameplay semantics, ruleset identity, and procedural-generation
+semantics must be validated before replay execution; fixed-map replays must not
+be coupled to generator semantics they do not use.
 
 The legacy Pascal/Lua implementation remains the behavioral reference. Its
 architecture, global callback machinery, and runtime Lua object model remain
@@ -40,20 +40,19 @@ non-goals for reproduction.
 
 ### 2.1a Scope and steering gate
 
-- **Steering priority:** Simulation correctness invariants (Gate A).
-- **Observable outcome:** Representative invalid commands across movement,
-  combat, inventory, equipment, item use, alternate actions, reload, and
-  descent all return an error with `before == after` for the complete `Game`.
-- **Replay/RNG impact:** Gameplay semantics remain `16`; this slice adds no
-  accepted transition and consumes no RNG. The rejection matrix explicitly
-  checks the RNG stream and preserves replay interpretation.
+- **Steering priority:** Deterministic semantics stability (Gate B).
+- **Observable outcome:** Current gameplay/ruleset metadata validates; stale
+  gameplay or ruleset values reject before simulation; procedural replays also
+  reject stale generator semantics, while fixed-map replays remain independent.
+- **Replay/RNG impact:** Gameplay semantics remain `16`; no command executes
+  during metadata rejection and no RNG is consumed.
 - **Content-catalog impact:** No content or protocol catalog changes.
-- **Protocol/domain ownership:** The invariant remains core-owned at the
-  transactional `Game::step` boundary; no new protocol surface is introduced.
+- **Protocol/domain ownership:** Replay metadata owns compatibility identity;
+  core `ReplayEngine` owns validation policy.
 - **Evidence boundary:** This is a Rust invariant test slice. Legacy runtime,
   browser, audio/visual, and external capture comparisons are `NOT_RUN`.
-- **Non-goals:** New commands, scheduler behavior, content migration, replay
-  schema changes, runtime Lua, and broad callback modeling.
+- **Non-goals:** Migration tooling, accepted gameplay changes, schema version
+  changes, runtime comparison, and presentation parity.
 
 ### 2.2 Why this slice supersedes content breadth
 
@@ -68,25 +67,25 @@ At the same time, adding a conventional content family now fans out across
 protocol enums, definitions, validation, replay codecs, assets, documentation,
 and other exhaustive registries. Continuing scalar-only breadth before a
 behavior model is selected would increase both migration debt and change
-amplification. The rejection matrix instead strengthens the executable
-transactional invariant that gates every future command addition.
+amplification. The replay matrix instead strengthens the executable semantic
+identity boundary that gates every future replay-visible change.
 
 Therefore, additional broad scalar-only family additions are temporarily
 blocked by the exit gates in Section 2.8.
 
-### 2.3 Gate A rejection matrix contracts
+### 2.3 Gate B replay compatibility contracts
 
-For each representative invalid command, `Game::step` must return an error and
-leave the complete cloned `Game` unchanged. The matrix includes at least one
-invalid command from every current command family and compares the full state,
-including deterministic RNG, rather than selected fields.
+For a replay with current metadata, `ReplayEngine::validate` succeeds. A stale
+gameplay semantics version or ruleset identity rejects before map construction
+or command execution. A procedural replay with stale generator semantics also
+rejects; a fixed-map replay with that field changed remains valid because no
+procedural generator is involved.
 
 #### Legacy evidence boundary
 
-No legacy source claim is needed for this invariant slice. The repository's
-transactional `Game::step` implementation and existing command-atomicity tests
-are the authoritative evidence; external runtime and presentation comparisons
-remain `NOT_RUN`.
+No legacy source claim is needed for this compatibility slice. The repository's
+`ReplayEngine::validate` implementation and versioning tests are authoritative;
+external runtime and presentation comparisons remain `NOT_RUN`.
 
 ### 2.4 Previous movement and historical correctness contracts
 
@@ -726,10 +725,10 @@ stress case, typed Mud terrain and movement cost. Its typed transition did:
 - [x] record that flow, fractional scheduler details, modifiers, runtime
   comparison, and exact audiovisual parity remain `NOT_RUN`.
 
-### 2.7n Current Gate A rejection matrix delivery target
+### 2.7n Previous Gate A rejection matrix delivery target
 
-The bounded implementation target for this revision is explicit rejection
-coverage across the current command surface. Its invariant must:
+The bounded implementation target for the previous revision was explicit
+rejection coverage across the current command surface. Its invariant did:
 
 - [x] exercise representative invalid Move, melee/ranged combat, pickup/drop,
   equip/unequip/use/invoke, alternate reload, reload, and descend commands;
@@ -739,6 +738,18 @@ coverage across the current command surface. Its invariant must:
   protocol/schema change;
 - [x] record runtime, browser, audio/visual, and external capture comparisons as
   `NOT_RUN`.
+
+### 2.7o Current Gate B replay compatibility delivery target
+
+The bounded implementation target for this revision is replay metadata
+compatibility coverage. Its matrix must:
+
+- [x] accept current gameplay semantics and ruleset metadata;
+- [x] reject stale gameplay semantics and ruleset values before execution;
+- [x] reject stale generator semantics for procedural replays while allowing
+  fixed-map replays to ignore that unused identity;
+- [x] preserve gameplay semantics `16` and record migration/runtime/browser/
+  audiovisual comparisons as `NOT_RUN`.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 

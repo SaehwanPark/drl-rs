@@ -3,6 +3,12 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.139]
+
+- Added replay metadata compatibility coverage for gameplay semantics, ruleset
+  identity, and procedural generator semantics; fixed-map replays remain
+  independent of unused generator metadata.
+
 ## [0.2.138]
 
 - Added a Gate A command-surface rejection matrix covering representative
