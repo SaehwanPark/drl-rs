@@ -21,8 +21,20 @@ pub struct WeaponProperties {
   pub knockback: u32,
   pub fire_cost: ActionCost,
   pub reload_cost: ActionCost,
-  /// Typed alternate-fire mode; non-Grammaton weapons remain `Single`.
+  /// Typed alternate-fire mode; ordinary weapons remain `Single`.
   pub fire_mode: WeaponFireMode,
+}
+
+impl WeaponProperties {
+  /// Returns the core-owned shell/round count selected by the typed mode.
+  #[must_use]
+  pub const fn shot_count(&self) -> u32 {
+    match self.fire_mode {
+      WeaponFireMode::Single => 1,
+      WeaponFireMode::Burst => 3,
+      WeaponFireMode::Auto => 6,
+    }
+  }
 }
 
 /// Physical properties for wearable body armor.
@@ -764,7 +776,10 @@ impl Item {
         knockback,
         fire_cost,
         reload_cost,
-        fire_mode: WeaponFireMode::Single,
+        fire_mode: match definition.archetype {
+          ItemArchetype::Jackhammer => WeaponFireMode::Burst,
+          _ => WeaponFireMode::Single,
+        },
       }),
       ItemDefinitionKind::Ammo {
         ammo_type,

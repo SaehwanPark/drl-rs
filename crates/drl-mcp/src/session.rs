@@ -195,6 +195,25 @@ pub fn compute_legal_actions(obs: &PlayerObservation) -> Vec<LegalAction> {
     });
   }
 
+  // 3d. Typed Jackhammer burst/single fire-mode toggle.
+  if let Some(weapon) = obs.equipped_weapon.as_ref()
+    && weapon.archetype == ItemArchetype::Jackhammer
+  {
+    let mut p = BTreeMap::new();
+    p.insert("action".to_string(), JsonValue::from("alt_reload"));
+    p.insert("item_id".to_string(), JsonValue::from(weapon.id.as_u64()));
+    p.insert("confirmed".to_string(), JsonValue::Bool(true));
+    actions.push(LegalAction {
+      action: "AltReload".to_string(),
+      description: "Toggle the equipped Jackhammer fire mode".to_string(),
+      command: Command::AltReload {
+        item_id: weapon.id,
+        confirmed: true,
+      },
+      params: JsonValue::Object(p),
+    });
+  }
+
   // 4. Reload weapon (if weapon not full and matching ammo exists in inventory)
   if let Some(ref weapon) = obs.equipped_weapon
     && let Some((loaded, max_clip)) = weapon.clip
@@ -851,6 +870,29 @@ pub fn game_event_to_json(event: &GameEvent) -> JsonValue {
       map.insert(
         "type".to_string(),
         JsonValue::from("GrammatonFireModeChanged"),
+      );
+      map.insert("entity_id".to_string(), JsonValue::from(entity_id.as_u64()));
+      map.insert("item_id".to_string(), JsonValue::from(item_id.as_u64()));
+      let mode_name = match mode {
+        drl_protocol::WeaponFireMode::Single => "single",
+        drl_protocol::WeaponFireMode::Burst => "burst",
+        drl_protocol::WeaponFireMode::Auto => "auto",
+      };
+      map.insert("mode".to_string(), JsonValue::from(mode_name));
+      map.insert(
+        "score_count_remaining".to_string(),
+        JsonValue::from(*score_count_remaining),
+      );
+    }
+    GameEvent::JackhammerFireModeChanged {
+      entity_id,
+      item_id,
+      mode,
+      score_count_remaining,
+    } => {
+      map.insert(
+        "type".to_string(),
+        JsonValue::from("JackhammerFireModeChanged"),
       );
       map.insert("entity_id".to_string(), JsonValue::from(entity_id.as_u64()));
       map.insert("item_id".to_string(), JsonValue::from(item_id.as_u64()));
@@ -1555,6 +1597,59 @@ mod tests {
         .iter()
         .any(|event| matches!(event, GameEvent::GrammatonFireModeChanged { .. }))
     );
+  }
+
+  #[test]
+  fn test_legal_action_catalog_and_events_include_jackhammer_mode_toggle() {
+    let mut session = McpSession::new();
+    session.start_game(798, None, None, None).unwrap();
+    let player_id = session.game.as_ref().unwrap().world().player_id().unwrap();
+    let item_id = session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .allocate_item_id();
+    let player = session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .get_actor_mut(player_id)
+      .unwrap();
+    player.set_score_count(5);
+    player
+      .equipment_mut()
+      .equip(
+        EquipmentSlot::Weapon,
+        drl_core::item::Item::jackhammer(item_id),
+      )
+      .unwrap();
+
+    let observation = session.get_observation().unwrap();
+    assert!(compute_legal_actions(&observation).iter().any(|action| {
+      action.action == "AltReload"
+        && action.command
+          == Command::AltReload {
+            item_id,
+            confirmed: true,
+          }
+    }));
+
+    let (events, _, _) = session
+      .step(Command::AltReload {
+        item_id,
+        confirmed: true,
+      })
+      .unwrap();
+    assert!(events.iter().any(|event| matches!(
+      event,
+      GameEvent::JackhammerFireModeChanged {
+        mode: drl_protocol::WeaponFireMode::Single,
+        score_count_remaining: 4,
+        ..
+      }
+    )));
   }
 
   #[test]

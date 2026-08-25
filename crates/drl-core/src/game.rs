@@ -12,6 +12,7 @@ use crate::generator::{LevelGenerator, LevelGeneratorConfig};
 use crate::grammaton::{GRAMMATON_MODE_SCORE_COST, GrammatonTransition};
 use crate::grid::Map;
 use crate::item::Item;
+use crate::jackhammer::{JACKHAMMER_MODE_SCORE_COST, JackhammerTransition};
 use crate::level_definition::standard_procedural;
 use crate::nuke::NukeState;
 use crate::rng::GameRng;
@@ -452,6 +453,29 @@ impl Game {
           .ok_or(CommandError::EntityNotFound(player_id))?
           .spend_score_count(GRAMMATON_MODE_SCORE_COST);
         events.push(GameEvent::GrammatonFireModeChanged {
+          entity_id: player_id,
+          item_id,
+          mode,
+          score_count_remaining,
+        });
+        Ok(())
+      }
+      drl_protocol::ItemArchetype::Jackhammer => {
+        let mode = self
+          .state
+          .world
+          .get_actor_mut(player_id)
+          .and_then(|actor| actor.equipment_mut().weapon_mut())
+          .and_then(|item| item.weapon_properties_mut())
+          .map(JackhammerTransition::cycle)
+          .ok_or(CommandError::CannotAltReload(item_id))?;
+        let score_count_remaining = self
+          .state
+          .world
+          .get_actor_mut(player_id)
+          .ok_or(CommandError::EntityNotFound(player_id))?
+          .spend_score_count(JACKHAMMER_MODE_SCORE_COST);
+        events.push(GameEvent::JackhammerFireModeChanged {
           entity_id: player_id,
           item_id,
           mode,
@@ -1086,7 +1110,7 @@ impl Game {
       if distance > props.range {
         return Err(CommandError::TargetOutOfRange(target_pos));
       }
-      let shot_count = GrammatonTransition::shot_count(props.fire_mode);
+      let shot_count = props.shot_count();
       if props.current_clip < shot_count {
         return Err(CommandError::NoAmmoInClip);
       }
