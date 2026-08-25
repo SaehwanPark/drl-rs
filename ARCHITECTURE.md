@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.140`
+Current project version: `0.2.141`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -106,6 +106,9 @@ Presentation Boundary
   - Observations: `PlayerObservation`, `TileView`, `ActorView`, `ItemView`.
   - Events: `GameEvent` stream (combat, movement, items, levels, and typed
     alternate-behavior transitions such as Grammaton fire-mode changes).
+  - Stable item identity uses one compile-time catalog for the
+    `ItemArchetype` enum, `ALL`, and wire names; gameplay definitions and
+    presentation policy remain owned by their respective crates.
   - Current residual typed-content helpers include `MonsterKind::definition()`
     and `TileKind::definition()`; their gameplay-policy ownership is a tracked
     boundary-cleanup item, not a pattern for further expansion.

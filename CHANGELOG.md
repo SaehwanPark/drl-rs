@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.141]
+
+- Centralized routine `ItemArchetype` identity registration in one protocol
+  catalog that generates the enum, stable wire names, and ordered `ALL` view;
+  gameplay definitions, count-sensitive spawn payloads, and presentation
+  policy remain explicit.
+
 ## [0.2.140]
 
 - Added explicit RNG sampling semantics to replay metadata and advanced the
