@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.121`
+Current project version: `0.2.122`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.121)
+## 3. Current Progress Summary (`VERSION` 0.2.122)
 
 ### Delivered Foundations
 
@@ -72,8 +72,7 @@ verification item uses explicit status semantics:
   out-of-bounds ranged, empty-target ranged, no-weapon ranged, and empty-clip
   ranged rejections and no-destination phase-device rejection are covered by
   exact `Game` equality tests; post-game-over command rejection is covered by
-  exact `Game` equality as well. Other command-family rejection paths remain
-  active Gate A follow-up work; pickup validates malformed out-of-bounds
+  exact `Game` equality as well. Pickup validates malformed out-of-bounds
   positions before ground-item removal. `GameRng::gen_range` now uses
   unbiased rejection sampling with pinned raw, bounded, and probability
   vectors. Replay metadata now records gameplay-semantics and ruleset identity
@@ -86,6 +85,13 @@ verification item uses explicit status semantics:
   preserving turn and RNG through a documented bounded rollback backstop.
   Accepted-only `Wait` and `Move(None)` branches are covered separately because
   they have no reachable rejection path.
+- **M1/Gate A late-failure audit (`0.2.122`)**: Death-drop destinations are
+  preflighted before player melee, ranged, and typed Subtle Knife effects;
+  exact `Game` equality tests cover the resulting blocked-terrain rejection,
+  including clip/RNG restoration for ranged attacks and typed-command costs.
+  The current dispatch surface now has explicit rejection evidence for every
+  reachable command family; future command additions must preserve the same
+  prepare/commit boundary.
   The first Gate C slice centralizes stable representative item spawn families
   in protocol's `ItemSpawnKind::ALL`; core structural validation accesses that
   catalog through `CURRENT_ITEM_SPAWN_KINDS`, and definition coverage derives

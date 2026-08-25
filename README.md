@@ -28,7 +28,9 @@ replays, and regression testing.
     off-stairs, blocked-terrain, and out-of-bounds commands atomically; melee
     rejects invalid directions and empty targets atomically; missing-item
     Equip/Drop and no-ground-item Pickup reject atomically; focused tests assert
-    exact `Game` state preservation for these paths; ranged out-of-bounds,
+    exact `Game` state preservation for these paths; typed `Invoke` and
+    `AltReload` rejections and late death-drop failures in melee, ranged, and
+    Subtle Knife paths are covered with the same invariant; ranged out-of-bounds,
     empty-target, no-weapon, and empty-clip rejections are covered as well;
     phase-device failure with no destination and post-game-over commands are
     atomic too; pickup validates out-of-bounds positions before touching ground
@@ -51,7 +53,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.121`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.122`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`

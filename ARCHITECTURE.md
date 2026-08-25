@@ -519,11 +519,12 @@ target contract but is not reported as already verified:
    off-stairs descend, blocked-terrain movement, out-of-bounds movement,
    invalid-direction melee, empty-target melee, missing-item Equip/Drop, and
    no-ground-item Pickup, out-of-bounds/empty-target ranged, and
-   no-equipped-weapon/empty-clip ranged, no-destination phase-device, and
-   post-game-over command rejection and out-of-bounds pickup validation cases
-   are covered by
-   `crates/drl-core/tests/command_atomicity.rs`; command-wide verification is
-   still an active correction gate documented in `docs/steering/`.
+   no-equipped-weapon/empty-clip ranged, no-destination phase-device,
+   `Invoke`/`AltReload`, post-game-over command rejection, and out-of-bounds
+   pickup validation cases are covered by
+   `crates/drl-core/tests/command_atomicity.rs`. Death-drop destinations are
+   preflighted before combat mutation, so expected terrain failures cannot
+   occur after ammo, RNG, or typed behavior effects have committed.
 
 ---
 

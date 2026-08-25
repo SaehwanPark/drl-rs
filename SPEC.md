@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.121`
+Current project version: `0.2.122`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,17 +25,15 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9/Gate D Trigun Alternate Reload
+## 2. Active Implementation Slice: M1/Gate A Late Death-Drop Rejection Audit
 
 ### 2.1 Objective
 
-Deliver the third selected Gate D behavior-covered stress case by representing
-Trigun's confirmation-gated alternate reload as a typed, deterministic Rust
-transition. A successful command pays the evidence-backed health and score
-costs, schedules a one-tick level nuke, and resolves that nuke at the accepted
-turn boundary through explicit events. The preceding Medical Powerarmor and
-Subtle Knife slices establish the first two behavior transitions; the remaining
-behavior vocabulary stays deferred rather than silently reactivated.
+Close a bounded Gate A correctness gap in which a death-drop destination could
+reject after combat or typed behavior effects had already mutated the game. The
+current command surface must validate every expected death-drop terrain failure
+before paying costs, consuming RNG, or applying damage, while preserving the
+outer exact-state rollback invariant as a backstop.
 
 The legacy Pascal/Lua implementation remains the behavioral reference. Its
 architecture, global callback machinery, and runtime Lua object model remain
@@ -43,26 +41,20 @@ non-goals for reproduction.
 
 ### 2.1a Scope and steering gate
 
-- **Steering gate:** Gate D — Behavior model passes hard cases.
-- **Observable outcome:** An equipped Trigun accepts a typed alternate-reload
-  command only after explicit confirmation and when player maximum HP is above
-  the legacy floor. Success reduces maximum/current HP and score count,
-  schedules a one-tick nuke, and resolves the level nuke with internal player
-  damage at the same accepted-turn boundary. The Trigun is not destroyed.
-- **Replay/RNG impact:** The transition consumes no RNG and preserves the V1
-  replay wire format; its gameplay semantics advance to project version
-  `0.2.121` and are not claimed cross-version compatible without matching
-  engine semantics. Nuke countdown and resolution ordering are part of the
-  typed replay-visible state.
-- **Catalog impact:** No new item family or registry is added. The existing
-  typed `ItemArchetype::Trigun` identity selects the behavior.
-- **Protocol/domain ownership:** `Command::AltReload` and the Trigun/nuke
-  events are stable semantic contracts; confirmation policy, health/score
-  costs, timer cadence, and damage mutation remain owned by `drl-core`.
-- **Non-goals:** Subtle Knife changes, generic callback/alternate-action
-  infrastructure, runtime Lua, legacy runtime/capture parity, browser
-  confirmation UI, explosion presentation, and broad content migration remain
-  open.
+- **Steering gate:** Gate A — Rejected commands are atomic.
+- **Observable outcome:** Player melee, ranged, and Subtle Knife commands with
+  a death drop on a non-walkable target tile reject with the documented terrain
+  error before combat, HP/status/score costs, ammo, or RNG change. `Invoke` and
+  `AltReload` invalid-command paths have direct exact-state evidence as well.
+- **Replay/RNG impact:** Rejected commands consume no RNG and preserve turn,
+  clip, actor, inventory, ground-item, and typed behavior state. The V1 replay
+  wire format and gameplay semantics remain unchanged by this audit.
+- **Catalog impact:** No content family or registry changes.
+- **Protocol/domain ownership:** Terrain preflight remains a `drl-core`
+  validation concern; semantic command and error contracts remain in
+  `drl-protocol`.
+- **Non-goals:** New combat behavior, runtime Lua, legacy runtime/capture
+  parity, browser presentation, and broad content migration remain open.
 
 ### 2.2 Why this slice supersedes content breadth
 
@@ -70,7 +62,8 @@ The preceding M9 work successfully established provenance-aware immutable
 content definitions and replay-visible item families. It also intentionally left
 many legacy behaviors open: callbacks, resistances, movement modifiers,
 alternate actions, recharge, set effects, exact weapon timing, and other
-special-case semantics.
+special-case semantics. The Gate A correction is narrower: it removes a known
+late-failure window without broadening those behavior claims.
 
 At the same time, adding a conventional content family now fans out across
 protocol enums, definitions, validation, replay codecs, assets, documentation,
@@ -83,7 +76,11 @@ blocked by the exit gates in Section 2.7.
 
 ### 2.3 Transactional Command Contract
 
-#### Current bounded delivery target: ranged target rejection atomicity
+#### Gate A evidence inventory
+
+**Current bounded delivery target (`0.2.122`):** Death-drop terrain
+preflight runs before player melee/ranged and Subtle Knife mutations, with
+focused tests proving exact rejection identity and ranged clip/RNG restoration.
 
 **Delivered in `0.2.90` on `codex/fix-equip-rejection-atomicity`:** Equipping a
 non-equippable inventory item must return `CommandError::CannotEquip` without
@@ -294,6 +291,11 @@ State identity on rejection includes, at minimum:
 - [x] Preserve turn and RNG state exactly on rejection.
 - [x] Document the chosen implementation pattern: prepare/commit is preferred;
   a bounded rollback guard is used as an interim correctness backstop.
+- [x] Preflight death-drop destinations before player melee, ranged, and
+  Subtle Knife mutations so expected terrain failures do not occur after
+  combat, ammo, RNG, or typed behavior effects commit.
+- [x] Cover invalid `Invoke` and `AltReload` commands plus blocked late
+  death-drop failures with exact `Game` equality and no ground-item creation.
 
 ### 2.4 RNG and Replay Semantics Contract
 
@@ -350,7 +352,7 @@ insufficient.
 - [ ] Define a typed behavior vocabulary that can represent at least:
   **Partial in `0.2.120`:** explicit Medical Powerarmor periodic repair and
   Subtle Knife alternate invoke transitions are delivered; the Trigun
-  alternate-reload transition is the active `0.2.121` target and the broader
+  alternate-reload transition is delivered in `0.2.121` and the broader
   vocabulary remains open.
   - passive stat/resistance modifiers;
   - equip/unequip effects and item-set membership;
@@ -388,8 +390,8 @@ presentation parity remain intentionally unclaimed.
 The third selected case is Trigun alternate reload; its source and callback
 decomposition are recorded in
 [`docs/legacy-behavior/trigun.md`](docs/legacy-behavior/trigun.md). Its typed
-Rust implementation is the active bounded target in this revision; controlled
-legacy runtime and presentation parity remain intentionally unclaimed.
+Rust implementation was delivered in `0.2.121`; controlled legacy runtime and
+presentation parity remain intentionally unclaimed.
 
 - an equipment set with reversible equip/unequip modifiers;
 - Subtle Knife-style alternate action with health/status cost and visible-target
@@ -469,7 +471,8 @@ Trigun alternate reload. Its typed transition must:
 
 All of the following are required:
 
-- [ ] Rejected commands are state-identical across the audited command surface.
+- [x] Rejected commands are state-identical across the audited command surface,
+  including late death-drop terrain failures and the typed alternate commands.
 - [ ] RNG sampling semantics are unbiased, golden-tested, and versioned.
 - [ ] Replays declare gameplay semantics compatibility and reject incompatible
   interpretation.
