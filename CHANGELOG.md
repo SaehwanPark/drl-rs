@@ -3,6 +3,12 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.125]
+
+- Added the next Gate C routine projection: ordinary `ItemSpawnKind` inverse
+  lookup now derives from `ItemSpawnKind::ALL`, while four loose-ammo count
+  branches remain explicit and tested.
+
 ## [0.2.124]
 
 - Added the next Gate C routine projection: core item definition lookup now

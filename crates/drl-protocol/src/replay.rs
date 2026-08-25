@@ -334,79 +334,21 @@ impl ItemSpawnKind {
   }
 
   /// Reconstructs a spawn family from its stable archetype and optional ammo count.
+  ///
+  /// Ordinary families are resolved from [`Self::ALL`]. Loose-ammo families
+  /// retain explicit count-sensitive branches because their payload is not
+  /// represented by the normalized catalog value.
   #[must_use]
-  pub const fn from_archetype(archetype: ItemArchetype, count: Option<u32>) -> Option<Self> {
+  pub fn from_archetype(archetype: ItemArchetype, count: Option<u32>) -> Option<Self> {
     match archetype {
-      ItemArchetype::Pistol => Some(Self::Pistol),
-      ItemArchetype::Shotgun => Some(Self::Shotgun),
-      ItemArchetype::DoubleShotgun => Some(Self::DoubleShotgun),
-      ItemArchetype::CombatShotgun => Some(Self::CombatShotgun),
-      ItemArchetype::Blaster => Some(Self::Blaster),
-      ItemArchetype::LaserRifle => Some(Self::LaserRifle),
-      ItemArchetype::MissileLauncher => Some(Self::MissileLauncher),
-      ItemArchetype::NuclearPlasmaRifle => Some(Self::NuclearPlasmaRifle),
-      ItemArchetype::NuclearBfg9000 => Some(Self::NuclearBfg9000),
-      ItemArchetype::Bfg10k => Some(Self::Bfg10k),
-      ItemArchetype::MegaBuster => Some(Self::MegaBuster),
-      ItemArchetype::GrammatonBeretta => Some(Self::GrammatonBeretta),
-      ItemArchetype::FragShotgun => Some(Self::FragShotgun),
-      ItemArchetype::RevenantsLauncher => Some(Self::RevenantsLauncher),
-      ItemArchetype::Railgun => Some(Self::Railgun),
-      ItemArchetype::AcidSpitter => Some(Self::AcidSpitter),
-      ItemArchetype::CombatPistol => Some(Self::CombatPistol),
-      ItemArchetype::AssaultShotgun => Some(Self::AssaultShotgun),
-      ItemArchetype::PlasmaShotgun => Some(Self::PlasmaShotgun),
-      ItemArchetype::Jackhammer => Some(Self::Jackhammer),
-      ItemArchetype::SuperShotgun => Some(Self::SuperShotgun),
-      ItemArchetype::TristarBlaster => Some(Self::TristarBlaster),
-      ItemArchetype::ButchersCleaver => Some(Self::ButchersCleaver),
-      ItemArchetype::Mjollnir => Some(Self::Mjollnir),
-      ItemArchetype::SubtleKnife => Some(Self::SubtleKnife),
-      ItemArchetype::Trigun => Some(Self::Trigun),
-      ItemArchetype::AntiFreakJackal => Some(Self::AntiFreakJackal),
-      ItemArchetype::Minigun => Some(Self::Minigun),
-      ItemArchetype::Chaingun => Some(Self::Chaingun),
-      ItemArchetype::RocketLauncher => Some(Self::RocketLauncher),
-      ItemArchetype::PlasmaRifle => Some(Self::PlasmaRifle),
-      ItemArchetype::Bfg9000 => Some(Self::Bfg9000),
-      ItemArchetype::Chainsaw => Some(Self::Chainsaw),
-      ItemArchetype::CombatKnife => Some(Self::CombatKnife),
-      ItemArchetype::Ammo9mm => match count {
-        Some(count) => Some(Self::Ammo9mm(count)),
-        None => None,
-      },
-      ItemArchetype::AmmoShells => match count {
-        Some(count) => Some(Self::AmmoShells(count)),
-        None => None,
-      },
-      ItemArchetype::AmmoRockets => match count {
-        Some(count) => Some(Self::AmmoRockets(count)),
-        None => None,
-      },
-      ItemArchetype::AmmoCells => match count {
-        Some(count) => Some(Self::AmmoCells(count)),
-        None => None,
-      },
-      ItemArchetype::AmmoPackRockets => Some(Self::AmmoPackRockets),
-      ItemArchetype::AmmoPackCells => Some(Self::AmmoPackCells),
-      ItemArchetype::AmmoPack9mm => Some(Self::AmmoPack9mm),
-      ItemArchetype::AmmoPackShells => Some(Self::AmmoPackShells),
-      ItemArchetype::SmallMedPack => Some(Self::SmallMedPack),
-      ItemArchetype::LargeMedPack => Some(Self::LargeMedPack),
-      ItemArchetype::GreenArmor => Some(Self::GreenArmor),
-      ItemArchetype::BlueArmor => Some(Self::BlueArmor),
-      ItemArchetype::RedArmor => Some(Self::RedArmor),
-      ItemArchetype::OnyxArmor => Some(Self::OnyxArmor),
-      ItemArchetype::PhaseshiftArmor => Some(Self::PhaseshiftArmor),
-      ItemArchetype::GothicArmor => Some(Self::GothicArmor),
-      ItemArchetype::MaleksArmor => Some(Self::MaleksArmor),
-      ItemArchetype::CyberneticArmor => Some(Self::CyberneticArmor),
-      ItemArchetype::Necroarmor => Some(Self::Necroarmor),
-      ItemArchetype::MedicalPowerarmor => Some(Self::MedicalPowerarmor),
-      ItemArchetype::LavaArmor => Some(Self::LavaArmor),
-      ItemArchetype::ShieldedArmor => Some(Self::ShieldedArmor),
-      ItemArchetype::PhaseDevice => Some(Self::PhaseDevice),
-      ItemArchetype::Unknown => None,
+      ItemArchetype::Ammo9mm => count.map(Self::Ammo9mm),
+      ItemArchetype::AmmoShells => count.map(Self::AmmoShells),
+      ItemArchetype::AmmoRockets => count.map(Self::AmmoRockets),
+      ItemArchetype::AmmoCells => count.map(Self::AmmoCells),
+      archetype => Self::ALL
+        .iter()
+        .copied()
+        .find(|kind| kind.archetype() == archetype),
     }
   }
 }
@@ -615,6 +557,18 @@ mod tests {
     assert_eq!(
       ItemSpawnKind::from_archetype(ItemArchetype::Pistol, Some(20)),
       Some(ItemSpawnKind::Pistol)
+    );
+    for archetype in [
+      ItemArchetype::Ammo9mm,
+      ItemArchetype::AmmoShells,
+      ItemArchetype::AmmoRockets,
+      ItemArchetype::AmmoCells,
+    ] {
+      assert_eq!(ItemSpawnKind::from_archetype(archetype, None), None);
+    }
+    assert_eq!(
+      ItemSpawnKind::from_archetype(ItemArchetype::Unknown, Some(20)),
+      None
     );
   }
 
