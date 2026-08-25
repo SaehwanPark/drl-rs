@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.132`
+Current project version: `0.2.133`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9/Gate D Acid Spitter Reload
+## 2. Active Implementation Slice: M9/Gate D Terrain Hazard Contact
 
 ### 2.1 Objective
 
-Close one callback-heavy legacy behavior gap by pinning Acid Spitter's
-pre-reload callback and making its terrain-dependent ammunition transition an
-explicit Rust state transition. A reload on Acid converts that tile to Water,
-loads one rocket, and spends the core-owned score cost.
+Close one callback-heavy legacy behavior gap by pinning the legacy Acid/Lava
+entered-cell callbacks and making their baseline player-contact damage an
+explicit Rust state transition. Moving onto Acid deals 6 damage; moving onto
+Lava deals 12 damage; both use the existing environment damage/death events.
 
 The legacy Pascal/Lua implementation remains the behavioral reference. Its
 architecture, global callback machinery, and runtime Lua object model remain
@@ -42,22 +42,28 @@ non-goals for reproduction.
 
 - **Steering priority:** Typed legacy behavior (Gate D), with Gate E's
   evidence-bounded claims applied to the source comparison.
-- **Observable outcome:** A successful Acid Spitter reload on an Acid tile
-  emits `AcidSpitterReloaded`, loads one rocket up to the ten-round clip cap,
-  changes the tile to Water, and subtracts 1000 score count.
-- **Replay/RNG impact:** Gameplay semantics advance from `10` to `11` because
-  the terrain contract and typed reload transition change future outcomes. The
-  transition consumes no RNG; rejected commands preserve exact `Game` state.
-- **Content-catalog impact:** The existing authoritative Acid Spitter family
-  gains one typed reload behavior without changing its pinned weapon scalars.
-- **Protocol/domain ownership:** Acid/Water tile kinds and the reload event are
-  stable semantic contracts; score policy and reload implementation remain
-  core-owned.
-- **Evidence boundary:** The pinned Lua source supports the Acid-only reload,
-  one-round load, score cost, and Acid-to-Water transition. Acid hazard damage,
+- **Observable outcome:** A successful player move onto Acid emits
+  `EntityMoved` followed by environment `DamageApplied` for 6 damage; moving
+  onto Lava emits the same sequence for 12 damage. Lethal contact emits
+  `ActorDied` with `DeathCause::Environment` and ends the game.
+- **Replay/RNG impact:** Gameplay semantics advance from `11` to `12` because
+  entered-cell hazards change future outcomes. The transition consumes no RNG;
+  rejected commands preserve exact `Game` state.
+- **Content-catalog impact:** Existing typed Lava/Acid terrain contracts gain
+  one explicit core hazard policy; no new item family or registry is added.
+- **Protocol/domain ownership:** Existing environment damage/death events remain
+  stable semantic contracts; hazard amounts and contact policy remain core-owned.
+- **Damage policy:** This bounded Rust policy uses the existing internal-damage
+  path so the raw 6/12 baseline is not reduced by generic armor protection;
+  typed resistance is deferred rather than inferred from that bypass.
+- **Lethal ordering:** A lethal contact still records the accepted action cost
+  and turn end, but skips periodic armor and pending-nuke follow-up and stops
+  scheduled monster turns after `ActorDied`.
+- **Evidence boundary:** Pinned Lua source supports base Acid 6 and Lava 12
+  contact damage. Difficulty/running modifiers, resistance/avoidance, fluid
   movement cost, runtime/capture, and audiovisual parity remain `NOT_RUN`.
-- **Non-goals:** Generic callback registries, hazard damage/resistance,
-  runtime Lua, and broad content migration.
+- **Non-goals:** Generic callback registries, resistance equations, ambient
+  hazard ticks, monster contact, runtime Lua, and broad content migration.
 
 ### 2.2 Why this slice supersedes content breadth
 
@@ -72,28 +78,29 @@ At the same time, adding a conventional content family now fans out across
 protocol enums, definitions, validation, replay codecs, assets, documentation,
 and other exhaustive registries. Continuing scalar-only breadth before a
 behavior model is selected would increase both migration debt and change
-amplification. The Acid Spitter source audit gives this slice a narrow
-terrain-fed reload transition, a focused catalog-backed reload test, and an
-explicit hazard/runtime evidence boundary.
+amplification. The terrain hazard source audit gives this slice a narrow
+entered-cell damage transition, focused movement/replay tests, and an explicit
+modifier/runtime evidence boundary.
 
 Therefore, additional broad scalar-only family additions are temporarily
 blocked by the exit gates in Section 2.8.
 
-### 2.3 Acid Spitter reload contracts
+### 2.3 Terrain hazard contact contracts
 
-For an equipped Acid Spitter, Reload applies a pure terrain-fed transition:
-full clips and non-Acid tiles are rejected without mutation; on Acid, one
-rocket is loaded, 1000 score count is spent using the Rust saturating signed
-policy, and the tile becomes Water. The accepted reload emits one ordered event.
-Acid hazard damage and fluid movement effects remain a later runtime slice.
+For a player movement accepted onto Acid or Lava, the pure hazard transition
+maps the entered tile to a fixed baseline amount: Acid `6`, Lava `12`, and all
+other tiles no contact damage. The integration emits the existing environment
+damage event after movement; lethal contact emits the existing environment death
+event and ends the game. Waiting on a hazard does not apply an extra contact
+tick.
 
 #### Legacy evidence boundary
 
 Pinned source evidence is recorded in
-[`docs/legacy-behavior/acid-spitter.md`](docs/legacy-behavior/acid-spitter.md).
-The callback's Acid-to-Water conversion, one-point reload, and score cost are
-implemented facts; Acid hazard damage, fluid movement cost, exact runtime
-comparison, and presentation feedback remain `NOT_RUN`.
+[`docs/legacy-behavior/terrain-hazard.md`](docs/legacy-behavior/terrain-hazard.md).
+The base Acid/Lava contact amounts are implemented facts; difficulty/running
+modifiers, resistance/avoidance, fluid movement cost, exact runtime comparison,
+and presentation feedback remain `NOT_RUN`.
 
 ### 2.4 Previous movement and historical correctness contracts
 
@@ -633,7 +640,7 @@ Charch's Null Pointer on-hit behavior. Its typed transition must:
 - [x] record that delayed area damage, exact explosion geometry/order, runtime,
   and audiovisual parity remain `NOT_RUN`.
 
-### 2.7h Current Acid Spitter delivery target
+### 2.7h Previous Acid Spitter delivery target
 
 The bounded implementation target for this revision is the eighth stress case,
 Acid Spitter terrain-fed reload. Its typed transition must:
@@ -650,6 +657,24 @@ Acid Spitter terrain-fed reload. Its typed transition must:
   projection;
 - [x] record that Acid hazard damage/resistance, fluid movement cost, runtime
   comparison, and exact presentation parity remain `NOT_RUN`.
+
+### 2.7i Current terrain hazard delivery target
+
+The bounded implementation target for this revision is the ninth stress case,
+baseline Lava and Acid entered-cell contact damage. Its typed transition must:
+
+- [x] expose pure Acid `6` and Lava `12` baseline damage outcomes while leaving
+  non-hazard tiles unchanged;
+- [x] apply damage only after an accepted player move onto the hazard, reusing
+  environment `DamageApplied` and `ActorDied` contracts without consuming RNG;
+- [x] preserve exact game/replay state on rejected movement and end the game
+  deterministically on lethal contact;
+- [x] cover pure transition behavior, Acid/Lava movement integration, lethal and
+  non-contact edges, custom-tile replay/scenario determinism, and existing
+  render/audio/MCP projections;
+- [x] record that difficulty/running modifiers, resistance/avoidance, fluid
+  movement cost, monster contact, runtime comparison, and exact presentation
+  parity remain `NOT_RUN`.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 

@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.132`
+Current project version: `0.2.133`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.132)
+## 3. Current Progress Summary (`VERSION` 0.2.133)
 
 ### Delivered Foundations
 
@@ -158,6 +158,11 @@ verification item uses explicit status semantics:
   evidence now drives a typed Acid-to-Water terrain transition that loads one
   rocket and spends 1000 score count. Acid hazard damage, runtime, and
   audiovisual parity remain `NOT_RUN`.
+- **M9/Gate D terrain hazard behavior (`0.2.133`)**: Pinned legacy cell
+  callbacks now drive typed baseline player-contact damage of 6 on Acid and 12
+  on Lava after accepted movement, with deterministic environment damage/death
+  events. Resistance, difficulty/running modifiers, fluid movement cost,
+  runtime comparison, and audiovisual parity remain `NOT_RUN`.
 - **Gate D first behavior slice:** Medical Powerarmor now has a typed,
   deterministic periodic-repair transition in `drl-core`, accepted-turn
   integration, exact timer/durability/health edge tests, and a typed repair
