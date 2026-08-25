@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.134`
+Current project version: `0.2.135`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -158,8 +158,10 @@ Presentation Boundary
     exact area damage remains an explicit gap. Legacy
     Acid/Lava entered-cell contact uses the dedicated `environment` classifier
     and applies the bounded raw baseline through environment damage/death
-    events; resistance and damage-type projection remain explicit gaps. Legacy
-    resistance, movement, prepared-slot consumption, map-cell explosions, and
+    events; Acid/Lava/Water movement uses the typed 1250-unit terrain cost;
+    resistance and damage-type projection remain explicit gaps. Legacy
+    resistance, running modifiers, Mud movement, prepared-slot consumption,
+    map-cell explosions, and
     broader item behavior remain explicit gaps, as do exact legacy
     timing/accuracy semantics.
   - Level Generation: `generator` (BFS reachability, room connectivity).
@@ -354,7 +356,7 @@ Presentation Boundary
 - **Energy-Based Scheduler**: Actors accumulate energy based on their `Speed`.
   When an actor reaches the action threshold, it executes one action costing
   the standard 1000 energy units by default; typed terrain movement rules may
-  override that cost (currently Acid/Lava direct movement uses 1250).
+  override that cost (currently Acid/Lava/Water direct movement uses 1250).
 - **Transactional command boundary**: `Game::step` snapshots and restores the
   complete state on any rejection, including turn, world, and RNG. Command
   handlers still use prepare/commit validation where practical; the bounded

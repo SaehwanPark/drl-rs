@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.134`
+Current project version: `0.2.135`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.134)
+## 3. Current Progress Summary (`VERSION` 0.2.135)
 
 ### Delivered Foundations
 
@@ -168,6 +168,10 @@ verification item uses explicit status semantics:
   onto Acid/Lava while ordinary walkable movement remains 1000. Running/NORUN,
   fractional scheduler details, fluid flow, runtime comparison, and
   audiovisual parity remain `NOT_RUN`.
+- **M9/Gate D Water movement-cost behavior (`0.2.135`)**: The pinned legacy
+  `move_cost=1.25` policy now also drives 1250-unit direct player movement onto
+  Water without contact damage; Mud's `1.65` movement cost remains deferred
+  because no Rust Mud tile exists.
 - **Gate D first behavior slice:** Medical Powerarmor now has a typed,
   deterministic periodic-repair transition in `drl-core`, accepted-turn
   integration, exact timer/durability/health edge tests, and a typed repair

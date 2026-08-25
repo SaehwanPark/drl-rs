@@ -3,13 +3,19 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.135]
+
+- Extended the pinned `move_cost=1.25` policy to direct player movement onto
+  Water, retaining deterministic 1250-unit cost and no contact damage; Mud's
+  `1.65` source movement cost remains deferred because no Rust Mud tile exists.
+
 ## [0.2.134]
 
 - Pinned Acid/Lava `move_cost=1.25` evidence and represented it as a
   deterministic `ActionCost::new(1250)` for direct player movement onto those
   tiles; ordinary walkable movement remains 1000.
-- Legacy Water (`1.25`) and Mud (`1.65`) movement-cost parity remains deferred
-  from this Acid/Lava-only slice.
+- Legacy Mud (`1.65`) movement-cost parity remains deferred from this
+  Acid/Lava/Water slice because no Rust Mud tile exists.
 - Fractional legacy scheduler details, running/NORUN restrictions, fluid flow,
   runtime comparison, and audiovisual parity remain `NOT_RUN`.
 
