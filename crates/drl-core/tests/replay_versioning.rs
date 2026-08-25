@@ -3,7 +3,7 @@
 use drl_core::replay::ReplayEngine;
 use drl_protocol::{
   Command, CommandError, Direction, ItemSpawnKind, ItemSpawnSpec, MonsterSpawnSpec, Position,
-  ReplayLog, ReplayMetadata, ReplayVersion, Turn,
+  ProceduralGenerationConfig, ReplayLog, ReplayMetadata, ReplayVersion, Turn,
 };
 
 #[test]
@@ -32,6 +32,44 @@ fn test_replay_version_and_metadata_headers() {
   });
 
   assert_eq!(replay.metadata.engine_name, "DRL-Rust-TestHarness");
+}
+
+#[test]
+fn replay_metadata_compatibility_matrix_is_explicit() {
+  let current = ReplayLog::new(42, 10, 10, Position::new(2, 2));
+  assert!(ReplayEngine::validate(&current).is_ok());
+
+  let mut stale_gameplay = current.clone();
+  stale_gameplay.metadata.gameplay_semantics_version =
+    drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION.saturating_sub(1);
+  let error = ReplayEngine::validate(&stale_gameplay).unwrap_err();
+  assert!(error.contains("unsupported gameplay semantics version"));
+
+  let mut stale_ruleset = current.clone();
+  stale_ruleset.metadata.ruleset_id = "legacy-ruleset".to_string();
+  let error = ReplayEngine::validate(&stale_ruleset).unwrap_err();
+  assert!(error.contains("unsupported replay ruleset"));
+
+  let mut procedural = current
+    .clone()
+    .with_procedural_config(ProceduralGenerationConfig {
+      max_rooms: 5,
+      min_room_size: 4,
+      max_room_size: 8,
+      max_monsters_per_room: 2,
+      max_items_per_room: 2,
+    });
+  procedural.metadata.generator_semantics_version =
+    drl_protocol::CURRENT_GENERATOR_SEMANTICS_VERSION.saturating_sub(1);
+  let error = ReplayEngine::validate(&procedural).unwrap_err();
+  assert!(error.contains("unsupported generator semantics version"));
+
+  let mut fixed_map_with_stale_generator = current;
+  fixed_map_with_stale_generator
+    .metadata
+    .generator_semantics_version =
+    drl_protocol::CURRENT_GENERATOR_SEMANTICS_VERSION.saturating_sub(1);
+  assert!(ReplayEngine::validate(&fixed_map_with_stale_generator).is_ok());
 }
 
 #[test]
