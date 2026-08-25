@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.124`
+Current project version: `0.2.125`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.124)
+## 3. Current Progress Summary (`VERSION` 0.2.125)
 
 ### Delivered Foundations
 
@@ -112,6 +112,10 @@ verification item uses explicit status semantics:
   single `CURRENT_ITEM_DEFINITIONS` catalog for family lookup and coverage;
   the prior 56-arm spawn-kind registration match is removed while balance and
   behavior remain core-owned.
+- **M9/Gate C inverse spawn projection (`0.2.125`)**: Ordinary replay spawn
+  families now resolve from `ItemSpawnKind::ALL`; only loose-ammo count
+  reconstruction remains explicit, preserving missing-count and unknown-family
+  rejection semantics.
 - **Gate D first behavior slice:** Medical Powerarmor now has a typed,
   deterministic periodic-repair transition in `drl-core`, accepted-turn
   integration, exact timer/durability/health edge tests, and a typed repair
