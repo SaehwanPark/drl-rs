@@ -13,6 +13,7 @@ pub mod batch;
 pub mod behavior;
 pub mod combat;
 pub mod content_validation;
+pub mod environment;
 pub mod fov;
 pub mod game;
 pub mod generator;
@@ -51,6 +52,7 @@ pub use behavior::{
 };
 pub use combat::CombatResolver;
 pub use content_validation::{ContentValidationError, validate_current_content};
+pub use environment::{HazardDamage, entered_tile_damage};
 pub use fov::{DEFAULT_VISION_RADIUS, compute_fov, has_line_of_sight, line_points};
 pub use game::{Game, GameState};
 pub use generator::{GeneratedLevel, LevelGenerator, LevelGeneratorConfig, MonsterSpawn, Room};

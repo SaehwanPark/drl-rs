@@ -3,6 +3,16 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.133]
+
+- Pinned legacy Acid/Lava entered-cell callbacks and added a pure baseline
+  contact policy: Acid deals 6 damage and Lava deals 12 on accepted player
+  movement.
+- Reused deterministic environment damage/death events for hazard contact;
+  the current event intentionally exposes source/amount but not Acid/Fire
+  `DamageType`; resistance, difficulty/running modifiers, fluid movement cost,
+  runtime comparison, and audiovisual parity remain `NOT_RUN`.
+
 ## [0.2.132]
 
 - Pinned Acid Spitter's legacy pre-reload callback at the fixed reference

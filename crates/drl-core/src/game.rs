@@ -8,6 +8,7 @@ use drl_protocol::{
 use crate::acid_spitter::{ACID_SPITTER_RELOAD_AMOUNT, AcidSpitterReloadError};
 use crate::behavior::{LavaRechargeOutcome, MedicalRepairOutcome};
 use crate::combat::CombatResolver;
+use crate::environment::entered_tile_damage;
 use crate::fov::DEFAULT_VISION_RADIUS;
 use crate::generator::{LevelGenerator, LevelGeneratorConfig};
 use crate::grammaton::{GRAMMATON_MODE_SCORE_COST, GrammatonTransition};
@@ -297,8 +298,10 @@ impl Game {
       }
     }
 
-    self.tick_player_medical_powerarmor(player_id, &mut events)?;
-    self.tick_player_lava_armor(player_id, &mut events)?;
+    if !self.state.is_game_over {
+      self.tick_player_medical_powerarmor(player_id, &mut events)?;
+      self.tick_player_lava_armor(player_id, &mut events)?;
+    }
 
     // Spend player energy
     if let Some(player) = self.state.world.get_actor_mut(player_id) {
@@ -309,7 +312,9 @@ impl Game {
       });
     }
 
-    self.tick_nuke(player_id, &mut events)?;
+    if !self.state.is_game_over {
+      self.tick_nuke(player_id, &mut events)?;
+    }
 
     // 2. Execute Monster AI turns until player is ready to act again
     self.run_scheduled_monster_turns(player_id, &mut events)?;
@@ -668,6 +673,49 @@ impl Game {
       from,
       to,
     });
+
+    self.apply_player_hazard_contact(player_id, to, events)?;
+    Ok(())
+  }
+
+  /// Applies the bounded entered-cell hazard policy after a successful move.
+  fn apply_player_hazard_contact(
+    &mut self,
+    player_id: drl_protocol::EntityId,
+    position: Position,
+    events: &mut Vec<GameEvent>,
+  ) -> Result<(), CommandError> {
+    let Some(tile) = self.state.world.map().get_tile(position) else {
+      return Err(CommandError::OutOfBounds(position));
+    };
+    let Some(hazard) = entered_tile_damage(tile.to_kind()) else {
+      return Ok(());
+    };
+
+    let (taken, lethal, death_cause) = self.state.world.apply_internal_damage(
+      player_id,
+      hazard.amount,
+      DamageSource::Environment,
+    )?;
+    let remaining_hp = self
+      .state
+      .world
+      .get_actor(player_id)
+      .map_or(0, |actor| actor.hp().current);
+    events.push(GameEvent::DamageApplied {
+      target_id: player_id,
+      amount: taken,
+      remaining_hp,
+      source: DamageSource::Environment,
+    });
+
+    if lethal {
+      events.push(GameEvent::ActorDied {
+        entity_id: player_id,
+        cause: death_cause.unwrap_or(DeathCause::Environment),
+      });
+      self.state.is_game_over = true;
+    }
     Ok(())
   }
 
