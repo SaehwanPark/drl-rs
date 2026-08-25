@@ -195,6 +195,18 @@ impl ItemArchetype {
     Self::ShieldedArmor,
     Self::PhaseDevice,
   ];
+
+  /// Returns whether replay JSON must carry an explicit loose-ammo count.
+  ///
+  /// This routine wire-shape projection belongs to the stable archetype
+  /// catalog so decoders do not maintain a second ammo-family list.
+  #[must_use]
+  pub const fn requires_stack_count(self) -> bool {
+    matches!(
+      self,
+      Self::Ammo9mm | Self::AmmoShells | Self::AmmoRockets | Self::AmmoCells
+    )
+  }
 }
 
 impl fmt::Display for ItemArchetype {
@@ -391,6 +403,17 @@ mod tests {
         Some(archetype)
       );
     }
+  }
+
+  #[test]
+  fn loose_ammo_catalog_shape_is_explicit() {
+    assert!(ItemArchetype::Ammo9mm.requires_stack_count());
+    assert!(ItemArchetype::AmmoShells.requires_stack_count());
+    assert!(ItemArchetype::AmmoRockets.requires_stack_count());
+    assert!(ItemArchetype::AmmoCells.requires_stack_count());
+    assert!(!ItemArchetype::Pistol.requires_stack_count());
+    assert!(!ItemArchetype::AmmoPackCells.requires_stack_count());
+    assert!(!ItemArchetype::SmallMedPack.requires_stack_count());
   }
 
   #[test]

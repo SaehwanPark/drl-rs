@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-25
-Current project version: `0.2.122`
+Current project version: `0.2.123`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.122)
+## 3. Current Progress Summary (`VERSION` 0.2.123)
 
 ### Delivered Foundations
 
@@ -92,6 +92,10 @@ verification item uses explicit status semantics:
   The current dispatch surface now has explicit rejection evidence for every
   reachable command family; future command additions must preserve the same
   prepare/commit boundary.
+- **M9/Gate C routine projection (`0.2.123`)**: The stable protocol
+  `ItemArchetype` catalog now owns loose-ammo count shape, and MCP replay JSON
+  decoding consumes that projection instead of maintaining a second variant
+  list. Gameplay balance and explicit definition mappings remain core-owned.
   The first Gate C slice centralizes stable representative item spawn families
   in protocol's `ItemSpawnKind::ALL`; core structural validation accesses that
   catalog through `CURRENT_ITEM_SPAWN_KINDS`, and definition coverage derives

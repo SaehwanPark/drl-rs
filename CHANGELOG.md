@@ -3,6 +3,12 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.123]
+
+- Added the next Gate C routine projection: the protocol archetype catalog now
+  owns whether replay JSON requires a loose-ammo stack count, and MCP decoding
+  uses that typed projection instead of a duplicate ammo-family match.
+
 ## [0.2.122]
 
 - Closed the current Gate A late-failure gap by preflighting death-drop map
