@@ -701,3 +701,134 @@ fn grammaton_vertical_scenario_preserves_burst_mode_and_replay() {
   assert_eq!(replayed_game, game);
   assert!(ReplayEngine::verify_determinism(&replay).unwrap());
 }
+
+#[test]
+fn jackhammer_vertical_scenario_preserves_single_mode_and_replay() {
+  let ascii = "########\n#@.i...#\n#......#\n########\n";
+  let mut scenario = Scenario::from_ascii(
+    "JackhammerVertical",
+    "Single-mode Jackhammer encounter against a visible target",
+    ascii,
+  )
+  .unwrap();
+  scenario.seed = 3;
+  scenario.player_config = Some(PlayerSpawnConfig {
+    hp: 50,
+    max_hp: 50,
+    speed: 100,
+    initial_items: Vec::new(),
+    equipped_weapon: Some(ItemSpawnKind::Jackhammer),
+    equipped_armor: None,
+    equipped_armor_durability: None,
+  });
+  scenario.monsters[0].name = "Single Target".to_string();
+  scenario.monsters[0].hp = 100;
+  scenario.monsters[0].speed = 1;
+
+  let jackhammer_id = scenario
+    .instantiate()
+    .unwrap()
+    .world()
+    .player()
+    .unwrap()
+    .equipment()
+    .weapon()
+    .unwrap()
+    .id();
+  let target_position = Position::new(3, 1);
+  let mode_command = Command::AltReload {
+    item_id: jackhammer_id,
+    confirmed: true,
+  };
+  let attack_command = Command::AttackRanged(target_position);
+  let commands = [mode_command, attack_command];
+  let (game, events, _metrics, replay) =
+    ScenarioRunner::run_commands(&scenario, &commands).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let target = game
+    .world()
+    .actors()
+    .values()
+    .find(|actor| actor.name() == "Single Target")
+    .unwrap();
+  let target_id = target.id();
+
+  let mode_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::JackhammerFireModeChanged {
+          entity_id,
+          item_id,
+          mode: drl_protocol::WeaponFireMode::Single,
+          score_count_remaining: -1,
+        } if *entity_id == player_id && *item_id == jackhammer_id
+      )
+    })
+    .expect("mode toggle event must select Single");
+  let attack_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::AttackResolved {
+          attacker_id,
+          target_id: resolved_target,
+          outcome: drl_protocol::AttackOutcome::Hit { damage, .. },
+          is_ranged: true,
+        } if *attacker_id == player_id && *resolved_target == target_id && (8..=24).contains(damage)
+      )
+    })
+    .expect("single-mode ranged attack must hit");
+  let damage_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::DamageApplied {
+          target_id: resolved_target,
+          amount,
+          ..
+        } if *resolved_target == target_id && (8..=24).contains(amount)
+      )
+    })
+    .expect("single-mode attack must apply one shell's damage");
+  let knockback_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::ActorKnockedBack {
+          entity_id,
+          from,
+          to,
+        } if *entity_id == target_id
+          && *from == target_position
+          && *to == Position::new(4, 1)
+      )
+    })
+    .expect("Jackhammer hit must preserve one-tile knockback");
+  assert!(mode_index < attack_index);
+  assert!(attack_index < damage_index);
+  assert!(damage_index < knockback_index);
+  assert_eq!(
+    game.world().get_actor(target_id).unwrap().position(),
+    Position::new(4, 1)
+  );
+  assert!(game.world().get_actor(target_id).unwrap().hp().current < 100);
+  assert_eq!(game.world().player().unwrap().score_count(), -1);
+  let weapon = game.world().player().unwrap().equipment().weapon().unwrap();
+  assert_eq!(weapon.id(), jackhammer_id);
+  assert_eq!(
+    weapon.weapon_properties().unwrap().fire_mode,
+    drl_protocol::WeaponFireMode::Single
+  );
+  assert_eq!(weapon.weapon_properties().unwrap().current_clip, 9);
+  assert_eq!(replay.commands, commands);
+
+  let (replayed_game, replay_events) = ReplayEngine::run(&replay).unwrap();
+  assert_eq!(replay_events, events);
+  assert_eq!(replayed_game, game);
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}

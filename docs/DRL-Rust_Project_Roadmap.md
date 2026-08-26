@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-26
-Current project version: `0.2.148`
+Current project version: `0.2.149`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.148)
+## 3. Current Progress Summary (`VERSION` 0.2.149)
 
 ### Delivered Foundations
 
@@ -265,6 +265,14 @@ verification item uses explicit status semantics:
   selection, score cost, three-shot clip consumption, stable identities,
   event/effect ordering, observations, and scene derivation. No gameplay-
   semantics or balance change is introduced; exact accuracy equations,
+  controlled legacy runtime, browser capture, audio, WebGPU, and broad AI
+  parity remain `NOT_RUN`.
+- **M9 vertical Jackhammer encounter (`0.2.149`):** The delivered typed
+  Jackhammer fire-mode transition now has a declarative ASCII encounter, replay
+  determinism, and browser-session presentation-boundary parity covering Single
+  selection, score cost, one-shell clip consumption, knockback, stable
+  identities, event/effect ordering, observations, and scene derivation. No
+  gameplay-semantics or balance change is introduced; exact spread/falloff,
   controlled legacy runtime, browser capture, audio, WebGPU, and broad AI
   parity remain `NOT_RUN`.
 - **Tooling & Replays (M5, M6)**: Versioned replay engine (`V2`), declarative
