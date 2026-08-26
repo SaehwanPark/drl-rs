@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-26
-Current project version: `0.2.163`
+Current project version: `0.2.164`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.163)
+## 3. Current Progress Summary (`VERSION` 0.2.164)
 
 ### Delivered Foundations
 
@@ -387,6 +387,14 @@ verification item uses explicit status semantics:
   gameplay-semantics or balance change is introduced; controlled legacy
   runtime, browser capture, audio, WebGPU, audiovisual, and broader
   weapon/spread and alternate-reload parity remain `NOT_RUN`.
+- **M9 vertical Double Shotgun clip reload (`0.2.164`):** The delivered typed
+  Double Shotgun encounter now has a declarative ASCII scenario, replay
+  determinism, and browser-session presentation-boundary parity covering two
+  seeded shell attacks, blocked knockback, shell consumption, stable
+  identities, observations, literal effects, and scene derivation. No
+  gameplay-semantics or balance change is introduced; controlled legacy
+  runtime, browser capture, audio, WebGPU, audiovisual, and broader
+  weapon/spread parity remain `NOT_RUN`.
 - **Tooling & Replays (M5, M6)**: Versioned replay engine (`V2`), declarative
   ASCII scenario runners, scripted bots, batch sweep runners, and a pure Rust
   zero-dependency MCP server.

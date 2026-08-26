@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.163`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.164`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -210,6 +210,9 @@ replays, and regression testing.
     knockback, shell consumption, and presentation effects have the same
     vertical scenario/replay/browser-boundary coverage; alternate reload
     callbacks and spread parity remain staged;
+    the Double Shotgun clip-reload encounter's two-shot sequence, blocked
+    knockback, shell consumption, and presentation effects have the same
+    vertical scenario/replay/browser-boundary coverage;
     resistance, running modifiers,
     prepared-slot consumption,
     explosion/map effects,
