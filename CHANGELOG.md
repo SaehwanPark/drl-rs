@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.163]
+
+- Added a bounded Assault Shotgun shell-clip depletion and reload encounter
+  spanning declarative scenario execution, deterministic replay, and the
+  browser presentation boundary. The slice compares six seeded shell shots,
+  blocked knockback, shell consumption, action ordering, literal effects, and
+  scene derivation without changing gameplay semantics or balance.
+
 ## [0.2.162]
 
 - Added a bounded standard Shotgun shell-clip depletion and reload encounter
