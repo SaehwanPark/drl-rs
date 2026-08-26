@@ -2792,6 +2792,166 @@ mod tests {
       drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism")
     );
   }
+
+  #[test]
+  fn null_pointer_vertical_browser_boundary_matches_direct_core_presentation() {
+    let player_position = Position::new(1, 1);
+    let target_position = Position::new(2, 1);
+    let mut setup_replay =
+      ReplayLog::new(25, 8, 4, player_position).with_player_config(PlayerSpawnConfig {
+        hp: 50,
+        max_hp: 50,
+        speed: 100,
+        initial_items: Vec::new(),
+        equipped_weapon: Some(ItemSpawnKind::NullPointer),
+        equipped_armor: None,
+        equipped_armor_durability: None,
+      });
+    setup_replay.record_monster(
+      MonsterSpawnSpec::new(target_position, "Boss Target", 20, 100, (3, 8))
+        .with_ranged_combat((2, 5), 7, 70)
+        .with_death_drop(Some(ItemSpawnKind::SmallMedPack))
+        .with_boss(true),
+    );
+
+    let (initial, setup_events) =
+      drl_core::ReplayEngine::run(&setup_replay).expect("vertical replay setup");
+    assert!(setup_events.is_empty());
+    let mut scenario = drl_core::scenario::Scenario::from_ascii(
+      "NullPointerVertical",
+      "Boss target for the typed Null Pointer encounter",
+      "########\n#@i....#\n#......#\n########\n",
+    )
+    .expect("vertical scenario fixture");
+    scenario.seed = 25;
+    scenario.monsters[0].name = "Boss Target".to_string();
+    scenario.monsters[0].is_boss = true;
+    scenario.player_config = Some(PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: Vec::new(),
+      equipped_weapon: Some(ItemSpawnKind::NullPointer),
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    });
+    assert_eq!(
+      scenario.instantiate().expect("scenario initial state"),
+      initial
+    );
+
+    let player_id = initial.world().player_id().expect("player");
+    let target_id = initial
+      .world()
+      .actors()
+      .values()
+      .find(|actor| actor.position() == target_position)
+      .expect("boss target")
+      .id();
+    let item_id = initial
+      .world()
+      .player()
+      .expect("player")
+      .equipment()
+      .weapon()
+      .expect("equipped Null Pointer")
+      .id();
+    assert!(
+      initial
+        .observe_player()
+        .visible_actors
+        .iter()
+        .any(|actor| actor.id == target_id)
+    );
+
+    let mut direct = initial.clone();
+    let mut browser = BrowserSession::from_game(initial);
+    let command = Command::AttackRanged(target_position);
+    let expected_events = direct.step(command).expect("direct ranged hit");
+    let step = browser.submit(command).expect("browser ranged hit");
+    assert_eq!(step.events, expected_events);
+    assert_eq!(step.after, direct.observe_player());
+    assert_eq!(
+      step.effects,
+      drl_render::effect_timeline_for_observations(&step.before, &step.after, &expected_events,)
+    );
+    assert_eq!(
+      step.effects,
+      vec![
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::RangedAttack,
+          start_tick: 0,
+          duration_ticks: 2,
+        },
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::MeleeAttack,
+          start_tick: 2,
+          duration_ticks: 2,
+        },
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::Hit,
+          start_tick: 4,
+          duration_ticks: 1,
+        },
+      ]
+    );
+    assert_eq!(browser.scene(), RenderScene::from_observation(&step.after));
+    assert_eq!(
+      direct.world().get_actor(target_id).unwrap().score_count(),
+      1000
+    );
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .id(),
+      item_id
+    );
+    assert_eq!(direct.world().player().unwrap().id(), player_id);
+
+    let attack_index = expected_events
+      .iter()
+      .position(|event| {
+        matches!(
+          event,
+          drl_protocol::GameEvent::AttackResolved {
+            is_ranged: true,
+            ..
+          }
+        )
+      })
+      .expect("ranged attack event");
+    let hit_index = expected_events
+      .iter()
+      .position(|event| matches!(event, drl_protocol::GameEvent::NullPointerHit { .. }))
+      .expect("Null Pointer hit event");
+    let explosion_index = expected_events
+      .iter()
+      .position(|event| {
+        matches!(
+          event,
+          drl_protocol::GameEvent::NullPointerExplosionScheduled { .. }
+        )
+      })
+      .expect("deferred explosion event");
+    assert!(attack_index < hit_index);
+    assert!(hit_index < explosion_index);
+
+    let mut command_replay = setup_replay;
+    command_replay.record_command(command);
+    let (replayed, replay_events) =
+      drl_core::ReplayEngine::run(&command_replay).expect("vertical command replay");
+    assert_eq!(replay_events, expected_events);
+    assert_eq!(replayed, direct);
+    assert_eq!(replayed.observe_player(), direct.observe_player());
+    assert!(
+      drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism")
+    );
+  }
 }
 
 #[cfg(all(test, target_arch = "wasm32"))]
