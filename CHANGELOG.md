@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.158]
+
+- Added a bounded Pistol clip depletion and reload encounter spanning
+  declarative scenario execution, deterministic replay, and the browser
+  presentation boundary. The slice compares ten seeded ranged attacks, hit and
+  damage totals, ammunition consumption, reload state, action ordering, literal
+  effects, and scene derivation without changing gameplay semantics or
+  balance.
+
 ## [0.2.157]
 
 - Added a bounded Demon melee-pressure and Small MedPack recovery encounter

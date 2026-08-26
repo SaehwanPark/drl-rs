@@ -1695,3 +1695,138 @@ fn demon_medpack_recovery_vertical_scenario_preserves_ai_and_replay() {
   assert_eq!(replay_events, events);
   assert!(ReplayEngine::verify_determinism(&replay).unwrap());
 }
+
+#[test]
+fn pistol_reload_vertical_scenario_preserves_ammo_and_replay() {
+  let mut scenario = Scenario::from_ascii(
+    "PistolReloadVertical",
+    "Pistol clip depletion and deterministic reload",
+    "########\n#@.h...#\n#......#\n########\n",
+  )
+  .unwrap();
+  scenario.seed = 0;
+  scenario.monsters[0].name = "Static Target".to_string();
+  scenario.monsters[0].hp = 500;
+  scenario.monsters[0].speed = 1;
+  scenario.player_config = Some(PlayerSpawnConfig {
+    hp: 50,
+    max_hp: 50,
+    speed: 100,
+    initial_items: vec![ItemSpawnKind::Ammo9mm(20)],
+    equipped_weapon: Some(ItemSpawnKind::Pistol),
+    equipped_armor: None,
+    equipped_armor_durability: None,
+  });
+
+  let initial = scenario.instantiate().unwrap();
+  let player_id = initial.world().player_id().unwrap();
+  let target_id = initial
+    .world()
+    .actors()
+    .values()
+    .find(|actor| !actor.is_player())
+    .unwrap()
+    .id();
+  let ammo_id = ItemId::new(4);
+  let pistol_id = ItemId::new(5);
+  assert_eq!(
+    initial
+      .world()
+      .player()
+      .unwrap()
+      .inventory()
+      .get_item(ammo_id)
+      .unwrap()
+      .count(),
+    20
+  );
+  assert_eq!(
+    initial
+      .world()
+      .player()
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .current_clip,
+    10
+  );
+  assert_eq!(
+    initial
+      .world()
+      .player()
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .id(),
+    pistol_id
+  );
+  let target_position = Position::new(3, 1);
+  let mut commands = vec![Command::AttackRanged(target_position); 10];
+  commands.push(Command::Reload);
+
+  let (game, events, metrics, replay) = ScenarioRunner::run_commands(&scenario, &commands).unwrap();
+  assert_eq!(metrics.outcome, RunOutcome::InProgress);
+  assert_eq!(metrics.turns_survived, 10);
+  assert_eq!(metrics.shots_fired, 10);
+  assert_eq!(metrics.shots_hit, 7);
+  assert_eq!(metrics.damage_dealt, 42);
+  assert_eq!(game.world().get_actor(target_id).unwrap().hp().current, 458);
+  assert_eq!(
+    game
+      .world()
+      .player()
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .current_clip,
+    10
+  );
+  assert_eq!(
+    game
+      .world()
+      .player()
+      .unwrap()
+      .inventory()
+      .get_item(ammo_id)
+      .unwrap()
+      .count(),
+    10
+  );
+
+  let reload_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::WeaponReloaded {
+          entity_id,
+          ammo_loaded: 10,
+          current_clip: 10,
+          max_clip: 10,
+        } if *entity_id == player_id
+      )
+    })
+    .unwrap();
+  assert!(reload_index > 0);
+  assert!(matches!(
+    events.get(reload_index + 1),
+    Some(GameEvent::ActionCostPaid { entity_id, cost: ActionCost(1000) })
+      if *entity_id == player_id
+  ));
+  assert!(matches!(
+    events.get(reload_index + 2),
+    Some(GameEvent::TurnEnded { .. })
+  ));
+  assert_eq!(replay.commands, commands);
+  let (replayed_game, replay_events) = ReplayEngine::run(&replay).unwrap();
+  assert_eq!(replayed_game, game);
+  assert_eq!(replay_events, events);
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}
