@@ -1405,3 +1405,81 @@ fn shotgun_knockback_vertical_scenario_preserves_response_and_replay() {
   assert_eq!(replay_events, events);
   assert!(ReplayEngine::verify_determinism(&replay).unwrap());
 }
+
+#[test]
+fn green_armor_protection_vertical_scenario_preserves_mitigation_and_replay() {
+  let mut scenario = Scenario::from_ascii(
+    "GreenArmorProtectionVertical",
+    "Green Armor mitigation against a Former Sergeant profile",
+    "########\n#@.s...#\n#......#\n########\n",
+  )
+  .unwrap();
+  scenario.seed = 4;
+  scenario.monsters[0].name = "Armor Target".to_string();
+  scenario.player_config = Some(PlayerSpawnConfig {
+    hp: 50,
+    max_hp: 50,
+    speed: 100,
+    initial_items: Vec::new(),
+    equipped_weapon: Some(ItemSpawnKind::Pistol),
+    equipped_armor: Some(ItemSpawnKind::GreenArmor),
+    equipped_armor_durability: None,
+  });
+
+  let initial = scenario.instantiate().unwrap();
+  let player_id = initial.world().player_id().unwrap();
+  let target_id = initial
+    .world()
+    .actors()
+    .values()
+    .find(|actor| !actor.is_player())
+    .unwrap()
+    .id();
+  assert_eq!(initial.world().player().unwrap().armor_protection(), 5);
+  let commands = vec![Command::Wait];
+
+  let (game, events, metrics, replay) = ScenarioRunner::run_commands(&scenario, &commands).unwrap();
+  assert_eq!(metrics.outcome, RunOutcome::InProgress);
+  assert_eq!(game.world().player().unwrap().hp().current, 49);
+  assert_eq!(
+    game.world().get_actor(target_id).unwrap().position(),
+    Position::new(3, 1)
+  );
+
+  let response_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::AttackResolved {
+          attacker_id,
+          target_id: event_target,
+          outcome: AttackOutcome::Hit { damage: 3, is_lethal: false },
+          is_ranged: true,
+        } if *attacker_id == target_id && *event_target == player_id
+      )
+    })
+    .expect("Former Sergeant-profile response event");
+  let damage_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::DamageApplied {
+          target_id: event_target,
+          amount: 1,
+          remaining_hp: 49,
+          source: DamageSource::Actor(source_id),
+          ..
+        } if *event_target == player_id && *source_id == target_id
+      )
+    })
+    .expect("Green Armor mitigated damage event");
+  assert!(response_index < damage_index);
+  assert_eq!(replay.commands, commands);
+
+  let (replayed_game, replay_events) = ReplayEngine::run(&replay).unwrap();
+  assert_eq!(replayed_game, game);
+  assert_eq!(replay_events, events);
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}

@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-26
-Current project version: `0.2.154`
+Current project version: `0.2.155`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -233,8 +233,9 @@ Presentation Boundary
     introducing a browser-side simulation model. The Trigun alternate-reload
     Acid Spitter terrain-reload, Null Pointer target-hit, Grammaton burst mode,
     Jackhammer single-mode, Lava Armor recharge, Medical Powerarmor repair,
-    Former Human-profile progression, Phase Device escape, and Shotgun
-    knockback encounters are covered by this same cross-boundary comparison.
+    Former Human-profile progression, Phase Device escape, Shotgun knockback,
+    and Green Armor protection encounters are covered by this same
+    cross-boundary comparison.
   - Accessible semantic minimap text grid fed by the fair `MinimapState`
     projection; it is bounded and never queries hidden world state.
   - WebGPU pipeline: texture cache, linear `Rgba8Unorm` storage, nearest base
