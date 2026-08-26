@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.151]
+
+- Added a bounded vertical Medical Powerarmor encounter check spanning
+  declarative scenario execution, deterministic replay, and the browser
+  presentation boundary. The slice compares thirty accepted waits, timer
+  progression, one-point healing, durability spend, event ordering,
+  observations, and scene derivation without changing gameplay semantics or
+  balance.
+
 ## [0.2.150]
 
 - Added a bounded vertical Lava Armor encounter check spanning declarative

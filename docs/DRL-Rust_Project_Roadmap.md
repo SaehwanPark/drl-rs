@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-26
-Current project version: `0.2.150`
+Current project version: `0.2.151`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.150)
+## 3. Current Progress Summary (`VERSION` 0.2.151)
 
 ### Delivered Foundations
 
@@ -281,6 +281,14 @@ verification item uses explicit status semantics:
   five accepted waits, timer progression, the three-point durability clamp,
   stable identity, event ordering, observations, and scene derivation. No
   gameplay-semantics or balance change is introduced; Lava hazard/resistance,
+  controlled legacy runtime, browser capture, audio, WebGPU, audiovisual, and
+  broad armor/content parity remain `NOT_RUN`.
+- **M9 vertical Medical Powerarmor encounter (`0.2.151`):** The delivered
+  typed Medical Powerarmor periodic repair transition now has a declarative
+  ASCII encounter, replay determinism, and browser-session presentation-
+  boundary parity covering thirty accepted waits, timer progression, one-point
+  healing, durability spend, stable identity, event ordering, observations, and
+  scene derivation. No gameplay-semantics or balance change is introduced;
   controlled legacy runtime, browser capture, audio, WebGPU, audiovisual, and
   broad armor/content parity remain `NOT_RUN`.
 - **Tooling & Replays (M5, M6)**: Versioned replay engine (`V2`), declarative
