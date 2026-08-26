@@ -4,7 +4,7 @@ use drl_core::grid::Tile;
 use drl_core::replay::ReplayEngine;
 use drl_core::scenario::{Scenario, ScenarioRunner};
 use drl_protocol::{
-  AttackOutcome, Command, DamageSource, Direction, GameEvent, ItemId, ItemSpawnKind,
+  ActionCost, AttackOutcome, Command, DamageSource, Direction, GameEvent, ItemId, ItemSpawnKind,
   PlayerSpawnConfig, Position, RunOutcome, ScenarioFixture, TileKind,
 };
 
@@ -1476,6 +1476,97 @@ fn green_armor_protection_vertical_scenario_preserves_mitigation_and_replay() {
     })
     .expect("Green Armor mitigated damage event");
   assert!(response_index < damage_index);
+  assert_eq!(replay.commands, commands);
+
+  let (replayed_game, replay_events) = ReplayEngine::run(&replay).unwrap();
+  assert_eq!(replayed_game, game);
+  assert_eq!(replay_events, events);
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}
+
+#[test]
+fn small_medpack_recovery_vertical_scenario_preserves_cap_and_replay() {
+  let mut scenario = Scenario::from_ascii(
+    "SmallMedPackRecoveryVertical",
+    "Small MedPack recovery at the health cap",
+    "########\n#@.....#\n#......#\n########\n",
+  )
+  .unwrap();
+  scenario.seed = 2;
+  scenario.player_config = Some(PlayerSpawnConfig {
+    hp: 45,
+    max_hp: 50,
+    speed: 100,
+    initial_items: vec![ItemSpawnKind::SmallMedPack],
+    equipped_weapon: None,
+    equipped_armor: None,
+    equipped_armor_durability: None,
+  });
+
+  let initial = scenario.instantiate().unwrap();
+  let player_id = initial.world().player_id().unwrap();
+  let medpack_id = *initial
+    .world()
+    .player()
+    .unwrap()
+    .inventory()
+    .items()
+    .keys()
+    .next()
+    .unwrap();
+  assert_eq!(medpack_id, ItemId::new(4));
+  assert_eq!(
+    initial
+      .world()
+      .player()
+      .unwrap()
+      .inventory()
+      .get_item(medpack_id)
+      .unwrap()
+      .name(),
+    "Small MedPack"
+  );
+  let commands = vec![Command::Use(medpack_id)];
+
+  let (game, events, metrics, replay) = ScenarioRunner::run_commands(&scenario, &commands).unwrap();
+  assert_eq!(metrics.outcome, RunOutcome::InProgress);
+  assert_eq!(metrics.items_used, 1);
+  assert_eq!(game.world().player().unwrap().hp().current, 50);
+  assert!(game.world().player().unwrap().inventory().is_empty());
+
+  let turn_started = events
+    .iter()
+    .position(|event| matches!(event, GameEvent::TurnStarted { .. }))
+    .unwrap();
+  let item_used = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::ItemUsed { entity_id, item_id, item_name }
+          if *entity_id == player_id
+            && *item_id == medpack_id
+            && item_name == "Small MedPack"
+      )
+    })
+    .unwrap();
+  let action_cost = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::ActionCostPaid { entity_id, cost }
+          if *entity_id == player_id && *cost == ActionCost(1000)
+      )
+    })
+    .unwrap();
+  let turn_ended = events
+    .iter()
+    .position(|event| matches!(event, GameEvent::TurnEnded { .. }))
+    .unwrap();
+  assert!(turn_started < item_used);
+  assert!(item_used < action_cost);
+  assert!(action_cost < turn_ended);
   assert_eq!(replay.commands, commands);
 
   let (replayed_game, replay_events) = ReplayEngine::run(&replay).unwrap();

@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.156]
+
+- Added a bounded Small MedPack recovery encounter spanning declarative
+  scenario execution, deterministic replay, and the browser presentation
+  boundary. The slice compares capped health recovery from `45/50` to `50`,
+  item consumption, action-cost ordering, observed inventory/health, literal
+  use effects, and scene derivation without changing gameplay semantics or
+  balance.
+
 ## [0.2.155]
 
 - Added a bounded Green Armor protection encounter spanning declarative

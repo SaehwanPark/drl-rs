@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-26
-Current project version: `0.2.155`
+Current project version: `0.2.156`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.155)
+## 3. Current Progress Summary (`VERSION` 0.2.156)
 
 ### Delivered Foundations
 
@@ -324,6 +324,14 @@ verification item uses explicit status semantics:
   change is introduced; controlled legacy runtime, browser capture, audio,
   WebGPU, audiovisual, durability/resistance, and broader armor/monster parity
   remain `NOT_RUN`.
+- **M9 vertical Small MedPack recovery (`0.2.156`):** The delivered typed
+  Small MedPack encounter now has a declarative ASCII scenario, replay
+  determinism, and browser-session presentation-boundary parity covering
+  capped healing, item consumption, action-cost ordering, stable identity,
+  observations, literal use effects, and scene derivation. No
+  gameplay-semantics or balance change is introduced; controlled legacy
+  runtime, browser capture, audio, WebGPU, audiovisual, and broader consumable
+  parity remain `NOT_RUN`.
 - **Tooling & Replays (M5, M6)**: Versioned replay engine (`V2`), declarative
   ASCII scenario runners, scripted bots, batch sweep runners, and a pure Rust
   zero-dependency MCP server.
