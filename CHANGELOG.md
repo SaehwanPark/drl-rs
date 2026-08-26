@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.166]
+
+- Added a bounded Combat Shotgun shell-clip depletion/reload encounter with
+  deterministic scenario/replay coverage and BrowserSession/direct-core parity.
+  The slice pins five seeded shots, blocked knockback, shell consumption, and
+  the standard reload ordering without changing gameplay semantics.
+
 ## [0.2.165]
 
 - Corrected normal Assault Shotgun reload to load one shell, matching the
