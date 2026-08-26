@@ -997,11 +997,19 @@ impl Game {
       if !props.is_ranged {
         return Err(CommandError::NoEquippedWeapon);
       }
-      let needed = props.clip_capacity.saturating_sub(props.current_clip);
-      if needed == 0 {
+      let clip_deficit = props.clip_capacity.saturating_sub(props.current_clip);
+      if clip_deficit == 0 {
         return Err(CommandError::ClipAlreadyFull);
       }
       let ammo_type = props.ammo_type.ok_or(CommandError::NoMatchingAmmo)?;
+      // The legacy Assault Shotgun reload callback is single-shell. Keep this
+      // policy explicit at the typed transition boundary instead of adding a
+      // callback-shaped field to every routine weapon definition.
+      let needed = if weapon.archetype() == drl_protocol::ItemArchetype::AssaultShotgun {
+        1
+      } else {
+        clip_deficit
+      };
       (ammo_type, needed, props.reload_cost)
     };
 

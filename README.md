@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.164`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.165`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -165,8 +165,7 @@ replays, and regression testing.
     Null Pointer's target-dependent boss hit and deferred explosion scheduling
     have the same vertical scenario/replay/browser-boundary coverage;
     Grammaton's Burst mode cycle and three-shot ranged encounter have the same
-    vertical scenario/replay/browser-boundary coverage; alternate reload
-    callbacks and spread parity remain staged;
+    vertical scenario/replay/browser-boundary coverage;
     Jackhammer's Single mode toggle, one-shell shot, and knockback encounter
     have the same vertical scenario/replay/browser-boundary coverage;
     Lava Armor's five-wait Lava recharge and durability clamp encounter have
@@ -208,7 +207,8 @@ replays, and regression testing.
     the same vertical scenario/replay/browser-boundary coverage;
     the Assault Shotgun shell-reload encounter's six-shot sequence, blocked
     knockback, shell consumption, and presentation effects have the same
-    vertical scenario/replay/browser-boundary coverage; alternate reload
+    vertical scenario/replay/browser-boundary coverage; its normal reload now
+    loads one shell under gameplay semantics `17`, while alternate reload
     callbacks and spread parity remain staged;
     the Double Shotgun clip-reload encounter's two-shot sequence, blocked
     knockback, shell consumption, and presentation effects have the same
