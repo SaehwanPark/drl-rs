@@ -1,7 +1,7 @@
 # Specification
 
-Last reviewed: 2026-08-25
-Current project version: `0.2.144`
+Last reviewed: 2026-08-26
+Current project version: `0.2.145`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9/Vertical Fidelity — Subtle Knife Encounter
+## 2. Active Implementation Slice: M9/Vertical Fidelity — Trigun Encounter
 
 ### 2.1 Objective
 
-Exercise the already-delivered Subtle Knife transition as one bounded vertical
-encounter. The same stable scenario/replay command must be observable through
-core events and the browser presentation boundary without changing gameplay
-semantics or balance.
+Exercise the already-delivered Trigun alternate-reload transition as one
+bounded vertical encounter. The same stable scenario/replay command must be
+observable through core events and the browser presentation boundary without
+changing gameplay semantics or balance.
 
 The legacy Pascal/Lua implementation remains the behavioral reference. Its
 architecture, global callback machinery, and runtime Lua object model remain
@@ -43,8 +43,8 @@ non-goals for reproduction.
 - **Steering priority:** Vertical canonical fidelity after the Gate C/D exit
   gates.
 - **Observable outcome:** A declarative encounter, replay execution, and
-  browser session agree on Subtle Knife target selection, event ordering,
-  player observation, and pure presentation effects.
+  browser session agree on Trigun confirmation/costs, one-tick nuke resolution,
+  terminal event ordering, player observation, and pure presentation effects.
 - **Gameplay/replay impact:** No accepted transition, replay schema, RNG
   sampling rule, or gameplay-semantics version changes.
 - **Protocol/domain ownership:** `drl-protocol` owns stable item identity and
@@ -53,13 +53,14 @@ non-goals for reproduction.
 - **Evidence boundary:** Rust scenario/replay/core/browser-boundary tests are
   verified. Controlled legacy runtime, browser capture, audio, WebGPU, and
   audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** New Subtle Knife balance, broad content migration, new
-  protocol fields, AI policy changes, armor/resistance parity, and runtime Lua.
+- **Non-goals:** New Trigun balance, nuke geometry/map effects, broad content
+  migration, new protocol fields, AI policy changes, armor/resistance parity,
+  and runtime Lua.
 
 ### 2.2 Why this slice is bounded
 
 The existing Gate C and Gate D work already centralizes stable item identity and
-delivers the typed Subtle Knife transition. This slice proves that those pieces
+delivers the typed Trigun transition. This slice proves that those pieces
 survive the scenario/replay and browser boundaries without introducing a second
 simulation model or a browser-specific wire format.
 
@@ -534,7 +535,7 @@ Subtle Knife alternate invoke. Its typed transition must:
 - [x] cover pure transition, visibility boundaries, accepted integration,
   rejection rollback, replay determinism, and command/protocol persistence.
 
-### 2.7c Current Trigun delivery target
+### 2.7c Previous Trigun delivery target
 
 The bounded implementation target for this revision is the third stress case,
 Trigun alternate reload. Its typed transition must:
@@ -781,7 +782,7 @@ for routine stable item identity projections. Its transition must:
 - [x] record legacy runtime, behavior, browser, and audiovisual comparisons as
   `NOT_RUN`.
 
-### 2.7r Current vertical Subtle Knife encounter delivery target
+### 2.7r Previous vertical Subtle Knife encounter delivery target
 
 The bounded implementation target for this revision is evidence that the
 delivered Subtle Knife behavior remains coherent across the public Rust
@@ -798,6 +799,27 @@ boundaries. Its vertical slice must:
 - [x] keep accepted gameplay semantics unchanged while recording controlled
   legacy runtime, browser capture, audio, WebGPU, armor/resistance, and broad
   monster/AI parity as `NOT_RUN`.
+
+### 2.7s Current vertical Trigun encounter delivery target
+
+The bounded implementation target for this revision is a canonical Trigun
+alternate-reload encounter across the declarative scenario, replay, and
+browser presentation boundaries. Its vertical slice must:
+
+- [x] construct a deterministic ASCII encounter with a confirmed Trigun,
+  visible and occluded actors, and explicit player configuration;
+- [x] run the same `Command::AltReload` through `ScenarioRunner`, preserving
+  confirmation, HP/max-HP/score costs, one-tick nuke resolution, terminal
+  ordering, and stable item identity;
+- [x] verify replay determinism and retain the typed alternate-reload command
+  payload without introducing a browser-specific replay format;
+- [x] compare `BrowserSession::submit` with direct `Game::step` for events,
+  player observations, pure effect timelines, terminal state, and scene
+  derivation;
+- [x] keep gameplay semantics unchanged while recording explosion geometry,
+  animation timing, confirmation UI, controlled legacy runtime, browser
+  capture, audio, WebGPU, armor/resistance, and broader monster/AI parity as
+  `NOT_RUN`.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 

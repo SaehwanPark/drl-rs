@@ -2562,6 +2562,107 @@ mod tests {
       drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism")
     );
   }
+
+  #[test]
+  fn trigun_vertical_browser_boundary_matches_direct_core_presentation() {
+    let mut setup_replay =
+      ReplayLog::new(42, 12, 4, Position::new(1, 1)).with_player_config(PlayerSpawnConfig {
+        hp: 20,
+        max_hp: 50,
+        speed: 100,
+        initial_items: Vec::new(),
+        equipped_weapon: Some(ItemSpawnKind::Trigun),
+        equipped_armor: None,
+        equipped_armor_durability: None,
+      });
+    setup_replay.record_tile(Position::new(8, 1), TileKind::Wall);
+    setup_replay.record_monster(
+      MonsterSpawnSpec::new(Position::new(4, 1), "Imp", 20, 100, (3, 8))
+        .with_ranged_combat((2, 5), 7, 70)
+        .with_death_drop(Some(ItemSpawnKind::SmallMedPack)),
+    );
+    setup_replay.record_monster(
+      MonsterSpawnSpec::new(Position::new(9, 1), "Imp", 20, 100, (3, 8))
+        .with_ranged_combat((2, 5), 7, 70)
+        .with_death_drop(Some(ItemSpawnKind::SmallMedPack)),
+    );
+
+    let (initial, setup_events) =
+      drl_core::ReplayEngine::run(&setup_replay).expect("vertical replay setup");
+    assert!(setup_events.is_empty());
+    let initial_observation = initial.observe_player();
+    let visible_id = initial
+      .world()
+      .actors()
+      .values()
+      .find(|actor| actor.position() == Position::new(4, 1))
+      .expect("visible actor")
+      .id();
+    let hidden_id = initial
+      .world()
+      .actors()
+      .values()
+      .find(|actor| actor.position() == Position::new(9, 1))
+      .expect("occluded actor")
+      .id();
+    let trigun_id = initial
+      .world()
+      .player()
+      .expect("player")
+      .equipment()
+      .weapon()
+      .expect("equipped Trigun")
+      .id();
+    assert!(
+      initial_observation
+        .visible_actors
+        .iter()
+        .any(|actor| actor.id == visible_id)
+    );
+    assert!(
+      !initial_observation
+        .visible_actors
+        .iter()
+        .any(|actor| actor.id == hidden_id)
+    );
+
+    let mut direct = initial.clone();
+    let mut browser = BrowserSession::from_game(initial);
+    let command = Command::AltReload {
+      item_id: trigun_id,
+      confirmed: true,
+    };
+
+    let expected_events = direct.step(command).expect("direct alternate reload");
+    let step = browser.submit(command).expect("browser alternate reload");
+    assert_eq!(step.events, expected_events);
+    assert_eq!(step.after, direct.observe_player());
+    assert_eq!(
+      step.effects,
+      drl_render::effect_timeline_for_observations(&step.before, &step.after, &expected_events,)
+    );
+    assert_eq!(browser.scene(), RenderScene::from_observation(&step.after));
+    assert!(direct.is_game_over());
+    assert!(browser.is_game_over());
+    assert_eq!(
+      direct.world().get_actor(visible_id).unwrap().hp().current,
+      20
+    );
+    assert_eq!(
+      direct.world().get_actor(hidden_id).unwrap().hp().current,
+      20
+    );
+
+    let mut command_replay = setup_replay;
+    command_replay.record_command(command);
+    let (replayed, replay_events) =
+      drl_core::ReplayEngine::run(&command_replay).expect("vertical command replay");
+    assert_eq!(replay_events, expected_events);
+    assert_eq!(replayed.observe_player(), direct.observe_player());
+    assert!(
+      drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism")
+    );
+  }
 }
 
 #[cfg(all(test, target_arch = "wasm32"))]
