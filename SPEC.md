@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-26
-Current project version: `0.2.157`
+Current project version: `0.2.158`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9/Vertical Fidelity — Demon MedPack Recovery
+## 2. Active Implementation Slice: M9/Vertical Fidelity — Pistol Reload
 
 ### 2.1 Objective
 
-Exercise the existing typed Demon melee AI and Small MedPack consumable
-transitions through a fixed recovery encounter. The same stable
-scenario/replay command sequence must be observable through core events and the
-browser presentation boundary without changing gameplay semantics or balance.
+Exercise the existing typed Pistol ranged-combat and reload transitions
+through a fixed ammunition encounter. The same stable scenario/replay command
+sequence must be observable through core events and the browser presentation
+boundary without changing gameplay semantics or balance.
 
 The legacy Pascal/Lua implementation remains the behavioral reference. Its
 architecture, global callback machinery, and runtime Lua object model remain
@@ -43,31 +43,29 @@ non-goals for reproduction.
 - **Steering priority:** Vertical canonical fidelity after the Gate C/D exit
   gates.
 - **Observable outcome:** A declarative encounter, replay execution, and
-  browser session agree on the exact arena, configured Demon identity, seeded
-  melee responses around Small MedPack use, health transition, item
-  consumption, event ordering, player observation, and pure presentation
-  effects.
+  browser session agree on the exact arena, configured Pistol identity,
+  seeded ten-shot ranged sequence, ammunition consumption, reload transition,
+  event ordering, player observation, and pure presentation effects.
 - **Gameplay/replay impact:** No accepted transition, replay schema, RNG
   sampling rule, or gameplay-semantics version changes.
 - **Protocol/domain ownership:** `drl-protocol` owns stable item/monster
-  identity and commands; core owns melee AI, consumable healing, inventory
-  mutation, scheduling, and event order; render/web own derived observations
-  and effects.
+  identity and commands; core owns ranged combat, ammunition, reload,
+  scheduling, and event order; render/web own derived observations and effects.
 - **Evidence boundary:** Rust scenario/replay/core/browser-boundary tests are
   verified. Controlled legacy runtime, browser capture, audio, WebGPU, and
   audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** New healing or monster balance equations, broad content
+- **Non-goals:** New weapon or monster balance equations, broad content
   migration, new protocol fields, AI policy changes, audiovisual parity,
-  runtime Lua, and broader monster or consumable variants beyond the pinned
-  Demon/Small MedPack recovery policy.
+  runtime Lua, and alternate weapon/ammunition variants beyond the pinned
+  Pistol reload policy.
 
 ### 2.2 Why this slice is bounded
 
 The existing Gate C and Gate D work already centralizes stable item/monster
-identity and delivers typed melee AI, inventory, consumable healing,
-scheduling, and presentation behavior. This slice proves that those pieces
-survive one canonical scenario/replay and browser boundary without introducing
-a second simulation model or a browser-specific wire format.
+identity and delivers typed ranged combat, ammunition, reload, scheduling, and
+presentation behavior. This slice proves that those pieces survive one
+canonical scenario/replay and browser boundary without introducing a second
+simulation model or a browser-specific wire format.
 
 Behavioral and presentation mappings remain explicit by design. The encounter
 consumes those typed boundaries while preserving compiler exhaustiveness and
@@ -1046,7 +1044,7 @@ presentation boundaries. Its vertical slice must:
   runtime, browser capture, audio, WebGPU, audiovisual, and broader
   consumable parity as `NOT_RUN`.
 
-### 2.7ae Current vertical Demon MedPack recovery delivery target
+### 2.7ae Previous vertical Demon MedPack recovery delivery target
 
 The bounded implementation target for this revision is a Demon melee-pressure
 and Small MedPack recovery encounter across the declarative scenario, replay,
@@ -1065,6 +1063,26 @@ and browser presentation boundaries. Its vertical slice must:
 - [x] keep gameplay semantics unchanged while recording controlled legacy
   runtime, browser capture, audio, WebGPU, audiovisual, and broader
   monster/consumable parity as `NOT_RUN`.
+
+### 2.7af Current vertical Pistol reload delivery target
+
+The bounded implementation target for this revision is a Pistol clip depletion
+and reload encounter across the declarative scenario, replay, and browser
+presentation boundaries. Its vertical slice must:
+
+- [x] construct an exact deterministic 8x4 ASCII arena with a configured
+  Pistol, twenty reserve 9mm rounds, and a static Former Human-profile target;
+- [x] run ten seeded ranged attacks then `Reload` through `ScenarioRunner`,
+  preserving shot/hit totals, ammunition consumption, reload state, stable
+  identities, and event order;
+- [x] verify replay determinism and compare generated replay events/final game
+  state with the direct `ScenarioRunner` result;
+- [x] compare `BrowserSession::submit` with direct `Game::step` for every
+  command's events, observations, literal effects, scene derivation, and
+  retained replay commands;
+- [x] keep gameplay semantics unchanged while recording controlled legacy
+  runtime, browser capture, audio, WebGPU, audiovisual, and broader
+  weapon/ammunition parity as `NOT_RUN`.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
@@ -1121,7 +1139,8 @@ encounter adds the consumable inventory/health boundary without changing
 callback semantics. The `0.2.157` Demon MedPack recovery encounter adds a
 seeded melee-AI response around that consumable boundary. Future composite
 successors that select callback-bearing behavior must include that behavior
-explicitly.
+explicitly. The `0.2.158` Pistol reload encounter adds the ranged ammunition
+and clip-timing boundary without changing callback semantics.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity
