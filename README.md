@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.161`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.162`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -202,6 +202,9 @@ replays, and regression testing.
     the Chainsaw melee encounter's seeded hit, Demon-profile target damage,
     and presentation effects have the same vertical
     scenario/replay/browser-boundary coverage;
+    the standard Shotgun shell-reload encounter's eight-shot sequence, shell
+    consumption, distinct 1200-unit reload cost, and presentation effects have
+    the same vertical scenario/replay/browser-boundary coverage;
     resistance, running modifiers,
     prepared-slot consumption,
     explosion/map effects,
