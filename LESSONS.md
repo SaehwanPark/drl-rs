@@ -183,6 +183,21 @@ repository and WASM job has reached a passing terminal state.
 - **Prevention:** Every scenario/browser parity test must verify the command
   list contains the exercised command before claiming replay preservation.
 
+## Compare generated scenario replays with their runner result
+
+- **Context:** `ScenarioRunner` returns a replay log alongside the final game
+  and event stream for a declarative fixture.
+- **Symptom:** A test can prove that the generated log is repeatable while a
+  missing tile, spawn field, or command serialization still differs from the
+  runner's authoritative result.
+- **Cause:** Replay determinism compares repeated executions of the log but does
+  not by itself compare that log with the original scenario execution.
+- **Resolution:** Run the generated replay once more and assert both its final
+  `Game` and complete events equal the `ScenarioRunner` outputs before claiming
+  scenario/replay parity.
+- **Prevention:** Keep generated-log parity and hand-authored boundary-replay
+  checks as separate assertions in every vertical scenario test.
+
 ## Commit replay sessions only after temporary execution
 
 - **Context:** A canonical replay can be syntactically valid but fail during
