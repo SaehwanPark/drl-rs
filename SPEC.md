@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-26
-Current project version: `0.2.155`
+Current project version: `0.2.156`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9/Vertical Fidelity — Green Armor Protection
+## 2. Active Implementation Slice: M9/Vertical Fidelity — Small MedPack Recovery
 
 ### 2.1 Objective
 
-Exercise the existing typed Green Armor mitigation and ranged-combat
-transitions through a fixed Former Sergeant-profile encounter. The same stable
-scenario/replay command sequence must be observable through core events and the
-browser presentation boundary without changing gameplay semantics or balance.
+Exercise the existing typed Small MedPack consumable and health transitions
+through a fixed recovery encounter. The same stable scenario/replay command
+sequence must be observable through core events and the browser presentation
+boundary without changing gameplay semantics or balance.
 
 The legacy Pascal/Lua implementation remains the behavioral reference. Its
 architecture, global callback machinery, and runtime Lua object model remain
@@ -43,29 +43,29 @@ non-goals for reproduction.
 - **Steering priority:** Vertical canonical fidelity after the Gate C/D exit
   gates.
 - **Observable outcome:** A declarative encounter, replay execution, and
-  browser session agree on the exact arena, configured Green Armor identity,
-  seeded ranged hit, armor-mitigated Former Sergeant-profile response, event
-  ordering, player observation, and pure presentation effects.
+  browser session agree on the exact arena, configured Small MedPack identity,
+  capped health recovery, item consumption, event ordering, player observation,
+  and pure presentation effects.
 - **Gameplay/replay impact:** No accepted transition, replay schema, RNG
   sampling rule, or gameplay-semantics version changes.
-- **Protocol/domain ownership:** `drl-protocol` owns stable item/monster
-  identity and commands; core owns armor mitigation, combat, scheduling, and
+- **Protocol/domain ownership:** `drl-protocol` owns stable item identity and
+  commands; core owns consumable healing, inventory mutation, scheduling, and
   event order; render/web own derived observations and effects.
 - **Evidence boundary:** Rust scenario/replay/core/browser-boundary tests are
   verified. Controlled legacy runtime, browser capture, audio, WebGPU, and
   audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** New armor or monster balance equations, broad content
+- **Non-goals:** New healing or monster balance equations, broad content
   migration, new protocol fields, AI policy changes, audiovisual parity,
-  runtime Lua, durability depletion, and resistance variants beyond the pinned
-  Green Armor protection policy.
+  runtime Lua, and large-medpack or broader consumable variants beyond the
+  pinned Small MedPack recovery policy.
 
 ### 2.2 Why this slice is bounded
 
-The existing Gate C and Gate D work already centralizes stable item/monster
-identity and delivers typed inventory, armor mitigation, ranged combat,
-scheduling, and presentation behavior. This slice proves that those pieces
-survive one canonical scenario/replay and browser boundary without introducing
-a second simulation model or a browser-specific wire format.
+The existing Gate C and Gate D work already centralizes stable item identity
+and delivers typed inventory, consumable healing, scheduling, and presentation
+behavior. This slice proves that those pieces survive one canonical
+scenario/replay and browser boundary without introducing a second simulation
+model or a browser-specific wire format.
 
 Behavioral and presentation mappings remain explicit by design. The encounter
 consumes those typed boundaries while preserving compiler exhaustiveness and
@@ -1005,7 +1005,7 @@ scenario, replay, and browser presentation boundaries. Its vertical slice must:
   runtime, browser capture, audio, WebGPU, audiovisual, and broader
   weapon/monster knockback parity as `NOT_RUN`.
 
-### 2.7ac Current vertical Green Armor protection delivery target
+### 2.7ac Previous vertical Green Armor protection delivery target
 
 The bounded implementation target for this revision is a Green Armor
 mitigation encounter against a Former Sergeant profile across the declarative
@@ -1024,6 +1024,25 @@ scenario, replay, and browser presentation boundaries. Its vertical slice must:
 - [x] keep gameplay semantics unchanged while recording controlled legacy
   runtime, browser capture, audio, WebGPU, audiovisual, durability/resistance,
   and broader armor/monster parity as `NOT_RUN`.
+
+### 2.7ad Current vertical Small MedPack recovery delivery target
+
+The bounded implementation target for this revision is a Small MedPack
+recovery encounter across the declarative scenario, replay, and browser
+presentation boundaries. Its vertical slice must:
+
+- [x] construct an exact deterministic 8x4 ASCII arena with HP `45/50` and a
+  configured Small MedPack;
+- [x] run `Use(ItemId(4))` through `ScenarioRunner`, preserving capped health
+  recovery to `50`, item consumption, stable identity, and event order;
+- [x] verify replay determinism and compare generated replay events/final game
+  state with the direct `ScenarioRunner` result;
+- [x] compare `BrowserSession::submit` with direct `Game::step` for the use
+  event, player observations, literal `Use` effect, scene derivation, and
+  retained replay command;
+- [x] keep gameplay semantics unchanged while recording controlled legacy
+  runtime, browser capture, audio, WebGPU, audiovisual, and broader
+  consumable parity as `NOT_RUN`.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
@@ -1075,8 +1094,10 @@ the preceding typed vertical slices. The `0.2.153` Phase Device escape added a
 callback-bearing special-item transition, and the `0.2.154` Shotgun knockback
 encounter extends the chain with a scheduled ranged response. The `0.2.155`
 Green Armor protection encounter adds the relevant armor/resistance boundary
-without changing callback semantics. Future composite successors that select
-callback-bearing behavior must include that behavior explicitly.
+without changing callback semantics. The `0.2.156` Small MedPack recovery
+encounter adds the consumable inventory/health boundary without changing
+callback semantics. Future composite successors that select callback-bearing
+behavior must include that behavior explicitly.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity

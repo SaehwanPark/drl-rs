@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-26
-Current project version: `0.2.155`
+Current project version: `0.2.156`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -234,8 +234,8 @@ Presentation Boundary
     Acid Spitter terrain-reload, Null Pointer target-hit, Grammaton burst mode,
     Jackhammer single-mode, Lava Armor recharge, Medical Powerarmor repair,
     Former Human-profile progression, Phase Device escape, Shotgun knockback,
-    and Green Armor protection encounters are covered by this same
-    cross-boundary comparison.
+    Green Armor protection, and Small MedPack recovery encounters are covered
+    by this same cross-boundary comparison.
   - Accessible semantic minimap text grid fed by the fair `MinimapState`
     projection; it is bounded and never queries hidden world state.
   - WebGPU pipeline: texture cache, linear `Rgba8Unorm` storage, nearest base

@@ -4023,6 +4023,94 @@ mod tests {
       drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism")
     );
   }
+
+  #[test]
+  fn small_medpack_recovery_vertical_browser_boundary_matches_direct_core_presentation() {
+    let player_position = Position::new(1, 1);
+    let player_config = PlayerSpawnConfig {
+      hp: 45,
+      max_hp: 50,
+      speed: 100,
+      initial_items: vec![ItemSpawnKind::SmallMedPack],
+      equipped_weapon: None,
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    };
+    let setup_replay =
+      ReplayLog::new(2, 8, 4, player_position).with_player_config(player_config.clone());
+    let (initial, setup_events) =
+      drl_core::ReplayEngine::run(&setup_replay).expect("vertical replay setup");
+    assert!(setup_events.is_empty());
+    let medpack_id = *initial
+      .world()
+      .player()
+      .expect("player")
+      .inventory()
+      .items()
+      .keys()
+      .next()
+      .expect("Small MedPack");
+    assert_eq!(medpack_id, drl_protocol::ItemId::new(4));
+
+    let mut scenario = drl_core::scenario::Scenario::from_ascii(
+      "SmallMedPackRecoveryVertical",
+      "Small MedPack recovery at the health cap",
+      "########\n#@.....#\n#......#\n########\n",
+    )
+    .expect("vertical scenario fixture");
+    scenario.seed = 2;
+    scenario.player_config = Some(player_config);
+    assert_eq!(
+      scenario.instantiate().expect("scenario initial state"),
+      initial
+    );
+
+    let player_id = initial.world().player_id().expect("player identity");
+    let command = Command::Use(medpack_id);
+    let mut direct = initial.clone();
+    let mut browser = BrowserSession::from_game(initial);
+
+    let expected_events = direct.step(command).expect("direct medpack use");
+    let step = browser.submit(command).expect("browser medpack use");
+    assert_eq!(step.events, expected_events);
+    assert_eq!(step.after, direct.observe_player());
+    assert_eq!(
+      step.effects,
+      drl_render::effect_timeline_for_observations(&step.before, &step.after, &expected_events,)
+    );
+    assert_eq!(
+      step.effects,
+      vec![drl_render::EffectSpan {
+        effect: drl_render::PresentationEffect::Use,
+        start_tick: 0,
+        duration_ticks: 2,
+      }]
+    );
+    assert_eq!(browser.scene(), RenderScene::from_observation(&step.after));
+    assert_eq!(browser.observation(), direct.observe_player());
+    assert_eq!(browser.replay_log().commands, vec![command]);
+    assert_eq!(step.after.player_hp.unwrap().current, 50);
+    assert!(step.after.inventory.is_empty());
+    assert!(expected_events.iter().any(|event| {
+      matches!(
+        event,
+        drl_protocol::GameEvent::ItemUsed { entity_id, item_id, item_name }
+          if *entity_id == player_id
+            && *item_id == medpack_id
+            && item_name == "Small MedPack"
+      )
+    }));
+
+    let mut command_replay = setup_replay;
+    command_replay.record_command(command);
+    let (replayed, replay_events) =
+      drl_core::ReplayEngine::run(&command_replay).expect("vertical command replay");
+    assert_eq!(replay_events, expected_events);
+    assert_eq!(replayed, direct);
+    assert!(
+      drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism")
+    );
+  }
 }
 
 #[cfg(all(test, target_arch = "wasm32"))]
