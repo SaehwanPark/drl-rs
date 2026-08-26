@@ -1056,3 +1056,135 @@ fn medical_powerarmor_vertical_scenario_preserves_repair_and_replay() {
   assert_eq!(scenario_replay_events, events);
   assert!(ReplayEngine::verify_determinism(&replay).unwrap());
 }
+
+#[test]
+fn former_human_profile_progression_vertical_scenario_preserves_combat_pickup_and_descent() {
+  let mut scenario = Scenario::from_ascii(
+    "FormerHumanProfileProgressionVertical",
+    "Pistol progression through a Former Human profile, dropped ammunition, and stairs",
+    "########\n#@..h>.#\n#......#\n########\n",
+  )
+  .unwrap();
+  scenario.seed = 0;
+  scenario.monsters[0].name = "Progression Target".to_string();
+  scenario.player_config = Some(PlayerSpawnConfig {
+    hp: 50,
+    max_hp: 50,
+    speed: 100,
+    initial_items: Vec::new(),
+    equipped_weapon: Some(ItemSpawnKind::Pistol),
+    equipped_armor: None,
+    equipped_armor_durability: None,
+  });
+
+  let initial = scenario.instantiate().unwrap();
+  let player_id = initial.world().player_id().unwrap();
+  let monster_id = initial
+    .world()
+    .actors()
+    .values()
+    .find(|actor| !actor.is_player())
+    .unwrap()
+    .id();
+  let target = Position::new(4, 1);
+  let commands = vec![
+    Command::Move(Direction::East),
+    Command::AttackRanged(target),
+    Command::AttackRanged(target),
+    Command::Move(Direction::East),
+    Command::Move(Direction::East),
+    Command::Pickup,
+    Command::Move(Direction::East),
+    Command::Descend,
+  ];
+
+  let (game, events, metrics, replay) = ScenarioRunner::run_commands(&scenario, &commands).unwrap();
+  assert_eq!(metrics.outcome, RunOutcome::Victory);
+  assert_eq!(game.world().level_id().0, 2);
+  assert_eq!(game.world().player().unwrap().hp().current, 44);
+  assert!(
+    game
+      .world()
+      .player()
+      .unwrap()
+      .inventory()
+      .has_ammo(drl_protocol::AmmoType::Ammo9mm, 10)
+  );
+
+  let player_shots = events
+    .iter()
+    .filter(|event| {
+      matches!(
+        event,
+        GameEvent::AttackResolved {
+          attacker_id,
+          target_id,
+          is_ranged: true,
+          ..
+        } if *attacker_id == player_id && *target_id == monster_id
+      )
+    })
+    .count();
+  let monster_shots = events
+    .iter()
+    .filter(|event| {
+      matches!(
+        event,
+        GameEvent::AttackResolved {
+          attacker_id,
+          target_id,
+          is_ranged: true,
+          ..
+        } if *attacker_id == monster_id && *target_id == player_id
+      )
+    })
+    .count();
+  assert_eq!(player_shots, 2);
+  assert_eq!(monster_shots, 2);
+
+  let death_index = events
+    .iter()
+    .position(
+      |event| matches!(event, GameEvent::ActorDied { entity_id, .. } if *entity_id == monster_id),
+    )
+    .expect("Former Human-profile target death event");
+  let dropped_item_id = events
+    .iter()
+    .find_map(|event| match event {
+      GameEvent::ItemDropped {
+        entity_id, item_id, ..
+      } if *entity_id == monster_id => Some(*item_id),
+      _ => None,
+    })
+    .expect("Former Human ammunition drop");
+  let pickup_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::ItemPickedUp { entity_id, item_id, .. }
+          if *entity_id == player_id && *item_id == dropped_item_id
+      )
+    })
+    .expect("dropped ammunition pickup");
+  let transition_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::LevelTransitioned {
+          from_level,
+          to_level,
+        } if from_level.0 == 1 && to_level.0 == 2
+      )
+    })
+    .expect("stairs descent event");
+  assert!(death_index < pickup_index);
+  assert!(pickup_index < transition_index);
+  assert_eq!(replay.commands, commands);
+
+  let (scenario_replayed_game, scenario_replay_events) = ReplayEngine::run(&replay).unwrap();
+  assert_eq!(scenario_replayed_game, game);
+  assert_eq!(scenario_replay_events, events);
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}

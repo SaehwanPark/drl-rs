@@ -3445,6 +3445,206 @@ mod tests {
       drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism")
     );
   }
+
+  #[test]
+  fn former_human_profile_progression_vertical_browser_boundary_matches_direct_core_presentation() {
+    let player_position = Position::new(1, 1);
+    let setup_replay =
+      ReplayLog::new(0, 8, 4, player_position).with_player_config(PlayerSpawnConfig {
+        hp: 50,
+        max_hp: 50,
+        speed: 100,
+        initial_items: Vec::new(),
+        equipped_weapon: Some(ItemSpawnKind::Pistol),
+        equipped_armor: None,
+        equipped_armor_durability: None,
+      });
+    let mut setup_replay = setup_replay;
+    setup_replay.record_stairs(Position::new(5, 1));
+    setup_replay.record_monster(
+      MonsterSpawnSpec::new(Position::new(4, 1), "Progression Target", 10, 100, (2, 5))
+        .with_ranged_combat((1, 4), 6, 65)
+        .with_death_drop(Some(ItemSpawnKind::Ammo9mm(10))),
+    );
+
+    let (initial, setup_events) =
+      drl_core::ReplayEngine::run(&setup_replay).expect("vertical replay setup");
+    assert!(setup_events.is_empty());
+    let scenario = drl_core::scenario::Scenario::from_ascii(
+      "FormerHumanProfileProgressionVertical",
+      "Pistol progression through a Former Human profile, dropped ammunition, and stairs",
+      "########\n#@..h>.#\n#......#\n########\n",
+    )
+    .expect("vertical scenario fixture");
+    let mut scenario = scenario;
+    scenario.seed = 0;
+    scenario.monsters[0].name = "Progression Target".to_string();
+    scenario.player_config = Some(PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: Vec::new(),
+      equipped_weapon: Some(ItemSpawnKind::Pistol),
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    });
+    assert_eq!(
+      scenario.instantiate().expect("scenario initial state"),
+      initial
+    );
+
+    let monster_id = initial
+      .world()
+      .actors()
+      .values()
+      .find(|actor| !actor.is_player())
+      .expect("Former Human identity")
+      .id();
+    let target = Position::new(4, 1);
+    let commands = vec![
+      Command::Move(Direction::East),
+      Command::AttackRanged(target),
+      Command::AttackRanged(target),
+      Command::Move(Direction::East),
+      Command::Move(Direction::East),
+      Command::Pickup,
+      Command::Move(Direction::East),
+      Command::Descend,
+    ];
+
+    let mut direct = initial.clone();
+    let mut browser = BrowserSession::from_game(initial);
+    let mut expected_events = Vec::new();
+    let expected_effects = [
+      vec![
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::Move,
+          start_tick: 0,
+          duration_ticks: 1,
+        },
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::RangedAttack,
+          start_tick: 1,
+          duration_ticks: 2,
+        },
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::Hit,
+          start_tick: 3,
+          duration_ticks: 1,
+        },
+      ],
+      vec![
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::RangedAttack,
+          start_tick: 0,
+          duration_ticks: 2,
+        },
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::Hit,
+          start_tick: 2,
+          duration_ticks: 1,
+        },
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::RangedAttack,
+          start_tick: 3,
+          duration_ticks: 2,
+        },
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::Hit,
+          start_tick: 5,
+          duration_ticks: 1,
+        },
+      ],
+      vec![
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::RangedAttack,
+          start_tick: 0,
+          duration_ticks: 2,
+        },
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::Hit,
+          start_tick: 2,
+          duration_ticks: 1,
+        },
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::Death,
+          start_tick: 3,
+          duration_ticks: 4,
+        },
+      ],
+      vec![drl_render::EffectSpan {
+        effect: drl_render::PresentationEffect::Move,
+        start_tick: 0,
+        duration_ticks: 1,
+      }],
+      vec![drl_render::EffectSpan {
+        effect: drl_render::PresentationEffect::Move,
+        start_tick: 0,
+        duration_ticks: 1,
+      }],
+      vec![drl_render::EffectSpan {
+        effect: drl_render::PresentationEffect::Pickup,
+        start_tick: 0,
+        duration_ticks: 2,
+      }],
+      vec![drl_render::EffectSpan {
+        effect: drl_render::PresentationEffect::Move,
+        start_tick: 0,
+        duration_ticks: 1,
+      }],
+      vec![drl_render::EffectSpan {
+        effect: drl_render::PresentationEffect::LevelTransition,
+        start_tick: 0,
+        duration_ticks: 4,
+      }],
+    ];
+    for (command, literal_effects) in commands.iter().copied().zip(expected_effects) {
+      let direct_events = direct.step(command).expect("progression command");
+      let step = browser
+        .submit(command)
+        .expect("browser progression command");
+      assert_eq!(step.events, direct_events);
+      assert_eq!(step.after, direct.observe_player());
+      assert_eq!(
+        step.effects,
+        drl_render::effect_timeline_for_observations(&step.before, &step.after, &direct_events,)
+      );
+      assert_eq!(step.effects, literal_effects);
+      assert_eq!(browser.scene(), RenderScene::from_observation(&step.after));
+      expected_events.extend(direct_events);
+    }
+
+    assert_eq!(direct.world().level_id().0, 2);
+    assert_eq!(direct.world().player().unwrap().hp().current, 44);
+    assert!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .inventory()
+        .has_ammo(drl_protocol::AmmoType::Ammo9mm, 10)
+    );
+    assert!(expected_events.iter().any(|event| {
+      matches!(
+        event,
+        drl_protocol::GameEvent::ActorDied { entity_id, .. } if *entity_id == monster_id
+      )
+    }));
+    assert_eq!(browser.observation(), direct.observe_player());
+    assert_eq!(browser.replay_log().commands, commands);
+
+    let mut command_replay = setup_replay;
+    for command in commands {
+      command_replay.record_command(command);
+    }
+    let (replayed, replay_events) =
+      drl_core::ReplayEngine::run(&command_replay).expect("vertical command replay");
+    assert_eq!(replay_events, expected_events);
+    assert_eq!(replayed, direct);
+    assert!(
+      drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism")
+    );
+  }
 }
 
 #[cfg(all(test, target_arch = "wasm32"))]
