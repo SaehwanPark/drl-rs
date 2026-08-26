@@ -228,3 +228,18 @@ repository and WASM job has reached a passing terminal state.
   mutating existing entries when full.
 - **Prevention:** Test empty, append, duplicate, zero-capacity, and full-boundary
   behavior before exposing storage to a renderer or browser lifecycle.
+
+## Replay mode transitions before mode-dependent effects
+
+- **Context:** A multi-mode weapon can expose a typed fire-mode transition before
+  its attack produces mode-specific damage or presentation effects.
+- **Symptom:** A boundary test can appear to cover the weapon while its replay
+  history still uses the default mode, leaving the transition and its score cost
+  outside the parity claim.
+- **Cause:** Setup and attack are often treated as separate fixtures, so the
+  mode-changing command is omitted from the replayed command stream.
+- **Resolution:** Record the mode transition and the mode-dependent attack in
+  one command history; assert the transition event and cost before checking
+  attack, hit, knockback, and browser effect spans.
+- **Prevention:** For every fire-mode vertical slice, compare direct and replayed
+  events/final state only after the exact toggle-then-attack sequence is present.
