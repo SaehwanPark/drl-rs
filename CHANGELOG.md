@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.159]
+
+- Added a bounded Plasma Rifle cell-reload encounter spanning declarative
+  scenario execution, deterministic replay, and the browser presentation
+  boundary. The slice compares six seeded ranged attacks, cell-ammunition
+  consumption, six-round clip restoration, action ordering, literal effects,
+  and scene derivation without changing gameplay semantics or balance.
+
 ## [0.2.158]
 
 - Added a bounded Pistol clip depletion and reload encounter spanning
