@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.156`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.157`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -186,6 +186,9 @@ replays, and regression testing.
     same vertical scenario/replay/browser-boundary coverage;
     the Small MedPack recovery encounter's capped healing, consumption,
     action-cost ordering, and presentation effects have the same vertical
+    scenario/replay/browser-boundary coverage;
+    the Demon melee-pressure recovery encounter's seeded AI responses,
+    consumable transition, and presentation effects have the same vertical
     scenario/replay/browser-boundary coverage;
     resistance, running modifiers,
     prepared-slot consumption,
