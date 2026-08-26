@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.159`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.160`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -195,6 +195,9 @@ replays, and regression testing.
     scenario/replay/browser-boundary coverage;
     the Plasma Rifle cell-reload encounter's six-shot sequence, cell
     consumption, six-round clip state, and presentation effects have the same
+    vertical scenario/replay/browser-boundary coverage;
+    the Rocket Launcher one-shot reload encounter's seeded hit, rocket
+    consumption, one-shot clip state, and presentation effects have the same
     vertical scenario/replay/browser-boundary coverage;
     resistance, running modifiers,
     prepared-slot consumption,

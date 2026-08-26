@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.160]
+
+- Added a bounded Rocket Launcher one-shot reload encounter spanning
+  declarative scenario execution, deterministic replay, and the browser
+  presentation boundary. The slice compares one seeded 29-damage hit, rocket
+  consumption, one-shot clip restoration, action ordering, literal effects,
+  and scene derivation without changing gameplay semantics or balance.
+
 ## [0.2.159]
 
 - Added a bounded Plasma Rifle cell-reload encounter spanning declarative

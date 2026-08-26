@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-26
-Current project version: `0.2.159`
+Current project version: `0.2.160`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.159)
+## 3. Current Progress Summary (`VERSION` 0.2.160)
 
 ### Delivered Foundations
 
@@ -352,6 +352,14 @@ verification item uses explicit status semantics:
   Plasma Rifle encounter now has a declarative ASCII scenario, replay
   determinism, and browser-session presentation-boundary parity covering six
   seeded ranged attacks, cell-ammunition consumption, six-round clip state,
+  stable identities, observations, literal effects, and scene derivation. No
+  gameplay-semantics or balance change is introduced; controlled legacy
+  runtime, browser capture, audio, WebGPU, audiovisual, and broader
+  weapon/ammunition parity remain `NOT_RUN`.
+- **M9 vertical Rocket Launcher one-shot reload (`0.2.160`):** The delivered
+  typed Rocket Launcher encounter now has a declarative ASCII scenario, replay
+  determinism, and browser-session presentation-boundary parity covering one
+  seeded ranged hit, rocket-ammunition consumption, one-shot clip state,
   stable identities, observations, literal effects, and scene derivation. No
   gameplay-semantics or balance change is introduced; controlled legacy
   runtime, browser capture, audio, WebGPU, audiovisual, and broader
