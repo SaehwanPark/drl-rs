@@ -1574,3 +1574,124 @@ fn small_medpack_recovery_vertical_scenario_preserves_cap_and_replay() {
   assert_eq!(replay_events, events);
   assert!(ReplayEngine::verify_determinism(&replay).unwrap());
 }
+
+#[test]
+fn demon_medpack_recovery_vertical_scenario_preserves_ai_and_replay() {
+  let mut scenario = Scenario::from_ascii(
+    "DemonMedPackRecoveryVertical",
+    "Demon melee pressure around Small MedPack recovery",
+    "########\n#@d....#\n#......#\n########\n",
+  )
+  .unwrap();
+  scenario.seed = 0;
+  scenario.monsters[0].name = "Rush Demon".to_string();
+  scenario.player_config = Some(PlayerSpawnConfig {
+    hp: 46,
+    max_hp: 50,
+    speed: 100,
+    initial_items: vec![ItemSpawnKind::SmallMedPack],
+    equipped_weapon: None,
+    equipped_armor: None,
+    equipped_armor_durability: None,
+  });
+
+  let initial = scenario.instantiate().unwrap();
+  let player_id = initial.world().player_id().unwrap();
+  let target_id = initial
+    .world()
+    .actors()
+    .values()
+    .find(|actor| !actor.is_player())
+    .unwrap()
+    .id();
+  let medpack_id = *initial
+    .world()
+    .player()
+    .unwrap()
+    .inventory()
+    .items()
+    .keys()
+    .next()
+    .unwrap();
+  assert_eq!(medpack_id, ItemId::new(4));
+  assert_eq!(
+    initial.world().get_actor(target_id).unwrap().name(),
+    "Rush Demon"
+  );
+  let commands = vec![Command::Wait, Command::Use(medpack_id)];
+
+  let (game, events, metrics, replay) = ScenarioRunner::run_commands(&scenario, &commands).unwrap();
+  assert_eq!(metrics.outcome, RunOutcome::InProgress);
+  assert_eq!(metrics.turns_survived, 1);
+  assert_eq!(metrics.damage_taken, 15);
+  assert_eq!(metrics.items_used, 1);
+  assert_eq!(game.world().player().unwrap().hp().current, 41);
+  assert!(game.world().player().unwrap().inventory().is_empty());
+  assert_eq!(events.len(), 14);
+  assert!(matches!(events[0], GameEvent::TurnStarted { .. }));
+  assert!(matches!(events[1], GameEvent::EntityWaited { entity_id, .. } if entity_id == player_id));
+  assert!(
+    matches!(events[2], GameEvent::ActionCostPaid { entity_id, cost: ActionCost(1000) } if entity_id == player_id)
+  );
+  assert!(matches!(
+    events[3],
+    GameEvent::AttackResolved {
+      attacker_id,
+      target_id: event_target,
+      outcome: AttackOutcome::Hit { damage: 6, is_lethal: false },
+      is_ranged: false,
+    } if attacker_id == target_id && event_target == player_id
+  ));
+  assert!(matches!(
+    events[4],
+    GameEvent::DamageApplied {
+      target_id: event_target,
+      amount: 6,
+      remaining_hp: 40,
+      source: DamageSource::Actor(source_id),
+      ..
+    } if event_target == player_id && source_id == target_id
+  ));
+  assert!(
+    matches!(events[5], GameEvent::ActionCostPaid { entity_id, cost: ActionCost(1000) } if entity_id == target_id)
+  );
+  assert!(matches!(events[6], GameEvent::TurnEnded { .. }));
+  assert!(matches!(events[7], GameEvent::TurnStarted { .. }));
+  assert!(matches!(
+    &events[8],
+    GameEvent::ItemUsed { entity_id, item_id, item_name }
+      if *entity_id == player_id && *item_id == medpack_id && item_name == "Small MedPack"
+  ));
+  assert!(
+    matches!(events[9], GameEvent::ActionCostPaid { entity_id, cost: ActionCost(1000) } if entity_id == player_id)
+  );
+  assert!(matches!(
+    events[10],
+    GameEvent::AttackResolved {
+      attacker_id,
+      target_id: event_target,
+      outcome: AttackOutcome::Hit { damage: 9, is_lethal: false },
+      is_ranged: false,
+    } if attacker_id == target_id && event_target == player_id
+  ));
+  assert!(matches!(
+    events[11],
+    GameEvent::DamageApplied {
+      target_id: event_target,
+      amount: 9,
+      remaining_hp: 41,
+      source: DamageSource::Actor(source_id),
+      ..
+    } if event_target == player_id && source_id == target_id
+  ));
+  assert!(
+    matches!(events[12], GameEvent::ActionCostPaid { entity_id, cost: ActionCost(1000) } if entity_id == target_id)
+  );
+  assert!(matches!(events[13], GameEvent::TurnEnded { .. }));
+  assert_eq!(replay.commands, commands);
+
+  let (replayed_game, replay_events) = ReplayEngine::run(&replay).unwrap();
+  assert_eq!(replayed_game, game);
+  assert_eq!(replay_events, events);
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}

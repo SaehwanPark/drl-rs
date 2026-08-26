@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-26
-Current project version: `0.2.156`
+Current project version: `0.2.157`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.156)
+## 3. Current Progress Summary (`VERSION` 0.2.157)
 
 ### Delivered Foundations
 
@@ -332,6 +332,14 @@ verification item uses explicit status semantics:
   gameplay-semantics or balance change is introduced; controlled legacy
   runtime, browser capture, audio, WebGPU, audiovisual, and broader consumable
   parity remain `NOT_RUN`.
+- **M9 vertical Demon MedPack recovery (`0.2.157`):** The delivered typed
+  Demon melee-pressure encounter now has a declarative ASCII scenario, replay
+  determinism, and browser-session presentation-boundary parity covering two
+  seeded AI responses around capped healing, item consumption, action-cost
+  ordering, stable identities, observations, literal effects, and scene
+  derivation. No gameplay-semantics or balance change is introduced;
+  controlled legacy runtime, browser capture, audio, WebGPU, audiovisual, and
+  broader monster/consumable parity remain `NOT_RUN`.
 - **Tooling & Replays (M5, M6)**: Versioned replay engine (`V2`), declarative
   ASCII scenario runners, scripted bots, batch sweep runners, and a pure Rust
   zero-dependency MCP server.
