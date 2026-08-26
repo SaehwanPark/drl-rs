@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-26
-Current project version: `0.2.152`
+Current project version: `0.2.153`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.152)
+## 3. Current Progress Summary (`VERSION` 0.2.153)
 
 ### Delivered Foundations
 
@@ -299,6 +299,14 @@ verification item uses explicit status semantics:
   observations, and scene derivation. No gameplay-semantics or balance change
   is introduced; controlled legacy runtime, browser capture, audio, WebGPU,
   audiovisual, and broader monster/weapon parity remain `NOT_RUN`.
+- **M9 vertical Phase Device escape (`0.2.153`):** The delivered typed Phase
+  Device transition now has a declarative ASCII encounter, replay determinism,
+  and browser-session presentation-boundary parity covering pickup,
+  deterministic teleport destination, item consumption, exploration, stable
+  identity, event ordering, observations, literal effects, and scene
+  derivation. No gameplay-semantics or balance change is introduced;
+  controlled legacy runtime, browser capture, audio, WebGPU, audiovisual, and
+  broader item/teleport parity remain `NOT_RUN`.
 - **Tooling & Replays (M5, M6)**: Versioned replay engine (`V2`), declarative
   ASCII scenario runners, scripted bots, batch sweep runners, and a pure Rust
   zero-dependency MCP server.

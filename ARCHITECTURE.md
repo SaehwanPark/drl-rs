@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-26
-Current project version: `0.2.152`
+Current project version: `0.2.153`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -233,7 +233,7 @@ Presentation Boundary
     introducing a browser-side simulation model. The Trigun alternate-reload
     Acid Spitter terrain-reload, Null Pointer target-hit, Grammaton burst mode,
     Jackhammer single-mode, Lava Armor recharge, Medical Powerarmor repair,
-    and Former Human-profile progression
+    Former Human-profile progression, and Phase Device escape
     encounters are covered by
     this same
     cross-boundary comparison.

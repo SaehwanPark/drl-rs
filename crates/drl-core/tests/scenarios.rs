@@ -1188,3 +1188,95 @@ fn former_human_profile_progression_vertical_scenario_preserves_combat_pickup_an
   assert_eq!(scenario_replay_events, events);
   assert!(ReplayEngine::verify_determinism(&replay).unwrap());
 }
+
+#[test]
+fn phase_device_vertical_scenario_preserves_teleport_pickup_and_replay() {
+  let mut scenario = Scenario::from_ascii(
+    "PhaseDeviceVertical",
+    "Phase Device escape from a fixed arena",
+    "########\n#@P....#\n#......#\n########\n",
+  )
+  .unwrap();
+  scenario.seed = 9999;
+
+  let initial = scenario.instantiate().unwrap();
+  let player_id = initial.world().player_id().unwrap();
+  let initial_position = initial.world().player().unwrap().position();
+  let device_id = initial
+    .world()
+    .ground_items()
+    .keys()
+    .next()
+    .copied()
+    .unwrap();
+  let commands = vec![
+    Command::Move(Direction::East),
+    Command::Pickup,
+    Command::Use(device_id),
+  ];
+
+  let (game, events, metrics, replay) = ScenarioRunner::run_commands(&scenario, &commands).unwrap();
+  let final_position = game.world().player().unwrap().position();
+  assert_eq!(metrics.items_picked_up, 1);
+  assert_eq!(game.world().level_id().0, 1);
+  assert_ne!(final_position, initial_position);
+  assert_eq!(final_position, Position::new(6, 2));
+  assert!(game.world().map().is_walkable(final_position));
+  assert!(game.world().is_explored(final_position));
+  assert!(
+    game
+      .world()
+      .player()
+      .unwrap()
+      .inventory()
+      .get_item(device_id)
+      .is_none()
+  );
+
+  let pickup_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::ItemPickedUp {
+          entity_id,
+          item_id,
+          ..
+        } if *entity_id == player_id && *item_id == device_id
+      )
+    })
+    .expect("phase device pickup event");
+  let teleport_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::PlayerTeleported { from, to }
+          if *from == Position::new(2, 1) && *to == final_position
+      )
+    })
+    .expect("phase device teleport event");
+  let used_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::ItemUsed {
+          entity_id,
+          item_id,
+          item_name,
+        } if *entity_id == player_id
+          && *item_id == device_id
+          && item_name == "Phase Device"
+      )
+    })
+    .expect("phase device use event");
+  assert!(pickup_index < teleport_index);
+  assert!(teleport_index < used_index);
+  assert_eq!(replay.commands, commands);
+
+  let (scenario_replayed_game, scenario_replay_events) = ReplayEngine::run(&replay).unwrap();
+  assert_eq!(scenario_replayed_game, game);
+  assert_eq!(scenario_replay_events, events);
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}

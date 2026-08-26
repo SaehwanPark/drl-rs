@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-26
-Current project version: `0.2.152`
+Current project version: `0.2.153`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,15 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9/Vertical Fidelity — Former Human-Profile Progression
+## 2. Active Implementation Slice: M9/Vertical Fidelity — Phase Device Escape
 
 ### 2.1 Objective
 
-Exercise one canonical Pistol progression through a Former Human-profile
-encounter,
-dropped ammunition pickup, and stairs descent. The same stable scenario/replay
-command sequence must be observable through core events and the browser
-presentation boundary without changing gameplay semantics or balance.
+Exercise the existing typed Phase Device escape transition through a fixed
+pickup-and-teleport encounter. The same stable scenario/replay command sequence
+must be observable through core events and the browser presentation boundary
+without changing gameplay semantics or balance.
 
 The legacy Pascal/Lua implementation remains the behavioral reference. Its
 architecture, global callback machinery, and runtime Lua object model remain
@@ -44,9 +43,9 @@ non-goals for reproduction.
 - **Steering priority:** Vertical canonical fidelity after the Gate C/D exit
   gates.
 - **Observable outcome:** A declarative encounter, replay execution, and
-  browser session agree on the exact arena, Pistol ranged combat, scheduled
-  Former Human-profile response, target defeat, dropped-ammunition pickup, stairs
-  descent, event ordering, player observation, and pure presentation effects.
+  browser session agree on the exact arena, Phase Device pickup, deterministic
+  teleport destination, item consumption, exploration, event ordering, player
+  observation, and pure presentation effects.
 - **Gameplay/replay impact:** No accepted transition, replay schema, RNG
   sampling rule, or gameplay-semantics version changes.
 - **Protocol/domain ownership:** `drl-protocol` owns stable item identity and
@@ -62,10 +61,10 @@ non-goals for reproduction.
 ### 2.2 Why this slice is bounded
 
 The existing Gate C and Gate D work already centralizes stable item identity and
-delivers typed combat, AI, inventory, and level-transition behavior. This slice
-proves that those pieces survive one canonical scenario/replay and browser
-boundary without introducing a second simulation model or a browser-specific
-wire format.
+delivers typed inventory, teleport, and presentation behavior. This slice proves
+that those pieces survive one canonical scenario/replay and browser boundary
+without introducing a second simulation model or a browser-specific wire
+format.
 
 Behavioral and presentation mappings remain explicit by design. The encounter
 consumes those typed boundaries while preserving compiler exhaustiveness and
@@ -941,7 +940,7 @@ and browser presentation boundaries. Its vertical slice must:
   variants, controlled legacy runtime, browser capture, audio, WebGPU,
   audiovisual, and broader armor/content parity as `NOT_RUN`.
 
-### 2.7z Current vertical Former Human-profile progression delivery target
+### 2.7z Previous vertical Former Human-profile progression delivery target
 
 The bounded implementation target for this revision is a canonical Pistol
 progression through a Former Human-profile encounter, dropped ammunition
@@ -964,6 +963,26 @@ presentation boundaries. Its vertical slice must:
 - [x] keep gameplay semantics unchanged while recording controlled legacy
   runtime, browser capture, audio, WebGPU, audiovisual, and broader
   monster/weapon parity as `NOT_RUN`.
+
+### 2.7aa Current vertical Phase Device escape delivery target
+
+The bounded implementation target for this revision is a Phase Device
+pickup-and-teleport encounter across the declarative scenario, replay, and
+browser presentation boundaries. Its vertical slice must:
+
+- [x] construct an exact deterministic 8x4 ASCII arena with a ground Phase
+  Device and the default player loadout;
+- [x] run the same `Move`, `Pickup`, and `Use` commands through
+  `ScenarioRunner`, preserving item identity, deterministic unoccupied-cell
+  selection, item consumption, exploration, and event order;
+- [x] verify replay determinism and compare generated replay events/final game
+  state with the direct `ScenarioRunner` result;
+- [x] compare `BrowserSession::submit` with direct `Game::step` for every
+  command's events, player observations, literal teleport/use effect spans,
+  and scene derivation;
+- [x] keep gameplay semantics unchanged while recording controlled legacy
+  runtime, browser capture, audio, WebGPU, audiovisual, and broader
+  item/teleport parity as `NOT_RUN`.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
@@ -1008,14 +1027,13 @@ and migrate it end-to-end, including relevant interactions among:
 - deterministic replay/scenario evidence;
 - browser presentation required to play the slice.
 
-The `0.2.152` Former Human-profile progression is intentionally a foundational
-progression slice: it exercises the canonical turn, combat, AI, inventory, and
-level-transition path, while callback-derived behavior is already covered by
-the preceding Subtle Knife, Trigun, Acid Spitter, Null Pointer, Grammaton,
-Jackhammer, Lava Armor, and Medical Powerarmor vertical slices. A future
-composite successor that selects a callback-bearing progression must include
-that callback behavior explicitly; this slice does not claim new callback
-coverage.
+The `0.2.152` Former Human-profile progression was a foundational progression
+slice: it exercised the canonical turn, combat, AI, inventory, and
+level-transition path, while callback-derived behavior was already covered by
+the preceding typed vertical slices. The `0.2.153` Phase Device escape now
+adds a callback-bearing special-item transition to the successor chain. Future
+composite successors that select callback-bearing behavior must include that
+behavior explicitly.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity

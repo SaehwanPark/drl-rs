@@ -3645,6 +3645,132 @@ mod tests {
       drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism")
     );
   }
+
+  #[test]
+  fn phase_device_vertical_browser_boundary_matches_direct_core_presentation() {
+    let player_position = Position::new(1, 1);
+    let mut setup_replay = ReplayLog::new(9999, 8, 4, player_position);
+    setup_replay.record_item(ItemSpawnSpec::new(
+      Position::new(2, 1),
+      ItemSpawnKind::PhaseDevice,
+    ));
+
+    let (initial, setup_events) =
+      drl_core::ReplayEngine::run(&setup_replay).expect("vertical replay setup");
+    assert!(setup_events.is_empty());
+    let scenario = drl_core::scenario::Scenario::from_ascii(
+      "PhaseDeviceVertical",
+      "Phase Device escape from a fixed arena",
+      "########\n#@P....#\n#......#\n########\n",
+    )
+    .expect("vertical scenario fixture");
+    let mut scenario = scenario;
+    scenario.seed = 9999;
+    assert_eq!(
+      scenario.instantiate().expect("scenario initial state"),
+      initial
+    );
+
+    let player_id = initial.world().player_id().expect("player identity");
+    let device_id = initial
+      .world()
+      .ground_items()
+      .keys()
+      .next()
+      .copied()
+      .expect("phase device identity");
+    let commands = vec![
+      Command::Move(Direction::East),
+      Command::Pickup,
+      Command::Use(device_id),
+    ];
+    let expected_effects = [
+      vec![drl_render::EffectSpan {
+        effect: drl_render::PresentationEffect::Move,
+        start_tick: 0,
+        duration_ticks: 1,
+      }],
+      vec![drl_render::EffectSpan {
+        effect: drl_render::PresentationEffect::Pickup,
+        start_tick: 0,
+        duration_ticks: 2,
+      }],
+      vec![
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::Teleport,
+          start_tick: 0,
+          duration_ticks: 4,
+        },
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::Use,
+          start_tick: 4,
+          duration_ticks: 2,
+        },
+      ],
+    ];
+
+    let mut direct = initial.clone();
+    let mut browser = BrowserSession::from_game(initial);
+    let mut expected_events = Vec::new();
+    for (command, literal_effects) in commands.iter().copied().zip(expected_effects) {
+      let direct_events = direct.step(command).expect("phase device command");
+      let step = browser
+        .submit(command)
+        .expect("browser phase device command");
+      assert_eq!(step.events, direct_events);
+      assert_eq!(step.after, direct.observe_player());
+      assert_eq!(
+        step.effects,
+        drl_render::effect_timeline_for_observations(&step.before, &step.after, &direct_events,)
+      );
+      assert_eq!(step.effects, literal_effects);
+      assert_eq!(browser.scene(), RenderScene::from_observation(&step.after));
+      expected_events.extend(direct_events);
+    }
+
+    assert_eq!(
+      direct.world().player().unwrap().position(),
+      Position::new(6, 2)
+    );
+    assert!(direct.world().is_explored(Position::new(6, 2)));
+    assert!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .inventory()
+        .get_item(device_id)
+        .is_none()
+    );
+    assert_eq!(browser.observation(), direct.observe_player());
+    assert_eq!(browser.replay_log().commands, commands);
+
+    let mut command_replay = setup_replay;
+    for command in commands {
+      command_replay.record_command(command);
+    }
+    let (replayed, replay_events) =
+      drl_core::ReplayEngine::run(&command_replay).expect("phase device command replay");
+    assert_eq!(replay_events, expected_events);
+    assert_eq!(replayed, direct);
+    assert!(
+      drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism")
+    );
+    assert!(expected_events.iter().any(|event| {
+      matches!(
+        event,
+        drl_protocol::GameEvent::PlayerTeleported { from, to }
+          if *from == Position::new(2, 1) && *to == Position::new(6, 2)
+      )
+    }));
+    assert!(expected_events.iter().any(|event| {
+      matches!(
+        event,
+        drl_protocol::GameEvent::ItemUsed { entity_id, item_id, .. }
+          if *entity_id == player_id && *item_id == device_id
+      )
+    }));
+  }
 }
 
 #[cfg(all(test, target_arch = "wasm32"))]
