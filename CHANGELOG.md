@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.145]
+
+- Added a bounded vertical Trigun encounter check spanning declarative
+  scenario execution, deterministic replay, and the browser presentation
+  boundary. The slice compares confirmation and resource costs, one-tick nuke
+  resolution, terminal event ordering, observations, pure effects, and scene
+  derivation without changing gameplay semantics or balance.
+
 ## [0.2.144]
 
 - Added a bounded vertical Subtle Knife encounter check spanning declarative

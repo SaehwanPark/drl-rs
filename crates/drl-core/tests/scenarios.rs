@@ -251,3 +251,124 @@ fn subtle_knife_vertical_scenario_preserves_visibility_and_replay() {
   assert_eq!(replay.commands, vec![Command::Invoke(ItemId::new(4))]);
   assert!(ReplayEngine::verify_determinism(&replay).unwrap());
 }
+
+#[test]
+fn trigun_vertical_scenario_preserves_nuke_order_and_replay() {
+  let ascii = "############\n#@..i...#i##\n#..........#\n############\n";
+  let mut scenario = Scenario::from_ascii(
+    "TrigunVertical",
+    "Confirmed Trigun nuke encounter with visible and occluded actors",
+    ascii,
+  )
+  .unwrap();
+  scenario.player_config = Some(PlayerSpawnConfig {
+    hp: 20,
+    max_hp: 50,
+    speed: 100,
+    initial_items: Vec::new(),
+    equipped_weapon: Some(ItemSpawnKind::Trigun),
+    equipped_armor: None,
+    equipped_armor_durability: None,
+  });
+  let trigun_id = scenario
+    .instantiate()
+    .unwrap()
+    .world()
+    .player()
+    .unwrap()
+    .equipment()
+    .weapon()
+    .unwrap()
+    .id();
+
+  let (game, events, _metrics, replay) = ScenarioRunner::run_commands(
+    &scenario,
+    &[Command::AltReload {
+      item_id: trigun_id,
+      confirmed: true,
+    }],
+  )
+  .unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let visible_id = game
+    .world()
+    .actors()
+    .values()
+    .find(|actor| actor.position() == Position::new(4, 1))
+    .unwrap()
+    .id();
+  let hidden_id = game
+    .world()
+    .actors()
+    .values()
+    .find(|actor| actor.position() == Position::new(9, 1))
+    .unwrap()
+    .id();
+
+  let reload_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::TrigunAltReloaded {
+          entity_id,
+          item_id,
+          remaining_hp: drl_protocol::HitPoints { current: 15, max: 45 },
+          score_count_remaining: -1_000,
+        } if *entity_id == player_id && *item_id == trigun_id
+      )
+    })
+    .expect("vertical reload event must preserve typed costs");
+  let activate_index = events
+    .iter()
+    .position(|event| matches!(event, GameEvent::NukeActivated { countdown: 1, .. }))
+    .expect("vertical reload must activate a one-tick nuke");
+  let level_index = events
+    .iter()
+    .position(|event| matches!(event, GameEvent::LevelNuked { .. }))
+    .expect("vertical reload must resolve the nuke");
+  let damage_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::DamageApplied {
+          target_id,
+          amount: 15,
+          remaining_hp: 0,
+          source: drl_protocol::DamageSource::Environment,
+          damage_type: None,
+        } if *target_id == player_id
+      )
+    })
+    .expect("nuke must apply terminal internal damage to the player");
+  let death_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::ActorDied {
+          entity_id,
+          cause: drl_protocol::DeathCause::Environment,
+        } if *entity_id == player_id
+      )
+    })
+    .expect("nuke must emit terminal death in order");
+
+  assert!(reload_index < activate_index);
+  assert!(activate_index < level_index);
+  assert!(level_index < damage_index);
+  assert!(damage_index < death_index);
+  assert!(game.is_game_over());
+  assert_eq!(game.world().player().unwrap().hp().current, 0);
+  assert_eq!(game.world().get_actor(visible_id).unwrap().hp().current, 20);
+  assert_eq!(game.world().get_actor(hidden_id).unwrap().hp().current, 20);
+  assert_eq!(
+    replay.commands,
+    vec![Command::AltReload {
+      item_id: trigun_id,
+      confirmed: true,
+    }]
+  );
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}

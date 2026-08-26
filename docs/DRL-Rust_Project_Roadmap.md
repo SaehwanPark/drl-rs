@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
-Last reviewed: 2026-08-25
-Current project version: `0.2.144`
+Last reviewed: 2026-08-26
+Current project version: `0.2.145`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.144)
+## 3. Current Progress Summary (`VERSION` 0.2.145)
 
 ### Delivered Foundations
 
@@ -235,6 +235,14 @@ verification item uses explicit status semantics:
   No gameplay-semantics or balance change is introduced; controlled legacy
   runtime, browser capture, audio, WebGPU, armor/resistance, and broad AI
   parity remain `NOT_RUN`.
+- **M9 vertical Trigun encounter (`0.2.145`):** The delivered typed Trigun
+  alternate-reload transition now has a declarative ASCII encounter, replay
+  determinism, and browser-session presentation-boundary parity covering
+  confirmation, HP/max-HP/score costs, one-tick nuke resolution, terminal
+  event ordering, observations, effects, and scene derivation. No gameplay-
+  semantics or balance change is introduced; explosion geometry, animation,
+  confirmation UI, controlled legacy runtime, browser capture, audio, WebGPU,
+  armor/resistance, and broad AI parity remain `NOT_RUN`.
 - **Tooling & Replays (M5, M6)**: Versioned replay engine (`V2`), declarative
   ASCII scenario runners, scripted bots, batch sweep runners, and a pure Rust
   zero-dependency MCP server.
