@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.150]
+
+- Added a bounded vertical Lava Armor encounter check spanning declarative
+  scenario execution, deterministic replay, and the browser presentation
+  boundary. The slice compares five accepted waits, timer progression, the
+  three-point durability clamp, event ordering, observations, and scene
+  derivation without changing gameplay semantics or balance.
+
 ## [0.2.149]
 
 - Added a bounded vertical Jackhammer encounter check spanning declarative

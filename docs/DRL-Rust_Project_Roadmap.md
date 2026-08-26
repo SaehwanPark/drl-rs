@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-26
-Current project version: `0.2.149`
+Current project version: `0.2.150`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.149)
+## 3. Current Progress Summary (`VERSION` 0.2.150)
 
 ### Delivered Foundations
 
@@ -275,6 +275,14 @@ verification item uses explicit status semantics:
   gameplay-semantics or balance change is introduced; exact spread/falloff,
   controlled legacy runtime, browser capture, audio, WebGPU, and broad AI
   parity remain `NOT_RUN`.
+- **M9 vertical Lava Armor encounter (`0.2.150`):** The delivered typed Lava
+  Armor periodic recharge transition now has a declarative ASCII encounter,
+  replay determinism, and browser-session presentation-boundary parity covering
+  five accepted waits, timer progression, the three-point durability clamp,
+  stable identity, event ordering, observations, and scene derivation. No
+  gameplay-semantics or balance change is introduced; Lava hazard/resistance,
+  controlled legacy runtime, browser capture, audio, WebGPU, audiovisual, and
+  broad armor/content parity remain `NOT_RUN`.
 - **Tooling & Replays (M5, M6)**: Versioned replay engine (`V2`), declarative
   ASCII scenario runners, scripted bots, batch sweep runners, and a pure Rust
   zero-dependency MCP server.

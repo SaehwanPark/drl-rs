@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-26
-Current project version: `0.2.149`
+Current project version: `0.2.150`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9/Vertical Fidelity — Jackhammer Encounter
+## 2. Active Implementation Slice: M9/Vertical Fidelity — Lava Armor Encounter
 
 ### 2.1 Objective
 
-Exercise the already-delivered Jackhammer fire-mode transition as one bounded
-vertical encounter. The same stable scenario/replay command sequence must be
-observable through core events and the browser presentation boundary without
-changing gameplay semantics or balance.
+Exercise the already-delivered Lava Armor periodic recharge transition as one
+bounded vertical encounter. The same stable scenario/replay command sequence
+must be observable through core events and the browser presentation boundary
+without changing gameplay semantics or balance.
 
 The legacy Pascal/Lua implementation remains the behavioral reference. Its
 architecture, global callback machinery, and runtime Lua object model remain
@@ -43,8 +43,8 @@ non-goals for reproduction.
 - **Steering priority:** Vertical canonical fidelity after the Gate C/D exit
   gates.
 - **Observable outcome:** A declarative encounter, replay execution, and
-  browser session agree on fire-mode selection, score cost, single-shot
-  resolution, clip consumption, knockback, event ordering, player observation,
+  browser session agree on the Lava tile fixture, five accepted waits, timer
+  progression, durability clamp, recharge event ordering, player observation,
   and pure presentation effects.
 - **Gameplay/replay impact:** No accepted transition, replay schema, RNG
   sampling rule, or gameplay-semantics version changes.
@@ -54,14 +54,14 @@ non-goals for reproduction.
 - **Evidence boundary:** Rust scenario/replay/core/browser-boundary tests are
   verified. Controlled legacy runtime, browser capture, audio, WebGPU, and
   audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** New Jackhammer balance or spread/falloff equations, broad
+- **Non-goals:** New Lava Armor balance or hazard/resistance equations, broad
   content migration, new protocol fields, AI policy changes, audiovisual parity,
   and runtime Lua.
 
 ### 2.2 Why this slice is bounded
 
 The existing Gate C and Gate D work already centralizes stable item identity and
-delivers the typed Jackhammer transition. This slice proves that those pieces
+delivers the typed Lava Armor transition. This slice proves that those pieces
 survive the scenario/replay and browser boundaries without introducing a second
 simulation model or a browser-specific wire format.
 
@@ -899,6 +899,26 @@ presentation boundaries. Its vertical slice must:
 - [x] keep gameplay semantics unchanged while recording exact spread/falloff,
   legacy runtime, browser capture, audio, WebGPU, and broader monster/AI parity
   as `NOT_RUN`.
+
+### 2.7x Current vertical Lava Armor encounter delivery target
+
+The bounded implementation target for this revision is a canonical Lava Armor
+periodic-recharge encounter across the declarative scenario, replay, and
+browser presentation boundaries. Its vertical slice must:
+
+- [x] construct an exact deterministic ASCII encounter with explicit Lava under
+  the player and beside the spawn, plus configured Lava Armor at `97/100`
+  durability;
+- [x] run the same five `Command::Wait` commands through `ScenarioRunner`,
+  preserving timer progression, one three-point recharge clamp, stable item
+  identity, and action order;
+- [x] verify replay determinism and compare replayed events and final game state
+  with the direct command result;
+- [x] compare `BrowserSession::submit` with direct `Game::step` for each wait's
+  events, player observations, empty pure effect timelines, and scene derivation;
+- [x] keep gameplay semantics unchanged while recording Lava hazard/resistance,
+  legacy runtime, browser capture, audio, WebGPU, audiovisual, and broader
+  armor/content parity as `NOT_RUN`.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 

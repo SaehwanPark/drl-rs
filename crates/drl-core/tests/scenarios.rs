@@ -5,7 +5,7 @@ use drl_core::replay::ReplayEngine;
 use drl_core::scenario::{Scenario, ScenarioRunner};
 use drl_protocol::{
   Command, Direction, GameEvent, ItemId, ItemSpawnKind, PlayerSpawnConfig, Position, RunOutcome,
-  ScenarioFixture,
+  ScenarioFixture, TileKind,
 };
 
 #[test]
@@ -831,4 +831,129 @@ fn jackhammer_vertical_scenario_preserves_single_mode_and_replay() {
   assert_eq!(replay_events, events);
   assert_eq!(replayed_game, game);
   assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}
+
+#[test]
+fn lava_armor_vertical_scenario_preserves_recharge_and_replay() {
+  let player_position = Position::new(1, 1);
+  let mut scenario = Scenario::from_ascii(
+    "LavaArmorVertical",
+    "Lava Armor recharge encounter on a canonical Lava tile",
+    "########\n#@=....#\n#......#\n########\n",
+  )
+  .unwrap();
+  scenario.seed = 17;
+  // The ASCII player marker supplies the spawn coordinate; the explicit tile
+  // override records the canonical encounter's starting Lava under the player.
+  scenario.tiles.insert(player_position, Tile::Lava);
+  scenario.player_config = Some(PlayerSpawnConfig {
+    hp: 50,
+    max_hp: 50,
+    speed: 100,
+    initial_items: Vec::new(),
+    equipped_weapon: Some(ItemSpawnKind::Pistol),
+    equipped_armor: Some(ItemSpawnKind::LavaArmor),
+    equipped_armor_durability: Some(97),
+  });
+
+  let initial = scenario.instantiate().unwrap();
+  let player_id = initial.world().player_id().unwrap();
+  let armor_id = initial
+    .world()
+    .player()
+    .unwrap()
+    .equipment()
+    .armor()
+    .unwrap()
+    .id();
+  assert_eq!(
+    initial.world().map().get_tile(player_position),
+    Some(Tile::Lava)
+  );
+
+  let commands = [Command::Wait; 5];
+  let mut direct = initial.clone();
+  let mut expected_events = Vec::new();
+  for (index, command) in commands.iter().copied().enumerate() {
+    let step_events = direct.step(command).unwrap();
+    if index < 4 {
+      assert_eq!(
+        direct.world().player().unwrap().lava_recharge_timer(),
+        (index + 1) as u32
+      );
+      assert!(
+        !step_events
+          .iter()
+          .any(|event| matches!(event, GameEvent::LavaArmorRecharged { .. }))
+      );
+    } else {
+      let recharge_index = step_events
+        .iter()
+        .position(|event| {
+          matches!(
+            event,
+            GameEvent::LavaArmorRecharged {
+              entity_id,
+              item_id,
+              durability_restored: 3,
+              durability_remaining: 100,
+              timer: 0,
+            } if *entity_id == player_id && *item_id == armor_id
+          )
+        })
+        .unwrap();
+      assert!(matches!(
+        step_events[recharge_index.saturating_sub(1)],
+        GameEvent::EntityWaited { entity_id, .. } if entity_id == player_id
+      ));
+      assert!(matches!(
+        step_events[recharge_index + 1],
+        GameEvent::ActionCostPaid { entity_id, .. } if entity_id == player_id
+      ));
+      assert_eq!(direct.world().player().unwrap().lava_recharge_timer(), 0);
+      assert_eq!(
+        direct
+          .world()
+          .player()
+          .unwrap()
+          .equipment()
+          .armor()
+          .unwrap()
+          .armor_properties()
+          .unwrap()
+          .durability,
+        100
+      );
+    }
+    expected_events.extend(step_events);
+  }
+
+  let (game, events, _metrics, replay) =
+    ScenarioRunner::run_commands(&scenario, &commands).unwrap();
+  assert_eq!(game, direct);
+  assert_eq!(events, expected_events);
+  assert_eq!(replay.commands, commands);
+  let (scenario_replayed_game, scenario_replay_events) = ReplayEngine::run(&replay).unwrap();
+  assert_eq!(scenario_replayed_game, game);
+  assert_eq!(scenario_replay_events, events);
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+
+  let mut setup_replay = drl_protocol::ReplayLog::new(17, 8, 4, player_position)
+    .with_player_config(PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: Vec::new(),
+      equipped_weapon: Some(ItemSpawnKind::Pistol),
+      equipped_armor: Some(ItemSpawnKind::LavaArmor),
+      equipped_armor_durability: Some(97),
+    });
+  setup_replay.record_tile(player_position, TileKind::Lava);
+  setup_replay.record_tile(player_position + Direction::East, TileKind::Lava);
+  for command in commands {
+    setup_replay.record_command(command);
+  }
+  let (replayed_game, replay_events) = ReplayEngine::run(&setup_replay).unwrap();
+  assert_eq!(replayed_game, game);
+  assert_eq!(replay_events, events);
 }
