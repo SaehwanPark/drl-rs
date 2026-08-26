@@ -372,3 +372,89 @@ fn trigun_vertical_scenario_preserves_nuke_order_and_replay() {
   );
   assert!(ReplayEngine::verify_determinism(&replay).unwrap());
 }
+
+#[test]
+fn acid_spitter_vertical_scenario_preserves_terrain_reload_and_replay() {
+  let ascii = "########\n#@w....#\n#......#\n########\n";
+  let mut scenario = Scenario::from_ascii(
+    "AcidSpitterVertical",
+    "Acid Spitter reload converts the current cell to Water",
+    ascii,
+  )
+  .unwrap();
+  let player_position = scenario.player_start;
+  scenario.tiles.insert(player_position, Tile::Acid);
+  scenario.player_config = Some(PlayerSpawnConfig {
+    hp: 50,
+    max_hp: 50,
+    speed: 100,
+    initial_items: Vec::new(),
+    equipped_weapon: Some(ItemSpawnKind::AcidSpitter),
+    equipped_armor: None,
+    equipped_armor_durability: None,
+  });
+  let acid_spitter_id = scenario
+    .instantiate()
+    .unwrap()
+    .world()
+    .player()
+    .unwrap()
+    .equipment()
+    .weapon()
+    .unwrap()
+    .id();
+
+  let (game, events, _metrics, replay) =
+    ScenarioRunner::run_commands(&scenario, &[Command::Reload]).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let reload_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::AcidSpitterReloaded {
+          entity_id,
+          item_id,
+          position,
+          ammo_loaded: 1,
+          current_clip: 1,
+          max_clip: 10,
+          score_count_remaining: -1_000,
+        } if *entity_id == player_id
+          && *item_id == acid_spitter_id
+          && *position == player_position
+      )
+    })
+    .expect("vertical reload event must preserve terrain-fed costs");
+  let cost_index = events
+    .iter()
+    .position(|event| matches!(event, GameEvent::ActionCostPaid { entity_id, .. } if *entity_id == player_id))
+    .expect("accepted reload must pay an action cost");
+  let turn_end_index = events
+    .iter()
+    .position(|event| matches!(event, GameEvent::TurnEnded { .. }))
+    .expect("accepted reload must end its turn");
+
+  assert!(reload_index < cost_index);
+  assert!(cost_index < turn_end_index);
+  assert_eq!(
+    game.world().map().get_tile(player_position),
+    Some(Tile::Water)
+  );
+  assert_eq!(
+    game
+      .world()
+      .map()
+      .get_tile(player_position + Direction::East),
+    Some(Tile::Water)
+  );
+  let weapon = game.world().player().unwrap().equipment().weapon().unwrap();
+  assert_eq!(weapon.id(), acid_spitter_id);
+  assert_eq!(weapon.weapon_properties().unwrap().current_clip, 1);
+  assert_eq!(game.world().player().unwrap().score_count(), -1_000);
+  assert_eq!(replay.commands, vec![Command::Reload]);
+  let (replayed, replay_events) = ReplayEngine::run(&replay).unwrap();
+  assert_eq!(replay_events, events);
+  assert_eq!(replayed, game);
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}

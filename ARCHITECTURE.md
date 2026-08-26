@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-26
-Current project version: `0.2.145`
+Current project version: `0.2.146`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -231,7 +231,8 @@ Presentation Boundary
     headless callers; native vertical-fidelity tests may wrap a replay-built
     game to compare events, fair observations, pure effects, and scenes without
     introducing a browser-side simulation model. The Trigun alternate-reload
-    encounter is covered by this same cross-boundary comparison.
+    and Acid Spitter terrain-reload encounters are covered by this same
+    cross-boundary comparison.
   - Accessible semantic minimap text grid fed by the fair `MinimapState`
     projection; it is bounded and never queries hidden world state.
   - WebGPU pipeline: texture cache, linear `Rgba8Unorm` storage, nearest base

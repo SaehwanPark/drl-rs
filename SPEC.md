@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-26
-Current project version: `0.2.145`
+Current project version: `0.2.146`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9/Vertical Fidelity — Trigun Encounter
+## 2. Active Implementation Slice: M9/Vertical Fidelity — Acid Spitter Encounter
 
 ### 2.1 Objective
 
-Exercise the already-delivered Trigun alternate-reload transition as one
-bounded vertical encounter. The same stable scenario/replay command must be
-observable through core events and the browser presentation boundary without
-changing gameplay semantics or balance.
+Exercise the already-delivered Acid Spitter reload transition as one bounded
+vertical encounter. The same stable scenario/replay command must be observable
+through core events and the browser presentation boundary without changing
+gameplay semantics or balance.
 
 The legacy Pascal/Lua implementation remains the behavioral reference. Its
 architecture, global callback machinery, and runtime Lua object model remain
@@ -43,8 +43,8 @@ non-goals for reproduction.
 - **Steering priority:** Vertical canonical fidelity after the Gate C/D exit
   gates.
 - **Observable outcome:** A declarative encounter, replay execution, and
-  browser session agree on Trigun confirmation/costs, one-tick nuke resolution,
-  terminal event ordering, player observation, and pure presentation effects.
+  browser session agree on Acid terrain, reload costs, Acid-to-Water conversion,
+  event ordering, player observation, and pure presentation effects.
 - **Gameplay/replay impact:** No accepted transition, replay schema, RNG
   sampling rule, or gameplay-semantics version changes.
 - **Protocol/domain ownership:** `drl-protocol` owns stable item identity and
@@ -53,14 +53,14 @@ non-goals for reproduction.
 - **Evidence boundary:** Rust scenario/replay/core/browser-boundary tests are
   verified. Controlled legacy runtime, browser capture, audio, WebGPU, and
   audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** New Trigun balance, nuke geometry/map effects, broad content
-  migration, new protocol fields, AI policy changes, armor/resistance parity,
-  and runtime Lua.
+- **Non-goals:** New Acid Spitter balance, hazard resistance/flow, broad
+  content migration, new protocol fields, AI policy changes, audiovisual
+  parity, and runtime Lua.
 
 ### 2.2 Why this slice is bounded
 
 The existing Gate C and Gate D work already centralizes stable item identity and
-delivers the typed Trigun transition. This slice proves that those pieces
+delivers the typed Acid Spitter transition. This slice proves that those pieces
 survive the scenario/replay and browser boundaries without introducing a second
 simulation model or a browser-specific wire format.
 
@@ -800,7 +800,7 @@ boundaries. Its vertical slice must:
   legacy runtime, browser capture, audio, WebGPU, armor/resistance, and broad
   monster/AI parity as `NOT_RUN`.
 
-### 2.7s Current vertical Trigun encounter delivery target
+### 2.7s Previous vertical Trigun encounter delivery target
 
 The bounded implementation target for this revision is a canonical Trigun
 alternate-reload encounter across the declarative scenario, replay, and
@@ -820,6 +820,26 @@ browser presentation boundaries. Its vertical slice must:
   animation timing, confirmation UI, controlled legacy runtime, browser
   capture, audio, WebGPU, armor/resistance, and broader monster/AI parity as
   `NOT_RUN`.
+
+### 2.7t Current vertical Acid Spitter encounter delivery target
+
+The bounded implementation target for this revision is a canonical Acid
+Spitter reload encounter across the declarative scenario, replay, and browser
+presentation boundaries. Its vertical slice must:
+
+- [x] construct a deterministic ASCII encounter with a configured Acid Spitter
+  on an Acid tile and an adjacent Water destination;
+- [x] run the same `Command::Reload` through `ScenarioRunner`, preserving
+  one-round clip loading, Acid-to-Water conversion, score-count cost, action
+  ordering, and stable item identity;
+- [x] verify replay determinism and retain the typed reload command payload
+  without introducing a browser-specific replay format;
+- [x] compare `BrowserSession::submit` with direct `Game::step` for events,
+  player observations, pure effect timelines, terrain projection, and scene
+  derivation;
+- [x] keep gameplay semantics unchanged while recording hazard resistance/flow,
+  explosion geometry, animation timing, controlled legacy runtime, browser
+  capture, audio, WebGPU, and broader monster/AI parity as `NOT_RUN`.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 

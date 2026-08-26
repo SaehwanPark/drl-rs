@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-26
-Current project version: `0.2.145`
+Current project version: `0.2.146`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.145)
+## 3. Current Progress Summary (`VERSION` 0.2.146)
 
 ### Delivered Foundations
 
@@ -243,6 +243,14 @@ verification item uses explicit status semantics:
   semantics or balance change is introduced; explosion geometry, animation,
   confirmation UI, controlled legacy runtime, browser capture, audio, WebGPU,
   armor/resistance, and broad AI parity remain `NOT_RUN`.
+- **M9 vertical Acid Spitter encounter (`0.2.146`):** The delivered typed Acid
+  Spitter reload transition now has a declarative ASCII encounter, replay
+  determinism, and browser-session presentation-boundary parity covering
+  terrain-fed reload costs, Acid-to-Water conversion, event/effect ordering,
+  observations, and scene derivation. No gameplay-semantics or balance change
+  is introduced; hazard resistance/flow, explosion geometry, animation timing,
+  controlled legacy runtime, browser capture, audio, WebGPU, and broad AI
+  parity remain `NOT_RUN`.
 - **Tooling & Replays (M5, M6)**: Versioned replay engine (`V2`), declarative
   ASCII scenario runners, scripted bots, batch sweep runners, and a pure Rust
   zero-dependency MCP server.

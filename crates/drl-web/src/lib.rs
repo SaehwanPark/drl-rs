@@ -2663,6 +2663,135 @@ mod tests {
       drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism")
     );
   }
+
+  #[test]
+  fn acid_spitter_vertical_browser_boundary_matches_direct_core_presentation() {
+    let player_position = Position::new(1, 1);
+    let mut setup_replay =
+      ReplayLog::new(42, 8, 4, player_position).with_player_config(PlayerSpawnConfig {
+        hp: 50,
+        max_hp: 50,
+        speed: 100,
+        initial_items: Vec::new(),
+        equipped_weapon: Some(ItemSpawnKind::AcidSpitter),
+        equipped_armor: None,
+        equipped_armor_durability: None,
+      });
+    setup_replay.record_tile(player_position, TileKind::Acid);
+    setup_replay.record_tile(player_position + Direction::East, TileKind::Water);
+
+    let (initial, setup_events) =
+      drl_core::ReplayEngine::run(&setup_replay).expect("vertical replay setup");
+    assert!(setup_events.is_empty());
+    let mut scenario = drl_core::scenario::Scenario::from_ascii(
+      "AcidSpitterVertical",
+      "Acid Spitter reload converts the current cell to Water",
+      "########\n#@w....#\n#......#\n########\n",
+    )
+    .expect("vertical scenario fixture");
+    scenario.tiles.insert(player_position, drl_core::Tile::Acid);
+    scenario.player_config = Some(PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: Vec::new(),
+      equipped_weapon: Some(ItemSpawnKind::AcidSpitter),
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    });
+    assert_eq!(
+      scenario.instantiate().expect("scenario initial state"),
+      initial
+    );
+    let acid_spitter_id = initial
+      .world()
+      .player()
+      .expect("player")
+      .equipment()
+      .weapon()
+      .expect("equipped Acid Spitter")
+      .id();
+    assert_eq!(
+      initial.world().map().get_tile(player_position),
+      Some(Tile::Acid)
+    );
+    assert_eq!(
+      initial
+        .world()
+        .map()
+        .get_tile(player_position + Direction::East),
+      Some(Tile::Water)
+    );
+
+    let mut direct = initial.clone();
+    let mut browser = BrowserSession::from_game(initial);
+    let command = Command::Reload;
+    let expected_events = direct.step(command).expect("direct terrain reload");
+    let step = browser.submit(command).expect("browser terrain reload");
+    assert_eq!(step.events, expected_events);
+    assert_eq!(step.after, direct.observe_player());
+    assert_eq!(
+      step.effects,
+      drl_render::effect_timeline_for_observations(&step.before, &step.after, &expected_events,)
+    );
+    assert_eq!(
+      step.effects,
+      vec![drl_render::EffectSpan {
+        effect: drl_render::PresentationEffect::Reload,
+        start_tick: 0,
+        duration_ticks: 3,
+      }]
+    );
+    assert_eq!(browser.scene(), RenderScene::from_observation(&step.after));
+    assert_eq!(
+      direct.world().map().get_tile(player_position),
+      Some(Tile::Water)
+    );
+    assert!(
+      step
+        .after
+        .visible_tiles
+        .iter()
+        .any(|tile| { tile.position == player_position && tile.kind == TileKind::Water })
+    );
+    assert_eq!(browser.observation().player_position, player_position);
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .id(),
+      acid_spitter_id
+    );
+
+    let reload_index = expected_events
+      .iter()
+      .position(|event| matches!(event, drl_protocol::GameEvent::AcidSpitterReloaded { .. }))
+      .expect("terrain reload event");
+    let cost_index = expected_events
+      .iter()
+      .position(|event| matches!(event, drl_protocol::GameEvent::ActionCostPaid { .. }))
+      .expect("reload action cost");
+    let turn_end_index = expected_events
+      .iter()
+      .position(|event| matches!(event, drl_protocol::GameEvent::TurnEnded { .. }))
+      .expect("reload turn end");
+    assert!(reload_index < cost_index);
+    assert!(cost_index < turn_end_index);
+
+    let mut command_replay = setup_replay;
+    command_replay.record_command(command);
+    let (replayed, replay_events) =
+      drl_core::ReplayEngine::run(&command_replay).expect("vertical command replay");
+    assert_eq!(replay_events, expected_events);
+    assert_eq!(replayed.observe_player(), direct.observe_player());
+    assert!(
+      drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism")
+    );
+  }
 }
 
 #[cfg(all(test, target_arch = "wasm32"))]
