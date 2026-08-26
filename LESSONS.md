@@ -197,6 +197,22 @@ repository and WASM job has reached a passing terminal state.
   rollback, append-after-load, terminal loads, session wrapper metadata such as
   turn limits, and repeated reset reruns as separate acceptance cases.
 
+## Prove fixture identity before boundary parity
+
+- **Context:** A vertical slice often reconstructs one encounter through both
+  a declarative scenario and a replay log before comparing browser output.
+- **Symptom:** Direct and browser commands can agree while the two setup paths
+  quietly differ in monster metadata, terrain, seed, or item identity.
+- **Cause:** Event/effect assertions begin after setup and do not establish
+  that both boundaries started from the same authoritative `Game`.
+- **Resolution:** Assert `Scenario::instantiate() == ReplayEngine::run(setup)`
+  before submitting the command, then compare replayed events and final state
+  with direct execution. Require literal effect spans for newly exercised
+  presentation behavior instead of only comparing a mapper to itself.
+- **Prevention:** Keep exact dimensions, ASCII rows, spawn fields, command
+  payloads, and derived IDs in the slice plan; treat any fixture drift as a
+  scope failure rather than adjusting an expected output in isolation.
+
 ## Make bounded presentation storage fail explicitly
 
 - **Context:** Legacy particle callbacks append accepted decal requests, while
