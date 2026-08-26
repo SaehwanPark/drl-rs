@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-26
-Current project version: `0.2.159`
+Current project version: `0.2.160`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,11 +25,11 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9/Vertical Fidelity — Plasma Rifle Cell Reload
+## 2. Active Implementation Slice: M9/Vertical Fidelity — Rocket Launcher One-Shot Reload
 
 ### 2.1 Objective
 
-Exercise the existing typed Plasma Rifle ranged-combat and cell-reload
+Exercise the existing typed Rocket Launcher ranged-combat and one-shot reload
 transitions through a fixed ammunition encounter. The same stable
 scenario/replay command sequence must be observable through core events and the
 browser presentation boundary without changing gameplay semantics or balance.
@@ -43,9 +43,9 @@ non-goals for reproduction.
 - **Steering priority:** Vertical canonical fidelity after the Gate C/D exit
   gates.
 - **Observable outcome:** A declarative encounter, replay execution, and
-  browser session agree on the exact arena, configured Plasma Rifle identity,
-  seeded six-shot ranged sequence, cell-ammunition consumption, reload
-  transition, event ordering, player observation, and pure presentation
+  browser session agree on the exact arena, configured Rocket Launcher
+  identity, seeded one-shot ranged sequence, rocket-ammunition consumption,
+  reload transition, event ordering, player observation, and pure presentation
   effects.
 - **Gameplay/replay impact:** No accepted transition, replay schema, RNG
   sampling rule, or gameplay-semantics version changes.
@@ -58,7 +58,7 @@ non-goals for reproduction.
 - **Non-goals:** New weapon or monster balance equations, broad content
   migration, new protocol fields, AI policy changes, audiovisual parity,
   runtime Lua, and alternate weapon/ammunition variants beyond the pinned
-  Plasma Rifle cell-reload policy.
+  Rocket Launcher one-shot reload policy.
 
 ### 2.2 Why this slice is bounded
 
@@ -1085,7 +1085,7 @@ presentation boundaries. Its vertical slice must:
   runtime, browser capture, audio, WebGPU, audiovisual, and broader
   weapon/ammunition parity as `NOT_RUN`.
 
-### 2.7ag Current vertical Plasma Rifle cell-reload delivery target
+### 2.7ag Previous vertical Plasma Rifle cell-reload delivery target
 
 The bounded implementation target for this revision is a Plasma Rifle
 six-cell clip depletion and reload encounter across the declarative scenario,
@@ -1096,6 +1096,27 @@ replay, and browser presentation boundaries. Its vertical slice must:
   target;
 - [x] run six seeded ranged attacks then `Reload` through `ScenarioRunner`,
   preserving shot/hit totals, ammunition consumption, reload state, stable
+  identities, and event order;
+- [x] verify replay determinism and compare generated replay events/final game
+  state with the direct `ScenarioRunner` result;
+- [x] compare `BrowserSession::submit` with direct `Game::step` for every
+  command's events, observations, literal effects, scene derivation, and
+  retained replay commands;
+- [x] keep gameplay semantics unchanged while recording controlled legacy
+  runtime, browser capture, audio, WebGPU, audiovisual, and broader
+  weapon/ammunition parity as `NOT_RUN`.
+
+### 2.7ah Current vertical Rocket Launcher one-shot reload delivery target
+
+The bounded implementation target for this revision is a Rocket Launcher
+one-shot clip depletion and reload encounter across the declarative scenario,
+replay, and browser presentation boundaries. Its vertical slice must:
+
+- [x] construct an exact deterministic 8x4 ASCII arena with a configured
+  Rocket Launcher, two reserve rockets, and a static Former Human-profile
+  target;
+- [x] run one seeded ranged attack then `Reload` through `ScenarioRunner`,
+  preserving the hit/damage total, rocket consumption, reload state, stable
   identities, and event order;
 - [x] verify replay determinism and compare generated replay events/final game
   state with the direct `ScenarioRunner` result;
@@ -1164,7 +1185,9 @@ successors that select callback-bearing behavior must include that behavior
 explicitly. The `0.2.158` Pistol reload encounter adds the ranged ammunition
 and clip-timing boundary without changing callback semantics. The `0.2.159`
 Plasma Rifle cell-reload encounter adds a distinct cell-ammunition and
-six-round clip boundary without changing callback semantics.
+six-round clip boundary without changing callback semantics. The `0.2.160`
+Rocket Launcher one-shot reload encounter adds a one-round rocket clip
+boundary without changing callback semantics.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity
