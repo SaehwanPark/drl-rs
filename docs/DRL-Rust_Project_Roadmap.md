@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-26
-Current project version: `0.2.158`
+Current project version: `0.2.159`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.158)
+## 3. Current Progress Summary (`VERSION` 0.2.159)
 
 ### Delivered Foundations
 
@@ -345,6 +345,14 @@ verification item uses explicit status semantics:
   browser-session presentation-boundary parity covering ten seeded ranged
   attacks, hit/damage totals, ammunition consumption, reload state, stable
   identities, observations, literal effects, and scene derivation. No
+  gameplay-semantics or balance change is introduced; controlled legacy
+  runtime, browser capture, audio, WebGPU, audiovisual, and broader
+  weapon/ammunition parity remain `NOT_RUN`.
+- **M9 vertical Plasma Rifle cell reload (`0.2.159`):** The delivered typed
+  Plasma Rifle encounter now has a declarative ASCII scenario, replay
+  determinism, and browser-session presentation-boundary parity covering six
+  seeded ranged attacks, cell-ammunition consumption, six-round clip state,
+  stable identities, observations, literal effects, and scene derivation. No
   gameplay-semantics or balance change is introduced; controlled legacy
   runtime, browser capture, audio, WebGPU, audiovisual, and broader
   weapon/ammunition parity remain `NOT_RUN`.
