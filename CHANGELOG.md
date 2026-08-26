@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.152]
+
+- Added a bounded Former Human-profile progression encounter spanning declarative
+  scenario execution, deterministic replay, and the browser presentation
+  boundary. The slice compares Pistol ranged combat, scheduled monster AI
+  responses, target defeat and ammunition pickup, stairs descent, event/order
+  semantics, observations, and scene derivation without changing gameplay
+  semantics or balance.
+
 ## [0.2.151]
 
 - Added a bounded vertical Medical Powerarmor encounter check spanning

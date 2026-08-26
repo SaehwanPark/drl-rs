@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-26
-Current project version: `0.2.151`
+Current project version: `0.2.152`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.151)
+## 3. Current Progress Summary (`VERSION` 0.2.152)
 
 ### Delivered Foundations
 
@@ -291,6 +291,14 @@ verification item uses explicit status semantics:
   scene derivation. No gameplay-semantics or balance change is introduced;
   controlled legacy runtime, browser capture, audio, WebGPU, audiovisual, and
   broad armor/content parity remain `NOT_RUN`.
+- **M9 vertical Former Human-profile progression (`0.2.152`):** The delivered
+  typed Pistol progression now has a declarative ASCII encounter, replay
+  determinism, and browser-session presentation-boundary parity covering
+  scheduled Former Human-profile responses, ranged combat, target defeat, dropped
+  ammunition pickup, stairs descent, stable identities, event ordering,
+  observations, and scene derivation. No gameplay-semantics or balance change
+  is introduced; controlled legacy runtime, browser capture, audio, WebGPU,
+  audiovisual, and broader monster/weapon parity remain `NOT_RUN`.
 - **Tooling & Replays (M5, M6)**: Versioned replay engine (`V2`), declarative
   ASCII scenario runners, scripted bots, batch sweep runners, and a pure Rust
   zero-dependency MCP server.

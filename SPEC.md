@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-26
-Current project version: `0.2.151`
+Current project version: `0.2.152`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,15 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9/Vertical Fidelity — Medical Powerarmor Encounter
+## 2. Active Implementation Slice: M9/Vertical Fidelity — Former Human-Profile Progression
 
 ### 2.1 Objective
 
-Exercise the already-delivered Medical Powerarmor periodic repair transition as
-one bounded vertical encounter. The same stable scenario/replay command
-sequence must be observable through core events and the browser presentation
-boundary without changing gameplay semantics or balance.
+Exercise one canonical Pistol progression through a Former Human-profile
+encounter,
+dropped ammunition pickup, and stairs descent. The same stable scenario/replay
+command sequence must be observable through core events and the browser
+presentation boundary without changing gameplay semantics or balance.
 
 The legacy Pascal/Lua implementation remains the behavioral reference. Its
 architecture, global callback machinery, and runtime Lua object model remain
@@ -43,9 +44,9 @@ non-goals for reproduction.
 - **Steering priority:** Vertical canonical fidelity after the Gate C/D exit
   gates.
 - **Observable outcome:** A declarative encounter, replay execution, and
-  browser session agree on the low-health fixture, thirty accepted waits, timer
-  progression, one-point healing, durability spend, repair event ordering,
-  player observation, and pure presentation effects.
+  browser session agree on the exact arena, Pistol ranged combat, scheduled
+  Former Human-profile response, target defeat, dropped-ammunition pickup, stairs
+  descent, event ordering, player observation, and pure presentation effects.
 - **Gameplay/replay impact:** No accepted transition, replay schema, RNG
   sampling rule, or gameplay-semantics version changes.
 - **Protocol/domain ownership:** `drl-protocol` owns stable item identity and
@@ -54,16 +55,17 @@ non-goals for reproduction.
 - **Evidence boundary:** Rust scenario/replay/core/browser-boundary tests are
   verified. Controlled legacy runtime, browser capture, audio, WebGPU, and
   audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** New Medical Powerarmor balance or repair-threshold equations, broad
-  content migration, new protocol fields, AI policy changes, audiovisual parity,
-  and runtime Lua.
+- **Non-goals:** New weapon or monster balance equations, broad content
+  migration, new protocol fields, AI policy changes, audiovisual parity, and
+  runtime Lua.
 
 ### 2.2 Why this slice is bounded
 
 The existing Gate C and Gate D work already centralizes stable item identity and
-delivers the typed Medical Powerarmor transition. This slice proves that those pieces
-survive the scenario/replay and browser boundaries without introducing a second
-simulation model or a browser-specific wire format.
+delivers typed combat, AI, inventory, and level-transition behavior. This slice
+proves that those pieces survive one canonical scenario/replay and browser
+boundary without introducing a second simulation model or a browser-specific
+wire format.
 
 Behavioral and presentation mappings remain explicit by design. The encounter
 consumes those typed boundaries while preserving compiler exhaustiveness and
@@ -920,7 +922,7 @@ browser presentation boundaries. Its vertical slice must:
   legacy runtime, browser capture, audio, WebGPU, audiovisual, and broader
   armor/content parity as `NOT_RUN`.
 
-### 2.7y Current vertical Medical Powerarmor encounter delivery target
+### 2.7y Previous vertical Medical Powerarmor encounter delivery target
 
 The bounded implementation target for this revision is a canonical Medical
 Powerarmor periodic-repair encounter across the declarative scenario, replay,
@@ -938,6 +940,30 @@ and browser presentation boundaries. Its vertical slice must:
 - [x] keep gameplay semantics unchanged while recording repair-threshold
   variants, controlled legacy runtime, browser capture, audio, WebGPU,
   audiovisual, and broader armor/content parity as `NOT_RUN`.
+
+### 2.7z Current vertical Former Human-profile progression delivery target
+
+The bounded implementation target for this revision is a canonical Pistol
+progression through a Former Human-profile encounter, dropped ammunition
+pickup, and stairs descent across the declarative scenario, replay, and browser
+presentation boundaries. Its vertical slice must:
+
+- [x] construct an exact deterministic 8x4 ASCII arena with a configured Pistol,
+  one Former Human-profile target (using an explicit non-catalog identity to
+  keep scenario and replay metadata equal), and a down-stairs exit;
+- [x] run the same movement, ranged-attack, pickup, and `Descend` commands
+  through `ScenarioRunner`, preserving scheduled Former Human-profile
+  responses, damage and
+  death events, dropped-ammunition identity, pickup state, action order, and
+  level transition;
+- [x] verify replay determinism and compare generated replay events/final game
+  state with the direct `ScenarioRunner` result;
+- [x] compare `BrowserSession::submit` with direct `Game::step` for every
+  command's events, player observations, pure effect timeline, and scene
+  derivation;
+- [x] keep gameplay semantics unchanged while recording controlled legacy
+  runtime, browser capture, audio, WebGPU, audiovisual, and broader
+  monster/weapon parity as `NOT_RUN`.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
@@ -981,6 +1007,15 @@ and migrate it end-to-end, including relevant interactions among:
 - one or more callback-derived special behaviors;
 - deterministic replay/scenario evidence;
 - browser presentation required to play the slice.
+
+The `0.2.152` Former Human-profile progression is intentionally a foundational
+progression slice: it exercises the canonical turn, combat, AI, inventory, and
+level-transition path, while callback-derived behavior is already covered by
+the preceding Subtle Knife, Trigun, Acid Spitter, Null Pointer, Grammaton,
+Jackhammer, Lava Armor, and Medical Powerarmor vertical slices. A future
+composite successor that selects a callback-bearing progression must include
+that callback behavior explicitly; this slice does not claim new callback
+coverage.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity
