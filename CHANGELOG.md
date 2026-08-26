@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.146]
+
+- Added a bounded vertical Acid Spitter encounter check spanning declarative
+  scenario execution, deterministic replay, and the browser presentation
+  boundary. The slice compares terrain-fed reload costs, Acid-to-Water
+  conversion, event/effect ordering, observations, and scene derivation
+  without changing gameplay semantics or balance.
+
 ## [0.2.145]
 
 - Added a bounded vertical Trigun encounter check spanning declarative
