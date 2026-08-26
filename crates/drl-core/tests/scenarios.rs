@@ -583,3 +583,121 @@ fn null_pointer_vertical_scenario_preserves_boss_hit_and_replay() {
   assert_eq!(replayed_game, game);
   assert!(ReplayEngine::verify_determinism(&replay).unwrap());
 }
+
+#[test]
+fn grammaton_vertical_scenario_preserves_burst_mode_and_replay() {
+  let ascii = "########\n#@.i...#\n#......#\n########\n";
+  let mut scenario = Scenario::from_ascii(
+    "GrammatonVertical",
+    "Burst-mode Grammaton encounter against a visible target",
+    ascii,
+  )
+  .unwrap();
+  scenario.seed = 4;
+  scenario.player_config = Some(PlayerSpawnConfig {
+    hp: 50,
+    max_hp: 50,
+    speed: 100,
+    initial_items: Vec::new(),
+    equipped_weapon: Some(ItemSpawnKind::GrammatonBeretta),
+    equipped_armor: None,
+    equipped_armor_durability: None,
+  });
+  scenario.monsters[0].name = "Burst Target".to_string();
+  scenario.monsters[0].hp = 200;
+  scenario.monsters[0].speed = 1;
+
+  let grammaton_id = scenario
+    .instantiate()
+    .unwrap()
+    .world()
+    .player()
+    .unwrap()
+    .equipment()
+    .weapon()
+    .unwrap()
+    .id();
+  let target_position = Position::new(3, 1);
+  let mode_command = Command::AltReload {
+    item_id: grammaton_id,
+    confirmed: true,
+  };
+  let attack_command = Command::AttackRanged(target_position);
+  let commands = [mode_command, attack_command];
+  let (game, events, _metrics, replay) =
+    ScenarioRunner::run_commands(&scenario, &commands).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let target_id = game
+    .world()
+    .actors()
+    .values()
+    .find(|actor| actor.position() == target_position)
+    .unwrap()
+    .id();
+
+  let mode_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::GrammatonFireModeChanged {
+          entity_id,
+          item_id,
+          mode: drl_protocol::WeaponFireMode::Burst,
+          score_count_remaining: -200,
+        } if *entity_id == player_id && *item_id == grammaton_id
+      )
+    })
+    .expect("mode cycle event must select Burst");
+  let attack_events: Vec<_> = events
+    .iter()
+    .enumerate()
+    .filter(|(_, event)| {
+      matches!(
+        event,
+        GameEvent::AttackResolved {
+          attacker_id,
+          target_id: resolved_target,
+          outcome: drl_protocol::AttackOutcome::Hit { .. },
+          is_ranged: true,
+        } if *attacker_id == player_id && *resolved_target == target_id
+      )
+    })
+    .collect();
+  assert_eq!(attack_events.len(), 3);
+  assert!(attack_events.iter().all(|(index, _)| *index > mode_index));
+  assert_eq!(game.world().get_actor(target_id).unwrap().hp().current, 188);
+  assert_eq!(game.world().player().unwrap().score_count(), -200);
+  assert_eq!(
+    game
+      .world()
+      .player()
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .fire_mode,
+    drl_protocol::WeaponFireMode::Burst
+  );
+  assert_eq!(
+    game
+      .world()
+      .player()
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .current_clip,
+    15
+  );
+  assert_eq!(replay.commands, commands);
+
+  let (replayed_game, replay_events) = ReplayEngine::run(&replay).unwrap();
+  assert_eq!(replay_events, events);
+  assert_eq!(replayed_game, game);
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}

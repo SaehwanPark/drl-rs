@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.148]
+
+- Added a bounded vertical Grammaton Cleric Beretta encounter check spanning
+  declarative scenario execution, deterministic replay, and the browser
+  presentation boundary. The slice compares Burst mode selection, score cost,
+  three-shot clip consumption, event/effect ordering, observations, and scene
+  derivation without changing gameplay semantics or balance.
+
 ## [0.2.147]
 
 - Added a bounded vertical Null Pointer encounter check spanning declarative

@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-26
-Current project version: `0.2.147`
+Current project version: `0.2.148`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,12 +25,12 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9/Vertical Fidelity — Null Pointer Encounter
+## 2. Active Implementation Slice: M9/Vertical Fidelity — Grammaton Encounter
 
 ### 2.1 Objective
 
-Exercise the already-delivered Null Pointer target-dependent hit transition as
-one bounded vertical encounter. The same stable scenario/replay command must be
+Exercise the already-delivered Grammaton fire-mode transition as one bounded
+vertical encounter. The same stable scenario/replay command sequence must be
 observable through core events and the browser presentation boundary without
 changing gameplay semantics or balance.
 
@@ -43,8 +43,8 @@ non-goals for reproduction.
 - **Steering priority:** Vertical canonical fidelity after the Gate C/D exit
   gates.
 - **Observable outcome:** A declarative encounter, replay execution, and
-  browser session agree on the boss target branch, score floor, deferred
-  explosion scheduling, event ordering, player observation, and pure
+  browser session agree on fire-mode selection, score cost, three-shot burst
+  resolution, clip consumption, event ordering, player observation, and pure
   presentation effects.
 - **Gameplay/replay impact:** No accepted transition, replay schema, RNG
   sampling rule, or gameplay-semantics version changes.
@@ -54,14 +54,14 @@ non-goals for reproduction.
 - **Evidence boundary:** Rust scenario/replay/core/browser-boundary tests are
   verified. Controlled legacy runtime, browser capture, audio, WebGPU, and
   audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** Delayed blast execution/geometry, new Null Pointer balance,
-  broad content migration, new protocol fields, AI policy changes,
-  audiovisual parity, and runtime Lua.
+- **Non-goals:** New Grammaton balance or accuracy equations, broad content
+  migration, new protocol fields, AI policy changes, audiovisual parity, and
+  runtime Lua.
 
 ### 2.2 Why this slice is bounded
 
 The existing Gate C and Gate D work already centralizes stable item identity and
-delivers the typed Null Pointer transition. This slice proves that those pieces
+delivers the typed Grammaton transition. This slice proves that those pieces
 survive the scenario/replay and browser boundaries without introducing a second
 simulation model or a browser-specific wire format.
 
@@ -860,6 +860,25 @@ presentation boundaries. Its vertical slice must:
 - [x] keep gameplay semantics unchanged while recording delayed blast geometry,
   legacy runtime, browser capture, audio, WebGPU, and broader monster/AI parity
   as `NOT_RUN`.
+
+### 2.7v Current vertical Grammaton encounter delivery target
+
+The bounded implementation target for this revision is a canonical Grammaton
+Cleric Beretta fire-mode encounter across the declarative scenario, replay, and
+browser presentation boundaries. Its vertical slice must:
+
+- [x] construct an exact deterministic ASCII encounter with a configured
+  Grammaton and a visible target;
+- [x] run the same `Command::AltReload` and `Command::AttackRanged` sequence
+  through `ScenarioRunner`, preserving Burst selection, score cost, three-shot
+  clip consumption, stable identities, and action ordering;
+- [x] verify replay determinism and compare replayed events and final game state
+  with the direct command result;
+- [x] compare `BrowserSession::submit` with direct `Game::step` for events,
+  player observations, concrete mode/attack effects, and scene derivation;
+- [x] keep gameplay semantics unchanged while recording exact accuracy
+  equations, legacy runtime, browser capture, audio, WebGPU, and broader
+  monster/AI parity as `NOT_RUN`.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 

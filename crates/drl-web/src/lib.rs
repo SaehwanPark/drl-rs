@@ -2952,6 +2952,161 @@ mod tests {
       drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism")
     );
   }
+
+  #[test]
+  fn grammaton_vertical_browser_boundary_matches_direct_core_presentation() {
+    let player_position = Position::new(1, 1);
+    let target_position = Position::new(3, 1);
+    let mut setup_replay =
+      ReplayLog::new(4, 8, 4, player_position).with_player_config(PlayerSpawnConfig {
+        hp: 50,
+        max_hp: 50,
+        speed: 100,
+        initial_items: Vec::new(),
+        equipped_weapon: Some(ItemSpawnKind::GrammatonBeretta),
+        equipped_armor: None,
+        equipped_armor_durability: None,
+      });
+    setup_replay.record_monster(
+      MonsterSpawnSpec::new(target_position, "Burst Target", 200, 1, (3, 8))
+        .with_ranged_combat((2, 5), 7, 70)
+        .with_death_drop(Some(ItemSpawnKind::SmallMedPack)),
+    );
+
+    let (initial, setup_events) =
+      drl_core::ReplayEngine::run(&setup_replay).expect("vertical replay setup");
+    assert!(setup_events.is_empty());
+    let mut scenario = drl_core::scenario::Scenario::from_ascii(
+      "GrammatonVertical",
+      "Burst-mode Grammaton encounter against a visible target",
+      "########\n#@.i...#\n#......#\n########\n",
+    )
+    .expect("vertical scenario fixture");
+    scenario.seed = 4;
+    scenario.monsters[0].name = "Burst Target".to_string();
+    scenario.monsters[0].hp = 200;
+    scenario.monsters[0].speed = 1;
+    scenario.player_config = Some(PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: Vec::new(),
+      equipped_weapon: Some(ItemSpawnKind::GrammatonBeretta),
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    });
+    assert_eq!(
+      scenario.instantiate().expect("scenario initial state"),
+      initial
+    );
+
+    let grammaton_id = initial
+      .world()
+      .player()
+      .expect("player")
+      .equipment()
+      .weapon()
+      .expect("equipped Grammaton")
+      .id();
+    let mode_command = Command::AltReload {
+      item_id: grammaton_id,
+      confirmed: true,
+    };
+    let attack_command = Command::AttackRanged(target_position);
+    let mut direct = initial.clone();
+    let mut browser = BrowserSession::from_game(initial);
+
+    let mode_events = direct.step(mode_command).expect("direct mode cycle");
+    let mode_step = browser.submit(mode_command).expect("browser mode cycle");
+    assert_eq!(mode_step.events, mode_events);
+    assert_eq!(mode_step.after, direct.observe_player());
+    assert!(mode_step.effects.is_empty());
+    assert!(mode_events.iter().any(|event| {
+      matches!(
+        event,
+        drl_protocol::GameEvent::GrammatonFireModeChanged {
+          item_id,
+          mode: drl_protocol::WeaponFireMode::Burst,
+          score_count_remaining: -200,
+          ..
+        } if *item_id == grammaton_id
+      )
+    }));
+
+    let expected_events = direct.step(attack_command).expect("direct burst attack");
+    let step = browser
+      .submit(attack_command)
+      .expect("browser burst attack");
+    assert_eq!(step.events, expected_events);
+    assert_eq!(step.after, direct.observe_player());
+    assert_eq!(
+      step.effects,
+      drl_render::effect_timeline_for_observations(&step.before, &step.after, &expected_events,)
+    );
+    assert_eq!(
+      step.effects,
+      vec![
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::RangedAttack,
+          start_tick: 0,
+          duration_ticks: 2,
+        },
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::Hit,
+          start_tick: 2,
+          duration_ticks: 1,
+        },
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::RangedAttack,
+          start_tick: 3,
+          duration_ticks: 2,
+        },
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::Hit,
+          start_tick: 5,
+          duration_ticks: 1,
+        },
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::RangedAttack,
+          start_tick: 6,
+          duration_ticks: 2,
+        },
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::Hit,
+          start_tick: 8,
+          duration_ticks: 1,
+        },
+      ]
+    );
+    assert_eq!(browser.scene(), RenderScene::from_observation(&step.after));
+    assert_eq!(browser.observation(), direct.observe_player());
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .expect("player")
+        .equipment()
+        .weapon()
+        .expect("weapon")
+        .weapon_properties()
+        .expect("weapon properties")
+        .current_clip,
+      15
+    );
+
+    let mut command_replay = setup_replay;
+    command_replay.record_command(mode_command);
+    command_replay.record_command(attack_command);
+    let (replayed, replay_events) =
+      drl_core::ReplayEngine::run(&command_replay).expect("vertical command replay");
+    let mut expected_full_events = mode_events;
+    expected_full_events.extend(expected_events);
+    assert_eq!(replay_events, expected_full_events);
+    assert_eq!(replayed, direct);
+    assert!(
+      drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism")
+    );
+  }
 }
 
 #[cfg(all(test, target_arch = "wasm32"))]
