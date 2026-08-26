@@ -4948,6 +4948,125 @@ mod tests {
       drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism")
     );
   }
+
+  #[test]
+  fn chainsaw_melee_vertical_browser_boundary_matches_direct_core_presentation() {
+    let player_position = Position::new(1, 1);
+    let player_config = PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: Vec::new(),
+      equipped_weapon: Some(ItemSpawnKind::Chainsaw),
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    };
+    let target_position = Position::new(2, 1);
+    let mut setup_replay =
+      ReplayLog::new(0, 8, 4, player_position).with_player_config(player_config.clone());
+    setup_replay.record_monster(
+      MonsterSpawnSpec::new(target_position, "Static Target", 500, 1, (5, 10))
+        .with_death_drop(Some(ItemSpawnKind::LargeMedPack)),
+    );
+
+    let (initial, setup_events) =
+      drl_core::ReplayEngine::run(&setup_replay).expect("vertical replay setup");
+    assert!(setup_events.is_empty());
+    let chainsaw_id = ItemId::new(4);
+    assert_eq!(
+      initial
+        .world()
+        .player()
+        .expect("player")
+        .equipment()
+        .weapon()
+        .expect("Chainsaw")
+        .id(),
+      chainsaw_id
+    );
+
+    let mut scenario = drl_core::scenario::Scenario::from_ascii(
+      "ChainsawMeleeVertical",
+      "Chainsaw melee damage against a static Demon-profile target",
+      "########\n#@d....#\n#......#\n########\n",
+    )
+    .expect("vertical scenario fixture");
+    scenario.seed = 0;
+    scenario.monsters[0].name = "Static Target".to_string();
+    scenario.monsters[0].hp = 500;
+    scenario.monsters[0].speed = 1;
+    scenario.player_config = Some(player_config);
+    assert_eq!(
+      scenario.instantiate().expect("scenario initial state"),
+      initial
+    );
+
+    let player_id = initial.world().player_id().expect("player identity");
+    let target_id = initial
+      .world()
+      .actors()
+      .values()
+      .find(|actor| !actor.is_player())
+      .expect("static target")
+      .id();
+    let command = Command::AttackMelee(Direction::East);
+    let expected_effects = vec![
+      drl_render::EffectSpan {
+        effect: drl_render::PresentationEffect::MeleeAttack,
+        start_tick: 0,
+        duration_ticks: 2,
+      },
+      drl_render::EffectSpan {
+        effect: drl_render::PresentationEffect::Hit,
+        start_tick: 2,
+        duration_ticks: 1,
+      },
+    ];
+    let mut direct = initial.clone();
+    let mut browser = BrowserSession::from_game(initial);
+    let expected_events = direct.step(command).expect("direct Chainsaw command");
+    let step = browser.submit(command).expect("browser Chainsaw command");
+    assert_eq!(step.events, expected_events);
+    assert_eq!(step.after, direct.observe_player());
+    assert_eq!(
+      step.effects,
+      drl_render::effect_timeline_for_observations(&step.before, &step.after, &expected_events,)
+    );
+    assert_eq!(step.effects, expected_effects);
+    assert_eq!(browser.scene(), RenderScene::from_observation(&step.after));
+    assert_eq!(browser.observation(), direct.observe_player());
+    assert_eq!(browser.replay_log().commands, vec![command]);
+    assert_eq!(
+      direct.world().get_actor(target_id).unwrap().hp().current,
+      480
+    );
+    assert!(matches!(
+      expected_events.get(1),
+      Some(drl_protocol::GameEvent::AttackResolved {
+        attacker_id,
+        target_id: event_target,
+        outcome: drl_protocol::AttackOutcome::Hit { damage: 20, is_lethal: false },
+        is_ranged: false,
+      }) if *attacker_id == player_id && *event_target == target_id
+    ));
+    assert!(matches!(
+      expected_events.get(3),
+      Some(drl_protocol::GameEvent::ActionCostPaid {
+        entity_id,
+        cost: drl_protocol::ActionCost(1000),
+      }) if *entity_id == player_id
+    ));
+
+    let mut command_replay = setup_replay;
+    command_replay.record_command(command);
+    let (replayed, replay_events) =
+      drl_core::ReplayEngine::run(&command_replay).expect("vertical command replay");
+    assert_eq!(replayed, direct);
+    assert_eq!(replay_events, expected_events);
+    assert!(
+      drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism")
+    );
+  }
 }
 
 #[cfg(all(test, target_arch = "wasm32"))]

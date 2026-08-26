@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-26
-Current project version: `0.2.160`
+Current project version: `0.2.161`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.160)
+## 3. Current Progress Summary (`VERSION` 0.2.161)
 
 ### Delivered Foundations
 
@@ -364,6 +364,13 @@ verification item uses explicit status semantics:
   gameplay-semantics or balance change is introduced; controlled legacy
   runtime, browser capture, audio, WebGPU, audiovisual, and broader
   weapon/ammunition parity remain `NOT_RUN`.
+- **M9 vertical Chainsaw melee (`0.2.161`):** The delivered typed Chainsaw
+  encounter now has a declarative ASCII scenario, replay determinism, and
+  browser-session presentation-boundary parity covering one seeded melee hit,
+  Demon-profile target damage, stable identities, observations, literal
+  effects, and scene derivation. No gameplay-semantics or balance change is
+  introduced; controlled legacy runtime, browser capture, audio, WebGPU,
+  audiovisual, and broader weapon/melee parity remain `NOT_RUN`.
 - **Tooling & Replays (M5, M6)**: Versioned replay engine (`V2`), declarative
   ASCII scenario runners, scripted bots, batch sweep runners, and a pure Rust
   zero-dependency MCP server.

@@ -2112,3 +2112,90 @@ fn rocket_launcher_vertical_scenario_preserves_one_shot_reload_and_replay() {
   assert_eq!(replay_events, events);
   assert!(ReplayEngine::verify_determinism(&replay).unwrap());
 }
+
+#[test]
+fn chainsaw_melee_vertical_scenario_preserves_damage_and_replay() {
+  let mut scenario = Scenario::from_ascii(
+    "ChainsawMeleeVertical",
+    "Chainsaw melee damage against a static Demon-profile target",
+    "########\n#@d....#\n#......#\n########\n",
+  )
+  .unwrap();
+  scenario.seed = 0;
+  scenario.monsters[0].name = "Static Target".to_string();
+  scenario.monsters[0].hp = 500;
+  scenario.monsters[0].speed = 1;
+  scenario.player_config = Some(PlayerSpawnConfig {
+    hp: 50,
+    max_hp: 50,
+    speed: 100,
+    initial_items: Vec::new(),
+    equipped_weapon: Some(ItemSpawnKind::Chainsaw),
+    equipped_armor: None,
+    equipped_armor_durability: None,
+  });
+
+  let initial = scenario.instantiate().unwrap();
+  let player_id = initial.world().player_id().unwrap();
+  let target_id = initial
+    .world()
+    .actors()
+    .values()
+    .find(|actor| !actor.is_player())
+    .unwrap()
+    .id();
+  let chainsaw_id = ItemId::new(4);
+  assert_eq!(
+    initial
+      .world()
+      .player()
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .id(),
+    chainsaw_id
+  );
+
+  let commands = vec![Command::AttackMelee(Direction::East)];
+  let (game, events, metrics, replay) = ScenarioRunner::run_commands(&scenario, &commands).unwrap();
+  assert_eq!(metrics.outcome, RunOutcome::InProgress);
+  assert_eq!(metrics.turns_survived, 0);
+  assert_eq!(metrics.damage_dealt, 20);
+  assert_eq!(metrics.damage_taken, 0);
+  assert_eq!(game.world().get_actor(target_id).unwrap().hp().current, 480);
+  assert!(matches!(
+    events.first(),
+    Some(GameEvent::TurnStarted { .. })
+  ));
+  assert!(matches!(
+    events.get(1),
+    Some(GameEvent::AttackResolved {
+      attacker_id,
+      target_id: event_target,
+      outcome: AttackOutcome::Hit { damage: 20, is_lethal: false },
+      is_ranged: false,
+    }) if *attacker_id == player_id && *event_target == target_id
+  ));
+  assert!(matches!(
+    events.get(2),
+    Some(GameEvent::DamageApplied {
+      target_id: event_target,
+      amount: 20,
+      remaining_hp: 480,
+      source: DamageSource::Actor(source_id),
+      ..
+    }) if *event_target == target_id && *source_id == player_id
+  ));
+  assert!(matches!(
+    events.get(3),
+    Some(GameEvent::ActionCostPaid { entity_id, cost: ActionCost(1000) })
+      if *entity_id == player_id
+  ));
+  assert!(matches!(events.get(4), Some(GameEvent::TurnEnded { .. })));
+  assert_eq!(replay.commands, commands);
+  let (replayed_game, replay_events) = ReplayEngine::run(&replay).unwrap();
+  assert_eq!(replayed_game, game);
+  assert_eq!(replay_events, events);
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}
