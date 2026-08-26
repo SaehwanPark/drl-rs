@@ -4,8 +4,8 @@ use drl_core::grid::Tile;
 use drl_core::replay::ReplayEngine;
 use drl_core::scenario::{Scenario, ScenarioRunner};
 use drl_protocol::{
-  Command, Direction, GameEvent, ItemId, ItemSpawnKind, PlayerSpawnConfig, Position, RunOutcome,
-  ScenarioFixture, TileKind,
+  AttackOutcome, Command, DamageSource, Direction, GameEvent, ItemId, ItemSpawnKind,
+  PlayerSpawnConfig, Position, RunOutcome, ScenarioFixture, TileKind,
 };
 
 #[test]
@@ -1278,5 +1278,130 @@ fn phase_device_vertical_scenario_preserves_teleport_pickup_and_replay() {
   let (scenario_replayed_game, scenario_replay_events) = ReplayEngine::run(&replay).unwrap();
   assert_eq!(scenario_replayed_game, game);
   assert_eq!(scenario_replay_events, events);
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}
+
+#[test]
+fn shotgun_knockback_vertical_scenario_preserves_response_and_replay() {
+  let mut scenario = Scenario::from_ascii(
+    "ShotgunKnockbackVertical",
+    "Shotgun knockback against a Former Sergeant profile",
+    "########\n#@.s...#\n#......#\n########\n",
+  )
+  .unwrap();
+  scenario.seed = 0;
+  scenario.monsters[0].name = "Knockback Target".to_string();
+  scenario.player_config = Some(PlayerSpawnConfig {
+    hp: 50,
+    max_hp: 50,
+    speed: 100,
+    initial_items: Vec::new(),
+    equipped_weapon: Some(ItemSpawnKind::Shotgun),
+    equipped_armor: None,
+    equipped_armor_durability: None,
+  });
+
+  let initial = scenario.instantiate().unwrap();
+  let player_id = initial.world().player_id().unwrap();
+  let target_id = initial
+    .world()
+    .actors()
+    .values()
+    .find(|actor| !actor.is_player())
+    .unwrap()
+    .id();
+  let target = Position::new(3, 1);
+  let commands = vec![Command::AttackRanged(target)];
+
+  let (game, events, metrics, replay) = ScenarioRunner::run_commands(&scenario, &commands).unwrap();
+  assert_eq!(metrics.outcome, RunOutcome::InProgress);
+  assert_eq!(
+    game.world().player().unwrap().position(),
+    Position::new(1, 1)
+  );
+  assert_eq!(game.world().player().unwrap().hp().current, 47);
+  let target_actor = game.world().get_actor(target_id).unwrap();
+  assert_eq!(target_actor.position(), Position::new(4, 1));
+  assert_eq!(target_actor.hp().current, 3);
+
+  let player_attack_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::AttackResolved {
+          attacker_id,
+          target_id: event_target,
+          outcome: AttackOutcome::Hit { damage: 12, is_lethal: false },
+          is_ranged: true,
+        } if *attacker_id == player_id && *event_target == target_id
+      )
+    })
+    .expect("Shotgun hit event");
+  let damage_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::DamageApplied {
+          target_id: event_target,
+          amount: 12,
+          remaining_hp: 3,
+          source: DamageSource::Actor(source_id),
+          ..
+        } if *event_target == target_id && *source_id == player_id
+      )
+    })
+    .expect("Shotgun damage event");
+  let knockback_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::ActorKnockedBack { entity_id, from, to }
+          if *entity_id == target_id
+            && *from == Position::new(3, 1)
+            && *to == Position::new(4, 1)
+      )
+    })
+    .expect("Shotgun knockback event");
+  let response_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::AttackResolved {
+          attacker_id,
+          target_id: event_target,
+          is_ranged: true,
+          ..
+        } if *attacker_id == target_id && *event_target == player_id
+      )
+    })
+    .expect("Former Sergeant response event");
+  let response_damage_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::DamageApplied {
+          target_id: event_target,
+          amount: 3,
+          remaining_hp: 47,
+          source: DamageSource::Actor(source_id),
+          ..
+        } if *event_target == player_id && *source_id == target_id
+      )
+    })
+    .expect("Former Sergeant response damage event");
+  assert!(player_attack_index < damage_index);
+  assert!(damage_index < knockback_index);
+  assert!(knockback_index < response_index);
+  assert!(response_index < response_damage_index);
+  assert_eq!(replay.commands, commands);
+
+  let (replayed_game, replay_events) = ReplayEngine::run(&replay).unwrap();
+  assert_eq!(replayed_game, game);
+  assert_eq!(replay_events, events);
   assert!(ReplayEngine::verify_determinism(&replay).unwrap());
 }

@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.154]
+
+- Added a bounded Shotgun knockback encounter spanning declarative scenario
+  execution, deterministic replay, and the browser presentation boundary. The
+  slice compares a seeded ranged hit/damage result, one-tile target
+  displacement, scheduled Former Sergeant-profile response, event ordering,
+  observations, literal effects, and scene derivation without changing
+  gameplay semantics or balance.
+
 ## [0.2.153]
 
 - Added a bounded Phase Device escape encounter spanning declarative scenario
