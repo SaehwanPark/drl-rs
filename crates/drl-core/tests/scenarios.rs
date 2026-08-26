@@ -957,3 +957,102 @@ fn lava_armor_vertical_scenario_preserves_recharge_and_replay() {
   assert_eq!(replayed_game, game);
   assert_eq!(replay_events, events);
 }
+
+#[test]
+fn medical_powerarmor_vertical_scenario_preserves_repair_and_replay() {
+  let mut scenario = Scenario::from_ascii(
+    "MedicalPowerarmorVertical",
+    "Medical Powerarmor periodic repair encounter",
+    "########\n#@.....#\n#......#\n########\n",
+  )
+  .unwrap();
+  scenario.seed = 23;
+  scenario.player_config = Some(PlayerSpawnConfig {
+    hp: 20,
+    max_hp: 50,
+    speed: 100,
+    initial_items: Vec::new(),
+    equipped_weapon: Some(ItemSpawnKind::Pistol),
+    equipped_armor: Some(ItemSpawnKind::MedicalPowerarmor),
+    equipped_armor_durability: Some(100),
+  });
+
+  let initial = scenario.instantiate().unwrap();
+  let player_id = initial.world().player_id().unwrap();
+  let armor_id = initial
+    .world()
+    .player()
+    .unwrap()
+    .equipment()
+    .armor()
+    .unwrap()
+    .id();
+  assert_eq!(initial.world().player().unwrap().hp().current, 20);
+
+  let commands = [Command::Wait; 30];
+  let mut direct = initial.clone();
+  let mut expected_events = Vec::new();
+  for (index, command) in commands.iter().copied().enumerate() {
+    let step_events = direct.step(command).unwrap();
+    if index < 29 {
+      assert_eq!(
+        direct.world().player().unwrap().medical_repair_timer(),
+        (index + 1) as u32
+      );
+      assert_eq!(direct.world().player().unwrap().hp().current, 20);
+      assert!(
+        !step_events
+          .iter()
+          .any(|event| matches!(event, GameEvent::MedicalPowerarmorRepaired { .. }))
+      );
+    } else {
+      let repair_index = step_events
+        .iter()
+        .position(|event| {
+          matches!(
+            event,
+            GameEvent::MedicalPowerarmorRepaired {
+              entity_id,
+              item_id,
+              healed: 1,
+              remaining_hp: 21,
+              durability_remaining: 99,
+              timer: 20,
+            } if *entity_id == player_id && *item_id == armor_id
+          )
+        })
+        .unwrap();
+      assert_eq!(repair_index, 2);
+      assert!(matches!(step_events[0], GameEvent::TurnStarted { .. }));
+      assert!(matches!(step_events[1], GameEvent::EntityWaited { .. }));
+      assert!(matches!(step_events[3], GameEvent::ActionCostPaid { .. }));
+      assert!(matches!(step_events[4], GameEvent::TurnEnded { .. }));
+      assert_eq!(direct.world().player().unwrap().medical_repair_timer(), 20);
+      assert_eq!(direct.world().player().unwrap().hp().current, 21);
+      assert_eq!(
+        direct
+          .world()
+          .player()
+          .unwrap()
+          .equipment()
+          .armor()
+          .unwrap()
+          .armor_properties()
+          .unwrap()
+          .durability,
+        99
+      );
+    }
+    expected_events.extend(step_events);
+  }
+
+  let (game, events, _metrics, replay) =
+    ScenarioRunner::run_commands(&scenario, &commands).unwrap();
+  assert_eq!(game, direct);
+  assert_eq!(events, expected_events);
+  assert_eq!(replay.commands, commands);
+  let (scenario_replayed_game, scenario_replay_events) = ReplayEngine::run(&replay).unwrap();
+  assert_eq!(scenario_replayed_game, game);
+  assert_eq!(scenario_replay_events, events);
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}

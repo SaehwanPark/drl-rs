@@ -3353,6 +3353,98 @@ mod tests {
       drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism")
     );
   }
+
+  #[test]
+  fn medical_powerarmor_vertical_browser_boundary_matches_direct_core_presentation() {
+    let player_position = Position::new(1, 1);
+    let setup_replay =
+      ReplayLog::new(23, 8, 4, player_position).with_player_config(PlayerSpawnConfig {
+        hp: 20,
+        max_hp: 50,
+        speed: 100,
+        initial_items: Vec::new(),
+        equipped_weapon: Some(ItemSpawnKind::Pistol),
+        equipped_armor: Some(ItemSpawnKind::MedicalPowerarmor),
+        equipped_armor_durability: Some(100),
+      });
+
+    let (initial, setup_events) =
+      drl_core::ReplayEngine::run(&setup_replay).expect("vertical replay setup");
+    assert!(setup_events.is_empty());
+    let scenario = drl_core::scenario::Scenario::from_ascii(
+      "MedicalPowerarmorVertical",
+      "Medical Powerarmor periodic repair encounter",
+      "########\n#@.....#\n#......#\n########\n",
+    )
+    .expect("vertical scenario fixture");
+    let mut scenario = scenario;
+    scenario.seed = 23;
+    scenario.player_config = Some(PlayerSpawnConfig {
+      hp: 20,
+      max_hp: 50,
+      speed: 100,
+      initial_items: Vec::new(),
+      equipped_weapon: Some(ItemSpawnKind::Pistol),
+      equipped_armor: Some(ItemSpawnKind::MedicalPowerarmor),
+      equipped_armor_durability: Some(100),
+    });
+    assert_eq!(
+      scenario.instantiate().expect("scenario initial state"),
+      initial
+    );
+
+    let mut direct = initial.clone();
+    let mut browser = BrowserSession::from_game(initial);
+    let commands = [Command::Wait; 30];
+    let mut expected_events = Vec::new();
+    for (index, command) in commands.iter().copied().enumerate() {
+      let direct_events = direct.step(command).expect("direct wait");
+      let step = browser.submit(command).expect("browser wait");
+      assert_eq!(step.events, direct_events);
+      assert_eq!(step.after, direct.observe_player());
+      assert_eq!(step.effects, Vec::new());
+      assert_eq!(
+        step.effects,
+        drl_render::effect_timeline_for_observations(&step.before, &step.after, &direct_events,)
+      );
+      assert_eq!(browser.scene(), RenderScene::from_observation(&step.after));
+      if index < 29 {
+        assert_eq!(
+          direct.world().player().unwrap().medical_repair_timer(),
+          (index + 1) as u32
+        );
+      } else {
+        assert!(direct_events.iter().any(|event| {
+          matches!(
+            event,
+            drl_protocol::GameEvent::MedicalPowerarmorRepaired {
+              healed: 1,
+              remaining_hp: 21,
+              durability_remaining: 99,
+              timer: 20,
+              ..
+            }
+          )
+        }));
+        assert_eq!(direct.world().player().unwrap().medical_repair_timer(), 20);
+      }
+      expected_events.extend(direct_events);
+    }
+
+    assert_eq!(browser.observation(), direct.observe_player());
+    assert_eq!(browser.replay_log().commands, commands);
+    let mut command_replay = setup_replay;
+    for command in commands {
+      command_replay.record_command(command);
+    }
+    let (replayed, replay_events) =
+      drl_core::ReplayEngine::run(&command_replay).expect("vertical command replay");
+    assert_eq!(replay_events, expected_events);
+    assert_eq!(replayed, direct);
+    assert!(
+      drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism")
+    );
+  }
 }
 
 #[cfg(all(test, target_arch = "wasm32"))]

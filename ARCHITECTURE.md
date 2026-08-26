@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-26
-Current project version: `0.2.150`
+Current project version: `0.2.151`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -232,7 +232,8 @@ Presentation Boundary
     game to compare events, fair observations, pure effects, and scenes without
     introducing a browser-side simulation model. The Trigun alternate-reload
     Acid Spitter terrain-reload, Null Pointer target-hit, Grammaton burst mode,
-    Jackhammer single-mode, and Lava Armor recharge encounters are covered by
+    Jackhammer single-mode, Lava Armor recharge, and Medical Powerarmor repair
+    encounters are covered by
     this same
     cross-boundary comparison.
   - Accessible semantic minimap text grid fed by the fair `MinimapState`

@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-26
-Current project version: `0.2.150`
+Current project version: `0.2.151`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9/Vertical Fidelity — Lava Armor Encounter
+## 2. Active Implementation Slice: M9/Vertical Fidelity — Medical Powerarmor Encounter
 
 ### 2.1 Objective
 
-Exercise the already-delivered Lava Armor periodic recharge transition as one
-bounded vertical encounter. The same stable scenario/replay command sequence
-must be observable through core events and the browser presentation boundary
-without changing gameplay semantics or balance.
+Exercise the already-delivered Medical Powerarmor periodic repair transition as
+one bounded vertical encounter. The same stable scenario/replay command
+sequence must be observable through core events and the browser presentation
+boundary without changing gameplay semantics or balance.
 
 The legacy Pascal/Lua implementation remains the behavioral reference. Its
 architecture, global callback machinery, and runtime Lua object model remain
@@ -43,9 +43,9 @@ non-goals for reproduction.
 - **Steering priority:** Vertical canonical fidelity after the Gate C/D exit
   gates.
 - **Observable outcome:** A declarative encounter, replay execution, and
-  browser session agree on the Lava tile fixture, five accepted waits, timer
-  progression, durability clamp, recharge event ordering, player observation,
-  and pure presentation effects.
+  browser session agree on the low-health fixture, thirty accepted waits, timer
+  progression, one-point healing, durability spend, repair event ordering,
+  player observation, and pure presentation effects.
 - **Gameplay/replay impact:** No accepted transition, replay schema, RNG
   sampling rule, or gameplay-semantics version changes.
 - **Protocol/domain ownership:** `drl-protocol` owns stable item identity and
@@ -54,14 +54,14 @@ non-goals for reproduction.
 - **Evidence boundary:** Rust scenario/replay/core/browser-boundary tests are
   verified. Controlled legacy runtime, browser capture, audio, WebGPU, and
   audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** New Lava Armor balance or hazard/resistance equations, broad
+- **Non-goals:** New Medical Powerarmor balance or repair-threshold equations, broad
   content migration, new protocol fields, AI policy changes, audiovisual parity,
   and runtime Lua.
 
 ### 2.2 Why this slice is bounded
 
 The existing Gate C and Gate D work already centralizes stable item identity and
-delivers the typed Lava Armor transition. This slice proves that those pieces
+delivers the typed Medical Powerarmor transition. This slice proves that those pieces
 survive the scenario/replay and browser boundaries without introducing a second
 simulation model or a browser-specific wire format.
 
@@ -919,6 +919,25 @@ browser presentation boundaries. Its vertical slice must:
 - [x] keep gameplay semantics unchanged while recording Lava hazard/resistance,
   legacy runtime, browser capture, audio, WebGPU, audiovisual, and broader
   armor/content parity as `NOT_RUN`.
+
+### 2.7y Current vertical Medical Powerarmor encounter delivery target
+
+The bounded implementation target for this revision is a canonical Medical
+Powerarmor periodic-repair encounter across the declarative scenario, replay,
+and browser presentation boundaries. Its vertical slice must:
+
+- [x] construct an exact deterministic 8x4 ASCII encounter with a low-health
+  player and configured Medical Powerarmor at `100/100` durability;
+- [x] run the same thirty `Command::Wait` commands through `ScenarioRunner`,
+  preserving timer progression, one-point healing, one durability spend, the
+  post-repair timer value, stable item identity, and action order;
+- [x] verify replay determinism and compare generated replay events/final game
+  state with the direct `ScenarioRunner` result;
+- [x] compare `BrowserSession::submit` with direct `Game::step` for every wait's
+  events, player observations, empty pure effect timelines, and scene derivation;
+- [x] keep gameplay semantics unchanged while recording repair-threshold
+  variants, controlled legacy runtime, browser capture, audio, WebGPU,
+  audiovisual, and broader armor/content parity as `NOT_RUN`.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
