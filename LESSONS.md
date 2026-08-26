@@ -211,7 +211,9 @@ repository and WASM job has reached a passing terminal state.
   presentation behavior instead of only comparing a mapper to itself.
 - **Prevention:** Keep exact dimensions, ASCII rows, spawn fields, command
   payloads, and derived IDs in the slice plan; treat any fixture drift as a
-  scope failure rather than adjusting an expected output in isolation.
+  scope failure rather than adjusting an expected output in isolation. For
+  burst weapons, choose seeds against the interleaved hit and damage draws,
+  not only the first hit roll.
 
 ## Make bounded presentation storage fail explicitly
 
