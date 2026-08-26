@@ -458,3 +458,128 @@ fn acid_spitter_vertical_scenario_preserves_terrain_reload_and_replay() {
   assert_eq!(replayed, game);
   assert!(ReplayEngine::verify_determinism(&replay).unwrap());
 }
+
+#[test]
+fn null_pointer_vertical_scenario_preserves_boss_hit_and_replay() {
+  let ascii = "########\n#@i....#\n#......#\n########\n";
+  let mut scenario = Scenario::from_ascii(
+    "NullPointerVertical",
+    "Boss target for the typed Null Pointer encounter",
+    ascii,
+  )
+  .unwrap();
+  scenario.seed = 25;
+  scenario.player_config = Some(PlayerSpawnConfig {
+    hp: 50,
+    max_hp: 50,
+    speed: 100,
+    initial_items: Vec::new(),
+    equipped_weapon: Some(ItemSpawnKind::NullPointer),
+    equipped_armor: None,
+    equipped_armor_durability: None,
+  });
+  scenario.monsters[0].name = "Boss Target".to_string();
+  scenario.monsters[0].is_boss = true;
+
+  let target_position = Position::new(2, 1);
+  let command = Command::AttackRanged(target_position);
+  let (game, events, _metrics, replay) =
+    ScenarioRunner::run_commands(&scenario, &[command]).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let target_id = game
+    .world()
+    .actors()
+    .values()
+    .find(|actor| actor.position() == target_position)
+    .unwrap()
+    .id();
+  let item_id = game
+    .world()
+    .player()
+    .unwrap()
+    .equipment()
+    .weapon()
+    .unwrap()
+    .id();
+
+  let attack_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::AttackResolved {
+          attacker_id,
+          target_id: resolved_target,
+          outcome: drl_protocol::AttackOutcome::Hit { damage: 0, .. },
+          is_ranged: true,
+        } if *attacker_id == player_id && *resolved_target == target_id
+      )
+    })
+    .expect("Null Pointer ranged hit must resolve");
+  let hit_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::NullPointerHit {
+          entity_id,
+          item_id: resolved_item,
+          target_id: resolved_target,
+          target_is_boss: true,
+          score_count_remaining: 1000,
+        } if *entity_id == player_id && *resolved_item == item_id && *resolved_target == target_id
+      )
+    })
+    .expect("boss score branch must emit a typed hit event");
+  let explosion_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::NullPointerExplosionScheduled {
+          entity_id,
+          target_id: resolved_target,
+          delay: 50,
+          radius: 1,
+          damage: 10,
+        } if *entity_id == player_id && *resolved_target == target_id
+      )
+    })
+    .expect("deferred explosion must be scheduled");
+  let cost_index = events
+    .iter()
+    .position(|event| matches!(event, GameEvent::ActionCostPaid { .. }))
+    .expect("accepted ranged attack must pay its action cost");
+  let turn_end_index = events
+    .iter()
+    .position(|event| matches!(event, GameEvent::TurnEnded { .. }))
+    .expect("accepted ranged attack must end its turn");
+
+  assert!(attack_index < hit_index);
+  assert!(hit_index < explosion_index);
+  assert!(explosion_index < cost_index);
+  assert!(cost_index < turn_end_index);
+  assert_eq!(
+    game.world().get_actor(target_id).unwrap().score_count(),
+    1000
+  );
+  assert_eq!(
+    game
+      .world()
+      .player()
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .current_clip,
+    59
+  );
+  assert_eq!(replay.commands, vec![command]);
+
+  let (replayed_game, replay_events) = ReplayEngine::run(&replay).unwrap();
+  assert_eq!(replay_events, events);
+  assert_eq!(replayed_game, game);
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}

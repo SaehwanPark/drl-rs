@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.147]
+
+- Added a bounded vertical Null Pointer encounter check spanning declarative
+  scenario execution, deterministic replay, and the browser presentation
+  boundary. The slice compares the boss score branch, deferred explosion
+  scheduling, stable identities, event/effect ordering, observations, and
+  scene derivation without changing gameplay semantics or balance.
+
 ## [0.2.146]
 
 - Added a bounded vertical Acid Spitter encounter check spanning declarative
