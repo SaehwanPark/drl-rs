@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.153]
+
+- Added a bounded Phase Device escape encounter spanning declarative scenario
+  execution, deterministic replay, and the browser presentation boundary. The
+  slice compares pickup, deterministic teleport destination, item consumption,
+  exploration, event ordering, observations, literal teleport/use effects,
+  and scene derivation without changing gameplay semantics or balance.
+
 ## [0.2.152]
 
 - Added a bounded Former Human-profile progression encounter spanning declarative
