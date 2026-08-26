@@ -3908,6 +3908,121 @@ mod tests {
       drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism")
     );
   }
+
+  #[test]
+  fn green_armor_protection_vertical_browser_boundary_matches_direct_core_presentation() {
+    let player_position = Position::new(1, 1);
+    let player_config = PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: Vec::new(),
+      equipped_weapon: Some(ItemSpawnKind::Pistol),
+      equipped_armor: Some(ItemSpawnKind::GreenArmor),
+      equipped_armor_durability: None,
+    };
+    let target_position = Position::new(3, 1);
+    let mut setup_replay =
+      ReplayLog::new(4, 8, 4, player_position).with_player_config(player_config.clone());
+    setup_replay.record_monster(
+      MonsterSpawnSpec::new(target_position, "Armor Target", 15, 100, (3, 6))
+        .with_ranged_combat((2, 6), 5, 60)
+        .with_death_drop(Some(ItemSpawnKind::AmmoShells(10))),
+    );
+
+    let (initial, setup_events) =
+      drl_core::ReplayEngine::run(&setup_replay).expect("vertical replay setup");
+    assert!(setup_events.is_empty());
+    let mut scenario = drl_core::scenario::Scenario::from_ascii(
+      "GreenArmorProtectionVertical",
+      "Green Armor mitigation against a Former Sergeant profile",
+      "########\n#@.s...#\n#......#\n########\n",
+    )
+    .expect("vertical scenario fixture");
+    scenario.seed = 4;
+    scenario.monsters[0].name = "Armor Target".to_string();
+    scenario.player_config = Some(player_config);
+    assert_eq!(
+      scenario.instantiate().expect("scenario initial state"),
+      initial
+    );
+
+    let player_id = initial.world().player_id().expect("player identity");
+    let target_id = initial
+      .world()
+      .actors()
+      .values()
+      .find(|actor| !actor.is_player())
+      .expect("armor target")
+      .id();
+    let command = Command::Wait;
+    let mut direct = initial.clone();
+    let mut browser = BrowserSession::from_game(initial);
+
+    let expected_events = direct.step(command).expect("direct armor response");
+    let step = browser.submit(command).expect("browser armor response");
+    assert_eq!(step.events, expected_events);
+    assert_eq!(step.after, direct.observe_player());
+    assert_eq!(
+      step.effects,
+      drl_render::effect_timeline_for_observations(&step.before, &step.after, &expected_events,)
+    );
+    assert_eq!(
+      step.effects,
+      vec![
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::RangedAttack,
+          start_tick: 0,
+          duration_ticks: 2,
+        },
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::Hit,
+          start_tick: 2,
+          duration_ticks: 1,
+        },
+      ]
+    );
+    assert_eq!(browser.scene(), RenderScene::from_observation(&step.after));
+    assert_eq!(browser.observation(), direct.observe_player());
+    assert_eq!(browser.replay_log().commands, vec![command]);
+    let armor = step.after.equipped_armor.as_ref().expect("Green Armor");
+    assert_eq!(armor.name, "Green Armor");
+    assert_eq!(armor.armor_value, Some(5));
+    assert_eq!(direct.world().player().unwrap().hp().current, 49);
+    assert!(expected_events.iter().any(|event| {
+      matches!(
+        event,
+        drl_protocol::GameEvent::AttackResolved {
+          attacker_id,
+          target_id: event_target,
+          outcome: drl_protocol::AttackOutcome::Hit { damage: 3, is_lethal: false },
+          is_ranged: true,
+        } if *attacker_id == target_id && *event_target == player_id
+      )
+    }));
+    assert!(expected_events.iter().any(|event| {
+      matches!(
+        event,
+        drl_protocol::GameEvent::DamageApplied {
+          target_id: event_target,
+          amount: 1,
+          remaining_hp: 49,
+          source: drl_protocol::DamageSource::Actor(source_id),
+          ..
+        } if *event_target == player_id && *source_id == target_id
+      )
+    }));
+
+    let mut command_replay = setup_replay;
+    command_replay.record_command(command);
+    let (replayed, replay_events) =
+      drl_core::ReplayEngine::run(&command_replay).expect("vertical command replay");
+    assert_eq!(replay_events, expected_events);
+    assert_eq!(replayed, direct);
+    assert!(
+      drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism")
+    );
+  }
 }
 
 #[cfg(all(test, target_arch = "wasm32"))]

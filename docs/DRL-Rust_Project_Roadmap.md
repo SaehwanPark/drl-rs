@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-26
-Current project version: `0.2.154`
+Current project version: `0.2.155`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.154)
+## 3. Current Progress Summary (`VERSION` 0.2.155)
 
 ### Delivered Foundations
 
@@ -315,6 +315,15 @@ verification item uses explicit status semantics:
   derivation. No gameplay-semantics or balance change is introduced;
   controlled legacy runtime, browser capture, audio, WebGPU, audiovisual, and
   broader weapon/monster knockback parity remain `NOT_RUN`.
+- **M9 vertical Green Armor protection (`0.2.155`):** The delivered typed
+  Green Armor encounter now has a declarative ASCII scenario, replay
+  determinism, and browser-session presentation-boundary parity covering the
+  seeded Former Sergeant-profile response, raw-versus-mitigated damage,
+  observed armor protection, stable identities, event ordering, observations,
+  literal effects, and scene derivation. No gameplay-semantics or balance
+  change is introduced; controlled legacy runtime, browser capture, audio,
+  WebGPU, audiovisual, durability/resistance, and broader armor/monster parity
+  remain `NOT_RUN`.
 - **Tooling & Replays (M5, M6)**: Versioned replay engine (`V2`), declarative
   ASCII scenario runners, scripted bots, batch sweep runners, and a pure Rust
   zero-dependency MCP server.

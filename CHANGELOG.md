@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.155]
+
+- Added a bounded Green Armor protection encounter spanning declarative
+  scenario execution, deterministic replay, and the browser presentation
+  boundary. The slice compares a seeded Former Sergeant-profile response,
+  raw-versus-mitigated damage (3 to 1), player HP, observed armor protection,
+  event ordering, literal effects, and scene derivation without changing
+  gameplay semantics or balance.
+
 ## [0.2.154]
 
 - Added a bounded Shotgun knockback encounter spanning declarative scenario
