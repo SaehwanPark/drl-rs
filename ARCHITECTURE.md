@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-26
-Current project version: `0.2.162`
+Current project version: `0.2.163`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -236,8 +236,8 @@ Presentation Boundary
     Former Human-profile progression, Phase Device escape, Shotgun knockback,
     Green Armor protection, Small MedPack recovery, Demon melee-pressure
     recovery, Pistol reload, Plasma Rifle cell-reload, Rocket Launcher
-    one-shot reload, Chainsaw melee, and standard Shotgun shell-reload
-    encounters are covered by this same
+    one-shot reload, Chainsaw melee, standard Shotgun shell-reload, and
+    Assault Shotgun shell-reload encounters are covered by this same
     cross-boundary comparison.
   - Accessible semantic minimap text grid fed by the fair `MinimapState`
     projection; it is bounded and never queries hidden world state.

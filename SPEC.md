@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-26
-Current project version: `0.2.162`
+Current project version: `0.2.163`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,11 +25,11 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9/Vertical Fidelity — Shotgun Shell Reload
+## 2. Active Implementation Slice: M9/Vertical Fidelity — Assault Shotgun Shell Reload
 
 ### 2.1 Objective
 
-Exercise the existing typed standard Shotgun transition through a fixed
+Exercise the existing typed Assault Shotgun transition through a fixed
 shell-clip encounter. The same stable scenario/replay command sequence must be
 observable through core events and the browser presentation boundary without
 changing gameplay semantics or balance.
@@ -43,9 +43,10 @@ non-goals for reproduction.
 - **Steering priority:** Vertical canonical fidelity after the Gate C/D exit
   gates.
 - **Observable outcome:** A declarative encounter, replay execution, and
-  browser session agree on the exact arena, configured Shotgun identity,
-  seeded shell-ammunition sequence, Former Human-profile target damage, reload
-  event ordering, player observation, and pure presentation effects.
+  browser session agree on the exact arena, configured Assault Shotgun
+  identity, seeded shell-ammunition sequence, Former Human-profile target
+  damage, blocked knockback, reload event ordering, player observation, and
+  pure presentation effects.
 - **Gameplay/replay impact:** No accepted transition, replay schema, RNG
   sampling rule, or gameplay-semantics version changes.
 - **Protocol/domain ownership:** `drl-protocol` owns stable item/monster
@@ -56,8 +57,8 @@ non-goals for reproduction.
   audiovisual comparisons remain `NOT_RUN`.
 - **Non-goals:** New weapon or monster balance equations, broad content
   migration, new protocol fields, AI policy changes, audiovisual parity,
-  runtime Lua, and alternate weapon/spread variants beyond the pinned standard
-  Shotgun single-target policy.
+  runtime Lua, alternate reload callbacks, and alternate weapon/spread variants
+  beyond the pinned Assault Shotgun single-target policy.
 
 ### 2.2 Why this slice is bounded
 
@@ -1145,7 +1146,7 @@ presentation boundaries. Its vertical slice must:
   runtime, browser capture, audio, WebGPU, audiovisual, and broader
   weapon/melee parity as `NOT_RUN`.
 
-### 2.7aj Current vertical Shotgun shell-reload delivery target
+### 2.7aj Previous vertical Shotgun shell-reload delivery target
 
 The bounded implementation target for this revision is a standard Shotgun
 shell-clip depletion and reload encounter across the declarative scenario,
@@ -1164,7 +1165,28 @@ replay, and browser presentation boundaries. Its vertical slice must:
   retained replay commands;
 - [x] keep gameplay semantics unchanged while recording controlled legacy
   runtime, browser capture, audio, WebGPU, audiovisual, and broader
-  weapon/spread parity as `NOT_RUN`.
+  weapon/spread and alternate-reload parity as `NOT_RUN`.
+
+### 2.7ak Current vertical Assault Shotgun shell-reload delivery target
+
+The bounded implementation target for this revision is an Assault Shotgun
+shell-clip depletion and reload encounter across the declarative scenario,
+replay, and browser presentation boundaries. Its vertical slice must:
+
+- [x] construct an exact deterministic 9x4 ASCII arena with a configured
+  Assault Shotgun, eight reserve shells, and a static Former Human-profile
+  target whose east knockback destination is blocked;
+- [x] run six seeded ranged attacks then `Reload` through `ScenarioRunner`,
+  preserving shot/hit totals, shell consumption, reload state, stable
+  identities, and the standard `1000` action cost/order;
+- [x] verify replay determinism and compare generated replay events/final game
+  state with the direct `ScenarioRunner` result;
+- [x] compare `BrowserSession::submit` with direct `Game::step` for every
+  command's events, observations, literal effects, scene derivation, and
+  retained replay commands;
+- [x] keep gameplay semantics unchanged while recording controlled legacy
+  runtime, browser capture, audio, WebGPU, audiovisual, and broader
+  weapon/spread and alternate-reload parity as `NOT_RUN`.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
@@ -1230,7 +1252,9 @@ boundary without changing callback semantics. The `0.2.161` Chainsaw melee
 encounter adds a canonical close-range melee boundary without changing
 callback semantics. The `0.2.162` Shotgun shell-reload encounter adds the
 standard shell-ammunition and distinct 1200-unit reload boundary without
-changing callback semantics.
+changing callback semantics. The `0.2.163` Assault Shotgun shell-reload
+encounter adds a six-shell clip/reload boundary without changing callback
+semantics.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity
