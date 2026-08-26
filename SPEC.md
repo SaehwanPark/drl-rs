@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-26
-Current project version: `0.2.165`
+Current project version: `0.2.166`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9/Vertical Fidelity — Assault Shotgun Single-Shell Reload
+## 2. Active Implementation Slice: M9/Vertical Fidelity — Combat Shotgun Clip Reload
 
 ### 2.1 Objective
 
-Correct the typed Assault Shotgun reload transition to honor its legacy
-single-shell callback through a fixed six-shot encounter. The same stable
-scenario/replay command sequence must be observable through core events and the
-browser presentation boundary while explicitly advancing gameplay semantics.
+Exercise the existing typed Combat Shotgun transition through a fixed
+five-shell clip encounter. The same stable scenario/replay command sequence
+must be observable through core events and the browser presentation boundary
+without changing gameplay semantics or balance.
 
 The legacy Pascal/Lua implementation remains the behavioral reference. Its
 architecture, global callback machinery, and runtime Lua object model remain
@@ -43,13 +43,13 @@ non-goals for reproduction.
 - **Steering priority:** Vertical canonical fidelity after the Gate C/D exit
   gates.
 - **Observable outcome:** A declarative encounter, replay execution, and
-  browser session agree on the exact arena, configured Assault Shotgun identity,
+  browser session agree on the exact arena, configured Combat Shotgun identity,
   seeded shell-ammunition sequence, Former Human-profile target damage,
-  blocked knockback, one-shell reload event ordering, player observation, and
+  blocked knockback, five-shell reload event ordering, player observation, and
   pure presentation effects.
-- **Gameplay/replay impact:** Normal Assault Shotgun reload now loads one shell;
-  gameplay semantics advance from `16` to `17`. Replay wire schema, RNG
-  sampling, procedural-generator, and ruleset identities remain unchanged.
+- **Gameplay/replay impact:** No accepted transition, replay schema, RNG
+  sampling rule, gameplay-semantics version, procedural-generator identity, or
+  ruleset identity changes.
 - **Protocol/domain ownership:** `drl-protocol` owns stable item/monster
   identity and commands; core owns ranged combat, ammunition, reload,
   scheduling, and event order; render/web own derived observations and effects.
@@ -64,10 +64,9 @@ non-goals for reproduction.
 
 The existing Gate C and Gate D work already centralizes stable item/monster
 identity and delivers typed ranged combat, shell ammunition, reload,
-scheduling, and presentation behavior. This slice makes one callback-derived
-reload policy explicit, then proves that the result survives one canonical
-scenario/replay and browser boundary without introducing a second simulation
-model or a browser-specific wire format.
+scheduling, and presentation behavior. This slice proves those pieces survive
+one canonical Combat Shotgun scenario/replay and browser boundary without
+introducing a second simulation model or a browser-specific wire format.
 
 Behavioral and presentation mappings remain explicit by design. The encounter
 consumes those typed boundaries while preserving compiler exhaustiveness and
@@ -1210,7 +1209,7 @@ replay, and browser presentation boundaries. Its vertical slice must:
   runtime, browser capture, audio, WebGPU, audiovisual, and broader
   weapon/spread parity as `NOT_RUN`.
 
-### 2.7am Current vertical Assault Shotgun single-shell reload delivery target
+### 2.7am Previous vertical Assault Shotgun single-shell reload delivery target
 
 The bounded implementation target for this revision is a callback-derived
 Assault Shotgun single-shell reload correction across the declarative scenario,
@@ -1233,6 +1232,27 @@ replay, and browser presentation boundaries. Its vertical slice must:
   wire schema, RNG sampling, generator, and ruleset identities; controlled
   legacy runtime, browser capture, audio, WebGPU, audiovisual, alternate
   reload, and broader weapon/spread parity remain `NOT_RUN`.
+
+### 2.7an Current vertical Combat Shotgun clip-reload delivery target
+
+The bounded implementation target for this revision is a Combat Shotgun
+five-shell clip depletion and reload encounter across the declarative scenario,
+replay, and browser presentation boundaries. Its vertical slice must:
+
+- [x] construct an exact deterministic 9x4 ASCII arena with a configured
+  Combat Shotgun, ten reserve shells, and a static Former Human-profile target
+  whose east knockback destination is blocked;
+- [x] run five seeded ranged attacks then `Reload` through `ScenarioRunner`,
+  preserving three hits for `46` damage, shell consumption, five-shell reload
+  state, stable identities, and the standard `1000` action cost/order;
+- [x] verify replay determinism and compare generated replay events/final game
+  state with the direct `ScenarioRunner` result;
+- [x] compare `BrowserSession::submit` with direct `Game::step` for every
+  command's events, observations, literal effects, scene derivation, and
+  retained replay commands;
+- [x] keep gameplay semantics unchanged while recording controlled legacy
+  runtime, browser capture, audio, WebGPU, audiovisual, and broader
+  weapon/spread parity as `NOT_RUN`.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
@@ -1305,6 +1325,8 @@ two-shell shotgun boundary without changing callback semantics.
 The `0.2.165` Assault Shotgun single-shell reload correction makes the
 callback-derived one-shell policy explicit, advances gameplay semantics to
 `17`, and leaves alternate reload and broader spread/falloff behavior open.
+The `0.2.166` Combat Shotgun clip-reload encounter adds a five-shell
+ammunition boundary without changing gameplay semantics.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity

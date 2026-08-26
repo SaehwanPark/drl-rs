@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-26
-Current project version: `0.2.165`
+Current project version: `0.2.166`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.165)
+## 3. Current Progress Summary (`VERSION` 0.2.166)
 
 ### Delivered Foundations
 
@@ -400,6 +400,14 @@ verification item uses explicit status semantics:
   behavior with one-shell loading, atomic full/no-reserve rejection coverage,
   deterministic scenario/replay evidence, and browser-session presentation
   parity. Gameplay semantics advance to `17`; alternate reload, controlled
+  legacy runtime, browser capture, audio/WebGPU, audiovisual, and broader
+  weapon/spread parity remain `NOT_RUN`.
+- **M9 vertical Combat Shotgun clip reload (`0.2.166`):** The delivered typed
+  Combat Shotgun encounter now has a declarative ASCII scenario, replay
+  determinism, and browser-session presentation-boundary parity covering five
+  seeded shell attacks, blocked knockback, shell consumption, stable
+  identities, observations, literal effects, scene derivation, and the
+  standard reload ordering. Gameplay semantics remain unchanged; controlled
   legacy runtime, browser capture, audio/WebGPU, audiovisual, and broader
   weapon/spread parity remain `NOT_RUN`.
 - **Tooling & Replays (M5, M6)**: Versioned replay engine (`V2`), declarative

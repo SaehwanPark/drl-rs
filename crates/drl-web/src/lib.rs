@@ -5784,6 +5784,190 @@ mod tests {
       drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism")
     );
   }
+
+  #[test]
+  fn combat_shotgun_vertical_browser_boundary_matches_direct_core_presentation() {
+    let player_position = Position::new(2, 1);
+    let player_config = PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: vec![ItemSpawnKind::AmmoShells(10)],
+      equipped_weapon: Some(ItemSpawnKind::CombatShotgun),
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    };
+    let target_position = Position::new(7, 1);
+    let mut setup_replay =
+      ReplayLog::new(0, 9, 4, player_position).with_player_config(player_config.clone());
+    setup_replay.record_monster(
+      MonsterSpawnSpec::new(target_position, "Static Target", 500, 1, (2, 5))
+        .with_ranged_combat((1, 4), 6, 65)
+        .with_death_drop(Some(ItemSpawnKind::Ammo9mm(10))),
+    );
+    let (initial, setup_events) =
+      drl_core::ReplayEngine::run(&setup_replay).expect("vertical replay setup");
+    assert!(setup_events.is_empty());
+    let shells_id = ItemId::new(4);
+    let weapon_id = ItemId::new(5);
+    let mut scenario = drl_core::scenario::Scenario::from_ascii(
+      "CombatShotgunVertical",
+      "Combat Shotgun shell clip depletion and deterministic reload",
+      "#########\n#.@....h#\n#.......#\n#########\n",
+    )
+    .expect("vertical scenario fixture");
+    scenario.seed = 0;
+    scenario.monsters[0].name = "Static Target".to_string();
+    scenario.monsters[0].hp = 500;
+    scenario.monsters[0].speed = 1;
+    scenario.player_config = Some(player_config);
+    assert_eq!(
+      scenario.instantiate().expect("scenario initial state"),
+      initial
+    );
+
+    let player_id = initial.world().player_id().expect("player identity");
+    let target_id = initial
+      .world()
+      .actors()
+      .values()
+      .find(|actor| !actor.is_player())
+      .expect("static target")
+      .id();
+    let target = Position::new(7, 1);
+    let mut commands = vec![Command::AttackRanged(target); 5];
+    commands.push(Command::Reload);
+    let ranged_attack = drl_render::EffectSpan {
+      effect: drl_render::PresentationEffect::RangedAttack,
+      start_tick: 0,
+      duration_ticks: 2,
+    };
+    let hit = drl_render::EffectSpan {
+      effect: drl_render::PresentationEffect::Hit,
+      start_tick: 2,
+      duration_ticks: 1,
+    };
+    let reload = drl_render::EffectSpan {
+      effect: drl_render::PresentationEffect::Reload,
+      start_tick: 0,
+      duration_ticks: 3,
+    };
+    let expected_effects = [
+      vec![ranged_attack],
+      vec![ranged_attack],
+      vec![ranged_attack, hit],
+      vec![ranged_attack, hit],
+      vec![ranged_attack, hit],
+      vec![reload],
+    ];
+    let mut direct = initial.clone();
+    let mut browser = BrowserSession::from_game(initial);
+    let mut all_events = Vec::new();
+    for (index, command) in commands.iter().copied().enumerate() {
+      let expected_events = direct.step(command).expect("direct Combat Shotgun command");
+      let step = browser
+        .submit(command)
+        .expect("browser Combat Shotgun command");
+      assert_eq!(step.events, expected_events);
+      assert_eq!(step.after, direct.observe_player());
+      assert_eq!(
+        step.effects,
+        drl_render::effect_timeline_for_observations(&step.before, &step.after, &expected_events,)
+      );
+      assert_eq!(step.effects, expected_effects[index]);
+      assert_eq!(browser.scene(), RenderScene::from_observation(&step.after));
+      all_events.extend(expected_events);
+    }
+
+    assert_eq!(
+      direct.world().get_actor(target_id).unwrap().hp().current,
+      454
+    );
+    assert_eq!(
+      direct.world().get_actor(target_id).unwrap().position(),
+      target
+    );
+    assert!(!all_events.iter().any(|event| {
+      matches!(
+        event,
+        drl_protocol::GameEvent::ActorKnockedBack { entity_id, .. }
+          if *entity_id == target_id
+      )
+    }));
+    let weapon_item = direct
+      .world()
+      .player()
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap();
+    assert_eq!(weapon_item.id(), weapon_id);
+    let weapon = weapon_item.weapon_properties().unwrap();
+    assert_eq!(weapon.current_clip, 5);
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .inventory()
+        .get_item(shells_id)
+        .unwrap()
+        .count(),
+      5
+    );
+    assert_eq!(browser.observation(), direct.observe_player());
+    assert_eq!(browser.replay_log().commands, commands);
+    assert_eq!(
+      browser.observation().equipped_weapon.unwrap().clip,
+      Some((5, 5))
+    );
+    assert_eq!(
+      browser
+        .observation()
+        .inventory
+        .iter()
+        .find(|item| item.id == shells_id)
+        .unwrap()
+        .count,
+      5
+    );
+    let reload_index = all_events
+      .iter()
+      .position(|event| {
+        matches!(
+          event,
+          drl_protocol::GameEvent::WeaponReloaded {
+            entity_id,
+            ammo_loaded: 5,
+            current_clip: 5,
+            max_clip: 5,
+          } if *entity_id == player_id
+        )
+      })
+      .expect("reload event");
+    assert!(matches!(
+      all_events.get(reload_index + 1),
+      Some(drl_protocol::GameEvent::ActionCostPaid {
+        entity_id,
+        cost: drl_protocol::ActionCost(1000),
+      }) if *entity_id == player_id
+    ));
+    assert!(matches!(
+      all_events.get(reload_index + 2),
+      Some(drl_protocol::GameEvent::TurnEnded { .. })
+    ));
+    let mut command_replay = setup_replay;
+    for command in commands {
+      command_replay.record_command(command);
+    }
+    let (replayed, replay_events) =
+      drl_core::ReplayEngine::run(&command_replay).expect("vertical command replay");
+    assert_eq!(replayed, direct);
+    assert_eq!(replay_events, all_events);
+    assert!(
+      drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism")
+    );
+  }
 }
 
 #[cfg(all(test, target_arch = "wasm32"))]
