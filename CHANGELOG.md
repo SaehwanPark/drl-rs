@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.187]
+
+- Extended typed exact-hit behavior to Revenant’s Launcher: valid ranged shots
+  bypass only the to-hit sample while retaining line-of-sight, range, clip,
+  action cost, damage RNG, and existing attack/damage events. Atomic rejection,
+  replay, MCP, and BrowserSession parity are covered; homing, projectile
+  routing, delayed explosions, runtime, and audiovisual parity remain separate
+  slices.
+
 ## [0.2.186]
 
 - Added typed standard BFG 9000 shot-cost behavior: each valid one-shot attack

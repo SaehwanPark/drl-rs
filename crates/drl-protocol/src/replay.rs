@@ -21,13 +21,14 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// Gameplay semantics identifier expected by the current replay engine.
 ///
 /// This advances independently from the wire/schema and RNG-sampling versions
-/// when other deterministic simulation rules change. Version `33` includes
-/// standard BFG 9000's typed 40-cell shot-cost behavior in addition to Nuclear
-/// BFG 9000 exact-hit resolution and standard BFG exact-hit,
+/// when other deterministic simulation rules change. Version `34` includes
+/// Revenant’s Launcher exact-hit resolution in addition to standard BFG 9000's
+/// typed 40-cell shot-cost behavior, Nuclear BFG 9000 exact-hit resolution,
+/// and standard BFG exact-hit,
 /// typed Nuclear BFG 9000 alternate overload, and Nuclear Plasma
 /// alternate overload and the prior Malek's Armor recharge, Missile Launcher,
 /// Nuclear BFG/Plasma, `IF_NORELOAD`, Blaster, and Combat Shotgun policies.
-pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 33;
+pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 34;
 
 /// Procedural-generation semantics identifier expected for replays that carry
 /// a procedural generation configuration. Version 2 includes the exact
@@ -47,9 +48,10 @@ pub struct ReplayMetadata {
   /// Engine crate version string.
   pub engine_version: String,
   /// Gameplay semantics version required to interpret the command history.
-  /// Version 33 includes standard BFG 9000's typed 40-cell shot-cost behavior
-  /// in addition to Nuclear BFG 9000 exact-hit resolution, standard BFG
-  /// exact-hit, typed Nuclear BFG 9000 alternate overload, Nuclear Plasma alternate overload,
+  /// Version 34 includes Revenant’s Launcher exact-hit resolution in addition
+  /// to standard BFG 9000's typed 40-cell shot-cost behavior, Nuclear BFG 9000
+  /// exact-hit resolution, standard BFG exact-hit, typed Nuclear BFG 9000
+  /// alternate overload, Nuclear Plasma alternate overload,
   /// Missile Launcher alternate/full reload, Nuclear BFG/Plasma recharge,
   /// `IF_NORELOAD` manual-reload denial, typed Blaster recharge, and the prior
   /// Combat Shotgun policy.

@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.186`
+Current project version: `0.2.187`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.186)
+## 3. Current Progress Summary (`VERSION` 0.2.187)
 
 ### Delivered Foundations
 
@@ -517,6 +517,12 @@ verification item uses explicit status semantics:
   MCP, and BrowserSession boundary parity are covered; Nuclear BFG and other
   shot costs, projectile routing, explosions, NukeRun, runtime, and
   audiovisual parity remain open.
+- **M9 Revenant’s Launcher exact-hit behavior (`0.2.187`):** Revenant’s
+  Launcher now shares the typed exact-hit policy, bypassing only its ranged
+  to-hit sample while preserving LOS, range, clip, action cost, damage RNG,
+  and existing attack/damage events. Atomic rejection, scenario/replay, MCP,
+  and BrowserSession boundary parity are covered; homing, projectile routing,
+  delayed explosions, runtime, and audiovisual parity remain open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1002,8 +1008,9 @@ scripting.
   medals, mods, spread, and timing callbacks remain open.
 - [x] Typed `urbazooka`, `urailgun`, and `uacid` preserve pinned
   special-projectile descriptions, ammo relations, clips/damage/range scalars,
-  replay kinds, and measured bazooka/plasma atlas slots; homing, piercing,
-  acid-map, explosion, and timing callbacks remain open.
+  replay kinds, and measured bazooka/plasma atlas slots; Revenant’s Launcher
+  exact-hit behavior is covered in `0.2.187`, while homing, piercing, acid-map,
+  explosion, and timing callbacks remain open.
 - [x] Typed `ucpistol`, `uashotgun`, and `upshotgun` preserve pinned eitems
   descriptions, ammo relations, clips/damage/range scalars, replay kinds, and
   measured pistol/combat-shotgun/shotgun atlas slots; aimed-fire,
