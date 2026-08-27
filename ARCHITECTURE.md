@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.179`
+Current project version: `0.2.180`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -165,7 +165,10 @@ Presentation Boundary
     five-command cadence, preserving the same event and reserve boundary.
     The exotic Missile Launcher uses the explicit single-shell reload policy,
     loading one rocket per accepted `Reload` while retaining the shared
-    `WeaponReloaded` event and atomic rejection contract.
+    `WeaponReloaded` event and atomic rejection contract. Its alternate/full
+    reload uses a dedicated typed planner that preflights the entire deficit,
+    consumes exact loose-rocket reserve, and caps the aggregate action cost at
+    2,500 units while retaining the same event contract.
     The pinned `IF_NORELOAD` families use an explicit item policy that rejects
     ordinary `Reload` before mutation; this remains separate from alternate
     reload and automatic recharge behavior.

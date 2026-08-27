@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.180]
+
+- Added the typed Missile Launcher alternate/full reload transition: one
+  accepted `AltReload` fills the complete sufficiently supplied clip deficit,
+  consumes exactly the loose rockets, emits one aggregate `WeaponReloaded`, and
+  caps the action cost at 2,500 units. Full and under-supplied clips reject
+  atomically; ordinary single-shell reload, rocket-jump, explosion, controlled
+  legacy runtime, and audiovisual parity remain separate slices.
+
 ## [0.2.179]
 
 - Corrected the exotic Missile Launcher reload policy: its pinned

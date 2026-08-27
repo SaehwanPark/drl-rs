@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.179`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.180`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -178,6 +178,10 @@ replays, and regression testing.
     the exotic Missile Launcher's pinned single-shell reload now loads exactly
     one rocket per accepted `Reload`, with atomic full/no-reserve rejection and
     scenario/replay/browser-boundary parity coverage;
+    its alternate/full reload now fills a complete, sufficiently supplied
+    deficit in one accepted `AltReload`, consumes exactly the loose rockets,
+    caps the action cost at 2,500 units, and preserves atomic rejection and
+    scenario/replay/browser-boundary parity;
     manual reload is explicitly denied for the pinned Blaster, Nuclear Plasma
     Rifle, and Nuclear BFG 9000 `IF_NORELOAD` families before any state/RNG
     mutation, with atomic core and MCP/browser-boundary coverage;
