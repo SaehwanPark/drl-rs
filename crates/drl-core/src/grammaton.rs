@@ -57,6 +57,7 @@ mod tests {
       knockback: 0,
       fire_cost: ActionCost::RANGED_ATTACK,
       reload_cost: ActionCost::STANDARD,
+      exact_hit: false,
       fire_mode: WeaponFireMode::Single,
     }
   }

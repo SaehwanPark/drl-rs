@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.183`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.184`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -193,6 +193,10 @@ replays, and regression testing.
     a confirmed, full-clip Nuclear BFG 9000 alternate overload now uses the
     same typed preflight and event boundary, with deterministic hazard/floor,
     replay, MCP, and BrowserSession coverage;
+    the standard BFG 9000 exact-hit policy now bypasses only its ranged to-hit
+    sample while retaining LOS, range, clip, action-cost, damage RNG, and
+    existing attack/damage events; other exact-hit families, projectile
+    routing, explosions, runtime, and audiovisual parity remain open;
     manual reload is explicitly denied for the pinned Blaster, Nuclear Plasma
     Rifle, and Nuclear BFG 9000 `IF_NORELOAD` families before any state/RNG
     mutation, with atomic core and MCP/browser-boundary coverage;

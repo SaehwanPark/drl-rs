@@ -23,6 +23,112 @@ fn equipped_nuclear_bfg(seed: u64) -> (Game, ItemId) {
   (game, weapon_id)
 }
 
+fn equipped_standard_bfg(seed: u64) -> (Game, ItemId) {
+  let mut game = Game::new(seed, 10, 6, drl_protocol::Position::new(2, 2)).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let weapon_id = game.world_mut().allocate_item_id();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, Item::bfg9000(weapon_id))
+    .unwrap();
+  (game, weapon_id)
+}
+
+#[test]
+fn standard_bfg_exact_hit_resolves_even_at_zero_accuracy() {
+  let (mut game, _weapon_id) = equipped_standard_bfg(1);
+  let target = drl_protocol::Position::new(5, 2);
+  let target_id = game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 500, 1, (2, 4))
+    .unwrap();
+  let player_id = game.world().player_id().unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .accuracy = 0;
+
+  let events = game
+    .step(Command::AttackRanged(target))
+    .expect("standard BFG shot should resolve");
+  assert!(events.iter().any(|event| {
+    matches!(
+      event,
+      GameEvent::AttackResolved {
+        attacker_id,
+        target_id: event_target,
+        outcome: drl_protocol::AttackOutcome::Hit { .. },
+        is_ranged: true,
+      } if *attacker_id == player_id && *event_target == target_id
+    )
+  }));
+  assert_eq!(
+    game
+      .world()
+      .get_actor(player_id)
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .current_clip,
+    99
+  );
+  assert_eq!(
+    game.world().get_actor(target_id).unwrap().hp().current,
+    500
+      - events
+        .iter()
+        .find_map(|event| match event {
+          GameEvent::DamageApplied {
+            target_id: event_target,
+            amount,
+            ..
+          } if *event_target == target_id => Some(*amount),
+          _ => None,
+        })
+        .expect("BFG hit should apply damage")
+  );
+}
+
+#[test]
+fn standard_bfg_empty_clip_rejection_is_atomic() {
+  let (mut game, _weapon_id) = equipped_standard_bfg(2);
+  let target = drl_protocol::Position::new(5, 2);
+  game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 500, 1, (2, 4))
+    .unwrap();
+  let player_id = game.world().player_id().unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 0;
+  let before = game.clone();
+
+  assert_eq!(
+    game.step(Command::AttackRanged(target)).unwrap_err(),
+    CommandError::NoAmmoInClip
+  );
+  assert_eq!(game, before);
+}
+
 #[test]
 fn test_phase_device_use_teleports_player_and_updates_visibility() {
   let mut game = Game::new(9999, 20, 20, Position::new(2, 2)).unwrap();

@@ -61,8 +61,8 @@ impl CombatResolver {
       .saturating_sub(penalty)
       .clamp(5, 95);
 
-    let roll = rng.gen_range(0..100);
-    if roll < effective_accuracy {
+    let hits = attacker.ranged_exact_hit() || rng.gen_range(0..100) < effective_accuracy;
+    if hits {
       let damage = if min_dam >= max_dam {
         min_dam
       } else {
@@ -79,7 +79,8 @@ impl CombatResolver {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use drl_protocol::{EntityId, HitPoints, Position, Speed};
+  use crate::item::Item;
+  use drl_protocol::{EntityId, EquipmentSlot, HitPoints, ItemId, Position, Speed};
 
   #[test]
   fn test_melee_attack_deterministic_hit_and_damage_bounds() {
@@ -161,5 +162,72 @@ mod tests {
     let mut rng = GameRng::from_seed(1);
     let outcome = CombatResolver::resolve_ranged_attack(&attacker, &defender, 10, &mut rng);
     assert_eq!(outcome, AttackOutcome::Miss);
+  }
+
+  #[test]
+  fn standard_bfg_exact_hit_skips_to_hit_rng_but_keeps_damage_rng() {
+    let mut attacker = Actor::new(EntityId::new(1), Position::new(0, 0), "Marine", true)
+      .with_stats(
+        HitPoints::full(50),
+        Speed::NORMAL,
+        (3, 6),
+        Some((4, 8)),
+        8,
+        5,
+      );
+    attacker
+      .equipment_mut()
+      .equip(EquipmentSlot::Weapon, Item::bfg9000(ItemId::new(3)))
+      .expect("BFG equips in the weapon slot");
+    assert!(attacker.ranged_exact_hit());
+
+    let defender = Actor::new(EntityId::new(2), Position::new(1, 0), "Demon", false);
+    let (min_damage, max_damage) = attacker.ranged_damage().expect("BFG damage policy");
+    let seed = 0;
+    let mut miss_probe = GameRng::from_seed(seed);
+    assert!(
+      miss_probe.gen_range(0..100) >= 5,
+      "seed must miss at minimum accuracy"
+    );
+    let mut expected_rng = GameRng::from_seed(seed);
+    let expected_damage = expected_rng.gen_range(min_damage..(max_damage + 1));
+    let mut actual_rng = GameRng::from_seed(seed);
+    let outcome = CombatResolver::resolve_ranged_attack(&attacker, &defender, 1, &mut actual_rng);
+
+    assert_eq!(
+      outcome,
+      AttackOutcome::Hit {
+        damage: expected_damage,
+        is_lethal: expected_damage >= defender.hp().current,
+      }
+    );
+    assert_eq!(
+      actual_rng, expected_rng,
+      "exact-hit consumes only damage RNG"
+    );
+  }
+
+  #[test]
+  fn exact_hit_policy_is_limited_to_standard_bfg() {
+    let mut standard = Actor::new(EntityId::new(1), Position::new(0, 0), "Marine", true);
+    standard
+      .equipment_mut()
+      .equip(EquipmentSlot::Weapon, Item::bfg9000(ItemId::new(1)))
+      .unwrap();
+    assert!(standard.ranged_exact_hit());
+
+    let mut nuclear = Actor::new(EntityId::new(2), Position::new(0, 0), "Marine", true);
+    nuclear
+      .equipment_mut()
+      .equip(EquipmentSlot::Weapon, Item::nuclear_bfg9000(ItemId::new(2)))
+      .unwrap();
+    assert!(!nuclear.ranged_exact_hit());
+
+    let mut pistol = Actor::new(EntityId::new(3), Position::new(0, 0), "Marine", true);
+    pistol
+      .equipment_mut()
+      .equip(EquipmentSlot::Weapon, Item::pistol(ItemId::new(3)))
+      .unwrap();
+    assert!(!pistol.ranged_exact_hit());
   }
 }

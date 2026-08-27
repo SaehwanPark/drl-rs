@@ -532,6 +532,73 @@ fn nuclear_bfg_overload_hazard_scenario_preserves_nuke_order_and_replay() {
 }
 
 #[test]
+fn standard_bfg_exact_hit_vertical_scenario_preserves_replay() {
+  let mut scenario = Scenario::from_ascii(
+    "StandardBfgExactHitVertical",
+    "Standard BFG 9000 bypasses only to-hit sampling",
+    "########\n#@...h.#\n#......#\n########\n",
+  )
+  .unwrap();
+  scenario.seed = 0;
+  scenario.monsters[0].name = "Static Target".to_string();
+  scenario.monsters[0].hp = 500;
+  scenario.monsters[0].speed = 1;
+  scenario.player_config = Some(PlayerSpawnConfig {
+    hp: 50,
+    max_hp: 50,
+    speed: 100,
+    initial_items: Vec::new(),
+    equipped_weapon: Some(ItemSpawnKind::Bfg9000),
+    equipped_armor: None,
+    equipped_armor_durability: None,
+  });
+
+  let target = Position::new(5, 1);
+  let commands = [Command::AttackRanged(target)];
+  let (game, events, _metrics, replay) =
+    ScenarioRunner::run_commands(&scenario, &commands).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let target_id = game
+    .world()
+    .actors()
+    .values()
+    .find(|actor| !actor.is_player())
+    .unwrap()
+    .id();
+  assert!(events.iter().any(|event| {
+    matches!(
+      event,
+      GameEvent::AttackResolved {
+        attacker_id,
+        target_id: event_target,
+        outcome: AttackOutcome::Hit { .. },
+        is_ranged: true,
+      } if *attacker_id == player_id && *event_target == target_id
+    )
+  }));
+  assert_eq!(
+    game
+      .world()
+      .player()
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .current_clip,
+    99
+  );
+  assert!(game.world().get_actor(target_id).unwrap().hp().current < 500);
+  assert_eq!(replay.commands, commands);
+
+  let (replayed_game, replay_events) = ReplayEngine::run(&replay).unwrap();
+  assert_eq!(replayed_game, game);
+  assert_eq!(replay_events, events);
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}
+
+#[test]
 fn acid_spitter_vertical_scenario_preserves_terrain_reload_and_replay() {
   let ascii = "########\n#@w....#\n#......#\n########\n";
   let mut scenario = Scenario::from_ascii(

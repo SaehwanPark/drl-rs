@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.183`
+Current project version: `0.2.184`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.183)
+## 3. Current Progress Summary (`VERSION` 0.2.184)
 
 ### Delivered Foundations
 
@@ -496,6 +496,13 @@ verification item uses explicit status semantics:
   Acid/Lava or 100 elsewhere. Atomic rejection, typed events, scenario/replay,
   MCP legal-action, and BrowserSession parity are covered; legacy `NukeRun`
   map effects, runtime, and audiovisual parity remain open.
+- **M9 standard BFG 9000 exact-hit behavior (`0.2.184`):** The standard BFG
+  now bypasses only the ranged to-hit sample while retaining LOS, range,
+  clip, action-cost, damage RNG, and existing attack/damage events. Invalid
+  target, LOS, range, and empty-clip commands remain atomic; pure combat,
+  scenario/replay, and BrowserSession boundary coverage is included. Other
+  exact-hit families, projectile routing, explosions, runtime, and
+  audiovisual parity remain open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1092,6 +1099,11 @@ scripting.
   elsewhere, and emits `NuclearWeaponOverloaded` plus the existing nuke events.
   Atomicity, scenario/replay, MCP, and BrowserSession parity are covered;
   legacy `NukeRun` map effects, runtime, and audiovisual parity remain open.
+- [x] Standard BFG 9000 exact-hit behavior bypasses only its ranged to-hit
+  sample while preserving LOS, range, clip, action cost, damage RNG, and
+  existing attack/damage events; atomic rejection, pure combat, replay, and
+  BrowserSession boundary parity are covered. Other exact-hit families,
+  projectile routing, explosions, runtime, and audiovisual parity remain open.
 - [ ] Full migration of legacy monsters, weapons, armor, mods, and consumable
   items.
 - [ ] Full migration of special levels, vaults, and dungeon branches.
