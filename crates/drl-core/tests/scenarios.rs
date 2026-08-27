@@ -2675,10 +2675,10 @@ fn double_shotgun_vertical_scenario_preserves_shells_and_replay() {
 }
 
 #[test]
-fn combat_shotgun_vertical_scenario_preserves_shells_and_replay() {
+fn combat_pump_vertical_scenario_preserves_shells_and_replay() {
   let mut scenario = Scenario::from_ascii(
-    "CombatShotgunVertical",
-    "Combat Shotgun shell clip depletion and deterministic reload",
+    "CombatPumpVertical",
+    "Combat Shotgun pump cycles, shell reload, and deterministic replay",
     "#########\n#.@....h#\n#.......#\n#########\n",
   )
   .unwrap();
@@ -2744,11 +2744,17 @@ fn combat_shotgun_vertical_scenario_preserves_shells_and_replay() {
   );
 
   let target = Position::new(7, 1);
-  let mut commands = vec![Command::AttackRanged(target); 5];
+  let mut commands = Vec::new();
+  for index in 0..5 {
+    commands.push(Command::AttackRanged(target));
+    if index < 4 {
+      commands.push(Command::Reload);
+    }
+  }
   commands.push(Command::Reload);
   let (game, events, metrics, replay) = ScenarioRunner::run_commands(&scenario, &commands).unwrap();
   assert_eq!(metrics.outcome, RunOutcome::InProgress);
-  assert_eq!(metrics.turns_survived, 5);
+  assert_eq!(metrics.turns_survived, 9);
   assert_eq!(metrics.shots_fired, 5);
   assert_eq!(metrics.shots_hit, 3);
   assert_eq!(metrics.damage_dealt, 46);
@@ -2814,6 +2820,21 @@ fn combat_shotgun_vertical_scenario_preserves_shells_and_replay() {
       })
       .count(),
     5
+  );
+  assert_eq!(
+    events
+      .iter()
+      .filter(|event| {
+        matches!(
+          event,
+          GameEvent::ActionCostPaid {
+            entity_id,
+            cost: ActionCost(200),
+          } if *entity_id == player_id
+        )
+      })
+      .count(),
+    4
   );
   assert!(matches!(
     events.get(reload_index + 1),

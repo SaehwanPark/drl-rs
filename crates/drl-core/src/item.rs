@@ -9,6 +9,7 @@ use crate::behavior::{
   LavaRechargeOutcome, LavaRechargeState, MedicalRepairOutcome, MedicalRepairState,
 };
 use crate::item_definition::{ItemDefinitionKind, definition_for_spawn_kind};
+use crate::pump_action::{PumpActionState, ReloadTransition};
 
 /// Physical properties for a weapon instance.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -130,6 +131,7 @@ pub struct Item {
   name: String,
   description: String,
   kind: ItemKind,
+  pump_action: Option<PumpActionState>,
 }
 
 impl Item {
@@ -147,6 +149,7 @@ impl Item {
       name: name.into(),
       description: description.into(),
       kind,
+      pump_action: None,
     }
   }
 
@@ -183,7 +186,56 @@ impl Item {
   #[must_use]
   fn with_archetype(mut self, archetype: ItemArchetype) -> Self {
     self.archetype = archetype;
+    if archetype == ItemArchetype::CombatShotgun {
+      self.pump_action = Some(PumpActionState::new());
+    }
     self
+  }
+
+  /// Returns whether an empty chamber blocks firing while clip ammo remains.
+  #[must_use]
+  pub(crate) fn pump_action_blocks_fire(&self) -> bool {
+    self.pump_action.is_some_and(|state| {
+      state.blocks_fire(self.weapon_properties().map_or(0, |p| p.current_clip))
+    })
+  }
+
+  /// Marks a successful shot as leaving the chamber empty.
+  pub(crate) fn mark_pump_action_after_fire(&mut self) {
+    if let Some(state) = self.pump_action {
+      self.pump_action = Some(state.after_fire());
+    }
+  }
+
+  /// Chambers a round after an accepted walk when clip ammo remains.
+  pub(crate) fn pump_action_after_accepted_move(&mut self) {
+    let Some(state) = self.pump_action else {
+      return;
+    };
+    let current_clip = self.weapon_properties().map_or(0, |p| p.current_clip);
+    self.pump_action = Some(state.after_accepted_move(current_clip));
+  }
+
+  /// Returns whether reload should cycle the action without consuming reserve ammo.
+  #[must_use]
+  pub(crate) fn pump_action_reload_transition(&self) -> Option<ReloadTransition> {
+    let state = self.pump_action?;
+    let current_clip = self.weapon_properties().map_or(0, |p| p.current_clip);
+    Some(state.reload_transition(current_clip))
+  }
+
+  /// Completes a pump-only reload.
+  pub(crate) fn complete_pump_action_pump(&mut self) {
+    if let Some(state) = self.pump_action {
+      self.pump_action = Some(state.after_pump());
+    }
+  }
+
+  /// Completes a regular reload that loaded reserve ammunition.
+  pub(crate) fn complete_pump_action_reload(&mut self, loaded: u32) {
+    if let Some(state) = self.pump_action {
+      self.pump_action = Some(state.after_regular_reload(loaded));
+    }
   }
 
   /// Returns the semantic category of this item.

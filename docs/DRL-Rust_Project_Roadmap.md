@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.169`
+Current project version: `0.2.170`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.169)
+## 3. Current Progress Summary (`VERSION` 0.2.170)
 
 ### Delivered Foundations
 
@@ -425,6 +425,13 @@ verification item uses explicit status semantics:
   validation now rejects unsupported schema versions and mismatched top-level
   and metadata headers before execution, matching the V2 MCP envelope contract.
   Gameplay and replay semantics remain unchanged.
+- **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
+  `CombatPumpVertical` encounter now carries typed chamber state: successful
+  fire empties it, empty-chamber fire rejects atomically, accepted movement and
+  pump-only reload chamber it, and an empty clip follows the one-shell reload
+  path. Scenario/replay and browser-boundary parity are verified; chamber
+  presentation, alternate reload, and controlled legacy runtime comparison
+  remain `NOT_RUN`.
 - **Tooling & Replays (M5, M6)**: Versioned replay engine (`V2`), declarative
   ASCII scenario runners, scripted bots, batch sweep runners, and a pure Rust
   zero-dependency MCP server.
@@ -955,8 +962,9 @@ scripting.
   runtime comparison is `NOT_RUN`.
 - [x] Combat Shotgun normal reload preserves the pinned `IF_SINGLERELOAD`
   policy: one shell loads per accepted command, full/no-reserve rejection is
-  atomic, and scenario/replay/browser-boundary parity is verified; pump-action,
-  alternate reload, and controlled legacy runtime comparison remain open.
+  atomic, and scenario/replay/browser-boundary parity is verified; pump-action
+  is delivered in the `0.2.170` vertical slice, while alternate reload and
+  controlled legacy runtime comparison remain open.
 - [ ] Full migration of legacy monsters, weapons, armor, mods, and consumable
   items.
 - [ ] Full migration of special levels, vaults, and dungeon branches.

@@ -5786,7 +5786,7 @@ mod tests {
   }
 
   #[test]
-  fn combat_shotgun_vertical_browser_boundary_matches_direct_core_presentation() {
+  fn combat_pump_vertical_browser_boundary_matches_direct_core_presentation() {
     let player_position = Position::new(2, 1);
     let player_config = PlayerSpawnConfig {
       hp: 50,
@@ -5811,8 +5811,8 @@ mod tests {
     let shells_id = ItemId::new(4);
     let weapon_id = ItemId::new(5);
     let mut scenario = drl_core::scenario::Scenario::from_ascii(
-      "CombatShotgunVertical",
-      "Combat Shotgun shell clip depletion and deterministic reload",
+      "CombatPumpVertical",
+      "Combat Shotgun pump cycles, shell reload, and deterministic replay",
       "#########\n#.@....h#\n#.......#\n#########\n",
     )
     .expect("vertical scenario fixture");
@@ -5835,7 +5835,13 @@ mod tests {
       .expect("static target")
       .id();
     let target = Position::new(7, 1);
-    let mut commands = vec![Command::AttackRanged(target); 5];
+    let mut commands = Vec::new();
+    for index in 0..5 {
+      commands.push(Command::AttackRanged(target));
+      if index < 4 {
+        commands.push(Command::Reload);
+      }
+    }
     commands.push(Command::Reload);
     let ranged_attack = drl_render::EffectSpan {
       effect: drl_render::PresentationEffect::RangedAttack,
@@ -5854,9 +5860,13 @@ mod tests {
     };
     let expected_effects = [
       vec![ranged_attack],
+      Vec::new(),
       vec![ranged_attack],
+      Vec::new(),
       vec![ranged_attack, hit],
+      Vec::new(),
       vec![ranged_attack, hit],
+      Vec::new(),
       vec![ranged_attack, hit],
       vec![reload],
     ];
@@ -5930,6 +5940,21 @@ mod tests {
         .unwrap()
         .count,
       9
+    );
+    assert_eq!(
+      all_events
+        .iter()
+        .filter(|event| {
+          matches!(
+            event,
+            drl_protocol::GameEvent::ActionCostPaid {
+              entity_id,
+              cost: drl_protocol::ActionCost(200),
+            } if *entity_id == player_id
+          )
+        })
+        .count(),
+      4
     );
     let reload_index = all_events
       .iter()

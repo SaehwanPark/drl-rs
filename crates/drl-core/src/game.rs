@@ -21,6 +21,7 @@ use crate::null_pointer::{
   NULL_POINTER_EXPLOSION_DAMAGE, NULL_POINTER_EXPLOSION_DELAY, NULL_POINTER_EXPLOSION_RADIUS,
   NullPointerHitTransition,
 };
+use crate::pump_action::{PUMP_ACTION_COST, ReloadTransition};
 use crate::rng::GameRng;
 use crate::scheduler::{ACTION_THRESHOLD, Scheduler};
 use crate::subtle_knife::{SUBTLE_KNIFE_TARGET_DAMAGE, SubtleKnifeError};
@@ -683,6 +684,11 @@ impl Game {
     });
 
     self.apply_player_hazard_contact(player_id, to, events)?;
+    if let Some(player) = self.state.world.get_actor_mut(player_id)
+      && let Some(weapon) = player.equipment_mut().weapon_mut()
+    {
+      weapon.pump_action_after_accepted_move();
+    }
     Ok(movement_cost(target_tile.to_kind()))
   }
 
@@ -990,6 +996,11 @@ impl Game {
       .weapon_mut()
       .ok_or(CommandError::NoEquippedWeapon)?;
 
+    if weapon.pump_action_reload_transition() == Some(ReloadTransition::PumpOnly) {
+      weapon.complete_pump_action_pump();
+      return Ok(PUMP_ACTION_COST);
+    }
+
     let (ammo_type, needed, reload_cost) = {
       let Some(props) = weapon.weapon_properties() else {
         return Err(CommandError::NoEquippedWeapon);
@@ -1024,6 +1035,7 @@ impl Game {
 
     let weapon = player.equipment_mut().weapon_mut().unwrap();
     weapon.load_ammo_into_clip(taken);
+    weapon.complete_pump_action_reload(taken);
 
     let (current_clip, max_clip) = {
       let props = weapon.weapon_properties().unwrap();
@@ -1334,6 +1346,9 @@ impl Game {
       if !props.is_ranged {
         return Err(CommandError::NoEquippedWeapon);
       }
+      if weapon.pump_action_blocks_fire() {
+        return Err(CommandError::ChamberEmpty);
+      }
       if props.current_clip == 0 {
         return Err(CommandError::NoAmmoInClip);
       }
@@ -1471,6 +1486,12 @@ impl Game {
       if player_kb > 0 {
         self.apply_knockback(player_id, target_monster_id, player_kb, events)?;
       }
+    }
+
+    if let Some(player) = self.state.world.get_actor_mut(player_id)
+      && let Some(weapon) = player.equipment_mut().weapon_mut()
+    {
+      weapon.mark_pump_action_after_fire();
     }
 
     Ok(fire_cost)

@@ -608,6 +608,120 @@ fn ranged_attack_without_ammo_preserves_game_state() {
 }
 
 #[test]
+fn combat_shotgun_empty_chamber_rejection_is_atomic() {
+  let mut game = Game::new(2_025, 10, 10, Position::new(2, 2)).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let target_position = Position::new(8, 2);
+  game
+    .world_mut()
+    .spawn_monster(target_position, "Static Target", 500, 0, (2, 4))
+    .unwrap();
+
+  let weapon_id = game.world_mut().allocate_item_id();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .inventory_mut()
+    .add_item(Item::combat_shotgun(weapon_id))
+    .unwrap();
+  game.step(Command::Equip(weapon_id)).unwrap();
+
+  game
+    .step(Command::AttackRanged(target_position))
+    .expect("first chambered shot");
+  let after_first_shot = game.clone();
+  assert_eq!(
+    game.step(Command::AttackRanged(target_position)),
+    Err(CommandError::ChamberEmpty)
+  );
+  assert_eq!(game, after_first_shot);
+
+  let pump_events = game.step(Command::Reload).expect("pump-only reload");
+  assert!(pump_events.iter().any(|event| {
+    matches!(
+      event,
+      drl_protocol::GameEvent::ActionCostPaid {
+        entity_id,
+        cost: drl_protocol::ActionCost(200),
+      } if *entity_id == player_id
+    )
+  }));
+  assert!(
+    !pump_events
+      .iter()
+      .any(|event| matches!(event, drl_protocol::GameEvent::WeaponReloaded { .. }))
+  );
+  assert_eq!(
+    game
+      .world()
+      .get_actor(player_id)
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .current_clip,
+    4
+  );
+
+  game
+    .step(Command::AttackRanged(target_position))
+    .expect("pumped chambered shot");
+  game
+    .world_mut()
+    .map_mut()
+    .set_tile(Position::new(1, 2), Tile::Wall);
+  assert!(game.step(Command::Move(Direction::West)).is_err());
+  game.step(Command::Wait).expect("wait does not pump");
+  assert_eq!(
+    game.step(Command::AttackRanged(target_position)),
+    Err(CommandError::ChamberEmpty)
+  );
+  game
+    .step(Command::Move(Direction::East))
+    .expect("accepted walk pumps chamber");
+  game
+    .step(Command::AttackRanged(target_position))
+    .expect("walk-pumped chambered shot");
+
+  let shell_id = game.world_mut().allocate_item_id();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .inventory_mut()
+    .add_item(Item::ammo_shells(shell_id, 1))
+    .unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 0;
+  let regular_reload = game.step(Command::Reload).expect("regular shell reload");
+  assert!(regular_reload.iter().any(|event| {
+    matches!(
+      event,
+      drl_protocol::GameEvent::WeaponReloaded {
+        entity_id,
+        ammo_loaded: 1,
+        current_clip: 1,
+        max_clip: 5,
+      } if *entity_id == player_id
+    )
+  }));
+  game
+    .step(Command::AttackRanged(target_position))
+    .expect("regular reload chambers a shell");
+}
+
+#[test]
 fn phase_device_without_destination_preserves_game_state() {
   let mut game = Game::new(25, 3, 3, Position::new(1, 1)).unwrap();
   let player_id = game.world().player_id().unwrap();

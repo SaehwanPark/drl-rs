@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.169`
+Current project version: `0.2.170`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -238,7 +238,7 @@ Presentation Boundary
     recovery, Pistol reload, Plasma Rifle cell-reload, Rocket Launcher
     one-shot reload, Chainsaw melee, standard Shotgun shell-reload, Assault
     Shotgun single-shell reload, Double Shotgun clip-reload, and Combat Shotgun
-    single-shell reload encounters are covered
+    pump-action encounters are covered
     by this same
     cross-boundary comparison.
   - Accessible semantic minimap text grid fed by the fair `MinimapState`
@@ -416,7 +416,9 @@ Presentation Boundary
   through a bounded typed Rust vocabulary (modifiers, equip/use/attack/kill
   effects, alternate actions, recharge/periodic policy, set membership, and
   explicit typed state machines for exceptional cases), not a generic runtime
-  callback/event bus.
+  callback/event bus. The Combat Shotgun pump-action chamber is one such
+  item-owned state machine; it remains hidden from `ItemView` until a later
+  presentation slice.
 - **Loot & Monster Rolls**: Pure roll-bound tables map caller-supplied PRNG
   rolls to procedural room loot and monster spawns.
 - **Tile Definitions**: `TileKind::definition()` in `drl-protocol` currently

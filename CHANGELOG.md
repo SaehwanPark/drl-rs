@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.170]
+
+- Added the typed Combat Shotgun pump-action chamber transition: successful
+  fire empties the chamber, an empty-chamber shot rejects atomically, accepted
+  movement or a 200-unit pump-only reload chambers it, and an empty clip uses
+  the existing one-shell reload. Replay/scenario and browser-boundary parity
+  are covered; chamber UI/audio and alternate reload remain `NOT_RUN`.
+
 ## [0.2.169]
 
 - Hardened direct-core replay preflight to accept only V2 schema headers and
@@ -19,8 +27,8 @@ documented in this file.
 - Corrected normal Combat Shotgun reload to load one shell, matching the
   pinned `IF_SINGLERELOAD` legacy behavior. Added atomic rejection coverage,
   deterministic ScenarioRunner/replay assertions, and BrowserSession/direct-
-  core parity; pump-action, alternate reload, and broader legacy spread
-  behavior remain `NOT_RUN`.
+  core parity; pump-action behavior was delivered in `0.2.170`, while
+  alternate reload and broader legacy spread behavior remain `NOT_RUN`.
 
 ## [0.2.166]
 

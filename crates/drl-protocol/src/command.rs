@@ -81,6 +81,8 @@ pub enum CommandError {
   NoEquippedWeapon,
   /// Weapon has no ammunition loaded in its clip.
   NoAmmoInClip,
+  /// Pump-action weapon chamber is empty while clip ammunition remains.
+  ChamberEmpty,
   /// No matching ammunition available in inventory for reloading.
   NoMatchingAmmo,
   /// Weapon clip is already full.
@@ -153,6 +155,7 @@ impl fmt::Display for CommandError {
       Self::SlotEmpty(slot) => write!(f, "{slot} slot is empty"),
       Self::NoEquippedWeapon => write!(f, "no weapon equipped"),
       Self::NoAmmoInClip => write!(f, "weapon clip is empty - reload required"),
+      Self::ChamberEmpty => write!(f, "weapon chamber is empty - pump required"),
       Self::NoMatchingAmmo => write!(f, "no matching ammunition in inventory"),
       Self::ClipAlreadyFull => write!(f, "weapon clip is already full"),
       Self::NotOnStairs(pos) => {
@@ -209,6 +212,12 @@ mod tests {
     assert_eq!(
       no_ammo.to_string(),
       "weapon clip is empty - reload required"
+    );
+
+    let chamber_empty = CommandError::ChamberEmpty;
+    assert_eq!(
+      chamber_empty.to_string(),
+      "weapon chamber is empty - pump required"
     );
 
     let slot_empty = CommandError::SlotEmpty(EquipmentSlot::Weapon);
