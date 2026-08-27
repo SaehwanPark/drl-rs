@@ -1645,18 +1645,18 @@ The bounded implementation target for this revision is the pinned Nuclear BFG
 path across combat, scenario/replay determinism, MCP behavior, and
 BrowserSession parity. Its acceptance criteria are:
 
-- [ ] mark only the Nuclear BFG 9000 weapon as exact-hit in addition to the
+- [x] mark only the Nuclear BFG 9000 weapon as exact-hit in addition to the
   delivered standard BFG policy, preserving ordinary accuracy behavior for
   every other weapon;
-- [ ] bypass only the to-hit RNG for a valid Nuclear BFG 9000 shot while
+- [x] bypass only the to-hit RNG for a valid Nuclear BFG 9000 shot while
   retaining line-of-sight, range, clip, action-cost, damage RNG, and existing
   attack/damage event contracts;
-- [ ] reject invalid target, blocked line-of-sight, out-of-range, and empty-clip
+- [x] reject invalid target, blocked line-of-sight, out-of-range, and empty-clip
   commands atomically, preserving complete `Game` and RNG state;
-- [ ] verify pure resolver boundaries, deterministic Nuclear-BFG scenarios,
+- [x] verify pure resolver boundaries, deterministic Nuclear-BFG scenarios,
   replay equality/determinism, MCP projections, and BrowserSession/direct-core
   parity;
-- [ ] advance gameplay semantics from `31` to `32` and project version from
+- [x] advance gameplay semantics from `31` to `32` and project version from
   `0.2.184` to `0.2.185` while preserving replay V2 wire, RNG, generator, and
   ruleset identities; BFG shot cost, projectile paths, explosions, NukeRun,
   other exact-hit families, runtime, and audiovisual parity remain open.
