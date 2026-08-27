@@ -25,6 +25,14 @@ pub const BLASTER_RECHARGE_TICK: u32 = 10;
 /// Number of cells restored by one Blaster recharge.
 pub const BLASTER_RECHARGE_AMOUNT: u32 = 1;
 
+/// Nuclear Plasma Rifle's pinned recharge delay before the first cell is
+/// restored.
+pub const NUCLEAR_PLASMA_RECHARGE_DELAY: u32 = 40;
+/// Nuclear Plasma Rifle's timer cadence retained after each restored cell.
+pub const NUCLEAR_PLASMA_RECHARGE_TICK: u32 = 2;
+/// Number of cells restored by one Nuclear Plasma Rifle recharge.
+pub const NUCLEAR_PLASMA_RECHARGE_AMOUNT: u32 = 1;
+
 /// Armor-owned state for Lava Armor's periodic durability behavior.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct LavaRechargeState {
@@ -90,17 +98,63 @@ pub enum LavaRechargeOutcome {
   NotOnLava { timer: u32 },
 }
 
-/// Weapon-owned state for the Blaster's periodic cell recharge behavior.
+/// Explicit timing and amount policy for a rechargeable weapon.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct WeaponRechargePolicy {
+  /// Accepted-command delay before the first restoration.
+  pub delay: u32,
+  /// Accepted-command cadence between restorations.
+  pub tick: u32,
+  /// Cells restored at each cadence boundary.
+  pub amount: u32,
+}
+
+impl Default for WeaponRechargePolicy {
+  fn default() -> Self {
+    Self::blaster()
+  }
+}
+
+impl WeaponRechargePolicy {
+  /// The pinned Blaster recharge policy.
+  #[must_use]
+  pub const fn blaster() -> Self {
+    Self {
+      delay: BLASTER_RECHARGE_DELAY,
+      tick: BLASTER_RECHARGE_TICK,
+      amount: BLASTER_RECHARGE_AMOUNT,
+    }
+  }
+
+  /// The pinned Nuclear Plasma Rifle recharge policy.
+  #[must_use]
+  pub const fn nuclear_plasma() -> Self {
+    Self {
+      delay: NUCLEAR_PLASMA_RECHARGE_DELAY,
+      tick: NUCLEAR_PLASMA_RECHARGE_TICK,
+      amount: NUCLEAR_PLASMA_RECHARGE_AMOUNT,
+    }
+  }
+}
+
+/// Weapon-owned state for a typed periodic cell-recharge behavior.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct WeaponRechargeState {
   timer: u32,
+  policy: WeaponRechargePolicy,
 }
 
 impl WeaponRechargeState {
   /// Creates a fresh recharge timer.
   #[must_use]
   pub const fn new() -> Self {
-    Self { timer: 0 }
+    Self::with_policy(WeaponRechargePolicy::blaster())
+  }
+
+  /// Creates a fresh timer with an explicit typed weapon policy.
+  #[must_use]
+  pub const fn with_policy(policy: WeaponRechargePolicy) -> Self {
+    Self { timer: 0, policy }
   }
 
   /// Returns the current deterministic recharge timer.
@@ -116,12 +170,15 @@ impl WeaponRechargeState {
     }
 
     self.timer = self.timer.saturating_add(1);
-    if self.timer < BLASTER_RECHARGE_DELAY + BLASTER_RECHARGE_TICK {
+    if self.timer < self.policy.delay.saturating_add(self.policy.tick) {
       return WeaponRechargeOutcome::Waiting { timer: self.timer };
     }
 
-    self.timer = self.timer.saturating_sub(BLASTER_RECHARGE_TICK);
-    let restored = BLASTER_RECHARGE_AMOUNT.min(max_clip.saturating_sub(*current_clip));
+    self.timer = self.timer.saturating_sub(self.policy.tick);
+    let restored = self
+      .policy
+      .amount
+      .min(max_clip.saturating_sub(*current_clip));
     *current_clip = current_clip.saturating_add(restored).min(max_clip);
     WeaponRechargeOutcome::Recharged {
       ammo_recharged: restored,
@@ -421,7 +478,10 @@ mod tests {
 
   #[test]
   fn weapon_recharge_full_clip_preserves_timer_and_reset_clears_it() {
-    let mut state = WeaponRechargeState { timer: 12 };
+    let mut state = WeaponRechargeState {
+      timer: 12,
+      policy: WeaponRechargePolicy::blaster(),
+    };
     let mut current_clip = 10;
 
     assert_eq!(
@@ -441,6 +501,7 @@ mod tests {
   fn weapon_recharge_clamps_at_capacity() {
     let mut state = WeaponRechargeState {
       timer: BLASTER_RECHARGE_DELAY + BLASTER_RECHARGE_TICK - 1,
+      policy: WeaponRechargePolicy::blaster(),
     };
     let mut current_clip = 9;
 
@@ -457,6 +518,64 @@ mod tests {
       WeaponRechargeOutcome::Full {
         timer: BLASTER_RECHARGE_DELAY
       }
+    );
+  }
+
+  #[test]
+  fn nuclear_plasma_recharge_uses_pinned_delay_and_cadence() {
+    let mut state = WeaponRechargeState::with_policy(WeaponRechargePolicy::nuclear_plasma());
+    let mut current_clip = 0;
+
+    for expected_timer in 1..(NUCLEAR_PLASMA_RECHARGE_DELAY + NUCLEAR_PLASMA_RECHARGE_TICK) {
+      assert_eq!(
+        state.tick(&mut current_clip, 24),
+        WeaponRechargeOutcome::Waiting {
+          timer: expected_timer,
+        }
+      );
+    }
+    assert_eq!(
+      state.tick(&mut current_clip, 24),
+      WeaponRechargeOutcome::Recharged {
+        ammo_recharged: NUCLEAR_PLASMA_RECHARGE_AMOUNT,
+        timer: NUCLEAR_PLASMA_RECHARGE_DELAY,
+      }
+    );
+    assert_eq!(current_clip, 1);
+
+    assert_eq!(
+      state.tick(&mut current_clip, 24),
+      WeaponRechargeOutcome::Waiting {
+        timer: NUCLEAR_PLASMA_RECHARGE_DELAY + 1,
+      }
+    );
+    assert_eq!(
+      state.tick(&mut current_clip, 24),
+      WeaponRechargeOutcome::Recharged {
+        ammo_recharged: NUCLEAR_PLASMA_RECHARGE_AMOUNT,
+        timer: NUCLEAR_PLASMA_RECHARGE_DELAY,
+      }
+    );
+    assert_eq!(current_clip, 2);
+  }
+
+  #[test]
+  fn nuclear_plasma_full_clip_preserves_timer_and_reset_clears_it() {
+    let mut state = WeaponRechargeState {
+      timer: 12,
+      policy: WeaponRechargePolicy::nuclear_plasma(),
+    };
+    let mut current_clip = 24;
+
+    assert_eq!(
+      state.tick(&mut current_clip, 24),
+      WeaponRechargeOutcome::Full { timer: 12 }
+    );
+    state.reset();
+    current_clip = 23;
+    assert_eq!(
+      state.tick(&mut current_clip, 24),
+      WeaponRechargeOutcome::Waiting { timer: 1 }
     );
   }
 }

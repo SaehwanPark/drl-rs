@@ -53,7 +53,8 @@ pub use batch::{
 pub use behavior::{
   BLASTER_RECHARGE_AMOUNT, BLASTER_RECHARGE_DELAY, BLASTER_RECHARGE_TICK, MEDICAL_REPAIR_INTERVAL,
   MEDICAL_REPAIR_MIN_DURABILITY_EXCLUSIVE, MEDICAL_REPAIR_TIMER_AFTER_REPAIR, MedicalRepairOutcome,
-  MedicalRepairState, WeaponRechargeOutcome, WeaponRechargeState,
+  MedicalRepairState, NUCLEAR_PLASMA_RECHARGE_AMOUNT, NUCLEAR_PLASMA_RECHARGE_DELAY,
+  NUCLEAR_PLASMA_RECHARGE_TICK, WeaponRechargeOutcome, WeaponRechargePolicy, WeaponRechargeState,
 };
 pub use combat::CombatResolver;
 pub use combat_shotgun::COMBAT_SHOTGUN_ALT_RELOAD_CAP;

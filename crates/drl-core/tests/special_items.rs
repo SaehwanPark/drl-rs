@@ -722,6 +722,58 @@ fn blaster_recharge_timer_resets_on_fire_and_rejected_commands_are_atomic() {
 }
 
 #[test]
+fn nuclear_plasma_recharge_timer_resets_on_fire() {
+  let mut game = Game::new(784, 10, 10, Position::new(2, 2)).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let target_position = Position::new(8, 2);
+  game
+    .world_mut()
+    .spawn_monster(target_position, "Static Target", 500, 0, (2, 4))
+    .unwrap();
+
+  let weapon_id = game.world_mut().allocate_item_id();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .inventory_mut()
+    .add_item(Item::nuclear_plasma_rifle(weapon_id))
+    .unwrap();
+  game.step(Command::Equip(weapon_id)).unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 23;
+
+  for _ in 0..10 {
+    game.step(Command::Wait).unwrap();
+  }
+  assert_eq!(game.world().player().unwrap().weapon_recharge_timer(), 10);
+
+  game
+    .step(Command::AttackRanged(target_position))
+    .expect("first Nuclear Plasma shot");
+  let player = game.world().player().unwrap();
+  assert_eq!(player.weapon_recharge_timer(), 1);
+  assert_eq!(
+    player
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .current_clip,
+    22
+  );
+}
+
+#[test]
 fn rejected_commands_roll_back_medical_repair_state() {
   let mut game = Game::new(779, 5, 5, Position::new(1, 1)).unwrap();
   let player_id = game.world().player_id().unwrap();
