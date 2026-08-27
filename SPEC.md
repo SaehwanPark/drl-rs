@@ -1602,18 +1602,18 @@ The bounded implementation target for this revision is the pinned Nuclear BFG
 determinism, MCP legal-action and event projection, and BrowserSession parity.
 Its acceptance criteria are:
 
-- [ ] preflight an equipped Nuclear BFG 9000 with a full 40-cell clip,
+- [x] preflight an equipped Nuclear BFG 9000 with a full 40-cell clip,
   explicit confirmation, a non-stairs tile, and no pending nuke before any
   score, equipment, or nuke-state mutation;
-- [ ] remove the equipped weapon, spend 1,000 score count, emit one
+- [x] remove the equipped weapon, spend 1,000 score count, emit one
   `NuclearWeaponOverloaded`, and arm countdown `1` on Acid/Lava or `100` on a
   safe floor using the existing `NukeState` transition;
-- [ ] reject unconfirmed, partial-clip, stairs, and pending-nuke commands
+- [x] reject unconfirmed, partial-clip, stairs, and pending-nuke commands
   atomically, preserving complete `Game` and RNG state;
-- [ ] verify the shared pure planner boundaries, hazard and floor scenarios,
+- [x] verify the shared pure planner boundaries, hazard and floor scenarios,
   typed nuke event ordering, replay determinism, MCP legal-action/JSON
   projections, and BrowserSession/direct-core parity for the BFG archetype;
-- [ ] advance gameplay semantics from `29` to `30` and project version from
+- [x] advance gameplay semantics from `29` to `30` and project version from
   `0.2.182` to `0.2.183` while preserving replay V2 wire, RNG, generator, and
   ruleset identities; Nuclear Plasma remains delivered, while `NukeRun`
   map-wide effects, runtime, and audiovisual parity remain open.
