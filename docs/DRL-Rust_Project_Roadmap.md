@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
-Last reviewed: 2026-08-26
-Current project version: `0.2.166`
+Last reviewed: 2026-08-27
+Current project version: `0.2.167`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.166)
+## 3. Current Progress Summary (`VERSION` 0.2.167)
 
 ### Delivered Foundations
 
@@ -410,6 +410,13 @@ verification item uses explicit status semantics:
   standard reload ordering. Gameplay semantics remain unchanged; controlled
   legacy runtime, browser capture, audio/WebGPU, audiovisual, and broader
   weapon/spread parity remain `NOT_RUN`.
+- **M9 vertical Combat Shotgun single-shell reload (`0.2.167`):** The
+  delivered typed reload correction honors the pinned `IF_SINGLERELOAD`
+  behavior with one-shell loading, atomic full/no-reserve rejection coverage,
+  deterministic scenario/replay evidence, and browser-session presentation
+  parity. Gameplay semantics advance to `18`; pump-action, alternate reload,
+  controlled legacy runtime, browser capture, audio/WebGPU, audiovisual, and
+  broader weapon/spread parity remain `NOT_RUN`.
 - **Tooling & Replays (M5, M6)**: Versioned replay engine (`V2`), declarative
   ASCII scenario runners, scripted bots, batch sweep runners, and a pure Rust
   zero-dependency MCP server.
@@ -936,6 +943,10 @@ scripting.
   smoothed preferred step, raw retry, horizontal fallback, then vertical
   fallback; all blocked candidates produce `Wait` instead of broad pathfinding;
   runtime comparison is `NOT_RUN`.
+- [x] Combat Shotgun normal reload preserves the pinned `IF_SINGLERELOAD`
+  policy: one shell loads per accepted command, full/no-reserve rejection is
+  atomic, and scenario/replay/browser-boundary parity is verified; pump-action,
+  alternate reload, and controlled legacy runtime comparison remain open.
 - [ ] Full migration of legacy monsters, weapons, armor, mods, and consumable
   items.
 - [ ] Full migration of special levels, vaults, and dungeon branches.

@@ -384,6 +384,37 @@ fn assault_shotgun_reload_rejections_preserve_game_state() {
 }
 
 #[test]
+fn combat_shotgun_single_shell_reload_rejections_preserve_game_state() {
+  let mut game = Game::new(1_655, 10, 10, Position::new(2, 2)).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let weapon_id = game.world_mut().allocate_item_id();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .inventory_mut()
+    .add_item(Item::combat_shotgun(weapon_id))
+    .unwrap();
+  game.step(Command::Equip(weapon_id)).unwrap();
+
+  // The five-shell clip starts full, so normal reload rejects atomically.
+  assert_rejected_command_is_atomic(&mut game, Command::Reload, CommandError::ClipAlreadyFull);
+
+  // An empty partial clip with no shell reserve also rejects atomically.
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 0;
+  assert_rejected_command_is_atomic(&mut game, Command::Reload, CommandError::NoMatchingAmmo);
+}
+
+#[test]
 fn descend_off_stairs_preserves_game_state() {
   let mut game = Game::new(13, 10, 10, Position::new(2, 2)).unwrap();
 

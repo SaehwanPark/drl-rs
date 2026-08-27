@@ -1,7 +1,7 @@
 # Architecture
 
-Last reviewed: 2026-08-26
-Current project version: `0.2.166`
+Last reviewed: 2026-08-27
+Current project version: `0.2.167`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -238,7 +238,7 @@ Presentation Boundary
     recovery, Pistol reload, Plasma Rifle cell-reload, Rocket Launcher
     one-shot reload, Chainsaw melee, standard Shotgun shell-reload, Assault
     Shotgun single-shell reload, Double Shotgun clip-reload, and Combat Shotgun
-    clip-reload encounters are covered
+    single-shell reload encounters are covered
     by this same
     cross-boundary comparison.
   - Accessible semantic minimap text grid fed by the fair `MinimapState`

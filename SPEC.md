@@ -1,7 +1,7 @@
 # Specification
 
-Last reviewed: 2026-08-26
-Current project version: `0.2.166`
+Last reviewed: 2026-08-27
+Current project version: `0.2.167`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9/Vertical Fidelity — Combat Shotgun Clip Reload
+## 2. Active Implementation Slice: M9/Vertical Fidelity — Combat Shotgun Single-Shell Reload
 
 ### 2.1 Objective
 
-Exercise the existing typed Combat Shotgun transition through a fixed
-five-shell clip encounter. The same stable scenario/replay command sequence
-must be observable through core events and the browser presentation boundary
-without changing gameplay semantics or balance.
+Exercise the legacy-backed Combat Shotgun single-shell reload transition through
+a fixed clip encounter. The same stable scenario/replay command sequence must
+be observable through core events and the browser presentation boundary while
+keeping the transition atomic and bounded.
 
 The legacy Pascal/Lua implementation remains the behavioral reference. Its
 architecture, global callback machinery, and runtime Lua object model remain
@@ -42,31 +42,36 @@ non-goals for reproduction.
 
 - **Steering priority:** Vertical canonical fidelity after the Gate C/D exit
   gates.
+- **Steering gate:** Gate D behavior evidence; the pinned `IF_SINGLERELOAD`
+  policy becomes one explicit typed transition without a callback registry.
 - **Observable outcome:** A declarative encounter, replay execution, and
-  browser session agree on the exact arena, configured Combat Shotgun identity,
-  seeded shell-ammunition sequence, Former Human-profile target damage,
-  blocked knockback, five-shell reload event ordering, player observation, and
-  pure presentation effects.
-- **Gameplay/replay impact:** No accepted transition, replay schema, RNG
-  sampling rule, gameplay-semantics version, procedural-generator identity, or
-  ruleset identity changes.
-- **Protocol/domain ownership:** `drl-protocol` owns stable item/monster
-  identity and commands; core owns ranged combat, ammunition, reload,
-  scheduling, and event order; render/web own derived observations and effects.
+  browser session agree on the exact arena, configured Combat Shotgun
+  identity, depleted clip, one-shell reserve consumption, event ordering,
+  player observation, and pure presentation effects.
+- **Gameplay/replay impact:** The accepted transition advances gameplay
+  semantics from `17` to `18`; replay wire schema, RNG sampling, generator,
+  and ruleset identities remain unchanged.
+- **Protocol/domain ownership:** `drl-protocol` owns stable item identity and
+  commands; core owns typed single-shell reload, ammunition, and event order;
+  render/web own derived observations and effects.
 - **Evidence boundary:** Rust scenario/replay/core/browser-boundary tests are
-  verified. Controlled legacy runtime, browser capture, audio, WebGPU, and
-  audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** Assault alternate reload, new weapon or monster balance
-  equations, broad content migration, new protocol fields, AI policy changes,
-  audiovisual parity, runtime Lua, and new spread/falloff or pellet equations.
+  verified, with pinned source behavior recorded in
+  [`docs/legacy-behavior/combat-shotgun.md`](docs/legacy-behavior/combat-shotgun.md).
+  Controlled legacy runtime, browser capture, audio, WebGPU, and audiovisual
+  comparisons remain `NOT_RUN`.
+- **Non-goals:** Combat Shotgun pump-action callback, alternate reload,
+  ammo-pack/prepared-slot behavior, new weapon or monster balance equations,
+  broad content migration, AI policy changes, audiovisual parity, runtime Lua,
+  and new spread/falloff or pellet equations.
 
 ### 2.2 Why this slice is bounded
 
-The existing Gate C and Gate D work already centralizes stable item/monster
-identity and delivers typed ranged combat, shell ammunition, reload,
-scheduling, and presentation behavior. This slice proves those pieces survive
-one canonical Combat Shotgun scenario/replay and browser boundary without
-introducing a second simulation model or a browser-specific wire format.
+The existing Gate C and Gate D work already centralizes stable item identity and
+delivers typed ranged combat, shell ammunition, reload, scheduling, and
+presentation behavior. This slice adds only the typed single-shell policy
+needed by the pinned Combat Shotgun definition and proves it survives one
+canonical scenario/replay and browser boundary without introducing a second
+simulation model or browser-specific wire format.
 
 Behavioral and presentation mappings remain explicit by design. The encounter
 consumes those typed boundaries while preserving compiler exhaustiveness and
@@ -1233,7 +1238,7 @@ replay, and browser presentation boundaries. Its vertical slice must:
   legacy runtime, browser capture, audio, WebGPU, audiovisual, alternate
   reload, and broader weapon/spread parity remain `NOT_RUN`.
 
-### 2.7an Current vertical Combat Shotgun clip-reload delivery target
+### 2.7an Previous vertical Combat Shotgun clip-reload delivery target
 
 The bounded implementation target for this revision is a Combat Shotgun
 five-shell clip depletion and reload encounter across the declarative scenario,
@@ -1253,6 +1258,28 @@ replay, and browser presentation boundaries. Its vertical slice must:
 - [x] keep gameplay semantics unchanged while recording controlled legacy
   runtime, browser capture, audio, WebGPU, audiovisual, and broader
   weapon/spread parity as `NOT_RUN`.
+
+### 2.7ao Current vertical Combat Shotgun single-shell reload delivery target
+
+The bounded implementation target for this revision is the callback-derived
+Combat Shotgun single-shell reload correction across the declarative scenario,
+replay, and browser presentation boundaries. Its vertical slice must:
+
+- [x] use the exact deterministic `CombatShotgunVertical` 9x4 ASCII arena with
+  a configured Combat Shotgun, five depleted rounds, and ten reserve shells;
+- [x] apply one `Command::Reload` that loads exactly one shell, consumes one
+  reserve shell, and preserves the standard 1,000-unit action cost;
+- [x] reject full-clip and missing-ammo reload attempts atomically with exact
+  `Game` equality;
+- [x] verify replay determinism and compare generated replay events/final game
+  state with the direct scenario result;
+- [x] compare `BrowserSession::submit` with direct `Game::step` for every
+  command's events, observations, literal effects, scene derivation, and
+  retained replay commands;
+- [x] advance gameplay semantics from `17` to `18` while preserving replay
+  wire schema, RNG sampling, generator, and ruleset identities; controlled
+  legacy runtime, browser capture, audio, WebGPU, audiovisual, pump-action,
+  alternate-reload, and broader weapon/spread comparisons remain `NOT_RUN`.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
@@ -1326,7 +1353,9 @@ The `0.2.165` Assault Shotgun single-shell reload correction makes the
 callback-derived one-shell policy explicit, advances gameplay semantics to
 `17`, and leaves alternate reload and broader spread/falloff behavior open.
 The `0.2.166` Combat Shotgun clip-reload encounter adds a five-shell
-ammunition boundary without changing gameplay semantics.
+ammunition boundary without changing gameplay semantics. The current
+successor adds only the pinned Combat Shotgun single-shell policy; pump-action,
+alternate reload, and broader callbacks remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity

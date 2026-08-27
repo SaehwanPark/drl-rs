@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.167]
+
+- Corrected normal Combat Shotgun reload to load one shell, matching the
+  pinned `IF_SINGLERELOAD` legacy behavior. Added atomic rejection coverage,
+  deterministic ScenarioRunner/replay assertions, and BrowserSession/direct-
+  core parity; pump-action, alternate reload, and broader legacy spread
+  behavior remain `NOT_RUN`.
+
 ## [0.2.166]
 
 - Added a bounded Combat Shotgun shell-clip depletion/reload encounter with
