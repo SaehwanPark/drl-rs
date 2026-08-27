@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.187`
+Current project version: `0.2.188`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -195,6 +195,9 @@ Presentation Boundary
     Revenant’s Launcher opts into the same typed exact-hit policy without
     changing its one-rocket clip or damage policy; homing, projectile routing,
     delayed explosions, and timing remain separate policy work.
+    Nuclear BFG 9000 shares the typed forty-cell shot-cost policy with the
+    standard BFG while preserving its exact-hit, recharge, and overload state;
+    projectile routing, explosions, and NukeRun remain separate policy work.
     The pinned `IF_NORELOAD` families use an explicit item policy that rejects
     ordinary `Reload` before mutation; this remains separate from alternate
     reload and automatic recharge behavior.

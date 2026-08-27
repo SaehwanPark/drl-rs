@@ -652,6 +652,15 @@ fn nuclear_bfg_exact_hit_vertical_scenario_preserves_replay() {
       } if *attacker_id == player_id && *event_target == target_id
     )
   }));
+  assert!(events.iter().any(|event| {
+    matches!(
+      event,
+      GameEvent::ActionCostPaid {
+        entity_id,
+        cost: ActionCost::RANGED_ATTACK,
+      } if *entity_id == player_id
+    )
+  }));
   assert_eq!(
     game
       .world()
@@ -663,7 +672,7 @@ fn nuclear_bfg_exact_hit_vertical_scenario_preserves_replay() {
       .weapon_properties()
       .unwrap()
       .current_clip,
-    39
+    0
   );
   assert!(game.world().get_actor(target_id).unwrap().hp().current < 500);
   assert_eq!(replay.commands, commands);
@@ -1617,7 +1626,7 @@ fn nuclear_bfg_periodic_recharge_vertical_scenario_preserves_replay() {
             entity_id,
             item_id,
             ammo_recharged: 1,
-            current_clip: 40,
+            current_clip: 1,
             max_clip: 40,
             timer: 0,
           } if *entity_id == player_id && *item_id == weapon_id

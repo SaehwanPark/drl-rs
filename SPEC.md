@@ -25,47 +25,49 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Revenant’s Launcher Exact-Hit Behavior
+## 2. Active Implementation Slice: M9 — Nuclear BFG 9000 Shot-Cost Behavior
 
 ### 2.1 Objective
 
-Honor the legacy Revenant’s Launcher `IF_EXACTHIT` behavior in the typed ranged
-combat path, bypassing only its to-hit RNG while retaining existing target,
-line-of-sight, range, damage, and event contracts.
+Honor the legacy Nuclear BFG 9000 `shotcost=40` behavior in the typed ranged
+combat path, consuming forty cells for each valid one-shot attack while
+retaining its delivered exact-hit, target, line-of-sight, range, damage, and
+event contracts.
 
 ### 2.1a Scope and steering gate
 
 - **Steering priority:** Vertical canonical fidelity and typed legacy behavior.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, and Gate D callback behavior evidence.
-- **Observable outcome:** An equipped Revenant’s Launcher always resolves a
-  hit against a valid visible target when its clip and range preflight succeeds;
-  the damage roll and existing attack/damage events remain unchanged. Invalid
-  targets, blocked line of sight, out-of-range targets, and empty clips reject
-  without mutation.
-- **Gameplay/replay impact:** Gameplay semantics advance from `33` to `34`
-  and project version advances from `0.2.186` to `0.2.187`; replay wire
+- **Observable outcome:** An equipped Nuclear BFG 9000 accepts a valid visible,
+  in-range shot only when at least forty cells remain, consuming exactly forty
+  cells while preserving its exact-hit resolver, damage roll, and existing
+  attack/damage events. Clips below forty, invalid targets, blocked line of
+  sight, and out-of-range targets reject without mutation.
+- **Gameplay/replay impact:** Gameplay semantics advance from `34` to `35`
+  and project version advances from `0.2.187` to `0.2.188`; replay wire
   schema, RNG, generator, and ruleset identities remain unchanged.
-- **Protocol/domain ownership:** `drl-core` owns the typed exact-hit policy in
-  weapon properties and combat resolution; existing protocol events and MCP,
-  render, audio, and browser projections remain unchanged.
+- **Protocol/domain ownership:** `drl-core` owns the typed shot-cost and
+  exact-hit policies in weapon properties and combat resolution; existing
+  protocol events and MCP, render, audio, and browser projections remain
+  unchanged.
 - **Evidence boundary:** Pinned legacy source at revision
   `17d9be1204751899b2d69d8d3a2dde247bd0cc5c` plus core, scenario, replay, MCP,
   and browser-boundary tests are authoritative. Controlled legacy runtime and
   audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** Homing, projectile-path routing, radius and falloff, delayed
-  explosions, mod behavior, other exact-hit families, replay-file
-  IO/migrations, exact legacy runtime behavior, and audiovisual parity.
+- **Non-goals:** Nuclear BFG alternate overload/recharge changes, BFG
+  explosions, projectile-path routing, radius and falloff, delayed explosions,
+  other shot-cost families, replay-file IO/migrations, exact legacy runtime
+  behavior, and audiovisual parity.
 
 ### 2.2 Why this slice is bounded
 
-The pinned Revenant’s Launcher carries `IF_EXACTHIT`; the legacy ranged
-resolver maps that flag to a 100% to-hit result while separate homing and
-delayed-explosion callbacks remain outside the hit-roll contract. Rust extends
-the delivered typed exact-hit policy to this one archetype, preserving existing
-LOS/range/clip preflight, damage RNG, and event flow. Projectile routing,
-homing, explosion, and audiovisual effects remain separate evidence and
-implementation slices.
+The pinned Nuclear BFG 9000 declares `shotcost=40` with one projectile. The
+legacy ranged path preflights and debits that ammo cost separately from the
+projectile count. Rust extends the delivered typed shot-cost policy to this one
+archetype, preserving its exact-hit resolver, LOS/range/clip preflight, damage
+RNG, and event flow. Projectile routing, explosions, overload/recharge, and
+audiovisual effects remain separate evidence and implementation slices.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -1683,7 +1685,7 @@ parity. Its acceptance criteria are:
   ruleset identities; Nuclear BFG/other shot costs, projectile paths,
   explosions, NukeRun, runtime, and audiovisual parity remain open.
 
-### 2.7bi Current Revenant’s Launcher exact-hit delivery target
+### 2.7bi Previous Revenant’s Launcher exact-hit delivery target
 
 The bounded implementation target for this revision is the pinned Revenant’s
 Launcher `IF_EXACTHIT` behavior, reusing the delivered typed resolver path
@@ -1705,6 +1707,31 @@ parity. Its acceptance criteria are:
   `0.2.186` to `0.2.187` while preserving replay V2 wire, RNG, generator, and
   ruleset identities; homing, projectile routing, explosions, other exact-hit
   families, runtime, and audiovisual parity remain open.
+
+### 2.7bj Current Nuclear BFG 9000 shot-cost delivery target
+
+The bounded implementation target for this revision is the pinned Nuclear BFG
+9000 `shotcost=40` behavior, extending the delivered typed standard-BFG
+shot-cost policy across combat, scenario/replay determinism, MCP behavior, and
+BrowserSession parity. Its acceptance criteria are:
+
+- [x] represent the Nuclear BFG 9000's forty-cell per-shot ammo cost in a typed
+  core policy while leaving other weapon costs unchanged;
+- [x] accept a valid visible, in-range Nuclear BFG 9000 shot with at least
+  forty cells, decrementing exactly forty cells once while preserving its
+  exact-hit resolution, damage RNG, action cost, recharge state, and existing
+  events;
+- [x] reject clips containing fewer than forty cells, invalid targets, blocked
+  line-of-sight, and out-of-range targets atomically, preserving complete
+  `Game` and RNG state and avoiding partial shot/event execution;
+- [x] verify pure shot-cost boundaries, clip 40/39 integration, deterministic
+  scenario/replay equality, MCP projections, and BrowserSession/direct-core
+  parity;
+- [x] advance gameplay semantics from `34` to `35` and project version from
+  `0.2.187` to `0.2.188` while preserving replay V2 wire, RNG, generator, and
+  ruleset identities; explosions, projectile paths, NukeRun, alternate
+  overload/recharge changes, other shot-cost families, runtime, and
+  audiovisual parity remain open.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
@@ -1810,6 +1837,12 @@ Revenant’s Launcher: valid visible, in-range shots bypass only the to-hit
 sample while preserving damage RNG and existing command/event contracts.
 Homing, projectile routing, delayed explosions, and exact legacy runtime or
 audiovisual parity remain open.
+
+The `0.2.188` successor extends the typed shot-cost policy to the pinned Nuclear
+BFG 9000: valid ordinary one-shot attacks consume exactly forty cells, while
+clips below that threshold reject atomically. Projectile routing, explosions,
+NukeRun, alternate overload/recharge changes, and other shot-cost families
+remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity
