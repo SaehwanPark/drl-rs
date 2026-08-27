@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.184`
+Current project version: `0.2.185`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,11 +25,11 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Standard BFG 9000 Exact-Hit Behavior
+## 2. Active Implementation Slice: M9 — Nuclear BFG 9000 Exact-Hit Behavior
 
 ### 2.1 Objective
 
-Honor the legacy standard BFG 9000 `IF_EXACTHIT` behavior in the typed ranged
+Honor the legacy Nuclear BFG 9000 `IF_EXACTHIT` behavior in the typed ranged
 combat path, bypassing only its to-hit RNG while retaining existing target,
 line-of-sight, range, damage, and event contracts.
 
@@ -38,13 +38,13 @@ line-of-sight, range, damage, and event contracts.
 - **Steering priority:** Vertical canonical fidelity and typed legacy behavior.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, and Gate D callback behavior evidence.
-- **Observable outcome:** An equipped standard BFG 9000 always resolves a hit
+- **Observable outcome:** An equipped Nuclear BFG 9000 always resolves a hit
   against a valid visible target when its clip and range preflight succeeds;
   the damage roll remains stochastic and existing attack/damage events are
   unchanged. Invalid targets, blocked line of sight, out-of-range targets, and
   empty clips reject without mutation.
-- **Gameplay/replay impact:** Gameplay semantics advance from `30` to `31`
-  and project version advances from `0.2.183` to `0.2.184`; replay wire
+- **Gameplay/replay impact:** Gameplay semantics advance from `31` to `32`
+  and project version advances from `0.2.184` to `0.2.185`; replay wire
   schema, RNG, generator, and ruleset identities remain unchanged.
 - **Protocol/domain ownership:** `drl-core` owns the typed exact-hit policy in
   weapon properties and combat resolution; existing protocol events and MCP,
@@ -59,12 +59,13 @@ line-of-sight, range, damage, and event contracts.
 
 ### 2.2 Why this slice is bounded
 
-The pinned standard BFG 9000 carries `IF_EXACTHIT`; the legacy ranged resolver
+The pinned Nuclear BFG 9000 carries `IF_EXACTHIT`; the legacy ranged resolver
 returns a 100% to-hit chance for that flag while retaining ordinary damage
-resolution. Rust stores the policy on `WeaponProperties`, skips only the
-accuracy-roll sample for this archetype, and retains existing LOS/range/clip
-preflight and damage RNG. Legacy projectile-path, explosion, and audiovisual
-effects remain separate evidence and implementation slices.
+resolution. Rust reuses the typed `WeaponProperties` policy and resolver,
+skipping only the accuracy-roll sample for this archetype while retaining
+existing LOS/range/clip preflight and damage RNG. Legacy projectile-path,
+explosion, and audiovisual effects remain separate evidence and implementation
+slices.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -1615,7 +1616,7 @@ Its acceptance criteria are:
   ruleset identities; Nuclear Plasma remains delivered, while `NukeRun`
   map-wide effects, runtime, and audiovisual parity remain open.
 
-### 2.7bf Current standard BFG 9000 exact-hit delivery target
+### 2.7bf Previous standard BFG 9000 exact-hit delivery target
 
 The bounded implementation target for this revision is the pinned standard
 BFG 9000 `IF_EXACTHIT` behavior across typed combat resolution,
@@ -1636,6 +1637,29 @@ Its acceptance criteria are:
   `0.2.183` to `0.2.184` while preserving replay V2 wire, RNG, generator, and
   ruleset identities; other exact-hit families, projectile paths, explosions,
   runtime, and audiovisual parity remain open.
+
+### 2.7bg Current Nuclear BFG 9000 exact-hit delivery target
+
+The bounded implementation target for this revision is the pinned Nuclear BFG
+9000 `IF_EXACTHIT` behavior, reusing the delivered standard-BFG typed resolver
+path across combat, scenario/replay determinism, MCP behavior, and
+BrowserSession parity. Its acceptance criteria are:
+
+- [ ] mark only the Nuclear BFG 9000 weapon as exact-hit in addition to the
+  delivered standard BFG policy, preserving ordinary accuracy behavior for
+  every other weapon;
+- [ ] bypass only the to-hit RNG for a valid Nuclear BFG 9000 shot while
+  retaining line-of-sight, range, clip, action-cost, damage RNG, and existing
+  attack/damage event contracts;
+- [ ] reject invalid target, blocked line-of-sight, out-of-range, and empty-clip
+  commands atomically, preserving complete `Game` and RNG state;
+- [ ] verify pure resolver boundaries, deterministic Nuclear-BFG scenarios,
+  replay equality/determinism, MCP projections, and BrowserSession/direct-core
+  parity;
+- [ ] advance gameplay semantics from `31` to `32` and project version from
+  `0.2.184` to `0.2.185` while preserving replay V2 wire, RNG, generator, and
+  ruleset identities; BFG shot cost, projectile paths, explosions, NukeRun,
+  other exact-hit families, runtime, and audiovisual parity remain open.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 

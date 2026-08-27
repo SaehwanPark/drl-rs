@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.184`
+Current project version: `0.2.185`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.184)
+## 3. Current Progress Summary (`VERSION` 0.2.185)
 
 ### Delivered Foundations
 
@@ -503,6 +503,13 @@ verification item uses explicit status semantics:
   scenario/replay, and BrowserSession boundary coverage is included. Other
   exact-hit families, projectile routing, explosions, runtime, and
   audiovisual parity remain open.
+- **M9 Nuclear BFG 9000 exact-hit behavior (`0.2.185`):** The Nuclear BFG
+  now shares the typed exact-hit policy, bypassing only its ranged to-hit
+  sample while retaining LOS, range, clip, action-cost, damage RNG, and
+  existing attack/damage events. Atomic rejection, pure combat, scenario/
+  replay, MCP, and BrowserSession boundary coverage is included. Shot-cost,
+  projectile routing, explosions, NukeRun, runtime, and audiovisual parity
+  remain open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -966,7 +973,8 @@ scripting.
   and exact timing remain open.
 - [x] Typed BFG 9000 preserves pinned cell relation, 100-cell clip, `10d6`
   damage range, description, replay kind, and `SPRITE_BFG9000` slot;
-  exact-hit/shot-cost and explosion semantics remain open.
+  standard and Nuclear BFG exact-hit behavior is covered in `0.2.184` and
+  `0.2.185`; shot-cost, projectile, and explosion semantics remain open.
 - [x] Typed double/combat shotguns preserve pinned shell relation, clips,
   damage/range scalars, descriptions, replay kinds, and `SPRITE_DSHOTGUN`/
   `SPRITE_CSHOTGUN` slots; callbacks and spread/falloff remain open.
@@ -1104,6 +1112,12 @@ scripting.
   existing attack/damage events; atomic rejection, pure combat, replay, and
   BrowserSession boundary parity are covered. Other exact-hit families,
   projectile routing, explosions, runtime, and audiovisual parity remain open.
+- [x] Nuclear BFG 9000 exact-hit behavior reuses the typed exact-hit policy,
+  bypassing only its ranged to-hit sample while preserving LOS, range, clip,
+  action cost, damage RNG, existing attack/damage events, atomic rejection,
+  replay determinism, MCP, and BrowserSession boundary parity. Shot-cost,
+  projectile routing, explosions, NukeRun, runtime, and audiovisual parity
+  remain open.
 - [ ] Full migration of legacy monsters, weapons, armor, mods, and consumable
   items.
 - [ ] Full migration of special levels, vaults, and dungeon branches.

@@ -208,7 +208,50 @@ mod tests {
   }
 
   #[test]
-  fn exact_hit_policy_is_limited_to_standard_bfg() {
+  fn nuclear_bfg_exact_hit_skips_to_hit_rng_but_keeps_damage_rng() {
+    let mut attacker = Actor::new(EntityId::new(1), Position::new(0, 0), "Marine", true)
+      .with_stats(
+        HitPoints::full(50),
+        Speed::NORMAL,
+        (3, 6),
+        Some((4, 8)),
+        8,
+        5,
+      );
+    attacker
+      .equipment_mut()
+      .equip(EquipmentSlot::Weapon, Item::nuclear_bfg9000(ItemId::new(3)))
+      .expect("Nuclear BFG equips in the weapon slot");
+    assert!(attacker.ranged_exact_hit());
+
+    let defender = Actor::new(EntityId::new(2), Position::new(1, 0), "Demon", false);
+    let (min_damage, max_damage) = attacker.ranged_damage().expect("Nuclear BFG damage policy");
+    let seed = 0;
+    let mut miss_probe = GameRng::from_seed(seed);
+    assert!(
+      miss_probe.gen_range(0..100) >= 5,
+      "seed must miss at minimum accuracy"
+    );
+    let mut expected_rng = GameRng::from_seed(seed);
+    let expected_damage = expected_rng.gen_range(min_damage..(max_damage + 1));
+    let mut actual_rng = GameRng::from_seed(seed);
+    let outcome = CombatResolver::resolve_ranged_attack(&attacker, &defender, 1, &mut actual_rng);
+
+    assert_eq!(
+      outcome,
+      AttackOutcome::Hit {
+        damage: expected_damage,
+        is_lethal: expected_damage >= defender.hp().current,
+      }
+    );
+    assert_eq!(
+      actual_rng, expected_rng,
+      "exact-hit consumes only damage RNG"
+    );
+  }
+
+  #[test]
+  fn exact_hit_policy_is_limited_to_bfg_families() {
     let mut standard = Actor::new(EntityId::new(1), Position::new(0, 0), "Marine", true);
     standard
       .equipment_mut()
@@ -221,12 +264,29 @@ mod tests {
       .equipment_mut()
       .equip(EquipmentSlot::Weapon, Item::nuclear_bfg9000(ItemId::new(2)))
       .unwrap();
-    assert!(!nuclear.ranged_exact_hit());
+    assert!(nuclear.ranged_exact_hit());
 
-    let mut pistol = Actor::new(EntityId::new(3), Position::new(0, 0), "Marine", true);
+    let mut bfg10k = Actor::new(EntityId::new(3), Position::new(0, 0), "Marine", true);
+    bfg10k
+      .equipment_mut()
+      .equip(EquipmentSlot::Weapon, Item::bfg10k(ItemId::new(3)))
+      .unwrap();
+    assert!(!bfg10k.ranged_exact_hit());
+
+    let mut revenant = Actor::new(EntityId::new(4), Position::new(0, 0), "Marine", true);
+    revenant
+      .equipment_mut()
+      .equip(
+        EquipmentSlot::Weapon,
+        Item::revenants_launcher(ItemId::new(4)),
+      )
+      .unwrap();
+    assert!(!revenant.ranged_exact_hit());
+
+    let mut pistol = Actor::new(EntityId::new(5), Position::new(0, 0), "Marine", true);
     pistol
       .equipment_mut()
-      .equip(EquipmentSlot::Weapon, Item::pistol(ItemId::new(3)))
+      .equip(EquipmentSlot::Weapon, Item::pistol(ItemId::new(5)))
       .unwrap();
     assert!(!pistol.ranged_exact_hit());
   }
