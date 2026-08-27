@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.189]
+
+- Extended typed exact-hit behavior to BFG 10K: valid ranged shots bypass only
+  the to-hit sample while preserving LOS, range, clip, action cost, damage RNG,
+  and existing attack/damage events. Scatter, multi-shot, chainfire,
+  projectile routing, explosions, runtime, and audiovisual parity remain
+  separate work.
+
 ## [0.2.188]
 
 - Added typed Nuclear BFG 9000 shot-cost behavior: each valid ordinary

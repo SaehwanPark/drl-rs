@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.188`
+Current project version: `0.2.189`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -198,6 +198,8 @@ Presentation Boundary
     Nuclear BFG 9000 shares the typed forty-cell shot-cost policy with the
     standard BFG while preserving its exact-hit, recharge, and overload state;
     projectile routing, explosions, and NukeRun remain separate policy work.
+    BFG 10K opts into the typed exact-hit policy while its scatter, multi-shot,
+    chainfire, shot-cost, and explosion behavior remains separate policy work.
     The pinned `IF_NORELOAD` families use an explicit item policy that rejects
     ordinary `Reload` before mutation; this remains separate from alternate
     reload and automatic recharge behavior.
