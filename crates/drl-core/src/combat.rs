@@ -185,7 +185,10 @@ mod tests {
     let (min_damage, max_damage) = attacker.ranged_damage().expect("BFG damage policy");
     let seed = 0;
     let mut miss_probe = GameRng::from_seed(seed);
-    assert!(miss_probe.gen_range(0..100) >= 5, "seed must miss at minimum accuracy");
+    assert!(
+      miss_probe.gen_range(0..100) >= 5,
+      "seed must miss at minimum accuracy"
+    );
     let mut expected_rng = GameRng::from_seed(seed);
     let expected_damage = expected_rng.gen_range(min_damage..(max_damage + 1));
     let mut actual_rng = GameRng::from_seed(seed);
