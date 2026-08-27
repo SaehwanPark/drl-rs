@@ -73,6 +73,8 @@ pub enum CommandError {
   CannotInvoke(ItemId),
   /// Item cannot perform its requested alternate reload.
   CannotAltReload(ItemId),
+  /// Weapon does not permit manual reloading.
+  CannotReload(ItemId),
   /// A confirmation decision was required or the alternate action was declined.
   AltReloadNotConfirmed(ItemId),
   /// Equipment slot is already empty.
@@ -147,6 +149,7 @@ impl fmt::Display for CommandError {
       Self::CannotAltReload(id) => {
         write!(f, "item {} cannot perform an alternate reload", id.as_u64())
       }
+      Self::CannotReload(id) => write!(f, "item {} cannot be manually reloaded", id.as_u64()),
       Self::AltReloadNotConfirmed(id) => write!(
         f,
         "alternate reload for item {} was not confirmed",

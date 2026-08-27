@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.175`
+Current project version: `0.2.176`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -158,6 +158,9 @@ Presentation Boundary
     `GameEvent::LavaArmorRecharged`. The Blaster's periodic cell recharge uses
     the same module's explicit weapon-owned timer and emits
     `GameEvent::WeaponRecharged` without reserve-ammo or presentation policy.
+    The pinned `IF_NORELOAD` families use an explicit item policy that rejects
+    ordinary `Reload` before mutation; this remains separate from alternate
+    reload and automatic recharge behavior.
     Grammaton mode cycling uses the dedicated
     `grammaton` transition and a
     typed `WeaponFireMode`; mode-specific multi-shot resolution preflights

@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.176]
+
+- Added typed manual-reload denial for the pinned `IF_NORELOAD` Blaster,
+  Nuclear Plasma Rifle, and Nuclear BFG 9000 families. `Reload` now rejects
+  with `CannotReload` before any clip, reserve, timer, turn, or RNG mutation;
+  replay diagnostics and browser/MCP boundaries remain deterministic. Other
+  no-unload, alternate-reload, and recharge behavior remain separate slices.
+
 ## [0.2.175]
 
 - Added typed Blaster periodic cell recharge: an equipped Blaster restores one

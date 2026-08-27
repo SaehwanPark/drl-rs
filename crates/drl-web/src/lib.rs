@@ -3448,6 +3448,52 @@ mod tests {
   }
 
   #[test]
+  fn if_noreload_denial_browser_boundary_matches_direct_core() {
+    for kind in [
+      ItemSpawnKind::Blaster,
+      ItemSpawnKind::NuclearPlasmaRifle,
+      ItemSpawnKind::NuclearBfg9000,
+    ] {
+      let replay =
+        ReplayLog::new(1_764, 8, 4, Position::new(1, 1)).with_player_config(PlayerSpawnConfig {
+          hp: 50,
+          max_hp: 50,
+          speed: 100,
+          initial_items: Vec::new(),
+          equipped_weapon: Some(kind),
+          equipped_armor: None,
+          equipped_armor_durability: None,
+        });
+      let (initial, setup_events) = drl_core::ReplayEngine::run(&replay).expect("replay setup");
+      assert!(setup_events.is_empty());
+
+      let mut direct = initial.clone();
+      let before = direct.clone();
+      assert!(matches!(
+        direct.step(Command::Reload),
+        Err(drl_protocol::CommandError::CannotReload(_))
+      ));
+      assert_eq!(direct, before);
+
+      let mut browser = BrowserSession::from_game(initial);
+      let observation_before = browser.observation();
+      let replay_before = browser.replay_log().clone();
+      let weapon_id = observation_before
+        .equipped_weapon
+        .as_ref()
+        .expect("configured weapon")
+        .id;
+      let error = browser.submit(Command::Reload).unwrap_err();
+      assert_eq!(
+        error,
+        drl_protocol::CommandError::CannotReload(weapon_id).to_string()
+      );
+      assert_eq!(browser.observation(), observation_before);
+      assert_eq!(browser.replay_log(), replay_before);
+    }
+  }
+
+  #[test]
   fn medical_powerarmor_vertical_browser_boundary_matches_direct_core_presentation() {
     let player_position = Position::new(1, 1);
     let setup_replay =

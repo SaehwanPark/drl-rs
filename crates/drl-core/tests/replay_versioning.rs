@@ -2,8 +2,9 @@
 
 use drl_core::replay::ReplayEngine;
 use drl_protocol::{
-  Command, CommandError, Direction, ItemSpawnKind, ItemSpawnSpec, MonsterSpawnSpec, Position,
-  ProceduralGenerationConfig, ReplayLog, ReplayMetadata, ReplayVersion, TileKind, Turn,
+  Command, CommandError, Direction, ItemSpawnKind, ItemSpawnSpec, MonsterSpawnSpec,
+  PlayerSpawnConfig, Position, ProceduralGenerationConfig, ReplayLog, ReplayMetadata,
+  ReplayVersion, TileKind, Turn,
 };
 
 #[test]
@@ -33,6 +34,37 @@ fn test_replay_version_and_metadata_headers() {
   });
 
   assert_eq!(replay.metadata.engine_name, "DRL-Rust-TestHarness");
+}
+
+#[test]
+fn if_noreload_replay_reports_denial_at_command_zero() {
+  for kind in [
+    ItemSpawnKind::Blaster,
+    ItemSpawnKind::NuclearPlasmaRifle,
+    ItemSpawnKind::NuclearBfg9000,
+  ] {
+    let mut replay =
+      ReplayLog::new(1_763, 10, 10, Position::new(2, 2)).with_player_config(PlayerSpawnConfig {
+        hp: 50,
+        max_hp: 50,
+        speed: 100,
+        initial_items: Vec::new(),
+        equipped_weapon: Some(kind),
+        equipped_armor: None,
+        equipped_armor_durability: None,
+      });
+    replay.record_command(Command::Reload);
+
+    let error = ReplayEngine::run_with_diagnostics(&replay).unwrap_err();
+    assert_eq!(error.command_index, 0);
+    assert_eq!(error.command, Command::Reload);
+    assert!(matches!(error.error, CommandError::CannotReload(_)));
+
+    let mut valid = replay;
+    valid.commands.clear();
+    valid.record_command(Command::Wait);
+    assert!(ReplayEngine::verify_determinism(&valid).unwrap());
+  }
 }
 
 #[test]
