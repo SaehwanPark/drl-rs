@@ -3675,7 +3675,7 @@ mod tests {
             event,
             drl_protocol::GameEvent::WeaponRecharged {
               ammo_recharged: 1,
-              current_clip: 40,
+              current_clip: 1,
               max_clip: 40,
               timer: 0,
               ..
@@ -7133,6 +7133,19 @@ mod tests {
         }
       )
     }));
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .current_clip,
+      0
+    );
 
     let mut browser = BrowserSession::from_game(initial);
     let step = browser

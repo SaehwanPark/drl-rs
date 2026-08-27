@@ -2439,6 +2439,22 @@ mod tests {
         } if *attacker_id == player_id
       )
     }));
+    assert_eq!(
+      session
+        .game
+        .as_ref()
+        .unwrap()
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .current_clip,
+      0
+    );
   }
 
   #[test]

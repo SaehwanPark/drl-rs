@@ -417,7 +417,7 @@ fn nuclear_bfg_exact_hit_resolves_even_at_zero_accuracy() {
       .weapon_properties()
       .unwrap()
       .current_clip,
-    39
+    0
   );
 }
 
@@ -440,6 +440,34 @@ fn nuclear_bfg_empty_clip_rejection_is_atomic() {
     .weapon_properties_mut()
     .unwrap()
     .current_clip = 0;
+  let before = game.clone();
+
+  assert_eq!(
+    game.step(Command::AttackRanged(target)).unwrap_err(),
+    CommandError::NoAmmoInClip
+  );
+  assert_eq!(game, before);
+}
+
+#[test]
+fn nuclear_bfg_below_shot_cost_rejection_is_atomic() {
+  let (mut game, _weapon_id) = equipped_nuclear_bfg(41);
+  let target = drl_protocol::Position::new(9, 6);
+  game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 500, 1, (2, 4))
+    .unwrap();
+  let player_id = game.world().player_id().unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 39;
   let before = game.clone();
 
   assert_eq!(

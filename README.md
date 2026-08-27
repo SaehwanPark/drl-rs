@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.187`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.188`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -204,6 +204,10 @@ replays, and regression testing.
     Revenant’s Launcher now shares the typed exact-hit policy while retaining
     its one-rocket clip and damage RNG; homing, projectile routing, delayed
     explosions, runtime, and audiovisual parity remain open;
+    Nuclear BFG 9000 now consumes its typed forty-cell shot cost for each
+    valid ordinary fire while retaining exact-hit, recharge, and overload
+    behavior; projectile routing, explosions, NukeRun, and other shot costs
+    remain open;
     manual reload is explicitly denied for the pinned Blaster, Nuclear Plasma
     Rifle, and Nuclear BFG 9000 `IF_NORELOAD` families before any state/RNG
     mutation, with atomic core and MCP/browser-boundary coverage;

@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.188]
+
+- Added typed Nuclear BFG 9000 shot-cost behavior: each valid ordinary
+  one-shot attack consumes exactly 40 cells and clips below 40 reject
+  atomically. Existing exact-hit, recharge, overload, action-cost, damage RNG,
+  replay, MCP, and BrowserSession contracts remain intact; projectile,
+  explosion, NukeRun, runtime, and audiovisual parity remain separate work.
+
 ## [0.2.187]
 
 - Extended typed exact-hit behavior to Revenant’s Launcher: valid ranged shots
