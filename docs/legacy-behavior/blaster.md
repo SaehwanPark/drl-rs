@@ -13,14 +13,13 @@ unrelated local changes in `drlhq`/`drllq` audio metadata and an untracked
 - `bin/data/drl/items/eitems.lua:135-169` defines `ublaster` with cell ammo,
   a ten-cell maximum clip, `IF_NORELOAD`, and the recharge perk. The item
   creation callback sets delay `30` and amount `1`.
-- `bin/data/drl/perks.lua:350-386` starts the recharge timer at zero, advances
-  it by the perk tick (`10`) while the equipped item is below capacity, restores
-  one cell when the timer reaches delay plus tick (`40`), subtracts one tick,
-  clamps at capacity, and resets the timer on fire.
-- `bin/data/drl/drlinventory.pas:238-244` limits inventory item ticks to equipped
-  slots; `bin/data/core/dfbeing.pas:1619-1629` and
-  `bin/data/core/dflevel.pas:1378-1388` establish the actor/scheduled tick
-  ownership used by the source runtime.
+- `bin/data/drl/perks.lua:350-386` starts the recharge timer at zero, increments
+  it by one per item tick while the equipped item is below capacity, restores
+  one cell when the timer reaches delay plus tick (`40`), subtracts the tick
+  cadence (`10`), clamps at capacity, and resets the timer on fire.
+- `src/drlinventory.pas:238-244` limits inventory item ticks to equipped slots;
+  `src/dfbeing.pas:1619-1629` and `src/dflevel.pas:1378-1388` establish the
+  actor/scheduled tick ownership used by the source runtime.
 
 ## Bounded Rust contract
 
