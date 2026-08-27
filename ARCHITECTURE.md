@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.185`
+Current project version: `0.2.186`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -184,9 +184,11 @@ Presentation Boundary
     event boundary for its 40-cell weapon; map-wide `NukeRun` behavior remains
     explicitly deferred.
     Standard BFG 9000 exact-hit behavior is a typed weapon policy that skips
-    only ranged to-hit sampling; LOS, range, clip, action cost, damage RNG, and
-    existing attack/damage events remain in the ordinary combat path. Projectile
-    routing and explosion effects remain separate policy work.
+    only ranged to-hit sampling; its separate typed 40-cell shot-cost policy
+    preflights and debits ammo before the ordinary single-projectile combat
+    path. LOS, range, action cost, damage RNG, and existing attack/damage
+    events remain unchanged. Projectile routing and explosion effects remain
+    separate policy work.
     Nuclear BFG 9000 opts into the same typed exact-hit policy without changing
     its recharge or alternate-overload state; its shot-cost, projectile, and
     NukeRun effects remain separate policy work.

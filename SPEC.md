@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.185`
+Current project version: `0.2.186`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,47 +25,48 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Nuclear BFG 9000 Exact-Hit Behavior
+## 2. Active Implementation Slice: M9 — Standard BFG 9000 Shot-Cost Behavior
 
 ### 2.1 Objective
 
-Honor the legacy Nuclear BFG 9000 `IF_EXACTHIT` behavior in the typed ranged
-combat path, bypassing only its to-hit RNG while retaining existing target,
-line-of-sight, range, damage, and event contracts.
+Honor the legacy standard BFG 9000 `shotcost=40` behavior in the typed ranged
+combat path, consuming forty cells for each valid one-shot attack while
+retaining existing target, line-of-sight, range, damage, and event contracts.
 
 ### 2.1a Scope and steering gate
 
 - **Steering priority:** Vertical canonical fidelity and typed legacy behavior.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, and Gate D callback behavior evidence.
-- **Observable outcome:** An equipped Nuclear BFG 9000 always resolves a hit
-  against a valid visible target when its clip and range preflight succeeds;
-  the damage roll remains stochastic and existing attack/damage events are
-  unchanged. Invalid targets, blocked line of sight, out-of-range targets, and
-  empty clips reject without mutation.
-- **Gameplay/replay impact:** Gameplay semantics advance from `31` to `32`
-  and project version advances from `0.2.184` to `0.2.185`; replay wire
+- **Observable outcome:** An equipped standard BFG 9000 consumes exactly forty
+  cells for each valid visible target attack when its clip and range preflight
+  succeeds; the exact-hit policy, damage roll, and existing attack/damage
+  events remain unchanged. Clips below forty, invalid targets, blocked line of
+  sight, and out-of-range targets reject without mutation.
+- **Gameplay/replay impact:** Gameplay semantics advance from `32` to `33`
+  and project version advances from `0.2.185` to `0.2.186`; replay wire
   schema, RNG, generator, and ruleset identities remain unchanged.
-- **Protocol/domain ownership:** `drl-core` owns the typed exact-hit policy in
-  weapon properties and combat resolution; existing protocol events and MCP,
-  render, audio, and browser projections remain unchanged.
+- **Protocol/domain ownership:** `drl-core` owns the typed exact-hit and
+  shot-cost policies in weapon properties and combat resolution; existing
+  protocol events and MCP, render, audio, and browser projections remain
+  unchanged.
 - **Evidence boundary:** Pinned legacy source at revision
   `17d9be1204751899b2d69d8d3a2dde247bd0cc5c` plus core, scenario, replay, MCP,
   and browser-boundary tests are authoritative. Controlled legacy runtime and
   audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** Nuclear overload/overcharge, projectile-path routing, radius
-  and falloff, delayed explosions, other exact-hit families, replay-file
-  IO/migrations, exact legacy runtime behavior, and audiovisual parity.
+- **Non-goals:** Nuclear BFG or other weapon shot costs, projectile-path
+  routing, radius and falloff, delayed explosions, NukeRun map effects,
+  replay-file IO/migrations, exact legacy runtime behavior, and audiovisual
+  parity.
 
 ### 2.2 Why this slice is bounded
 
-The pinned Nuclear BFG 9000 carries `IF_EXACTHIT`; the legacy ranged resolver
-returns a 100% to-hit chance for that flag while retaining ordinary damage
-resolution. Rust reuses the typed `WeaponProperties` policy and resolver,
-skipping only the accuracy-roll sample for this archetype while retaining
-existing LOS/range/clip preflight and damage RNG. Legacy projectile-path,
-explosion, and audiovisual effects remain separate evidence and implementation
-slices.
+The pinned standard BFG 9000 declares `shotcost=40` with one projectile. The
+legacy ranged path preflights and debits that ammo cost separately from the
+projectile count. Rust adds a narrow typed shot-cost policy for this archetype,
+preserving the delivered exact-hit resolver and existing LOS/range/clip
+preflight, damage RNG, and event flow. Legacy projectile-path, explosion, and
+audiovisual effects remain separate evidence and implementation slices.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -1524,7 +1525,7 @@ are:
   ruleset identities; alternate/full reload, rocket-jump, explosion, runtime,
   and audiovisual parity remain open.
 
-### 2.7bb Current Missile Launcher alternate/full reload delivery target
+### 2.7bb Previous Missile Launcher alternate/full reload delivery target
 
 The bounded implementation target for this revision is the pinned exotic
 Missile Launcher's `perk_altreload_full` path across typed core behavior,
@@ -1638,7 +1639,7 @@ Its acceptance criteria are:
   ruleset identities; other exact-hit families, projectile paths, explosions,
   runtime, and audiovisual parity remain open.
 
-### 2.7bg Current Nuclear BFG 9000 exact-hit delivery target
+### 2.7bg Previous Nuclear BFG 9000 exact-hit delivery target
 
 The bounded implementation target for this revision is the pinned Nuclear BFG
 9000 `IF_EXACTHIT` behavior, reusing the delivered standard-BFG typed resolver
@@ -1660,6 +1661,28 @@ BrowserSession parity. Its acceptance criteria are:
   `0.2.184` to `0.2.185` while preserving replay V2 wire, RNG, generator, and
   ruleset identities; BFG shot cost, projectile paths, explosions, NukeRun,
   other exact-hit families, runtime, and audiovisual parity remain open.
+
+### 2.7bh Current standard BFG 9000 shot-cost delivery target
+
+The bounded implementation target for this revision is the pinned standard
+BFG 9000 `shotcost=40` behavior, reusing the delivered exact-hit resolver path
+across combat, scenario/replay determinism, MCP behavior, and BrowserSession
+parity. Its acceptance criteria are:
+
+- [ ] represent the standard BFG 9000's forty-cell per-shot ammo cost in a
+  typed core policy while leaving other weapon costs unchanged;
+- [ ] accept a valid visible, in-range standard BFG 9000 shot with at least
+  forty cells, decrementing exactly forty cells once while preserving its
+  exact-hit resolution, damage RNG, action cost, and existing events;
+- [ ] reject clips containing fewer than forty cells atomically, preserving
+  complete `Game` and RNG state and avoiding partial shot/event execution;
+- [ ] verify pure shot-cost boundaries, clip 40/39 integration, deterministic
+  scenario/replay equality, MCP projections, and BrowserSession/direct-core
+  parity;
+- [ ] advance gameplay semantics from `32` to `33` and project version from
+  `0.2.185` to `0.2.186` while preserving replay V2 wire, RNG, generator, and
+  ruleset identities; Nuclear BFG/other shot costs, projectile paths,
+  explosions, NukeRun, runtime, and audiovisual parity remain open.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 

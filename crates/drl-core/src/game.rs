@@ -1675,7 +1675,7 @@ impl Game {
     let distance = p_pos.distance_chebyshev(target_pos);
 
     // Prepare the full validation boundary before consuming ammo or RNG.
-    let (fire_cost, shot_count, null_pointer_item_id) = {
+    let (fire_cost, shot_count, ammo_cost, null_pointer_item_id) = {
       let player = self
         .state
         .world
@@ -1702,13 +1702,16 @@ impl Game {
         return Err(CommandError::TargetOutOfRange(target_pos));
       }
       let shot_count = props.shot_count();
-      if props.current_clip < shot_count {
+      // Keep emitted projectile count separate from typed clip cost (the
+      // standard BFG emits one shot while consuming forty cells).
+      let ammo_cost = shot_count.saturating_mul(weapon.shot_cost());
+      if props.current_clip < ammo_cost {
         return Err(CommandError::NoAmmoInClip);
       }
 
       let null_pointer_item_id =
         (weapon.archetype() == drl_protocol::ItemArchetype::NullPointer).then_some(weapon.id());
-      (props.fire_cost, shot_count, null_pointer_item_id)
+      (props.fire_cost, shot_count, ammo_cost, null_pointer_item_id)
     };
 
     // Keep all ordinary command validation ahead of the death-drop preflight,
@@ -1736,7 +1739,7 @@ impl Game {
       let props = weapon
         .weapon_properties_mut()
         .ok_or(CommandError::NoEquippedWeapon)?;
-      props.current_clip -= shot_count;
+      props.current_clip -= ammo_cost;
     }
 
     for _ in 0..shot_count {
