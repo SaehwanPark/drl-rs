@@ -906,6 +906,265 @@ fn nuclear_plasma_recharge_timer_resets_on_fire() {
 }
 
 #[test]
+fn nuclear_plasma_overload_on_floor_removes_weapon_and_arms_nuke() {
+  let mut game = Game::new_arena(787, 12, 12).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let weapon_id = game.world_mut().allocate_item_id();
+  let player = game.world_mut().get_actor_mut(player_id).unwrap();
+  player.set_score_count(2_000);
+  player
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, Item::nuclear_plasma_rifle(weapon_id))
+    .unwrap();
+
+  let events = game
+    .step(Command::AltReload {
+      item_id: weapon_id,
+      confirmed: true,
+    })
+    .unwrap();
+  let overload_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::NuclearWeaponOverloaded {
+          entity_id,
+          item_id,
+          countdown: 100,
+          score_count_remaining: 1_000,
+        } if *entity_id == player_id && *item_id == weapon_id
+      )
+    })
+    .expect("floor overload event must be emitted");
+  let activate_index = events
+    .iter()
+    .position(|event| matches!(event, GameEvent::NukeActivated { countdown: 100, .. }))
+    .expect("floor overload must arm the nuke");
+  let cost_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::ActionCostPaid { entity_id, .. } if *entity_id == player_id
+      )
+    })
+    .expect("accepted overload must pay the standard action cost");
+  assert!(overload_index < activate_index);
+  assert!(activate_index < cost_index);
+  assert!(
+    game
+      .world()
+      .player()
+      .unwrap()
+      .equipment()
+      .weapon()
+      .is_none()
+  );
+  assert_eq!(game.world().player().unwrap().score_count(), 1_000);
+  assert_eq!(game.nuke_state().countdown(), Some(99));
+  assert!(!game.is_game_over());
+}
+
+#[test]
+fn nuclear_plasma_overload_on_acid_resolves_typed_nuke() {
+  let mut game = Game::new_arena(788, 12, 12).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let player_position = game.world().player().unwrap().position();
+  game
+    .world_mut()
+    .map_mut()
+    .set_tile(player_position, Tile::Acid);
+  let weapon_id = game.world_mut().allocate_item_id();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, Item::nuclear_plasma_rifle(weapon_id))
+    .unwrap();
+
+  let events = game
+    .step(Command::AltReload {
+      item_id: weapon_id,
+      confirmed: true,
+    })
+    .unwrap();
+  let overload_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::NuclearWeaponOverloaded { countdown: 1, .. }
+      )
+    })
+    .expect("hazard overload event must be emitted");
+  let activate_index = events
+    .iter()
+    .position(|event| matches!(event, GameEvent::NukeActivated { countdown: 1, .. }))
+    .expect("hazard overload must arm a one-tick nuke");
+  let level_index = events
+    .iter()
+    .position(|event| matches!(event, GameEvent::LevelNuked { .. }))
+    .expect("one-tick nuke must resolve");
+  let damage_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::DamageApplied { target_id, .. } if *target_id == player_id
+      )
+    })
+    .expect("resolved nuke must damage the player");
+  let death_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::ActorDied { entity_id, .. } if *entity_id == player_id
+      )
+    })
+    .expect("resolved nuke must end the player");
+  assert!(overload_index < activate_index);
+  assert!(activate_index < level_index);
+  assert!(level_index < damage_index);
+  assert!(damage_index < death_index);
+  assert!(game.is_game_over());
+  assert!(
+    game
+      .world()
+      .player()
+      .unwrap()
+      .equipment()
+      .weapon()
+      .is_none()
+  );
+}
+
+#[test]
+fn nuclear_plasma_overload_rejections_are_transactional() {
+  let mut unconfirmed = Game::new_arena(789, 12, 12).unwrap();
+  let player_id = unconfirmed.world().player_id().unwrap();
+  let weapon_id = unconfirmed.world_mut().allocate_item_id();
+  unconfirmed
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, Item::nuclear_plasma_rifle(weapon_id))
+    .unwrap();
+  let before_unconfirmed = unconfirmed.clone();
+  assert_eq!(
+    unconfirmed
+      .step(Command::AltReload {
+        item_id: weapon_id,
+        confirmed: false,
+      })
+      .unwrap_err(),
+    drl_protocol::CommandError::AltReloadNotConfirmed(weapon_id)
+  );
+  assert_eq!(unconfirmed, before_unconfirmed);
+
+  let mut partial = Game::new_arena(790, 12, 12).unwrap();
+  let partial_player = partial.world().player_id().unwrap();
+  let partial_id = partial.world_mut().allocate_item_id();
+  partial
+    .world_mut()
+    .get_actor_mut(partial_player)
+    .unwrap()
+    .equipment_mut()
+    .equip(
+      EquipmentSlot::Weapon,
+      Item::nuclear_plasma_rifle(partial_id),
+    )
+    .unwrap();
+  partial
+    .world_mut()
+    .get_actor_mut(partial_player)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 23;
+  let before_partial = partial.clone();
+  assert_eq!(
+    partial
+      .step(Command::AltReload {
+        item_id: partial_id,
+        confirmed: true,
+      })
+      .unwrap_err(),
+    drl_protocol::CommandError::CannotAltReload(partial_id)
+  );
+  assert_eq!(partial, before_partial);
+
+  let mut stairs = Game::new_arena(791, 12, 12).unwrap();
+  let stairs_player = stairs.world().player_id().unwrap();
+  let stairs_position = stairs.world().player().unwrap().position();
+  stairs
+    .world_mut()
+    .map_mut()
+    .set_tile(stairs_position, Tile::StairsDown);
+  let stairs_id = stairs.world_mut().allocate_item_id();
+  stairs
+    .world_mut()
+    .get_actor_mut(stairs_player)
+    .unwrap()
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, Item::nuclear_plasma_rifle(stairs_id))
+    .unwrap();
+  let before_stairs = stairs.clone();
+  assert_eq!(
+    stairs
+      .step(Command::AltReload {
+        item_id: stairs_id,
+        confirmed: true,
+      })
+      .unwrap_err(),
+    drl_protocol::CommandError::CannotAltReload(stairs_id)
+  );
+  assert_eq!(stairs, before_stairs);
+
+  let mut pending = Game::new_arena(792, 12, 12).unwrap();
+  let pending_player = pending.world().player_id().unwrap();
+  let first_id = pending.world_mut().allocate_item_id();
+  pending
+    .world_mut()
+    .get_actor_mut(pending_player)
+    .unwrap()
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, Item::nuclear_plasma_rifle(first_id))
+    .unwrap();
+  pending
+    .step(Command::AltReload {
+      item_id: first_id,
+      confirmed: true,
+    })
+    .unwrap();
+  let second_id = pending.world_mut().allocate_item_id();
+  pending
+    .world_mut()
+    .get_actor_mut(pending_player)
+    .unwrap()
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, Item::nuclear_plasma_rifle(second_id))
+    .unwrap();
+  let before_pending = pending.clone();
+  assert_eq!(
+    pending
+      .step(Command::AltReload {
+        item_id: second_id,
+        confirmed: true,
+      })
+      .unwrap_err(),
+    drl_protocol::CommandError::CannotAltReload(second_id)
+  );
+  assert_eq!(pending, before_pending);
+}
+
+#[test]
 fn rejected_commands_roll_back_medical_repair_state() {
   let mut game = Game::new(779, 5, 5, Position::new(1, 1)).unwrap();
   let player_id = game.world().player_id().unwrap();

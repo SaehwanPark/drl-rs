@@ -138,6 +138,7 @@ impl EpisodeMetrics {
       | GameEvent::MedicalPowerarmorRepaired { .. }
       | GameEvent::LavaArmorRecharged { .. }
       | GameEvent::MalekArmorRecharged { .. }
+      | GameEvent::NuclearWeaponOverloaded { .. }
       | GameEvent::SubtleKnifeInvoked { .. }
       | GameEvent::TrigunAltReloaded { .. }
       | GameEvent::GrammatonFireModeChanged { .. }

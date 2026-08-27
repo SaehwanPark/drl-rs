@@ -1368,6 +1368,7 @@ pub fn effects_for_events(events: &[GameEvent]) -> Vec<PresentationEffect> {
       GameEvent::WeaponRecharged { .. } => None,
       GameEvent::LavaArmorRecharged { .. } => None,
       GameEvent::MalekArmorRecharged { .. } => None,
+      GameEvent::NuclearWeaponOverloaded { .. } => None,
       GameEvent::SubtleKnifeInvoked { .. } => None,
       GameEvent::TrigunAltReloaded { .. } => None,
       GameEvent::GrammatonFireModeChanged { .. } => None,
@@ -1469,6 +1470,7 @@ fn event_entity_ids(event: &GameEvent) -> [Option<EntityId>; 2] {
     | GameEvent::WeaponRecharged { entity_id, .. }
     | GameEvent::LavaArmorRecharged { entity_id, .. }
     | GameEvent::MalekArmorRecharged { entity_id, .. }
+    | GameEvent::NuclearWeaponOverloaded { entity_id, .. }
     | GameEvent::SubtleKnifeInvoked { entity_id, .. }
     | GameEvent::TrigunAltReloaded { entity_id, .. }
     | GameEvent::GrammatonFireModeChanged { entity_id, .. }

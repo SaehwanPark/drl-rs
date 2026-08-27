@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.181`
+Current project version: `0.2.182`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -174,6 +174,12 @@ Presentation Boundary
     maximum, damage resets its timer, and successful repairs emit the neutral
     `GameEvent::MalekArmorRecharged` event. General armor degradation and
     resistance remain separate policy work.
+    Nuclear Plasma alternate overload uses the focused `nuclear_overload`
+    preflight: a confirmed full clip on a non-stairs tile arms the existing
+    `NukeState`, removes the equipped weapon, spends score count, and emits
+    `GameEvent::NuclearWeaponOverloaded`; Acid/Lava selects countdown 1 and a
+    safe floor selects 100. Legacy map-wide `NukeRun` effects remain outside
+    this transition.
     The pinned `IF_NORELOAD` families use an explicit item policy that rejects
     ordinary `Reload` before mutation; this remains separate from alternate
     reload and automatic recharge behavior.

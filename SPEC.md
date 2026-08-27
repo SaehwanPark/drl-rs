@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.181`
+Current project version: `0.2.182`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,12 +25,12 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Malek’s Armor Periodic Recharge
+## 2. Active Implementation Slice: M9 — Nuclear Plasma Alternate Overload
 
 ### 2.1 Objective
 
-Honor the legacy Malek’s Armor periodic recharge callback in the typed Rust
-armor path, with deterministic timer transitions, damage-reset behavior, and
+Honor the legacy Nuclear Plasma Rifle alternate-nuke callback in the typed
+Rust overload path, with deterministic preflight, weapon destruction, and
 scenario, replay, MCP, and browser-boundary coverage.
 
 ### 2.1a Scope and steering gate
@@ -38,39 +38,36 @@ scenario, replay, MCP, and browser-boundary coverage.
 - **Steering priority:** Vertical canonical fidelity and typed legacy behavior.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, and Gate D callback behavior evidence.
-- **Observable outcome:** An equipped Malek’s Armor item below maximum
-  durability advances its recharge timer once per accepted player command;
-  durability increases by one at 55 accepted ticks and then every 5 ticks
-  while below maximum. Full durability leaves the timer unchanged, and
-  received damage resets it.
-- **Gameplay/replay impact:** Gameplay semantics advance from `27` to `28`
-  and project version advances from `0.2.180` to `0.2.181`; replay wire
+- **Observable outcome:** An equipped, full Nuclear Plasma Rifle accepts a
+  confirmed `AltReload` off stairs, removes the weapon, spends 1,000 score
+  count, and arms the existing typed nuke timer: `1` on Acid/Lava and `100`
+  elsewhere. Partial clips, unconfirmed commands, stairs, and pending nukes
+  reject without mutation.
+- **Gameplay/replay impact:** Gameplay semantics advance from `28` to `29`
+  and project version advances from `0.2.181` to `0.2.182`; replay wire
   schema, RNG, generator, and ruleset identities remain unchanged.
-- **Protocol/domain ownership:** `drl-core` owns the typed Malek recharge
-  state and policy; `drl-protocol` exposes an explicit
-  `MalekArmorRecharged` event, while MCP, render, and audio provide stable
-  projections without presentation cues.
+- **Protocol/domain ownership:** `drl-core` owns the typed overload preflight
+  and action transition; `drl-protocol` exposes
+  `NuclearWeaponOverloaded` alongside existing nuke events, while MCP,
+  render, and audio provide stable projections without presentation cues.
 - **Evidence boundary:** Pinned legacy source at revision
   `17d9be1204751899b2d69d8d3a2dde247bd0cc5c` plus core, scenario, replay, MCP,
   and browser-boundary tests are authoritative. Controlled legacy runtime and
   audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** General armor durability degradation or resistance, other
-  rechargeable armor/items, boots (no protocol slot), replay-file
-  IO/migrations, exact legacy scheduler cadence, and audiovisual parity.
+- **Non-goals:** Nuclear BFG overload, standard overcharge, legacy
+  `NukeRun` random explosions/map destruction, nukecell map mutation, other
+  weapons/mods, replay-file IO/migrations, exact legacy runtime behavior, and
+  audiovisual parity.
 
 ### 2.2 Why this slice is bounded
 
-The pinned Malek’s Armor definition sets a recharge delay of `50`, cadence of
-`5`, and amount `1`. The generic legacy callback only advances an equipped
-armor item while durability is below its maximum, subtracts one cadence from
-the retained timer after each repair, and resets the timer on received damage.
-The Rust slice models accepted player commands as the deterministic scheduler
-boundary; it does not claim the legacy actor-tick cadence.
-
-Recharge is deterministic, clamps at maximum durability, consumes no inventory
-or action cost, and is rolled back with the complete `Game` transaction when a
-command is rejected. General armor damage/degradation and audiovisual callback
-parity remain separate.
+The pinned Nuclear Plasma Rifle carries the alternate-nuke perk with a
+24-cell clip. The legacy callback requires explicit confirmation, a full clip,
+and a non-stairs tile; it arms a one-tick nuke on Acid/Lava or a 100-tick nuke
+elsewhere, subtracts 1,000 score count, and destroys the weapon. Rust
+preflights all checks before mutating score, equipment, or `NukeState`, then
+uses the existing abstract nuke resolution. Legacy map-wide `NukeRun` effects
+remain a separate evidence and implementation slice.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -1551,7 +1548,7 @@ BrowserSession parity. Its acceptance criteria are:
   ruleset identities; rocket-jump, explosion, runtime, and audiovisual parity
   remain open.
 
-### 2.7bc Current Malek’s Armor periodic-recharge delivery target
+### 2.7bc Previous Malek’s Armor periodic-recharge delivery target
 
 The bounded implementation target for this revision is the pinned Malek’s
 Armor recharge callback across typed core behavior, deterministic damage-reset
@@ -1574,6 +1571,29 @@ BrowserSession parity. Its acceptance criteria are:
   `0.2.180` to `0.2.181` while preserving replay V2 wire, RNG, generator, and
   ruleset identities; general armor degradation/resistance, other recharge
   families, runtime, and audiovisual parity remain open.
+
+### 2.7bd Current Nuclear Plasma alternate-overload delivery target
+
+The bounded implementation target for this revision is the pinned Nuclear
+Plasma Rifle alternate-nuke callback across typed core behavior,
+scenario/replay determinism, MCP legal-action and event projection, and
+BrowserSession parity. Its acceptance criteria are:
+
+- [x] preflight an equipped Nuclear Plasma Rifle with a full 24-cell clip,
+  explicit confirmation, a non-stairs tile, and no pending nuke before any
+  score, equipment, or nuke-state mutation;
+- [x] remove the equipped weapon, spend 1,000 score count, emit one
+  `NuclearWeaponOverloaded`, and arm countdown `1` on Acid/Lava or `100` on a
+  safe floor using the existing `NukeState` transition;
+- [x] reject unconfirmed, partial-clip, stairs, and pending-nuke commands
+  atomically, preserving complete `Game` and RNG state;
+- [x] verify pure planner boundaries, hazard and floor scenarios, typed nuke
+  event ordering, replay determinism, MCP legal-action/JSON projections, and
+  BrowserSession/direct-core parity;
+- [x] advance gameplay semantics from `28` to `29` and project version from
+  `0.2.181` to `0.2.182` while preserving replay V2 wire, RNG, generator, and
+  ruleset identities; Nuclear BFG, `NukeRun` map-wide effects, runtime, and
+  audiovisual parity remain open.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
