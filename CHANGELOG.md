@@ -3,6 +3,12 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.168]
+
+- Closed the direct-core replay validation gap for out-of-bounds custom tile
+  overrides. Core now rejects malformed positions before map construction,
+  matching MCP decoding while preserving valid replay behavior.
+
 ## [0.2.167]
 
 - Corrected normal Combat Shotgun reload to load one shell, matching the
