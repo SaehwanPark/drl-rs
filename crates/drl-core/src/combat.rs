@@ -251,7 +251,55 @@ mod tests {
   }
 
   #[test]
-  fn exact_hit_policy_is_limited_to_bfg_families() {
+  fn revenants_launcher_exact_hit_skips_to_hit_rng_but_keeps_damage_rng() {
+    let mut attacker = Actor::new(EntityId::new(1), Position::new(0, 0), "Marine", true)
+      .with_stats(
+        HitPoints::full(50),
+        Speed::NORMAL,
+        (3, 6),
+        Some((4, 8)),
+        8,
+        5,
+      );
+    attacker
+      .equipment_mut()
+      .equip(
+        EquipmentSlot::Weapon,
+        Item::revenants_launcher(ItemId::new(3)),
+      )
+      .expect("Revenant's Launcher equips in the weapon slot");
+    assert!(attacker.ranged_exact_hit());
+
+    let defender = Actor::new(EntityId::new(2), Position::new(1, 0), "Demon", false);
+    let (min_damage, max_damage) = attacker
+      .ranged_damage()
+      .expect("Revenant's Launcher damage policy");
+    let seed = 0;
+    let mut miss_probe = GameRng::from_seed(seed);
+    assert!(
+      miss_probe.gen_range(0..100) >= 5,
+      "seed must miss at minimum accuracy"
+    );
+    let mut expected_rng = GameRng::from_seed(seed);
+    let expected_damage = expected_rng.gen_range(min_damage..(max_damage + 1));
+    let mut actual_rng = GameRng::from_seed(seed);
+    let outcome = CombatResolver::resolve_ranged_attack(&attacker, &defender, 1, &mut actual_rng);
+
+    assert_eq!(
+      outcome,
+      AttackOutcome::Hit {
+        damage: expected_damage,
+        is_lethal: expected_damage >= defender.hp().current,
+      }
+    );
+    assert_eq!(
+      actual_rng, expected_rng,
+      "exact-hit consumes only damage RNG"
+    );
+  }
+
+  #[test]
+  fn exact_hit_policy_is_limited_to_current_exact_families() {
     let mut standard = Actor::new(EntityId::new(1), Position::new(0, 0), "Marine", true);
     standard
       .equipment_mut()
@@ -281,7 +329,7 @@ mod tests {
         Item::revenants_launcher(ItemId::new(4)),
       )
       .unwrap();
-    assert!(!revenant.ranged_exact_hit());
+    assert!(revenant.ranged_exact_hit());
 
     let mut pistol = Actor::new(EntityId::new(5), Position::new(0, 0), "Marine", true);
     pistol

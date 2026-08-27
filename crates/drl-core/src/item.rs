@@ -944,7 +944,7 @@ impl Item {
         reload_cost,
         exact_hit: matches!(
           definition.archetype,
-          ItemArchetype::Bfg9000 | ItemArchetype::NuclearBfg9000
+          ItemArchetype::Bfg9000 | ItemArchetype::NuclearBfg9000 | ItemArchetype::RevenantsLauncher
         ),
         fire_mode: match definition.archetype {
           ItemArchetype::Jackhammer => WeaponFireMode::Burst,
