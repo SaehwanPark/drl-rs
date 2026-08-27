@@ -924,12 +924,14 @@ scripting.
   `SPRITE_CSHOTGUN` slots; callbacks and spread/falloff remain open.
 - [x] Typed `ublaster`, `ulaser`, and `umbazooka` preserve pinned exotic
   descriptions, ammo relations, clip/damage scalars, replay kinds, and
-  measured reuse of pistol/plasma/bazooka atlas slots; recharge, chainfire,
-  rocket-jump, and explosion callbacks remain open.
+  measured reuse of pistol/plasma/bazooka atlas slots; Blaster recharge is
+  behavior-covered in `0.2.175`, while other recharge, chainfire, rocket-jump,
+  and explosion callbacks remain open.
 - [x] Typed `unplasma`, `unbfg9000`, and `ubfg10k` preserve pinned heavy-energy
   descriptions, cell relations, clips/damage scalars, replay kinds, and
-  measured plasma/BFG/BFG10K atlas slots; recharge, exact-hit, chainfire,
-  explosion, and mod callbacks remain open.
+  measured plasma/BFG/BFG10K atlas slots; Nuclear Plasma recharge is
+  behavior-covered in `0.2.177`, while exact-hit, chainfire, explosion, and mod
+  callbacks remain open.
 - [x] Typed `umega`, `uberetta`, and `ufshotgun` preserve pinned unique-firearm
   descriptions, 9mm relations, clips/damage/range scalars, replay kinds, and
   measured plasma/pistol/combat-shotgun atlas slots; mode switching, kill
@@ -1014,6 +1016,11 @@ scripting.
   reload is delivered in `0.2.171`, and Combat Shotgun alternate full reload
   with chamber reset is delivered in `0.2.172`; partial reserve policy and
   controlled legacy runtime comparison remain open.
+- [x] Nuclear Plasma Rifle periodic recharge is behavior-covered by an
+  explicit delay-40/cadence-2/amount-1 policy: one cell returns at accepted
+  command tick 42, then every two ticks below capacity, with scenario/replay
+  and BrowserSession parity. Alternate nuke/chainfire and exact runtime/
+  presentation parity remain open.
 - [ ] Full migration of legacy monsters, weapons, armor, mods, and consumable
   items.
 - [ ] Full migration of special levels, vaults, and dungeon branches.
