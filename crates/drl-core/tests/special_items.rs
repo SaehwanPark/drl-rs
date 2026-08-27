@@ -9,6 +9,20 @@ use drl_protocol::{
   MonsterSpawnSpec, PlayerSpawnConfig, Position, ReplayLog,
 };
 
+fn equipped_nuclear_bfg(seed: u64) -> (Game, ItemId) {
+  let mut game = Game::new_arena(seed, 12, 12).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let weapon_id = game.world_mut().allocate_item_id();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, Item::nuclear_bfg9000(weapon_id))
+    .unwrap();
+  (game, weapon_id)
+}
+
 #[test]
 fn test_phase_device_use_teleports_player_and_updates_visibility() {
   let mut game = Game::new(9999, 20, 20, Position::new(2, 2)).unwrap();
@@ -1160,6 +1174,191 @@ fn nuclear_plasma_overload_rejections_are_transactional() {
       })
       .unwrap_err(),
     drl_protocol::CommandError::CannotAltReload(second_id)
+  );
+  assert_eq!(pending, before_pending);
+}
+
+#[test]
+fn nuclear_bfg_overload_on_floor_removes_weapon_and_arms_nuke() {
+  let (mut game, weapon_id) = equipped_nuclear_bfg(793);
+  let player_id = game.world().player_id().unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .set_score_count(2_000);
+
+  let events = game
+    .step(Command::AltReload {
+      item_id: weapon_id,
+      confirmed: true,
+    })
+    .unwrap();
+  let overload_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::NuclearWeaponOverloaded {
+          entity_id,
+          item_id,
+          countdown: 100,
+          score_count_remaining: 1_000,
+        } if *entity_id == player_id && *item_id == weapon_id
+      )
+    })
+    .expect("floor BFG overload event must be emitted");
+  let activate_index = events
+    .iter()
+    .position(|event| matches!(event, GameEvent::NukeActivated { countdown: 100, .. }))
+    .expect("floor BFG overload must arm the nuke");
+  let cost_index = events
+    .iter()
+    .position(|event| matches!(event, GameEvent::ActionCostPaid { entity_id, .. } if *entity_id == player_id))
+    .expect("accepted BFG overload must pay the action cost");
+  assert!(overload_index < activate_index);
+  assert!(activate_index < cost_index);
+  assert!(
+    game
+      .world()
+      .player()
+      .unwrap()
+      .equipment()
+      .weapon()
+      .is_none()
+  );
+  assert_eq!(game.world().player().unwrap().score_count(), 1_000);
+  assert_eq!(game.nuke_state().countdown(), Some(99));
+  assert!(!game.is_game_over());
+}
+
+#[test]
+fn nuclear_bfg_overload_on_acid_resolves_typed_nuke() {
+  let (mut game, weapon_id) = equipped_nuclear_bfg(794);
+  let player_id = game.world().player_id().unwrap();
+  let position = game.world().player().unwrap().position();
+  game.world_mut().map_mut().set_tile(position, Tile::Acid);
+
+  let events = game
+    .step(Command::AltReload {
+      item_id: weapon_id,
+      confirmed: true,
+    })
+    .unwrap();
+  let overload_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::NuclearWeaponOverloaded { countdown: 1, .. }
+      )
+    })
+    .expect("hazard BFG overload event must be emitted");
+  let activate_index = events
+    .iter()
+    .position(|event| matches!(event, GameEvent::NukeActivated { countdown: 1, .. }))
+    .expect("hazard BFG overload must arm a one-tick nuke");
+  let level_index = events
+    .iter()
+    .position(|event| matches!(event, GameEvent::LevelNuked { .. }))
+    .expect("hazard BFG overload must resolve the nuke");
+  assert!(overload_index < activate_index);
+  assert!(activate_index < level_index);
+  assert!(game.is_game_over());
+  assert!(
+    game
+      .world()
+      .player()
+      .unwrap()
+      .equipment()
+      .weapon()
+      .is_none()
+  );
+  assert_eq!(game.world().get_actor(player_id).unwrap().hp().current, 0);
+}
+
+#[test]
+fn nuclear_bfg_overload_rejections_are_transactional() {
+  let (mut unconfirmed, unconfirmed_id) = equipped_nuclear_bfg(795);
+  let before_unconfirmed = unconfirmed.clone();
+  assert_eq!(
+    unconfirmed
+      .step(Command::AltReload {
+        item_id: unconfirmed_id,
+        confirmed: false,
+      })
+      .unwrap_err(),
+    CommandError::AltReloadNotConfirmed(unconfirmed_id)
+  );
+  assert_eq!(unconfirmed, before_unconfirmed);
+
+  let (mut partial, partial_id) = equipped_nuclear_bfg(796);
+  let partial_player = partial.world().player_id().unwrap();
+  partial
+    .world_mut()
+    .get_actor_mut(partial_player)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 39;
+  let before_partial = partial.clone();
+  assert_eq!(
+    partial
+      .step(Command::AltReload {
+        item_id: partial_id,
+        confirmed: true,
+      })
+      .unwrap_err(),
+    CommandError::CannotAltReload(partial_id)
+  );
+  assert_eq!(partial, before_partial);
+
+  let (mut stairs, stairs_id) = equipped_nuclear_bfg(797);
+  let stairs_position = stairs.world().player().unwrap().position();
+  stairs
+    .world_mut()
+    .map_mut()
+    .set_tile(stairs_position, Tile::StairsDown);
+  let before_stairs = stairs.clone();
+  assert_eq!(
+    stairs
+      .step(Command::AltReload {
+        item_id: stairs_id,
+        confirmed: true,
+      })
+      .unwrap_err(),
+    CommandError::CannotAltReload(stairs_id)
+  );
+  assert_eq!(stairs, before_stairs);
+
+  let (mut pending, first_id) = equipped_nuclear_bfg(798);
+  let player_id = pending.world().player_id().unwrap();
+  pending
+    .step(Command::AltReload {
+      item_id: first_id,
+      confirmed: true,
+    })
+    .unwrap();
+  let second_id = pending.world_mut().allocate_item_id();
+  pending
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, Item::nuclear_bfg9000(second_id))
+    .unwrap();
+  let before_pending = pending.clone();
+  assert_eq!(
+    pending
+      .step(Command::AltReload {
+        item_id: second_id,
+        confirmed: true,
+      })
+      .unwrap_err(),
+    CommandError::CannotAltReload(second_id)
   );
   assert_eq!(pending, before_pending);
 }

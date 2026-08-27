@@ -2722,6 +2722,63 @@ mod tests {
   }
 
   #[test]
+  fn nuclear_bfg_overload_browser_boundary_matches_direct_core() {
+    let player_position = Position::new(1, 1);
+    let mut setup_replay =
+      ReplayLog::new(795, 8, 4, player_position).with_player_config(PlayerSpawnConfig {
+        hp: 50,
+        max_hp: 50,
+        speed: 100,
+        initial_items: Vec::new(),
+        equipped_weapon: Some(ItemSpawnKind::NuclearBfg9000),
+        equipped_armor: None,
+        equipped_armor_durability: None,
+      });
+    setup_replay.record_tile(player_position, TileKind::Acid);
+
+    let (initial, setup_events) =
+      drl_core::ReplayEngine::run(&setup_replay).expect("vertical replay setup");
+    assert!(setup_events.is_empty());
+    let bfg_id = initial
+      .world()
+      .player()
+      .expect("player")
+      .equipment()
+      .weapon()
+      .expect("equipped Nuclear BFG 9000")
+      .id();
+    let mut direct = initial.clone();
+    let mut browser = BrowserSession::from_game(initial);
+    let command = Command::AltReload {
+      item_id: bfg_id,
+      confirmed: true,
+    };
+
+    let expected_events = direct.step(command).expect("direct overload");
+    let step = browser.submit(command).expect("browser overload");
+    assert_eq!(step.events, expected_events);
+    assert_eq!(step.after, direct.observe_player());
+    assert_eq!(
+      step.effects,
+      drl_render::effect_timeline_for_observations(&step.before, &step.after, &expected_events,)
+    );
+    assert_eq!(browser.scene(), RenderScene::from_observation(&step.after));
+    assert!(direct.is_game_over());
+    assert!(browser.is_game_over());
+    assert_eq!(direct.world().player().unwrap().equipment().weapon(), None);
+
+    let mut command_replay = setup_replay;
+    command_replay.record_command(command);
+    let (replayed, replay_events) =
+      drl_core::ReplayEngine::run(&command_replay).expect("vertical command replay");
+    assert_eq!(replay_events, expected_events);
+    assert_eq!(replayed, direct);
+    assert!(
+      drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism")
+    );
+  }
+
+  #[test]
   fn acid_spitter_vertical_browser_boundary_matches_direct_core_presentation() {
     let player_position = Position::new(1, 1);
     let mut setup_replay =

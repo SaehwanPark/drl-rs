@@ -453,6 +453,85 @@ fn nuclear_plasma_overload_hazard_scenario_preserves_nuke_order_and_replay() {
 }
 
 #[test]
+fn nuclear_bfg_overload_hazard_scenario_preserves_nuke_order_and_replay() {
+  let player_position = Position::new(1, 1);
+  let mut scenario = Scenario::from_ascii(
+    "NuclearBfgOverloadHazardVertical",
+    "Confirmed Nuclear BFG 9000 overload on an Acid tile",
+    "########\n#@.....#\n#......#\n########\n",
+  )
+  .unwrap();
+  scenario.seed = 795;
+  scenario.tiles.insert(player_position, Tile::Acid);
+  scenario.player_config = Some(PlayerSpawnConfig {
+    hp: 50,
+    max_hp: 50,
+    speed: 100,
+    initial_items: Vec::new(),
+    equipped_weapon: Some(ItemSpawnKind::NuclearBfg9000),
+    equipped_armor: None,
+    equipped_armor_durability: None,
+  });
+  let bfg_id = scenario
+    .instantiate()
+    .unwrap()
+    .world()
+    .player()
+    .unwrap()
+    .equipment()
+    .weapon()
+    .unwrap()
+    .id();
+
+  let commands = [Command::AltReload {
+    item_id: bfg_id,
+    confirmed: true,
+  }];
+  let (game, events, _metrics, replay) =
+    ScenarioRunner::run_commands(&scenario, &commands).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let overload_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::NuclearWeaponOverloaded {
+          entity_id,
+          item_id,
+          countdown: 1,
+          score_count_remaining: -1_000,
+        } if *entity_id == player_id && *item_id == bfg_id
+      )
+    })
+    .expect("hazard BFG overload event must be emitted");
+  let activate_index = events
+    .iter()
+    .position(|event| matches!(event, GameEvent::NukeActivated { countdown: 1, .. }))
+    .expect("hazard BFG overload must arm a one-tick nuke");
+  let level_index = events
+    .iter()
+    .position(|event| matches!(event, GameEvent::LevelNuked { .. }))
+    .expect("hazard BFG overload must resolve the nuke");
+  assert!(overload_index < activate_index);
+  assert!(activate_index < level_index);
+  assert!(game.is_game_over());
+  assert!(
+    game
+      .world()
+      .player()
+      .unwrap()
+      .equipment()
+      .weapon()
+      .is_none()
+  );
+  assert_eq!(replay.commands, commands);
+  let (replayed_game, replay_events) = ReplayEngine::run(&replay).unwrap();
+  assert_eq!(replayed_game, game);
+  assert_eq!(replay_events, events);
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}
+
+#[test]
 fn acid_spitter_vertical_scenario_preserves_terrain_reload_and_replay() {
   let ascii = "########\n#@w....#\n#......#\n########\n";
   let mut scenario = Scenario::from_ascii(
