@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.172`
+Current project version: `0.2.173`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.172)
+## 3. Current Progress Summary (`VERSION` 0.2.173)
 
 ### Delivered Foundations
 
@@ -425,6 +425,10 @@ verification item uses explicit status semantics:
   validation now rejects unsupported schema versions and mismatched top-level
   and metadata headers before execution, matching the V2 MCP envelope contract.
   Gameplay and replay semantics remain unchanged.
+- **M5 direct-core replay dimension bounds (`0.2.173`):** Direct replay
+  validation now rejects map dimensions outside the MCP decoder's bounded
+  `3..=512` range before map construction, while valid replay execution and
+  all gameplay/replay semantics remain unchanged.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -668,7 +672,8 @@ validation.
   locations.
 - [x] Replay consistency validation (`ReplayEngine::validate`), including
   V2/top-level metadata header checks and preflight rejection of out-of-bounds
-  custom tile overrides before map construction.
+  custom tile overrides and dimensions outside `3..=512` before map
+  construction.
 - [x] Declarative ASCII scenario fixture framework (`Scenario`,
   `ScenarioRunner`).
 - [x] Observation-only test bot policies (`RandomBot`, `GreedyCombatBot`,

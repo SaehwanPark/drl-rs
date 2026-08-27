@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.172`
+Current project version: `0.2.173`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,51 +25,43 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Combat Shotgun Alternate Reload
+## 2. Active Implementation Slice: M5 — Direct Replay Dimension Bounds
 
 ### 2.1 Objective
 
-Implement the pinned Combat Shotgun alternate/full-reload behavior as a typed,
-deterministic core transition. An accepted alternate reload fills the entire
-clip deficit when enough loose shells are available and directly chambers the
-weapon when the pump action is empty.
+Keep direct `ReplayEngine` validation aligned with the MCP replay decoder by
+rejecting map dimensions outside the bounded `3..=512` range before any map or
+world construction.
 
 ### 2.1a Scope and steering gate
 
-- **Steering priority:** Typed legacy behavior and vertical canonical fidelity.
-- **Steering gates:** Gate A rejected-command atomicity and Gate D explicit
-  behavior state.
-- **Observable outcome:** A partial Combat Shotgun alternate reload consumes
-  exactly the deficit, emits one existing `WeaponReloaded` event, resets an
-  empty chamber, and pays the capped legacy cost; full or under-supplied clips
-  reject before mutation.
-- **Gameplay/replay impact:** Gameplay semantics advance from `20` to `21`;
-  replay wire schema, RNG, generator, and ruleset identities remain unchanged.
-- **Protocol/domain ownership:** `drl-protocol` keeps the existing semantic
-  `Command::AltReload` and `WeaponReloaded` contracts; `drl-core` owns the
-  Combat Shotgun transition, chamber reset, and cost policy.
-- **Evidence boundary:** Pinned legacy source, core state-machine tests,
-  command atomicity, replay/scenario determinism, and BrowserSession parity are
-  authoritative. Controlled legacy runtime, audio, WebGPU, and audiovisual
-  comparisons remain `NOT_RUN`.
-- **Non-goals:** Partial-reserve policy, ammo-pack behavior, new protocol
-  events, runtime Lua, presentation/audio parity, and broad migration.
+- **Steering priority:** Simulation correctness invariants and deterministic
+  replay boundary consistency.
+- **Steering gates:** Gate A rejected-input safety and Gate B explicit replay
+  compatibility.
+- **Observable outcome:** Direct replay validation rejects dimensions below 3 or
+  above 512 with no map construction or command execution.
+- **Gameplay/replay impact:** Gameplay semantics, replay wire schema, RNG,
+  generator, and ruleset identities remain unchanged; project version advances
+  from `0.2.172` to `0.2.173`.
+- **Protocol/domain ownership:** `drl-core::ReplayEngine` owns direct replay
+  preflight; MCP retains its existing decoder contract and bounds.
+- **Evidence boundary:** Core replay-validation tests and MCP boundary tests are
+  authoritative. Runtime, browser, audio, and audiovisual comparisons are not
+  implicated and remain unchanged.
+- **Non-goals:** Replay-file IO, migrations, external interchange, gameplay
+  semantics, and broad content migration.
 
 ### 2.2 Why this slice is bounded
 
-The pinned legacy `ashotgun` definition carries `IF_SINGLERELOAD`,
-`perk_altreload_full`, and `perk_pump_action`. Its alternate callback clears an
-empty chamber, performs a complete reload, and caps the resulting speed cost at
-`2500`, while ordinary empty-chamber reload remains a 200-unit pump-only
-transition. The Rust transition preflights the complete deficit against
-inventory reserve before mutating either inventory or clip, with `Game::step`
-providing the existing whole-state rollback boundary.
+The MCP JSON decoder already bounds replay dimensions to `3..=512`, but the
+direct core validator previously accepted smaller or unbounded dimensions.
+Aligning both entry points prevents malformed in-memory replays from reaching
+map construction and keeps the accepted replay domain explicit.
 
-Behavioral and presentation mappings remain explicit by design. The existing
-`WeaponReloaded` event represents the aggregate shell load; no new protocol
-event or observation field is needed. Alternate reload's chamber reset,
-2500-unit cost, and single event are covered at the core and browser
-boundaries.
+This is a validation-only correction: no command, event, observation, RNG, or
+replay wire field changes. The direct and MCP boundaries now share the same
+dimension acceptance range, while replay-file IO and migration remain open.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -1354,7 +1346,7 @@ and browser presentation boundaries. Its vertical slice must:
   full reload, partial-reserve policy, controlled legacy runtime, audio,
   WebGPU, and audiovisual parity remain `NOT_RUN`.
 
-### 2.7at Current vertical Combat Shotgun alternate-reload delivery target
+### 2.7at Previous vertical Combat Shotgun alternate-reload delivery target
 
 The bounded implementation target for this revision is the pinned Combat
 Shotgun alternate/full-reload callback across the declarative scenario, replay,
@@ -1381,6 +1373,22 @@ and browser presentation boundaries. Its vertical slice must:
   wire schema, RNG sampling, generator, and ruleset identities; partial-reserve
   policy, ammo packs, controlled legacy runtime, audio, WebGPU, and audiovisual
   parity remain `NOT_RUN`.
+
+### 2.7au Current direct replay dimension-bound delivery target
+
+The bounded implementation target for this revision is direct-core replay
+dimension validation parity with the existing MCP decoder. Its acceptance
+criteria are:
+
+- [x] reject zero, one, and two-cell widths or heights before map construction;
+- [x] reject dimensions above the bounded maximum of `512` before map
+  construction;
+- [x] preserve acceptance of valid `3..=512` dimensions and all existing replay
+  headers, initial-state containers, commands, and deterministic execution;
+- [x] verify the lower and upper bound rejections in the replay-versioning test
+  suite without mutating a game or consuming RNG;
+- [x] advance project version from `0.2.172` to `0.2.173` without changing
+  gameplay, replay wire, RNG, generator, or ruleset semantics.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
@@ -1457,9 +1465,10 @@ The `0.2.166` Combat Shotgun clip-reload encounter adds a five-shell
 ammunition boundary without changing gameplay semantics. The `0.2.167`
 successor adds the pinned Combat Shotgun single-shell policy, `0.2.170` adds
 the typed pump-action chamber transition, and `0.2.171` adds the typed Assault
-Shotgun alternate/full reload, and `0.2.172` adds the typed Combat Shotgun
- alternate/full reload with chamber reset. Partial-reserve behavior, broader
- callbacks, and presentation parity remain open.
+Shotgun alternate/full reload, `0.2.172` adds the typed Combat Shotgun
+alternate/full reload with chamber reset, and `0.2.173` aligns direct replay
+dimension validation with the MCP `3..=512` bound. Partial-reserve behavior,
+broader callbacks, and presentation parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity

@@ -95,6 +95,25 @@ fn test_replay_validation_catches_invalid_bounds() {
   let zero_dim = ReplayLog::new(1, 0, 10, Position::new(0, 0));
   assert!(ReplayEngine::validate(&zero_dim).is_err());
 
+  // Direct core replay validation must match MCP's bounded dimensions.
+  let too_small = ReplayLog::new(1, 2, 10, Position::new(0, 0));
+  assert!(ReplayEngine::validate(&too_small).is_err());
+  let too_small_height = ReplayLog::new(1, 10, 2, Position::new(0, 0));
+  assert!(ReplayEngine::validate(&too_small_height).is_err());
+  let too_large = ReplayLog::new(1, 513, 10, Position::new(0, 0));
+  assert!(ReplayEngine::validate(&too_large).is_err());
+  let too_large_height = ReplayLog::new(1, 10, 513, Position::new(0, 0));
+  assert!(ReplayEngine::validate(&too_large_height).is_err());
+  assert!(ReplayEngine::validate(&ReplayLog::new(1, 3, 3, Position::new(0, 0))).is_ok());
+  assert!(ReplayEngine::validate(&ReplayLog::new(1, 512, 512, Position::new(0, 0))).is_ok());
+
+  let mut malformed_with_command = too_small.clone();
+  malformed_with_command.record_command(Command::Wait);
+  let diagnostic = ReplayEngine::run_with_diagnostics(&malformed_with_command).unwrap_err();
+  assert_eq!(diagnostic.command_index, 0);
+  assert_eq!(diagnostic.turn, Turn::zero());
+  assert!(matches!(diagnostic.error, CommandError::InvalidCommand(_)));
+
   // Test player out of bounds
   let oob_player = ReplayLog::new(1, 10, 10, Position::new(12, 5));
   assert!(ReplayEngine::validate(&oob_player).is_err());

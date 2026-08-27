@@ -9,6 +9,10 @@ use drl_protocol::{
   Position, ReplayExecutionError, ReplayLog, RunOutcome, Speed, Turn,
 };
 
+/// Shared replay-map bounds enforced by the MCP decoder and direct core path.
+const MIN_REPLAY_DIMENSION: u32 = 3;
+const MAX_REPLAY_DIMENSION: u32 = 512;
+
 /// Engine for replaying recorded game sessions deterministically with rich diagnostics.
 pub struct ReplayEngine;
 
@@ -66,10 +70,12 @@ impl ReplayEngine {
         drl_protocol::CURRENT_GENERATOR_SEMANTICS_VERSION
       ));
     }
-    if replay.width == 0 || replay.height == 0 {
+    if !(MIN_REPLAY_DIMENSION..=MAX_REPLAY_DIMENSION).contains(&replay.width)
+      || !(MIN_REPLAY_DIMENSION..=MAX_REPLAY_DIMENSION).contains(&replay.height)
+    {
       return Err(format!(
-        "Invalid map dimensions: {}x{}",
-        replay.width, replay.height
+        "Invalid map dimensions: {}x{}; expected {}..={}",
+        replay.width, replay.height, MIN_REPLAY_DIMENSION, MAX_REPLAY_DIMENSION
       ));
     }
 
