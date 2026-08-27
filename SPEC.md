@@ -1669,17 +1669,17 @@ BFG 9000 `shotcost=40` behavior, reusing the delivered exact-hit resolver path
 across combat, scenario/replay determinism, MCP behavior, and BrowserSession
 parity. Its acceptance criteria are:
 
-- [ ] represent the standard BFG 9000's forty-cell per-shot ammo cost in a
+- [x] represent the standard BFG 9000's forty-cell per-shot ammo cost in a
   typed core policy while leaving other weapon costs unchanged;
-- [ ] accept a valid visible, in-range standard BFG 9000 shot with at least
+- [x] accept a valid visible, in-range standard BFG 9000 shot with at least
   forty cells, decrementing exactly forty cells once while preserving its
   exact-hit resolution, damage RNG, action cost, and existing events;
-- [ ] reject clips containing fewer than forty cells atomically, preserving
+- [x] reject clips containing fewer than forty cells atomically, preserving
   complete `Game` and RNG state and avoiding partial shot/event execution;
-- [ ] verify pure shot-cost boundaries, clip 40/39 integration, deterministic
+- [x] verify pure shot-cost boundaries, clip 40/39 integration, deterministic
   scenario/replay equality, MCP projections, and BrowserSession/direct-core
   parity;
-- [ ] advance gameplay semantics from `32` to `33` and project version from
+- [x] advance gameplay semantics from `32` to `33` and project version from
   `0.2.185` to `0.2.186` while preserving replay V2 wire, RNG, generator, and
   ruleset identities; Nuclear BFG/other shot costs, projectile paths,
   explosions, NukeRun, runtime, and audiovisual parity remain open.
