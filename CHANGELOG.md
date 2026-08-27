@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.178]
+
+- Extended the typed periodic cell-recharge policy to the Nuclear BFG 9000:
+  an equipped BFG restores one cell after 5 accepted commands and every 5
+  commands while below its 40-cell clip capacity. The existing
+  `WeaponRecharged` event, replay determinism, and browser boundary remain
+  aligned; alternate nuke, exact-hit/explosion, runtime, and audiovisual parity
+  remain separate slices.
+
 ## [0.2.177]
 
 - Extended the typed periodic cell-recharge policy to the Nuclear Plasma Rifle:

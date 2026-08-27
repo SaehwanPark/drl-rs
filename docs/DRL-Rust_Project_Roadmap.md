@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.177`
+Current project version: `0.2.178`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.177)
+## 3. Current Progress Summary (`VERSION` 0.2.178)
 
 ### Delivered Foundations
 
@@ -455,6 +455,12 @@ verification item uses explicit status semantics:
   parity are covered through the existing `WeaponRecharged` event; alternate
   nuke/chainfire, exact legacy runtime cadence, and audiovisual parity remain
   open.
+- **M9 typed Nuclear BFG 9000 periodic recharge (`0.2.178`):** The equipped
+  Nuclear BFG 9000 now owns an explicit delay-0/cadence-5/amount-1 cell
+  recharge policy: it restores one cell at accepted-command tick 5 and every
+  five ticks below its 40-cell capacity. Scenario/replay and browser-boundary
+  parity use the existing `WeaponRecharged` event; alternate nuke,
+  exact-hit/explosion, runtime, and audiovisual parity remain open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and

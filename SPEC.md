@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.177`
+Current project version: `0.2.178`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,27 +25,27 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Nuclear Plasma Periodic Recharge
+## 2. Active Implementation Slice: M9 — Nuclear BFG 9000 Periodic Recharge
 
 ### 2.1 Objective
 
-Make the legacy Nuclear Plasma Rifle self-charging behavior explicit in the
-typed Rust weapon-recharge policy, with deterministic accepted-command timing
-and scenario, replay, MCP, and browser-boundary coverage.
+Make the legacy Nuclear BFG 9000 self-charging behavior explicit in the typed
+Rust weapon-recharge policy, with deterministic accepted-command timing and
+scenario, replay, MCP, and browser-boundary coverage.
 
 ### 2.1a Scope and steering gate
 
 - **Steering priority:** Vertical canonical fidelity and typed legacy behavior.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, and Gate D callback behavior evidence.
-- **Observable outcome:** An equipped Nuclear Plasma Rifle restores one cell
-  after 42 accepted player-command ticks, then one cell every 2 ticks while
-  below its 24-cell capacity; successful fire resets its timer and full clips
-  leave the timer unchanged.
+- **Observable outcome:** An equipped Nuclear BFG 9000 restores one cell after
+  5 accepted player-command ticks, then one cell every 5 ticks while below its
+  40-cell capacity; successful fire resets its timer and full clips leave the
+  timer unchanged.
 - **Gameplay/replay impact:** Gameplay semantics, replay wire schema, RNG,
   generator, and ruleset identities remain unchanged; gameplay semantics
-  advance from `23` to `24` and project version advances from `0.2.176` to
-  `0.2.177`.
+  advance from `24` to `25` and project version advances from `0.2.177` to
+  `0.2.178`.
 - **Protocol/domain ownership:** `drl-core` owns the typed recharge policy and
   accepted-command tick; `drl-protocol` owns the existing `WeaponRecharged`
   event; MCP, render, and audio retain their existing event projections.
@@ -53,19 +53,19 @@ and scenario, replay, MCP, and browser-boundary coverage.
   `17d9be1204751899b2d69d8d3a2dde247bd0cc5c` plus core, scenario, replay, MCP,
   and browser-boundary tests are authoritative. Controlled legacy runtime and
   audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** Blaster policy changes, Nuclear Plasma alternate reload/nuke
-  and chainfire behavior, other families/mods, partial-reserve policy,
-  replay-file IO/migrations, exact legacy runtime cadence, and audiovisual
-  parity.
+- **Non-goals:** Blaster and Nuclear Plasma policy changes, Nuclear BFG
+  alternate nuke behavior, exact-hit/explosion behavior, other families/mods,
+  partial-reserve policy, replay-file IO/migrations, exact legacy runtime
+  cadence, and audiovisual parity.
 
 ### 2.2 Why this slice is bounded
 
-The pinned Nuclear Plasma Rifle definition adds `perk_weapon_recharge` with a
-delay of `40`, a cadence tick of `2`, and one restored cell. The generic legacy
+The pinned Nuclear BFG 9000 definition adds `perk_weapon_recharge` with a delay
+of `0`, a cadence tick of `5`, and one restored cell. The generic legacy
 callback increments its timer once per equipped inventory tick and subtracts
 the cadence after each restoration. This slice ports only that deterministic
-typed transition; the already-delivered Blaster policy and the weapon's
-alternate actions remain separate transitions.
+typed transition; the already-delivered Blaster and Nuclear Plasma policies and
+the weapon's alternate action remain separate transitions.
 
 Recharge is deterministic, consumes neither reserve ammunition nor RNG, and
 uses the existing full-game rollback guard so rejected commands restore timer
@@ -1463,7 +1463,7 @@ criteria are:
   `0.2.175` to `0.2.176` while preserving replay V2 wire, RNG, generator, and
   ruleset identities; runtime, audio, and other family behavior remain open.
 
-### 2.7ay Current Nuclear Plasma periodic-recharge delivery target
+### 2.7ay Previous Nuclear Plasma periodic-recharge delivery target
 
 The bounded implementation target for this revision is the pinned Nuclear
 Plasma Rifle recharge callback across typed core behavior, scenario/replay
@@ -1484,6 +1484,28 @@ determinism, and BrowserSession parity. Its acceptance criteria are:
   `0.2.176` to `0.2.177` while preserving replay V2 wire, RNG, generator, and
   ruleset identities; alternate/nuke, chainfire, runtime, and audiovisual
   parity remain open.
+
+### 2.7az Current Nuclear BFG 9000 periodic-recharge delivery target
+
+The bounded implementation target for this revision is the pinned Nuclear BFG
+9000 recharge callback across typed core behavior, scenario/replay
+determinism, and BrowserSession parity. Its acceptance criteria are:
+
+- [x] construct an equipped Nuclear BFG 9000 with its 40-cell clip and a typed
+  recharge policy of delay `0`, cadence `5`, and amount `1`;
+- [x] tick the equipped weapon once after each accepted player command, restore
+  one cell on tick `5`, then restore one cell every 5 ticks while below
+  capacity, clamping at 40 cells;
+- [x] leave a full clip's timer unchanged and reset the timer on a successful
+  ranged fire; rejected commands restore timer and clip through the existing
+  transaction guard, with no reserve-ammo mutation;
+- [x] emit the existing `WeaponRecharged` event with the resulting clip and
+  retained timer, and verify pure policy boundaries, ScenarioRunner/replay
+  determinism, and BrowserSession/direct-core parity;
+- [x] advance gameplay semantics from `24` to `25` and project version from
+  `0.2.177` to `0.2.178` while preserving replay V2 wire, RNG, generator, and
+  ruleset identities; alternate nuke, exact-hit/explosion, runtime, and
+  audiovisual parity remain open.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
@@ -1579,6 +1601,10 @@ parity remain open.
 The `0.2.177` successor extends the explicit recharge policy to the pinned
 Nuclear Plasma Rifle: one cell returns at accepted-command tick `42`, then
 every two ticks below capacity. Exact legacy runtime cadence remains `NOT_RUN`.
+
+The `0.2.178` successor extends the explicit recharge policy to the pinned
+Nuclear BFG 9000: one cell returns at accepted-command tick `5`, then every
+five ticks below capacity. Exact legacy runtime cadence remains `NOT_RUN`.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity

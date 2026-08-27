@@ -199,6 +199,9 @@ impl Item {
       ItemArchetype::NuclearPlasmaRifle => Some(WeaponRechargeState::with_policy(
         WeaponRechargePolicy::nuclear_plasma(),
       )),
+      ItemArchetype::NuclearBfg9000 => Some(WeaponRechargeState::with_policy(
+        WeaponRechargePolicy::nuclear_bfg(),
+      )),
       _ => None,
     };
     self
