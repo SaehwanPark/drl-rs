@@ -13,6 +13,7 @@ pub mod assault_shotgun;
 pub mod batch;
 pub mod behavior;
 pub mod combat;
+pub mod combat_shotgun;
 pub mod content_validation;
 pub mod environment;
 pub mod fov;
@@ -54,6 +55,7 @@ pub use behavior::{
   MEDICAL_REPAIR_TIMER_AFTER_REPAIR, MedicalRepairOutcome, MedicalRepairState,
 };
 pub use combat::CombatResolver;
+pub use combat_shotgun::COMBAT_SHOTGUN_ALT_RELOAD_CAP;
 pub use content_validation::{ContentValidationError, validate_current_content};
 pub use environment::{
   FLUID_MOVEMENT_COST, HazardDamage, MUD_MOVEMENT_COST, entered_tile_damage, movement_cost,

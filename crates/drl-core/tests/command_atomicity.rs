@@ -537,6 +537,152 @@ fn assault_shotgun_alt_reload_fills_deficit_at_capped_cost() {
 }
 
 #[test]
+fn combat_shotgun_alt_reload_rejections_preserve_chamber_and_game_state() {
+  let mut game = Game::new(1_658, 10, 10, Position::new(2, 2)).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let target = Position::new(8, 2);
+  game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 500, 0, (2, 4))
+    .unwrap();
+  let weapon_id = game.world_mut().allocate_item_id();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .inventory_mut()
+    .add_item(Item::combat_shotgun(weapon_id))
+    .unwrap();
+  game.step(Command::Equip(weapon_id)).unwrap();
+
+  // A fired Combat Shotgun has an empty chamber. An under-supplied full
+  // reload must reject before touching either the reserve or chamber state.
+  game.step(Command::AttackRanged(target)).unwrap();
+  let shells_id = game.world_mut().allocate_item_id();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .inventory_mut()
+    .add_item(Item::ammo_shells(shells_id, 0))
+    .unwrap();
+  let before_under_supply = game.clone();
+  assert_rejected_command_is_atomic(
+    &mut game,
+    Command::AltReload {
+      item_id: weapon_id,
+      confirmed: false,
+    },
+    CommandError::NoMatchingAmmo,
+  );
+  assert_eq!(game, before_under_supply);
+
+  // A full clip is also rejected atomically, even while the chamber remains
+  // empty from the earlier shot.
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 5;
+  assert_rejected_command_is_atomic(
+    &mut game,
+    Command::AltReload {
+      item_id: weapon_id,
+      confirmed: false,
+    },
+    CommandError::ClipAlreadyFull,
+  );
+}
+
+#[test]
+fn combat_shotgun_alt_reload_fills_deficit_resets_chamber_and_caps_cost() {
+  let mut game = Game::new(1_659, 10, 10, Position::new(2, 2)).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let target = Position::new(8, 2);
+  game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 500, 0, (2, 4))
+    .unwrap();
+  let weapon_id = game.world_mut().allocate_item_id();
+  let shells_id = game.world_mut().allocate_item_id();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .inventory_mut()
+    .add_item(Item::combat_shotgun(weapon_id))
+    .unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .inventory_mut()
+    .add_item(Item::ammo_shells(shells_id, 5))
+    .unwrap();
+  game.step(Command::Equip(weapon_id)).unwrap();
+
+  // Force an empty chamber and a zero-clip five-shell deficit.
+  game.step(Command::AttackRanged(target)).unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 0;
+
+  let events = game
+    .step(Command::AltReload {
+      item_id: weapon_id,
+      confirmed: false,
+    })
+    .unwrap();
+  assert!(events.iter().any(|event| {
+    matches!(
+      event,
+      drl_protocol::GameEvent::WeaponReloaded {
+        entity_id,
+        ammo_loaded: 5,
+        current_clip: 5,
+        max_clip: 5,
+      } if *entity_id == player_id
+    )
+  }));
+  assert!(events.iter().any(|event| {
+    matches!(
+      event,
+      drl_protocol::GameEvent::ActionCostPaid {
+        entity_id,
+        cost: drl_protocol::ActionCost(2_500),
+      } if *entity_id == player_id
+    )
+  }));
+  assert!(
+    game
+      .world()
+      .get_actor(player_id)
+      .unwrap()
+      .inventory()
+      .get_item(shells_id)
+      .is_none()
+  );
+
+  // Full alternate reload directly chambers the weapon: firing immediately
+  // succeeds without a separate 200-unit pump action.
+  game
+    .step(Command::AttackRanged(target))
+    .expect("alternate reload chambers the next round");
+}
+
+#[test]
 fn combat_shotgun_single_shell_reload_rejections_preserve_game_state() {
   let mut game = Game::new(1_655, 10, 10, Position::new(2, 2)).unwrap();
   let player_id = game.world().player_id().unwrap();
