@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.169`
+Current project version: `0.2.170`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,48 +25,45 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M5/M6 — Direct-Core Replay Header Consistency
+## 2. Active Implementation Slice: M9 — Combat Shotgun Pump Action
 
 ### 2.1 Objective
 
-Close the direct-core replay validation gap for schema headers. The core engine
-must accept only the supported V2 envelope and reject mismatches between the
-top-level replay schema and its metadata before any simulation state is built.
+Implement the pinned Combat Shotgun pump-action chamber behavior as a typed,
+deterministic core transition. A newly spawned Combat Shotgun starts chambered;
+firing empties the chamber, and the next shot requires a pump transition.
 
 ### 2.1a Scope and steering gate
 
-- **Steering priority:** Simulation correctness invariants and deterministic
-  replay boundaries.
-- **Steering gate:** Gate B explicit replay compatibility; no gameplay
-  semantics change is introduced.
-- **Observable outcome:** Direct `ReplayEngine::validate` rejects unsupported
-  top-level schema versions and mismatched metadata headers before execution,
-  while a canonical V2 replay remains accepted and deterministic.
-- **Gameplay/replay impact:** Gameplay semantics, replay wire schema, RNG,
-  generator, and ruleset identities remain unchanged; only the project patch
-  version advances from `0.2.168` to `0.2.169`.
-- **Protocol/domain ownership:** `drl-protocol` owns the version identifiers;
-  core owns structural validation and execution ordering; MCP retains its
-  existing V2 decoder contract.
-- **Evidence boundary:** Core replay validation tests and the full repository
-  harness are authoritative. Browser, controlled legacy runtime, capture,
-  audio, WebGPU, and audiovisual comparisons are not relevant to this
-  validation-only slice and remain `NOT_RUN`.
-- **Non-goals:** Replay migrations, V1 compatibility, minimum-dimension policy
-  changes, procedural-generator validation, map semantics, gameplay balance,
-  browser UI, runtime Lua, and broad content migration.
+- **Steering priority:** Typed legacy behavior and vertical canonical fidelity.
+- **Steering gates:** Gate A rejected-command atomicity and Gate D explicit
+  behavior state.
+- **Observable outcome:** A chamber-empty Combat Shotgun shot is rejected before
+  clip/RNG mutation; accepted movement or a pump-only reload chambers it.
+- **Gameplay/replay impact:** Gameplay semantics advance from `18` to `19`;
+  replay wire schema, RNG, generator, and ruleset identities remain unchanged.
+- **Protocol/domain ownership:** `drl-protocol` owns the typed
+  `CommandError::ChamberEmpty`; `drl-core` owns chamber state and transitions.
+- **Evidence boundary:** Pinned legacy source, core state-machine tests,
+  command atomicity, replay/scenario determinism, and BrowserSession parity are
+  authoritative. Controlled legacy runtime, audio, WebGPU, and audiovisual
+  comparisons remain `NOT_RUN`.
+- **Non-goals:** ItemView chamber disclosure, pump events/cues, equip lifecycle,
+  ammo-pack behavior, alternate/full reload, runtime Lua, and broad migration.
 
 ### 2.2 Why this slice is bounded
 
-The MCP decoder already accepts only V2 envelopes and parses a metadata version,
-but direct core replay execution previously did not check either schema field.
-This slice adds the missing preflight checks in the single authoritative replay
-engine, preserving one validation contract without changing the wire schema or
-introducing a second replay representation.
+The pinned legacy `ashotgun` definition carries `IF_SINGLERELOAD` and
+`perk_pump_action`. Its hooks reject firing while the chamber is empty and clip
+ammo remains, clear the chamber after a shot, pump on accepted movement, and
+make an empty-chamber reload pump-only before the normal one-shell reload path.
+The Rust transition is explicit state on the item instance, with `Game::step`
+providing the existing whole-state rollback boundary.
 
-Behavioral and presentation mappings remain explicit by design. Replay
-validation consumes the same typed protocol positions as MCP while preserving
-compiler exhaustiveness and avoiding a second browser-side replay model.
+Behavioral and presentation mappings remain explicit by design. The chamber is
+intentionally omitted from `ItemView` and no new `GameEvent` is emitted in this
+behavior-only slice; pump-only reload is observed through its 200-unit cost and
+absence of `WeaponReloaded`.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -1256,10 +1253,11 @@ The bounded implementation target for this revision is the callback-derived
 Combat Shotgun single-shell reload correction across the declarative scenario,
 replay, and browser presentation boundaries. Its vertical slice must:
 
-- [x] use the exact deterministic `CombatShotgunVertical` 9x4 ASCII arena with
-  a configured Combat Shotgun, five depleted rounds, and ten reserve shells;
-- [x] apply one `Command::Reload` that loads exactly one shell, consumes one
-  reserve shell, and preserves the standard 1,000-unit action cost;
+- [x] use the exact deterministic `CombatPumpVertical` 9x4 ASCII arena with a
+  configured Combat Shotgun, five depleted rounds, and ten reserve shells;
+- [x] apply the final `Command::Reload` after the explicit pump-action sequence
+  so it loads exactly one shell, consumes one reserve shell, and preserves the
+  standard 1,000-unit action cost;
 - [x] reject full-clip and missing-ammo reload attempts atomically with exact
   `Game` equality;
 - [x] verify replay determinism and compare generated replay events/final game
@@ -1286,7 +1284,7 @@ validation parity for explicit custom tile overrides. Its slice must:
   and ruleset identities unchanged while advancing the patch version from
   `0.2.167` to `0.2.168`.
 
-### 2.7aq Current direct-core replay header consistency delivery target
+### 2.7aq Previous direct-core replay header consistency delivery target
 
 The bounded implementation target for this revision is structural replay
 schema-header validation. Its slice must:
@@ -1299,6 +1297,30 @@ schema-header validation. Its slice must:
 - [x] keep gameplay semantics, replay wire schema, RNG sampling, generator,
   and ruleset identities unchanged while advancing the patch version from
   `0.2.168` to `0.2.169`.
+
+### 2.7ar Current vertical Combat Shotgun pump-action delivery target
+
+The bounded implementation target for this revision is the pinned Combat
+Shotgun pump-action chamber transition across the declarative scenario, replay,
+and browser presentation boundaries. Its vertical slice must:
+
+- [x] construct the deterministic `CombatPumpVertical` 9x4 arena with a
+  configured five-shell Combat Shotgun, ten reserve shells, and a static target;
+- [x] mark the chamber empty after a successful shot and reject the next shot
+  with typed `CommandError::ChamberEmpty` before clip/RNG/turn mutation;
+- [x] chamber on an accepted walk only, while blocked movement and waiting leave
+  the chamber empty;
+- [x] make empty-chamber reload with clip ammo pump-only at cost `200`, without
+  reserve consumption or `WeaponReloaded`; empty clip then uses the regular
+  one-shell reload at cost `1000`;
+- [x] verify replay determinism and compare generated replay events/final game
+  state with the direct scenario result;
+- [x] compare `BrowserSession::submit` with direct `Game::step` for every
+  accepted command's events, observations, effects, scenes, and replay log;
+- [x] advance gameplay semantics from `18` to `19` while preserving replay wire
+  schema, RNG sampling, generator, and ruleset identities; chamber UI/audio,
+  alternate reload, controlled legacy runtime, and audiovisual parity remain
+  `NOT_RUN`.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
@@ -1372,9 +1394,10 @@ The `0.2.165` Assault Shotgun single-shell reload correction makes the
 callback-derived one-shell policy explicit, advances gameplay semantics to
 `17`, and leaves alternate reload and broader spread/falloff behavior open.
 The `0.2.166` Combat Shotgun clip-reload encounter adds a five-shell
-ammunition boundary without changing gameplay semantics. The current
-successor adds only the pinned Combat Shotgun single-shell policy; pump-action,
-alternate reload, and broader callbacks remain open.
+ammunition boundary without changing gameplay semantics. The `0.2.167`
+successor adds the pinned Combat Shotgun single-shell policy, and `0.2.170`
+adds the typed pump-action chamber transition. Alternate reload, broader
+callbacks, and presentation parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity

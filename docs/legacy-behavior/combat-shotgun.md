@@ -1,4 +1,4 @@
-# Combat Shotgun single-shell reload evidence
+# Combat Shotgun single-shell reload and pump-action evidence
 
 ## Pinned source
 
@@ -11,17 +11,26 @@
 
 ## Attributable behavior
 
-The `ashotgun` declaration carries `IF_SINGLERELOAD` and a five-shell
-capacity. Pascal's normal reload dispatch passes that flag into
-`TBeing.Reload`; with the flag set, one reload action transfers at most one
-matching shell from reserve to the clip. The item also has a separate
-`perk_pump_action` callback, but pump-action chamber state is outside this
-slice.
+The `ashotgun` declaration carries `IF_SINGLERELOAD`, a five-shell capacity,
+and the `perk_pump_action` callback. Pascal's normal reload dispatch passes
+that flag into `TBeing.Reload`; with the flag set, one reload action transfers
+at most one matching shell from reserve to the clip.
+
+The pinned Lua callback establishes the chamber transitions: firing marks the
+chamber empty, firing is rejected while the chamber is empty and clip ammo
+remains, accepted equipped movement chambers a round without extra cost, and
+an empty-chamber reload pumps for 200 speed units without consuming reserve
+ammo. When the clip is empty, normal reload loads one shell and clears the
+chamber. These hooks run after successful movement, after shot resolution, and
+before normal reload clip/ammo checks respectively.
 
 ## Rust boundary
 
 The typed normal-reload transition now applies the single-shell load limit to
-both Assault Shotgun and Combat Shotgun definitions. The accepted Combat
-Shotgun transition advances gameplay semantics from `17` to `18`; alternate
-reload, pump-action state, ammo-pack behavior, exact legacy timing, controlled
-runtime comparison, and presentation parity remain `NOT_RUN`.
+both Assault Shotgun and Combat Shotgun definitions. Combat Shotgun instances
+also own explicit chamber state: the direct core rejects an empty-chamber shot
+atomically, accepted movement or a pump-only reload chambers it, and a regular
+one-shell reload restores it after an empty clip. This transition advances
+gameplay semantics from `18` to `19`; alternate reload, ammo-pack behavior,
+exact legacy timing, controlled runtime comparison, and chamber presentation
+parity remain `NOT_RUN`.
