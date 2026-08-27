@@ -1622,17 +1622,17 @@ BFG 9000 `IF_EXACTHIT` behavior across typed combat resolution,
 scenario/replay determinism, MCP boundary behavior, and BrowserSession parity.
 Its acceptance criteria are:
 
-- [ ] mark only the standard BFG 9000 weapon as exact-hit in the typed weapon
+- [x] mark only the standard BFG 9000 weapon as exact-hit in the typed weapon
   policy, preserving ordinary accuracy behavior for every other weapon;
-- [ ] bypass only the to-hit RNG for a valid standard BFG 9000 shot while
+- [x] bypass only the to-hit RNG for a valid standard BFG 9000 shot while
   retaining line-of-sight, range, clip, action-cost, damage RNG, and existing
   attack/damage event contracts;
-- [ ] reject invalid target, blocked line-of-sight, out-of-range, and empty-clip
+- [x] reject invalid target, blocked line-of-sight, out-of-range, and empty-clip
   commands atomically, preserving complete `Game` and RNG state;
-- [ ] verify pure resolver boundaries, deterministic standard-BFG scenarios,
+- [x] verify pure resolver boundaries, deterministic standard-BFG scenarios,
   replay equality/determinism, MCP projections, and BrowserSession/direct-core
   parity;
-- [ ] advance gameplay semantics from `30` to `31` and project version from
+- [x] advance gameplay semantics from `30` to `31` and project version from
   `0.2.183` to `0.2.184` while preserving replay V2 wire, RNG, generator, and
   ruleset identities; other exact-hit families, projectile paths, explosions,
   runtime, and audiovisual parity remain open.
