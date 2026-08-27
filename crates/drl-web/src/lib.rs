@@ -5713,6 +5713,143 @@ mod tests {
   }
 
   #[test]
+  fn combat_shotgun_alt_reload_browser_boundary_matches_direct_core_presentation() {
+    let player_position = Position::new(2, 1);
+    let player_config = PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: vec![ItemSpawnKind::AmmoShells(10)],
+      equipped_weapon: Some(ItemSpawnKind::CombatShotgun),
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    };
+    let target_position = Position::new(7, 1);
+    let mut setup_replay =
+      ReplayLog::new(0, 9, 4, player_position).with_player_config(player_config.clone());
+    setup_replay.record_monster(
+      MonsterSpawnSpec::new(target_position, "Static Target", 500, 1, (2, 5))
+        .with_ranged_combat((1, 4), 6, 65)
+        .with_death_drop(Some(ItemSpawnKind::Ammo9mm(10))),
+    );
+    let (initial, setup_events) =
+      drl_core::ReplayEngine::run(&setup_replay).expect("vertical replay setup");
+    assert!(setup_events.is_empty());
+    let player_id = initial.world().player_id().expect("player identity");
+    let weapon_id = initial
+      .world()
+      .player()
+      .expect("player")
+      .equipment()
+      .weapon()
+      .expect("Combat Shotgun")
+      .id();
+
+    let mut scenario = drl_core::scenario::Scenario::from_ascii(
+      "CombatShotgunAltReloadVertical",
+      "Combat Shotgun alternate full reload directly chambers an empty chamber",
+      "#########\n#.@....h#\n#.......#\n#########\n",
+    )
+    .expect("vertical scenario fixture");
+    scenario.seed = 0;
+    scenario.monsters[0].name = "Static Target".to_string();
+    scenario.monsters[0].hp = 500;
+    scenario.monsters[0].speed = 1;
+    scenario.player_config = Some(player_config);
+    assert_eq!(
+      scenario.instantiate().expect("scenario initial state"),
+      initial
+    );
+
+    let target = Position::new(7, 1);
+    let mut commands = Vec::new();
+    for index in 0..5 {
+      commands.push(Command::AttackRanged(target));
+      if index < 4 {
+        commands.push(Command::Reload);
+      }
+    }
+    commands.push(Command::AltReload {
+      item_id: weapon_id,
+      confirmed: false,
+    });
+    commands.push(Command::AttackRanged(target));
+
+    let mut direct = initial.clone();
+    let mut browser = BrowserSession::from_game(initial);
+    let mut all_events = Vec::new();
+    for command in commands.iter().copied() {
+      let expected_events = direct
+        .step(command)
+        .expect("direct Combat Shotgun alternate reload command");
+      let step = browser
+        .submit(command)
+        .expect("browser Combat Shotgun alternate reload command");
+      assert_eq!(step.events, expected_events);
+      assert_eq!(step.after, direct.observe_player());
+      assert_eq!(
+        step.effects,
+        drl_render::effect_timeline_for_observations(&step.before, &step.after, &expected_events,)
+      );
+      assert_eq!(browser.scene(), RenderScene::from_observation(&step.after));
+      all_events.extend(expected_events);
+    }
+
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .expect("player")
+        .equipment()
+        .weapon()
+        .expect("Combat Shotgun")
+        .weapon_properties()
+        .expect("weapon properties")
+        .current_clip,
+      4
+    );
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .expect("player")
+        .inventory()
+        .total_ammo(drl_protocol::AmmoType::Shells),
+      5
+    );
+    assert!(all_events.iter().any(|event| matches!(
+      event,
+      drl_protocol::GameEvent::WeaponReloaded {
+        entity_id,
+        ammo_loaded: 5,
+        current_clip: 5,
+        max_clip: 5,
+      } if *entity_id == player_id
+    )));
+    assert!(all_events.iter().any(|event| matches!(
+      event,
+      drl_protocol::GameEvent::ActionCostPaid {
+        entity_id,
+        cost: drl_protocol::ActionCost(2_500),
+      } if *entity_id == player_id
+    )));
+    assert_eq!(browser.observation(), direct.observe_player());
+    assert_eq!(browser.replay_log().commands, commands);
+
+    let mut command_replay = setup_replay;
+    for command in commands {
+      command_replay.record_command(command);
+    }
+    let (replayed, replay_events) =
+      drl_core::ReplayEngine::run(&command_replay).expect("vertical command replay");
+    assert_eq!(replayed, direct);
+    assert_eq!(replay_events, all_events);
+    assert!(
+      drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism")
+    );
+  }
+
+  #[test]
   fn double_shotgun_vertical_browser_boundary_matches_direct_core_presentation() {
     let player_position = Position::new(2, 1);
     let player_config = PlayerSpawnConfig {

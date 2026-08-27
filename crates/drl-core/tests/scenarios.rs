@@ -2945,3 +2945,127 @@ fn combat_pump_vertical_scenario_preserves_shells_and_replay() {
   assert_eq!(replay_events, events);
   assert!(ReplayEngine::verify_determinism(&replay).unwrap());
 }
+
+#[test]
+fn combat_shotgun_alt_reload_vertical_scenario_resets_chamber_and_replays() {
+  let mut scenario = Scenario::from_ascii(
+    "CombatShotgunAltReloadVertical",
+    "Combat Shotgun alternate full reload directly chambers an empty chamber",
+    "#########\n#.@....h#\n#.......#\n#########\n",
+  )
+  .unwrap();
+  scenario.seed = 0;
+  scenario.monsters[0].name = "Static Target".to_string();
+  scenario.monsters[0].hp = 500;
+  scenario.monsters[0].speed = 1;
+  scenario.player_config = Some(PlayerSpawnConfig {
+    hp: 50,
+    max_hp: 50,
+    speed: 100,
+    initial_items: vec![ItemSpawnKind::AmmoShells(10)],
+    equipped_weapon: Some(ItemSpawnKind::CombatShotgun),
+    equipped_armor: None,
+    equipped_armor_durability: None,
+  });
+
+  let initial = scenario.instantiate().unwrap();
+  let player_id = initial.world().player_id().unwrap();
+  let target_id = initial
+    .world()
+    .actors()
+    .values()
+    .find(|actor| !actor.is_player())
+    .unwrap()
+    .id();
+  let weapon_id = initial
+    .world()
+    .player()
+    .unwrap()
+    .equipment()
+    .weapon()
+    .unwrap()
+    .id();
+  let target = Position::new(7, 1);
+  let mut commands = Vec::new();
+  for index in 0..5 {
+    commands.push(Command::AttackRanged(target));
+    if index < 4 {
+      commands.push(Command::Reload);
+    }
+  }
+  commands.push(Command::AltReload {
+    item_id: weapon_id,
+    confirmed: false,
+  });
+  // This attack is intentionally immediate: the alternate reload must have
+  // reset the empty chamber without a separate 200-unit pump command.
+  commands.push(Command::AttackRanged(target));
+
+  let (game, events, metrics, replay) = ScenarioRunner::run_commands(&scenario, &commands).unwrap();
+  assert_eq!(metrics.outcome, RunOutcome::InProgress);
+  assert_eq!(metrics.shots_fired, 6);
+  assert_eq!(
+    game.world().get_actor(target_id).unwrap().position(),
+    target
+  );
+  let weapon = game
+    .world()
+    .player()
+    .unwrap()
+    .equipment()
+    .weapon()
+    .unwrap()
+    .weapon_properties()
+    .unwrap();
+  assert_eq!(weapon.current_clip, 4);
+  assert_eq!(
+    game
+      .world()
+      .player()
+      .unwrap()
+      .inventory()
+      .total_ammo(drl_protocol::AmmoType::Shells),
+    5
+  );
+  let reload_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::WeaponReloaded {
+          entity_id,
+          ammo_loaded: 5,
+          current_clip: 5,
+          max_clip: 5,
+        } if *entity_id == player_id
+      )
+    })
+    .expect("alternate reload event");
+  assert!(matches!(
+    events.get(reload_index + 1),
+    Some(GameEvent::ActionCostPaid { entity_id, cost: ActionCost(2_500) })
+      if *entity_id == player_id
+  ));
+  assert_eq!(
+    events[reload_index + 2..]
+      .iter()
+      .filter(|event| {
+        matches!(
+          event,
+          GameEvent::AttackResolved {
+            attacker_id,
+            target_id: event_target,
+            is_ranged: true,
+            ..
+          } if *attacker_id == player_id && *event_target == target_id
+        )
+      })
+      .count(),
+    1
+  );
+  assert_eq!(replay.commands, commands);
+  let (replayed_game, replay_events) = ReplayEngine::run(&replay).unwrap();
+  assert_eq!(replayed_game, game);
+  assert_eq!(replay_events, events);
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}

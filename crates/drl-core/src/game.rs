@@ -9,6 +9,7 @@ use crate::acid_spitter::{ACID_SPITTER_RELOAD_AMOUNT, AcidSpitterReloadError};
 use crate::assault_shotgun::{AssaultShotgunReloadPlan, AssaultShotgunTransition};
 use crate::behavior::{LavaRechargeOutcome, MedicalRepairOutcome};
 use crate::combat::CombatResolver;
+use crate::combat_shotgun::{CombatShotgunReloadPlan, CombatShotgunTransition};
 use crate::environment::{entered_tile_damage, movement_cost};
 use crate::fov::DEFAULT_VISION_RADIUS;
 use crate::generator::{LevelGenerator, LevelGeneratorConfig};
@@ -579,6 +580,72 @@ impl Game {
           .ok_or(CommandError::CannotAltReload(item_id))?;
         let loaded = weapon.load_ammo_into_clip(taken);
         debug_assert_eq!(loaded, amount);
+        let (current_clip, max_clip) = {
+          let properties = weapon
+            .weapon_properties()
+            .ok_or(CommandError::CannotAltReload(item_id))?;
+          (properties.current_clip, properties.clip_capacity)
+        };
+        events.push(GameEvent::WeaponReloaded {
+          entity_id: player_id,
+          ammo_loaded: loaded,
+          current_clip,
+          max_clip,
+        });
+        Ok(cost)
+      }
+      drl_protocol::ItemArchetype::CombatShotgun => {
+        let (current_clip, clip_capacity, ammo_type, reload_cost, available_ammo) = {
+          let player = self
+            .state
+            .world
+            .get_actor(player_id)
+            .ok_or(CommandError::EntityNotFound(player_id))?;
+          let weapon = player
+            .equipment()
+            .weapon()
+            .filter(|item| item.id() == item_id)
+            .ok_or(CommandError::CannotAltReload(item_id))?;
+          let properties = weapon
+            .weapon_properties()
+            .ok_or(CommandError::CannotAltReload(item_id))?;
+          let ammo_type = properties
+            .ammo_type
+            .ok_or(CommandError::CannotAltReload(item_id))?;
+          (
+            properties.current_clip,
+            properties.clip_capacity,
+            ammo_type,
+            properties.reload_cost,
+            player.inventory().total_ammo(ammo_type),
+          )
+        };
+        let plan =
+          CombatShotgunTransition::plan(current_clip, clip_capacity, available_ammo, reload_cost);
+        let CombatShotgunReloadPlan::Load { amount, cost } = plan else {
+          return Err(match plan {
+            CombatShotgunReloadPlan::ClipFull => CommandError::ClipAlreadyFull,
+            CombatShotgunReloadPlan::InsufficientAmmo => CommandError::NoMatchingAmmo,
+            CombatShotgunReloadPlan::Load { .. } => unreachable!(),
+          });
+        };
+
+        let player = self
+          .state
+          .world
+          .get_actor_mut(player_id)
+          .ok_or(CommandError::EntityNotFound(player_id))?;
+        let taken = player.inventory_mut().take_ammo(ammo_type, amount);
+        debug_assert_eq!(taken, amount);
+        let weapon = player
+          .equipment_mut()
+          .weapon_mut()
+          .ok_or(CommandError::CannotAltReload(item_id))?;
+        let loaded = weapon.load_ammo_into_clip(taken);
+        debug_assert_eq!(loaded, amount);
+        // Alternate/full reload directly chambers the weapon, unlike the
+        // ordinary empty-chamber pump-only reload.
+        weapon.complete_pump_action_reload(loaded);
         let (current_clip, max_clip) = {
           let properties = weapon
             .weapon_properties()
