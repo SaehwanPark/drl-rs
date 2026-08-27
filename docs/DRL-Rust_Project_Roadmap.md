@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.179`
+Current project version: `0.2.180`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.179)
+## 3. Current Progress Summary (`VERSION` 0.2.180)
 
 ### Delivered Foundations
 
@@ -465,8 +465,16 @@ verification item uses explicit status semantics:
   Missile Launcher now honors its pinned `IF_SINGLERELOAD` policy, loading one
   rocket per accepted ordinary reload while preserving atomic full/no-reserve
   rejection and shared `WeaponReloaded` event ordering. Scenario/replay and
-  BrowserSession boundary parity are covered; alternate/full reload,
-  rocket-jump, explosion, runtime, and audiovisual parity remain open.
+  BrowserSession boundary parity are covered; rocket-jump, explosion, runtime,
+  and audiovisual parity remain open.
+- **M9 vertical Missile Launcher alternate/full reload (`0.2.180`):** The
+  exotic Missile Launcher now honors its pinned `perk_altreload_full` callback,
+  filling a complete sufficiently supplied deficit in one accepted
+  `AltReload`, consuming exact loose-rocket reserve, emitting one aggregate
+  `WeaponReloaded`, and capping cost at 2,500 units. Full and under-supplied
+  rejections are atomic, with scenario/replay, MCP legal-action, and
+  BrowserSession boundary parity covered; rocket-jump, explosion, runtime, and
+  audiovisual parity remain open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1030,9 +1038,14 @@ scripting.
   controlled legacy runtime comparison remain open.
 - [x] Missile Launcher ordinary reload preserves the pinned `IF_SINGLERELOAD`
   policy: one rocket loads per accepted command, full/no-reserve rejection is
-  atomic, and scenario/replay/browser-boundary parity is verified; alternate
-  full reload, rocket-jump, explosion, and controlled legacy runtime
-  comparison remain open.
+  atomic, and scenario/replay/browser-boundary parity is verified; rocket-jump,
+  explosion, and controlled legacy runtime comparison remain open.
+- [x] Missile Launcher alternate/full reload preserves the pinned
+  `perk_altreload_full` policy: one accepted command fills a complete,
+  sufficiently supplied deficit, consumes exact loose-rocket reserve, caps the
+  action cost at 2,500 units, rejects full/under-supplied clips atomically, and
+  has scenario/replay/MCP/BrowserSession boundary parity; rocket-jump,
+  explosion, and controlled legacy runtime comparison remain open.
 - [x] Nuclear Plasma Rifle periodic recharge is behavior-covered by an
   explicit delay-40/cadence-2/amount-1 policy: one cell returns at accepted
   command tick 42, then every two ticks below capacity, with scenario/replay

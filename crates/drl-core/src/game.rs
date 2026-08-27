@@ -18,6 +18,7 @@ use crate::grid::{Map, Tile};
 use crate::item::Item;
 use crate::jackhammer::{JACKHAMMER_MODE_SCORE_COST, JackhammerTransition};
 use crate::level_definition::standard_procedural;
+use crate::missile_launcher::{MissileLauncherReloadPlan, MissileLauncherTransition};
 use crate::nuke::NukeState;
 use crate::null_pointer::{
   NULL_POINTER_EXPLOSION_DAMAGE, NULL_POINTER_EXPLOSION_DELAY, NULL_POINTER_EXPLOSION_RADIUS,
@@ -647,6 +648,69 @@ impl Game {
         // Alternate/full reload directly chambers the weapon, unlike the
         // ordinary empty-chamber pump-only reload.
         weapon.complete_pump_action_reload(loaded);
+        let (current_clip, max_clip) = {
+          let properties = weapon
+            .weapon_properties()
+            .ok_or(CommandError::CannotAltReload(item_id))?;
+          (properties.current_clip, properties.clip_capacity)
+        };
+        events.push(GameEvent::WeaponReloaded {
+          entity_id: player_id,
+          ammo_loaded: loaded,
+          current_clip,
+          max_clip,
+        });
+        Ok(cost)
+      }
+      drl_protocol::ItemArchetype::MissileLauncher => {
+        let (current_clip, clip_capacity, ammo_type, reload_cost, available_ammo) = {
+          let player = self
+            .state
+            .world
+            .get_actor(player_id)
+            .ok_or(CommandError::EntityNotFound(player_id))?;
+          let weapon = player
+            .equipment()
+            .weapon()
+            .filter(|item| item.id() == item_id)
+            .ok_or(CommandError::CannotAltReload(item_id))?;
+          let properties = weapon
+            .weapon_properties()
+            .ok_or(CommandError::CannotAltReload(item_id))?;
+          let ammo_type = properties
+            .ammo_type
+            .ok_or(CommandError::CannotAltReload(item_id))?;
+          (
+            properties.current_clip,
+            properties.clip_capacity,
+            ammo_type,
+            properties.reload_cost,
+            player.inventory().total_ammo(ammo_type),
+          )
+        };
+        let plan =
+          MissileLauncherTransition::plan(current_clip, clip_capacity, available_ammo, reload_cost);
+        let MissileLauncherReloadPlan::Load { amount, cost } = plan else {
+          return Err(match plan {
+            MissileLauncherReloadPlan::ClipFull => CommandError::ClipAlreadyFull,
+            MissileLauncherReloadPlan::InsufficientAmmo => CommandError::NoMatchingAmmo,
+            MissileLauncherReloadPlan::Load { .. } => unreachable!(),
+          });
+        };
+
+        let player = self
+          .state
+          .world
+          .get_actor_mut(player_id)
+          .ok_or(CommandError::EntityNotFound(player_id))?;
+        let taken = player.inventory_mut().take_ammo(ammo_type, amount);
+        debug_assert_eq!(taken, amount);
+        let weapon = player
+          .equipment_mut()
+          .weapon_mut()
+          .ok_or(CommandError::CannotAltReload(item_id))?;
+        let loaded = weapon.load_ammo_into_clip(taken);
+        debug_assert_eq!(loaded, amount);
         let (current_clip, max_clip) = {
           let properties = weapon
             .weapon_properties()

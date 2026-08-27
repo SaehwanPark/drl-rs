@@ -840,6 +840,133 @@ fn missile_launcher_single_shell_reload_preserves_atomic_rejections() {
 }
 
 #[test]
+fn missile_launcher_alt_reload_fills_deficit_and_caps_cost() {
+  let mut game = Game::new(1_657, 10, 10, Position::new(2, 2)).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let weapon_id = game.world_mut().allocate_item_id();
+  let rockets_id = game.world_mut().allocate_item_id();
+  let player = game.world_mut().get_actor_mut(player_id).unwrap();
+  player
+    .inventory_mut()
+    .add_item(Item::missile_launcher(weapon_id))
+    .unwrap();
+  player
+    .inventory_mut()
+    .add_item(Item::ammo_rockets(rockets_id, 4))
+    .unwrap();
+  game.step(Command::Equip(weapon_id)).unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 0;
+
+  let events = game
+    .step(Command::AltReload {
+      item_id: weapon_id,
+      confirmed: false,
+    })
+    .unwrap();
+  assert_eq!(
+    events
+      .iter()
+      .filter(|event| matches!(event, drl_protocol::GameEvent::WeaponReloaded { .. }))
+      .count(),
+    1
+  );
+  assert!(events.iter().any(|event| {
+    matches!(
+      event,
+      drl_protocol::GameEvent::WeaponReloaded {
+        entity_id,
+        ammo_loaded: 4,
+        current_clip: 4,
+        max_clip: 4,
+      } if *entity_id == player_id
+    )
+  }));
+  assert!(events.iter().any(|event| {
+    matches!(
+      event,
+      drl_protocol::GameEvent::ActionCostPaid {
+        entity_id,
+        cost: drl_protocol::ActionCost(2_500),
+      } if *entity_id == player_id
+    )
+  }));
+  assert_eq!(
+    game
+      .world()
+      .get_actor(player_id)
+      .unwrap()
+      .inventory()
+      .get_item(rockets_id),
+    None
+  );
+}
+
+#[test]
+fn missile_launcher_alt_reload_rejections_preserve_game_state() {
+  let mut game = Game::new(1_658, 10, 10, Position::new(2, 2)).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let weapon_id = game.world_mut().allocate_item_id();
+  let rockets_id = game.world_mut().allocate_item_id();
+  let player = game.world_mut().get_actor_mut(player_id).unwrap();
+  player
+    .inventory_mut()
+    .add_item(Item::missile_launcher(weapon_id))
+    .unwrap();
+  player
+    .inventory_mut()
+    .add_item(Item::ammo_rockets(rockets_id, 1))
+    .unwrap();
+  game.step(Command::Equip(weapon_id)).unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 2;
+
+  assert_rejected_command_is_atomic(
+    &mut game,
+    Command::AltReload {
+      item_id: weapon_id,
+      confirmed: false,
+    },
+    CommandError::NoMatchingAmmo,
+  );
+
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 4;
+  assert_rejected_command_is_atomic(
+    &mut game,
+    Command::AltReload {
+      item_id: weapon_id,
+      confirmed: false,
+    },
+    CommandError::ClipAlreadyFull,
+  );
+}
+
+#[test]
 fn descend_off_stairs_preserves_game_state() {
   let mut game = Game::new(13, 10, 10, Position::new(2, 2)).unwrap();
 

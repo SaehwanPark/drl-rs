@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.179`
+Current project version: `0.2.180`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,13 +25,13 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Missile Launcher Single-Shell Reload
+## 2. Active Implementation Slice: M9 — Missile Launcher Alternate/Full Reload
 
 ### 2.1 Objective
 
-Honor the legacy Missile Launcher's `IF_SINGLERELOAD` contract in the typed
-Rust reload path, with deterministic one-rocket transitions and scenario,
-replay, MCP, and browser-boundary coverage.
+Honor the legacy Missile Launcher's `perk_altreload_full` contract in the
+typed Rust alternate-reload path, with deterministic all-deficit transitions
+and scenario, replay, MCP, and browser-boundary coverage.
 
 ### 2.1a Scope and steering gate
 
@@ -39,34 +39,36 @@ replay, MCP, and browser-boundary coverage.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, and Gate D callback behavior evidence.
 - **Observable outcome:** An equipped Missile Launcher with a clip deficit
-  loads exactly one rocket per accepted `Reload`; full clips and missing
-  reserve ammunition reject without mutation.
+  loads the complete deficit on one accepted `AltReload`; full clips and
+  insufficient reserve ammunition reject without mutation.
 - **Gameplay/replay impact:** Gameplay semantics, replay wire schema, RNG,
   generator, and ruleset identities remain unchanged; gameplay semantics
-  advance from `25` to `26` and project version advances from `0.2.178` to
-  `0.2.179`.
-- **Protocol/domain ownership:** `drl-core` owns the typed single-shell policy;
-  `drl-protocol` retains the existing `WeaponReloaded` event; MCP, render, and
-  audio retain their existing command/event projections.
+-  advance from `26` to `27` and project version advances from `0.2.179` to
+  `0.2.180`.
+- **Protocol/domain ownership:** `drl-core` owns the typed full-reload planner;
+  `drl-protocol` retains the existing `AltReload` command and
+  `WeaponReloaded` event; MCP, render, and audio retain their existing
+  command/event projections.
 - **Evidence boundary:** Pinned legacy source at revision
   `17d9be1204751899b2d69d8d3a2dde247bd0cc5c` plus core, scenario, replay, MCP,
   and browser-boundary tests are authoritative. Controlled legacy runtime and
   audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** Missile Launcher alternate/full reload, rocket-jump and
-  explosion behavior, other families/mods, partial-reserve policy,
-  replay-file IO/migrations, exact legacy runtime cadence, and audiovisual
-  parity.
+- **Non-goals:** Missile Launcher rocket-jump and explosion behavior, other
+  families/mods, partial-reserve policy, replay-file IO/migrations, exact
+  legacy runtime timing, and audiovisual parity.
 
 ### 2.2 Why this slice is bounded
 
 The pinned Missile Launcher definition carries `IF_SINGLERELOAD` with a
-four-rocket clip. The legacy reload path therefore takes one loose rocket per
-accepted reload command. This slice ports only that deterministic typed
-transition; alternate/full reload and rocket-jump behavior remain separate.
+four-rocket clip and adds `perk_altreload_full`. The legacy callback delegates
+to `full_reload`, which loads the complete clip deficit and caps cumulative
+shell cost at `2500`. This slice ports the all-deficit transition atomically;
+rocket-jump and explosion behavior remain separate.
 
-Single-shell reload is deterministic, consumes one reserve rocket when
-available, and uses the existing full-game rollback guard so rejected commands
-restore clip, inventory, turn, and RNG state exactly.
+Full reload is deterministic, consumes exactly the deficit from loose rockets,
+and uses the existing full-game rollback guard so rejected commands restore
+clip, inventory, turn, and RNG state exactly. Regular `Reload` remains the
+single-shell path delivered previously.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -1504,7 +1506,7 @@ determinism, and BrowserSession parity. Its acceptance criteria are:
   ruleset identities; alternate nuke, exact-hit/explosion, runtime, and
   audiovisual parity remain open.
 
-### 2.7ba Current Missile Launcher single-shell reload delivery target
+### 2.7ba Previous Missile Launcher single-shell reload delivery target
 
 The bounded implementation target for this revision is the pinned exotic
 Missile Launcher's ordinary `IF_SINGLERELOAD` path across typed core behavior,
@@ -1524,6 +1526,28 @@ are:
   `0.2.178` to `0.2.179` while preserving replay V2 wire, RNG, generator, and
   ruleset identities; alternate/full reload, rocket-jump, explosion, runtime,
   and audiovisual parity remain open.
+
+### 2.7bb Current Missile Launcher alternate/full reload delivery target
+
+The bounded implementation target for this revision is the pinned exotic
+Missile Launcher's `perk_altreload_full` path across typed core behavior,
+scenario/replay determinism, existing MCP legal-action filtering, and
+BrowserSession parity. Its acceptance criteria are:
+
+- [x] construct an equipped Missile Launcher with a four-rocket clip and
+  partial deficit plus sufficient loose rockets;
+- [x] load the complete deficit on one accepted `AltReload`, consume exactly
+  that reserve, emit one `WeaponReloaded`, and pay
+  `min(deficit * reload_cost, 2500)`;
+- [x] reject full clips and insufficient reserve atomically, preserving clip,
+  inventory, turn, and RNG state;
+- [x] preserve ordinary one-shell `Reload`, verify ScenarioRunner/replay
+  determinism and BrowserSession/direct-core parity, and confirm existing MCP
+  legal-action filtering exposes the typed command;
+- [x] advance gameplay semantics from `26` to `27` and project version from
+  `0.2.179` to `0.2.180` while preserving replay V2 wire, RNG, generator, and
+  ruleset identities; rocket-jump, explosion, runtime, and audiovisual parity
+  remain open.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 

@@ -252,6 +252,32 @@ pub fn compute_legal_actions(obs: &PlayerObservation) -> Vec<LegalAction> {
     });
   }
 
+  // 3g. Typed Missile Launcher alternate/full reload.
+  if let Some(weapon) = obs.equipped_weapon.as_ref()
+    && weapon.archetype == ItemArchetype::MissileLauncher
+    && weapon
+      .clip
+      .is_some_and(|(loaded, max_clip)| loaded < max_clip)
+    && obs
+      .inventory
+      .iter()
+      .any(|item| item.archetype == ItemArchetype::AmmoRockets && item.count > 0)
+  {
+    let mut p = BTreeMap::new();
+    p.insert("action".to_string(), JsonValue::from("alt_reload"));
+    p.insert("item_id".to_string(), JsonValue::from(weapon.id.as_u64()));
+    p.insert("confirmed".to_string(), JsonValue::Bool(false));
+    actions.push(LegalAction {
+      action: "AltReload".to_string(),
+      description: "Fully reload the equipped Missile Launcher from loose rockets".to_string(),
+      command: Command::AltReload {
+        item_id: weapon.id,
+        confirmed: false,
+      },
+      params: JsonValue::Object(p),
+    });
+  }
+
   // 4. Reload weapon (if weapon not full and matching ammo exists in inventory)
   if let Some(ref weapon) = obs.equipped_weapon
     && let Some((loaded, max_clip)) = weapon.clip
@@ -2053,6 +2079,86 @@ mod tests {
         ammo_loaded: 5,
         current_clip: 5,
         max_clip: 5,
+      } if *entity_id == player_id
+    )));
+    assert!(events.iter().any(|event| matches!(
+      event,
+      GameEvent::ActionCostPaid {
+        entity_id,
+        cost: drl_protocol::ActionCost(2_500),
+      } if *entity_id == player_id
+    )));
+    assert!(
+      !session
+        .legal_actions()
+        .unwrap()
+        .iter()
+        .any(|action| action.command == command)
+    );
+  }
+
+  #[test]
+  fn test_legal_action_catalog_and_events_include_missile_launcher_alt_reload() {
+    let mut session = McpSession::new();
+    session.start_game(801, None, None, None).unwrap();
+    let player_id = session.game.as_ref().unwrap().world().player_id().unwrap();
+    let weapon_id = session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .allocate_item_id();
+    let rockets_id = session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .allocate_item_id();
+    let player = session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .get_actor_mut(player_id)
+      .unwrap();
+    player
+      .inventory_mut()
+      .add_item(drl_core::item::Item::ammo_rockets(rockets_id, 4))
+      .unwrap();
+    player
+      .equipment_mut()
+      .equip(
+        EquipmentSlot::Weapon,
+        drl_core::item::Item::missile_launcher(weapon_id),
+      )
+      .unwrap();
+    player
+      .equipment_mut()
+      .weapon_mut()
+      .unwrap()
+      .weapon_properties_mut()
+      .unwrap()
+      .current_clip = 0;
+
+    let observation = session.get_observation().unwrap();
+    let command = Command::AltReload {
+      item_id: weapon_id,
+      confirmed: false,
+    };
+    assert!(
+      compute_legal_actions(&observation)
+        .iter()
+        .any(|action| action.action == "AltReload" && action.command == command)
+    );
+
+    let (events, _, _) = session.step(command).unwrap();
+    assert!(events.iter().any(|event| matches!(
+      event,
+      GameEvent::WeaponReloaded {
+        entity_id,
+        ammo_loaded: 4,
+        current_clip: 4,
+        max_clip: 4,
       } if *entity_id == player_id
     )));
     assert!(events.iter().any(|event| matches!(
