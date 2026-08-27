@@ -15,13 +15,18 @@
 The `uashotgun` declaration carries `IF_SINGLERELOAD`, a six-shell capacity,
 and the `perk_altreload_full` alternate-reload perk. Pascal reload dispatch
 passes that flag into `TBeing.Reload`, so ordinary reload is a single-shell
-transition for this weapon. The alternate callback is a separate full-reload
-policy with a dynamic score-count cap and remains outside this slice.
+transition for this weapon. The alternate callback performs a complete deficit
+reload when enough loose shells are available and caps the resulting speed
+cost at `2500` units.
 
 ## Rust boundary
 
 The typed normal-reload transition applies an explicit Assault Shotgun
 single-shell load limit without adding a generic callback registry or changing
-the replay wire schema. The accepted transition advances gameplay semantics
-from `16` to `17`; alternate reload, ammo-pack behavior, exact legacy timing,
-runtime comparison, and presentation parity remain `NOT_RUN`.
+the replay wire schema, while the dedicated alternate-reload transition
+preflights and fills the complete clip deficit atomically. A successful
+alternate reload emits one aggregate `WeaponReloaded` event and pays
+`min(deficit * reload_cost, 2500)`; under-supplied and full clips reject before
+mutation. Gameplay semantics advance from `19` to `20`; ammo-pack behavior,
+partial-reserve policy, exact legacy timing, runtime comparison, and
+presentation parity remain `NOT_RUN`.

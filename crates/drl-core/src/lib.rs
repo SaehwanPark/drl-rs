@@ -9,6 +9,7 @@ pub mod acid_spitter;
 pub mod actor;
 pub mod agent;
 pub mod ai;
+pub mod assault_shotgun;
 pub mod batch;
 pub mod behavior;
 pub mod combat;
@@ -42,6 +43,7 @@ pub mod world;
 pub use actor::Actor;
 pub use agent::{AgentPolicy, ExplorerBot, GreedyCombatBot, RandomBot};
 pub use ai::{MonsterAction, MonsterAi};
+pub use assault_shotgun::ASSAULT_SHOTGUN_ALT_RELOAD_CAP;
 pub use batch::{
   BatchRunner, CohortComparison, CohortConfig, CohortDepthBucket, CohortDepthDistribution,
   CohortOutcomeComparison, CohortOutcomeDistribution, CohortOutcomeTolerances, CohortReport,

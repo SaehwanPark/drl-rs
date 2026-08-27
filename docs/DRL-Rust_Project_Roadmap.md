@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.170`
+Current project version: `0.2.171`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.170)
+## 3. Current Progress Summary (`VERSION` 0.2.171)
 
 ### Delivered Foundations
 
@@ -432,6 +432,15 @@ verification item uses explicit status semantics:
   path. Scenario/replay and browser-boundary parity are verified; chamber
   presentation, alternate reload, and controlled legacy runtime comparison
   remain `NOT_RUN`.
+- **M9 vertical Assault Shotgun alternate reload (`0.2.171`):** The
+  `AssaultShotgunAltReloadVertical` encounter now carries the pinned typed
+  full-reload transition: a sufficiently supplied partial clip fills to six
+  shells, consumes exactly the deficit, emits one `WeaponReloaded` event, and
+  pays the capped 2,500-unit cost. Full and under-supplied clips reject
+  atomically; ordinary reload remains single-shell. Scenario/replay and
+  browser-boundary parity are verified; partial-reserve policy, Combat
+  variants, controlled legacy runtime, and presentation parity remain
+  `NOT_RUN`.
 - **Tooling & Replays (M5, M6)**: Versioned replay engine (`V2`), declarative
   ASCII scenario runners, scripted bots, batch sweep runners, and a pure Rust
   zero-dependency MCP server.
@@ -963,8 +972,9 @@ scripting.
 - [x] Combat Shotgun normal reload preserves the pinned `IF_SINGLERELOAD`
   policy: one shell loads per accepted command, full/no-reserve rejection is
   atomic, and scenario/replay/browser-boundary parity is verified; pump-action
-  is delivered in the `0.2.170` vertical slice, while alternate reload and
-  controlled legacy runtime comparison remain open.
+  is delivered in the `0.2.170` vertical slice and Assault Shotgun alternate
+  full reload is delivered in `0.2.171`, while Combat full reload, partial
+  reserve policy, and controlled legacy runtime comparison remain open.
 - [ ] Full migration of legacy monsters, weapons, armor, mods, and consumable
   items.
 - [ ] Full migration of special levels, vaults, and dungeon branches.

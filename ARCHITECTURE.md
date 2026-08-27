@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.170`
+Current project version: `0.2.171`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -159,6 +159,11 @@ Presentation Boundary
     `grammaton` transition and a
     typed `WeaponFireMode`; mode-specific multi-shot resolution preflights
     clip capacity before consuming RNG and emits ordered shot events. Legacy
+    Assault Shotgun alternate reload uses the dedicated `assault_shotgun`
+    transition: it preflights the complete clip deficit against loose-shell
+    reserve, fills atomically, emits the existing aggregate `WeaponReloaded`
+    event, and caps the action cost at 2,500 units; ordinary reload remains the
+    single-shell policy. Legacy
     Null Pointer target score branching uses the dedicated `null_pointer`
     transition and emits a typed hit plus deferred-explosion schedule event;
     exact area damage remains an explicit gap. Legacy
@@ -237,8 +242,8 @@ Presentation Boundary
     Green Armor protection, Small MedPack recovery, Demon melee-pressure
     recovery, Pistol reload, Plasma Rifle cell-reload, Rocket Launcher
     one-shot reload, Chainsaw melee, standard Shotgun shell-reload, Assault
-    Shotgun single-shell reload, Double Shotgun clip-reload, and Combat Shotgun
-    pump-action encounters are covered
+    Shotgun single-shell and alternate full reload, Double Shotgun clip-reload,
+    and Combat Shotgun pump-action encounters are covered
     by this same
     cross-boundary comparison.
   - Accessible semantic minimap text grid fed by the fair `MinimapState`

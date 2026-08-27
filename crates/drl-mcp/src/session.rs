@@ -214,6 +214,25 @@ pub fn compute_legal_actions(obs: &PlayerObservation) -> Vec<LegalAction> {
     });
   }
 
+  // 3e. Typed Assault Shotgun alternate/full reload.
+  if let Some(weapon) = obs.equipped_weapon.as_ref()
+    && weapon.archetype == ItemArchetype::AssaultShotgun
+  {
+    let mut p = BTreeMap::new();
+    p.insert("action".to_string(), JsonValue::from("alt_reload"));
+    p.insert("item_id".to_string(), JsonValue::from(weapon.id.as_u64()));
+    p.insert("confirmed".to_string(), JsonValue::Bool(false));
+    actions.push(LegalAction {
+      action: "AltReload".to_string(),
+      description: "Fully reload the equipped Assault Shotgun from loose shells".to_string(),
+      command: Command::AltReload {
+        item_id: weapon.id,
+        confirmed: false,
+      },
+      params: JsonValue::Object(p),
+    });
+  }
+
   // 4. Reload weapon (if weapon not full and matching ammo exists in inventory)
   if let Some(ref weapon) = obs.equipped_weapon
     && let Some((loaded, max_clip)) = weapon.clip
@@ -1826,6 +1845,86 @@ mod tests {
         ..
       }
     )));
+  }
+
+  #[test]
+  fn test_legal_action_catalog_and_events_include_assault_shotgun_alt_reload() {
+    let mut session = McpSession::new();
+    session.start_game(799, None, None, None).unwrap();
+    let player_id = session.game.as_ref().unwrap().world().player_id().unwrap();
+    let weapon_id = session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .allocate_item_id();
+    let shells_id = session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .allocate_item_id();
+    let player = session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .get_actor_mut(player_id)
+      .unwrap();
+    player
+      .inventory_mut()
+      .add_item(drl_core::item::Item::ammo_shells(shells_id, 6))
+      .unwrap();
+    player
+      .equipment_mut()
+      .equip(
+        EquipmentSlot::Weapon,
+        drl_core::item::Item::assault_shotgun(weapon_id),
+      )
+      .unwrap();
+    player
+      .equipment_mut()
+      .weapon_mut()
+      .unwrap()
+      .weapon_properties_mut()
+      .unwrap()
+      .current_clip = 0;
+
+    let observation = session.get_observation().unwrap();
+    let command = Command::AltReload {
+      item_id: weapon_id,
+      confirmed: false,
+    };
+    assert!(
+      compute_legal_actions(&observation)
+        .iter()
+        .any(|action| { action.action == "AltReload" && action.command == command })
+    );
+
+    let (events, _, _) = session.step(command).unwrap();
+    assert!(events.iter().any(|event| matches!(
+      event,
+      GameEvent::WeaponReloaded {
+        entity_id,
+        ammo_loaded: 6,
+        current_clip: 6,
+        max_clip: 6,
+      } if *entity_id == player_id
+    )));
+    assert!(events.iter().any(|event| matches!(
+      event,
+      GameEvent::ActionCostPaid {
+        entity_id,
+        cost: drl_protocol::ActionCost(2_500),
+        } if *entity_id == player_id
+    )));
+    assert!(
+      !session
+        .legal_actions()
+        .unwrap()
+        .iter()
+        .any(|action| action.command == command)
+    );
   }
 
   #[test]

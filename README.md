@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.170`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.171`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -212,15 +212,17 @@ replays, and regression testing.
     the Assault Shotgun shell-reload encounter's six-shot sequence, blocked
     knockback, shell consumption, and presentation effects have the same
     vertical scenario/replay/browser-boundary coverage; its normal reload now
-    loads one shell under gameplay semantics `17`, while alternate reload
-    callbacks and spread parity remain staged;
+    loads one shell under gameplay semantics `17`, and its alternate reload
+    fills a sufficiently supplied deficit at the capped 2,500-unit cost under
+    gameplay semantics `20`; partial-reserve policy and spread parity remain
+    staged;
     the Double Shotgun clip-reload encounter's two-shot sequence, blocked
     knockback, shell consumption, and presentation effects have the same
     vertical scenario/replay/browser-boundary coverage;
     the Combat Shotgun pump-action encounter's five-shot sequence, typed
     chamber-empty rejection, pump-only reload cost, shell consumption, and
     presentation-boundary coverage; its regular reload loads one shell under
-    gameplay semantics `19`, while chamber UI/audio, alternate reload, and
+    gameplay semantics `19`, while full reload variants, chamber UI/audio, and
     spread parity remain staged;
     resistance, running modifiers,
     prepared-slot consumption,

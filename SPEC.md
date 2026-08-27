@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.170`
+Current project version: `0.2.171`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,45 +25,47 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Combat Shotgun Pump Action
+## 2. Active Implementation Slice: M9 — Assault Shotgun Alternate Reload
 
 ### 2.1 Objective
 
-Implement the pinned Combat Shotgun pump-action chamber behavior as a typed,
-deterministic core transition. A newly spawned Combat Shotgun starts chambered;
-firing empties the chamber, and the next shot requires a pump transition.
+Implement the pinned Assault Shotgun alternate/full-reload behavior as a typed,
+deterministic core transition. An accepted alternate reload fills the entire
+clip deficit when enough loose shells are available.
 
 ### 2.1a Scope and steering gate
 
 - **Steering priority:** Typed legacy behavior and vertical canonical fidelity.
 - **Steering gates:** Gate A rejected-command atomicity and Gate D explicit
   behavior state.
-- **Observable outcome:** A chamber-empty Combat Shotgun shot is rejected before
-  clip/RNG mutation; accepted movement or a pump-only reload chambers it.
-- **Gameplay/replay impact:** Gameplay semantics advance from `18` to `19`;
+- **Observable outcome:** A partial Assault Shotgun alternate reload consumes
+  exactly the deficit, emits one existing `WeaponReloaded` event, and pays the
+  capped legacy cost; full or under-supplied clips reject before mutation.
+- **Gameplay/replay impact:** Gameplay semantics advance from `19` to `20`;
   replay wire schema, RNG, generator, and ruleset identities remain unchanged.
-- **Protocol/domain ownership:** `drl-protocol` owns the typed
-  `CommandError::ChamberEmpty`; `drl-core` owns chamber state and transitions.
+- **Protocol/domain ownership:** `drl-protocol` keeps the existing semantic
+  `Command::AltReload` and `WeaponReloaded` contracts; `drl-core` owns the
+  Assault Shotgun transition and cost policy.
 - **Evidence boundary:** Pinned legacy source, core state-machine tests,
   command atomicity, replay/scenario determinism, and BrowserSession parity are
   authoritative. Controlled legacy runtime, audio, WebGPU, and audiovisual
   comparisons remain `NOT_RUN`.
-- **Non-goals:** ItemView chamber disclosure, pump events/cues, equip lifecycle,
-  ammo-pack behavior, alternate/full reload, runtime Lua, and broad migration.
+- **Non-goals:** Combat Shotgun/full-reload variants, partial-reserve policy,
+  ammo-pack behavior, new protocol events, runtime Lua, and broad migration.
 
 ### 2.2 Why this slice is bounded
 
-The pinned legacy `ashotgun` definition carries `IF_SINGLERELOAD` and
-`perk_pump_action`. Its hooks reject firing while the chamber is empty and clip
-ammo remains, clear the chamber after a shot, pump on accepted movement, and
-make an empty-chamber reload pump-only before the normal one-shell reload path.
-The Rust transition is explicit state on the item instance, with `Game::step`
-providing the existing whole-state rollback boundary.
+The pinned legacy `uashotgun` definition carries `IF_SINGLERELOAD` and
+`perk_altreload_full`. Its alternate callback calls full reload and caps the
+resulting per-shell speed cost at `2500`, while ordinary reload remains a
+single-shell transition. The Rust transition preflights the complete deficit
+against inventory reserve before mutating either inventory or clip, with
+`Game::step` providing the existing whole-state rollback boundary.
 
-Behavioral and presentation mappings remain explicit by design. The chamber is
-intentionally omitted from `ItemView` and no new `GameEvent` is emitted in this
-behavior-only slice; pump-only reload is observed through its 200-unit cost and
-absence of `WeaponReloaded`.
+Behavioral and presentation mappings remain explicit by design. The existing
+`WeaponReloaded` event represents the aggregate shell load; no new protocol
+event or observation field is needed. Alternate reload's 2500-unit cost and
+single event are covered at the core and browser boundaries.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -1298,7 +1300,7 @@ schema-header validation. Its slice must:
   and ruleset identities unchanged while advancing the patch version from
   `0.2.168` to `0.2.169`.
 
-### 2.7ar Current vertical Combat Shotgun pump-action delivery target
+### 2.7ar Previous vertical Combat Shotgun pump-action delivery target
 
 The bounded implementation target for this revision is the pinned Combat
 Shotgun pump-action chamber transition across the declarative scenario, replay,
@@ -1321,6 +1323,32 @@ and browser presentation boundaries. Its vertical slice must:
   schema, RNG sampling, generator, and ruleset identities; chamber UI/audio,
   alternate reload, controlled legacy runtime, and audiovisual parity remain
   `NOT_RUN`.
+
+### 2.7as Current vertical Assault Shotgun alternate-reload delivery target
+
+The bounded implementation target for this revision is the pinned Assault
+Shotgun alternate/full-reload callback across the declarative scenario, replay,
+and browser presentation boundaries. Its vertical slice must:
+
+- [x] construct the deterministic `AssaultShotgunAltReloadVertical` 9x4 arena
+  with a configured six-shell Assault Shotgun, eight reserve shells, and a
+  static target;
+- [x] run six seeded ranged attacks followed by
+  `Command::AltReload { confirmed: false }`, preserving the six-shot totals,
+  shell consumption, full six-shell clip, and stable identities;
+- [x] preflight the complete clip deficit so full clips and insufficient/no
+  reserve reject atomically, while a successful transition emits one existing
+  `WeaponReloaded` event and consumes exactly the deficit;
+- [x] pay `min(deficit * reload_cost, 2500)` for accepted alternate reloads;
+  ordinary `Command::Reload` remains the one-shell `IF_SINGLERELOAD` path;
+- [x] verify replay determinism and compare generated replay/final game state
+  with the direct `ScenarioRunner` result;
+- [x] compare `BrowserSession::submit` with direct `Game::step` for every
+  command's events, observations, effects, scene, and retained replay log;
+- [x] advance gameplay semantics from `19` to `20` while preserving replay
+  wire schema, RNG sampling, generator, and ruleset identities; Combat Shotgun
+  full reload, partial-reserve policy, controlled legacy runtime, audio,
+  WebGPU, and audiovisual parity remain `NOT_RUN`.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
@@ -1395,9 +1423,10 @@ callback-derived one-shell policy explicit, advances gameplay semantics to
 `17`, and leaves alternate reload and broader spread/falloff behavior open.
 The `0.2.166` Combat Shotgun clip-reload encounter adds a five-shell
 ammunition boundary without changing gameplay semantics. The `0.2.167`
-successor adds the pinned Combat Shotgun single-shell policy, and `0.2.170`
-adds the typed pump-action chamber transition. Alternate reload, broader
-callbacks, and presentation parity remain open.
+successor adds the pinned Combat Shotgun single-shell policy, `0.2.170` adds
+the typed pump-action chamber transition, and `0.2.171` adds the typed Assault
+Shotgun alternate/full reload. Combat full reload, broader callbacks, and
+presentation parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity

@@ -21,9 +21,9 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// Gameplay semantics identifier expected by the current replay engine.
 ///
 /// This advances independently from the wire/schema and RNG-sampling versions
-/// when other deterministic simulation rules change. Version `19` includes
-/// the typed Combat Shotgun pump-action chamber policy.
-pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 19;
+/// when other deterministic simulation rules change. Version `20` includes
+/// the typed Assault Shotgun alternate/full-reload policy.
+pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 20;
 
 /// Procedural-generation semantics identifier expected for replays that carry
 /// a procedural generation configuration. Version 2 includes the exact
@@ -43,7 +43,7 @@ pub struct ReplayMetadata {
   /// Engine crate version string.
   pub engine_version: String,
   /// Gameplay semantics version required to interpret the command history.
-  /// Version 19 includes the typed Combat Shotgun pump-action chamber policy.
+  /// Version 20 includes the typed Assault Shotgun alternate/full-reload policy.
   pub gameplay_semantics_version: u32,
   /// RNG sampling semantics required to reproduce bounded random choices.
   pub rng_sampling_semantics_version: u32,
