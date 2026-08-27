@@ -786,7 +786,7 @@ impl Game {
     Ok(())
   }
 
-  /// Advances the equipped Blaster recharge after an accepted player command.
+  /// Advances the equipped rechargeable weapon after an accepted player command.
   fn tick_player_weapon_recharge(
     &mut self,
     player_id: drl_protocol::EntityId,

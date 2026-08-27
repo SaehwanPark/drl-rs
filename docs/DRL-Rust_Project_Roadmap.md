@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.176`
+Current project version: `0.2.177`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.176)
+## 3. Current Progress Summary (`VERSION` 0.2.177)
 
 ### Delivered Foundations
 
@@ -448,6 +448,13 @@ verification item uses explicit status semantics:
   mutation, using the explicit `CannotReload` error. Replay diagnostics,
   MCP-session safety, and browser-boundary parity are covered; `IF_NOUNLOAD`,
   alternate reload, and recharge behavior remain separate concerns.
+- **M9 typed Nuclear Plasma periodic recharge (`0.2.177`):** The equipped
+  Nuclear Plasma Rifle now owns an explicit delay-40/cadence-2/amount-1 cell
+  recharge policy: it restores one cell at accepted-command tick 42 and every
+  two ticks below its 24-cell capacity. Scenario/replay and browser-boundary
+  parity are covered through the existing `WeaponRecharged` event; alternate
+  nuke/chainfire, exact legacy runtime cadence, and audiovisual parity remain
+  open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and

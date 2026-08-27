@@ -385,7 +385,7 @@ impl Actor {
     Some((item_id, outcome))
   }
 
-  /// Current equipped Blaster recharge timer, or zero when no Blaster is equipped.
+  /// Current equipped rechargeable-weapon timer, or zero when none is equipped.
   #[must_use]
   pub fn weapon_recharge_timer(&self) -> u32 {
     self
@@ -395,13 +395,9 @@ impl Actor {
       .unwrap_or(0)
   }
 
-  /// Advances the equipped Blaster's periodic recharge behavior.
+  /// Advances the equipped rechargeable weapon's periodic behavior.
   pub fn tick_weapon_recharge(&mut self) -> Option<(drl_protocol::ItemId, WeaponRechargeOutcome)> {
-    let weapon_item = self.equipment.weapon()?;
-    if weapon_item.archetype() != ItemArchetype::Blaster {
-      return None;
-    }
-    let item_id = weapon_item.id();
+    let item_id = self.equipment.weapon()?.id();
     let outcome = self.equipment.weapon_mut()?.tick_weapon_recharge()?;
     Some((item_id, outcome))
   }

@@ -12,7 +12,9 @@ unrelated local changes in `drlhq`/`drllq` audio metadata and an untracked
 
 - `bin/data/drl/items/eitems.lua:135-169` defines `ublaster` with cell ammo,
   a ten-cell maximum clip, `IF_NORELOAD`, and the recharge perk. The item
-  creation callback sets delay `30` and amount `1`.
+  creation callback sets delay `30` and amount `1`; the Nuclear Plasma Rifle
+  uses the same perk with delay `40` and cadence tick `2` (see
+  `nuclear-plasma.md`).
 - `bin/data/drl/perks.lua:350-386` starts the recharge timer at zero, increments
   it by one per item tick while the equipped item is below capacity, restores
   one cell when the timer reaches delay plus tick (`40`), subtracts the tick
@@ -23,14 +25,14 @@ unrelated local changes in `drlhq`/`drllq` audio metadata and an untracked
 
 ## Bounded Rust contract
 
-DRL-Rust models this callback as a typed `WeaponRechargeState` attached only to
-the `Blaster` archetype. The deterministic headless abstraction advances it
-once after each accepted player command. It restores one cell at tick `40`,
-then every `10` ticks while below capacity, and leaves the timer unchanged when
-the clip is full. A successful ranged shot resets the timer before the
-post-command tick. No reserve ammunition, random numbers, or extra action cost
-are involved. The existing full-game transaction guard restores timer and clip
-state on rejected commands.
+DRL-Rust models this callback as a typed `WeaponRechargeState` with explicit
+policies for the `Blaster` and Nuclear Plasma Rifle archetypes. The deterministic
+headless abstraction advances it once after each accepted player command. The
+Blaster restores one cell at tick `40`, then every `10` ticks; Nuclear Plasma
+restores one cell at tick `42`, then every `2` ticks. Both leave the timer
+unchanged when full and reset it after a successful ranged shot. No reserve
+ammunition, random numbers, or extra action cost are involved. The existing
+full-game transaction guard restores timer and clip state on rejected commands.
 
 Each restored cell emits one `GameEvent::WeaponRecharged` carrying entity,
 item, restored amount, current/max clip, and retained timer values. The event is

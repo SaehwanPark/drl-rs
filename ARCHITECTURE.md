@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.176`
+Current project version: `0.2.177`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -158,6 +158,9 @@ Presentation Boundary
     `GameEvent::LavaArmorRecharged`. The Blaster's periodic cell recharge uses
     the same module's explicit weapon-owned timer and emits
     `GameEvent::WeaponRecharged` without reserve-ammo or presentation policy.
+    Nuclear Plasma Rifle recharge uses the same typed state with an explicit
+    delay/cadence/amount policy; it emits the existing `WeaponRecharged` event
+    and consumes no reserve ammunition.
     The pinned `IF_NORELOAD` families use an explicit item policy that rejects
     ordinary `Reload` before mutation; this remains separate from alternate
     reload and automatic recharge behavior.
