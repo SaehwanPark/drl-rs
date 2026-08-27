@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.168`
+Current project version: `0.2.169`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,44 +25,43 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M5/M6 — Direct-Core Replay Custom-Tile Bounds
+## 2. Active Implementation Slice: M5/M6 — Direct-Core Replay Header Consistency
 
 ### 2.1 Objective
 
-Close the direct-core replay validation gap for explicit custom tile overrides.
-Malformed replay positions must be rejected before map construction or tile
-mutation, with the same spatial contract already enforced by MCP replay JSON
-decoding. Valid custom tiles must continue to replay deterministically.
+Close the direct-core replay validation gap for schema headers. The core engine
+must accept only the supported V2 envelope and reject mismatches between the
+top-level replay schema and its metadata before any simulation state is built.
 
 ### 2.1a Scope and steering gate
 
 - **Steering priority:** Simulation correctness invariants and deterministic
   replay boundaries.
-- **Steering gates:** Gate A rejected-input safety and Gate B explicit replay
-  compatibility; no gameplay semantics change is introduced.
-- **Observable outcome:** Direct `ReplayEngine::validate` rejects every
-  out-of-bounds custom tile before execution, while in-bounds overrides remain
-  accepted and deterministic.
+- **Steering gate:** Gate B explicit replay compatibility; no gameplay
+  semantics change is introduced.
+- **Observable outcome:** Direct `ReplayEngine::validate` rejects unsupported
+  top-level schema versions and mismatched metadata headers before execution,
+  while a canonical V2 replay remains accepted and deterministic.
 - **Gameplay/replay impact:** Gameplay semantics, replay wire schema, RNG,
   generator, and ruleset identities remain unchanged; only the project patch
-  version advances from `0.2.167` to `0.2.168`.
-- **Protocol/domain ownership:** `drl-protocol` owns the replay field and tile
-  identity; core owns structural validation and execution ordering; MCP keeps
-  its existing decoder-side safety checks.
+  version advances from `0.2.168` to `0.2.169`.
+- **Protocol/domain ownership:** `drl-protocol` owns the version identifiers;
+  core owns structural validation and execution ordering; MCP retains its
+  existing V2 decoder contract.
 - **Evidence boundary:** Core replay validation tests and the full repository
   harness are authoritative. Browser, controlled legacy runtime, capture,
   audio, WebGPU, and audiovisual comparisons are not relevant to this
   validation-only slice and remain `NOT_RUN`.
-- **Non-goals:** Replay migrations, minimum-dimension policy changes,
-  procedural-generator validation, map semantics, gameplay balance, browser
-  UI, runtime Lua, and broad content migration.
+- **Non-goals:** Replay migrations, V1 compatibility, minimum-dimension policy
+  changes, procedural-generator validation, map semantics, gameplay balance,
+  browser UI, runtime Lua, and broad content migration.
 
 ### 2.2 Why this slice is bounded
 
-The MCP decoder already rejects out-of-bounds custom tiles, but direct core
-replay execution previously ignored the boolean result of `Map::set_tile`.
-This slice adds the missing preflight check in the single authoritative replay
-engine, preserving one validation contract without changing the map API or
+The MCP decoder already accepts only V2 envelopes and parses a metadata version,
+but direct core replay execution previously did not check either schema field.
+This slice adds the missing preflight checks in the single authoritative replay
+engine, preserving one validation contract without changing the wire schema or
 introducing a second replay representation.
 
 Behavioral and presentation mappings remain explicit by design. Replay
@@ -1273,7 +1272,7 @@ replay, and browser presentation boundaries. Its vertical slice must:
   legacy runtime, browser capture, audio, WebGPU, audiovisual, pump-action,
   alternate-reload, and broader weapon/spread comparisons remain `NOT_RUN`.
 
-### 2.7ap Current direct-core replay custom-tile bounds delivery target
+### 2.7ap Previous direct-core replay custom-tile bounds delivery target
 
 The bounded implementation target for this revision is structural replay
 validation parity for explicit custom tile overrides. Its slice must:
@@ -1286,6 +1285,20 @@ validation parity for explicit custom tile overrides. Its slice must:
 - [x] keep gameplay semantics, replay wire schema, RNG sampling, generator,
   and ruleset identities unchanged while advancing the patch version from
   `0.2.167` to `0.2.168`.
+
+### 2.7aq Current direct-core replay header consistency delivery target
+
+The bounded implementation target for this revision is structural replay
+schema-header validation. Its slice must:
+
+- [x] reject a top-level replay schema other than V2 before map construction;
+- [x] reject a metadata schema version that differs from the top-level replay
+  version before execution;
+- [x] retain acceptance, map application, and deterministic reproduction for a
+  canonical V2 replay;
+- [x] keep gameplay semantics, replay wire schema, RNG sampling, generator,
+  and ruleset identities unchanged while advancing the patch version from
+  `0.2.168` to `0.2.169`.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 

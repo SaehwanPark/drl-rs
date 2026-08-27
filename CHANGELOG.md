@@ -3,6 +3,11 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.169]
+
+- Hardened direct-core replay preflight to accept only V2 schema headers and
+  reject mismatched top-level and metadata versions before execution.
+
 ## [0.2.168]
 
 - Closed the direct-core replay validation gap for out-of-bounds custom tile

@@ -13,11 +13,24 @@ use drl_protocol::{
 pub struct ReplayEngine;
 
 impl ReplayEngine {
-  /// Validates a replay log's spatial bounds and structural consistency before execution.
+  /// Validates a replay log's schema headers, spatial bounds, and structural
+  /// consistency before execution.
   ///
   /// Custom tile overrides are checked here so execution cannot silently drop
   /// an out-of-bounds map mutation.
   pub fn validate(replay: &ReplayLog) -> Result<(), String> {
+    if replay.version != drl_protocol::ReplayVersion::V2 {
+      return Err(format!(
+        "unsupported replay schema version {:?}; expected V2",
+        replay.version
+      ));
+    }
+    if replay.metadata.version != replay.version {
+      return Err(format!(
+        "replay schema version {:?} does not match metadata version {:?}",
+        replay.version, replay.metadata.version
+      ));
+    }
     if replay.metadata.gameplay_semantics_version
       != drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION
     {

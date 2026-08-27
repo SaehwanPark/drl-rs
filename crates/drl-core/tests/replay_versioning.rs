@@ -40,6 +40,16 @@ fn replay_metadata_compatibility_matrix_is_explicit() {
   let current = ReplayLog::new(42, 10, 10, Position::new(2, 2));
   assert!(ReplayEngine::validate(&current).is_ok());
 
+  let mut unsupported_schema = current.clone();
+  unsupported_schema.version = ReplayVersion::V1;
+  let error = ReplayEngine::validate(&unsupported_schema).unwrap_err();
+  assert!(error.contains("unsupported replay schema version"));
+
+  let mut mismatched_header = current.clone();
+  mismatched_header.metadata.version = ReplayVersion::V1;
+  let error = ReplayEngine::validate(&mismatched_header).unwrap_err();
+  assert!(error.contains("replay schema version"));
+
   let mut stale_gameplay = current.clone();
   stale_gameplay.metadata.gameplay_semantics_version =
     drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION.saturating_sub(1);
