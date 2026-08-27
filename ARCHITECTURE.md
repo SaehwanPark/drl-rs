@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.177`
+Current project version: `0.2.178`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -161,6 +161,8 @@ Presentation Boundary
     Nuclear Plasma Rifle recharge uses the same typed state with an explicit
     delay/cadence/amount policy; it emits the existing `WeaponRecharged` event
     and consumes no reserve ammunition.
+    Nuclear BFG 9000 recharge uses the same policy with a zero delay and
+    five-command cadence, preserving the same event and reserve boundary.
     The pinned `IF_NORELOAD` families use an explicit item policy that rejects
     ordinary `Reload` before mutation; this remains separate from alternate
     reload and automatic recharge behavior.

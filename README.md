@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.177`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.178`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -172,6 +172,9 @@ replays, and regression testing.
     the Nuclear Plasma Rifle's typed periodic cell recharge restores one cell
     after 42 accepted commands and every 2 commands thereafter, with
     scenario/replay and browser-boundary parity coverage;
+    the Nuclear BFG 9000's typed periodic cell recharge restores one cell after
+    5 accepted commands and every 5 commands thereafter, with scenario/replay
+    and browser-boundary parity coverage;
     manual reload is explicitly denied for the pinned Blaster, Nuclear Plasma
     Rifle, and Nuclear BFG 9000 `IF_NORELOAD` families before any state/RNG
     mutation, with atomic core and MCP/browser-boundary coverage;

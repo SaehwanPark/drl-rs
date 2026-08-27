@@ -3517,6 +3517,75 @@ mod tests {
   }
 
   #[test]
+  fn nuclear_bfg_recharge_browser_boundary_matches_direct_core() {
+    let player_position = Position::new(1, 1);
+    let target_position = Position::new(2, 1);
+    let player_config = PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: Vec::new(),
+      equipped_weapon: Some(ItemSpawnKind::NuclearBfg9000),
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    };
+    let target =
+      drl_protocol::MonsterSpawnSpec::new(target_position, "Recharge Target", 1_000, 1, (0, 0));
+    let mut setup_replay =
+      ReplayLog::new(33, 8, 4, player_position).with_player_config(player_config);
+    setup_replay.record_monster(target);
+    let (initial, setup_events) =
+      drl_core::ReplayEngine::run(&setup_replay).expect("vertical replay setup");
+    assert!(setup_events.is_empty());
+
+    let mut direct = initial.clone();
+    let mut browser = BrowserSession::from_game(initial);
+    let mut commands = Vec::with_capacity(5);
+    commands.push(Command::AttackRanged(target_position));
+    commands.extend(std::iter::repeat_n(Command::Wait, 4));
+    let mut expected_events = Vec::new();
+    for (index, command) in commands.iter().copied().enumerate() {
+      let direct_events = direct.step(command).expect("direct command");
+      let step = browser.submit(command).expect("browser command");
+      assert_eq!(step.events, direct_events);
+      assert_eq!(step.after, direct.observe_player());
+      if index < 4 {
+        assert!(
+          !direct_events
+            .iter()
+            .any(|event| matches!(event, drl_protocol::GameEvent::WeaponRecharged { .. }))
+        );
+      } else {
+        assert!(direct_events.iter().any(|event| {
+          matches!(
+            event,
+            drl_protocol::GameEvent::WeaponRecharged {
+              ammo_recharged: 1,
+              current_clip: 40,
+              max_clip: 40,
+              timer: 0,
+              ..
+            }
+          )
+        }));
+      }
+      expected_events.extend(direct_events);
+    }
+
+    assert_eq!(browser.observation(), direct.observe_player());
+    assert_eq!(browser.replay_log().commands, commands);
+    let mut command_replay = setup_replay;
+    for command in commands {
+      command_replay.record_command(command);
+    }
+    let (replayed, replay_events) =
+      drl_core::ReplayEngine::run(&command_replay).expect("vertical command replay");
+    assert_eq!(replay_events, expected_events);
+    assert_eq!(replayed, direct);
+    assert!(drl_core::ReplayEngine::verify_determinism(&command_replay).unwrap());
+  }
+
+  #[test]
   fn if_noreload_denial_browser_boundary_matches_direct_core() {
     for kind in [
       ItemSpawnKind::Blaster,

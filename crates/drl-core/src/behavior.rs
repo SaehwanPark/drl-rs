@@ -33,6 +33,13 @@ pub const NUCLEAR_PLASMA_RECHARGE_TICK: u32 = 2;
 /// Number of cells restored by one Nuclear Plasma Rifle recharge.
 pub const NUCLEAR_PLASMA_RECHARGE_AMOUNT: u32 = 1;
 
+/// Nuclear BFG 9000's pinned recharge delay before the first cell is restored.
+pub const NUCLEAR_BFG_RECHARGE_DELAY: u32 = 0;
+/// Nuclear BFG 9000's timer cadence retained after each restored cell.
+pub const NUCLEAR_BFG_RECHARGE_TICK: u32 = 5;
+/// Number of cells restored by one Nuclear BFG 9000 recharge.
+pub const NUCLEAR_BFG_RECHARGE_AMOUNT: u32 = 1;
+
 /// Armor-owned state for Lava Armor's periodic durability behavior.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct LavaRechargeState {
@@ -133,6 +140,16 @@ impl WeaponRechargePolicy {
       delay: NUCLEAR_PLASMA_RECHARGE_DELAY,
       tick: NUCLEAR_PLASMA_RECHARGE_TICK,
       amount: NUCLEAR_PLASMA_RECHARGE_AMOUNT,
+    }
+  }
+
+  /// The pinned Nuclear BFG 9000 recharge policy.
+  #[must_use]
+  pub const fn nuclear_bfg() -> Self {
+    Self {
+      delay: NUCLEAR_BFG_RECHARGE_DELAY,
+      tick: NUCLEAR_BFG_RECHARGE_TICK,
+      amount: NUCLEAR_BFG_RECHARGE_AMOUNT,
     }
   }
 }
@@ -575,6 +592,35 @@ mod tests {
     current_clip = 23;
     assert_eq!(
       state.tick(&mut current_clip, 24),
+      WeaponRechargeOutcome::Waiting { timer: 1 }
+    );
+  }
+
+  #[test]
+  fn nuclear_bfg_recharge_uses_immediate_five_tick_cadence() {
+    let mut state = WeaponRechargeState::with_policy(WeaponRechargePolicy::nuclear_bfg());
+    let mut current_clip = 0;
+
+    for expected_timer in 1..NUCLEAR_BFG_RECHARGE_TICK {
+      assert_eq!(
+        state.tick(&mut current_clip, 40),
+        WeaponRechargeOutcome::Waiting {
+          timer: expected_timer,
+        }
+      );
+    }
+    assert_eq!(
+      state.tick(&mut current_clip, 40),
+      WeaponRechargeOutcome::Recharged {
+        ammo_recharged: NUCLEAR_BFG_RECHARGE_AMOUNT,
+        timer: NUCLEAR_BFG_RECHARGE_DELAY,
+      }
+    );
+    assert_eq!(current_clip, 1);
+    state.reset();
+    current_clip = 39;
+    assert_eq!(
+      state.tick(&mut current_clip, 40),
       WeaponRechargeOutcome::Waiting { timer: 1 }
     );
   }
