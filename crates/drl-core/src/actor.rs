@@ -478,6 +478,16 @@ impl Actor {
     }
   }
 
+  /// Returns whether the equipped ranged weapon bypasses to-hit sampling.
+  #[must_use]
+  pub fn ranged_exact_hit(&self) -> bool {
+    self
+      .equipment
+      .weapon()
+      .and_then(Item::weapon_properties)
+      .is_some_and(|properties| properties.exact_hit)
+  }
+
   /// Kinetic knockback power (tiles pushed on hit).
   #[must_use]
   pub fn knockback(&self) -> u32 {

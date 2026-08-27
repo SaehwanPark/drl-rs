@@ -21,11 +21,12 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// Gameplay semantics identifier expected by the current replay engine.
 ///
 /// This advances independently from the wire/schema and RNG-sampling versions
-/// when other deterministic simulation rules change. Version `30` includes
-/// typed Nuclear BFG 9000 alternate overload in addition to Nuclear Plasma
+/// when other deterministic simulation rules change. Version `31` includes
+/// standard BFG 9000 exact-hit resolution in addition to typed Nuclear BFG
+/// 9000 alternate overload and Nuclear Plasma
 /// alternate overload and the prior Malek's Armor recharge, Missile Launcher,
 /// Nuclear BFG/Plasma, `IF_NORELOAD`, Blaster, and Combat Shotgun policies.
-pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 30;
+pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 31;
 
 /// Procedural-generation semantics identifier expected for replays that carry
 /// a procedural generation configuration. Version 2 includes the exact
@@ -45,8 +46,8 @@ pub struct ReplayMetadata {
   /// Engine crate version string.
   pub engine_version: String,
   /// Gameplay semantics version required to interpret the command history.
-  /// Version 30 includes typed Nuclear BFG 9000 alternate overload in addition
-  /// to Nuclear Plasma alternate overload, Malek's Armor periodic recharge,
+  /// Version 31 includes standard BFG 9000 exact-hit resolution in addition to
+  /// typed Nuclear BFG 9000 alternate overload, Nuclear Plasma alternate overload,
   /// Missile Launcher alternate/full reload, Nuclear BFG/Plasma recharge,
   /// `IF_NORELOAD` manual-reload denial, typed Blaster recharge, and the prior
   /// Combat Shotgun policy.

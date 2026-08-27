@@ -2300,6 +2300,69 @@ mod tests {
   }
 
   #[test]
+  fn standard_bfg_exact_hit_is_exposed_through_mcp_fire_action() {
+    let mut session = McpSession::new();
+    session
+      .load_scenario("\n########\n#@..h..#\n########\n", None)
+      .unwrap();
+    let player_id = session.game.as_ref().unwrap().world().player_id().unwrap();
+    let weapon_id = session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .allocate_item_id();
+    session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .get_actor_mut(player_id)
+      .unwrap()
+      .equipment_mut()
+      .equip(
+        EquipmentSlot::Weapon,
+        drl_core::item::Item::bfg9000(weapon_id),
+      )
+      .unwrap();
+    session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .get_actor_mut(player_id)
+      .unwrap()
+      .equipment_mut()
+      .weapon_mut()
+      .unwrap()
+      .weapon_properties_mut()
+      .unwrap()
+      .accuracy = 0;
+
+    let target = Position::new(4, 1);
+    let observation = session.get_observation().unwrap();
+    let command = Command::AttackRanged(target);
+    assert!(
+      compute_legal_actions(&observation)
+        .iter()
+        .any(|action| action.action == "Fire" && action.command == command)
+    );
+
+    let (events, _, _) = session.step(command).unwrap();
+    assert!(events.iter().any(|event| {
+      matches!(
+        event,
+        GameEvent::AttackResolved {
+          attacker_id,
+          target_id: _,
+          outcome: drl_protocol::AttackOutcome::Hit { .. },
+          is_ranged: true,
+        } if *attacker_id == player_id
+      )
+    }));
+  }
+
+  #[test]
   fn test_legal_action_catalog_and_events_include_nuclear_plasma_overload() {
     let mut session = McpSession::new();
     session

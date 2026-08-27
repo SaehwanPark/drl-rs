@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.183`
+Current project version: `0.2.184`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -183,6 +183,10 @@ Presentation Boundary
     Nuclear BFG 9000 alternate overload reuses the same focused preflight and
     event boundary for its 40-cell weapon; map-wide `NukeRun` behavior remains
     explicitly deferred.
+    Standard BFG 9000 exact-hit behavior is a typed weapon policy that skips
+    only ranged to-hit sampling; LOS, range, clip, action cost, damage RNG, and
+    existing attack/damage events remain in the ordinary combat path. Projectile
+    routing and explosion effects remain separate policy work.
     The pinned `IF_NORELOAD` families use an explicit item policy that rejects
     ordinary `Reload` before mutation; this remains separate from alternate
     reload and automatic recharge behavior.

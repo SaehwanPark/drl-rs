@@ -26,6 +26,8 @@ pub struct WeaponProperties {
   pub knockback: u32,
   pub fire_cost: ActionCost,
   pub reload_cost: ActionCost,
+  /// Whether this weapon bypasses the ranged to-hit roll.
+  pub exact_hit: bool,
   /// Typed alternate-fire mode; ordinary weapons remain `Single`.
   pub fire_mode: WeaponFireMode,
 }
@@ -928,6 +930,7 @@ impl Item {
         knockback,
         fire_cost,
         reload_cost,
+        exact_hit: definition.archetype == ItemArchetype::Bfg9000,
         fire_mode: match definition.archetype {
           ItemArchetype::Jackhammer => WeaponFireMode::Burst,
           _ => WeaponFireMode::Single,

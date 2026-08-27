@@ -3,6 +3,16 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.184]
+
+- Added typed standard BFG 9000 exact-hit behavior: valid ranged shots bypass
+  only the to-hit sample while retaining line-of-sight, range, clip,
+  action-cost, damage RNG, and existing attack/damage events. Invalid target,
+  line-of-sight, range, and empty-clip commands remain atomic; pure combat,
+  replay, and BrowserSession parity are covered. Other exact-hit families,
+  projectile routing, explosions, runtime, and audiovisual parity remain
+  separate slices.
+
 ## [0.2.183]
 
 - Extended typed alternate overload arming to the Nuclear BFG 9000: a
