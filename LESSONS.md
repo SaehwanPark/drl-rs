@@ -54,6 +54,22 @@ truth.
   behavior transition and test no-effect branches independently from transport
   or callback invocation success.
 
+## Preflight aggregate resource requirements before consuming stacks
+
+- **Context:** An alternate/full reload can consume several inventory stacks in
+  one accepted command while rejected commands must remain state-identical.
+- **Symptom:** Calling a mutating `take_ammo` helper before checking the total
+  reserve can partially deplete inventory when the complete clip deficit is not
+  available.
+- **Cause:** Stack-wise inventory helpers naturally return the amount available,
+  but a full-reload callback has an all-or-nothing requirement.
+- **Resolution:** Plan the complete deficit from immutable state first, reject
+  under-supplied clips before mutation, then consume exactly the planned amount
+  and commit one aggregate reload event.
+- **Prevention:** Keep aggregate resource planning in a pure typed transition
+  helper and cover both multi-stack sufficiency and under-supply with exact
+  `Game` equality tests.
+
 ## Prefer immutable tables with compatibility accessors
 
 - **Context:** Item, monster, loot, tile, and level metadata was repeated in

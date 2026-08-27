@@ -6,6 +6,7 @@ use drl_protocol::{
 };
 
 use crate::acid_spitter::{ACID_SPITTER_RELOAD_AMOUNT, AcidSpitterReloadError};
+use crate::assault_shotgun::{AssaultShotgunReloadPlan, AssaultShotgunTransition};
 use crate::behavior::{LavaRechargeOutcome, MedicalRepairOutcome};
 use crate::combat::CombatResolver;
 use crate::environment::{entered_tile_damage, movement_cost};
@@ -289,7 +290,7 @@ impl Game {
         self.execute_player_invoke(player_id, item_id, &mut events)?;
       }
       Command::AltReload { item_id, confirmed } => {
-        self.execute_player_alt_reload(player_id, item_id, confirmed, &mut events)?;
+        action_cost = self.execute_player_alt_reload(player_id, item_id, confirmed, &mut events)?;
       }
       Command::Reload => {
         action_cost = self.execute_player_reload(player_id, &mut events)?;
@@ -438,7 +439,7 @@ impl Game {
     item_id: drl_protocol::ItemId,
     confirmed: bool,
     events: &mut Vec<GameEvent>,
-  ) -> Result<(), CommandError> {
+  ) -> Result<ActionCost, CommandError> {
     let player = self
       .state
       .world
@@ -471,7 +472,7 @@ impl Game {
           mode,
           score_count_remaining,
         });
-        Ok(())
+        Ok(ActionCost::STANDARD)
       }
       drl_protocol::ItemArchetype::Jackhammer => {
         let mode = self
@@ -494,7 +495,7 @@ impl Game {
           mode,
           score_count_remaining,
         });
-        Ok(())
+        Ok(ActionCost::STANDARD)
       }
       drl_protocol::ItemArchetype::Trigun => {
         if !confirmed {
@@ -527,7 +528,70 @@ impl Game {
           level_id: self.state.world.level_id(),
           countdown: TRIGUN_NUKE_TIMER,
         });
-        Ok(())
+        Ok(ActionCost::STANDARD)
+      }
+      drl_protocol::ItemArchetype::AssaultShotgun => {
+        let (current_clip, clip_capacity, ammo_type, reload_cost, available_ammo) = {
+          let player = self
+            .state
+            .world
+            .get_actor(player_id)
+            .ok_or(CommandError::EntityNotFound(player_id))?;
+          let weapon = player
+            .equipment()
+            .weapon()
+            .filter(|item| item.id() == item_id)
+            .ok_or(CommandError::CannotAltReload(item_id))?;
+          let properties = weapon
+            .weapon_properties()
+            .ok_or(CommandError::CannotAltReload(item_id))?;
+          let ammo_type = properties
+            .ammo_type
+            .ok_or(CommandError::CannotAltReload(item_id))?;
+          (
+            properties.current_clip,
+            properties.clip_capacity,
+            ammo_type,
+            properties.reload_cost,
+            player.inventory().total_ammo(ammo_type),
+          )
+        };
+        let plan =
+          AssaultShotgunTransition::plan(current_clip, clip_capacity, available_ammo, reload_cost);
+        let AssaultShotgunReloadPlan::Load { amount, cost } = plan else {
+          return Err(match plan {
+            AssaultShotgunReloadPlan::ClipFull => CommandError::ClipAlreadyFull,
+            AssaultShotgunReloadPlan::InsufficientAmmo => CommandError::NoMatchingAmmo,
+            AssaultShotgunReloadPlan::Load { .. } => unreachable!(),
+          });
+        };
+
+        let player = self
+          .state
+          .world
+          .get_actor_mut(player_id)
+          .ok_or(CommandError::EntityNotFound(player_id))?;
+        let taken = player.inventory_mut().take_ammo(ammo_type, amount);
+        debug_assert_eq!(taken, amount);
+        let weapon = player
+          .equipment_mut()
+          .weapon_mut()
+          .ok_or(CommandError::CannotAltReload(item_id))?;
+        let loaded = weapon.load_ammo_into_clip(taken);
+        debug_assert_eq!(loaded, amount);
+        let (current_clip, max_clip) = {
+          let properties = weapon
+            .weapon_properties()
+            .ok_or(CommandError::CannotAltReload(item_id))?;
+          (properties.current_clip, properties.clip_capacity)
+        };
+        events.push(GameEvent::WeaponReloaded {
+          entity_id: player_id,
+          ammo_loaded: loaded,
+          current_clip,
+          max_clip,
+        });
+        Ok(cost)
       }
       _ => Err(CommandError::CannotAltReload(item_id)),
     }

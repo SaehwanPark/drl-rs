@@ -3,6 +3,16 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.171]
+
+- Added the typed Assault Shotgun alternate/full reload transition: a
+  sufficiently supplied partial clip fills to capacity, consumes exactly the
+  deficit, emits one aggregate `WeaponReloaded` event, and pays the capped
+  2,500-unit action cost. Full and under-supplied clips reject atomically;
+  ordinary reload remains single-shell. Scenario/replay and browser-boundary
+  parity are covered; partial-reserve policy and presentation/runtime parity
+  remain `NOT_RUN`.
+
 ## [0.2.170]
 
 - Added the typed Combat Shotgun pump-action chamber transition: successful

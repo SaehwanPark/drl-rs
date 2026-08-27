@@ -384,6 +384,159 @@ fn assault_shotgun_reload_rejections_preserve_game_state() {
 }
 
 #[test]
+fn assault_shotgun_alt_reload_rejections_preserve_game_state() {
+  let mut game = Game::new(1_656, 10, 10, Position::new(2, 2)).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let weapon_id = game.world_mut().allocate_item_id();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .inventory_mut()
+    .add_item(Item::assault_shotgun(weapon_id))
+    .unwrap();
+  game.step(Command::Equip(weapon_id)).unwrap();
+
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 0;
+
+  // Full reload requires the complete deficit, not a partial reserve.
+  let shells_id = game.world_mut().allocate_item_id();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .inventory_mut()
+    .add_item(Item::ammo_shells(shells_id, 5))
+    .unwrap();
+  assert_rejected_command_is_atomic(
+    &mut game,
+    Command::AltReload {
+      item_id: weapon_id,
+      confirmed: false,
+    },
+    CommandError::NoMatchingAmmo,
+  );
+
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .inventory_mut()
+    .get_item_mut(shells_id)
+    .unwrap()
+    .add_ammo(1);
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 6;
+  assert_rejected_command_is_atomic(
+    &mut game,
+    Command::AltReload {
+      item_id: weapon_id,
+      confirmed: true,
+    },
+    CommandError::ClipAlreadyFull,
+  );
+}
+
+#[test]
+fn assault_shotgun_alt_reload_fills_deficit_at_capped_cost() {
+  let mut game = Game::new(1_657, 10, 10, Position::new(2, 2)).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let weapon_id = game.world_mut().allocate_item_id();
+  let shells_id = game.world_mut().allocate_item_id();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .inventory_mut()
+    .add_item(Item::assault_shotgun(weapon_id))
+    .unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .inventory_mut()
+    .add_item(Item::ammo_shells(shells_id, 6))
+    .unwrap();
+  game.step(Command::Equip(weapon_id)).unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 0;
+
+  let events = game
+    .step(Command::AltReload {
+      item_id: weapon_id,
+      confirmed: false,
+    })
+    .unwrap();
+  assert!(events.iter().any(|event| {
+    matches!(
+      event,
+      drl_protocol::GameEvent::WeaponReloaded {
+        entity_id,
+        ammo_loaded: 6,
+        current_clip: 6,
+        max_clip: 6,
+      } if *entity_id == player_id
+    )
+  }));
+  assert!(events.iter().any(|event| {
+    matches!(
+      event,
+      drl_protocol::GameEvent::ActionCostPaid {
+        entity_id,
+        cost: drl_protocol::ActionCost(2_500),
+      } if *entity_id == player_id
+    )
+  }));
+  assert_eq!(
+    game
+      .world()
+      .get_actor(player_id)
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .current_clip,
+    6
+  );
+  assert!(
+    game
+      .world()
+      .get_actor(player_id)
+      .unwrap()
+      .inventory()
+      .get_item(shells_id)
+      .is_none()
+  );
+}
+
+#[test]
 fn combat_shotgun_single_shell_reload_rejections_preserve_game_state() {
   let mut game = Game::new(1_655, 10, 10, Position::new(2, 2)).unwrap();
   let player_id = game.world().player_id().unwrap();
