@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.175`
+Current project version: `0.2.176`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.175)
+## 3. Current Progress Summary (`VERSION` 0.2.176)
 
 ### Delivered Foundations
 
@@ -442,6 +442,12 @@ verification item uses explicit status semantics:
   `WeaponRecharged` event. Pure behavior, scenario/replay, MCP, and browser
   boundary parity are covered; exact legacy runtime cadence, manual reload
   denial for other `IF_NORELOAD` families, and audiovisual parity remain open.
+- **M9 typed `IF_NORELOAD` manual-reload denial (`0.2.176`):** Ordinary
+  `Reload` now rejects the pinned Blaster, Nuclear Plasma Rifle, and Nuclear
+  BFG 9000 families before any pump, clip, reserve, timer, turn, or RNG
+  mutation, using the explicit `CannotReload` error. Replay diagnostics,
+  MCP-session safety, and browser-boundary parity are covered; `IF_NOUNLOAD`,
+  alternate reload, and recharge behavior remain separate concerns.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and

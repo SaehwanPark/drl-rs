@@ -1145,6 +1145,17 @@ impl Game {
     player_id: drl_protocol::EntityId,
     events: &mut Vec<GameEvent>,
   ) -> Result<ActionCost, CommandError> {
+    let manual_reload_denial = self
+      .state
+      .world
+      .get_actor(player_id)
+      .and_then(|player| player.equipment().weapon())
+      .filter(|weapon| !weapon.allows_manual_reload())
+      .map(Item::id);
+    if let Some(item_id) = manual_reload_denial {
+      return Err(CommandError::CannotReload(item_id));
+    }
+
     let acid_spitter_item_id = self
       .state
       .world

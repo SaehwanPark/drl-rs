@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.175`
+Current project version: `0.2.176`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,51 +25,49 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Blaster Periodic Recharge
+## 2. Active Implementation Slice: M9 — IF_NORELOAD Manual-Reload Denial
 
 ### 2.1 Objective
 
-Make the legacy Blaster's self-recharging cell behavior explicit in the typed
-Rust behavior model, with deterministic accepted-command timing and replay,
-scenario, MCP, and browser-boundary coverage.
+Make the legacy `IF_NORELOAD` manual-reload restriction explicit in the typed
+Rust item policy for Blaster, Nuclear Plasma Rifle, and Nuclear BFG 9000, with
+atomic core, replay, MCP, and browser-boundary coverage.
 
 ### 2.1a Scope and steering gate
 
-- **Steering priority:** Vertical canonical fidelity and the typed legacy
-  behavior model.
+- **Steering priority:** Simulation correctness invariants and typed legacy
+  behavior policy.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
-  compatibility, and Gate D callback-heavy behavior evidence.
-- **Observable outcome:** An equipped Blaster restores one cell after 40
-  accepted player-command ticks, then once every 10 ticks while below capacity;
-  successful fire resets its timer, full clips leave the timer unchanged, and a
-  typed `WeaponRecharged` event reports the resulting clip.
+  compatibility, and Gate D behavior evidence.
+- **Observable outcome:** Ordinary `Reload` rejects an equipped Blaster,
+  Nuclear Plasma Rifle, or Nuclear BFG 9000 with `CannotReload` before any
+  pump, clip, reserve, timer, turn, or RNG mutation.
 - **Gameplay/replay impact:** Gameplay semantics, replay wire schema, RNG,
   generator, and ruleset identities remain unchanged; gameplay semantics
-  advance from `21` to `22` and project version advances from `0.2.174` to
-  `0.2.175`.
-- **Protocol/domain ownership:** `drl-core` owns the typed recharge state and
-  accepted-command tick; `drl-protocol` owns the stable event contract; MCP,
-  render, and audio project the event without adding simulation policy.
+  advance from `22` to `23` and project version advances from `0.2.175` to
+  `0.2.176`.
+- **Protocol/domain ownership:** `drl-core` owns the typed item reload policy;
+  `drl-protocol` owns the stable `CannotReload` error; MCP and browser
+  boundaries retain their existing command/error surfaces.
 - **Evidence boundary:** Pinned legacy source at revision
   `17d9be1204751899b2d69d8d3a2dde247bd0cc5c` plus core, scenario, replay, MCP,
   and browser-boundary tests are authoritative. Controlled legacy runtime and
   audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** Manual-reload denial for all `IF_NORELOAD` families, aimed
-  alternate fire, other rechargeable weapons, mods, partial-reserve policy,
-  replay-file IO/migrations, and full audiovisual parity.
+- **Non-goals:** `IF_NOUNLOAD`, alternate reload/nuke behavior, chainfire,
+  exact-hit/explosion behavior, other families/mods, partial-reserve policy,
+  replay-file IO/migrations, and runtime/audio parity.
 
 ### 2.2 Why this slice is bounded
 
-The pinned Blaster definition carries cell ammunition, a ten-cell clip, and the
-`IF_NORELOAD` flag; its `perk_weapon_recharge` callback uses a delay of `30`, a
-timer tick of `10`, and one restored cell. Equipped inventory ticks are the
-relevant trigger, and firing resets the timer. This slice ports only that
-observable recharge transition into an explicit Rust state machine.
+The pinned legacy action path checks `IF_NORELOAD` before any clip or reserve
+mutation and reports that the weapon cannot be manually reloaded. The three
+selected families carry that flag in the pinned item data. This slice ports only
+the denial boundary into an explicit Rust item policy; alternate actions and
+Blaster's already-delivered automatic recharge remain separate transitions.
 
-The transition is deterministic and consumes neither reserve ammunition nor
-RNG. Rejected commands use the existing full-game rollback guard, so timer and
-clip state remain unchanged on errors. The new event is intentionally
-presentation-neutral; later work may add a dedicated cue or visible timer.
+The rejection is deterministic, consumes neither reserve ammunition nor RNG,
+and uses the existing full-game rollback guard so the complete game state is
+unchanged.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -1419,7 +1417,7 @@ criteria are:
   gameplay, replay wire, RNG, generator, or ruleset semantics; replay-file IO,
   migrations, and external interchange remain open.
 
-### 2.7aw Current Blaster periodic-recharge delivery target
+### 2.7aw Previous Blaster periodic-recharge delivery target
 
 The bounded implementation target for this revision is the pinned Blaster
 recharge callback across typed core behavior, scenario/replay determinism, and
@@ -1443,6 +1441,25 @@ the MCP/browser presentation boundaries. Its acceptance criteria are:
   ruleset identities; manual-reload denial, other rechargeable weapons,
   partial-reserve behavior, controlled legacy runtime, and audiovisual parity
   remain open.
+
+### 2.7ax Current `IF_NORELOAD` manual-reload delivery target
+
+The bounded implementation target for this revision is the pinned
+`IF_NORELOAD` denial at the ordinary `Reload` command boundary. Its acceptance
+criteria are:
+
+- [x] deny manual reload for exactly Blaster, Nuclear Plasma Rifle, and Nuclear
+  BFG 9000 with typed `CannotReload(item_id)` before pump, clip, reserve,
+  recharge-timer, turn, or RNG mutation;
+- [x] preserve the ordinary reload path for all other ranged weapons and keep
+  `IF_NOUNLOAD` behavior, alternate reload, and automatic recharge separate;
+- [x] verify exact core game equality for each rejected family, including a
+  partially loaded clip and reserve ammunition;
+- [x] verify replay diagnostics at command index `0`, valid replay determinism,
+  MCP-session non-mutation/error behavior, and BrowserSession parity;
+- [x] advance gameplay semantics from `22` to `23` and project version from
+  `0.2.175` to `0.2.176` while preserving replay V2 wire, RNG, generator, and
+  ruleset identities; runtime, audio, and other family behavior remain open.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
@@ -1530,6 +1547,10 @@ The `0.2.175` successor adds the bounded, Blaster-only periodic recharge
 transition described above. Exact legacy runtime cadence remains `NOT_RUN`; the
 accepted-command tick is the explicit deterministic abstraction used by the
 headless core and its boundary tests.
+
+The `0.2.176` successor adds typed manual-reload denial for the three pinned
+`IF_NORELOAD` families. `IF_NOUNLOAD`, alternate actions, and broader runtime
+parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity

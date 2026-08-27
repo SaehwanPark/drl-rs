@@ -2108,6 +2108,80 @@ mod tests {
   }
 
   #[test]
+  fn if_noreload_reload_is_not_advertised_and_session_is_unchanged() {
+    for (seed, kind) in [
+      (1_763, drl_protocol::ItemSpawnKind::Blaster),
+      (1_764, drl_protocol::ItemSpawnKind::NuclearPlasmaRifle),
+      (1_765, drl_protocol::ItemSpawnKind::NuclearBfg9000),
+    ] {
+      let mut session = McpSession::new();
+      session.start_game(seed, None, Some(10), Some(10)).unwrap();
+      let player_id = session.game.as_ref().unwrap().world().player_id().unwrap();
+      let weapon_id = session
+        .game
+        .as_mut()
+        .unwrap()
+        .world_mut()
+        .allocate_item_id();
+      let cells_id = session
+        .game
+        .as_mut()
+        .unwrap()
+        .world_mut()
+        .allocate_item_id();
+      let player = session
+        .game
+        .as_mut()
+        .unwrap()
+        .world_mut()
+        .get_actor_mut(player_id)
+        .unwrap();
+      player
+        .inventory_mut()
+        .add_item(drl_core::item::Item::from_spawn_kind(weapon_id, kind))
+        .unwrap();
+      let weapon = player.inventory_mut().remove_item(weapon_id).unwrap();
+      player
+        .equipment_mut()
+        .equip(EquipmentSlot::Weapon, weapon)
+        .unwrap();
+      player
+        .inventory_mut()
+        .add_item(drl_core::item::Item::ammo_cells(cells_id, 20))
+        .unwrap();
+      player
+        .equipment_mut()
+        .weapon_mut()
+        .unwrap()
+        .weapon_properties_mut()
+        .unwrap()
+        .current_clip = 1;
+
+      let command = Command::Reload;
+      let observation_before = session.get_observation().unwrap();
+      let metrics_before = session.get_metrics().clone();
+      let replay_before = session.export_replay().unwrap().clone();
+      let events_before = session.recent_events().to_vec();
+
+      assert!(
+        !session
+          .legal_actions()
+          .unwrap()
+          .iter()
+          .any(|action| action.command == command)
+      );
+      assert_eq!(
+        session.step(command).unwrap_err(),
+        "Command is not currently advertised as legal"
+      );
+      assert_eq!(session.get_observation().unwrap(), observation_before);
+      assert_eq!(session.get_metrics(), &metrics_before);
+      assert_eq!(session.export_replay().unwrap(), &replay_before);
+      assert_eq!(session.recent_events(), events_before.as_slice());
+    }
+  }
+
+  #[test]
   fn test_json_to_command_parsing() {
     let raw = r#"{"action":"move","direction":"North"}"#;
     let val = JsonValue::parse(raw).unwrap();

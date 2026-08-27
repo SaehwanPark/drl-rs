@@ -325,6 +325,19 @@ impl Item {
     }
   }
 
+  /// Returns whether this weapon accepts the ordinary manual reload command.
+  ///
+  /// The three pinned `IF_NORELOAD` families are explicit typed policy rather
+  /// than a generic callback flag. Alternate actions and automatic recharge
+  /// remain separate transitions.
+  #[must_use]
+  pub(crate) const fn allows_manual_reload(&self) -> bool {
+    !matches!(
+      self.archetype,
+      ItemArchetype::Blaster | ItemArchetype::NuclearPlasmaRifle | ItemArchetype::NuclearBfg9000
+    )
+  }
+
   /// Returns weapon properties if this item is a weapon.
   #[must_use]
   pub const fn weapon_properties(&self) -> Option<&WeaponProperties> {

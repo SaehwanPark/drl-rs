@@ -353,6 +353,52 @@ fn reload_without_matching_ammo_preserves_game_state() {
 }
 
 #[test]
+fn if_noreload_manual_reload_rejections_preserve_game_state() {
+  for (seed, kind) in [
+    (1_760, ItemSpawnKind::Blaster),
+    (1_761, ItemSpawnKind::NuclearPlasmaRifle),
+    (1_762, ItemSpawnKind::NuclearBfg9000),
+  ] {
+    let mut game = Game::new(seed, 10, 10, Position::new(2, 2)).unwrap();
+    let player_id = game.world().player_id().unwrap();
+    let weapon_id = game.world_mut().allocate_item_id();
+    game
+      .world_mut()
+      .get_actor_mut(player_id)
+      .unwrap()
+      .inventory_mut()
+      .add_item(Item::from_spawn_kind(weapon_id, kind))
+      .unwrap();
+    game.step(Command::Equip(weapon_id)).unwrap();
+
+    let ammo_id = game.world_mut().allocate_item_id();
+    game
+      .world_mut()
+      .get_actor_mut(player_id)
+      .unwrap()
+      .inventory_mut()
+      .add_item(Item::ammo_cells(ammo_id, 20))
+      .unwrap();
+    game
+      .world_mut()
+      .get_actor_mut(player_id)
+      .unwrap()
+      .equipment_mut()
+      .weapon_mut()
+      .unwrap()
+      .weapon_properties_mut()
+      .unwrap()
+      .current_clip = 1;
+
+    assert_rejected_command_is_atomic(
+      &mut game,
+      Command::Reload,
+      CommandError::CannotReload(weapon_id),
+    );
+  }
+}
+
+#[test]
 fn assault_shotgun_reload_rejections_preserve_game_state() {
   let mut game = Game::new(1_654, 10, 10, Position::new(2, 2)).unwrap();
   let player_id = game.world().player_id().unwrap();
