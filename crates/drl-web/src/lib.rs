@@ -7251,6 +7251,86 @@ mod tests {
       drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism")
     );
   }
+
+  #[test]
+  fn bfg10k_exact_hit_browser_boundary_matches_direct_core() {
+    let player_position = Position::new(2, 1);
+    let target_position = Position::new(5, 1);
+    let player_config = PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: Vec::new(),
+      equipped_weapon: Some(ItemSpawnKind::Bfg10k),
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    };
+    let mut setup_replay =
+      ReplayLog::new(0, 9, 4, player_position).with_player_config(player_config);
+    setup_replay.record_monster(MonsterSpawnSpec::new(
+      target_position,
+      "Static Target",
+      500,
+      1,
+      (2, 4),
+    ));
+    let (initial, setup_events) =
+      drl_core::ReplayEngine::run(&setup_replay).expect("BFG 10K exact-hit replay setup");
+    assert!(setup_events.is_empty());
+
+    let command = Command::AttackRanged(target_position);
+    let mut direct = initial.clone();
+    let expected_events = direct
+      .step(command)
+      .expect("direct BFG 10K exact-hit command");
+    assert!(expected_events.iter().any(|event| {
+      matches!(
+        event,
+        drl_protocol::GameEvent::AttackResolved {
+          outcome: drl_protocol::AttackOutcome::Hit { .. },
+          is_ranged: true,
+          ..
+        }
+      )
+    }));
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .current_clip,
+      49
+    );
+
+    let mut browser = BrowserSession::from_game(initial);
+    let step = browser
+      .submit(command)
+      .expect("browser BFG 10K exact-hit command");
+    assert_eq!(step.events, expected_events);
+    assert_eq!(step.after, direct.observe_player());
+    assert_eq!(
+      step.effects,
+      drl_render::effect_timeline_for_observations(&step.before, &step.after, &expected_events,)
+    );
+    assert_eq!(browser.scene(), RenderScene::from_observation(&step.after));
+    assert_eq!(browser.observation(), direct.observe_player());
+    assert_eq!(browser.replay_log().commands, vec![command]);
+
+    let mut command_replay = setup_replay;
+    command_replay.record_command(command);
+    let (replayed, replay_events) =
+      drl_core::ReplayEngine::run(&command_replay).expect("BFG 10K exact-hit command replay");
+    assert_eq!(replayed, direct);
+    assert_eq!(replay_events, expected_events);
+    assert!(
+      drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism")
+    );
+  }
 }
 
 #[cfg(all(test, target_arch = "wasm32"))]

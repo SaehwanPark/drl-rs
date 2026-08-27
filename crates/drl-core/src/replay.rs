@@ -411,7 +411,7 @@ mod tests {
     let mut replay = ReplayLog::new(1234, 10, 10, Position::new(1, 1));
     // Version 5 predates the AI movement candidate-order change and must not
     // be interpreted by the version-29 engine without an explicit migration.
-    assert_eq!(drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION, 35);
+    assert_eq!(drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION, 36);
     assert_eq!(
       drl_protocol::CURRENT_RNG_SAMPLING_SEMANTICS_VERSION,
       crate::rng::RNG_SAMPLING_SEMANTICS_VERSION

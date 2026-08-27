@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.188`
+Current project version: `0.2.189`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.188)
+## 3. Current Progress Summary (`VERSION` 0.2.189)
 
 ### Delivered Foundations
 
@@ -530,6 +530,12 @@ verification item uses explicit status semantics:
   Scenario/replay, MCP, and BrowserSession boundary parity are covered; other
   shot costs, projectile routing, explosions, NukeRun, runtime, and
   audiovisual parity remain open.
+- **M9 BFG 10K exact-hit behavior (`0.2.189`):** BFG 10K now shares the typed
+  exact-hit policy, bypassing only its ranged to-hit sample while preserving
+  LOS, range, clip, action cost, damage RNG, and existing attack/damage events.
+  Atomic rejection, scenario/replay, MCP, and BrowserSession boundary parity
+  are covered; scatter, multi-shot, chainfire, projectile routing, explosions,
+  runtime, and audiovisual parity remain open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1007,9 +1013,10 @@ scripting.
 - [x] Typed `unplasma`, `unbfg9000`, and `ubfg10k` preserve pinned heavy-energy
   descriptions, cell relations, clips/damage scalars, replay kinds, and
   measured plasma/BFG/BFG10K atlas slots; Nuclear Plasma recharge is
-  behavior-covered in `0.2.177`, Nuclear BFG exact-hit in `0.2.185`, and
-  Nuclear BFG's 40-cell shot cost in `0.2.188`, while Nuclear Plasma exact-hit,
-  BFG10K exact-hit, chainfire, explosion, and mod callbacks remain open.
+  behavior-covered in `0.2.177`, Nuclear BFG exact-hit in `0.2.185`, Nuclear
+  BFG's 40-cell shot cost in `0.2.188`, and BFG10K exact-hit in `0.2.189`,
+  while Nuclear Plasma exact-hit, chainfire, explosion, and mod callbacks
+  remain open.
 - [x] Typed `umega`, `uberetta`, and `ufshotgun` preserve pinned unique-firearm
   descriptions, 9mm relations, clips/damage/range scalars, replay kinds, and
   measured plasma/pistol/combat-shotgun atlas slots; mode switching, kill

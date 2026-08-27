@@ -51,6 +51,20 @@ fn equipped_revenants_launcher(seed: u64) -> (Game, ItemId) {
   (game, weapon_id)
 }
 
+fn equipped_bfg10k(seed: u64) -> (Game, ItemId) {
+  let mut game = Game::new(seed, 10, 6, Position::new(2, 2)).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let weapon_id = game.world_mut().allocate_item_id();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, Item::bfg10k(weapon_id))
+    .unwrap();
+  (game, weapon_id)
+}
+
 fn equipped_nuclear_bfg_wide(seed: u64) -> (Game, ItemId) {
   let mut game = Game::new_arena(seed, 24, 12).unwrap();
   let player_id = game.world().player_id().unwrap();
@@ -361,6 +375,132 @@ fn revenants_launcher_exact_hit_rejections_are_atomic() {
       EquipmentSlot::Weapon,
       Item::revenants_launcher(out_weapon_id),
     )
+    .unwrap();
+  let before_out_of_range = out_of_range.clone();
+  assert_eq!(
+    out_of_range
+      .step(Command::AttackRanged(out_target))
+      .unwrap_err(),
+    CommandError::TargetOutOfRange(out_target)
+  );
+  assert_eq!(out_of_range, before_out_of_range);
+}
+
+#[test]
+fn bfg10k_exact_hit_resolves_even_at_zero_accuracy() {
+  let (mut game, _weapon_id) = equipped_bfg10k(11);
+  let target = Position::new(5, 2);
+  let target_id = game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 500, 1, (2, 4))
+    .unwrap();
+  let player_id = game.world().player_id().unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .accuracy = 0;
+
+  let events = game
+    .step(Command::AttackRanged(target))
+    .expect("BFG 10K shot should resolve");
+  assert!(events.iter().any(|event| {
+    matches!(
+      event,
+      GameEvent::AttackResolved {
+        attacker_id,
+        target_id: event_target,
+        outcome: drl_protocol::AttackOutcome::Hit { .. },
+        is_ranged: true,
+      } if *attacker_id == player_id && *event_target == target_id
+    )
+  }));
+  assert_eq!(
+    game
+      .world()
+      .get_actor(player_id)
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .current_clip,
+    49
+  );
+}
+
+#[test]
+fn bfg10k_exact_hit_rejections_are_atomic() {
+  let target = Position::new(5, 2);
+  let (mut empty_clip, _) = equipped_bfg10k(12);
+  empty_clip
+    .world_mut()
+    .spawn_monster(target, "Static Target", 500, 1, (2, 4))
+    .unwrap();
+  let player_id = empty_clip.world().player_id().unwrap();
+  empty_clip
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 0;
+  let before_empty = empty_clip.clone();
+  assert_eq!(
+    empty_clip.step(Command::AttackRanged(target)).unwrap_err(),
+    CommandError::NoAmmoInClip
+  );
+  assert_eq!(empty_clip, before_empty);
+
+  let (mut invalid_target, _) = equipped_bfg10k(13);
+  let before_invalid_target = invalid_target.clone();
+  assert_eq!(
+    invalid_target
+      .step(Command::AttackRanged(target))
+      .unwrap_err(),
+    CommandError::InvalidTarget(target)
+  );
+  assert_eq!(invalid_target, before_invalid_target);
+
+  let (mut blocked, _) = equipped_bfg10k(14);
+  blocked
+    .world_mut()
+    .spawn_monster(target, "Static Target", 500, 1, (2, 4))
+    .unwrap();
+  blocked
+    .world_mut()
+    .map_mut()
+    .set_tile(Position::new(3, 2), Tile::Wall);
+  let before_blocked = blocked.clone();
+  assert_eq!(
+    blocked.step(Command::AttackRanged(target)).unwrap_err(),
+    CommandError::LineOfSightBlocked(target)
+  );
+  assert_eq!(blocked, before_blocked);
+
+  let mut out_of_range = Game::new_arena(15, 24, 12).unwrap();
+  let out_target = Position::new(2, 2);
+  out_of_range
+    .world_mut()
+    .spawn_monster(out_target, "Static Target", 500, 1, (2, 4))
+    .unwrap();
+  let out_player_id = out_of_range.world().player_id().unwrap();
+  let out_weapon_id = out_of_range.world_mut().allocate_item_id();
+  out_of_range
+    .world_mut()
+    .get_actor_mut(out_player_id)
+    .unwrap()
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, Item::bfg10k(out_weapon_id))
     .unwrap();
   let before_out_of_range = out_of_range.clone();
   assert_eq!(
