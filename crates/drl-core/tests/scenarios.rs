@@ -806,7 +806,7 @@ fn bfg10k_exact_hit_vertical_scenario_preserves_replay() {
       .weapon_properties()
       .unwrap()
       .current_clip,
-    49
+    45
   );
   assert!(game.world().get_actor(target_id).unwrap().hp().current < 500);
   assert_eq!(replay.commands, commands);

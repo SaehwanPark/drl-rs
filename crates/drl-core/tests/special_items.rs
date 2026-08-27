@@ -431,7 +431,53 @@ fn bfg10k_exact_hit_resolves_even_at_zero_accuracy() {
       .weapon_properties()
       .unwrap()
       .current_clip,
-    49
+    45
+  );
+}
+
+#[test]
+fn bfg10k_shot_cost_accepts_five_cells_and_consumes_them_once() {
+  let target = Position::new(5, 2);
+  let (mut game, _) = equipped_bfg10k(16);
+  game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 500, 1, (2, 4))
+    .unwrap();
+  let player_id = game.world().player_id().unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 5;
+
+  let events = game
+    .step(Command::AttackRanged(target))
+    .expect("five-cell BFG 10K shot should resolve");
+  assert!(events.iter().any(|event| matches!(
+    event,
+    GameEvent::AttackResolved {
+      outcome: drl_protocol::AttackOutcome::Hit { .. },
+      is_ranged: true,
+      ..
+    }
+  )));
+  assert_eq!(
+    game
+      .world()
+      .player()
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .current_clip,
+    0
   );
 }
 
@@ -460,6 +506,29 @@ fn bfg10k_exact_hit_rejections_are_atomic() {
     CommandError::NoAmmoInClip
   );
   assert_eq!(empty_clip, before_empty);
+
+  let (mut under_cost, _) = equipped_bfg10k(17);
+  under_cost
+    .world_mut()
+    .spawn_monster(target, "Static Target", 500, 1, (2, 4))
+    .unwrap();
+  let under_cost_player_id = under_cost.world().player_id().unwrap();
+  under_cost
+    .world_mut()
+    .get_actor_mut(under_cost_player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 4;
+  let before_under_cost = under_cost.clone();
+  assert_eq!(
+    under_cost.step(Command::AttackRanged(target)).unwrap_err(),
+    CommandError::NoAmmoInClip
+  );
+  assert_eq!(under_cost, before_under_cost);
 
   let (mut invalid_target, _) = equipped_bfg10k(13);
   let before_invalid_target = invalid_target.clone();

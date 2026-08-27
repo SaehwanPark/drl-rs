@@ -21,8 +21,9 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// Gameplay semantics identifier expected by the current replay engine.
 ///
 /// This advances independently from the wire/schema and RNG-sampling versions
-/// when other deterministic simulation rules change. Version `36` includes
-/// BFG 10K's typed exact-hit resolution in addition to Nuclear BFG 9000's
+/// when other deterministic simulation rules change. Version `37` includes
+/// BFG 10K's typed exact-hit and five-cell shot-cost policies in addition to
+/// Nuclear BFG 9000's
 /// typed 40-cell shot-cost behavior, Revenant’s Launcher exact-hit resolution,
 /// standard BFG 9000's
 /// typed 40-cell shot-cost behavior, Nuclear BFG 9000 exact-hit resolution,
@@ -30,7 +31,7 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// typed Nuclear BFG 9000 alternate overload, and Nuclear Plasma
 /// alternate overload and the prior Malek's Armor recharge, Missile Launcher,
 /// Nuclear BFG/Plasma, `IF_NORELOAD`, Blaster, and Combat Shotgun policies.
-pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 36;
+pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 37;
 
 /// Procedural-generation semantics identifier expected for replays that carry
 /// a procedural generation configuration. Version 2 includes the exact
@@ -50,8 +51,9 @@ pub struct ReplayMetadata {
   /// Engine crate version string.
   pub engine_version: String,
   /// Gameplay semantics version required to interpret the command history.
-  /// Version 36 includes BFG 10K's typed exact-hit resolution in addition to
-  /// Nuclear BFG 9000's typed 40-cell shot-cost behavior, Revenant’s Launcher
+  /// Version 37 includes BFG 10K's typed exact-hit and five-cell shot-cost
+  /// policies in addition to Nuclear BFG 9000's typed 40-cell shot-cost
+  /// behavior, Revenant’s Launcher
   /// exact-hit resolution, standard BFG 9000's typed 40-cell shot-cost
   /// behavior, Nuclear BFG 9000 exact-hit
   /// resolution, standard BFG exact-hit, typed Nuclear BFG 9000

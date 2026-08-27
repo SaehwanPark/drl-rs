@@ -7304,7 +7304,7 @@ mod tests {
         .weapon_properties()
         .unwrap()
         .current_clip,
-      49
+      45
     );
 
     let mut browser = BrowserSession::from_game(initial);

@@ -2595,7 +2595,7 @@ mod tests {
         .weapon_properties()
         .unwrap()
         .current_clip,
-      49
+      45
     );
   }
 
