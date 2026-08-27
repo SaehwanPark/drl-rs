@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.173]
+
+- Aligned direct `ReplayEngine` map-dimension validation with the MCP replay
+  decoder: dimensions must be within `3..=512` before map construction.
+  Valid replay execution and gameplay/replay semantics are unchanged; replay
+  file I/O, migrations, and external interchange remain open.
+
 ## [0.2.172]
 
 - Added the typed Combat Shotgun alternate/full reload transition: a
