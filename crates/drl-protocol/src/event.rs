@@ -181,6 +181,13 @@ pub enum GameEvent {
     durability_remaining: u32,
     timer: u32,
   },
+  /// A confirmed nuclear weapon overload armed a typed level nuke.
+  NuclearWeaponOverloaded {
+    entity_id: EntityId,
+    item_id: ItemId,
+    countdown: u32,
+    score_count_remaining: i32,
+  },
   /// The player descended stairs and transitioned to a new level.
   LevelTransitioned {
     from_level: LevelId,

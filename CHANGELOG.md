@@ -3,6 +3,16 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.182]
+
+- Added typed Nuclear Plasma Rifle alternate overload arming: a confirmed
+  full clip on a non-stairs tile destroys the equipped weapon, spends 1,000
+  score count, and arms a countdown of 1 on Acid/Lava or 100 elsewhere.
+  Partial/unconfirmed/stairs/pending-nuke inputs reject atomically, with a
+  typed overload event plus scenario/replay, MCP, and BrowserSession parity.
+  Legacy `NukeRun` map effects, exact runtime cadence, and audiovisual parity
+  remain separate slices.
+
 ## [0.2.181]
 
 - Added typed Malek’s Armor periodic durability recharge: equipped armor

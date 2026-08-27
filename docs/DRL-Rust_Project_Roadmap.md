@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.181`
+Current project version: `0.2.182`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.181)
+## 3. Current Progress Summary (`VERSION` 0.2.182)
 
 ### Delivered Foundations
 
@@ -483,6 +483,13 @@ verification item uses explicit status semantics:
   BrowserSession/direct-core parity tests. General armor degradation,
   resistance, exact legacy scheduler cadence, runtime, and audiovisual parity
   remain open.
+- **M9 Nuclear Plasma alternate overload (`0.2.182`):** A confirmed full-clip
+  Nuclear Plasma Rifle overload now preflights stairs and pending-nuke state,
+  removes the equipped weapon, spends 1,000 score count, and arms the existing
+  typed nuke countdown (1 on Acid/Lava, 100 elsewhere). Typed overload and
+  nuke events, atomic rejection, scenario/replay, MCP, and BrowserSession
+  parity are covered; Nuclear BFG, legacy `NukeRun` map effects, runtime, and
+  audiovisual parity remain open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1066,6 +1073,13 @@ scripting.
   `MalekArmorRecharged` is covered by pure, replay, MCP, and browser-boundary
   tests. General armor degradation/resistance and exact runtime cadence remain
   open.
+- [x] Nuclear Plasma Rifle alternate overload is behavior-covered by a typed
+  full-clip/confirmation/stairs/pending-nuke preflight: it destroys the
+  equipped weapon, spends 1,000 score count, selects countdown 1 on Acid/Lava
+  or 100 elsewhere, and emits `NuclearWeaponOverloaded` plus the existing
+  nuke events. Atomicity, scenario/replay, MCP, and BrowserSession parity are
+  covered; Nuclear BFG, legacy `NukeRun` map effects, runtime, and audiovisual
+  parity remain open.
 - [ ] Full migration of legacy monsters, weapons, armor, mods, and consumable
   items.
 - [ ] Full migration of special levels, vaults, and dungeon branches.

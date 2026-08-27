@@ -278,6 +278,34 @@ pub fn compute_legal_actions(obs: &PlayerObservation) -> Vec<LegalAction> {
     });
   }
 
+  // 3h. Typed Nuclear Plasma Rifle overload (the caller must explicitly
+  // confirm the destructive action). The cloned core probe below filters
+  // pending-nuke and any other state not visible through observation.
+  if let Some(weapon) = obs.equipped_weapon.as_ref()
+    && weapon.archetype == ItemArchetype::NuclearPlasmaRifle
+    && weapon
+      .clip
+      .is_some_and(|(loaded, max_clip)| loaded >= max_clip)
+    && !obs
+      .visible_tiles
+      .iter()
+      .any(|tile| tile.position == obs.player_position && tile.kind == TileKind::StairsDown)
+  {
+    let mut p = BTreeMap::new();
+    p.insert("action".to_string(), JsonValue::from("alt_reload"));
+    p.insert("item_id".to_string(), JsonValue::from(weapon.id.as_u64()));
+    p.insert("confirmed".to_string(), JsonValue::Bool(true));
+    actions.push(LegalAction {
+      action: "AltReload".to_string(),
+      description: "Confirm the equipped Nuclear Plasma Rifle overload".to_string(),
+      command: Command::AltReload {
+        item_id: weapon.id,
+        confirmed: true,
+      },
+      params: JsonValue::Object(p),
+    });
+  }
+
   // 4. Reload weapon (if weapon not full and matching ammo exists in inventory)
   if let Some(ref weapon) = obs.equipped_weapon
     && let Some((loaded, max_clip)) = weapon.clip
@@ -968,6 +996,24 @@ pub fn game_event_to_json(event: &GameEvent) -> JsonValue {
         JsonValue::from(*durability_remaining),
       );
       map.insert("timer".to_string(), JsonValue::from(*timer));
+    }
+    GameEvent::NuclearWeaponOverloaded {
+      entity_id,
+      item_id,
+      countdown,
+      score_count_remaining,
+    } => {
+      map.insert(
+        "type".to_string(),
+        JsonValue::from("NuclearWeaponOverloaded"),
+      );
+      map.insert("entity_id".to_string(), JsonValue::from(entity_id.as_u64()));
+      map.insert("item_id".to_string(), JsonValue::from(item_id.as_u64()));
+      map.insert("countdown".to_string(), JsonValue::from(*countdown));
+      map.insert(
+        "score_count_remaining".to_string(),
+        JsonValue::from(*score_count_remaining),
+      );
     }
     GameEvent::SubtleKnifeInvoked {
       entity_id,
@@ -1730,6 +1776,30 @@ mod tests {
   }
 
   #[test]
+  fn nuclear_weapon_overloaded_event_projects_to_mcp_json() {
+    let value = game_event_to_json(&GameEvent::NuclearWeaponOverloaded {
+      entity_id: drl_protocol::EntityId::new(1),
+      item_id: ItemId::new(2),
+      countdown: 100,
+      score_count_remaining: -1_000,
+    });
+    let JsonValue::Object(map) = value else {
+      panic!("event projection must be an object");
+    };
+    assert_eq!(
+      map.get("type").and_then(JsonValue::as_str),
+      Some("NuclearWeaponOverloaded")
+    );
+    assert_eq!(map.get("entity_id").and_then(JsonValue::as_i64), Some(1));
+    assert_eq!(map.get("item_id").and_then(JsonValue::as_i64), Some(2));
+    assert_eq!(map.get("countdown").and_then(JsonValue::as_i64), Some(100));
+    assert_eq!(
+      map.get("score_count_remaining").and_then(JsonValue::as_i64),
+      Some(-1_000)
+    );
+  }
+
+  #[test]
   fn environment_damage_type_projects_to_mcp_json() {
     let value = game_event_to_json(&GameEvent::DamageApplied {
       target_id: drl_protocol::EntityId::new(1),
@@ -2217,6 +2287,68 @@ mod tests {
         cost: drl_protocol::ActionCost(2_500),
       } if *entity_id == player_id
     )));
+    assert!(
+      !session
+        .legal_actions()
+        .unwrap()
+        .iter()
+        .any(|action| action.command == command)
+    );
+  }
+
+  #[test]
+  fn test_legal_action_catalog_and_events_include_nuclear_plasma_overload() {
+    let mut session = McpSession::new();
+    session
+      .load_scenario("\n#######\n#@....#\n#######\n", None)
+      .unwrap();
+    let player_id = session.game.as_ref().unwrap().world().player_id().unwrap();
+    let weapon_id = session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .allocate_item_id();
+    session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .get_actor_mut(player_id)
+      .unwrap()
+      .equipment_mut()
+      .equip(
+        EquipmentSlot::Weapon,
+        drl_core::item::Item::nuclear_plasma_rifle(weapon_id),
+      )
+      .unwrap();
+
+    let observation = session.get_observation().unwrap();
+    let command = Command::AltReload {
+      item_id: weapon_id,
+      confirmed: true,
+    };
+    assert!(
+      compute_legal_actions(&observation)
+        .iter()
+        .any(|action| action.action == "AltReload" && action.command == command)
+    );
+
+    let (events, _, _) = session.step(command).unwrap();
+    assert!(events.iter().any(|event| matches!(
+      event,
+      GameEvent::NuclearWeaponOverloaded {
+        entity_id,
+        item_id,
+        countdown: 100,
+        score_count_remaining: -1_000,
+      } if *entity_id == player_id && *item_id == weapon_id
+    )));
+    assert!(
+      events
+        .iter()
+        .any(|event| matches!(event, GameEvent::NukeActivated { countdown: 100, .. }))
+    );
     assert!(
       !session
         .legal_actions()

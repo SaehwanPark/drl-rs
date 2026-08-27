@@ -1,8 +1,9 @@
 //! High-level game execution kernel and turn progression.
 
 use drl_protocol::{
-  ActionCost, AttackOutcome, Command, CommandError, DamageSource, DeathCause, Direction, GameEvent,
-  LevelId, OmniscientObservation, PlayerObservation, Position, TileKind, Turn,
+  ActionCost, AttackOutcome, Command, CommandError, DamageSource, DeathCause, Direction,
+  EquipmentSlot, GameEvent, LevelId, OmniscientObservation, PlayerObservation, Position, TileKind,
+  Turn,
 };
 
 use crate::acid_spitter::{ACID_SPITTER_RELOAD_AMOUNT, AcidSpitterReloadError};
@@ -20,6 +21,7 @@ use crate::jackhammer::{JACKHAMMER_MODE_SCORE_COST, JackhammerTransition};
 use crate::level_definition::standard_procedural;
 use crate::malek_armor::MalekRechargeOutcome;
 use crate::missile_launcher::{MissileLauncherReloadPlan, MissileLauncherTransition};
+use crate::nuclear_overload::{NUCLEAR_OVERLOAD_SCORE_COST, NuclearOverloadError};
 use crate::nuke::NukeState;
 use crate::null_pointer::{
   NULL_POINTER_EXPLOSION_DAMAGE, NULL_POINTER_EXPLOSION_DELAY, NULL_POINTER_EXPLOSION_RADIUS,
@@ -532,6 +534,63 @@ impl Game {
         events.push(GameEvent::NukeActivated {
           level_id: self.state.world.level_id(),
           countdown: TRIGUN_NUKE_TIMER,
+        });
+        Ok(ActionCost::STANDARD)
+      }
+      drl_protocol::ItemArchetype::NuclearPlasmaRifle => {
+        let position = player.position();
+        let tile = self
+          .state
+          .world
+          .map()
+          .get_tile(position)
+          .ok_or(CommandError::CannotAltReload(item_id))?;
+        let clip_capacity = weapon
+          .weapon_properties()
+          .ok_or(CommandError::CannotAltReload(item_id))?
+          .clip_capacity;
+        let current_clip = weapon
+          .weapon_properties()
+          .ok_or(CommandError::CannotAltReload(item_id))?
+          .current_clip;
+        let plan = crate::nuclear_overload::plan(
+          current_clip,
+          clip_capacity,
+          confirmed,
+          tile,
+          self.state.nuke,
+        )
+        .map_err(|error| match error {
+          NuclearOverloadError::NotConfirmed => CommandError::AltReloadNotConfirmed(item_id),
+          NuclearOverloadError::Stairs
+          | NuclearOverloadError::ClipNotFull
+          | NuclearOverloadError::NukeUnavailable => CommandError::CannotAltReload(item_id),
+        })?;
+        let countdown = plan.countdown();
+        self
+          .state
+          .nuke
+          .activate(countdown)
+          .map_err(|_| CommandError::CannotAltReload(item_id))?;
+        let player = self
+          .state
+          .world
+          .get_actor_mut(player_id)
+          .ok_or(CommandError::EntityNotFound(player_id))?;
+        let _destroyed_weapon = player
+          .equipment_mut()
+          .unequip(EquipmentSlot::Weapon)
+          .map_err(|_| CommandError::CannotAltReload(item_id))?;
+        let score_count_remaining = player.spend_score_count(NUCLEAR_OVERLOAD_SCORE_COST);
+        events.push(GameEvent::NuclearWeaponOverloaded {
+          entity_id: player_id,
+          item_id,
+          countdown,
+          score_count_remaining,
+        });
+        events.push(GameEvent::NukeActivated {
+          level_id: self.state.world.level_id(),
+          countdown,
         });
         Ok(ActionCost::STANDARD)
       }
