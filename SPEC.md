@@ -1534,17 +1534,17 @@ Missile Launcher's `perk_altreload_full` path across typed core behavior,
 scenario/replay determinism, existing MCP legal-action filtering, and
 BrowserSession parity. Its acceptance criteria are:
 
-- [ ] construct an equipped Missile Launcher with a four-rocket clip and
+- [x] construct an equipped Missile Launcher with a four-rocket clip and
   partial deficit plus sufficient loose rockets;
-- [ ] load the complete deficit on one accepted `AltReload`, consume exactly
+- [x] load the complete deficit on one accepted `AltReload`, consume exactly
   that reserve, emit one `WeaponReloaded`, and pay
   `min(deficit * reload_cost, 2500)`;
-- [ ] reject full clips and insufficient reserve atomically, preserving clip,
+- [x] reject full clips and insufficient reserve atomically, preserving clip,
   inventory, turn, and RNG state;
-- [ ] preserve ordinary one-shell `Reload`, verify ScenarioRunner/replay
+- [x] preserve ordinary one-shell `Reload`, verify ScenarioRunner/replay
   determinism and BrowserSession/direct-core parity, and confirm existing MCP
   legal-action filtering exposes the typed command;
-- [ ] advance gameplay semantics from `26` to `27` and project version from
+- [x] advance gameplay semantics from `26` to `27` and project version from
   `0.2.179` to `0.2.180` while preserving replay V2 wire, RNG, generator, and
   ruleset identities; rocket-jump, explosion, runtime, and audiovisual parity
   remain open.
