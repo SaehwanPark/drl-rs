@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.168`
+Current project version: `0.2.169`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.168)
+## 3. Current Progress Summary (`VERSION` 0.2.169)
 
 ### Delivered Foundations
 
@@ -421,6 +421,10 @@ verification item uses explicit status semantics:
   validation now rejects out-of-bounds custom tile overrides before map
   construction, matching the MCP decoder's spatial contract while preserving
   valid replay execution. Gameplay and replay semantics remain unchanged.
+- **M5/M6 direct-core replay header consistency (`0.2.169`):** Direct replay
+  validation now rejects unsupported schema versions and mismatched top-level
+  and metadata headers before execution, matching the V2 MCP envelope contract.
+  Gameplay and replay semantics remain unchanged.
 - **Tooling & Replays (M5, M6)**: Versioned replay engine (`V2`), declarative
   ASCII scenario runners, scripted bots, batch sweep runners, and a pure Rust
   zero-dependency MCP server.
@@ -640,8 +644,8 @@ validation.
 - [x] Versioned replay log schema (`ReplayVersion::V2`) with diagnostic error
   locations.
 - [x] Replay consistency validation (`ReplayEngine::validate`), including
-  preflight rejection of out-of-bounds custom tile overrides before map
-  construction.
+  V2/top-level metadata header checks and preflight rejection of out-of-bounds
+  custom tile overrides before map construction.
 - [x] Declarative ASCII scenario fixture framework (`Scenario`,
   `ScenarioRunner`).
 - [x] Observation-only test bot policies (`RandomBot`, `GreedyCombatBot`,
