@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.174`
+Current project version: `0.2.175`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.174)
+## 3. Current Progress Summary (`VERSION` 0.2.175)
 
 ### Delivered Foundations
 
@@ -435,6 +435,13 @@ verification item uses explicit status semantics:
   construction, matching the MCP decoder's safety caps. Gameplay semantics,
   replay wire, RNG, generator, and ruleset identities remain unchanged;
   replay-file I/O, migrations, and external interchange remain open.
+- **M9 vertical Blaster periodic recharge (`0.2.175`):** The equipped Blaster
+  now owns a typed, deterministic cell-recharge timer: it restores one cell
+  after 40 accepted commands and every 10 commands while below capacity,
+  resets on successful fire, and emits a presentation-neutral
+  `WeaponRecharged` event. Pure behavior, scenario/replay, MCP, and browser
+  boundary parity are covered; exact legacy runtime cadence, manual reload
+  denial for other `IF_NORELOAD` families, and audiovisual parity remain open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
