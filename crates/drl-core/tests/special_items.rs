@@ -643,7 +643,11 @@ fn rejected_commands_roll_back_lava_recharge_state() {
   }
 
   let before = game.clone();
-  assert!(game.step(Command::Move(Direction::West)).is_err());
+  assert!(
+    game
+      .step(Command::AttackRanged(Position::new(99, 99)))
+      .is_err()
+  );
   assert_eq!(game, before);
 
   let events = game.step(Command::Wait).unwrap();
@@ -652,6 +656,69 @@ fn rejected_commands_roll_back_lava_recharge_state() {
       .iter()
       .any(|event| matches!(event, GameEvent::LavaArmorRecharged { .. }))
   );
+}
+
+#[test]
+fn blaster_recharge_timer_resets_on_fire_and_rejected_commands_are_atomic() {
+  let mut game = Game::new(783, 10, 10, Position::new(2, 2)).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let target_position = Position::new(8, 2);
+  game
+    .world_mut()
+    .spawn_monster(target_position, "Static Target", 500, 0, (2, 4))
+    .unwrap();
+
+  let weapon_id = game.world_mut().allocate_item_id();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .inventory_mut()
+    .add_item(Item::blaster(weapon_id))
+    .unwrap();
+  game.step(Command::Equip(weapon_id)).unwrap();
+
+  // A full clip does not advance the timer.
+  for _ in 0..5 {
+    game.step(Command::Wait).unwrap();
+  }
+  assert_eq!(game.world().player().unwrap().weapon_recharge_timer(), 0);
+
+  game
+    .step(Command::AttackRanged(target_position))
+    .expect("first Blaster shot");
+  let player = game.world().player().unwrap();
+  assert_eq!(player.weapon_recharge_timer(), 1);
+  assert_eq!(
+    player
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .current_clip,
+    9
+  );
+
+  for _ in 0..3 {
+    game.step(Command::Wait).unwrap();
+  }
+  assert_eq!(game.world().player().unwrap().weapon_recharge_timer(), 4);
+  let before_rejection = game.clone();
+  assert!(
+    game
+      .step(Command::AttackRanged(Position::new(99, 99)))
+      .is_err()
+  );
+  assert_eq!(game, before_rejection);
+
+  let events = game.step(Command::Wait).unwrap();
+  assert!(
+    !events
+      .iter()
+      .any(|event| matches!(event, GameEvent::WeaponRecharged { .. }))
+  );
+  assert_eq!(game.world().player().unwrap().weapon_recharge_timer(), 5);
 }
 
 #[test]

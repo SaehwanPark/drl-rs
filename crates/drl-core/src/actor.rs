@@ -3,7 +3,7 @@ use drl_protocol::{
   Speed,
 };
 
-use crate::behavior::{LavaRechargeOutcome, MedicalRepairOutcome};
+use crate::behavior::{LavaRechargeOutcome, MedicalRepairOutcome, WeaponRechargeOutcome};
 use crate::inventory::{Equipment, Inventory};
 use crate::item::Item;
 use crate::subtle_knife::{SubtleKnifeCost, SubtleKnifeError, SubtleKnifeTransition, TiredStatus};
@@ -382,6 +382,27 @@ impl Actor {
     let item_id = armor_item.id();
     let armor = self.equipment.armor_mut()?.armor_properties_mut()?;
     let outcome = armor.tick_lava_recharge(on_lava);
+    Some((item_id, outcome))
+  }
+
+  /// Current equipped Blaster recharge timer, or zero when no Blaster is equipped.
+  #[must_use]
+  pub fn weapon_recharge_timer(&self) -> u32 {
+    self
+      .equipment
+      .weapon()
+      .and_then(Item::weapon_recharge_timer)
+      .unwrap_or(0)
+  }
+
+  /// Advances the equipped Blaster's periodic recharge behavior.
+  pub fn tick_weapon_recharge(&mut self) -> Option<(drl_protocol::ItemId, WeaponRechargeOutcome)> {
+    let weapon_item = self.equipment.weapon()?;
+    if weapon_item.archetype() != ItemArchetype::Blaster {
+      return None;
+    }
+    let item_id = weapon_item.id();
+    let outcome = self.equipment.weapon_mut()?.tick_weapon_recharge()?;
     Some((item_id, outcome))
   }
 

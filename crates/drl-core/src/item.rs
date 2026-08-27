@@ -7,6 +7,7 @@ use drl_protocol::{
 
 use crate::behavior::{
   LavaRechargeOutcome, LavaRechargeState, MedicalRepairOutcome, MedicalRepairState,
+  WeaponRechargeOutcome, WeaponRechargeState,
 };
 use crate::item_definition::{ItemDefinitionKind, definition_for_spawn_kind};
 use crate::pump_action::{PumpActionState, ReloadTransition};
@@ -132,6 +133,7 @@ pub struct Item {
   description: String,
   kind: ItemKind,
   pump_action: Option<PumpActionState>,
+  weapon_recharge: Option<WeaponRechargeState>,
 }
 
 impl Item {
@@ -150,6 +152,7 @@ impl Item {
       description: description.into(),
       kind,
       pump_action: None,
+      weapon_recharge: None,
     }
   }
 
@@ -188,6 +191,9 @@ impl Item {
     self.archetype = archetype;
     if archetype == ItemArchetype::CombatShotgun {
       self.pump_action = Some(PumpActionState::new());
+    }
+    if archetype == ItemArchetype::Blaster {
+      self.weapon_recharge = Some(WeaponRechargeState::new());
     }
     self
   }
@@ -235,6 +241,28 @@ impl Item {
   pub(crate) fn complete_pump_action_reload(&mut self, loaded: u32) {
     if let Some(state) = self.pump_action {
       self.pump_action = Some(state.after_regular_reload(loaded));
+    }
+  }
+
+  /// Returns the Blaster's current recharge timer, when this is a Blaster.
+  #[must_use]
+  pub fn weapon_recharge_timer(&self) -> Option<u32> {
+    self.weapon_recharge.map(WeaponRechargeState::timer)
+  }
+
+  /// Advances one accepted-command tick of the Blaster's recharge behavior.
+  pub(crate) fn tick_weapon_recharge(&mut self) -> Option<WeaponRechargeOutcome> {
+    let state = self.weapon_recharge.as_mut()?;
+    let ItemKind::Weapon(properties) = &mut self.kind else {
+      return None;
+    };
+    Some(state.tick(&mut properties.current_clip, properties.clip_capacity))
+  }
+
+  /// Resets a Blaster's recharge timer after a successful shot.
+  pub(crate) fn reset_weapon_recharge_timer(&mut self) {
+    if let Some(state) = self.weapon_recharge.as_mut() {
+      state.reset();
     }
   }
 

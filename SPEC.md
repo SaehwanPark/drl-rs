@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.174`
+Current project version: `0.2.175`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,46 +25,51 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M5 — Direct Replay Structural Bounds
+## 2. Active Implementation Slice: M9 — Blaster Periodic Recharge
 
 ### 2.1 Objective
 
-Keep direct `ReplayEngine` validation aligned with the MCP replay decoder by
-rejecting oversized replay containers and unsafe procedural-generation
-parameters before any map, world, or command construction.
+Make the legacy Blaster's self-recharging cell behavior explicit in the typed
+Rust behavior model, with deterministic accepted-command timing and replay,
+scenario, MCP, and browser-boundary coverage.
 
 ### 2.1a Scope and steering gate
 
-- **Steering priority:** Simulation correctness invariants and deterministic
-  replay boundary consistency.
-- **Steering gates:** Gate A rejected-input safety and Gate B explicit replay
-  compatibility.
-- **Observable outcome:** Direct replay validation rejects initial monster/item
-  arrays, custom-tile and command arrays, player initial-item arrays, and
-  procedural parameters outside the MCP's bounded domain with no map
-  construction or command execution.
+- **Steering priority:** Vertical canonical fidelity and the typed legacy
+  behavior model.
+- **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
+  compatibility, and Gate D callback-heavy behavior evidence.
+- **Observable outcome:** An equipped Blaster restores one cell after 40
+  accepted player-command ticks, then once every 10 ticks while below capacity;
+  successful fire resets its timer, full clips leave the timer unchanged, and a
+  typed `WeaponRecharged` event reports the resulting clip.
 - **Gameplay/replay impact:** Gameplay semantics, replay wire schema, RNG,
-  generator, and ruleset identities remain unchanged; project version advances
-  from `0.2.173` to `0.2.174`.
-- **Protocol/domain ownership:** `drl-core::ReplayEngine` owns direct replay
-  preflight; MCP retains its existing decoder contract and bounds.
-- **Evidence boundary:** Core replay-validation tests and MCP boundary tests are
-  authoritative. Runtime, browser, audio, and audiovisual comparisons are not
-  implicated and remain unchanged.
-- **Non-goals:** Replay-file IO, migrations, external interchange, gameplay
-  semantics, and broad content migration.
+  generator, and ruleset identities remain unchanged; gameplay semantics
+  advance from `21` to `22` and project version advances from `0.2.174` to
+  `0.2.175`.
+- **Protocol/domain ownership:** `drl-core` owns the typed recharge state and
+  accepted-command tick; `drl-protocol` owns the stable event contract; MCP,
+  render, and audio project the event without adding simulation policy.
+- **Evidence boundary:** Pinned legacy source at revision
+  `17d9be1204751899b2d69d8d3a2dde247bd0cc5c` plus core, scenario, replay, MCP,
+  and browser-boundary tests are authoritative. Controlled legacy runtime and
+  audiovisual comparisons remain `NOT_RUN`.
+- **Non-goals:** Manual-reload denial for all `IF_NORELOAD` families, aimed
+  alternate fire, other rechargeable weapons, mods, partial-reserve policy,
+  replay-file IO/migrations, and full audiovisual parity.
 
 ### 2.2 Why this slice is bounded
 
-The MCP JSON decoder already bounds replay arrays and procedural parameters, but
-the direct core validator previously accepted unbounded in-memory containers.
-Aligning both entry points prevents oversized or unsafe replay inputs from
-reaching map construction and keeps the accepted replay domain explicit.
+The pinned Blaster definition carries cell ammunition, a ten-cell clip, and the
+`IF_NORELOAD` flag; its `perk_weapon_recharge` callback uses a delay of `30`, a
+timer tick of `10`, and one restored cell. Equipped inventory ticks are the
+relevant trigger, and firing resets the timer. This slice ports only that
+observable recharge transition into an explicit Rust state machine.
 
-This is a validation-only correction: no command, event, observation, RNG, or
-replay wire field changes. The direct and MCP boundaries now share the same
-spatial and structural acceptance limits, while replay-file IO and migration
-remain open.
+The transition is deterministic and consumes neither reserve ammunition nor
+RNG. Rejected commands use the existing full-game rollback guard, so timer and
+clip state remain unchanged on errors. The new event is intentionally
+presentation-neutral; later work may add a dedicated cue or visible timer.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -1393,7 +1398,7 @@ criteria are:
 - [x] advance project version from `0.2.172` to `0.2.173` without changing
   gameplay, replay wire, RNG, generator, or ruleset semantics.
 
-### 2.7av Current direct replay structural-bound delivery target
+### 2.7av Previous direct replay structural-bound delivery target
 
 The bounded implementation target for this revision is direct-core replay
 structural validation parity with the existing MCP decoder. Its acceptance
@@ -1413,6 +1418,31 @@ criteria are:
 - [x] advance project version from `0.2.173` to `0.2.174` without changing
   gameplay, replay wire, RNG, generator, or ruleset semantics; replay-file IO,
   migrations, and external interchange remain open.
+
+### 2.7aw Current Blaster periodic-recharge delivery target
+
+The bounded implementation target for this revision is the pinned Blaster
+recharge callback across typed core behavior, scenario/replay determinism, and
+the MCP/browser presentation boundaries. Its acceptance criteria are:
+
+- [x] construct an equipped Blaster with its ten-cell clip and no reserve-ammo
+  dependency;
+- [x] tick the equipped weapon once after each accepted player command, restore
+  one cell at timer `40`, then restore one cell every `10` ticks while below
+  capacity, clamping at ten cells;
+- [x] leave a full clip's timer unchanged and reset the timer on a successful
+  ranged fire; rejected commands restore the timer and clip through the
+  existing transaction guard;
+- [x] emit one typed `WeaponRecharged` event per restored cell with entity,
+  item, restored-amount, current/max-clip, and retained-timer fields; metrics
+  remain unchanged and render/audio remain presentation-neutral;
+- [x] verify pure state-machine boundaries, a deterministic scenario/replay,
+  MCP event JSON, and BrowserSession parity with direct `Game::step`;
+- [x] advance gameplay semantics from `21` to `22` and project version from
+  `0.2.174` to `0.2.175` while preserving replay V2 wire, RNG, generator, and
+  ruleset identities; manual-reload denial, other rechargeable weapons,
+  partial-reserve behavior, controlled legacy runtime, and audiovisual parity
+  remain open.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
@@ -1495,6 +1525,11 @@ dimension validation with the MCP `3..=512` bound. The `0.2.174` successor
 aligns direct replay structural caps for arrays and procedural parameters with
 the MCP decoder. Partial-reserve behavior, broader callbacks, replay-file
 IO/migrations, and presentation parity remain open.
+
+The `0.2.175` successor adds the bounded, Blaster-only periodic recharge
+transition described above. Exact legacy runtime cadence remains `NOT_RUN`; the
+accepted-command tick is the explicit deterministic abstraction used by the
+headless core and its boundary tests.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity

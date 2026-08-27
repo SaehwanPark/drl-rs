@@ -133,6 +133,7 @@ impl EpisodeMetrics {
       | GameEvent::ItemEquipped { .. }
       | GameEvent::ItemUnequipped { .. }
       | GameEvent::WeaponReloaded { .. }
+      | GameEvent::WeaponRecharged { .. }
       | GameEvent::AcidSpitterReloaded { .. }
       | GameEvent::MedicalPowerarmorRepaired { .. }
       | GameEvent::LavaArmorRecharged { .. }

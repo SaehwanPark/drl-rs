@@ -1365,6 +1365,7 @@ pub fn effects_for_events(events: &[GameEvent]) -> Vec<PresentationEffect> {
         Some(PresentationEffect::Reload)
       }
       GameEvent::MedicalPowerarmorRepaired { .. } => None,
+      GameEvent::WeaponRecharged { .. } => None,
       GameEvent::LavaArmorRecharged { .. } => None,
       GameEvent::SubtleKnifeInvoked { .. } => None,
       GameEvent::TrigunAltReloaded { .. } => None,
@@ -1464,6 +1465,7 @@ fn event_entity_ids(event: &GameEvent) -> [Option<EntityId>; 2] {
     | GameEvent::WeaponReloaded { entity_id, .. }
     | GameEvent::AcidSpitterReloaded { entity_id, .. }
     | GameEvent::MedicalPowerarmorRepaired { entity_id, .. }
+    | GameEvent::WeaponRecharged { entity_id, .. }
     | GameEvent::LavaArmorRecharged { entity_id, .. }
     | GameEvent::SubtleKnifeInvoked { entity_id, .. }
     | GameEvent::TrigunAltReloaded { entity_id, .. }

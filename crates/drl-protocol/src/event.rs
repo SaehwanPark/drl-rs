@@ -88,6 +88,15 @@ pub enum GameEvent {
     current_clip: u32,
     max_clip: u32,
   },
+  /// A self-recharging weapon restored ammunition without using reserve ammo.
+  WeaponRecharged {
+    entity_id: EntityId,
+    item_id: ItemId,
+    ammo_recharged: u32,
+    current_clip: u32,
+    max_clip: u32,
+    timer: u32,
+  },
   /// Acid Spitter drew one rocket from an Acid tile and converted it to Water.
   AcidSpitterReloaded {
     entity_id: EntityId,

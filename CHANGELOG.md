@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.175]
+
+- Added typed Blaster periodic cell recharge: an equipped Blaster restores one
+  cell after 40 accepted commands and every 10 commands while below capacity,
+  resets its timer after successful fire, clamps at ten cells, and emits a
+  presentation-neutral `WeaponRecharged` event. Pure behavior, scenario/replay,
+  MCP, and browser-boundary parity are covered; other `IF_NORELOAD` families,
+  controlled legacy runtime, and audiovisual parity remain open.
+
 ## [0.2.174]
 
 - Aligned direct `ReplayEngine` structural validation with the MCP replay

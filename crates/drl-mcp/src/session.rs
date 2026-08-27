@@ -841,6 +841,25 @@ pub fn game_event_to_json(event: &GameEvent) -> JsonValue {
       map.insert("current_clip".to_string(), JsonValue::from(*current_clip));
       map.insert("max_clip".to_string(), JsonValue::from(*max_clip));
     }
+    GameEvent::WeaponRecharged {
+      entity_id,
+      item_id,
+      ammo_recharged,
+      current_clip,
+      max_clip,
+      timer,
+    } => {
+      map.insert("type".to_string(), JsonValue::from("WeaponRecharged"));
+      map.insert("entity_id".to_string(), JsonValue::from(entity_id.as_u64()));
+      map.insert("item_id".to_string(), JsonValue::from(item_id.as_u64()));
+      map.insert(
+        "ammo_recharged".to_string(),
+        JsonValue::from(*ammo_recharged),
+      );
+      map.insert("current_clip".to_string(), JsonValue::from(*current_clip));
+      map.insert("max_clip".to_string(), JsonValue::from(*max_clip));
+      map.insert("timer".to_string(), JsonValue::from(*timer));
+    }
     GameEvent::AcidSpitterReloaded {
       entity_id,
       item_id,
@@ -1607,6 +1626,32 @@ mod tests {
         .and_then(JsonValue::as_i64),
       Some(3)
     );
+  }
+
+  #[test]
+  fn weapon_recharged_event_projects_to_mcp_json() {
+    let value = game_event_to_json(&GameEvent::WeaponRecharged {
+      entity_id: drl_protocol::EntityId::new(1),
+      item_id: ItemId::new(2),
+      ammo_recharged: 1,
+      current_clip: 10,
+      max_clip: 10,
+      timer: 30,
+    });
+    let JsonValue::Object(map) = value else {
+      panic!("event projection must be an object");
+    };
+    assert_eq!(
+      map.get("type").and_then(JsonValue::as_str),
+      Some("WeaponRecharged")
+    );
+    assert_eq!(map.get("entity_id").and_then(JsonValue::as_i64), Some(1));
+    assert_eq!(map.get("item_id").and_then(JsonValue::as_i64), Some(2));
+    assert_eq!(
+      map.get("current_clip").and_then(JsonValue::as_i64),
+      Some(10)
+    );
+    assert_eq!(map.get("max_clip").and_then(JsonValue::as_i64), Some(10));
   }
 
   #[test]

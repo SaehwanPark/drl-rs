@@ -7,7 +7,7 @@ use drl_protocol::{
 
 use crate::acid_spitter::{ACID_SPITTER_RELOAD_AMOUNT, AcidSpitterReloadError};
 use crate::assault_shotgun::{AssaultShotgunReloadPlan, AssaultShotgunTransition};
-use crate::behavior::{LavaRechargeOutcome, MedicalRepairOutcome};
+use crate::behavior::{LavaRechargeOutcome, MedicalRepairOutcome, WeaponRechargeOutcome};
 use crate::combat::CombatResolver;
 use crate::combat_shotgun::{CombatShotgunReloadPlan, CombatShotgunTransition};
 use crate::environment::{entered_tile_damage, movement_cost};
@@ -304,6 +304,7 @@ impl Game {
     if !self.state.is_game_over {
       self.tick_player_medical_powerarmor(player_id, &mut events)?;
       self.tick_player_lava_armor(player_id, &mut events)?;
+      self.tick_player_weapon_recharge(player_id, &mut events)?;
     }
 
     // Spend player energy
@@ -779,6 +780,45 @@ impl Game {
         item_id,
         durability_restored,
         durability_remaining,
+        timer,
+      });
+    }
+    Ok(())
+  }
+
+  /// Advances the equipped Blaster recharge after an accepted player command.
+  fn tick_player_weapon_recharge(
+    &mut self,
+    player_id: drl_protocol::EntityId,
+    events: &mut Vec<GameEvent>,
+  ) -> Result<(), CommandError> {
+    let player = self
+      .state
+      .world
+      .get_actor_mut(player_id)
+      .ok_or(CommandError::EntityNotFound(player_id))?;
+    let Some((item_id, outcome)) = player.tick_weapon_recharge() else {
+      return Ok(());
+    };
+
+    if let WeaponRechargeOutcome::Recharged {
+      ammo_recharged,
+      timer,
+    } = outcome
+    {
+      let (current_clip, max_clip) = player
+        .equipment()
+        .weapon()
+        .and_then(Item::weapon_properties)
+        .map_or((0, 0), |properties| {
+          (properties.current_clip, properties.clip_capacity)
+        });
+      events.push(GameEvent::WeaponRecharged {
+        entity_id: player_id,
+        item_id,
+        ammo_recharged,
+        current_clip,
+        max_clip,
         timer,
       });
     }
@@ -1622,6 +1662,7 @@ impl Game {
     if let Some(player) = self.state.world.get_actor_mut(player_id)
       && let Some(weapon) = player.equipment_mut().weapon_mut()
     {
+      weapon.reset_weapon_recharge_timer();
       weapon.mark_pump_action_after_fire();
     }
 

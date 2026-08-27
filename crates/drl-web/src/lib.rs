@@ -3355,6 +3355,99 @@ mod tests {
   }
 
   #[test]
+  fn blaster_recharge_vertical_browser_boundary_matches_direct_core_presentation() {
+    let player_position = Position::new(1, 1);
+    let target_position = Position::new(2, 1);
+    let player_config = PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: Vec::new(),
+      equipped_weapon: Some(ItemSpawnKind::Blaster),
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    };
+    let target =
+      drl_protocol::MonsterSpawnSpec::new(target_position, "Recharge Target", 1_000, 1, (0, 0));
+    let mut setup_replay =
+      ReplayLog::new(31, 8, 4, player_position).with_player_config(player_config.clone());
+    setup_replay.record_monster(target.clone());
+
+    let (initial, setup_events) =
+      drl_core::ReplayEngine::run(&setup_replay).expect("vertical replay setup");
+    assert!(setup_events.is_empty());
+    let mut scenario = drl_core::scenario::Scenario::from_ascii(
+      "BlasterRechargeVertical",
+      "Blaster recharge after an accepted-command interval",
+      "########\n#@i....#\n#......#\n########\n",
+    )
+    .expect("vertical scenario fixture");
+    scenario.seed = 31;
+    scenario.monsters[0] = target;
+    scenario.player_config = Some(player_config);
+    assert_eq!(
+      scenario.instantiate().expect("scenario initial state"),
+      initial
+    );
+
+    let mut direct = initial.clone();
+    let mut browser = BrowserSession::from_game(initial);
+    let mut commands = Vec::with_capacity(40);
+    commands.push(Command::AttackRanged(target_position));
+    commands.extend(std::iter::repeat_n(Command::Wait, 39));
+    let mut expected_events = Vec::new();
+    for (index, command) in commands.iter().copied().enumerate() {
+      let direct_events = direct.step(command).expect("direct command");
+      let step = browser.submit(command).expect("browser command");
+      assert_eq!(step.events, direct_events);
+      assert_eq!(step.after, direct.observe_player());
+      assert_eq!(
+        step.effects,
+        drl_render::effect_timeline_for_observations(&step.before, &step.after, &direct_events,)
+      );
+      if index > 0 {
+        assert_eq!(step.effects, Vec::new());
+      }
+      assert_eq!(browser.scene(), RenderScene::from_observation(&step.after));
+      if index < 39 {
+        assert!(
+          !direct_events
+            .iter()
+            .any(|event| matches!(event, drl_protocol::GameEvent::WeaponRecharged { .. }))
+        );
+      } else {
+        assert!(direct_events.iter().any(|event| {
+          matches!(
+            event,
+            drl_protocol::GameEvent::WeaponRecharged {
+              ammo_recharged: 1,
+              current_clip: 10,
+              max_clip: 10,
+              timer: 30,
+              ..
+            }
+          )
+        }));
+      }
+      expected_events.extend(direct_events);
+    }
+
+    assert_eq!(browser.observation(), direct.observe_player());
+    assert_eq!(browser.replay_log().commands, commands);
+    let mut command_replay = setup_replay;
+    for command in commands {
+      command_replay.record_command(command);
+    }
+    let (replayed, replay_events) =
+      drl_core::ReplayEngine::run(&command_replay).expect("vertical command replay");
+    assert_eq!(replay_events, expected_events);
+    assert_eq!(replayed, direct);
+    assert!(
+      drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism")
+    );
+  }
+
+  #[test]
   fn medical_powerarmor_vertical_browser_boundary_matches_direct_core_presentation() {
     let player_position = Position::new(1, 1);
     let setup_replay =
