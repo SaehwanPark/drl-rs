@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.173`
+Current project version: `0.2.174`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.173)
+## 3. Current Progress Summary (`VERSION` 0.2.174)
 
 ### Delivered Foundations
 
@@ -429,6 +429,12 @@ verification item uses explicit status semantics:
   validation now rejects map dimensions outside the MCP decoder's bounded
   `3..=512` range before map construction, while valid replay execution and
   all gameplay/replay semantics remain unchanged.
+- **M5 direct-core replay structural bounds (`0.2.174`):** Direct replay
+  validation now rejects oversized initial-state, custom-tile, command, and
+  player-item arrays plus unsafe procedural room/content parameters before map
+  construction, matching the MCP decoder's safety caps. Gameplay semantics,
+  replay wire, RNG, generator, and ruleset identities remain unchanged;
+  replay-file I/O, migrations, and external interchange remain open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and

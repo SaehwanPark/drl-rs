@@ -9,15 +9,21 @@ use drl_protocol::{
   Position, ReplayExecutionError, ReplayLog, RunOutcome, Speed, Turn,
 };
 
-/// Shared replay-map bounds enforced by the MCP decoder and direct core path.
+/// Shared replay bounds enforced by the MCP decoder and direct core path.
 const MIN_REPLAY_DIMENSION: u32 = 3;
 const MAX_REPLAY_DIMENSION: u32 = 512;
+const MAX_INITIAL_ENTITIES: usize = 4_096;
+const MAX_CUSTOM_TILES: usize = 65_536;
+const MAX_COMMANDS: usize = 100_000;
+const MAX_PROCEDURAL_ROOMS: u32 = 64;
+const MAX_ROOM_SIZE: u32 = 64;
+const MAX_CONTENT_PER_ROOM: u32 = 64;
 
 /// Engine for replaying recorded game sessions deterministically with rich diagnostics.
 pub struct ReplayEngine;
 
 impl ReplayEngine {
-  /// Validates a replay log's schema headers, spatial bounds, and structural
+  /// Validates a replay log's schema headers, spatial/structural bounds, and
   /// consistency before execution.
   ///
   /// Custom tile overrides are checked here so execution cannot silently drop
@@ -70,6 +76,7 @@ impl ReplayEngine {
         drl_protocol::CURRENT_GENERATOR_SEMANTICS_VERSION
       ));
     }
+    validate_replay_structure(replay)?;
     if !(MIN_REPLAY_DIMENSION..=MAX_REPLAY_DIMENSION).contains(&replay.width)
       || !(MIN_REPLAY_DIMENSION..=MAX_REPLAY_DIMENSION).contains(&replay.height)
     {
@@ -332,6 +339,47 @@ impl ReplayEngine {
 
     Ok(game1 == game2 && events1 == events2 && metrics1 == metrics2)
   }
+}
+
+fn validate_replay_structure(replay: &ReplayLog) -> Result<(), String> {
+  if replay.initial_monsters.len() > MAX_INITIAL_ENTITIES {
+    return Err(format!(
+      "initial_monsters exceeds maximum of {MAX_INITIAL_ENTITIES} entries"
+    ));
+  }
+  if replay.initial_items.len() > MAX_INITIAL_ENTITIES {
+    return Err(format!(
+      "initial_items exceeds maximum of {MAX_INITIAL_ENTITIES} entries"
+    ));
+  }
+  if replay.custom_tiles.len() > MAX_CUSTOM_TILES {
+    return Err(format!(
+      "custom_tiles exceeds maximum of {MAX_CUSTOM_TILES} entries"
+    ));
+  }
+  if replay.commands.len() > MAX_COMMANDS {
+    return Err(format!(
+      "commands exceeds maximum of {MAX_COMMANDS} entries"
+    ));
+  }
+  if let Some(config) = &replay.player_config
+    && config.initial_items.len() > MAX_INITIAL_ENTITIES
+  {
+    return Err(format!(
+      "player_config.initial_items exceeds maximum of {MAX_INITIAL_ENTITIES} entries"
+    ));
+  }
+  if let Some(config) = &replay.procedural_config
+    && (config.max_rooms > MAX_PROCEDURAL_ROOMS
+      || config.min_room_size == 0
+      || config.min_room_size > config.max_room_size
+      || config.max_room_size > MAX_ROOM_SIZE
+      || config.max_monsters_per_room > MAX_CONTENT_PER_ROOM
+      || config.max_items_per_room > MAX_CONTENT_PER_ROOM)
+  {
+    return Err("procedural replay configuration exceeds safe bounds".to_string());
+  }
+  Ok(())
 }
 
 #[cfg(test)]

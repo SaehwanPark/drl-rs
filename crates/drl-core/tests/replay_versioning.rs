@@ -181,6 +181,138 @@ fn test_replay_validation_catches_invalid_bounds() {
 }
 
 #[test]
+fn test_replay_validation_catches_unsafe_structure_bounds() {
+  let monster = MonsterSpawnSpec::new(Position::new(2, 2), "Imp", 20, 100, (3, 6));
+  let too_many_monsters = ReplayLog {
+    initial_monsters: vec![monster; 4_097],
+    ..ReplayLog::new(1, 10, 10, Position::new(2, 2))
+  };
+  let error = ReplayEngine::validate(&too_many_monsters).unwrap_err();
+  assert!(error.contains("initial_monsters"));
+
+  let item = ItemSpawnSpec::new(Position::new(2, 2), ItemSpawnKind::Pistol);
+  let too_many_items = ReplayLog {
+    initial_items: vec![item; 4_097],
+    ..ReplayLog::new(1, 10, 10, Position::new(2, 2))
+  };
+  let error = ReplayEngine::validate(&too_many_items).unwrap_err();
+  assert!(error.contains("initial_items"));
+
+  let too_many_tiles = ReplayLog {
+    custom_tiles: vec![(Position::new(2, 2), TileKind::Floor); 65_537],
+    ..ReplayLog::new(1, 10, 10, Position::new(2, 2))
+  };
+  let error = ReplayEngine::validate(&too_many_tiles).unwrap_err();
+  assert!(error.contains("custom_tiles"));
+
+  let too_many_commands = ReplayLog {
+    commands: vec![Command::Wait; 100_001],
+    ..ReplayLog::new(1, 10, 10, Position::new(2, 2))
+  };
+  let error = ReplayEngine::validate(&too_many_commands).unwrap_err();
+  assert!(error.contains("commands"));
+  let diagnostic = ReplayEngine::run_with_diagnostics(&too_many_commands).unwrap_err();
+  assert_eq!(diagnostic.command_index, 0);
+  assert_eq!(diagnostic.turn, Turn::zero());
+  assert!(matches!(diagnostic.error, CommandError::InvalidCommand(_)));
+
+  let too_many_player_items = ReplayLog::new(1, 10, 10, Position::new(2, 2)).with_player_config(
+    drl_protocol::PlayerSpawnConfig {
+      initial_items: vec![ItemSpawnKind::Pistol; 4_097],
+      ..drl_protocol::PlayerSpawnConfig::default()
+    },
+  );
+  let error = ReplayEngine::validate(&too_many_player_items).unwrap_err();
+  assert!(error.contains("player_config.initial_items"));
+
+  let valid_config = || ProceduralGenerationConfig {
+    max_rooms: 4,
+    min_room_size: 4,
+    max_room_size: 8,
+    max_monsters_per_room: 2,
+    max_items_per_room: 2,
+  };
+  let configurations = [
+    (
+      "max_rooms",
+      ProceduralGenerationConfig {
+        max_rooms: 65,
+        ..valid_config()
+      },
+    ),
+    (
+      "min_room_size",
+      ProceduralGenerationConfig {
+        min_room_size: 0,
+        ..valid_config()
+      },
+    ),
+    (
+      "room_size_order",
+      ProceduralGenerationConfig {
+        min_room_size: 9,
+        max_room_size: 8,
+        ..valid_config()
+      },
+    ),
+    (
+      "max_room_size",
+      ProceduralGenerationConfig {
+        max_room_size: 65,
+        ..valid_config()
+      },
+    ),
+    (
+      "max_monsters_per_room",
+      ProceduralGenerationConfig {
+        max_monsters_per_room: 65,
+        ..valid_config()
+      },
+    ),
+    (
+      "max_items_per_room",
+      ProceduralGenerationConfig {
+        max_items_per_room: 65,
+        ..valid_config()
+      },
+    ),
+  ];
+  for (field, config) in configurations {
+    let replay = ReplayLog::new(1, 10, 10, Position::new(2, 2)).with_procedural_config(config);
+    let error = ReplayEngine::validate(&replay).unwrap_err();
+    assert!(
+      error.contains("procedural replay configuration"),
+      "{field} should be rejected: {error}"
+    );
+  }
+}
+
+#[test]
+fn test_replay_validation_accepts_structural_bound_edges() {
+  let monster = MonsterSpawnSpec::new(Position::new(2, 2), "Imp", 20, 100, (3, 6));
+  let item = ItemSpawnSpec::new(Position::new(2, 2), ItemSpawnKind::Pistol);
+  let replay = ReplayLog {
+    initial_monsters: vec![monster; 4_096],
+    initial_items: vec![item; 4_096],
+    custom_tiles: vec![(Position::new(2, 2), TileKind::Floor); 65_536],
+    commands: vec![Command::Wait; 100_000],
+    player_config: Some(drl_protocol::PlayerSpawnConfig {
+      initial_items: vec![ItemSpawnKind::Pistol; 4_096],
+      ..drl_protocol::PlayerSpawnConfig::default()
+    }),
+    procedural_config: Some(ProceduralGenerationConfig {
+      max_rooms: 64,
+      min_room_size: 4,
+      max_room_size: 64,
+      max_monsters_per_room: 64,
+      max_items_per_room: 64,
+    }),
+    ..ReplayLog::new(1, 10, 10, Position::new(2, 2))
+  };
+  assert!(ReplayEngine::validate(&replay).is_ok());
+}
+
+#[test]
 fn test_replay_diagnostics_precise_error_location() {
   let mut replay = ReplayLog::new(100, 10, 10, Position::new(1, 1));
   // Move East 3 times: from (1,1) -> (2,1) -> (3,1) -> (4,1)

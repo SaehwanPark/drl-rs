@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.173`
+Current project version: `0.2.174`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,13 +25,13 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M5 — Direct Replay Dimension Bounds
+## 2. Active Implementation Slice: M5 — Direct Replay Structural Bounds
 
 ### 2.1 Objective
 
 Keep direct `ReplayEngine` validation aligned with the MCP replay decoder by
-rejecting map dimensions outside the bounded `3..=512` range before any map or
-world construction.
+rejecting oversized replay containers and unsafe procedural-generation
+parameters before any map, world, or command construction.
 
 ### 2.1a Scope and steering gate
 
@@ -39,11 +39,13 @@ world construction.
   replay boundary consistency.
 - **Steering gates:** Gate A rejected-input safety and Gate B explicit replay
   compatibility.
-- **Observable outcome:** Direct replay validation rejects dimensions below 3 or
-  above 512 with no map construction or command execution.
+- **Observable outcome:** Direct replay validation rejects initial monster/item
+  arrays, custom-tile and command arrays, player initial-item arrays, and
+  procedural parameters outside the MCP's bounded domain with no map
+  construction or command execution.
 - **Gameplay/replay impact:** Gameplay semantics, replay wire schema, RNG,
   generator, and ruleset identities remain unchanged; project version advances
-  from `0.2.172` to `0.2.173`.
+  from `0.2.173` to `0.2.174`.
 - **Protocol/domain ownership:** `drl-core::ReplayEngine` owns direct replay
   preflight; MCP retains its existing decoder contract and bounds.
 - **Evidence boundary:** Core replay-validation tests and MCP boundary tests are
@@ -54,14 +56,15 @@ world construction.
 
 ### 2.2 Why this slice is bounded
 
-The MCP JSON decoder already bounds replay dimensions to `3..=512`, but the
-direct core validator previously accepted smaller or unbounded dimensions.
-Aligning both entry points prevents malformed in-memory replays from reaching
-map construction and keeps the accepted replay domain explicit.
+The MCP JSON decoder already bounds replay arrays and procedural parameters, but
+the direct core validator previously accepted unbounded in-memory containers.
+Aligning both entry points prevents oversized or unsafe replay inputs from
+reaching map construction and keeps the accepted replay domain explicit.
 
 This is a validation-only correction: no command, event, observation, RNG, or
 replay wire field changes. The direct and MCP boundaries now share the same
-dimension acceptance range, while replay-file IO and migration remain open.
+spatial and structural acceptance limits, while replay-file IO and migration
+remain open.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -1374,7 +1377,7 @@ and browser presentation boundaries. Its vertical slice must:
   policy, ammo packs, controlled legacy runtime, audio, WebGPU, and audiovisual
   parity remain `NOT_RUN`.
 
-### 2.7au Current direct replay dimension-bound delivery target
+### 2.7au Previous direct replay dimension-bound delivery target
 
 The bounded implementation target for this revision is direct-core replay
 dimension validation parity with the existing MCP decoder. Its acceptance
@@ -1389,6 +1392,27 @@ criteria are:
   suite without mutating a game or consuming RNG;
 - [x] advance project version from `0.2.172` to `0.2.173` without changing
   gameplay, replay wire, RNG, generator, or ruleset semantics.
+
+### 2.7av Current direct replay structural-bound delivery target
+
+The bounded implementation target for this revision is direct-core replay
+structural validation parity with the existing MCP decoder. Its acceptance
+criteria are:
+
+- [x] reject more than `4,096` initial monsters or ground items before map
+  construction;
+- [x] reject more than `65,536` custom tile overrides or `100,000` commands
+  before map construction;
+- [x] reject more than `4,096` configured player initial items before map
+  construction;
+- [x] reject procedural configurations with more than `64` rooms, zero or
+  inverted room-size bounds, room dimensions above `64`, or more than `64`
+  monsters/items per room;
+- [x] verify every structural rejection and a malformed replay diagnostic at
+  command index `0`, proving no command execution or RNG consumption;
+- [x] advance project version from `0.2.173` to `0.2.174` without changing
+  gameplay, replay wire, RNG, generator, or ruleset semantics; replay-file IO,
+  migrations, and external interchange remain open.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
@@ -1467,8 +1491,10 @@ successor adds the pinned Combat Shotgun single-shell policy, `0.2.170` adds
 the typed pump-action chamber transition, and `0.2.171` adds the typed Assault
 Shotgun alternate/full reload, `0.2.172` adds the typed Combat Shotgun
 alternate/full reload with chamber reset, and `0.2.173` aligns direct replay
-dimension validation with the MCP `3..=512` bound. Partial-reserve behavior,
-broader callbacks, and presentation parity remain open.
+dimension validation with the MCP `3..=512` bound. The `0.2.174` successor
+aligns direct replay structural caps for arrays and procedural parameters with
+the MCP decoder. Partial-reserve behavior, broader callbacks, replay-file
+IO/migrations, and presentation parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity
