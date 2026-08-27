@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.183]
+
+- Extended typed alternate overload arming to the Nuclear BFG 9000: a
+  confirmed full 40-cell clip on a non-stairs tile destroys the equipped
+  weapon, spends 1,000 score count, and arms countdown 1 on Acid/Lava or 100
+  elsewhere. Atomic rejection, typed nuke events, replay, MCP, and
+  BrowserSession parity are covered; legacy `NukeRun` map effects and
+  audiovisual parity remain separate slices.
+
 ## [0.2.182]
 
 - Added typed Nuclear Plasma Rifle alternate overload arming: a confirmed

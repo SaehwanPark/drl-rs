@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.182`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.183`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -190,6 +190,9 @@ replays, and regression testing.
     stairs and pending-nuke state, destroys the equipped weapon, spends 1,000
     score count, and arms the existing typed nuke countdown (1 on Acid/Lava,
     100 elsewhere) with deterministic scenario/replay/MCP/browser coverage;
+    a confirmed, full-clip Nuclear BFG 9000 alternate overload now uses the
+    same typed preflight and event boundary, with deterministic hazard/floor,
+    replay, MCP, and BrowserSession coverage;
     manual reload is explicitly denied for the pinned Blaster, Nuclear Plasma
     Rifle, and Nuclear BFG 9000 `IF_NORELOAD` families before any state/RNG
     mutation, with atomic core and MCP/browser-boundary coverage;

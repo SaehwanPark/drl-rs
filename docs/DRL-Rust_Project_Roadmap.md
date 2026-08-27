@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.182`
+Current project version: `0.2.183`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.182)
+## 3. Current Progress Summary (`VERSION` 0.2.183)
 
 ### Delivered Foundations
 
@@ -490,6 +490,12 @@ verification item uses explicit status semantics:
   nuke events, atomic rejection, scenario/replay, MCP, and BrowserSession
   parity are covered; Nuclear BFG, legacy `NukeRun` map effects, runtime, and
   audiovisual parity remain open.
+- **M9 Nuclear BFG 9000 alternate overload (`0.2.183`):** A confirmed
+  full-clip Nuclear BFG 9000 now reuses the typed overload preflight, destroys
+  the equipped weapon, spends 1,000 score count, and arms countdown 1 on
+  Acid/Lava or 100 elsewhere. Atomic rejection, typed events, scenario/replay,
+  MCP legal-action, and BrowserSession parity are covered; legacy `NukeRun`
+  map effects, runtime, and audiovisual parity remain open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1080,6 +1086,12 @@ scripting.
   nuke events. Atomicity, scenario/replay, MCP, and BrowserSession parity are
   covered; Nuclear BFG, legacy `NukeRun` map effects, runtime, and audiovisual
   parity remain open.
+- [x] Nuclear BFG 9000 alternate overload reuses the typed
+  full-clip/confirmation/stairs/pending-nuke preflight, destroys the equipped
+  weapon, spends 1,000 score count, selects countdown 1 on Acid/Lava or 100
+  elsewhere, and emits `NuclearWeaponOverloaded` plus the existing nuke events.
+  Atomicity, scenario/replay, MCP, and BrowserSession parity are covered;
+  legacy `NukeRun` map effects, runtime, and audiovisual parity remain open.
 - [ ] Full migration of legacy monsters, weapons, armor, mods, and consumable
   items.
 - [ ] Full migration of special levels, vaults, and dungeon branches.

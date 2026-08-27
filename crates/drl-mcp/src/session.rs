@@ -278,11 +278,14 @@ pub fn compute_legal_actions(obs: &PlayerObservation) -> Vec<LegalAction> {
     });
   }
 
-  // 3h. Typed Nuclear Plasma Rifle overload (the caller must explicitly
-  // confirm the destructive action). The cloned core probe below filters
-  // pending-nuke and any other state not visible through observation.
+  // 3h. Typed nuclear-weapon overload (the caller must explicitly confirm
+  // the destructive action). The cloned core probe below filters pending-
+  // nuke and any other state not visible through observation.
   if let Some(weapon) = obs.equipped_weapon.as_ref()
-    && weapon.archetype == ItemArchetype::NuclearPlasmaRifle
+    && matches!(
+      weapon.archetype,
+      ItemArchetype::NuclearPlasmaRifle | ItemArchetype::NuclearBfg9000
+    )
     && weapon
       .clip
       .is_some_and(|(loaded, max_clip)| loaded >= max_clip)
@@ -297,7 +300,7 @@ pub fn compute_legal_actions(obs: &PlayerObservation) -> Vec<LegalAction> {
     p.insert("confirmed".to_string(), JsonValue::Bool(true));
     actions.push(LegalAction {
       action: "AltReload".to_string(),
-      description: "Confirm the equipped Nuclear Plasma Rifle overload".to_string(),
+      description: format!("Confirm the equipped {} overload", weapon.name),
       command: Command::AltReload {
         item_id: weapon.id,
         confirmed: true,
@@ -2320,6 +2323,68 @@ mod tests {
       .equip(
         EquipmentSlot::Weapon,
         drl_core::item::Item::nuclear_plasma_rifle(weapon_id),
+      )
+      .unwrap();
+
+    let observation = session.get_observation().unwrap();
+    let command = Command::AltReload {
+      item_id: weapon_id,
+      confirmed: true,
+    };
+    assert!(
+      compute_legal_actions(&observation)
+        .iter()
+        .any(|action| action.action == "AltReload" && action.command == command)
+    );
+
+    let (events, _, _) = session.step(command).unwrap();
+    assert!(events.iter().any(|event| matches!(
+      event,
+      GameEvent::NuclearWeaponOverloaded {
+        entity_id,
+        item_id,
+        countdown: 100,
+        score_count_remaining: -1_000,
+      } if *entity_id == player_id && *item_id == weapon_id
+    )));
+    assert!(
+      events
+        .iter()
+        .any(|event| matches!(event, GameEvent::NukeActivated { countdown: 100, .. }))
+    );
+    assert!(
+      !session
+        .legal_actions()
+        .unwrap()
+        .iter()
+        .any(|action| action.command == command)
+    );
+  }
+
+  #[test]
+  fn test_legal_action_catalog_and_events_include_nuclear_bfg_overload() {
+    let mut session = McpSession::new();
+    session
+      .load_scenario("\n#######\n#@....#\n#######\n", None)
+      .unwrap();
+    let player_id = session.game.as_ref().unwrap().world().player_id().unwrap();
+    let weapon_id = session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .allocate_item_id();
+    session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .get_actor_mut(player_id)
+      .unwrap()
+      .equipment_mut()
+      .equip(
+        EquipmentSlot::Weapon,
+        drl_core::item::Item::nuclear_bfg9000(weapon_id),
       )
       .unwrap();
 

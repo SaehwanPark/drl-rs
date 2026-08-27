@@ -537,7 +537,8 @@ impl Game {
         });
         Ok(ActionCost::STANDARD)
       }
-      drl_protocol::ItemArchetype::NuclearPlasmaRifle => {
+      drl_protocol::ItemArchetype::NuclearPlasmaRifle
+      | drl_protocol::ItemArchetype::NuclearBfg9000 => {
         let position = player.position();
         let tile = self
           .state
