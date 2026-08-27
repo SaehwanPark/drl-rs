@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.179]
+
+- Corrected the exotic Missile Launcher reload policy: its pinned
+  `IF_SINGLERELOAD` behavior now loads exactly one rocket per accepted
+  `Reload`, with atomic full/no-reserve rejection and scenario/replay/browser
+  boundary coverage. Alternate full reload, rocket-jump, and audiovisual or
+  controlled legacy runtime parity remain separate slices.
+
 ## [0.2.178]
 
 - Extended the typed periodic cell-recharge policy to the Nuclear BFG 9000:

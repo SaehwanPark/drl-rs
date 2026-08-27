@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.178`
+Current project version: `0.2.179`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,51 +25,48 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Nuclear BFG 9000 Periodic Recharge
+## 2. Active Implementation Slice: M9 — Missile Launcher Single-Shell Reload
 
 ### 2.1 Objective
 
-Make the legacy Nuclear BFG 9000 self-charging behavior explicit in the typed
-Rust weapon-recharge policy, with deterministic accepted-command timing and
-scenario, replay, MCP, and browser-boundary coverage.
+Honor the legacy Missile Launcher's `IF_SINGLERELOAD` contract in the typed
+Rust reload path, with deterministic one-rocket transitions and scenario,
+replay, MCP, and browser-boundary coverage.
 
 ### 2.1a Scope and steering gate
 
 - **Steering priority:** Vertical canonical fidelity and typed legacy behavior.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, and Gate D callback behavior evidence.
-- **Observable outcome:** An equipped Nuclear BFG 9000 restores one cell after
-  5 accepted player-command ticks, then one cell every 5 ticks while below its
-  40-cell capacity; successful fire resets its timer and full clips leave the
-  timer unchanged.
+- **Observable outcome:** An equipped Missile Launcher with a clip deficit
+  loads exactly one rocket per accepted `Reload`; full clips and missing
+  reserve ammunition reject without mutation.
 - **Gameplay/replay impact:** Gameplay semantics, replay wire schema, RNG,
   generator, and ruleset identities remain unchanged; gameplay semantics
-  advance from `24` to `25` and project version advances from `0.2.177` to
-  `0.2.178`.
-- **Protocol/domain ownership:** `drl-core` owns the typed recharge policy and
-  accepted-command tick; `drl-protocol` owns the existing `WeaponRecharged`
-  event; MCP, render, and audio retain their existing event projections.
+  advance from `25` to `26` and project version advances from `0.2.178` to
+  `0.2.179`.
+- **Protocol/domain ownership:** `drl-core` owns the typed single-shell policy;
+  `drl-protocol` retains the existing `WeaponReloaded` event; MCP, render, and
+  audio retain their existing command/event projections.
 - **Evidence boundary:** Pinned legacy source at revision
   `17d9be1204751899b2d69d8d3a2dde247bd0cc5c` plus core, scenario, replay, MCP,
   and browser-boundary tests are authoritative. Controlled legacy runtime and
   audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** Blaster and Nuclear Plasma policy changes, Nuclear BFG
-  alternate nuke behavior, exact-hit/explosion behavior, other families/mods,
-  partial-reserve policy, replay-file IO/migrations, exact legacy runtime
-  cadence, and audiovisual parity.
+- **Non-goals:** Missile Launcher alternate/full reload, rocket-jump and
+  explosion behavior, other families/mods, partial-reserve policy,
+  replay-file IO/migrations, exact legacy runtime cadence, and audiovisual
+  parity.
 
 ### 2.2 Why this slice is bounded
 
-The pinned Nuclear BFG 9000 definition adds `perk_weapon_recharge` with a delay
-of `0`, a cadence tick of `5`, and one restored cell. The generic legacy
-callback increments its timer once per equipped inventory tick and subtracts
-the cadence after each restoration. This slice ports only that deterministic
-typed transition; the already-delivered Blaster and Nuclear Plasma policies and
-the weapon's alternate action remain separate transitions.
+The pinned Missile Launcher definition carries `IF_SINGLERELOAD` with a
+four-rocket clip. The legacy reload path therefore takes one loose rocket per
+accepted reload command. This slice ports only that deterministic typed
+transition; alternate/full reload and rocket-jump behavior remain separate.
 
-Recharge is deterministic, consumes neither reserve ammunition nor RNG, and
-uses the existing full-game rollback guard so rejected commands restore timer
-and clip state exactly.
+Single-shell reload is deterministic, consumes one reserve rocket when
+available, and uses the existing full-game rollback guard so rejected commands
+restore clip, inventory, turn, and RNG state exactly.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -1485,7 +1482,7 @@ determinism, and BrowserSession parity. Its acceptance criteria are:
   ruleset identities; alternate/nuke, chainfire, runtime, and audiovisual
   parity remain open.
 
-### 2.7az Current Nuclear BFG 9000 periodic-recharge delivery target
+### 2.7az Previous Nuclear BFG 9000 periodic-recharge delivery target
 
 The bounded implementation target for this revision is the pinned Nuclear BFG
 9000 recharge callback across typed core behavior, scenario/replay
@@ -1506,6 +1503,27 @@ determinism, and BrowserSession parity. Its acceptance criteria are:
   `0.2.177` to `0.2.178` while preserving replay V2 wire, RNG, generator, and
   ruleset identities; alternate nuke, exact-hit/explosion, runtime, and
   audiovisual parity remain open.
+
+### 2.7ba Current Missile Launcher single-shell reload delivery target
+
+The bounded implementation target for this revision is the pinned exotic
+Missile Launcher's ordinary `IF_SINGLERELOAD` path across typed core behavior,
+scenario/replay determinism, and BrowserSession parity. Its acceptance criteria
+are:
+
+- [x] construct an equipped Missile Launcher with a four-rocket clip and
+  ordinary reload cost;
+- [x] load exactly one loose rocket on each accepted `Reload` while the clip is
+  below capacity, preserving the shared `WeaponReloaded` event and action-cost
+  ordering;
+- [x] reject full clips and empty reserve atomically, preserving clip,
+  inventory, turn, and RNG state;
+- [x] verify pure command atomicity, ScenarioRunner/replay determinism,
+  existing MCP legal-action filtering, and BrowserSession/direct-core parity;
+- [x] advance gameplay semantics from `25` to `26` and project version from
+  `0.2.178` to `0.2.179` while preserving replay V2 wire, RNG, generator, and
+  ruleset identities; alternate/full reload, rocket-jump, explosion, runtime,
+  and audiovisual parity remain open.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 

@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.178`
+Current project version: `0.2.179`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -163,6 +163,9 @@ Presentation Boundary
     and consumes no reserve ammunition.
     Nuclear BFG 9000 recharge uses the same policy with a zero delay and
     five-command cadence, preserving the same event and reserve boundary.
+    The exotic Missile Launcher uses the explicit single-shell reload policy,
+    loading one rocket per accepted `Reload` while retaining the shared
+    `WeaponReloaded` event and atomic rejection contract.
     The pinned `IF_NORELOAD` families use an explicit item policy that rejects
     ordinary `Reload` before mutation; this remains separate from alternate
     reload and automatic recharge behavior.

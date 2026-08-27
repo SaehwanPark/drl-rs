@@ -760,6 +760,86 @@ fn combat_shotgun_single_shell_reload_rejections_preserve_game_state() {
 }
 
 #[test]
+fn missile_launcher_single_shell_reload_preserves_atomic_rejections() {
+  let mut game = Game::new(1_656, 10, 10, Position::new(2, 2)).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let weapon_id = game.world_mut().allocate_item_id();
+  let rockets_id = game.world_mut().allocate_item_id();
+  let player = game.world_mut().get_actor_mut(player_id).unwrap();
+  player
+    .inventory_mut()
+    .add_item(Item::missile_launcher(weapon_id))
+    .unwrap();
+  player
+    .inventory_mut()
+    .add_item(Item::ammo_rockets(rockets_id, 2))
+    .unwrap();
+  game.step(Command::Equip(weapon_id)).unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 0;
+
+  game.step(Command::Reload).unwrap();
+  let player = game.world().get_actor(player_id).unwrap();
+  assert_eq!(
+    player
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .current_clip,
+    1
+  );
+  assert_eq!(
+    player
+      .inventory()
+      .total_ammo(drl_protocol::AmmoType::Rocket),
+    1
+  );
+
+  game.step(Command::Reload).unwrap();
+  let player = game.world().get_actor(player_id).unwrap();
+  assert_eq!(
+    player
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .current_clip,
+    2
+  );
+  assert_eq!(
+    player
+      .inventory()
+      .total_ammo(drl_protocol::AmmoType::Rocket),
+    0
+  );
+
+  assert_rejected_command_is_atomic(&mut game, Command::Reload, CommandError::NoMatchingAmmo);
+
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 4;
+  assert_rejected_command_is_atomic(&mut game, Command::Reload, CommandError::ClipAlreadyFull);
+}
+
+#[test]
 fn descend_off_stairs_preserves_game_state() {
   let mut game = Game::new(13, 10, 10, Position::new(2, 2)).unwrap();
 

@@ -1195,13 +1195,15 @@ impl Game {
         return Err(CommandError::ClipAlreadyFull);
       }
       let ammo_type = props.ammo_type.ok_or(CommandError::NoMatchingAmmo)?;
-      // The legacy Assault and Combat Shotgun definitions carry
+      // The legacy Assault/Combat Shotgun and Missile Launcher definitions carry
       // IF_SINGLERELOAD. Keep this policy explicit at the typed transition
       // boundary instead of adding a callback-shaped field to every routine
       // weapon definition.
       let needed = if matches!(
         weapon.archetype(),
-        drl_protocol::ItemArchetype::AssaultShotgun | drl_protocol::ItemArchetype::CombatShotgun
+        drl_protocol::ItemArchetype::AssaultShotgun
+          | drl_protocol::ItemArchetype::CombatShotgun
+          | drl_protocol::ItemArchetype::MissileLauncher
       ) {
         1
       } else {
