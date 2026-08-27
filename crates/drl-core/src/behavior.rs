@@ -18,6 +18,13 @@ pub const LAVA_RECHARGE_INTERVAL: u32 = 5;
 /// Maximum durability restored by one Lava Armor recharge.
 pub const LAVA_RECHARGE_AMOUNT: u32 = 3;
 
+/// Blaster's pinned recharge delay before the first cell is restored.
+pub const BLASTER_RECHARGE_DELAY: u32 = 30;
+/// Blaster's timer cadence retained after each restored cell.
+pub const BLASTER_RECHARGE_TICK: u32 = 10;
+/// Number of cells restored by one Blaster recharge.
+pub const BLASTER_RECHARGE_AMOUNT: u32 = 1;
+
 /// Armor-owned state for Lava Armor's periodic durability behavior.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct LavaRechargeState {
@@ -81,6 +88,62 @@ pub enum LavaRechargeOutcome {
   },
   /// Interval elapsed away from Lava; timer resets without repair.
   NotOnLava { timer: u32 },
+}
+
+/// Weapon-owned state for the Blaster's periodic cell recharge behavior.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub struct WeaponRechargeState {
+  timer: u32,
+}
+
+impl WeaponRechargeState {
+  /// Creates a fresh recharge timer.
+  #[must_use]
+  pub const fn new() -> Self {
+    Self { timer: 0 }
+  }
+
+  /// Returns the current deterministic recharge timer.
+  #[must_use]
+  pub const fn timer(self) -> u32 {
+    self.timer
+  }
+
+  /// Advances one accepted-command tick while the weapon is below capacity.
+  pub fn tick(&mut self, current_clip: &mut u32, max_clip: u32) -> WeaponRechargeOutcome {
+    if *current_clip >= max_clip {
+      return WeaponRechargeOutcome::Full { timer: self.timer };
+    }
+
+    self.timer = self.timer.saturating_add(1);
+    if self.timer < BLASTER_RECHARGE_DELAY + BLASTER_RECHARGE_TICK {
+      return WeaponRechargeOutcome::Waiting { timer: self.timer };
+    }
+
+    self.timer = self.timer.saturating_sub(BLASTER_RECHARGE_TICK);
+    let restored = BLASTER_RECHARGE_AMOUNT.min(max_clip.saturating_sub(*current_clip));
+    *current_clip = current_clip.saturating_add(restored).min(max_clip);
+    WeaponRechargeOutcome::Recharged {
+      ammo_recharged: restored,
+      timer: self.timer,
+    }
+  }
+
+  /// Resets the timer after an accepted shot.
+  pub const fn reset(&mut self) {
+    self.timer = 0;
+  }
+}
+
+/// Observable result of a typed weapon recharge transition.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum WeaponRechargeOutcome {
+  /// Weapon is already full; source behavior leaves the timer untouched.
+  Full { timer: u32 },
+  /// Recharge interval has not yet elapsed.
+  Waiting { timer: u32 },
+  /// One or more cells were restored at the interval boundary.
+  Recharged { ammo_recharged: u32, timer: u32 },
 }
 
 /// Armor-owned state for the Medical Powerarmor periodic behavior.
@@ -316,5 +379,84 @@ mod tests {
       LavaRechargeOutcome::Full { timer: 4 }
     );
     assert_eq!(state.timer(), 4);
+  }
+
+  #[test]
+  fn weapon_recharge_waits_for_delay_then_recharges_every_tick_cadence() {
+    let mut state = WeaponRechargeState::default();
+    let mut current_clip = 0;
+
+    for expected_timer in 1..(BLASTER_RECHARGE_DELAY + BLASTER_RECHARGE_TICK) {
+      assert_eq!(
+        state.tick(&mut current_clip, 10),
+        WeaponRechargeOutcome::Waiting {
+          timer: expected_timer,
+        }
+      );
+    }
+    assert_eq!(
+      state.tick(&mut current_clip, 10),
+      WeaponRechargeOutcome::Recharged {
+        ammo_recharged: BLASTER_RECHARGE_AMOUNT,
+        timer: BLASTER_RECHARGE_DELAY,
+      }
+    );
+    assert_eq!(current_clip, 1);
+
+    for _ in 0..(BLASTER_RECHARGE_TICK - 1) {
+      assert!(matches!(
+        state.tick(&mut current_clip, 10),
+        WeaponRechargeOutcome::Waiting { .. }
+      ));
+    }
+    assert!(matches!(
+      state.tick(&mut current_clip, 10),
+      WeaponRechargeOutcome::Recharged {
+        ammo_recharged: BLASTER_RECHARGE_AMOUNT,
+        timer: BLASTER_RECHARGE_DELAY,
+      }
+    ));
+    assert_eq!(current_clip, 2);
+  }
+
+  #[test]
+  fn weapon_recharge_full_clip_preserves_timer_and_reset_clears_it() {
+    let mut state = WeaponRechargeState { timer: 12 };
+    let mut current_clip = 10;
+
+    assert_eq!(
+      state.tick(&mut current_clip, 10),
+      WeaponRechargeOutcome::Full { timer: 12 }
+    );
+    state.reset();
+    assert_eq!(state.timer(), 0);
+    current_clip = 9;
+    assert_eq!(
+      state.tick(&mut current_clip, 10),
+      WeaponRechargeOutcome::Waiting { timer: 1 }
+    );
+  }
+
+  #[test]
+  fn weapon_recharge_clamps_at_capacity() {
+    let mut state = WeaponRechargeState {
+      timer: BLASTER_RECHARGE_DELAY + BLASTER_RECHARGE_TICK - 1,
+    };
+    let mut current_clip = 9;
+
+    assert_eq!(
+      state.tick(&mut current_clip, 10),
+      WeaponRechargeOutcome::Recharged {
+        ammo_recharged: 1,
+        timer: BLASTER_RECHARGE_DELAY,
+      }
+    );
+    assert_eq!(current_clip, 10);
+    assert_eq!(
+      state.tick(&mut current_clip, 10),
+      WeaponRechargeOutcome::Full {
+        timer: BLASTER_RECHARGE_DELAY
+      }
+    );
   }
 }

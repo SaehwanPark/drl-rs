@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.174`
+Current project version: `0.2.175`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -155,7 +155,10 @@ Presentation Boundary
     internal damage through `Command::AltReload` and typed nuke events. Legacy
     Lava Armor recharge uses the dedicated `behavior` transition and a
     typed `Tile::Lava` terrain check; successful intervals emit
-    `GameEvent::LavaArmorRecharged`. Grammaton mode cycling uses the dedicated
+    `GameEvent::LavaArmorRecharged`. The Blaster's periodic cell recharge uses
+    the same module's explicit weapon-owned timer and emits
+    `GameEvent::WeaponRecharged` without reserve-ammo or presentation policy.
+    Grammaton mode cycling uses the dedicated
     `grammaton` transition and a
     typed `WeaponFireMode`; mode-specific multi-shot resolution preflights
     clip capacity before consuming RNG and emits ordered shot events. Legacy

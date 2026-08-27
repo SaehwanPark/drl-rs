@@ -959,6 +959,136 @@ fn lava_armor_vertical_scenario_preserves_recharge_and_replay() {
 }
 
 #[test]
+fn blaster_periodic_recharge_vertical_scenario_preserves_replay() {
+  let target_position = Position::new(2, 1);
+  let mut scenario = Scenario::from_ascii(
+    "BlasterRechargeVertical",
+    "Blaster recharge after an accepted-command interval",
+    "########\n#@i....#\n#......#\n########\n",
+  )
+  .unwrap();
+  scenario.seed = 31;
+  // Keep the target inert while the 40-command recharge interval elapses.
+  scenario.monsters[0].name = "Recharge Target".to_string();
+  scenario.monsters[0].hp = 1_000;
+  scenario.monsters[0].speed = 1;
+  scenario.monsters[0].ranged_damage = None;
+  scenario.monsters[0].ranged_range = 0;
+  scenario.player_config = Some(PlayerSpawnConfig {
+    hp: 50,
+    max_hp: 50,
+    speed: 100,
+    initial_items: Vec::new(),
+    equipped_weapon: Some(ItemSpawnKind::Blaster),
+    equipped_armor: None,
+    equipped_armor_durability: None,
+  });
+
+  let initial = scenario.instantiate().unwrap();
+  let player_id = initial.world().player_id().unwrap();
+  let weapon_id = initial
+    .world()
+    .player()
+    .unwrap()
+    .equipment()
+    .weapon()
+    .unwrap()
+    .id();
+  let weapon = initial
+    .world()
+    .player()
+    .unwrap()
+    .equipment()
+    .weapon()
+    .unwrap();
+  assert_eq!(weapon.archetype(), drl_protocol::ItemArchetype::Blaster);
+  assert_eq!(weapon.weapon_properties().unwrap().current_clip, 10);
+  assert_eq!(initial.world().player().unwrap().weapon_recharge_timer(), 0);
+
+  let mut commands = Vec::with_capacity(40);
+  commands.push(Command::AttackRanged(target_position));
+  commands.extend(std::iter::repeat_n(Command::Wait, 39));
+
+  let mut direct = initial.clone();
+  let mut expected_events = Vec::new();
+  let attack_events = direct.step(commands[0]).unwrap();
+  assert_eq!(
+    direct
+      .world()
+      .player()
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .current_clip,
+    9
+  );
+  assert_eq!(direct.world().player().unwrap().weapon_recharge_timer(), 1);
+  assert!(
+    !attack_events
+      .iter()
+      .any(|event| matches!(event, GameEvent::WeaponRecharged { .. }))
+  );
+  expected_events.extend(attack_events);
+
+  for (index, command) in commands.iter().copied().enumerate().skip(1) {
+    let step_events = direct.step(command).unwrap();
+    if index < 39 {
+      assert_eq!(
+        direct.world().player().unwrap().weapon_recharge_timer(),
+        (index + 1) as u32
+      );
+      assert!(
+        !step_events
+          .iter()
+          .any(|event| matches!(event, GameEvent::WeaponRecharged { .. }))
+      );
+    } else {
+      assert!(step_events.iter().any(|event| {
+        matches!(
+          event,
+          GameEvent::WeaponRecharged {
+            entity_id,
+            item_id,
+            ammo_recharged: 1,
+            current_clip: 10,
+            max_clip: 10,
+            timer: 30,
+          } if *entity_id == player_id && *item_id == weapon_id
+        )
+      }));
+      assert_eq!(direct.world().player().unwrap().weapon_recharge_timer(), 30);
+      assert_eq!(
+        direct
+          .world()
+          .player()
+          .unwrap()
+          .equipment()
+          .weapon()
+          .unwrap()
+          .weapon_properties()
+          .unwrap()
+          .current_clip,
+        10
+      );
+    }
+    expected_events.extend(step_events);
+  }
+
+  let (game, events, _metrics, replay) =
+    ScenarioRunner::run_commands(&scenario, &commands).unwrap();
+  assert_eq!(game, direct);
+  assert_eq!(events, expected_events);
+  assert_eq!(replay.commands, commands);
+  let (replayed_game, replay_events) = ReplayEngine::run(&replay).unwrap();
+  assert_eq!(replayed_game, game);
+  assert_eq!(replay_events, events);
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}
+
+#[test]
 fn medical_powerarmor_vertical_scenario_preserves_repair_and_replay() {
   let mut scenario = Scenario::from_ascii(
     "MedicalPowerarmorVertical",
