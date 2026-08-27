@@ -3,7 +3,7 @@
 use drl_core::replay::ReplayEngine;
 use drl_protocol::{
   Command, CommandError, Direction, ItemSpawnKind, ItemSpawnSpec, MonsterSpawnSpec, Position,
-  ProceduralGenerationConfig, ReplayLog, ReplayMetadata, ReplayVersion, Turn,
+  ProceduralGenerationConfig, ReplayLog, ReplayMetadata, ReplayVersion, TileKind, Turn,
 };
 
 #[test]
@@ -107,6 +107,27 @@ fn test_replay_validation_catches_invalid_bounds() {
     ItemSpawnKind::Pistol,
   ));
   assert!(ReplayEngine::validate(&oob_item).is_err());
+
+  // Test custom tile out of bounds. Direct core replay validation must reject
+  // the same malformed position that the MCP decoder rejects.
+  let mut oob_custom_tile = ReplayLog::new(1, 10, 10, Position::new(2, 2));
+  oob_custom_tile.record_tile(Position::new(-1, 4), TileKind::Wall);
+  let error = ReplayEngine::validate(&oob_custom_tile).unwrap_err();
+  assert!(error.contains("Custom tile position"));
+  let diagnostic = ReplayEngine::run_with_diagnostics(&oob_custom_tile).unwrap_err();
+  assert_eq!(diagnostic.command_index, 0);
+  assert_eq!(diagnostic.turn, Turn::zero());
+  assert!(matches!(diagnostic.error, CommandError::InvalidCommand(_)));
+
+  let mut valid_custom_tile = ReplayLog::new(1, 10, 10, Position::new(2, 2));
+  valid_custom_tile.record_tile(Position::new(4, 4), TileKind::DoorOpen);
+  assert!(ReplayEngine::validate(&valid_custom_tile).is_ok());
+  let (game, _, _) = ReplayEngine::run_with_diagnostics(&valid_custom_tile).unwrap();
+  assert_eq!(
+    game.world().map().get_tile(Position::new(4, 4)),
+    Some(drl_core::Tile::DoorOpen)
+  );
+  assert!(ReplayEngine::verify_determinism(&valid_custom_tile).unwrap());
 
   // Test stairs out of bounds
   let mut oob_stairs = ReplayLog::new(1, 10, 10, Position::new(2, 2));

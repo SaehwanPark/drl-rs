@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.167`
+Current project version: `0.2.168`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,57 +25,49 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9/Vertical Fidelity — Combat Shotgun Single-Shell Reload
+## 2. Active Implementation Slice: M5/M6 — Direct-Core Replay Custom-Tile Bounds
 
 ### 2.1 Objective
 
-Exercise the legacy-backed Combat Shotgun single-shell reload transition through
-a fixed clip encounter. The same stable scenario/replay command sequence must
-be observable through core events and the browser presentation boundary while
-keeping the transition atomic and bounded.
-
-The legacy Pascal/Lua implementation remains the behavioral reference. Its
-architecture, global callback machinery, and runtime Lua object model remain
-non-goals for reproduction.
+Close the direct-core replay validation gap for explicit custom tile overrides.
+Malformed replay positions must be rejected before map construction or tile
+mutation, with the same spatial contract already enforced by MCP replay JSON
+decoding. Valid custom tiles must continue to replay deterministically.
 
 ### 2.1a Scope and steering gate
 
-- **Steering priority:** Vertical canonical fidelity after the Gate C/D exit
-  gates.
-- **Steering gate:** Gate D behavior evidence; the pinned `IF_SINGLERELOAD`
-  policy becomes one explicit typed transition without a callback registry.
-- **Observable outcome:** A declarative encounter, replay execution, and
-  browser session agree on the exact arena, configured Combat Shotgun
-  identity, depleted clip, one-shell reserve consumption, event ordering,
-  player observation, and pure presentation effects.
-- **Gameplay/replay impact:** The accepted transition advances gameplay
-  semantics from `17` to `18`; replay wire schema, RNG sampling, generator,
-  and ruleset identities remain unchanged.
-- **Protocol/domain ownership:** `drl-protocol` owns stable item identity and
-  commands; core owns typed single-shell reload, ammunition, and event order;
-  render/web own derived observations and effects.
-- **Evidence boundary:** Rust scenario/replay/core/browser-boundary tests are
-  verified, with pinned source behavior recorded in
-  [`docs/legacy-behavior/combat-shotgun.md`](docs/legacy-behavior/combat-shotgun.md).
-  Controlled legacy runtime, browser capture, audio, WebGPU, and audiovisual
-  comparisons remain `NOT_RUN`.
-- **Non-goals:** Combat Shotgun pump-action callback, alternate reload,
-  ammo-pack/prepared-slot behavior, new weapon or monster balance equations,
-  broad content migration, AI policy changes, audiovisual parity, runtime Lua,
-  and new spread/falloff or pellet equations.
+- **Steering priority:** Simulation correctness invariants and deterministic
+  replay boundaries.
+- **Steering gates:** Gate A rejected-input safety and Gate B explicit replay
+  compatibility; no gameplay semantics change is introduced.
+- **Observable outcome:** Direct `ReplayEngine::validate` rejects every
+  out-of-bounds custom tile before execution, while in-bounds overrides remain
+  accepted and deterministic.
+- **Gameplay/replay impact:** Gameplay semantics, replay wire schema, RNG,
+  generator, and ruleset identities remain unchanged; only the project patch
+  version advances from `0.2.167` to `0.2.168`.
+- **Protocol/domain ownership:** `drl-protocol` owns the replay field and tile
+  identity; core owns structural validation and execution ordering; MCP keeps
+  its existing decoder-side safety checks.
+- **Evidence boundary:** Core replay validation tests and the full repository
+  harness are authoritative. Browser, controlled legacy runtime, capture,
+  audio, WebGPU, and audiovisual comparisons are not relevant to this
+  validation-only slice and remain `NOT_RUN`.
+- **Non-goals:** Replay migrations, minimum-dimension policy changes,
+  procedural-generator validation, map semantics, gameplay balance, browser
+  UI, runtime Lua, and broad content migration.
 
 ### 2.2 Why this slice is bounded
 
-The existing Gate C and Gate D work already centralizes stable item identity and
-delivers typed ranged combat, shell ammunition, reload, scheduling, and
-presentation behavior. This slice adds only the typed single-shell policy
-needed by the pinned Combat Shotgun definition and proves it survives one
-canonical scenario/replay and browser boundary without introducing a second
-simulation model or browser-specific wire format.
+The MCP decoder already rejects out-of-bounds custom tiles, but direct core
+replay execution previously ignored the boolean result of `Map::set_tile`.
+This slice adds the missing preflight check in the single authoritative replay
+engine, preserving one validation contract without changing the map API or
+introducing a second replay representation.
 
-Behavioral and presentation mappings remain explicit by design. The encounter
-consumes those typed boundaries while preserving compiler exhaustiveness and
-avoiding a second browser-side simulation model.
+Behavioral and presentation mappings remain explicit by design. Replay
+validation consumes the same typed protocol positions as MCP while preserving
+compiler exhaustiveness and avoiding a second browser-side replay model.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -1259,7 +1251,7 @@ replay, and browser presentation boundaries. Its vertical slice must:
   runtime, browser capture, audio, WebGPU, audiovisual, and broader
   weapon/spread parity as `NOT_RUN`.
 
-### 2.7ao Current vertical Combat Shotgun single-shell reload delivery target
+### 2.7ao Previous vertical Combat Shotgun single-shell reload delivery target
 
 The bounded implementation target for this revision is the callback-derived
 Combat Shotgun single-shell reload correction across the declarative scenario,
@@ -1280,6 +1272,20 @@ replay, and browser presentation boundaries. Its vertical slice must:
   wire schema, RNG sampling, generator, and ruleset identities; controlled
   legacy runtime, browser capture, audio, WebGPU, audiovisual, pump-action,
   alternate-reload, and broader weapon/spread comparisons remain `NOT_RUN`.
+
+### 2.7ap Current direct-core replay custom-tile bounds delivery target
+
+The bounded implementation target for this revision is structural replay
+validation parity for explicit custom tile overrides. Its slice must:
+
+- [x] reject every custom tile position outside replay dimensions with a
+  deterministic validation error before map construction or mutation;
+- [x] accept an in-bounds custom tile and preserve existing replay execution;
+- [x] cover both rejection and acceptance in the core replay-versioning tests,
+  retaining the MCP decoder's matching bounds contract;
+- [x] keep gameplay semantics, replay wire schema, RNG sampling, generator,
+  and ruleset identities unchanged while advancing the patch version from
+  `0.2.167` to `0.2.168`.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 

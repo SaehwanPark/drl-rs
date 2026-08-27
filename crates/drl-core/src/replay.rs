@@ -14,6 +14,9 @@ pub struct ReplayEngine;
 
 impl ReplayEngine {
   /// Validates a replay log's spatial bounds and structural consistency before execution.
+  ///
+  /// Custom tile overrides are checked here so execution cannot silently drop
+  /// an out-of-bounds map mutation.
   pub fn validate(replay: &ReplayLog) -> Result<(), String> {
     if replay.metadata.gameplay_semantics_version
       != drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION
@@ -88,6 +91,15 @@ impl ReplayEngine {
         return Err(format!(
           "Item position {:?} is out of map bounds",
           item.position
+        ));
+      }
+    }
+
+    for &(position, _) in &replay.custom_tiles {
+      if !is_in_bounds(position) {
+        return Err(format!(
+          "Custom tile position {:?} is out of map bounds",
+          position
         ));
       }
     }
