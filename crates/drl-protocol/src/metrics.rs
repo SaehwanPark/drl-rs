@@ -137,6 +137,7 @@ impl EpisodeMetrics {
       | GameEvent::AcidSpitterReloaded { .. }
       | GameEvent::MedicalPowerarmorRepaired { .. }
       | GameEvent::LavaArmorRecharged { .. }
+      | GameEvent::MalekArmorRecharged { .. }
       | GameEvent::SubtleKnifeInvoked { .. }
       | GameEvent::TrigunAltReloaded { .. }
       | GameEvent::GrammatonFireModeChanged { .. }

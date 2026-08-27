@@ -3,6 +3,16 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.181]
+
+- Added typed Malek’s Armor periodic durability recharge: equipped armor
+  restores one durability at accepted command tick 55 and every five ticks
+  below maximum, preserves its timer at full durability, and resets the timer
+  on received damage. Repairs emit a presentation-neutral
+  `MalekArmorRecharged` event; pure behavior, atomicity, replay, MCP, and
+  BrowserSession parity are covered. General armor degradation/resistance,
+  exact legacy runtime cadence, and audiovisual parity remain separate slices.
+
 ## [0.2.180]
 
 - Added the typed Missile Launcher alternate/full reload transition: one

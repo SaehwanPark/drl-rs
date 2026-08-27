@@ -6,6 +6,7 @@ use drl_protocol::{
 use crate::behavior::{LavaRechargeOutcome, MedicalRepairOutcome, WeaponRechargeOutcome};
 use crate::inventory::{Equipment, Inventory};
 use crate::item::Item;
+use crate::malek_armor::MalekRechargeOutcome;
 use crate::subtle_knife::{SubtleKnifeCost, SubtleKnifeError, SubtleKnifeTransition, TiredStatus};
 use crate::trigun::{TrigunCost, TrigunError, TrigunTransition};
 
@@ -237,6 +238,13 @@ impl Actor {
     let armor_prot = self.armor_protection();
     let net_amount = raw_amount.saturating_sub(armor_prot).max(1);
     let taken = self.hp.take_damage(net_amount);
+    if let Some(armor) = self
+      .equipment
+      .armor_mut()
+      .and_then(Item::armor_properties_mut)
+    {
+      armor.reset_malek_recharge();
+    }
     if self.hp.is_dead() {
       self.is_alive = false;
       self.blocks_movement = false;
@@ -382,6 +390,28 @@ impl Actor {
     let item_id = armor_item.id();
     let armor = self.equipment.armor_mut()?.armor_properties_mut()?;
     let outcome = armor.tick_lava_recharge(on_lava);
+    Some((item_id, outcome))
+  }
+
+  /// Current Malek's Armor recharge timer for deterministic inspection.
+  #[must_use]
+  pub fn malek_recharge_timer(&self) -> u32 {
+    self
+      .equipment
+      .armor()
+      .and_then(Item::armor_properties)
+      .map_or(0, |armor| armor.malek_recharge_timer())
+  }
+
+  /// Advances the equipped Malek's Armor behavior, when present.
+  pub fn tick_malek_armor(&mut self) -> Option<(drl_protocol::ItemId, MalekRechargeOutcome)> {
+    let armor_item = self.equipment.armor()?;
+    if armor_item.archetype() != ItemArchetype::MaleksArmor {
+      return None;
+    }
+    let item_id = armor_item.id();
+    let armor = self.equipment.armor_mut()?.armor_properties_mut()?;
+    let outcome = armor.tick_malek_recharge();
     Some((item_id, outcome))
   }
 

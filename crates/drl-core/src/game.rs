@@ -18,6 +18,7 @@ use crate::grid::{Map, Tile};
 use crate::item::Item;
 use crate::jackhammer::{JACKHAMMER_MODE_SCORE_COST, JackhammerTransition};
 use crate::level_definition::standard_procedural;
+use crate::malek_armor::MalekRechargeOutcome;
 use crate::missile_launcher::{MissileLauncherReloadPlan, MissileLauncherTransition};
 use crate::nuke::NukeState;
 use crate::null_pointer::{
@@ -305,6 +306,7 @@ impl Game {
     if !self.state.is_game_over {
       self.tick_player_medical_powerarmor(player_id, &mut events)?;
       self.tick_player_lava_armor(player_id, &mut events)?;
+      self.tick_player_malek_armor(player_id, &mut events)?;
       self.tick_player_weapon_recharge(player_id, &mut events)?;
     }
 
@@ -840,6 +842,42 @@ impl Game {
         .and_then(Item::armor_properties)
         .map_or(0, |properties| properties.durability);
       events.push(GameEvent::LavaArmorRecharged {
+        entity_id: player_id,
+        item_id,
+        durability_restored,
+        durability_remaining,
+        timer,
+      });
+    }
+    Ok(())
+  }
+
+  /// Advances Malek's Armor after an accepted command.
+  fn tick_player_malek_armor(
+    &mut self,
+    player_id: drl_protocol::EntityId,
+    events: &mut Vec<GameEvent>,
+  ) -> Result<(), CommandError> {
+    let player = self
+      .state
+      .world
+      .get_actor_mut(player_id)
+      .ok_or(CommandError::EntityNotFound(player_id))?;
+    let Some((item_id, outcome)) = player.tick_malek_armor() else {
+      return Ok(());
+    };
+
+    if let MalekRechargeOutcome::Recharged {
+      durability_restored,
+      timer,
+    } = outcome
+    {
+      let durability_remaining = player
+        .equipment()
+        .armor()
+        .and_then(Item::armor_properties)
+        .map_or(0, |properties| properties.durability);
+      events.push(GameEvent::MalekArmorRecharged {
         entity_id: player_id,
         item_id,
         durability_restored,

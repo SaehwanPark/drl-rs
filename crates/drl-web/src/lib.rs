@@ -3724,6 +3724,103 @@ mod tests {
   }
 
   #[test]
+  fn maleks_armor_vertical_browser_boundary_matches_direct_core_presentation() {
+    let player_position = Position::new(1, 1);
+    let setup_replay =
+      ReplayLog::new(24, 8, 4, player_position).with_player_config(PlayerSpawnConfig {
+        hp: 50,
+        max_hp: 50,
+        speed: 100,
+        initial_items: Vec::new(),
+        equipped_weapon: Some(ItemSpawnKind::Pistol),
+        equipped_armor: Some(ItemSpawnKind::MaleksArmor),
+        equipped_armor_durability: Some(99),
+      });
+
+    let (initial, setup_events) =
+      drl_core::ReplayEngine::run(&setup_replay).expect("vertical replay setup");
+    assert!(setup_events.is_empty());
+    let mut scenario = drl_core::scenario::Scenario::from_ascii(
+      "MalekArmorVertical",
+      "Malek's Armor periodic durability recharge encounter",
+      "########\n#@.....#\n#......#\n########\n",
+    )
+    .expect("vertical scenario fixture");
+    scenario.seed = 24;
+    scenario.player_config = Some(PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: Vec::new(),
+      equipped_weapon: Some(ItemSpawnKind::Pistol),
+      equipped_armor: Some(ItemSpawnKind::MaleksArmor),
+      equipped_armor_durability: Some(99),
+    });
+    assert_eq!(
+      scenario.instantiate().expect("scenario initial state"),
+      initial
+    );
+
+    let mut direct = initial.clone();
+    let mut browser = BrowserSession::from_game(initial);
+    let commands = [Command::Wait; 56];
+    let mut expected_events = Vec::new();
+    for (index, command) in commands.iter().copied().enumerate() {
+      let direct_events = direct.step(command).expect("direct wait");
+      let step = browser.submit(command).expect("browser wait");
+      assert_eq!(step.events, direct_events);
+      assert_eq!(step.after, direct.observe_player());
+      assert_eq!(step.effects, Vec::new());
+      assert_eq!(
+        step.effects,
+        drl_render::effect_timeline_for_observations(&step.before, &step.after, &direct_events,)
+      );
+      assert_eq!(browser.scene(), RenderScene::from_observation(&step.after));
+      if index < 54 {
+        assert_eq!(
+          direct.world().player().unwrap().malek_recharge_timer(),
+          (index + 1) as u32
+        );
+      } else if index == 54 {
+        assert!(direct_events.iter().any(|event| {
+          matches!(
+            event,
+            drl_protocol::GameEvent::MalekArmorRecharged {
+              durability_restored: 1,
+              durability_remaining: 100,
+              timer: 50,
+              ..
+            }
+          )
+        }));
+        assert_eq!(direct.world().player().unwrap().malek_recharge_timer(), 50);
+      } else {
+        assert!(
+          !direct_events
+            .iter()
+            .any(|event| matches!(event, drl_protocol::GameEvent::MalekArmorRecharged { .. }))
+        );
+        assert_eq!(direct.world().player().unwrap().malek_recharge_timer(), 50);
+      }
+      expected_events.extend(direct_events);
+    }
+
+    assert_eq!(browser.observation(), direct.observe_player());
+    assert_eq!(browser.replay_log().commands, commands);
+    let mut command_replay = setup_replay;
+    for command in commands {
+      command_replay.record_command(command);
+    }
+    let (replayed, replay_events) =
+      drl_core::ReplayEngine::run(&command_replay).expect("vertical command replay");
+    assert_eq!(replay_events, expected_events);
+    assert_eq!(replayed, direct);
+    assert!(
+      drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism")
+    );
+  }
+
+  #[test]
   fn former_human_profile_progression_vertical_browser_boundary_matches_direct_core_presentation() {
     let player_position = Position::new(1, 1);
     let setup_replay =

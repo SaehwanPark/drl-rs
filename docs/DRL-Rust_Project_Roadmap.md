@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.180`
+Current project version: `0.2.181`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.180)
+## 3. Current Progress Summary (`VERSION` 0.2.181)
 
 ### Delivered Foundations
 
@@ -475,6 +475,14 @@ verification item uses explicit status semantics:
   rejections are atomic, with scenario/replay, MCP legal-action, and
   BrowserSession boundary parity covered; rocket-jump, explosion, runtime, and
   audiovisual parity remain open.
+- **M9 Malek’s Armor periodic recharge (`0.2.181`):** Equipped Malek’s Armor
+  now owns a typed delay-50/cadence-5 timer, restoring one durability at
+  accepted command tick 55 and every five ticks below maximum. Full armor
+  preserves its timer, received damage resets it, and the neutral
+  `MalekArmorRecharged` event is covered by pure, scenario/replay, MCP, and
+  BrowserSession/direct-core parity tests. General armor degradation,
+  resistance, exact legacy scheduler cadence, runtime, and audiovisual parity
+  remain open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1051,6 +1059,13 @@ scripting.
   command tick 42, then every two ticks below capacity, with scenario/replay
   and BrowserSession parity. Alternate nuke/chainfire and exact runtime/
   presentation parity remain open.
+- [x] Malek’s Armor periodic recharge is behavior-covered by an explicit
+  delay-50/cadence-5/amount-1 armor-owned timer: one durability returns at
+  accepted command tick 55, then every five ticks below maximum; full armor
+  preserves its timer, received damage resets it, and
+  `MalekArmorRecharged` is covered by pure, replay, MCP, and browser-boundary
+  tests. General armor degradation/resistance and exact runtime cadence remain
+  open.
 - [ ] Full migration of legacy monsters, weapons, armor, mods, and consumable
   items.
 - [ ] Full migration of special levels, vaults, and dungeon branches.
