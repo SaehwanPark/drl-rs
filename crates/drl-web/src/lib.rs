@@ -5227,6 +5227,106 @@ mod tests {
   }
 
   #[test]
+  fn missile_launcher_single_shell_reload_browser_boundary_matches_direct_core() {
+    let player_position = Position::new(1, 1);
+    let target_position = Position::new(3, 1);
+    let player_config = PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: vec![ItemSpawnKind::AmmoRockets(2)],
+      equipped_weapon: Some(ItemSpawnKind::MissileLauncher),
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    };
+    let mut setup_replay =
+      ReplayLog::new(1, 8, 4, player_position).with_player_config(player_config.clone());
+    setup_replay.record_monster(
+      MonsterSpawnSpec::new(target_position, "Static Target", 1_000, 1, (2, 5))
+        .with_ranged_combat((1, 4), 6, 65)
+        .with_death_drop(Some(ItemSpawnKind::Ammo9mm(10))),
+    );
+    let (initial, setup_events) =
+      drl_core::ReplayEngine::run(&setup_replay).expect("vertical replay setup");
+    assert!(setup_events.is_empty());
+
+    let mut scenario = drl_core::scenario::Scenario::from_ascii(
+      "MissileLauncherSingleShellVertical",
+      "Missile Launcher single-shell reload after clip depletion",
+      "########\n#@.h...#\n#......#\n########\n",
+    )
+    .expect("vertical scenario fixture");
+    scenario.seed = 1;
+    scenario.monsters[0].name = "Static Target".to_string();
+    scenario.monsters[0].hp = 1_000;
+    scenario.monsters[0].speed = 1;
+    scenario.player_config = Some(player_config);
+    assert_eq!(
+      scenario.instantiate().expect("scenario initial state"),
+      initial
+    );
+
+    let commands = vec![
+      Command::AttackRanged(target_position),
+      Command::AttackRanged(target_position),
+      Command::AttackRanged(target_position),
+      Command::AttackRanged(target_position),
+      Command::Reload,
+      Command::Reload,
+    ];
+    let mut direct = initial.clone();
+    let mut browser = BrowserSession::from_game(initial);
+    let mut all_events = Vec::new();
+    for command in commands.iter().copied() {
+      let expected_events = direct
+        .step(command)
+        .expect("direct Missile Launcher command");
+      let step = browser
+        .submit(command)
+        .expect("browser Missile Launcher command");
+      assert_eq!(step.events, expected_events);
+      assert_eq!(step.after, direct.observe_player());
+      assert_eq!(
+        step.effects,
+        drl_render::effect_timeline_for_observations(&step.before, &step.after, &expected_events,)
+      );
+      all_events.extend(expected_events);
+    }
+
+    let weapon = direct
+      .world()
+      .player()
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap();
+    assert_eq!(weapon.current_clip, 2);
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .inventory()
+        .total_ammo(drl_protocol::AmmoType::Rocket),
+      0
+    );
+    assert_eq!(browser.observation(), direct.observe_player());
+    assert_eq!(browser.replay_log().commands, commands);
+
+    let mut command_replay = setup_replay;
+    for command in commands {
+      command_replay.record_command(command);
+    }
+    let (replayed, replay_events) =
+      drl_core::ReplayEngine::run(&command_replay).expect("vertical command replay");
+    assert_eq!(replayed, direct);
+    assert_eq!(replay_events, all_events);
+    assert!(drl_core::ReplayEngine::verify_determinism(&command_replay).unwrap());
+  }
+
+  #[test]
   fn chainsaw_melee_vertical_browser_boundary_matches_direct_core_presentation() {
     let player_position = Position::new(1, 1);
     let player_config = PlayerSpawnConfig {

@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.178`
+Current project version: `0.2.179`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.178)
+## 3. Current Progress Summary (`VERSION` 0.2.179)
 
 ### Delivered Foundations
 
@@ -461,6 +461,12 @@ verification item uses explicit status semantics:
   five ticks below its 40-cell capacity. Scenario/replay and browser-boundary
   parity use the existing `WeaponRecharged` event; alternate nuke,
   exact-hit/explosion, runtime, and audiovisual parity remain open.
+- **M9 vertical Missile Launcher single-shell reload (`0.2.179`):** The exotic
+  Missile Launcher now honors its pinned `IF_SINGLERELOAD` policy, loading one
+  rocket per accepted ordinary reload while preserving atomic full/no-reserve
+  rejection and shared `WeaponReloaded` event ordering. Scenario/replay and
+  BrowserSession boundary parity are covered; alternate/full reload,
+  rocket-jump, explosion, runtime, and audiovisual parity remain open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1022,6 +1028,11 @@ scripting.
   reload is delivered in `0.2.171`, and Combat Shotgun alternate full reload
   with chamber reset is delivered in `0.2.172`; partial reserve policy and
   controlled legacy runtime comparison remain open.
+- [x] Missile Launcher ordinary reload preserves the pinned `IF_SINGLERELOAD`
+  policy: one rocket loads per accepted command, full/no-reserve rejection is
+  atomic, and scenario/replay/browser-boundary parity is verified; alternate
+  full reload, rocket-jump, explosion, and controlled legacy runtime
+  comparison remain open.
 - [x] Nuclear Plasma Rifle periodic recharge is behavior-covered by an
   explicit delay-40/cadence-2/amount-1 policy: one cell returns at accepted
   command tick 42, then every two ticks below capacity, with scenario/replay

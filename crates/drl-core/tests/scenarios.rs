@@ -2427,6 +2427,99 @@ fn rocket_launcher_vertical_scenario_preserves_one_shot_reload_and_replay() {
 }
 
 #[test]
+fn missile_launcher_vertical_scenario_preserves_single_shell_reload_and_replay() {
+  let mut scenario = Scenario::from_ascii(
+    "MissileLauncherSingleShellVertical",
+    "Missile Launcher single-shell reload after deterministic clip depletion",
+    "########\n#@.h...#\n#......#\n########\n",
+  )
+  .unwrap();
+  scenario.seed = 1;
+  scenario.monsters[0].name = "Static Target".to_string();
+  scenario.monsters[0].hp = 1_000;
+  scenario.monsters[0].speed = 1;
+  scenario.player_config = Some(PlayerSpawnConfig {
+    hp: 50,
+    max_hp: 50,
+    speed: 100,
+    initial_items: vec![ItemSpawnKind::AmmoRockets(2)],
+    equipped_weapon: Some(ItemSpawnKind::MissileLauncher),
+    equipped_armor: None,
+    equipped_armor_durability: None,
+  });
+
+  let initial = scenario.instantiate().unwrap();
+  let player_id = initial.world().player_id().unwrap();
+  let target = Position::new(3, 1);
+  let commands = vec![
+    Command::AttackRanged(target),
+    Command::AttackRanged(target),
+    Command::AttackRanged(target),
+    Command::AttackRanged(target),
+    Command::Reload,
+    Command::Reload,
+  ];
+  let (game, events, metrics, replay) = ScenarioRunner::run_commands(&scenario, &commands).unwrap();
+
+  assert_eq!(metrics.outcome, RunOutcome::InProgress);
+  assert_eq!(metrics.shots_fired, 4);
+  assert!(metrics.shots_hit <= metrics.shots_fired);
+  let weapon = game
+    .world()
+    .player()
+    .unwrap()
+    .equipment()
+    .weapon()
+    .unwrap()
+    .weapon_properties()
+    .unwrap();
+  assert_eq!(weapon.current_clip, 2);
+  assert_eq!(
+    game
+      .world()
+      .player()
+      .unwrap()
+      .inventory()
+      .total_ammo(drl_protocol::AmmoType::Rocket),
+    0
+  );
+
+  let reloads: Vec<_> = events
+    .iter()
+    .enumerate()
+    .filter(|(_, event)| {
+      matches!(
+        event,
+        GameEvent::WeaponReloaded {
+          entity_id,
+          ammo_loaded: 1,
+          current_clip: 1..=2,
+          max_clip: 4,
+        } if *entity_id == player_id
+      )
+    })
+    .collect();
+  assert_eq!(reloads.len(), 2);
+  for (index, _) in reloads {
+    assert!(matches!(
+      events.get(index + 1),
+      Some(GameEvent::ActionCostPaid { entity_id, cost: ActionCost(1000) })
+        if *entity_id == player_id
+    ));
+    assert!(matches!(
+      events.get(index + 2),
+      Some(GameEvent::TurnEnded { .. })
+    ));
+  }
+
+  assert_eq!(replay.commands, commands);
+  let (replayed_game, replay_events) = ReplayEngine::run(&replay).unwrap();
+  assert_eq!(replayed_game, game);
+  assert_eq!(replay_events, events);
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}
+
+#[test]
 fn chainsaw_melee_vertical_scenario_preserves_damage_and_replay() {
   let mut scenario = Scenario::from_ascii(
     "ChainsawMeleeVertical",
