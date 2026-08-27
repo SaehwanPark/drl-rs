@@ -10,6 +10,7 @@ use crate::behavior::{
   WeaponRechargeOutcome, WeaponRechargePolicy, WeaponRechargeState,
 };
 use crate::item_definition::{ItemDefinitionKind, definition_for_spawn_kind};
+use crate::malek_armor::{MalekRechargeOutcome, MalekRechargeState};
 use crate::pump_action::{PumpActionState, ReloadTransition};
 
 /// Physical properties for a weapon instance.
@@ -49,6 +50,7 @@ pub struct ArmorProperties {
   pub max_durability: u32,
   medical_repair: MedicalRepairState,
   lava_recharge: LavaRechargeState,
+  malek_recharge: MalekRechargeState,
 }
 
 impl ArmorProperties {
@@ -61,6 +63,7 @@ impl ArmorProperties {
       max_durability,
       medical_repair: MedicalRepairState::new(),
       lava_recharge: LavaRechargeState::new(),
+      malek_recharge: MalekRechargeState::new(),
     }
   }
 
@@ -86,6 +89,24 @@ impl ArmorProperties {
     self
       .lava_recharge
       .tick(on_lava, &mut self.durability, self.max_durability)
+  }
+
+  /// Returns the armor-owned Malek's Armor timer.
+  #[must_use]
+  pub const fn malek_recharge_timer(&self) -> u32 {
+    self.malek_recharge.timer()
+  }
+
+  /// Advances the armor-owned Malek's Armor transition.
+  pub fn tick_malek_recharge(&mut self) -> MalekRechargeOutcome {
+    self
+      .malek_recharge
+      .tick(&mut self.durability, self.max_durability)
+  }
+
+  /// Resets Malek's Armor's timer after damage is received.
+  pub const fn reset_malek_recharge(&mut self) {
+    self.malek_recharge.reset();
   }
 }
 

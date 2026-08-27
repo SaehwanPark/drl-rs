@@ -659,6 +659,138 @@ fn rejected_commands_roll_back_lava_recharge_state() {
 }
 
 #[test]
+fn maleks_armor_recharges_after_fifty_five_accepted_commands() {
+  let mut game = Game::new_arena(784, 12, 12).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let armor_id = game.world_mut().allocate_item_id();
+  let player = game.world_mut().get_actor_mut(player_id).unwrap();
+  player
+    .equipment_mut()
+    .equip(EquipmentSlot::Armor, Item::maleks_armor(armor_id))
+    .unwrap();
+  player
+    .equipment_mut()
+    .armor_mut()
+    .unwrap()
+    .armor_properties_mut()
+    .unwrap()
+    .durability = 99;
+
+  for _ in 0..54 {
+    let events = game.step(Command::Wait).unwrap();
+    assert!(
+      !events
+        .iter()
+        .any(|event| matches!(event, GameEvent::MalekArmorRecharged { .. }))
+    );
+  }
+  assert_eq!(game.world().player().unwrap().malek_recharge_timer(), 54);
+
+  let events = game.step(Command::Wait).unwrap();
+  let recharge_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::MalekArmorRecharged {
+          entity_id,
+          item_id,
+          durability_restored: 1,
+          durability_remaining: 100,
+          timer: 50,
+        } if *entity_id == player_id && *item_id == armor_id
+      )
+    })
+    .expect("Malek's Armor recharge event must be emitted");
+  assert_eq!(recharge_index, 2);
+  assert!(matches!(events[0], GameEvent::TurnStarted { .. }));
+  assert!(matches!(events[1], GameEvent::EntityWaited { .. }));
+  assert!(matches!(events[3], GameEvent::ActionCostPaid { .. }));
+  assert!(matches!(events[4], GameEvent::TurnEnded { .. }));
+  assert_eq!(game.world().player().unwrap().malek_recharge_timer(), 50);
+
+  let before_full = game.clone();
+  let events = game.step(Command::Wait).unwrap();
+  assert!(
+    !events
+      .iter()
+      .any(|event| matches!(event, GameEvent::MalekArmorRecharged { .. }))
+  );
+  assert_eq!(game.world().player().unwrap().malek_recharge_timer(), 50);
+  assert_ne!(
+    game, before_full,
+    "accepted full-armor wait still advances turn"
+  );
+}
+
+#[test]
+fn maleks_armor_damage_resets_recharge_timer() {
+  let mut game = Game::new_arena(785, 12, 12).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let armor_id = game.world_mut().allocate_item_id();
+  let player = game.world_mut().get_actor_mut(player_id).unwrap();
+  player
+    .equipment_mut()
+    .equip(EquipmentSlot::Armor, Item::maleks_armor(armor_id))
+    .unwrap();
+  player
+    .equipment_mut()
+    .armor_mut()
+    .unwrap()
+    .armor_properties_mut()
+    .unwrap()
+    .durability = 99;
+
+  for _ in 0..12 {
+    game.step(Command::Wait).unwrap();
+  }
+  assert_eq!(game.world().player().unwrap().malek_recharge_timer(), 12);
+  game
+    .world_mut()
+    .apply_damage(player_id, 3, drl_protocol::DamageSource::Environment)
+    .unwrap();
+  assert_eq!(game.world().player().unwrap().malek_recharge_timer(), 0);
+}
+
+#[test]
+fn rejected_commands_roll_back_maleks_armor_recharge_state() {
+  let mut game = Game::new(786, 5, 5, Position::new(1, 1)).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let armor_id = game.world_mut().allocate_item_id();
+  let player = game.world_mut().get_actor_mut(player_id).unwrap();
+  player
+    .equipment_mut()
+    .equip(EquipmentSlot::Armor, Item::maleks_armor(armor_id))
+    .unwrap();
+  player
+    .equipment_mut()
+    .armor_mut()
+    .unwrap()
+    .armor_properties_mut()
+    .unwrap()
+    .durability = 99;
+  for _ in 0..4 {
+    game.step(Command::Wait).unwrap();
+  }
+
+  let before = game.clone();
+  assert!(
+    game
+      .step(Command::AttackRanged(Position::new(99, 99)))
+      .is_err()
+  );
+  assert_eq!(game, before);
+
+  let events = game.step(Command::Wait).unwrap();
+  assert!(
+    !events
+      .iter()
+      .any(|event| matches!(event, GameEvent::MalekArmorRecharged { .. }))
+  );
+  assert_eq!(game.world().player().unwrap().malek_recharge_timer(), 5);
+}
+
+#[test]
 fn blaster_recharge_timer_resets_on_fire_and_rejected_commands_are_atomic() {
   let mut game = Game::new(783, 10, 10, Position::new(2, 2)).unwrap();
   let player_id = game.world().player_id().unwrap();

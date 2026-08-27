@@ -1371,6 +1371,108 @@ fn medical_powerarmor_vertical_scenario_preserves_repair_and_replay() {
 }
 
 #[test]
+fn maleks_armor_vertical_scenario_preserves_recharge_and_replay() {
+  let mut scenario = Scenario::from_ascii(
+    "MalekArmorVertical",
+    "Malek's Armor periodic durability recharge encounter",
+    "########\n#@.....#\n#......#\n########\n",
+  )
+  .unwrap();
+  scenario.seed = 24;
+  scenario.player_config = Some(PlayerSpawnConfig {
+    hp: 50,
+    max_hp: 50,
+    speed: 100,
+    initial_items: Vec::new(),
+    equipped_weapon: Some(ItemSpawnKind::Pistol),
+    equipped_armor: Some(ItemSpawnKind::MaleksArmor),
+    equipped_armor_durability: Some(99),
+  });
+
+  let initial = scenario.instantiate().unwrap();
+  let player_id = initial.world().player_id().unwrap();
+  let armor_id = initial
+    .world()
+    .player()
+    .unwrap()
+    .equipment()
+    .armor()
+    .unwrap()
+    .id();
+  let commands = [Command::Wait; 56];
+  let mut direct = initial.clone();
+  let mut expected_events = Vec::new();
+
+  for (index, command) in commands.iter().copied().enumerate() {
+    let step_events = direct.step(command).unwrap();
+    if index < 54 {
+      assert_eq!(
+        direct.world().player().unwrap().malek_recharge_timer(),
+        (index + 1) as u32
+      );
+      assert!(
+        !step_events
+          .iter()
+          .any(|event| matches!(event, GameEvent::MalekArmorRecharged { .. }))
+      );
+    } else if index == 54 {
+      let recharge_index = step_events
+        .iter()
+        .position(|event| {
+          matches!(
+            event,
+            GameEvent::MalekArmorRecharged {
+              entity_id,
+              item_id,
+              durability_restored: 1,
+              durability_remaining: 100,
+              timer: 50,
+            } if *entity_id == player_id && *item_id == armor_id
+          )
+        })
+        .expect("Malek's Armor recharge event must be emitted");
+      assert_eq!(recharge_index, 2);
+      assert!(matches!(step_events[0], GameEvent::TurnStarted { .. }));
+      assert!(matches!(step_events[1], GameEvent::EntityWaited { .. }));
+      assert!(matches!(step_events[3], GameEvent::ActionCostPaid { .. }));
+      assert!(matches!(step_events[4], GameEvent::TurnEnded { .. }));
+      assert_eq!(direct.world().player().unwrap().malek_recharge_timer(), 50);
+      assert_eq!(
+        direct
+          .world()
+          .player()
+          .unwrap()
+          .equipment()
+          .armor()
+          .unwrap()
+          .armor_properties()
+          .unwrap()
+          .durability,
+        100
+      );
+    } else {
+      assert_eq!(direct.world().player().unwrap().malek_recharge_timer(), 50);
+      assert!(
+        !step_events
+          .iter()
+          .any(|event| matches!(event, GameEvent::MalekArmorRecharged { .. }))
+      );
+    }
+    expected_events.extend(step_events);
+  }
+
+  let (game, events, _metrics, replay) =
+    ScenarioRunner::run_commands(&scenario, &commands).unwrap();
+  assert_eq!(game, direct);
+  assert_eq!(events, expected_events);
+  assert_eq!(replay.commands, commands);
+  let (replayed_game, replay_events) = ReplayEngine::run(&replay).unwrap();
+  assert_eq!(replayed_game, game);
+  assert_eq!(replay_events, events);
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}
+
+#[test]
 fn former_human_profile_progression_vertical_scenario_preserves_combat_pickup_and_descent() {
   let mut scenario = Scenario::from_ascii(
     "FormerHumanProfileProgressionVertical",

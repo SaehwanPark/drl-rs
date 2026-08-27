@@ -65,6 +65,7 @@ pub fn cues_for_events(events: &[GameEvent]) -> Vec<AudioCue> {
       | GameEvent::WeaponRecharged { .. }
       | GameEvent::MedicalPowerarmorRepaired { .. }
       | GameEvent::LavaArmorRecharged { .. }
+      | GameEvent::MalekArmorRecharged { .. }
       | GameEvent::SubtleKnifeInvoked { .. }
       | GameEvent::TrigunAltReloaded { .. }
       | GameEvent::GrammatonFireModeChanged { .. }

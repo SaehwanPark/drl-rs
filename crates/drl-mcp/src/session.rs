@@ -949,6 +949,26 @@ pub fn game_event_to_json(event: &GameEvent) -> JsonValue {
       );
       map.insert("timer".to_string(), JsonValue::from(*timer));
     }
+    GameEvent::MalekArmorRecharged {
+      entity_id,
+      item_id,
+      durability_restored,
+      durability_remaining,
+      timer,
+    } => {
+      map.insert("type".to_string(), JsonValue::from("MalekArmorRecharged"));
+      map.insert("entity_id".to_string(), JsonValue::from(entity_id.as_u64()));
+      map.insert("item_id".to_string(), JsonValue::from(item_id.as_u64()));
+      map.insert(
+        "durability_restored".to_string(),
+        JsonValue::from(*durability_restored),
+      );
+      map.insert(
+        "durability_remaining".to_string(),
+        JsonValue::from(*durability_remaining),
+      );
+      map.insert("timer".to_string(), JsonValue::from(*timer));
+    }
     GameEvent::SubtleKnifeInvoked {
       entity_id,
       item_id,
@@ -1678,6 +1698,35 @@ mod tests {
       Some(10)
     );
     assert_eq!(map.get("max_clip").and_then(JsonValue::as_i64), Some(10));
+  }
+
+  #[test]
+  fn maleks_armor_recharged_event_projects_to_mcp_json() {
+    let value = game_event_to_json(&GameEvent::MalekArmorRecharged {
+      entity_id: drl_protocol::EntityId::new(1),
+      item_id: ItemId::new(2),
+      durability_restored: 1,
+      durability_remaining: 100,
+      timer: 50,
+    });
+    let JsonValue::Object(map) = value else {
+      panic!("event projection must be an object");
+    };
+    assert_eq!(
+      map.get("type").and_then(JsonValue::as_str),
+      Some("MalekArmorRecharged")
+    );
+    assert_eq!(map.get("entity_id").and_then(JsonValue::as_i64), Some(1));
+    assert_eq!(map.get("item_id").and_then(JsonValue::as_i64), Some(2));
+    assert_eq!(
+      map.get("durability_restored").and_then(JsonValue::as_i64),
+      Some(1)
+    );
+    assert_eq!(
+      map.get("durability_remaining").and_then(JsonValue::as_i64),
+      Some(100)
+    );
+    assert_eq!(map.get("timer").and_then(JsonValue::as_i64), Some(50));
   }
 
   #[test]

@@ -27,6 +27,7 @@ pub mod item_definition;
 pub mod jackhammer;
 pub mod level_definition;
 pub mod loot_definition;
+pub mod malek_armor;
 pub mod missile_launcher;
 pub mod monster_roll_definition;
 pub mod nuke;
@@ -73,6 +74,9 @@ pub use inventory::{DEFAULT_INVENTORY_CAPACITY, Equipment, Inventory};
 pub use item::Item;
 pub use jackhammer::{JACKHAMMER_MODE_SCORE_COST, JackhammerTransition};
 pub use level_definition::{LEVEL_DEFINITIONS, LevelDefinition, standard_procedural};
+pub use malek_armor::{
+  MALEK_ARMOR_RECHARGE_AMOUNT, MALEK_ARMOR_RECHARGE_DELAY, MALEK_ARMOR_RECHARGE_TICK,
+};
 pub use missile_launcher::MISSILE_LAUNCHER_ALT_RELOAD_CAP;
 pub use nuke::{NukeError, NukeState};
 pub use pump_action::PUMP_ACTION_COST;

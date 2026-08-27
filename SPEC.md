@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.180`
+Current project version: `0.2.181`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,50 +25,52 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Missile Launcher Alternate/Full Reload
+## 2. Active Implementation Slice: M9 — Malek’s Armor Periodic Recharge
 
 ### 2.1 Objective
 
-Honor the legacy Missile Launcher's `perk_altreload_full` contract in the
-typed Rust alternate-reload path, with deterministic all-deficit transitions
-and scenario, replay, MCP, and browser-boundary coverage.
+Honor the legacy Malek’s Armor periodic recharge callback in the typed Rust
+armor path, with deterministic timer transitions, damage-reset behavior, and
+scenario, replay, MCP, and browser-boundary coverage.
 
 ### 2.1a Scope and steering gate
 
 - **Steering priority:** Vertical canonical fidelity and typed legacy behavior.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, and Gate D callback behavior evidence.
-- **Observable outcome:** An equipped Missile Launcher with a clip deficit
-  loads the complete deficit on one accepted `AltReload`; full clips and
-  insufficient reserve ammunition reject without mutation.
-- **Gameplay/replay impact:** Gameplay semantics, replay wire schema, RNG,
-  generator, and ruleset identities remain unchanged; gameplay semantics
--  advance from `26` to `27` and project version advances from `0.2.179` to
-  `0.2.180`.
-- **Protocol/domain ownership:** `drl-core` owns the typed full-reload planner;
-  `drl-protocol` retains the existing `AltReload` command and
-  `WeaponReloaded` event; MCP, render, and audio retain their existing
-  command/event projections.
+- **Observable outcome:** An equipped Malek’s Armor item below maximum
+  durability advances its recharge timer once per accepted player command;
+  durability increases by one at 55 accepted ticks and then every 5 ticks
+  while below maximum. Full durability leaves the timer unchanged, and
+  received damage resets it.
+- **Gameplay/replay impact:** Gameplay semantics advance from `27` to `28`
+  and project version advances from `0.2.180` to `0.2.181`; replay wire
+  schema, RNG, generator, and ruleset identities remain unchanged.
+- **Protocol/domain ownership:** `drl-core` owns the typed Malek recharge
+  state and policy; `drl-protocol` exposes an explicit
+  `MalekArmorRecharged` event, while MCP, render, and audio provide stable
+  projections without presentation cues.
 - **Evidence boundary:** Pinned legacy source at revision
   `17d9be1204751899b2d69d8d3a2dde247bd0cc5c` plus core, scenario, replay, MCP,
   and browser-boundary tests are authoritative. Controlled legacy runtime and
   audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** Missile Launcher rocket-jump and explosion behavior, other
-  families/mods, partial-reserve policy, replay-file IO/migrations, exact
-  legacy runtime timing, and audiovisual parity.
+- **Non-goals:** General armor durability degradation or resistance, other
+  rechargeable armor/items, boots (no protocol slot), replay-file
+  IO/migrations, exact legacy scheduler cadence, and audiovisual parity.
 
 ### 2.2 Why this slice is bounded
 
-The pinned Missile Launcher definition carries `IF_SINGLERELOAD` with a
-four-rocket clip and adds `perk_altreload_full`. The legacy callback delegates
-to `full_reload`, which loads the complete clip deficit and caps cumulative
-shell cost at `2500`. This slice ports the all-deficit transition atomically;
-rocket-jump and explosion behavior remain separate.
+The pinned Malek’s Armor definition sets a recharge delay of `50`, cadence of
+`5`, and amount `1`. The generic legacy callback only advances an equipped
+armor item while durability is below its maximum, subtracts one cadence from
+the retained timer after each repair, and resets the timer on received damage.
+The Rust slice models accepted player commands as the deterministic scheduler
+boundary; it does not claim the legacy actor-tick cadence.
 
-Full reload is deterministic, consumes exactly the deficit from loose rockets,
-and uses the existing full-game rollback guard so rejected commands restore
-clip, inventory, turn, and RNG state exactly. Regular `Reload` remains the
-single-shell path delivered previously.
+Recharge is deterministic, clamps at maximum durability, consumes no inventory
+or action cost, and is rolled back with the complete `Game` transaction when a
+command is rejected. General armor damage/degradation and audiovisual callback
+parity remain separate.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -1548,6 +1550,30 @@ BrowserSession parity. Its acceptance criteria are:
   `0.2.179` to `0.2.180` while preserving replay V2 wire, RNG, generator, and
   ruleset identities; rocket-jump, explosion, runtime, and audiovisual parity
   remain open.
+
+### 2.7bc Current Malek’s Armor periodic-recharge delivery target
+
+The bounded implementation target for this revision is the pinned Malek’s
+Armor recharge callback across typed core behavior, deterministic damage-reset
+semantics, scenario/replay determinism, MCP event projection, and
+BrowserSession parity. Its acceptance criteria are:
+
+- [x] construct an equipped Malek’s Armor item with a typed policy of delay
+  `50`, cadence `5`, amount `1`, and an explicit timer state;
+- [x] tick the equipped armor once after each accepted player command, restore
+  one durability at accepted tick `55`, then restore one durability every 5
+  accepted ticks while below maximum, clamping at maximum;
+- [x] leave full durability’s timer unchanged and reset the timer when the
+  actor receives damage; rejected commands restore timer and durability
+  through the existing transaction guard;
+- [x] emit `MalekArmorRecharged` with the restored amount, remaining
+  durability, and retained timer, and verify pure policy boundaries,
+  ScenarioRunner/replay determinism, MCP JSON projection, and
+  BrowserSession/direct-core parity;
+- [x] advance gameplay semantics from `27` to `28` and project version from
+  `0.2.180` to `0.2.181` while preserving replay V2 wire, RNG, generator, and
+  ruleset identities; general armor degradation/resistance, other recharge
+  families, runtime, and audiovisual parity remain open.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 

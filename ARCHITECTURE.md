@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.180`
+Current project version: `0.2.181`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -169,6 +169,11 @@ Presentation Boundary
     reload uses a dedicated typed planner that preflights the entire deficit,
     consumes exact loose-rocket reserve, and caps the aggregate action cost at
     2,500 units while retaining the same event contract.
+    Malek’s Armor uses the focused `malek_armor` state machine with a typed
+    delay-50/cadence-5 policy; accepted-command ticks restore durability below
+    maximum, damage resets its timer, and successful repairs emit the neutral
+    `GameEvent::MalekArmorRecharged` event. General armor degradation and
+    resistance remain separate policy work.
     The pinned `IF_NORELOAD` families use an explicit item policy that rejects
     ordinary `Reload` before mutation; this remains separate from alternate
     reload and automatic recharge behavior.

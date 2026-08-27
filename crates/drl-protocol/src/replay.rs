@@ -21,11 +21,11 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// Gameplay semantics identifier expected by the current replay engine.
 ///
 /// This advances independently from the wire/schema and RNG-sampling versions
-/// when other deterministic simulation rules change. Version `27` includes
-/// typed Missile Launcher alternate/full reload in addition to the prior
-/// single-shell, Nuclear BFG/Plasma, `IF_NORELOAD`, Blaster, and Combat Shotgun
+/// when other deterministic simulation rules change. Version `28` includes
+/// typed Malek's Armor periodic recharge in addition to the prior Missile
+/// Launcher, Nuclear BFG/Plasma, `IF_NORELOAD`, Blaster, and Combat Shotgun
 /// policies.
-pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 27;
+pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 28;
 
 /// Procedural-generation semantics identifier expected for replays that carry
 /// a procedural generation configuration. Version 2 includes the exact
@@ -45,9 +45,10 @@ pub struct ReplayMetadata {
   /// Engine crate version string.
   pub engine_version: String,
   /// Gameplay semantics version required to interpret the command history.
-  /// Version 27 includes typed Missile Launcher alternate/full reload, typed
-  /// Nuclear BFG/Plasma recharge, typed `IF_NORELOAD` manual-reload denial,
-  /// typed Blaster recharge, and the prior Combat Shotgun policy.
+  /// Version 28 includes typed Malek's Armor periodic recharge in addition to
+  /// typed Missile Launcher alternate/full reload, Nuclear BFG/Plasma
+  /// recharge, `IF_NORELOAD` manual-reload denial, typed Blaster recharge,
+  /// and the prior Combat Shotgun policy.
   pub gameplay_semantics_version: u32,
   /// RNG sampling semantics required to reproduce bounded random choices.
   pub rng_sampling_semantics_version: u32,
