@@ -5,8 +5,8 @@ use drl_core::grid::Tile;
 use drl_core::item::Item;
 use drl_core::replay::ReplayEngine;
 use drl_protocol::{
-  Command, CommandError, Direction, EquipmentSlot, GameEvent, ItemId, ItemSpawnKind, ItemSpawnSpec,
-  MonsterSpawnSpec, PlayerSpawnConfig, Position, ReplayLog,
+  ActionCost, Command, CommandError, Direction, EquipmentSlot, GameEvent, ItemId, ItemSpawnKind,
+  ItemSpawnSpec, MonsterSpawnSpec, PlayerSpawnConfig, Position, ReplayLog,
 };
 
 fn equipped_nuclear_bfg(seed: u64) -> (Game, ItemId) {
@@ -96,7 +96,7 @@ fn standard_bfg_exact_hit_resolves_even_at_zero_accuracy() {
       .weapon_properties()
       .unwrap()
       .current_clip,
-    99
+    60
   );
   assert_eq!(
     game.world().get_actor(target_id).unwrap().hp().current,
@@ -134,6 +134,92 @@ fn standard_bfg_empty_clip_rejection_is_atomic() {
     .weapon_properties_mut()
     .unwrap()
     .current_clip = 0;
+  let before = game.clone();
+
+  assert_eq!(
+    game.step(Command::AttackRanged(target)).unwrap_err(),
+    CommandError::NoAmmoInClip
+  );
+  assert_eq!(game, before);
+}
+
+#[test]
+fn standard_bfg_shot_cost_accepts_forty_cells_and_consumes_them_once() {
+  let (mut game, _weapon_id) = equipped_standard_bfg(4);
+  let target = Position::new(5, 2);
+  let target_id = game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 500, 1, (2, 4))
+    .unwrap();
+  let player_id = game.world().player_id().unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 40;
+
+  let events = game
+    .step(Command::AttackRanged(target))
+    .expect("40 cells are sufficient for one BFG shot");
+  assert_eq!(
+    game
+      .world()
+      .get_actor(player_id)
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .current_clip,
+    0
+  );
+  assert!(events.iter().any(|event| {
+    matches!(
+      event,
+      GameEvent::AttackResolved {
+        attacker_id,
+        target_id: event_target,
+        outcome: drl_protocol::AttackOutcome::Hit { .. },
+        is_ranged: true,
+      } if *attacker_id == player_id && *event_target == target_id
+    )
+  }));
+  assert!(events.iter().any(|event| {
+    matches!(
+      event,
+      GameEvent::ActionCostPaid {
+        entity_id,
+        cost: ActionCost::RANGED_ATTACK,
+      } if *entity_id == player_id
+    )
+  }));
+}
+
+#[test]
+fn standard_bfg_below_shot_cost_rejection_is_atomic() {
+  let (mut game, _weapon_id) = equipped_standard_bfg(5);
+  let target = Position::new(5, 2);
+  game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 500, 1, (2, 4))
+    .unwrap();
+  let player_id = game.world().player_id().unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 39;
   let before = game.clone();
 
   assert_eq!(

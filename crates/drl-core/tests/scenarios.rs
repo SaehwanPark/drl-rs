@@ -535,7 +535,7 @@ fn nuclear_bfg_overload_hazard_scenario_preserves_nuke_order_and_replay() {
 fn standard_bfg_exact_hit_vertical_scenario_preserves_replay() {
   let mut scenario = Scenario::from_ascii(
     "StandardBfgExactHitVertical",
-    "Standard BFG 9000 bypasses only to-hit sampling",
+    "Standard BFG 9000 bypasses to-hit sampling and consumes 40 cells",
     "########\n#@...h.#\n#......#\n########\n",
   )
   .unwrap();
@@ -576,6 +576,15 @@ fn standard_bfg_exact_hit_vertical_scenario_preserves_replay() {
       } if *attacker_id == player_id && *event_target == target_id
     )
   }));
+  assert!(events.iter().any(|event| {
+    matches!(
+      event,
+      GameEvent::ActionCostPaid {
+        entity_id,
+        cost: ActionCost::RANGED_ATTACK,
+      } if *entity_id == player_id
+    )
+  }));
   assert_eq!(
     game
       .world()
@@ -587,7 +596,7 @@ fn standard_bfg_exact_hit_vertical_scenario_preserves_replay() {
       .weapon_properties()
       .unwrap()
       .current_clip,
-    99
+    60
   );
   assert!(game.world().get_actor(target_id).unwrap().hp().current < 500);
   assert_eq!(replay.commands, commands);

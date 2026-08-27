@@ -370,6 +370,18 @@ impl Item {
     )
   }
 
+  /// Returns the typed per-projectile clip cost for ranged fire.
+  ///
+  /// The standard BFG 9000 is the only currently delivered shot-cost
+  /// exception; all other weapons consume one clip unit per projectile.
+  #[must_use]
+  pub(crate) const fn shot_cost(&self) -> u32 {
+    match self.archetype {
+      ItemArchetype::Bfg9000 => 40,
+      _ => 1,
+    }
+  }
+
   /// Returns weapon properties if this item is a weapon.
   #[must_use]
   pub const fn weapon_properties(&self) -> Option<&WeaponProperties> {
@@ -1010,6 +1022,13 @@ mod tests {
     let added = ammo.add_ammo(10);
     assert_eq!(added, 10);
     assert_eq!(ammo.count(), 25);
+  }
+
+  #[test]
+  fn standard_bfg_has_typed_forty_cell_shot_cost() {
+    assert_eq!(Item::bfg9000(ItemId::new(4)).shot_cost(), 40);
+    assert_eq!(Item::nuclear_bfg9000(ItemId::new(5)).shot_cost(), 1);
+    assert_eq!(Item::pistol(ItemId::new(6)).shot_cost(), 1);
   }
 
   #[test]

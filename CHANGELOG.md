@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.186]
+
+- Added typed standard BFG 9000 shot-cost behavior: each valid one-shot attack
+  consumes exactly 40 cells and clips below 40 reject atomically. Existing
+  exact-hit, line-of-sight, range, action-cost, damage RNG, and attack/damage
+  event behavior remain unchanged; scenario/replay, MCP, and BrowserSession
+  parity are covered. Nuclear BFG and other shot costs, projectile routing,
+  explosions, NukeRun, runtime, and audiovisual parity remain separate slices.
+
 ## [0.2.185]
 
 - Extended typed exact-hit behavior to the Nuclear BFG 9000: valid ranged

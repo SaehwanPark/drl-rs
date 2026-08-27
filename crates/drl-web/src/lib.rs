@@ -7055,6 +7055,19 @@ mod tests {
         }
       )
     }));
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .current_clip,
+      60
+    );
 
     let mut browser = BrowserSession::from_game(initial);
     let step = browser.submit(command).expect("browser exact-hit command");

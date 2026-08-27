@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.185`
+Current project version: `0.2.186`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.185)
+## 3. Current Progress Summary (`VERSION` 0.2.186)
 
 ### Delivered Foundations
 
@@ -510,6 +510,13 @@ verification item uses explicit status semantics:
   replay, MCP, and BrowserSession boundary coverage is included. Shot-cost,
   projectile routing, explosions, NukeRun, runtime, and audiovisual parity
   remain open.
+- **M9 standard BFG 9000 shot-cost behavior (`0.2.186`):** The standard BFG
+  now preflights and consumes exactly 40 cells for each valid one-shot attack,
+  rejecting clips below 40 atomically while preserving its exact-hit resolver,
+  action cost, damage RNG, and existing attack/damage events. Scenario/replay,
+  MCP, and BrowserSession boundary parity are covered; Nuclear BFG and other
+  shot costs, projectile routing, explosions, NukeRun, runtime, and
+  audiovisual parity remain open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -974,7 +981,8 @@ scripting.
 - [x] Typed BFG 9000 preserves pinned cell relation, 100-cell clip, `10d6`
   damage range, description, replay kind, and `SPRITE_BFG9000` slot;
   standard and Nuclear BFG exact-hit behavior is covered in `0.2.184` and
-  `0.2.185`; shot-cost, projectile, and explosion semantics remain open.
+  `0.2.185`; standard BFG's 40-cell shot cost is covered in `0.2.186`, while
+  other shot-cost, projectile, and explosion semantics remain open.
 - [x] Typed double/combat shotguns preserve pinned shell relation, clips,
   damage/range scalars, descriptions, replay kinds, and `SPRITE_DSHOTGUN`/
   `SPRITE_CSHOTGUN` slots; callbacks and spread/falloff remain open.
