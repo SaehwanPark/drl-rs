@@ -37,6 +37,20 @@ fn equipped_standard_bfg(seed: u64) -> (Game, ItemId) {
   (game, weapon_id)
 }
 
+fn equipped_nuclear_bfg_wide(seed: u64) -> (Game, ItemId) {
+  let mut game = Game::new_arena(seed, 24, 12).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let weapon_id = game.world_mut().allocate_item_id();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, Item::nuclear_bfg9000(weapon_id))
+    .unwrap();
+  (game, weapon_id)
+}
+
 #[test]
 fn standard_bfg_exact_hit_resolves_even_at_zero_accuracy() {
   let (mut game, _weapon_id) = equipped_standard_bfg(1);
@@ -127,6 +141,131 @@ fn standard_bfg_empty_clip_rejection_is_atomic() {
     CommandError::NoAmmoInClip
   );
   assert_eq!(game, before);
+}
+
+#[test]
+fn nuclear_bfg_exact_hit_resolves_even_at_zero_accuracy() {
+  let (mut game, _weapon_id) = equipped_nuclear_bfg(3);
+  let target = drl_protocol::Position::new(9, 6);
+  let target_id = game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 500, 1, (2, 4))
+    .unwrap();
+  let player_id = game.world().player_id().unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .accuracy = 0;
+
+  let events = game
+    .step(Command::AttackRanged(target))
+    .expect("Nuclear BFG shot should resolve");
+  assert!(events.iter().any(|event| {
+    matches!(
+      event,
+      GameEvent::AttackResolved {
+        attacker_id,
+        target_id: event_target,
+        outcome: drl_protocol::AttackOutcome::Hit { .. },
+        is_ranged: true,
+      } if *attacker_id == player_id && *event_target == target_id
+    )
+  }));
+  assert_eq!(
+    game
+      .world()
+      .get_actor(player_id)
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .current_clip,
+    39
+  );
+}
+
+#[test]
+fn nuclear_bfg_empty_clip_rejection_is_atomic() {
+  let (mut game, _weapon_id) = equipped_nuclear_bfg(4);
+  let target = drl_protocol::Position::new(9, 6);
+  game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 500, 1, (2, 4))
+    .unwrap();
+  let player_id = game.world().player_id().unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 0;
+  let before = game.clone();
+
+  assert_eq!(
+    game.step(Command::AttackRanged(target)).unwrap_err(),
+    CommandError::NoAmmoInClip
+  );
+  assert_eq!(game, before);
+}
+
+#[test]
+fn nuclear_bfg_exact_hit_rejections_are_atomic() {
+  let (mut invalid_target, _) = equipped_nuclear_bfg(5);
+  let invalid_position = drl_protocol::Position::new(8, 6);
+  let before_invalid = invalid_target.clone();
+  assert_eq!(
+    invalid_target
+      .step(Command::AttackRanged(invalid_position))
+      .unwrap_err(),
+    CommandError::InvalidTarget(invalid_position)
+  );
+  assert_eq!(invalid_target, before_invalid);
+
+  let (mut blocked, _) = equipped_nuclear_bfg(6);
+  let blocked_position = drl_protocol::Position::new(9, 6);
+  blocked
+    .world_mut()
+    .spawn_monster(blocked_position, "Static Target", 500, 1, (2, 4))
+    .unwrap();
+  blocked
+    .world_mut()
+    .map_mut()
+    .set_tile(drl_protocol::Position::new(8, 6), Tile::Wall);
+  let before_blocked = blocked.clone();
+  assert_eq!(
+    blocked
+      .step(Command::AttackRanged(blocked_position))
+      .unwrap_err(),
+    CommandError::LineOfSightBlocked(blocked_position)
+  );
+  assert_eq!(blocked, before_blocked);
+
+  let (mut distant, _) = equipped_nuclear_bfg_wide(7);
+  let distant_position = drl_protocol::Position::new(21, 6);
+  distant
+    .world_mut()
+    .spawn_monster(distant_position, "Static Target", 500, 1, (2, 4))
+    .unwrap();
+  let before_distant = distant.clone();
+  assert_eq!(
+    distant
+      .step(Command::AttackRanged(distant_position))
+      .unwrap_err(),
+    CommandError::TargetOutOfRange(distant_position)
+  );
+  assert_eq!(distant, before_distant);
 }
 
 #[test]

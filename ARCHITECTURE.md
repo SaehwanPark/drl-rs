@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.184`
+Current project version: `0.2.185`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -187,6 +187,9 @@ Presentation Boundary
     only ranged to-hit sampling; LOS, range, clip, action cost, damage RNG, and
     existing attack/damage events remain in the ordinary combat path. Projectile
     routing and explosion effects remain separate policy work.
+    Nuclear BFG 9000 opts into the same typed exact-hit policy without changing
+    its recharge or alternate-overload state; its shot-cost, projectile, and
+    NukeRun effects remain separate policy work.
     The pinned `IF_NORELOAD` families use an explicit item policy that rejects
     ordinary `Reload` before mutation; this remains separate from alternate
     reload and automatic recharge behavior.

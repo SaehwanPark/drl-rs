@@ -930,7 +930,10 @@ impl Item {
         knockback,
         fire_cost,
         reload_cost,
-        exact_hit: definition.archetype == ItemArchetype::Bfg9000,
+        exact_hit: matches!(
+          definition.archetype,
+          ItemArchetype::Bfg9000 | ItemArchetype::NuclearBfg9000
+        ),
         fire_mode: match definition.archetype {
           ItemArchetype::Jackhammer => WeaponFireMode::Burst,
           _ => WeaponFireMode::Single,

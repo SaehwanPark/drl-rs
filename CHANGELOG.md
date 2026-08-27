@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.185]
+
+- Extended typed exact-hit behavior to the Nuclear BFG 9000: valid ranged
+  shots bypass only the to-hit sample while retaining line-of-sight, range,
+  clip, action-cost, damage RNG, and existing attack/damage events. Atomic
+  rejection, replay, MCP, and BrowserSession parity are covered; shot-cost,
+  projectile routing, explosions, NukeRun, runtime, and audiovisual parity
+  remain separate slices.
+
 ## [0.2.184]
 
 - Added typed standard BFG 9000 exact-hit behavior: valid ranged shots bypass
