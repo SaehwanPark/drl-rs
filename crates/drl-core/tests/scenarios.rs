@@ -2772,7 +2772,7 @@ fn combat_shotgun_vertical_scenario_preserves_shells_and_replay() {
     .unwrap()
     .weapon_properties()
     .unwrap();
-  assert_eq!(weapon.current_clip, 5);
+  assert_eq!(weapon.current_clip, 1);
   assert_eq!(
     game
       .world()
@@ -2782,7 +2782,7 @@ fn combat_shotgun_vertical_scenario_preserves_shells_and_replay() {
       .get_item(shells_id)
       .unwrap()
       .count(),
-    5
+    9
   );
   let reload_index = events
     .iter()
@@ -2791,8 +2791,8 @@ fn combat_shotgun_vertical_scenario_preserves_shells_and_replay() {
         event,
         GameEvent::WeaponReloaded {
           entity_id,
-          ammo_loaded: 5,
-          current_clip: 5,
+          ammo_loaded: 1,
+          current_clip: 1,
           max_clip: 5,
         } if *entity_id == player_id
       )

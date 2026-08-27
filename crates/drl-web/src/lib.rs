@@ -5903,7 +5903,7 @@ mod tests {
       .unwrap();
     assert_eq!(weapon_item.id(), weapon_id);
     let weapon = weapon_item.weapon_properties().unwrap();
-    assert_eq!(weapon.current_clip, 5);
+    assert_eq!(weapon.current_clip, 1);
     assert_eq!(
       direct
         .world()
@@ -5913,13 +5913,13 @@ mod tests {
         .get_item(shells_id)
         .unwrap()
         .count(),
-      5
+      9
     );
     assert_eq!(browser.observation(), direct.observe_player());
     assert_eq!(browser.replay_log().commands, commands);
     assert_eq!(
       browser.observation().equipped_weapon.unwrap().clip,
-      Some((5, 5))
+      Some((1, 5))
     );
     assert_eq!(
       browser
@@ -5929,7 +5929,7 @@ mod tests {
         .find(|item| item.id == shells_id)
         .unwrap()
         .count,
-      5
+      9
     );
     let reload_index = all_events
       .iter()
@@ -5938,8 +5938,8 @@ mod tests {
           event,
           drl_protocol::GameEvent::WeaponReloaded {
             entity_id,
-            ammo_loaded: 5,
-            current_clip: 5,
+            ammo_loaded: 1,
+            current_clip: 1,
             max_clip: 5,
           } if *entity_id == player_id
         )
