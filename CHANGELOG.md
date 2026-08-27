@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.174]
+
+- Aligned direct `ReplayEngine` structural validation with the MCP replay
+  decoder: oversized initial-state, custom-tile, command, and player-item
+  arrays plus unsafe procedural room/content parameters are rejected before
+  map construction. Gameplay semantics, replay wire, RNG, generator, and
+  ruleset identities remain unchanged; replay-file I/O, migrations, and
+  external interchange remain open.
+
 ## [0.2.173]
 
 - Aligned direct `ReplayEngine` map-dimension validation with the MCP replay

@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.173`
+Current project version: `0.2.174`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -503,9 +503,10 @@ Presentation Boundary
   verification proves deterministic reproduction under the implementation and
   semantics that interpret that log; it does not by itself define archival
   compatibility across future gameplay/content/RNG changes. Structural
-  validation rejects unsupported schema headers and out-of-bounds custom tile
-  overrides and dimensions outside `3..=512` before map construction, matching
-  the MCP decoder's spatial contract.
+  validation rejects unsupported schema headers, out-of-bounds custom tile
+  overrides, dimensions outside `3..=512`, oversized replay containers, and
+  unsafe procedural parameters before map construction, matching the MCP
+  decoder's spatial and structural contracts.
 - **Replay Compatibility Layers**: Wire/schema version, engine/gameplay
   semantics version, and ruleset/content identity must be distinguished before
   cross-version compatibility is claimed. Generator semantics should be

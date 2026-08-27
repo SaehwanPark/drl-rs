@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.173`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.174`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -74,6 +74,9 @@ replays, and regression testing.
     before map construction, matching the MCP decoder's spatial contract.
   - Direct core replay validation rejects map dimensions outside the MCP
     decoder's bounded `3..=512` range before map construction.
+  - Direct core replay validation rejects oversized initial-state, custom-tile,
+    command, player-item, and procedural-generation containers before map
+    construction, matching the MCP decoder's structural safety caps.
   - Direct core replay validation rejects unsupported schema versions and
     top-level/metadata version mismatches before map construction.
   - Stable item identity, names, catalog order, and normalized replay spawn
