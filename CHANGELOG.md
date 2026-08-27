@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.190]
+
+- Added typed BFG 10K shot-cost behavior: each valid Rust one-shot attack
+  consumes exactly five cells and clips below five reject atomically. Existing
+  exact-hit, line-of-sight, range, action-cost, damage RNG, replay, MCP, and
+  BrowserSession contracts remain intact; the legacy five-shot volley, scatter,
+  chainfire, projectile routing, explosions, runtime, and audiovisual parity
+  remain separate work.
+
 ## [0.2.189]
 
 - Extended typed exact-hit behavior to BFG 10K: valid ranged shots bypass only
