@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.191`
+Current project version: `0.2.192`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,27 +25,27 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Vertical BFG 10K Shot-Cost Encounter
+## 2. Active Implementation Slice: M9 — Vertical Nuclear BFG Shot-Cost Encounter
 
 ### 2.1 Objective
 
-Exercise the delivered typed BFG 10K `shotcost=5` behavior end-to-end in one
-deterministic canonical encounter, preserving the direct-core command result
-through ScenarioRunner, replay, MCP, and BrowserSession boundaries.
+Exercise the delivered typed Nuclear BFG 9000 `shotcost=40` behavior end-to-end
+in one deterministic canonical encounter, preserving the direct-core command
+result through ScenarioRunner, replay, MCP, and BrowserSession boundaries.
 
 ### 2.1a Scope and steering gate
 
 - **Steering priority:** Vertical canonical fidelity and typed legacy behavior.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, and Gate D callback behavior evidence.
-- **Observable outcome:** A fixed ASCII encounter equips a BFG 10K, places a
-  visible static target at a legal ranged position, and accepts one attack
-  that consumes exactly five cells while preserving exact-hit, damage, action
-  cost, and event ordering. ScenarioRunner, replay, MCP, and BrowserSession
-  all expose the same accepted result and final state.
+- **Observable outcome:** A fixed ASCII encounter equips a Nuclear BFG 9000,
+  places a visible static target at a legal ranged position, and accepts one
+  attack that consumes exactly forty cells while preserving exact-hit, damage,
+  action cost, and event ordering. ScenarioRunner, replay, MCP, and
+  BrowserSession all expose the same accepted result and final state.
 - **Gameplay/replay impact:** Gameplay semantics remain `37`; replay wire
   schema, RNG, generator, and ruleset identities remain unchanged. Project
-  version advances from `0.2.190` to `0.2.191` for the added executable
+  version advances from `0.2.191` to `0.2.192` for the added executable
   vertical coverage.
 - **Protocol/domain ownership:** `drl-core` continues to own typed exact-hit
   and shot-cost policies; protocol, MCP, render, audio, and browser layers
@@ -55,20 +55,19 @@ through ScenarioRunner, replay, MCP, and BrowserSession boundaries.
   `17d9be1204751899b2d69d8d3a2dde247bd0cc5c` plus core, scenario, replay, MCP,
   and browser-boundary tests are authoritative. Controlled legacy runtime and
   audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** BFG 10K scatter/five-shot volley/chainfire, projectile-path
-  routing, radius and falloff, delayed explosions, mod behavior, additional
-  shot-cost families, replay-file IO/migrations, exact legacy runtime
-  behavior, browser capture, and audiovisual parity.
+- **Non-goals:** Nuclear BFG alternate overload, projectile-path routing,
+  radius and falloff, delayed explosions, recharge timing changes, mod
+  behavior, additional shot-cost families, replay-file IO/migrations, exact
+  legacy runtime behavior, browser capture, and audiovisual parity.
 
 ### 2.2 Why this slice is bounded
 
-The pinned BFG 10K carries `shotcost=5` in addition to separate scatter,
-five-shot, chainfire, and explosion behavior. This slice composes the already
+The pinned Nuclear BFG 9000 carries `shotcost=40` alongside exact-hit,
+recharge, overload, and explosion behavior. This slice composes the already
 delivered typed shot-cost policy with the existing vertical scenario/replay and
 browser-boundary harnesses, preserving exact-hit, LOS/range/clip preflight,
-damage RNG, and event flow. The legacy volley, projectile routing, scatter,
-explosions, and audiovisual effects remain separate evidence and implementation
-slices.
+damage RNG, and event flow. Alternate overload, projectile routing, explosions,
+and audiovisual effects remain separate evidence and implementation slices.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -1777,7 +1776,7 @@ are:
   ruleset identities; five-shot volley, scatter, chainfire, projectile
   routing, explosions, mods, runtime, and audiovisual parity remain open.
 
-### 2.7bm Current vertical BFG 10K shot-cost delivery target
+### 2.7bm Previous vertical BFG 10K shot-cost delivery target
 
 The bounded implementation target for this revision is a canonical BFG 10K
 shot-cost encounter across the declarative scenario, replay, MCP, and browser
@@ -1795,6 +1794,25 @@ presentation boundaries. Its vertical slice must:
 - [x] keep gameplay semantics unchanged while recording the five-shot volley,
   scatter, projectile routing, explosion geometry, controlled legacy runtime,
   browser capture, audio, WebGPU, and audiovisual parity as `NOT_RUN`.
+
+### 2.7bn Current vertical Nuclear BFG 9000 shot-cost delivery target
+
+The bounded implementation target for this revision is a canonical Nuclear BFG
+9000 shot-cost encounter across the declarative scenario, replay, MCP, and
+browser presentation boundaries. Its vertical slice must:
+
+- [x] construct an exact deterministic ASCII encounter with a configured
+  Nuclear BFG 9000 and a visible static target at a legal ranged position;
+- [x] run the same `Command::AttackRanged` through `ScenarioRunner`, preserving
+  exact-hit resolution, forty-cell clip consumption, action cost, stable item
+  and target identities, and ordered events;
+- [x] verify replay determinism and compare replayed events/final game state
+  with the direct `ScenarioRunner` result;
+- [x] compare `BrowserSession::submit` with direct `Game::step` for events,
+  player observations, pure effect timelines, and scene derivation;
+- [x] keep gameplay semantics unchanged while recording alternate overload,
+  recharge timing, projectile routing, explosion geometry, controlled legacy
+  runtime, browser capture, audio, WebGPU, and audiovisual parity as `NOT_RUN`.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
@@ -1923,6 +1941,11 @@ The `0.2.191` successor exercises that typed policy in a canonical vertical
 BFG 10K encounter across ScenarioRunner, replay, MCP, and BrowserSession
 boundaries. Gameplay semantics remain `37`; controlled legacy runtime,
 browser capture, and audiovisual parity remain `NOT_RUN`.
+
+The `0.2.192` successor exercises the typed Nuclear BFG 9000 forty-cell
+shot-cost policy in the same canonical vertical boundary sequence. Gameplay
+semantics remain `37`; controlled legacy runtime, browser capture, and
+audiovisual parity remain `NOT_RUN`.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity
