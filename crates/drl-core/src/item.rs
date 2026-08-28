@@ -372,15 +372,16 @@ impl Item {
 
   /// Returns the typed per-projectile clip cost for ranged fire.
   ///
-  /// The typed BFG families use their pinned per-projectile clip costs; all
-  /// other weapons consume one clip unit per emitted projectile. BFG 10K's
-  /// five-projectile direct-target volley therefore charges five cells for
-  /// each emitted projectile.
+  /// The typed BFG families and Plasma Shotgun use their pinned per-projectile
+  /// clip costs; all other weapons consume one clip unit per emitted projectile.
+  /// BFG 10K's five-projectile direct-target volley therefore charges five
+  /// cells for each emitted projectile.
   #[must_use]
   pub(crate) const fn shot_cost(&self) -> u32 {
     match self.archetype {
       ItemArchetype::Bfg9000 | ItemArchetype::NuclearBfg9000 => 40,
       ItemArchetype::Bfg10k => 5,
+      ItemArchetype::PlasmaShotgun => 3,
       _ => 1,
     }
   }
@@ -1047,10 +1048,11 @@ mod tests {
   }
 
   #[test]
-  fn bfg_families_have_typed_shot_costs() {
+  fn typed_shot_costs_preserve_pinned_per_projectile_values() {
     assert_eq!(Item::bfg9000(ItemId::new(4)).shot_cost(), 40);
     assert_eq!(Item::nuclear_bfg9000(ItemId::new(5)).shot_cost(), 40);
     assert_eq!(Item::bfg10k(ItemId::new(7)).shot_cost(), 5);
+    assert_eq!(Item::plasma_shotgun(ItemId::new(8)).shot_cost(), 3);
     assert_eq!(Item::pistol(ItemId::new(6)).shot_cost(), 1);
   }
 

@@ -481,6 +481,25 @@ const COMBAT_PISTOL_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
 pub const COMBAT_PISTOL_BEHAVIOR: BehaviorProfile =
   BehaviorProfile::new(COMBAT_PISTOL_BEHAVIOR_SPECS);
 
+/// Current Rust projectile count for an ordinary Plasma Shotgun shot.
+pub const PLASMA_SHOTGUN_PROJECTILE_COUNT: u32 = 1;
+/// Pinned per-projectile clip cost for an ordinary Plasma Shotgun shot.
+pub const PLASMA_SHOTGUN_SHOT_COST: u32 = 3;
+
+const PLASMA_SHOTGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Attack(AttackEffect::ProjectileCount(
+    PLASMA_SHOTGUN_PROJECTILE_COUNT,
+  )),
+  BehaviorSpec::Cost(ResourceCost::Ammo {
+    ammo_type: AmmoType::Cell,
+    amount: PLASMA_SHOTGUN_SHOT_COST,
+  }),
+];
+
+/// Immutable typed profile for the current Plasma Shotgun ordinary-fire cost.
+pub const PLASMA_SHOTGUN_BEHAVIOR: BehaviorProfile =
+  BehaviorProfile::new(PLASMA_SHOTGUN_BEHAVIOR_SPECS);
+
 /// Current Rust projectile count for an ordinary Pistol shot.
 pub const PISTOL_PROJECTILE_COUNT: u32 = 1;
 
@@ -1285,6 +1304,16 @@ mod tests {
         BehaviorSpec::Cost(ResourceCost::Ammo {
           ammo_type: AmmoType::Ammo9mm,
           amount: 1,
+        }),
+      ]
+    );
+    assert_eq!(
+      PLASMA_SHOTGUN_BEHAVIOR.specs(),
+      &[
+        BehaviorSpec::Attack(AttackEffect::ProjectileCount(1)),
+        BehaviorSpec::Cost(ResourceCost::Ammo {
+          ammo_type: AmmoType::Cell,
+          amount: 3,
         }),
       ]
     );

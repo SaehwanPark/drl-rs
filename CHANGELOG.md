@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.221]
+
+- Added the immutable `PLASMA_SHOTGUN_BEHAVIOR` profile and enforced its
+  pinned three-cell ordinary-fire cost before clip/RNG mutation, including
+  atomic below-cost rejection coverage. Full spread/falloff/knockback parity
+  remains deferred.
+
 ## [0.2.220]
 
 - Added the immutable `COMBAT_PISTOL_BEHAVIOR` profile for the current

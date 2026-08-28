@@ -79,6 +79,20 @@ fn equipped_double_shotgun(seed: u64) -> (Game, ItemId) {
   (game, weapon_id)
 }
 
+fn equipped_plasma_shotgun(seed: u64) -> (Game, ItemId) {
+  let mut game = Game::new(seed, 10, 6, Position::new(2, 2)).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let weapon_id = game.world_mut().allocate_item_id();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, Item::plasma_shotgun(weapon_id))
+    .unwrap();
+  (game, weapon_id)
+}
+
 fn assert_bfg10k_volley_events(
   events: &[GameEvent],
   attacker_id: drl_protocol::EntityId,
@@ -486,6 +500,72 @@ fn double_shotgun_below_dual_shot_cost_rejection_is_atomic() {
     .weapon_properties_mut()
     .unwrap()
     .current_clip = 1;
+  let before = game.clone();
+
+  assert_eq!(
+    game.step(Command::AttackRanged(target)).unwrap_err(),
+    CommandError::NoAmmoInClip
+  );
+  assert_eq!(game, before);
+}
+
+#[test]
+fn plasma_shotgun_consumes_three_cells_per_ordinary_shot() {
+  let (mut game, _weapon_id) = equipped_plasma_shotgun(2_210);
+  let target = Position::new(5, 2);
+  game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 500, 1, (2, 4))
+    .unwrap();
+  let player_id = game.world().player_id().unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 3;
+
+  game
+    .step(Command::AttackRanged(target))
+    .expect("three-cell Plasma Shotgun shot should resolve");
+  assert_eq!(
+    game
+      .world()
+      .player()
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .current_clip,
+    0
+  );
+}
+
+#[test]
+fn plasma_shotgun_below_three_cell_cost_rejection_is_atomic() {
+  let (mut game, _weapon_id) = equipped_plasma_shotgun(2_211);
+  let target = Position::new(5, 2);
+  game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 500, 1, (2, 4))
+    .unwrap();
+  let player_id = game.world().player_id().unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 2;
   let before = game.clone();
 
   assert_eq!(

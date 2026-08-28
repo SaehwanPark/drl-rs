@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.220`
+Current project version: `0.2.221`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.220)
+## 3. Current Progress Summary (`VERSION` 0.2.221)
 
 ### Delivered Foundations
 
@@ -711,6 +711,11 @@ verification item uses explicit status semantics:
   legality, damage RNG, event ordering, and transaction safety. Aimed-fire
   callback, exact legacy timing/accuracy, runtime, and audiovisual parity
   remain open.
+- **M9 Plasma Shotgun ordinary-fire cost (`0.2.221`):** The immutable
+  `PLASMA_SHOTGUN_BEHAVIOR` profile records one ordered projectile and a
+  three-cell clip cost, and generic ranged execution now preflights that cost
+  before mutation. Full spread/falloff/knockback semantics, exact legacy
+  timing/accuracy, runtime, and audiovisual parity remain open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1276,6 +1281,11 @@ scripting.
   one-projectile ordinary fire and one-9mm-round cost; generic ranged execution
   remains authoritative while aimed-fire callback semantics, exact legacy
   timing/accuracy, runtime, and audiovisual parity remain open.
+- [x] Plasma Shotgun has an immutable behavior profile for its current
+  one-projectile ordinary fire and three-cell clip cost; generic ranged
+  execution preflights the cost and preserves atomic below-cost rejection while
+  full spread/falloff/knockback semantics, exact legacy timing/accuracy,
+  runtime, and audiovisual parity remain open.
 - [x] Revenant's Launcher has an immutable behavior profile for its pinned
   exact-hit attack policy; dedicated combat execution remains authoritative and
   homing, projectile routing, delayed explosions, runtime, and audiovisual
