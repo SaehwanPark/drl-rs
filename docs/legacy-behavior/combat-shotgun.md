@@ -46,7 +46,8 @@ clip. Success consumes exactly the deficit, emits one aggregate
 `WeaponReloaded` event, and uses `min(deficit * reload_cost, 2500)`. The
 item-owned pump state is reset as part of the successful alternate reload, so
 the next shot is accepted without an extra pump command. Full and
-under-supplied clips reject atomically. Gameplay semantics advance from `20`
-to `21`; ammo-pack behavior, partial-reserve policy, exact legacy timing,
-controlled runtime comparison, and chamber presentation/audio remain
-`NOT_RUN`.
+under-supplied clips reject atomically. The earlier transition delivery
+advanced gameplay semantics from `20` to `21`; this profile-only `0.2.212`
+revision keeps current semantics `41` unchanged. Ammo-pack behavior,
+partial-reserve policy, exact legacy timing, controlled runtime comparison,
+and chamber presentation/audio remain `NOT_RUN`.
