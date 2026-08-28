@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.192]
+
+- Added a deterministic vertical Nuclear BFG 9000 shot-cost encounter. The
+  same one-shot command is exercised through ScenarioRunner, replay, MCP, and
+  BrowserSession/direct-core boundary checks, preserving exact-hit resolution,
+  forty-cell clip consumption, event ordering, and final-state equality.
+  Alternate overload, recharge timing, projectile/explosion routing, and
+  controlled runtime or audiovisual parity remain open.
+
 ## [0.2.191]
 
 - Added a deterministic vertical BFG 10K shot-cost encounter. The same
