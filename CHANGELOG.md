@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.227]
+
+- Added the immutable `MEGA_BUSTER_BEHAVIOR` profile and enforced the pinned
+  three-projectile/three-round ordinary-fire volley, including atomic
+  below-cost rejection coverage. Gameplay semantics advance to `49`; stale
+  semantics-48 replays are rejected before execution. The kill morph callback,
+  spread/falloff, and controlled runtime or audiovisual parity remain deferred.
+
 ## [0.2.226]
 
 - Extended the immutable `ACID_SPITTER_BEHAVIOR` profile with its pinned

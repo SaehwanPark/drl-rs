@@ -149,6 +149,20 @@ fn equipped_acid_spitter(seed: u64) -> (Game, ItemId) {
   (game, weapon_id)
 }
 
+fn equipped_mega_buster(seed: u64) -> (Game, ItemId) {
+  let mut game = Game::new(seed, 10, 6, Position::new(2, 2)).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let weapon_id = game.world_mut().allocate_item_id();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, Item::mega_buster(weapon_id))
+    .unwrap();
+  (game, weapon_id)
+}
+
 fn equipped_plasma_shotgun(seed: u64) -> (Game, ItemId) {
   let mut game = Game::new(seed, 10, 6, Position::new(2, 2)).unwrap();
   let player_id = game.world().player_id().unwrap();
@@ -948,6 +962,135 @@ fn acid_spitter_below_ten_rocket_cost_rejection_is_atomic() {
     CommandError::NoAmmoInClip
   );
   assert_eq!(game, before);
+}
+
+#[test]
+fn mega_buster_consumes_nine_9mm_rounds_for_three_projectiles() {
+  let (mut game, _weapon_id) = equipped_mega_buster(2_230);
+  let target = Position::new(5, 2);
+  let target_id = game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 500, 100, (1, 8))
+    .unwrap();
+  let player_id = game.world().player_id().unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 9;
+  let events = game
+    .step(Command::AttackRanged(target))
+    .expect("nine 9mm rounds are sufficient for one Mega Buster volley");
+  assert_eq!(
+    events
+      .iter()
+      .filter(|event| {
+        matches!(
+          event,
+          GameEvent::AttackResolved {
+            attacker_id,
+            target_id: event_target,
+            is_ranged: true,
+            ..
+          } if *attacker_id == player_id && *event_target == target_id
+        )
+      })
+      .count(),
+    3
+  );
+  assert_eq!(
+    game
+      .world()
+      .player()
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .current_clip,
+    0
+  );
+}
+
+#[test]
+fn mega_buster_below_nine_round_cost_rejection_is_atomic() {
+  let (mut game, _weapon_id) = equipped_mega_buster(2_231);
+  let target = Position::new(5, 2);
+  game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 500, 100, (1, 8))
+    .unwrap();
+  let player_id = game.world().player_id().unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 8;
+  let before = game.clone();
+
+  assert_eq!(
+    game.step(Command::AttackRanged(target)).unwrap_err(),
+    CommandError::NoAmmoInClip
+  );
+  assert_eq!(game, before);
+}
+
+#[test]
+fn mega_buster_replay_preserves_three_projectile_volley_deterministically() {
+  let player_start = Position::new(5, 5);
+  let mut replay =
+    ReplayLog::new(2_232, 12, 12, player_start).with_player_config(PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: Vec::new(),
+      equipped_weapon: Some(ItemSpawnKind::MegaBuster),
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    });
+  let target = Position::new(6, 5);
+  replay.record_monster(MonsterSpawnSpec::new(target, "Target", 500, 100, (1, 8)));
+  replay.record_command(Command::AttackRanged(target));
+
+  let (game, events) = ReplayEngine::run(&replay).expect("Mega Buster replay should run");
+  assert_eq!(
+    game
+      .world()
+      .player()
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .current_clip,
+    51
+  );
+  assert_eq!(
+    events
+      .iter()
+      .filter(|event| matches!(
+        event,
+        GameEvent::AttackResolved {
+          is_ranged: true,
+          ..
+        }
+      ))
+      .count(),
+    3
+  );
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
 }
 
 #[test]

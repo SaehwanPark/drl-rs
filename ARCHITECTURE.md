@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.226`
+Current project version: `0.2.227`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -39,6 +39,8 @@ invariants:
 Typed behavior profiles remain immutable compile-time descriptions. Acid Spitter
 records its typed one-projectile ordinary-fire and ten-rocket ammo-cost
 fragments alongside its Acid-to-Water terrain-reload and score-cost fragments;
+Mega Buster records its typed three-projectile ordinary-fire and three-round
+per-projectile ammo-cost fragments;
 Grammaton records its typed Single/Burst/Auto mode and score-cost fragments; Jackhammer
 records its typed Burst/Single mode and score-cost fragments; Lava Armor records
 its typed terrain-gated durability-recharge fragment; Malek's Armor records its
@@ -205,7 +207,8 @@ Presentation Boundary
     alternate-action, periodic, explicit-cost, and deterministic-target
     concepts, including target-dependent score branches. Acid Spitter's immutable
     profile records its one-projectile/ten-rocket ordinary-fire and
-    terrain-reload/score-cost fragments; Grammaton's
+    terrain-reload/score-cost fragments; Mega Buster's profile records its
+    three-projectile/three-round ordinary-fire fragments; Grammaton's
     profile records its mode and score-cost fragments; Jackhammer's profile
     records its mode and score-cost fragments; Lava Armor's
     immutable profile records its terrain-gated durability-recharge fragment;

@@ -526,6 +526,22 @@ const TRISTAR_BLASTER_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
 pub const TRISTAR_BLASTER_BEHAVIOR: BehaviorProfile =
   BehaviorProfile::new(TRISTAR_BLASTER_BEHAVIOR_SPECS);
 
+/// Pinned projectile count for an ordinary Mega Buster shot.
+pub const MEGA_BUSTER_PROJECTILE_COUNT: u32 = 3;
+/// Pinned per-projectile clip cost for an ordinary Mega Buster shot.
+pub const MEGA_BUSTER_SHOT_COST: u32 = 3;
+
+const MEGA_BUSTER_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Attack(AttackEffect::ProjectileCount(MEGA_BUSTER_PROJECTILE_COUNT)),
+  BehaviorSpec::Cost(ResourceCost::Ammo {
+    ammo_type: AmmoType::Ammo9mm,
+    amount: MEGA_BUSTER_SHOT_COST,
+  }),
+];
+
+/// Immutable typed profile for the current Mega Buster ordinary-fire volley.
+pub const MEGA_BUSTER_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(MEGA_BUSTER_BEHAVIOR_SPECS);
+
 /// Current Rust projectile count for an ordinary Combat Pistol shot.
 pub const COMBAT_PISTOL_PROJECTILE_COUNT: u32 = 1;
 
@@ -1409,6 +1425,16 @@ mod tests {
         BehaviorSpec::Cost(ResourceCost::Ammo {
           ammo_type: AmmoType::Cell,
           amount: TRISTAR_BLASTER_SHOT_COST,
+        }),
+      ]
+    );
+    assert_eq!(
+      MEGA_BUSTER_BEHAVIOR.specs(),
+      &[
+        BehaviorSpec::Attack(AttackEffect::ProjectileCount(MEGA_BUSTER_PROJECTILE_COUNT,)),
+        BehaviorSpec::Cost(ResourceCost::Ammo {
+          ammo_type: AmmoType::Ammo9mm,
+          amount: MEGA_BUSTER_SHOT_COST,
         }),
       ]
     );
