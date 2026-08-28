@@ -457,6 +457,16 @@ const NUCLEAR_PLASMA_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
 pub const NUCLEAR_PLASMA_BEHAVIOR: BehaviorProfile =
   BehaviorProfile::new(NUCLEAR_PLASMA_BEHAVIOR_SPECS);
 
+const BLASTER_BEHAVIOR_SPECS: &[BehaviorSpec] =
+  &[BehaviorSpec::Periodic(PeriodicEffect::Recharge {
+    delay: BLASTER_RECHARGE_DELAY,
+    cadence: BLASTER_RECHARGE_TICK,
+    amount: BLASTER_RECHARGE_AMOUNT,
+  })];
+
+/// Immutable typed profile for the current Blaster behavior.
+pub const BLASTER_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(BLASTER_BEHAVIOR_SPECS);
+
 /// Medical Powerarmor begins repair only while durability is strictly above
 /// the legacy callback's `20`-point guard.
 pub const MEDICAL_REPAIR_MIN_DURABILITY_EXCLUSIVE: u32 = 20;
@@ -931,6 +941,14 @@ mod tests {
           amount: NUCLEAR_PLASMA_RECHARGE_AMOUNT,
         }),
       ]
+    );
+    assert_eq!(
+      BLASTER_BEHAVIOR.specs(),
+      &[BehaviorSpec::Periodic(PeriodicEffect::Recharge {
+        delay: BLASTER_RECHARGE_DELAY,
+        cadence: BLASTER_RECHARGE_TICK,
+        amount: BLASTER_RECHARGE_AMOUNT,
+      })]
     );
   }
 

@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.204`
+Current project version: `0.2.205`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -36,9 +36,10 @@ invariants:
 - **No Runtime Scripting**: Lua is treated as build-time reference and
   conversion evidence only; no Lua runtime exists in the WASM browser bundle.
 
-Typed behavior profiles remain immutable compile-time descriptions. Nuclear
-Plasma records its typed alternate-overload and periodic-recharge fragments;
-the BFG family profiles record exact-hit, typed projectile-count,
+Typed behavior profiles remain immutable compile-time descriptions. Blaster
+records its typed periodic-recharge fragment; Nuclear Plasma records its typed
+alternate-overload and periodic-recharge fragments; the BFG family profiles
+record exact-hit, typed projectile-count,
 ammunition-cost, and delayed-explosion metadata. Dedicated runtime command
 paths remain the execution authority; chainfire, scatter, and projectile
 routing are not inferred from these profiles.
@@ -174,11 +175,11 @@ Presentation Boundary
     The `behavior` module also exposes a compile-time `BehaviorSpec` vocabulary
     and immutable profiles for passive/equipment, attack/hit/kill,
     alternate-action, periodic, explicit-cost, and deterministic-target
-    concepts, including target-dependent score branches. Nuclear Plasma's
-    immutable profile records its overload and recharge fragments without
-    claiming chainfire. Profiles describe behavior without string keys or
-    runtime callbacks; dedicated transition modules remain the execution
-    authority.
+    concepts, including target-dependent score branches. Blaster's immutable
+    profile records its recharge fragment, while Nuclear Plasma's profile
+    records overload and recharge without claiming chainfire. Profiles describe
+    behavior without string keys or runtime callbacks; dedicated transition
+    modules remain the execution authority.
     The exotic Missile Launcher uses the explicit single-shell reload policy,
     loading one rocket per accepted `Reload` while retaining the shared
     `WeaponReloaded` event and atomic rejection contract. Its alternate/full

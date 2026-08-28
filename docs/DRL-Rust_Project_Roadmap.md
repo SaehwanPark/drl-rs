@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.204`
+Current project version: `0.2.205`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.204)
+## 3. Current Progress Summary (`VERSION` 0.2.205)
 
 ### Delivered Foundations
 
@@ -629,6 +629,11 @@ verification item uses explicit status semantics:
   overload and delay-40/cadence-2/amount-1 recharge fragments in declaration
   order. Dedicated transition modules remain the execution authority;
   chainfire, runtime, and audiovisual parity remain explicitly open.
+- **M9 Blaster behavior profile (`0.2.205`):** The immutable
+  `BLASTER_BEHAVIOR` profile now records the delivered delay-30/cadence-10/
+  amount-1 recharge fragment. The dedicated weapon-recharge transition remains
+  authoritative; aimed fire, runtime, and audiovisual parity remain explicitly
+  open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1142,6 +1147,9 @@ scripting.
   alternate-overload and delay-40/cadence-2/amount-1 recharge fragments;
   dedicated transitions remain authoritative and chainfire, runtime, and
   audiovisual parity remain open.
+- [x] Blaster has an immutable behavior profile for its delay-30/cadence-10/
+  amount-1 recharge fragment; the dedicated transition remains authoritative
+  and aimed fire, runtime, and audiovisual parity remain open.
 - [x] Vertical Nuclear BFG 9000 shot-cost encounter preserves the typed
   forty-cell one-shot policy through deterministic scenario/replay, MCP, and
   BrowserSession/direct-core parity; alternate overload, recharge timing,

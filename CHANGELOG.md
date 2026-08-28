@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.205]
+
+- Added an immutable `BLASTER_BEHAVIOR` profile for the evidence-backed
+  delay-30/cadence-10/amount-1 recharge transition while retaining dedicated
+  execution ownership. Aimed fire, runtime, and audiovisual parity remain
+  deferred.
+
 ## [0.2.204]
 
 - Added an immutable `NUCLEAR_PLASMA_BEHAVIOR` profile describing the
