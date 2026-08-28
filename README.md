@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.195`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.196`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -82,9 +82,10 @@ replays, and regression testing.
   - Stable item identity, names, catalog order, and normalized replay spawn
     families derive from one protocol declaration; gameplay definitions,
     count-sensitive reconstruction, and presentation policy remain explicit.
-  - The typed behavior vocabulary includes an immutable BFG 10K profile for
-    exact-hit, one-projectile, five-cell one-shot behavior; the legacy volley,
-    scatter, and projectile-routing semantics remain explicitly deferred.
+  - The typed behavior vocabulary includes immutable standard BFG 9000, Nuclear
+    BFG 9000, and BFG 10K profiles for their exact-hit and one-shot cost
+    boundaries; Nuclear BFG recharge/overload is explicit, while legacy volleys,
+    scatter, and projectile-routing semantics remain deferred.
   - Rejected `Game::step` commands restore turn, world, and RNG state through a
     bounded transaction guard; focused command-atomicity tests cover the
     invariant.

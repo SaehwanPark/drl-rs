@@ -374,6 +374,37 @@ const BFG10K_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
 /// Immutable typed profile for the current BFG 10K one-shot behavior.
 pub const BFG10K_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(BFG10K_BEHAVIOR_SPECS);
 
+const BFG9000_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Attack(AttackEffect::ExactHit),
+  BehaviorSpec::Attack(AttackEffect::ProjectileCount(1)),
+  BehaviorSpec::Cost(ResourceCost::Ammo {
+    ammo_type: AmmoType::Cell,
+    amount: 40,
+  }),
+];
+
+/// Immutable typed profile for the current standard BFG 9000 one-shot behavior.
+pub const BFG9000_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(BFG9000_BEHAVIOR_SPECS);
+
+const NUCLEAR_BFG9000_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Attack(AttackEffect::ExactHit),
+  BehaviorSpec::Attack(AttackEffect::ProjectileCount(1)),
+  BehaviorSpec::Cost(ResourceCost::Ammo {
+    ammo_type: AmmoType::Cell,
+    amount: 40,
+  }),
+  BehaviorSpec::Alternate(AlternateAction::Overload),
+  BehaviorSpec::Periodic(PeriodicEffect::Recharge {
+    delay: NUCLEAR_BFG_RECHARGE_DELAY,
+    cadence: NUCLEAR_BFG_RECHARGE_TICK,
+    amount: NUCLEAR_BFG_RECHARGE_AMOUNT,
+  }),
+];
+
+/// Immutable typed profile for the current Nuclear BFG 9000 behavior.
+pub const NUCLEAR_BFG9000_BEHAVIOR: BehaviorProfile =
+  BehaviorProfile::new(NUCLEAR_BFG9000_BEHAVIOR_SPECS);
+
 /// Medical Powerarmor begins repair only while durability is strictly above
 /// the legacy callback's `20`-point guard.
 pub const MEDICAL_REPAIR_MIN_DURABILITY_EXCLUSIVE: u32 = 20;
@@ -791,6 +822,34 @@ mod tests {
         BehaviorSpec::Cost(ResourceCost::Ammo {
           ammo_type: AmmoType::Cell,
           amount: 5,
+        }),
+      ]
+    );
+    assert_eq!(
+      BFG9000_BEHAVIOR.specs(),
+      &[
+        BehaviorSpec::Attack(AttackEffect::ExactHit),
+        BehaviorSpec::Attack(AttackEffect::ProjectileCount(1)),
+        BehaviorSpec::Cost(ResourceCost::Ammo {
+          ammo_type: AmmoType::Cell,
+          amount: 40,
+        }),
+      ]
+    );
+    assert_eq!(
+      NUCLEAR_BFG9000_BEHAVIOR.specs(),
+      &[
+        BehaviorSpec::Attack(AttackEffect::ExactHit),
+        BehaviorSpec::Attack(AttackEffect::ProjectileCount(1)),
+        BehaviorSpec::Cost(ResourceCost::Ammo {
+          ammo_type: AmmoType::Cell,
+          amount: 40,
+        }),
+        BehaviorSpec::Alternate(AlternateAction::Overload),
+        BehaviorSpec::Periodic(PeriodicEffect::Recharge {
+          delay: NUCLEAR_BFG_RECHARGE_DELAY,
+          cadence: NUCLEAR_BFG_RECHARGE_TICK,
+          amount: NUCLEAR_BFG_RECHARGE_AMOUNT,
         }),
       ]
     );

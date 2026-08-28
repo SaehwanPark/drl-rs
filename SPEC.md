@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.195`
+Current project version: `0.2.196`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,15 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — BFG 10K Behavior Profile
+## 2. Active Implementation Slice: M9 — BFG-Family Behavior Profiles
 
 ### 2.1 Objective
 
-Extend the compile-time typed behavior vocabulary with an immutable BFG 10K
-profile that composes the current exact-hit, one-projectile, and five-cell
-one-shot policies without introducing runtime callbacks, string-keyed dispatch,
-or gameplay changes.
+Extend the compile-time typed behavior vocabulary with immutable standard and
+Nuclear BFG 9000 profiles that compose the current exact-hit, one-projectile,
+and forty-cell one-shot policies. The Nuclear profile also records its existing
+typed recharge and overload boundaries without introducing runtime callbacks,
+string-keyed dispatch, or gameplay changes.
 
 ### 2.1a Scope and steering gate
 
@@ -40,21 +41,24 @@ or gameplay changes.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, Gate C catalog ownership, and Gate D callback behavior
   evidence remain closed for this contract-only slice.
-- **Observable outcome:** `drl-core` exposes an immutable `BFG10K_BEHAVIOR`
-  profile composed from exact-hit, one-projectile, and five-cell cell-cost
-  specs. Exact profile content and declaration order are unit-tested alongside
-  the existing stress profiles.
+- **Observable outcome:** `drl-core` exposes immutable `BFG9000_BEHAVIOR` and
+  `NUCLEAR_BFG9000_BEHAVIOR` profiles composed from exact-hit,
+  one-projectile, forty-cell cell-cost, and (for Nuclear BFG) typed overload
+  and recharge specs. Exact profile content and declaration order are
+  unit-tested alongside the existing stress profiles.
 - **Gameplay/replay impact:** Gameplay semantics remain `37`; replay wire
   schema, RNG, generator, and ruleset identities remain unchanged. Project
-  version advances from `0.2.194` to `0.2.195` for the new typed profile and
+  version advances from `0.2.195` to `0.2.196` for the new typed profiles and
   executable vocabulary tests.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary
   and profiles; protocol, MCP, render, audio, and browser layers receive no new
   gameplay balance or dispatch surface in this slice.
-- **Evidence boundary:** Pinned BFG 10K exact-hit and shot-cost evidence at
-  revision `17d9be1204751899b2d8d3a2dde247bd0cc5c` in
-  `docs/legacy-behavior/bfg10k-exact-hit.md` and
-  `docs/legacy-behavior/bfg10k-shot-cost.md` is authoritative. Controlled
+- **Evidence boundary:** Pinned standard/Nuclear BFG exact-hit, shot-cost,
+  recharge, and overload evidence in
+  `docs/legacy-behavior/bfg9000-exact-hit.md`,
+  `docs/legacy-behavior/bfg9000-shot-cost.md`,
+  `docs/legacy-behavior/nuclear-bfg.md`, and
+  `docs/legacy-behavior/nuclear-bfg-overload.md` is authoritative. Controlled
   legacy runtime and audiovisual comparisons remain `NOT_RUN`.
 - **Non-goals:** Reworking existing behavior transitions, adding new gameplay
   effects, replay-file IO/migrations, runtime Lua, generic callback/event
@@ -62,11 +66,11 @@ or gameplay changes.
 
 ### 2.2 Why this slice is bounded
 
-The BFG 10K transition already has explicit Rust exact-hit and shot-cost
-behavior. This slice adds only the missing declarative profile: a small
-immutable fragment list whose payloads are compiler-checked and directly
-testable. It does not reinterpret the transition or add a runtime dispatcher,
-so no replay or gameplay behavior changes.
+The standard and Nuclear BFG transitions already have explicit Rust exact-hit,
+shot-cost, recharge, and overload behavior. This slice adds only the missing
+declarative profiles: small immutable fragment lists whose payloads are
+compiler-checked and directly testable. It does not reinterpret the transitions
+or add a runtime dispatcher, so no replay or gameplay behavior changes.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -1851,7 +1855,7 @@ profile for Charch's Null Pointer on-hit behavior. Its contract must:
   audio, WebGPU, and controlled-legacy behavior unchanged or `NOT_RUN` where
   comparison evidence is unavailable.
 
-### 2.7bq Current BFG 10K behavior-profile delivery target
+### 2.7bq Previous BFG 10K behavior-profile delivery target
 
 The bounded implementation target for this revision is an immutable typed
 profile for the current BFG 10K one-shot path. Its contract must:
@@ -1863,6 +1867,24 @@ profile for the current BFG 10K one-shot path. Its contract must:
   resource cost;
 - [x] assert exact profile content and declaration order while preserving the
   existing dedicated ranged-command runtime path;
+- [x] keep gameplay semantics, replay schema, RNG, protocol, MCP, browser,
+  audio, WebGPU, and controlled-legacy behavior unchanged or `NOT_RUN` where
+  comparison evidence is unavailable.
+
+### 2.7br Current BFG-family behavior-profile delivery target
+
+The bounded implementation target for this revision is immutable typed
+profiles for the standard and Nuclear BFG 9000 current one-shot paths. Their
+contracts must:
+
+- [x] represent exact-hit as a typed attack effect;
+- [x] represent the current Rust one-projectile boundary while leaving legacy
+  projectile volleys/routing explicitly deferred;
+- [x] represent the forty-cell Cell ammunition cost as a typed resource cost;
+- [x] represent Nuclear BFG's already-delivered periodic recharge and
+  alternate overload as typed fragments;
+- [x] assert exact profile content/declaration order while preserving the
+  dedicated ranged/overload runtime paths;
 - [x] keep gameplay semantics, replay schema, RNG, protocol, MCP, browser,
   audio, WebGPU, and controlled-legacy behavior unchanged or `NOT_RUN` where
   comparison evidence is unavailable.
