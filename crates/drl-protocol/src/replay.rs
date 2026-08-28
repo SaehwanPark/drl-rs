@@ -54,11 +54,13 @@ pub struct ReplayMetadata {
   /// Engine crate version string.
   pub engine_version: String,
   /// Gameplay semantics version required to interpret the command history.
-  /// Version 47 includes the Tristar Blaster's three-projectile/five-cell
-  /// ordinary-fire volley, version 46's Null Pointer ten-cell ordinary-fire
-  /// cost, version 45's Railgun five-cell ordinary-fire cost, the version 44 Frag
-  /// Shotgun's two-round ordinary-fire cost, the version 43
-  /// Plasma Shotgun's three-cell ordinary-fire cost, the version 42 Double
+  /// Version 49 includes the Mega Buster's three-projectile/three-round
+  /// ordinary-fire volley, version 48's Acid Spitter ten-rocket ordinary-fire
+  /// cost, version 47's Tristar Blaster three-projectile/five-cell ordinary-fire
+  /// volley, version 46's Null Pointer ten-cell ordinary-fire cost, version 45's
+  /// Railgun five-cell ordinary-fire cost, the version 44 Frag Shotgun's
+  /// two-round ordinary-fire cost, the version 43 Plasma Shotgun's three-cell
+  /// ordinary-fire cost, the version 42 Double
   /// Shotgun's two-projectile dual-shot policy, plus typed exact-hit policies,
   /// BFG 10K's five-projectile volley and delayed explosion schedules,
   /// standard and Nuclear BFG 9000's forty-cell shot costs and delayed
