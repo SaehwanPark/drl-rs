@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.195`
+Current project version: `0.2.196`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.195)
+## 3. Current Progress Summary (`VERSION` 0.2.196)
 
 ### Delivered Foundations
 
@@ -572,6 +572,11 @@ verification item uses explicit status semantics:
   one-projectile, five-cell one-shot boundary. The legacy five-projectile
   volley, scatter, projectile routing, runtime, and audiovisual parity remain
   explicitly open.
+- **M9 BFG-family behavior profiles (`0.2.196`):** The typed vocabulary now
+  includes immutable standard and Nuclear BFG 9000 profiles for exact-hit,
+  one-projectile, and forty-cell one-shot boundaries; Nuclear BFG also records
+  its typed recharge and overload actions. Legacy projectile routing, NukeRun,
+  runtime, and audiovisual parity remain explicitly open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and

@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.196]
+
+- Added immutable typed profiles for standard BFG 9000 and Nuclear BFG 9000.
+  The profiles compose exact-hit, one-projectile, and forty-cell one-shot
+  costs; Nuclear BFG also records its periodic recharge and overload actions.
+  Runtime, replay, and public gameplay semantics remain unchanged.
+
 ## [0.2.195]
 
 - Added an immutable typed BFG 10K behavior profile composing the current
