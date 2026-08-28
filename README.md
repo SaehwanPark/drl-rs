@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.218`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.219`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -84,7 +84,7 @@ replays, and regression testing.
     count-sensitive reconstruction, and presentation policy remain explicit.
   - The typed behavior vocabulary includes immutable Acid Spitter, Grammaton,
     Jackhammer, Lava Armor, Malek's Armor, Blaster, Nuclear Plasma Rifle,
-    Missile Launcher, Pistol, Shotgun, Combat Shotgun, Double Shotgun, Assault Shotgun,
+    Missile Launcher, Pistol, Rocket Launcher, Shotgun, Combat Shotgun, Double Shotgun, Assault Shotgun,
     Revenant's Launcher,
     standard BFG 9000, Nuclear BFG 9000, and BFG 10K profiles for typed
     ordinary-action, periodic/alternate, exact-hit, projectile-count,
@@ -101,7 +101,8 @@ replays, and regression testing.
     typed pump-only chamber cycle costs 200 action units; Assault Shotgun
     ordinary single-shell reload plus full-deficit reload capped at 2,500
     score-count units; Pistol's typed ordinary fire resolves one projectile and
-    consumes one 9mm round; Standard Shotgun's typed one-cell knockback hit
+    consumes one 9mm round; Rocket Launcher's typed ordinary fire resolves one
+    projectile and consumes one rocket; Standard Shotgun's typed one-cell knockback hit
     consumes one shell; Revenant's Launcher
     exact-hit policy; Blaster
     recharge delay 30/cadence 10/amount 1; Nuclear Plasma recharge delay

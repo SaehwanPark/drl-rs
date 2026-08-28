@@ -65,10 +65,11 @@ pub use behavior::{
   NUCLEAR_BFG_RECHARGE_TICK, NUCLEAR_BFG9000_BEHAVIOR, NUCLEAR_PLASMA_BEHAVIOR,
   NUCLEAR_PLASMA_RECHARGE_AMOUNT, NUCLEAR_PLASMA_RECHARGE_DELAY, NUCLEAR_PLASMA_RECHARGE_TICK,
   NULL_POINTER_BEHAVIOR, PISTOL_BEHAVIOR, PISTOL_PROJECTILE_COUNT, PassiveModifier, PassiveStat,
-  PeriodicEffect, REVENANTS_LAUNCHER_BEHAVIOR, ResourceCost, SHOTGUN_BEHAVIOR,
-  SHOTGUN_KNOCKBACK_DISTANCE, SUBTLE_KNIFE_BEHAVIOR, StatusCost, StatusEffect, TRIGUN_BEHAVIOR,
-  TargetOrder, TargetProperty, TargetSelectionPolicy, TargetSource, WeaponRechargeOutcome,
-  WeaponRechargePolicy, WeaponRechargeState,
+  PeriodicEffect, REVENANTS_LAUNCHER_BEHAVIOR, ROCKET_LAUNCHER_BEHAVIOR,
+  ROCKET_LAUNCHER_PROJECTILE_COUNT, ResourceCost, SHOTGUN_BEHAVIOR, SHOTGUN_KNOCKBACK_DISTANCE,
+  SUBTLE_KNIFE_BEHAVIOR, StatusCost, StatusEffect, TRIGUN_BEHAVIOR, TargetOrder, TargetProperty,
+  TargetSelectionPolicy, TargetSource, WeaponRechargeOutcome, WeaponRechargePolicy,
+  WeaponRechargeState,
 };
 pub use combat::CombatResolver;
 pub use combat_shotgun::COMBAT_SHOTGUN_ALT_RELOAD_CAP;
