@@ -135,6 +135,20 @@ fn equipped_tristar_blaster(seed: u64) -> (Game, ItemId) {
   (game, weapon_id)
 }
 
+fn equipped_acid_spitter(seed: u64) -> (Game, ItemId) {
+  let mut game = Game::new(seed, 10, 6, Position::new(2, 2)).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let weapon_id = game.world_mut().allocate_item_id();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, Item::acid_spitter(weapon_id))
+    .unwrap();
+  (game, weapon_id)
+}
+
 fn equipped_plasma_shotgun(seed: u64) -> (Game, ItemId) {
   let mut game = Game::new(seed, 10, 6, Position::new(2, 2)).unwrap();
   let player_id = game.world().player_id().unwrap();
@@ -845,6 +859,88 @@ fn tristar_blaster_below_fifteen_cell_cost_rejection_is_atomic() {
     .weapon_properties_mut()
     .unwrap()
     .current_clip = 14;
+  let before = game.clone();
+
+  assert_eq!(
+    game.step(Command::AttackRanged(target)).unwrap_err(),
+    CommandError::NoAmmoInClip
+  );
+  assert_eq!(game, before);
+}
+
+#[test]
+fn acid_spitter_consumes_ten_rockets_per_ordinary_shot() {
+  let (mut game, _weapon_id) = equipped_acid_spitter(2_228);
+  let target = Position::new(5, 2);
+  let target_id = game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 500, 100, (2, 4))
+    .unwrap();
+  let player_id = game.world().player_id().unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 10;
+  let events = game
+    .step(Command::AttackRanged(target))
+    .expect("ten rockets are sufficient for one Acid Spitter shot");
+  assert_eq!(
+    events
+      .iter()
+      .filter(|event| {
+        matches!(
+          event,
+          GameEvent::AttackResolved {
+            attacker_id,
+            target_id: event_target,
+            is_ranged: true,
+            ..
+          } if *attacker_id == player_id && *event_target == target_id
+        )
+      })
+      .count(),
+    1
+  );
+  assert_eq!(
+    game
+      .world()
+      .player()
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .current_clip,
+    0
+  );
+}
+
+#[test]
+fn acid_spitter_below_ten_rocket_cost_rejection_is_atomic() {
+  let (mut game, _weapon_id) = equipped_acid_spitter(2_229);
+  let target = Position::new(5, 2);
+  game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 500, 100, (2, 4))
+    .unwrap();
+  let player_id = game.world().player_id().unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 9;
   let before = game.clone();
 
   assert_eq!(

@@ -716,7 +716,17 @@ const GRAMMATON_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
 /// Immutable typed profile for the current Grammaton Single/Burst/Auto cycle.
 pub const GRAMMATON_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(GRAMMATON_BEHAVIOR_SPECS);
 
+/// Current Rust projectile count for an ordinary Acid Spitter shot.
+pub const ACID_SPITTER_PROJECTILE_COUNT: u32 = 1;
+/// Pinned per-projectile clip cost for an ordinary Acid Spitter shot.
+pub const ACID_SPITTER_SHOT_COST: u32 = 10;
+
 const ACID_SPITTER_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Attack(AttackEffect::ProjectileCount(ACID_SPITTER_PROJECTILE_COUNT)),
+  BehaviorSpec::Cost(ResourceCost::Ammo {
+    ammo_type: AmmoType::Rocket,
+    amount: ACID_SPITTER_SHOT_COST,
+  }),
   BehaviorSpec::Alternate(AlternateAction::TerrainReload {
     required_terrain: TileKind::Acid,
     resulting_terrain: TileKind::Water,
@@ -727,7 +737,8 @@ const ACID_SPITTER_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
   }),
 ];
 
-/// Immutable typed profile for the current Acid Spitter terrain reload.
+/// Immutable typed profile for the current Acid Spitter ordinary fire and
+/// terrain reload policies.
 pub const ACID_SPITTER_BEHAVIOR: BehaviorProfile =
   BehaviorProfile::new(ACID_SPITTER_BEHAVIOR_SPECS);
 
@@ -1310,6 +1321,11 @@ mod tests {
     assert_eq!(
       ACID_SPITTER_BEHAVIOR.specs(),
       &[
+        BehaviorSpec::Attack(AttackEffect::ProjectileCount(ACID_SPITTER_PROJECTILE_COUNT,)),
+        BehaviorSpec::Cost(ResourceCost::Ammo {
+          ammo_type: AmmoType::Rocket,
+          amount: ACID_SPITTER_SHOT_COST,
+        }),
         BehaviorSpec::Alternate(AlternateAction::TerrainReload {
           required_terrain: TileKind::Acid,
           resulting_terrain: TileKind::Water,

@@ -3,6 +3,16 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.226]
+
+- Extended the immutable `ACID_SPITTER_BEHAVIOR` profile with its pinned
+  one-projectile ordinary fire and ten-rocket clip cost, enforcing atomic
+  below-cost rejection through generic ranged execution. Gameplay semantics
+  advance to `48`; stale semantics-47 replays are rejected before execution.
+  The existing Acid-to-Water reload remains authoritative; explosion
+  geometry/content and controlled runtime or audiovisual parity remain
+  deferred.
+
 ## [0.2.225]
 
 - Added the immutable `TRISTAR_BLASTER_BEHAVIOR` profile and enforced its
