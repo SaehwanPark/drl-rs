@@ -5,6 +5,10 @@
 
 use drl_protocol::{AmmoType, DamageType, EquipmentSlot, HitPoints, ItemArchetype, WeaponFireMode};
 
+use crate::null_pointer::{
+  NULL_POINTER_BOSS_SCORE_COST, NULL_POINTER_EXPLOSION_DELAY, NULL_POINTER_EXPLOSION_RADIUS,
+  NULL_POINTER_MIN_SCORE_COUNT, NULL_POINTER_TARGET_SCORE_COST,
+};
 use crate::subtle_knife::{
   SUBTLE_KNIFE_HP_COST, SUBTLE_KNIFE_SCORE_COST, SUBTLE_KNIFE_TARGET_DAMAGE,
 };
@@ -145,6 +149,13 @@ pub enum HitEffect {
   ScheduleExplosion { delay: u32, radius: u32 },
   /// Apply a target-dependent score cost.
   ScoreCost { amount: i32 },
+  /// Apply a score branch selected by one explicit target property.
+  TargetScoreCost {
+    property: TargetProperty,
+    matching_amount: i32,
+    other_amount: i32,
+    minimum: i32,
+  },
 }
 
 /// Effects that can be attached to a lethal hit.
@@ -243,6 +254,13 @@ pub enum TargetOrder {
   DistanceThenEntityId,
 }
 
+/// Explicit target property used by target-dependent effects.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum TargetProperty {
+  /// Whether the selected actor is marked as a boss by core state.
+  IsBoss,
+}
+
 /// Deterministic target-selection policies over an explicit state source.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TargetSelectionPolicy {
@@ -319,6 +337,27 @@ const TRIGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
 
 /// Declarative profile for the existing Trigun transition.
 pub const TRIGUN_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(TRIGUN_BEHAVIOR_SPECS);
+
+const NULL_POINTER_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Targeting(TargetSelectionPolicy::Single {
+    source: TargetSource::CurrentSimulation,
+    order: TargetOrder::EntityIdAscending,
+  }),
+  BehaviorSpec::Hit(HitEffect::TargetScoreCost {
+    property: TargetProperty::IsBoss,
+    matching_amount: NULL_POINTER_BOSS_SCORE_COST,
+    other_amount: NULL_POINTER_TARGET_SCORE_COST,
+    minimum: NULL_POINTER_MIN_SCORE_COUNT,
+  }),
+  BehaviorSpec::Hit(HitEffect::ScheduleExplosion {
+    delay: NULL_POINTER_EXPLOSION_DELAY,
+    radius: NULL_POINTER_EXPLOSION_RADIUS,
+  }),
+];
+
+/// Immutable typed profile for Charch's Null Pointer on-hit transition.
+pub const NULL_POINTER_BEHAVIOR: BehaviorProfile =
+  BehaviorProfile::new(NULL_POINTER_BEHAVIOR_SPECS);
 
 /// Medical Powerarmor begins repair only while durability is strictly above
 /// the legacy callback's `20`-point guard.
@@ -707,6 +746,25 @@ mod tests {
         }),
         BehaviorSpec::Cost(ResourceCost::Score {
           amount: TRIGUN_SCORE_COST,
+        }),
+      ]
+    );
+    assert_eq!(
+      NULL_POINTER_BEHAVIOR.specs(),
+      &[
+        BehaviorSpec::Targeting(TargetSelectionPolicy::Single {
+          source: TargetSource::CurrentSimulation,
+          order: TargetOrder::EntityIdAscending,
+        }),
+        BehaviorSpec::Hit(HitEffect::TargetScoreCost {
+          property: TargetProperty::IsBoss,
+          matching_amount: NULL_POINTER_BOSS_SCORE_COST,
+          other_amount: NULL_POINTER_TARGET_SCORE_COST,
+          minimum: NULL_POINTER_MIN_SCORE_COUNT,
+        }),
+        BehaviorSpec::Hit(HitEffect::ScheduleExplosion {
+          delay: NULL_POINTER_EXPLOSION_DELAY,
+          radius: NULL_POINTER_EXPLOSION_RADIUS,
         }),
       ]
     );

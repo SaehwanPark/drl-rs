@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.193`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.194`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -218,8 +218,8 @@ replays, and regression testing.
     boundary fixture;
     `drl-core` exposes a compile-time `BehaviorSpec` vocabulary and immutable
     stress-case profiles for passive/equipment, attack/hit/kill, alternate,
-    periodic, explicit-cost, and deterministic-target behavior without dynamic
-    callback keys;
+    periodic, explicit-cost, and deterministic-target behavior, including the
+    Null Pointer's target-dependent score branch, without dynamic callback keys;
     manual reload is explicitly denied for the pinned Blaster, Nuclear Plasma
     Rifle, and Nuclear BFG 9000 `IF_NORELOAD` families before any state/RNG
     mutation, with atomic core and MCP/browser-boundary coverage;

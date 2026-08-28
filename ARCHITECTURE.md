@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.193`
+Current project version: `0.2.194`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -166,8 +166,9 @@ Presentation Boundary
     The `behavior` module also exposes a compile-time `BehaviorSpec` vocabulary
     and immutable profiles for passive/equipment, attack/hit/kill,
     alternate-action, periodic, explicit-cost, and deterministic-target
-    concepts. Profiles describe behavior without string keys or runtime
-    callbacks; dedicated transition modules remain the execution authority.
+    concepts, including target-dependent score branches. Profiles describe
+    behavior without string keys or runtime callbacks; dedicated transition
+    modules remain the execution authority.
     The exotic Missile Launcher uses the explicit single-shell reload policy,
     loading one rocket per accepted `Reload` while retaining the shared
     `WeaponReloaded` event and atomic rejection contract. Its alternate/full

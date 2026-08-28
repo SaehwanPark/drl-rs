@@ -11,6 +11,13 @@ documented in this file.
   periodic, explicit resource/status-cost, and deterministic-target concepts
   without introducing runtime callbacks or changing gameplay/replay semantics.
 
+## [0.2.194]
+
+- Extended the typed behavior vocabulary with an immutable Null Pointer profile
+  that records deterministic single-target selection, the explicit boss versus
+  ordinary score-count branch, and the deferred explosion schedule. Existing
+  runtime, gameplay, and replay transitions remain unchanged.
+
 ## [0.2.192]
 
 - Added a deterministic vertical Nuclear BFG 9000 shot-cost encounter. The
