@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.210`
+Current project version: `0.2.211`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -42,7 +42,8 @@ Grammaton records its typed Single/Burst/Auto mode and score-cost fragments; Jac
 records its typed Burst/Single mode and score-cost fragments; Lava Armor records
 its typed terrain-gated durability-recharge fragment; Malek's Armor records its
 typed durability-recharge fragment; Blaster records its
-typed periodic-recharge fragment; Nuclear Plasma records its typed
+typed periodic-recharge fragment; Missile Launcher records its typed ordinary
+single-rocket reload and capped full-deficit reload fragments; Nuclear Plasma records its typed
 alternate-overload and periodic-recharge fragments; the BFG family profiles
 record exact-hit, typed projectile-count,
 ammunition-cost, and delayed-explosion metadata. Dedicated runtime command
@@ -190,6 +191,9 @@ Presentation Boundary
     records overload and recharge without claiming chainfire. Profiles describe
     behavior without string keys or runtime callbacks; dedicated transition
     modules remain the execution authority.
+    Missile Launcher's immutable profile records ordinary `Reload` and
+    capped `FullReload` fragments; its dedicated planner remains responsible
+    for reserve, deficit, cost, and transactional validation.
     The exotic Missile Launcher uses the explicit single-shell reload policy,
     loading one rocket per accepted `Reload` while retaining the shared
     `WeaponReloaded` event and atomic rejection contract. Its alternate/full

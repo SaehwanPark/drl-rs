@@ -1,7 +1,7 @@
 # Missile Launcher reload evidence
 
-Status: source-backed behavior evidence; controlled legacy runtime comparison
-is `NOT_RUN`.
+Status: source-backed delivered reload transition and typed behavior-profile
+evidence through `0.2.211`; controlled legacy runtime comparison is `NOT_RUN`.
 
 ## Pinned source
 
