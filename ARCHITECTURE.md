@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.201`
+Current project version: `0.2.202`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -112,7 +112,7 @@ Presentation Boundary
   - Observations: `PlayerObservation`, `TileView`, `ActorView`, `ItemView`.
   - Events: `GameEvent` stream (combat, movement, items, levels, and typed
     alternate-behavior transitions such as Grammaton fire-mode changes and the
-    BFG 10K delayed-explosion schedule metadata event).
+    BFG 10K and standard BFG 9000 delayed-explosion schedule metadata events).
   - Stable item identity and normalized replay spawn families use one
     compile-time catalog for the `ItemArchetype`/`ItemSpawnKind` enums, ordered
     `ALL` views, and wire names; count-sensitive reconstruction, gameplay
@@ -200,8 +200,10 @@ Presentation Boundary
     only ranged to-hit sampling; its separate typed 40-cell shot-cost policy
     preflights and debits ammo before the ordinary single-projectile combat
     path. LOS, range, action cost, damage RNG, and existing attack/damage
-    events remain unchanged. Projectile routing and explosion effects remain
-    separate policy work.
+    events remain unchanged. Its direct-target hit now emits one typed
+    `Bfg9000ExplosionScheduled` event with delay 33, radius 8, and knockback 16;
+    explosion geometry, splash, knockback application, and projectile routing
+    remain separate policy work.
     Nuclear BFG 9000 opts into the same typed exact-hit policy without changing
     its recharge or alternate-overload state; its shot-cost, projectile, and
     NukeRun effects remain separate policy work.

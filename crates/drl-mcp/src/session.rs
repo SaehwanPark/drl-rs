@@ -1161,6 +1161,23 @@ pub fn game_event_to_json(event: &GameEvent) -> JsonValue {
       map.insert("radius".to_string(), JsonValue::from(*radius));
       map.insert("knockback".to_string(), JsonValue::from(*knockback));
     }
+    GameEvent::Bfg9000ExplosionScheduled {
+      entity_id,
+      target_id,
+      delay,
+      radius,
+      knockback,
+    } => {
+      map.insert(
+        "type".to_string(),
+        JsonValue::from("Bfg9000ExplosionScheduled"),
+      );
+      map.insert("entity_id".to_string(), JsonValue::from(entity_id.as_u64()));
+      map.insert("target_id".to_string(), JsonValue::from(target_id.as_u64()));
+      map.insert("delay".to_string(), JsonValue::from(*delay));
+      map.insert("radius".to_string(), JsonValue::from(*radius));
+      map.insert("knockback".to_string(), JsonValue::from(*knockback));
+    }
     GameEvent::NukeActivated {
       level_id,
       countdown,
@@ -1784,6 +1801,63 @@ mod tests {
     }
   }
 
+  fn assert_standard_bfg_schedule_event(
+    events: &[GameEvent],
+    attacker_id: drl_protocol::EntityId,
+    target_id: drl_protocol::EntityId,
+  ) {
+    let attack_index = events
+      .iter()
+      .position(|event| {
+        matches!(
+          event,
+          GameEvent::AttackResolved {
+            attacker_id: event_attacker,
+            target_id: event_target,
+            outcome: drl_protocol::AttackOutcome::Hit { .. },
+            is_ranged: true,
+          } if *event_attacker == attacker_id && *event_target == target_id
+        )
+      })
+      .expect("standard BFG shot must resolve a hit");
+    let damage_index = events
+      .iter()
+      .position(|event| {
+        matches!(
+          event,
+          GameEvent::DamageApplied { target_id: event_target, .. }
+            if *event_target == target_id
+        )
+      })
+      .expect("standard BFG shot must apply damage");
+    let (schedule_index, delay, radius, knockback) = events
+      .iter()
+      .enumerate()
+      .find_map(|(index, event)| match event {
+        GameEvent::Bfg9000ExplosionScheduled {
+          entity_id,
+          target_id: event_target,
+          delay,
+          radius,
+          knockback,
+        } if *entity_id == attacker_id && *event_target == target_id => {
+          Some((index, *delay, *radius, *knockback))
+        }
+        _ => None,
+      })
+      .expect("standard BFG shot must schedule its delayed explosion");
+    assert_eq!(damage_index, attack_index + 1);
+    assert_eq!(schedule_index, damage_index + 1);
+    assert_eq!((delay, radius, knockback), (33, 8, 16));
+    assert_eq!(
+      events
+        .iter()
+        .filter(|event| matches!(event, GameEvent::Bfg9000ExplosionScheduled { .. }))
+        .count(),
+      1
+    );
+  }
+
   #[test]
   fn acid_spitter_reload_event_projects_to_mcp_json() {
     let value = game_event_to_json(&GameEvent::AcidSpitterReloaded {
@@ -1840,6 +1914,29 @@ mod tests {
     assert_eq!(map.get("target_id").and_then(JsonValue::as_i64), Some(2));
     assert_eq!(map.get("delay").and_then(JsonValue::as_i64), Some(25));
     assert_eq!(map.get("radius").and_then(JsonValue::as_i64), Some(2));
+    assert_eq!(map.get("knockback").and_then(JsonValue::as_i64), Some(16));
+  }
+
+  #[test]
+  fn bfg9000_explosion_schedule_event_projects_to_mcp_json() {
+    let value = game_event_to_json(&GameEvent::Bfg9000ExplosionScheduled {
+      entity_id: drl_protocol::EntityId::new(1),
+      target_id: drl_protocol::EntityId::new(2),
+      delay: 33,
+      radius: 8,
+      knockback: 16,
+    });
+    let JsonValue::Object(map) = value else {
+      panic!("event projection must be an object");
+    };
+    assert_eq!(
+      map.get("type").and_then(JsonValue::as_str),
+      Some("Bfg9000ExplosionScheduled")
+    );
+    assert_eq!(map.get("entity_id").and_then(JsonValue::as_i64), Some(1));
+    assert_eq!(map.get("target_id").and_then(JsonValue::as_i64), Some(2));
+    assert_eq!(map.get("delay").and_then(JsonValue::as_i64), Some(33));
+    assert_eq!(map.get("radius").and_then(JsonValue::as_i64), Some(8));
     assert_eq!(map.get("knockback").and_then(JsonValue::as_i64), Some(16));
   }
 
@@ -2469,6 +2566,14 @@ mod tests {
     );
 
     let (events, _, _) = session.step(command).unwrap();
+    let target_id = events
+      .iter()
+      .find_map(|event| match event {
+        GameEvent::AttackResolved { target_id, .. } => Some(*target_id),
+        _ => None,
+      })
+      .expect("standard BFG attack should identify a target");
+    assert_standard_bfg_schedule_event(&events, player_id, target_id);
     assert!(events.iter().any(|event| {
       matches!(
         event,
@@ -2939,6 +3044,16 @@ mod tests {
       .step(command)
       .expect("direct standard BFG shot-cost command");
     let (events, observation, outcome) = session.step(command).expect("MCP standard BFG shot");
+
+    let player_id = direct.world().player_id().unwrap();
+    let target_id = direct
+      .world()
+      .actors()
+      .values()
+      .find(|actor| !actor.is_player())
+      .unwrap()
+      .id();
+    assert_standard_bfg_schedule_event(&events, player_id, target_id);
 
     assert_eq!(events, expected_events);
     assert_eq!(session.game.as_ref().unwrap(), &direct);

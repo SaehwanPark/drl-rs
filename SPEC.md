@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.201`
+Current project version: `0.2.202`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,15 +25,15 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — BFG 10K Explosion Schedule Metadata
+## 2. Active Implementation Slice: M9 — Standard BFG 9000 Explosion Schedule Metadata
 
 ### 2.1 Objective
 
-Carry the pinned BFG 10K delayed explosion payload into the typed deterministic
-core. After each direct-target volley hit, the bounded path emits deterministic
-schedule metadata for the evidence-backed delay, radius, and knockback without
-introducing explosion geometry, splash damage, scatter routing, runtime
-callbacks, or a new gameplay surface.
+Carry the pinned standard BFG 9000 delayed explosion payload into the typed
+deterministic core. After its direct-target hit, the bounded path emits
+deterministic schedule metadata for the evidence-backed delay, radius, and
+knockback without introducing explosion geometry, splash damage, projectile
+routing, runtime callbacks, or a new gameplay surface.
 
 ### 2.1a Scope and steering gate
 
@@ -41,40 +41,39 @@ callbacks, or a new gameplay surface.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, Gate C catalog ownership, and Gate D callback behavior
   evidence remain closed for this contract-only slice.
-- **Observable outcome:** A deterministic BFG 10K fixture starts with a
-  fifty-cell clip and one visible static target. One accepted ranged command
-  emits five ordered exact-hit attack/damage pairs followed by five typed
-  explosion-schedule events carrying delay `25`, radius `2`, and knockback `16`;
-  it consumes twenty-five clip cells and matches direct-core, ScenarioRunner,
-  MCP, BrowserSession, replay, and determinism evidence.
-- **Gameplay/replay impact:** Gameplay semantics advance from `38` to `39`;
+- **Observable outcome:** A deterministic standard BFG 9000 fixture starts with
+  a full one-hundred-cell clip and one visible static target. One accepted
+  ranged command emits one exact-hit attack/damage pair followed by one typed
+  explosion-schedule event carrying delay `33`, radius `8`, and knockback `16`;
+  it consumes forty clip cells and matches direct-core, ScenarioRunner, MCP,
+  BrowserSession, replay, and determinism evidence.
+- **Gameplay/replay impact:** Gameplay semantics advance from `39` to `40`;
   replay wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.200` to `0.2.201` for the
-  typed schedule metadata.
+  unchanged. Project version advances from `0.2.201` to `0.2.202` for the
+  standard-BFG schedule metadata.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary
   and profiles; `drl-protocol` carries the one typed schedule event while MCP,
   render, audio, and browser layers only project or ignore it. No new gameplay
   balance or runtime dispatch surface is introduced in this slice.
-- **Evidence boundary:** Pinned BFG 10K exact-hit, shot-cost, and explosion
-  evidence in `docs/legacy-behavior/bfg10k-exact-hit.md`,
-  `docs/legacy-behavior/bfg10k-shot-cost.md`, and
-  `docs/legacy-behavior/bfg10k-explosion.md` is authoritative. Controlled
+- **Evidence boundary:** Pinned standard BFG 9000 exact-hit, shot-cost, and
+  explosion evidence in `docs/legacy-behavior/bfg9000-explosion.md` plus the
+  delivered exact-hit/shot-cost contracts is authoritative. Controlled
   legacy runtime, browser capture, and audiovisual comparisons remain
   `NOT_RUN`.
 - **Non-goals:** Explosion geometry and splash damage, knockback application,
-  scatter and projectile routing, chainfire, mods, replay-file IO/migrations,
+  projectile routing, alternate overload, mods, replay-file IO/migrations,
   runtime Lua, generic callback/event registries, unrelated protocol changes,
   and browser/audio/WebGPU parity.
 
 ### 2.2 Why this slice is bounded
 
-The existing ranged command already resolves the bounded five-shot volley and
-charges the per-projectile clip cost. This slice adds only the evidence-backed
-schedule payload as an ordered event after each direct-target hit, keeping
+The existing ranged command already resolves one standard BFG 9000 direct hit
+and charges its typed forty-cell cost. This slice adds only the evidence-backed
+schedule payload as an ordered event after that direct-target hit, keeping
 explosion execution outside the simulation until geometry and splash semantics
-have their own evidence-backed contract. It does not implement scatter or a
-projectile system, so the change stays within the current direct-target event
-contract.
+have their own evidence-backed contract. It does not implement a projectile
+system or alternate overload, so the change stays within the current direct-
+target event contract.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -1949,7 +1948,7 @@ policies. Its contract must:
   WebGPU, and controlled-legacy behavior unchanged or `NOT_RUN` where
   comparison evidence is unavailable.
 
-### 2.7bv Previous BFG 10K five-projectile volley delivery target
+### 2.7bv Historical BFG 10K five-projectile volley delivery target
 
 The bounded implementation target for this revision is the pinned BFG 10K
 five-projectile count and five-cell per-projectile cost on the existing direct
@@ -1970,7 +1969,7 @@ target path. Its contract must:
   audio, WebGPU, and controlled-legacy behavior unchanged or `NOT_RUN` where
   comparison evidence is unavailable.
 
-### 2.7bw Current BFG 10K explosion-schedule metadata delivery target
+### 2.7bw Historical BFG 10K explosion-schedule metadata delivery target
 
 The bounded implementation target for this revision is the pinned BFG 10K
 delayed explosion payload on the existing direct-target volley path. Its
@@ -1988,6 +1987,26 @@ contract must:
   simulation;
 - [x] keep explosion geometry, splash damage, knockback application, scatter,
   projectile routing, chainfire, mods, generic protocol registries, audio,
+  WebGPU, and controlled-legacy behavior unchanged or `NOT_RUN` where
+  comparison evidence is unavailable.
+
+### 2.7bx Current standard BFG 9000 explosion-schedule metadata delivery target
+
+The bounded implementation target for this revision is the pinned standard BFG
+9000 delayed explosion payload on the existing direct-target shot path. Its
+contract must:
+
+- [x] emit one typed schedule event after the direct-target attack/damage pair;
+- [x] preserve delay `33`, radius `8`, and knockback `16` from the pinned legacy
+  item payload and use the item radius assigned by the legacy ranged path;
+- [x] preserve the existing forty-cell preflight, exact-hit damage RNG, one
+  action-cost/turn-end sequence, and no additional RNG draws;
+- [x] assert ScenarioRunner/replay, MCP, and BrowserSession/direct-core state,
+  observation, event, and determinism equality;
+- [x] advance gameplay semantics to `40` and reject stale replay metadata before
+  simulation;
+- [x] keep explosion geometry, splash damage, knockback application, projectile
+  routing, alternate overload, mods, generic protocol registries, audio,
   WebGPU, and controlled-legacy behavior unchanged or `NOT_RUN` where
   comparison evidence is unavailable.
 
@@ -2131,11 +2150,17 @@ five cells from the full clip), with deterministic ScenarioRunner/replay, MCP,
 and BrowserSession/direct-core parity. Scatter, projectile routing, explosions,
 chainfire, runtime, and audiovisual parity remain open.
 
-The `0.2.201` successor records the pinned BFG 10K delayed explosion payload
+The `0.2.201` revision recorded the pinned BFG 10K delayed explosion payload
 after each direct-target hit as an ordered `Bfg10kExplosionScheduled` event
 (delay `25`, radius `2`, knockback `16`). Explosion geometry, splash damage,
 knockback application, projectile routing, runtime, and audiovisual parity
 remain open.
+
+The `0.2.202` successor records the pinned standard BFG 9000 delayed explosion
+payload after its direct-target hit as a `Bfg9000ExplosionScheduled` event
+(delay `33`, radius `8`, knockback `16`). Explosion geometry, splash damage,
+knockback application, projectile routing, alternate overload, runtime, and
+audiovisual parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity

@@ -5,6 +5,19 @@ M9 slices in this repository. They are intentionally short; the roadmap,
 `SPEC.md`, `ARCHITECTURE.md`, and slice evidence remain the detailed sources of
 truth.
 
+## Preserve source-side payload assignments
+
+- **Context:** Legacy item data can provide part of an effect payload while
+  the native ranged path supplies the rest.
+- **Symptom:** Copying only the serialized explosion fields leaves a schedule
+  with the default range instead of the weapon's evidenced radius.
+- **Resolution:** Trace both the item declaration and the native assignment
+  site; record the resulting typed event only after the complete payload is
+  established. For standard BFG 9000, the ranged path copies item radius `8`
+  into the explosion range alongside delay `33` and knockback `16`.
+- **Prevention:** Keep source provenance for each payload field in the slice
+  evidence and test the complete event tuple at every boundary.
+
 ## Separate current-Rust evidence from legacy parity
 
 - **Context:** Many slices use the pinned Pascal/Lua project as behavioral

@@ -1376,6 +1376,7 @@ pub fn effects_for_events(events: &[GameEvent]) -> Vec<PresentationEffect> {
       GameEvent::NullPointerHit { .. }
       | GameEvent::NullPointerExplosionScheduled { .. }
       | GameEvent::Bfg10kExplosionScheduled { .. } => None,
+      GameEvent::Bfg9000ExplosionScheduled { .. } => None,
       GameEvent::NukeActivated { .. } => None,
       GameEvent::LevelNuked { .. } => None,
       GameEvent::LevelTransitioned { .. } => Some(PresentationEffect::LevelTransition),
@@ -1480,6 +1481,7 @@ fn event_entity_ids(event: &GameEvent) -> [Option<EntityId>; 2] {
     | GameEvent::NullPointerHit { entity_id, .. }
     | GameEvent::NullPointerExplosionScheduled { entity_id, .. }
     | GameEvent::Bfg10kExplosionScheduled { entity_id, .. }
+    | GameEvent::Bfg9000ExplosionScheduled { entity_id, .. }
     | GameEvent::ActorKnockedBack { entity_id, .. } => [Some(*entity_id), None],
     GameEvent::AttackResolved {
       attacker_id,

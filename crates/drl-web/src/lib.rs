@@ -2112,6 +2112,68 @@ mod tests {
     }
   }
 
+  fn assert_standard_bfg_schedule_event(
+    events: &[drl_protocol::GameEvent],
+    attacker_id: drl_protocol::EntityId,
+    target_id: drl_protocol::EntityId,
+  ) {
+    let attack_index = events
+      .iter()
+      .position(|event| {
+        matches!(
+          event,
+          drl_protocol::GameEvent::AttackResolved {
+            attacker_id: event_attacker,
+            target_id: event_target,
+            outcome: drl_protocol::AttackOutcome::Hit { .. },
+            is_ranged: true,
+          } if *event_attacker == attacker_id && *event_target == target_id
+        )
+      })
+      .expect("standard BFG shot must resolve a hit");
+    let damage_index = events
+      .iter()
+      .position(|event| {
+        matches!(
+          event,
+          drl_protocol::GameEvent::DamageApplied { target_id: event_target, .. }
+            if *event_target == target_id
+        )
+      })
+      .expect("standard BFG shot must apply damage");
+    let (schedule_index, delay, radius, knockback) = events
+      .iter()
+      .enumerate()
+      .find_map(|(index, event)| match event {
+        drl_protocol::GameEvent::Bfg9000ExplosionScheduled {
+          entity_id,
+          target_id: event_target,
+          delay,
+          radius,
+          knockback,
+        } if *entity_id == attacker_id && *event_target == target_id => {
+          Some((index, *delay, *radius, *knockback))
+        }
+        _ => None,
+      })
+      .expect("standard BFG shot must schedule its delayed explosion");
+    assert_eq!(damage_index, attack_index + 1);
+    assert_eq!(schedule_index, damage_index + 1);
+    assert_eq!((delay, radius, knockback), (33, 8, 16));
+    assert_eq!(
+      events
+        .iter()
+        .filter(|event| {
+          matches!(
+            event,
+            drl_protocol::GameEvent::Bfg9000ExplosionScheduled { .. }
+          )
+        })
+        .count(),
+      1
+    );
+  }
+
   fn test_item(name: &str) -> ItemView {
     ItemView {
       id: ItemId::new(7),
@@ -7148,6 +7210,15 @@ mod tests {
         .current_clip,
       60
     );
+    let player_id = direct.world().player_id().unwrap();
+    let target_id = direct
+      .world()
+      .actors()
+      .values()
+      .find(|actor| !actor.is_player())
+      .unwrap()
+      .id();
+    assert_standard_bfg_schedule_event(&expected_events, player_id, target_id);
 
     let mut browser = BrowserSession::from_game(initial);
     let step = browser.submit(command).expect("browser exact-hit command");
@@ -7615,6 +7686,15 @@ mod tests {
       .expect("accepted standard BFG shot must end its turn");
     assert!(attack_index < cost_index);
     assert!(cost_index < turn_end_index);
+    let player_id = direct.world().player_id().unwrap();
+    let target_id = direct
+      .world()
+      .actors()
+      .values()
+      .find(|actor| !actor.is_player())
+      .unwrap()
+      .id();
+    assert_standard_bfg_schedule_event(&expected_events, player_id, target_id);
     assert_eq!(
       direct
         .world()

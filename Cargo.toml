@@ -14,17 +14,17 @@ resolver = "3"
 default-members = ["crates/drl-app"]
 
 [workspace.package]
-version = "0.2.201"
+version = "0.2.202"
 edition = "2024"
 license = "MIT"
 authors = ["DRL-Rust Contributors"]
 
 [workspace.dependencies]
-drl-audio = { path = "crates/drl-audio", version = "0.2.201" }
-drl-assets = { path = "crates/drl-assets", version = "0.2.201" }
-drl-core = { path = "crates/drl-core", version = "0.2.201" }
-drl-mcp = { path = "crates/drl-mcp", version = "0.2.201" }
-drl-protocol = { path = "crates/drl-protocol", version = "0.2.201" }
-drl-render = { path = "crates/drl-render", version = "0.2.201" }
-drl-script = { path = "crates/drl-script", version = "0.2.201" }
-drl-web = { path = "crates/drl-web", version = "0.2.201" }
+drl-audio = { path = "crates/drl-audio", version = "0.2.202" }
+drl-assets = { path = "crates/drl-assets", version = "0.2.202" }
+drl-core = { path = "crates/drl-core", version = "0.2.202" }
+drl-mcp = { path = "crates/drl-mcp", version = "0.2.202" }
+drl-protocol = { path = "crates/drl-protocol", version = "0.2.202" }
+drl-render = { path = "crates/drl-render", version = "0.2.202" }
+drl-script = { path = "crates/drl-script", version = "0.2.202" }
+drl-web = { path = "crates/drl-web", version = "0.2.202" }
