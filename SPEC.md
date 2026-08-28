@@ -2335,16 +2335,16 @@ The bounded implementation target for this revision is an immutable profile
 for the already-delivered Combat Pistol ordinary ranged action. Its contract
 must:
 
-- [ ] expose ordered typed `AttackEffect::ProjectileCount(1)` and
+- [x] expose ordered typed `AttackEffect::ProjectileCount(1)` and
   `ResourceCost::Ammo { ammo_type: Ammo9mm, amount: 1 }` fragments;
-- [ ] retain generic ranged execution ownership for target/LOS/range
+- [x] retain generic ranged execution ownership for target/LOS/range
   validation, damage RNG, event ordering, and transactional clip consumption;
-- [ ] assert exact profile declaration order without adding an alternate-fire
+- [x] assert exact profile declaration order without adding an alternate-fire
   command, callback registry, replay-wire field, or gameplay semantics change;
-- [ ] keep aimed-fire callback semantics, exact legacy timing/accuracy,
+- [x] keep aimed-fire callback semantics, exact legacy timing/accuracy,
   controlled runtime, and audiovisual parity `NOT_RUN` where comparison
   evidence is unavailable;
-- [ ] advance project version from `0.2.219` to `0.2.220` while keeping
+- [x] advance project version from `0.2.219` to `0.2.220` while keeping
   gameplay semantics `42`, replay schema, RNG, generator, and ruleset
   identities unchanged.
 
@@ -2583,6 +2583,11 @@ The `0.2.219` successor records the immutable `ROCKET_LAUNCHER_BEHAVIOR`
 profile for the delivered one-projectile ordinary fire and one-rocket cost.
 Rocket-jump/explosion callback semantics, exact legacy timing/accuracy,
 controlled runtime, and audiovisual parity remain open.
+
+The `0.2.220` successor records the immutable `COMBAT_PISTOL_BEHAVIOR`
+profile for the delivered one-projectile ordinary fire and one-9mm-round cost.
+Aimed-fire callback semantics, exact legacy timing/accuracy, controlled
+runtime, and audiovisual parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity

@@ -17,6 +17,9 @@ at revision `17d9be1204751899b2d69d8d3a2dde247bd0cc5c`.
 - `src/dfitem.pas:249-252` defaults absent `shots` and `shotcost` fields to
   zero, and `src/dfbeing.pas:1477-1481` resolves ordinary fire with
   `iShots := Max(aGun.Shots, 1)`, so the ordinary path emits one projectile.
+- `src/dfitem.pas:627-634` applies `math.Max(ShotCost, 1)` and multiplies by
+  the resolved shot count; with the absent `shotcost` default and one ordinary
+  shot, the legacy cost is one round before any callback multiplier.
 - The Rust definition maps the stable family to `AmmoType::Ammo9mm`; ordinary
   ranged execution consumes one clip round after complete target, line-of-
   sight, range, and death-drop preflight.
