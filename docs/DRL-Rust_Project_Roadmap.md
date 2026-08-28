@@ -714,8 +714,10 @@ verification item uses explicit status semantics:
 - **M9 Plasma Shotgun ordinary-fire cost (`0.2.221`):** The immutable
   `PLASMA_SHOTGUN_BEHAVIOR` profile records one ordered projectile and a
   three-cell clip cost, and generic ranged execution now preflights that cost
-  before mutation. Full spread/falloff/knockback semantics, exact legacy
-  timing/accuracy, runtime, and audiovisual parity remain open.
+  before mutation. Gameplay semantics advance to `43`, so stale semantics-42
+  replay metadata is rejected before execution. Full spread/falloff/knockback
+  semantics, exact legacy timing/accuracy, runtime, and audiovisual parity
+  remain open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and

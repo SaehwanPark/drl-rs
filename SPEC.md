@@ -31,8 +31,7 @@ contracts, acceptance criteria, and verification boundaries.
 
 Carry the already-delivered Plasma Shotgun ordinary-fire policy into an
 immutable typed behavior profile. The profile describes one ordered projectile
-and a three-cell clip cost without changing command handling, replay wire shape,
-or runtime ownership.
+and a three-cell clip cost while retaining generic command execution ownership.
 
 ### 2.1a Scope and steering gate
 
@@ -45,10 +44,11 @@ or runtime ownership.
   `ResourceCost::Ammo { ammo_type: Cell, amount: 3 }` fragments; the exact
   profile order is asserted by the behavior contract test and generic ranged
   execution consumes three clip cells per accepted shot.
-- **Gameplay/replay impact:** Gameplay semantics remain `42`;
-  replay wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.220` to `0.2.221` for the
-  profile-only contract.
+- **Gameplay/replay impact:** Gameplay semantics advance from `42` to `43` so
+  replays recorded before the three-cell cost cannot be reinterpreted under the
+  new deterministic clip policy. Replay wire/schema, RNG sampling, generator,
+  and ruleset identities remain unchanged. Project version advances from
+  `0.2.220` to `0.2.221`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary
   and profiles; `drl-protocol`, MCP, render, audio, and browser boundaries remain
   unchanged. No new gameplay balance, command, event, or runtime dispatch
@@ -2364,13 +2364,14 @@ must:
 - [x] enforce the three-cell cost before mutation, reject clips below the cost
   atomically, and preserve the existing one-projectile event contract;
 - [x] assert exact profile declaration order without adding an alternate-fire
-  command, callback registry, replay-wire field, or gameplay semantics change;
+  command, callback registry, or replay-wire field; stale gameplay semantics
+  `42` replays are rejected before execution;
 - [x] keep spread/falloff/knockback callback semantics, exact legacy
   timing/accuracy, controlled runtime, and audiovisual parity `NOT_RUN` where
   comparison evidence is unavailable;
-- [x] advance project version from `0.2.220` to `0.2.221` while keeping
-  gameplay semantics `42`, replay schema, RNG, generator, and ruleset
-  identities unchanged.
+- [x] advance project version from `0.2.220` to `0.2.221` and gameplay
+  semantics from `42` to `43`, preserving replay schema, RNG, generator, and
+  ruleset identities.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 

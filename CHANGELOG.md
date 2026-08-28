@@ -8,7 +8,8 @@ documented in this file.
 - Added the immutable `PLASMA_SHOTGUN_BEHAVIOR` profile and enforced its
   pinned three-cell ordinary-fire cost before clip/RNG mutation, including
   atomic below-cost rejection coverage. Full spread/falloff/knockback parity
-  remains deferred.
+  remains deferred. Gameplay semantics advance to `43`; stale semantics-42
+  replays are rejected before execution.
 
 ## [0.2.220]
 
