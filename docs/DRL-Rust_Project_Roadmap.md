@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.207`
+Current project version: `0.2.208`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.207)
+## 3. Current Progress Summary (`VERSION` 0.2.208)
 
 ### Delivered Foundations
 
@@ -644,6 +644,11 @@ verification item uses explicit status semantics:
   terrain-gated interval-5/amount-3 durability-recharge fragment. The
   dedicated armor transition remains authoritative; hazard damage/resistance,
   runtime, and audiovisual parity remain explicitly open.
+- **M9 Jackhammer behavior profile (`0.2.208`):** The immutable
+  `JACKHAMMER_BEHAVIOR` profile now records ordered Single/Burst mode fragments
+  and the one-point score-count cost. The dedicated mode transition remains
+  authoritative; spread/falloff, exact timing/accuracy, runtime, and
+  audiovisual parity remain explicitly open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1168,6 +1173,10 @@ scripting.
   `TileKind::Lava` terrain-gated interval-5/amount-3 durability-recharge
   fragment; the dedicated transition remains authoritative and hazard
   damage/resistance, runtime, and audiovisual parity remain open.
+- [x] Jackhammer has an immutable behavior profile for its ordered Single/
+  Burst mode fragments and one-point score-count cost; the dedicated
+  transition remains authoritative and spread/falloff, exact timing/accuracy,
+  runtime, and audiovisual parity remain open.
 - [x] Vertical Nuclear BFG 9000 shot-cost encounter preserves the typed
   forty-cell one-shot policy through deterministic scenario/replay, MCP, and
   BrowserSession/direct-core parity; alternate overload, recharge timing,

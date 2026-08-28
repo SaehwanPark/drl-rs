@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.208]
+
+- Added an immutable `JACKHAMMER_BEHAVIOR` profile for the evidence-backed
+  Single/Burst mode fragments and one-point score-count cost while retaining
+  dedicated execution ownership. Spread/falloff, exact timing/accuracy,
+  runtime, and audiovisual parity remain deferred.
+
 ## [0.2.207]
 
 - Added an immutable `LAVA_ARMOR_BEHAVIOR` profile for the evidence-backed

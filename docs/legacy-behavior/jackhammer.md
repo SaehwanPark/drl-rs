@@ -1,7 +1,7 @@
 # Jackhammer alternate fire-mode evidence
 
-Status: behavior target for `0.2.129`; controlled runtime and presentation
-comparison remain `NOT_RUN`.
+Status: delivered typed transition and behavior profile through `0.2.208`;
+controlled runtime and presentation comparison remain `NOT_RUN`.
 
 ## Source identity
 
