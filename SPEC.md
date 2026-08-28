@@ -56,9 +56,10 @@ data, or runtime ownership.
   `docs/legacy-behavior/assault-shotgun-profile.md` plus the delivered
   transition/planner contract is authoritative. Controlled legacy runtime,
   browser capture, and audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** Pump/chamber behavior, new command or callback registries,
-  gameplay balance changes, replay-file IO/migrations, runtime Lua, unrelated
-  protocol changes, and browser/audio/WebGPU parity.
+- **Non-goals:** Exact legacy timing and partial-reserve policy comparison,
+  new command or callback registries, gameplay balance changes, replay-file
+  IO/migrations, runtime Lua, unrelated protocol changes, and browser/audio/
+  WebGPU parity.
 
 ### 2.2 Why this slice is bounded
 
@@ -2225,9 +2226,9 @@ transitions. Its contract must:
   ownership for one-shell, full-deficit, reserve, and capped-cost execution;
 - [x] assert exact profile declaration order without adding a runtime command,
   callback registry, or replay-wire field;
-- [x] keep pump/chamber behavior, gameplay balance, exact legacy timing,
-  runtime, audio, WebGPU, and controlled-legacy behavior unchanged or `NOT_RUN`
-  where comparison evidence is unavailable;
+- [x] keep gameplay balance unchanged, while exact legacy timing,
+  partial-reserve policy, runtime, audio, WebGPU, and controlled-legacy behavior
+  remain `NOT_RUN` where comparison evidence is unavailable;
 - [x] advance project version from `0.2.213` to `0.2.214` while keeping
   gameplay semantics `41`, replay schema, RNG, generator, and ruleset
   identities unchanged.
@@ -2442,8 +2443,8 @@ and audiovisual parity remain open.
 
 The `0.2.214` successor records the immutable `ASSAULT_SHOTGUN_BEHAVIOR`
 profile with ordinary single-shell reload and capped full-deficit reload
-fragments. Dedicated reload/planner paths remain authoritative; pump/chamber,
-runtime, and audiovisual parity remain open.
+fragments. Dedicated reload/planner paths remain authoritative; exact legacy
+timing, partial-reserve policy, runtime, and audiovisual parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity

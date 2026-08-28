@@ -1,7 +1,7 @@
 # Assault Shotgun typed behavior-profile evidence
 
-Status: delivered typed behavior profile for `0.2.214`; pump/chamber behavior,
-exact legacy timing, controlled runtime comparison, and audiovisual parity
+Status: delivered typed behavior profile for `0.2.214`; exact legacy timing,
+partial-reserve policy, controlled runtime comparison, and audiovisual parity
 remain `NOT_RUN`.
 
 ## Pinned source
@@ -27,6 +27,6 @@ for one-shell loading, full-deficit reserve checks, capped cost, and
 transactional rejection behavior. No command, replay, RNG, or generic
 callback-dispatch surface is introduced by the profile.
 
-Pump/chamber behavior, exact legacy timing, partial-reserve policy, controlled
-runtime comparison, and audiovisual parity remain deferred and are not inferred
-from source similarity alone.
+Exact legacy timing, partial-reserve policy, controlled runtime comparison, and
+audiovisual parity remain deferred and are not inferred from source similarity
+alone.
