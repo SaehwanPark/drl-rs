@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.204]
+
+- Added an immutable `NUCLEAR_PLASMA_BEHAVIOR` profile describing the
+  evidence-backed alternate-overload and delay-40/cadence-2/amount-1 recharge
+  transitions while retaining dedicated execution ownership. Nuclear Plasma
+  chainfire, runtime, and audiovisual parity remain deferred.
+
 ## [0.2.203]
 
 - Added typed Nuclear BFG 9000 delayed-explosion schedule metadata after its

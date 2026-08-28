@@ -59,11 +59,12 @@ pub use behavior::{
   HitEffect, ItemSetId, KillEffect, MEDICAL_POWERARMOR_BEHAVIOR, MEDICAL_REPAIR_INTERVAL,
   MEDICAL_REPAIR_MIN_DURABILITY_EXCLUSIVE, MEDICAL_REPAIR_TIMER_AFTER_REPAIR, MedicalRepairOutcome,
   MedicalRepairState, NUCLEAR_BFG_RECHARGE_AMOUNT, NUCLEAR_BFG_RECHARGE_DELAY,
-  NUCLEAR_BFG_RECHARGE_TICK, NUCLEAR_BFG9000_BEHAVIOR, NUCLEAR_PLASMA_RECHARGE_AMOUNT,
-  NUCLEAR_PLASMA_RECHARGE_DELAY, NUCLEAR_PLASMA_RECHARGE_TICK, NULL_POINTER_BEHAVIOR,
-  PassiveModifier, PassiveStat, PeriodicEffect, ResourceCost, SUBTLE_KNIFE_BEHAVIOR, StatusCost,
-  StatusEffect, TRIGUN_BEHAVIOR, TargetOrder, TargetProperty, TargetSelectionPolicy, TargetSource,
-  WeaponRechargeOutcome, WeaponRechargePolicy, WeaponRechargeState,
+  NUCLEAR_BFG_RECHARGE_TICK, NUCLEAR_BFG9000_BEHAVIOR, NUCLEAR_PLASMA_BEHAVIOR,
+  NUCLEAR_PLASMA_RECHARGE_AMOUNT, NUCLEAR_PLASMA_RECHARGE_DELAY, NUCLEAR_PLASMA_RECHARGE_TICK,
+  NULL_POINTER_BEHAVIOR, PassiveModifier, PassiveStat, PeriodicEffect, ResourceCost,
+  SUBTLE_KNIFE_BEHAVIOR, StatusCost, StatusEffect, TRIGUN_BEHAVIOR, TargetOrder, TargetProperty,
+  TargetSelectionPolicy, TargetSource, WeaponRechargeOutcome, WeaponRechargePolicy,
+  WeaponRechargeState,
 };
 pub use combat::CombatResolver;
 pub use combat_shotgun::COMBAT_SHOTGUN_ALT_RELOAD_CAP;

@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.203`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.204`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -82,11 +82,12 @@ replays, and regression testing.
   - Stable item identity, names, catalog order, and normalized replay spawn
     families derive from one protocol declaration; gameplay definitions,
     count-sensitive reconstruction, and presentation policy remain explicit.
-  - The typed behavior vocabulary includes immutable standard BFG 9000, Nuclear
-    BFG 9000, and BFG 10K profiles for exact-hit, projectile-count, typed
-    ammunition-cost, and delayed-explosion schedule boundaries (standard and
-    Nuclear BFG 9000 delay 33/radius 8/knockback 16; BFG 10K delay 25/radius
-    2/knockback 16);
+  - The typed behavior vocabulary includes immutable Nuclear Plasma Rifle,
+    standard BFG 9000, Nuclear BFG 9000, and BFG 10K profiles for typed
+    alternate/periodic, exact-hit, projectile-count, ammunition-cost, and
+    delayed-explosion schedule boundaries (Nuclear Plasma recharge delay
+    40/cadence 2/amount 1; standard and Nuclear BFG 9000 delay 33/radius
+    8/knockback 16; BFG 10K delay 25/radius 2/knockback 16);
     Nuclear BFG recharge/overload is explicit, while scatter and
     projectile-routing semantics remain deferred.
   - Rejected `Game::step` commands restore turn, world, and RNG state through a
