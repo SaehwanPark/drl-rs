@@ -1,5 +1,9 @@
 # Acid Spitter reload evidence
 
+Status: delivered typed transition and behavior profile through `0.2.210`;
+hazard damage/resistance, fluid movement cost, controlled legacy runtime, and
+audiovisual parity remain `NOT_RUN`.
+
 ## Pinned source
 
 - Legacy checkout: `/Users/saehwan/repos/doom-the-roughlike-original`

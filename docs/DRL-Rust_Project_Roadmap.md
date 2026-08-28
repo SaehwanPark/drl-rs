@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.209`
+Current project version: `0.2.210`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.209)
+## 3. Current Progress Summary (`VERSION` 0.2.210)
 
 ### Delivered Foundations
 
@@ -654,6 +654,11 @@ verification item uses explicit status semantics:
   fragments and the 200-point score-count cost. The dedicated mode transition
   remains authoritative; legacy accuracy equations, exact timing, runtime, and
   audiovisual parity remain explicitly open.
+- **M9 Acid Spitter behavior profile (`0.2.210`):** The immutable
+  `ACID_SPITTER_BEHAVIOR` profile now records the Acid-to-Water one-round
+  terrain reload and 1,000-point score-count cost. The dedicated transition
+  remains authoritative; hazard damage/resistance, runtime, and audiovisual
+  parity remain explicitly open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1186,6 +1191,10 @@ scripting.
   ordered Single/Burst/Auto mode fragments and 200-point score-count cost; the
   dedicated transition remains authoritative and legacy accuracy equations,
   exact timing, runtime, and audiovisual parity remain open.
+- [x] Acid Spitter has an immutable behavior profile for its Acid-to-Water
+  one-round terrain reload and 1,000-point score-count cost; the dedicated
+  transition remains authoritative and hazard damage/resistance, fluid
+  movement cost, runtime, and audiovisual parity remain open.
 - [x] Vertical Nuclear BFG 9000 shot-cost encounter preserves the typed
   forty-cell one-shot policy through deterministic scenario/replay, MCP, and
   BrowserSession/direct-core parity; alternate overload, recharge timing,
