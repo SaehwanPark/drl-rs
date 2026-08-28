@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.201]
+
+- Added typed BFG 10K delayed-explosion schedule metadata after each direct-
+  target volley hit. Each of the five ordered events carries the pinned delay
+  `25`, radius `2`, and knockback `16` payload with replay, MCP, and
+  BrowserSession parity; explosion geometry, splash damage, knockback
+  application, routing, runtime, and audiovisual parity remain deferred.
+
 ## [0.2.200]
 
 - Implemented the pinned BFG 10K five-projectile direct-target volley in the

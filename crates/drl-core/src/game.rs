@@ -8,7 +8,10 @@ use drl_protocol::{
 
 use crate::acid_spitter::{ACID_SPITTER_RELOAD_AMOUNT, AcidSpitterReloadError};
 use crate::assault_shotgun::{AssaultShotgunReloadPlan, AssaultShotgunTransition};
-use crate::behavior::{LavaRechargeOutcome, MedicalRepairOutcome, WeaponRechargeOutcome};
+use crate::behavior::{
+  BFG10K_EXPLOSION_DELAY, BFG10K_EXPLOSION_KNOCKBACK, BFG10K_EXPLOSION_RADIUS, LavaRechargeOutcome,
+  MedicalRepairOutcome, WeaponRechargeOutcome,
+};
 use crate::combat::CombatResolver;
 use crate::combat_shotgun::{CombatShotgunReloadPlan, CombatShotgunTransition};
 use crate::environment::{entered_tile_damage, movement_cost};
@@ -1675,7 +1678,7 @@ impl Game {
     let distance = p_pos.distance_chebyshev(target_pos);
 
     // Prepare the full validation boundary before consuming ammo or RNG.
-    let (fire_cost, shot_count, ammo_cost, null_pointer_item_id) = {
+    let (fire_cost, shot_count, ammo_cost, null_pointer_item_id, weapon_is_bfg10k) = {
       let player = self
         .state
         .world
@@ -1711,7 +1714,14 @@ impl Game {
 
       let null_pointer_item_id =
         (weapon.archetype() == drl_protocol::ItemArchetype::NullPointer).then_some(weapon.id());
-      (props.fire_cost, shot_count, ammo_cost, null_pointer_item_id)
+      let weapon_is_bfg10k = weapon.archetype() == drl_protocol::ItemArchetype::Bfg10k;
+      (
+        props.fire_cost,
+        shot_count,
+        ammo_cost,
+        null_pointer_item_id,
+        weapon_is_bfg10k,
+      )
     };
 
     // Keep all ordinary command validation ahead of the death-drop preflight,
@@ -1802,6 +1812,16 @@ impl Game {
         source: DamageSource::Actor(player_id),
         damage_type: None,
       });
+
+      if weapon_is_bfg10k {
+        events.push(GameEvent::Bfg10kExplosionScheduled {
+          entity_id: player_id,
+          target_id: target_monster_id,
+          delay: BFG10K_EXPLOSION_DELAY,
+          radius: BFG10K_EXPLOSION_RADIUS,
+          knockback: BFG10K_EXPLOSION_KNOCKBACK,
+        });
+      }
 
       if actual_lethal {
         let death_drop = self

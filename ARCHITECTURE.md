@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.200`
+Current project version: `0.2.201`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -111,7 +111,8 @@ Presentation Boundary
   - Commands & Errors: `Command`, `CommandError`.
   - Observations: `PlayerObservation`, `TileView`, `ActorView`, `ItemView`.
   - Events: `GameEvent` stream (combat, movement, items, levels, and typed
-    alternate-behavior transitions such as Grammaton fire-mode changes).
+    alternate-behavior transitions such as Grammaton fire-mode changes and the
+    BFG 10K delayed-explosion schedule metadata event).
   - Stable item identity and normalized replay spawn families use one
     compile-time catalog for the `ItemArchetype`/`ItemSpawnKind` enums, ordered
     `ALL` views, and wire names; count-sensitive reconstruction, gameplay
@@ -210,9 +211,11 @@ Presentation Boundary
     Nuclear BFG 9000 shares the typed forty-cell shot-cost policy with the
     standard BFG while preserving its exact-hit, recharge, and overload state;
     projectile routing, explosions, and NukeRun remain separate policy work.
-    BFG 10K opts into typed exact-hit, five-projectile direct-target volley, and
-    five-cell-per-projectile shot-cost policies; scatter, projectile routing,
-    chainfire, and explosion behavior remain separate policy work.
+    BFG 10K opts into typed exact-hit, five-projectile direct-target volley,
+    five-cell-per-projectile shot-cost, and delayed explosion schedule metadata
+    (delay 25, radius 2, knockback 16); explosion geometry, splash damage,
+    knockback application, scatter, projectile routing, and chainfire remain
+    separate policy work.
     The pinned `IF_NORELOAD` families use an explicit item policy that rejects
     ordinary `Reload` before mutation; this remains separate from alternate
     reload and automatic recharge behavior.
