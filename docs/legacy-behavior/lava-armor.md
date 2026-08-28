@@ -1,8 +1,8 @@
 # Lava Armor recharge evidence
 
-Status: bounded typed behavior target for `0.2.130`; hazard damage,
-resistance equations, controlled runtime comparison, and exact presentation
-parity remain `NOT_RUN`.
+Status: delivered typed transition and behavior profile through `0.2.207`;
+hazard damage, resistance equations, controlled runtime comparison, and exact
+presentation parity remain `NOT_RUN`.
 
 ## Pinned source
 

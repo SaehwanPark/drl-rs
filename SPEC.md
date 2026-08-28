@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.206`
+Current project version: `0.2.207`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Malek's Armor Behavior Profile
+## 2. Active Implementation Slice: M9 — Lava Armor Behavior Profile
 
 ### 2.1 Objective
 
-Carry the already-delivered Malek's Armor durability-recharge transition into
-an immutable typed behavior profile. The profile describes the evidence-backed
-policy without changing command handling, replay wire data, or runtime
-ownership.
+Carry the already-delivered Lava Armor terrain-gated durability-recharge
+transition into an immutable typed behavior profile. The profile describes the
+evidence-backed policy without changing command handling, replay wire data, or
+runtime ownership.
 
 ### 2.1a Scope and steering gate
 
@@ -40,34 +40,34 @@ ownership.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, Gate C catalog ownership, and Gate D callback behavior
   evidence remain closed for this contract-only slice.
-- **Observable outcome:** `MALEK_ARMOR_BEHAVIOR` exposes one typed
-  `PeriodicEffect::DurabilityRecharge` fragment with delay `50`, cadence `5`,
-  and amount `1`; exact profile declaration order is asserted while the
-  existing dedicated transition remains unchanged.
+- **Observable outcome:** `LAVA_ARMOR_BEHAVIOR` exposes one typed
+  `PeriodicEffect::TerrainRecharge` fragment for `TileKind::Lava`, with
+  interval `5` and amount `3`; exact profile declaration order is asserted
+  while the existing dedicated transition remains unchanged.
 - **Gameplay/replay impact:** Gameplay semantics remain `41`;
   replay wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.205` to `0.2.206` for the
+  unchanged. Project version advances from `0.2.206` to `0.2.207` for the
   profile-only contract.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary
   and profiles; `drl-protocol`, MCP, render, audio, and browser boundaries remain
   unchanged. No new gameplay balance, command, event, or runtime dispatch
   surface is introduced in this slice.
-- **Evidence boundary:** Pinned Malek's Armor recharge evidence in
-  `docs/legacy-behavior/malek-armor-profile.md` plus the delivered transition
+- **Evidence boundary:** Pinned Lava Armor recharge evidence in
+  `docs/legacy-behavior/lava-armor-profile.md` plus the delivered transition
   contract is authoritative. Controlled legacy runtime, browser capture, and
   audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** Armor resistance/degradation, damage-timer reset semantics in
-  the profile, new command or callback registries, gameplay balance changes,
-  replay-file IO/migrations, runtime Lua, unrelated protocol changes, and
-  browser/audio/WebGPU parity.
+- **Non-goals:** Hazard damage/resistance, armor movement/knockback modifiers,
+  new command or callback registries, gameplay balance changes, replay-file
+  IO/migrations, runtime Lua, unrelated protocol changes, and browser/audio/
+  WebGPU parity.
 
 ### 2.2 Why this slice is bounded
 
-The existing Malek's Armor durability-recharge transition already has a
-dedicated deterministic execution path. This slice adds only its immutable
-descriptive profile, keeping command validation and state mutation in the
-focused module. It does not add a generic dispatcher or alter armor policy, so
-the change stays within the current typed behavior boundary.
+The existing Lava Armor terrain-gated durability-recharge transition already
+has a dedicated deterministic execution path. This slice adds only its
+immutable descriptive profile, keeping command validation and state mutation in
+the focused module. It does not add a generic dispatcher or alter armor policy,
+so the change stays within the current typed behavior boundary.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -2061,7 +2061,7 @@ the already-delivered Blaster recharge transition. Its contract must:
   gameplay semantics `41`, replay schema, RNG, generator, and ruleset
   identities unchanged.
 
-### 2.7cb Current Malek's Armor behavior-profile delivery target
+### 2.7cb Historical Malek's Armor behavior-profile delivery target
 
 The bounded implementation target for this revision is an immutable profile
 for the already-delivered Malek's Armor durability-recharge transition. Its
@@ -2076,6 +2076,25 @@ contract must:
   WebGPU, and controlled-legacy behavior unchanged or `NOT_RUN` where
   comparison evidence is unavailable;
 - [x] advance project version from `0.2.205` to `0.2.206` while keeping
+  gameplay semantics `41`, replay schema, RNG, generator, and ruleset
+  identities unchanged.
+
+### 2.7cc Current Lava Armor behavior-profile delivery target
+
+The bounded implementation target for this revision is an immutable profile
+for the already-delivered Lava Armor terrain-gated durability-recharge
+transition. Its contract must:
+
+- [x] expose one typed `PeriodicEffect::TerrainRecharge` fragment for
+  `TileKind::Lava`;
+- [x] preserve interval `5` and amount `3` from the pinned legacy callback
+  while retaining dedicated armor-owned transition ownership;
+- [x] assert exact profile declaration order without adding a runtime command,
+  callback registry, or replay-wire field;
+- [x] keep hazard damage/resistance, movement/knockback modifiers, gameplay
+  balance, runtime, audio, WebGPU, and controlled-legacy behavior unchanged or
+  `NOT_RUN` where comparison evidence is unavailable;
+- [x] advance project version from `0.2.206` to `0.2.207` while keeping
   gameplay semantics `41`, replay schema, RNG, generator, and ruleset
   identities unchanged.
 
@@ -2250,6 +2269,11 @@ The `0.2.206` successor records the immutable `MALEK_ARMOR_BEHAVIOR` profile
 with the delay-50/cadence-5/amount-1 durability-recharge fragment. The
 dedicated transition remains authoritative; armor resistance/degradation,
 runtime, and audiovisual parity remain open.
+
+The `0.2.207` successor records the immutable `LAVA_ARMOR_BEHAVIOR` profile
+with the TileKind::Lava-gated interval-5/amount-3 durability-recharge
+fragment. The dedicated transition remains authoritative; hazard damage,
+armor resistance, runtime, and audiovisual parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity

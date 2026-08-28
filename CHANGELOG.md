@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.207]
+
+- Added an immutable `LAVA_ARMOR_BEHAVIOR` profile for the evidence-backed
+  `TileKind::Lava` terrain-gated interval-5/amount-3 durability recharge while
+  retaining dedicated execution ownership. Hazard damage/resistance, runtime,
+  and audiovisual parity remain deferred.
+
 ## [0.2.206]
 
 - Added an immutable `MALEK_ARMOR_BEHAVIOR` profile for the evidence-backed
