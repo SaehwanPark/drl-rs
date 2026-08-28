@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.217`
+Current project version: `0.2.218`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Standard Shotgun Knockback Profile
+## 2. Active Implementation Slice: M9 — Pistol Ordinary-Fire Profile
 
 ### 2.1 Objective
 
-Carry the already-delivered standard Shotgun one-cell knockback policy into an
-immutable typed behavior profile. The profile describes the current hit effect
-and one-shell cost without changing command handling, replay wire shape, or
-runtime ownership.
+Carry the already-delivered Pistol ordinary-fire policy into an immutable typed
+behavior profile. The profile describes one ordered projectile and one 9mm
+round cost without changing command handling, replay wire shape, or runtime
+ownership.
 
 ### 2.1a Scope and steering gate
 
@@ -40,24 +40,24 @@ runtime ownership.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, Gate C catalog ownership, and Gate D callback behavior
   evidence remain closed for this contract-only slice.
-- **Observable outcome:** `SHOTGUN_BEHAVIOR` exposes ordered typed
-  `HitEffect::Knockback { distance: 1 }` and
-  `ResourceCost::Ammo { ammo_type: Shells, amount: 1 }` fragments; the exact
-  profile order is asserted alongside the existing knockback scenario evidence.
+- **Observable outcome:** `PISTOL_BEHAVIOR` exposes ordered typed
+  `AttackEffect::ProjectileCount(1)` and
+  `ResourceCost::Ammo { ammo_type: Ammo9mm, amount: 1 }` fragments; the exact
+  profile order is asserted alongside the existing Pistol vertical scenario.
 - **Gameplay/replay impact:** Gameplay semantics remain `42`;
   replay wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.216` to `0.2.217` for the
+  unchanged. Project version advances from `0.2.217` to `0.2.218` for the
   profile-only contract.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary
   and profiles; `drl-protocol`, MCP, render, audio, and browser boundaries remain
   unchanged. No new gameplay balance, command, event, or runtime dispatch
   surface is introduced in this slice.
-- **Evidence boundary:** Pinned standard Shotgun evidence in
-  `docs/legacy-behavior/shotgun-knockback-profile.md` plus the delivered
-  collision-aware knockback contract is authoritative. Controlled legacy
-  runtime, browser capture, and audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** Exact legacy force/timing, spread/falloff, and audiovisual
-  presentation comparison,
+- **Evidence boundary:** Pinned Pistol source evidence in
+  `docs/legacy-behavior/pistol-profile.md` plus the delivered single-target
+  ranged contract is authoritative. Controlled legacy runtime, browser
+  capture, and audiovisual comparisons remain `NOT_RUN`.
+- **Non-goals:** Aimed-fire callback semantics, exact legacy timing/accuracy,
+  and audiovisual presentation comparison,
   new command or callback registries, gameplay balance changes, replay-file
   IO/migrations, runtime Lua, unrelated protocol changes, and browser/audio/
   WebGPU parity.
@@ -65,10 +65,10 @@ runtime ownership.
 ### 2.2 Why this slice is bounded
 
 The existing ranged command path already performs complete preflight,
-transactional clip validation, and collision-aware one-cell knockback. This
-slice records that delivered policy in an immutable profile; it does not add a
-generic dispatcher or alter RNG sampling, so replay behavior stays deterministic
-and reviewable.
+transactional clip validation, single-projectile resolution, and one-round
+ammunition consumption. This slice records that delivered policy in an
+immutable profile; it does not add a generic dispatcher or alter RNG sampling,
+so replay behavior stays deterministic and reviewable.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -2274,7 +2274,7 @@ Its contract must:
   semantics from `41` to `42`, preserving replay schema, RNG, generator, and
   ruleset identities.
 
-### 2.7cm Current Standard Shotgun knockback profile delivery target
+### 2.7cm Historical Standard Shotgun knockback profile delivery target
 
 The bounded implementation target for this revision is an immutable profile
 for the already-delivered standard Shotgun one-cell knockback hit and shell
@@ -2289,6 +2289,24 @@ cost. Its contract must:
 - [x] keep exact legacy force/timing, spread/falloff, controlled runtime, and
   audiovisual parity `NOT_RUN` where comparison evidence is unavailable;
 - [x] advance project version from `0.2.216` to `0.2.217` while keeping
+  gameplay semantics `42`, replay schema, RNG, generator, and ruleset
+  identities unchanged.
+
+### 2.7cn Current Pistol ordinary-fire profile delivery target
+
+The bounded implementation target for this revision is an immutable profile
+for the already-delivered Pistol ordinary ranged action. Its contract must:
+
+- [x] expose ordered typed `AttackEffect::ProjectileCount(1)` and
+  `ResourceCost::Ammo { ammo_type: Ammo9mm, amount: 1 }` fragments;
+- [x] retain generic ranged execution ownership for target/LOS/range
+  validation, damage RNG, event ordering, and transactional clip consumption;
+- [x] assert exact profile declaration order without adding an alternate-fire
+  command, callback registry, replay-wire field, or gameplay semantics change;
+- [x] keep aimed-fire callback semantics, exact legacy timing/accuracy,
+  controlled runtime, and audiovisual parity `NOT_RUN` where comparison
+  evidence is unavailable;
+- [x] advance project version from `0.2.217` to `0.2.218` while keeping
   gameplay semantics `42`, replay schema, RNG, generator, and ruleset
   identities unchanged.
 
@@ -2517,6 +2535,11 @@ exact timing, controlled legacy runtime, and audiovisual parity remain open.
 The `0.2.217` successor records the immutable `SHOTGUN_BEHAVIOR` profile for
 the delivered one-cell knockback hit and one-shell cost. Exact legacy force and
 timing, spread/falloff, controlled runtime, and audiovisual parity remain open.
+
+The `0.2.218` successor records the immutable `PISTOL_BEHAVIOR` profile for
+the delivered one-projectile ordinary fire and one-9mm-round cost. Aimed-fire
+callback semantics, exact legacy timing/accuracy, controlled runtime, and
+audiovisual parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity

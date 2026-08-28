@@ -464,6 +464,20 @@ const DOUBLE_SHOTGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
 pub const DOUBLE_SHOTGUN_BEHAVIOR: BehaviorProfile =
   BehaviorProfile::new(DOUBLE_SHOTGUN_BEHAVIOR_SPECS);
 
+/// Current Rust projectile count for an ordinary Pistol shot.
+pub const PISTOL_PROJECTILE_COUNT: u32 = 1;
+
+const PISTOL_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Attack(AttackEffect::ProjectileCount(PISTOL_PROJECTILE_COUNT)),
+  BehaviorSpec::Cost(ResourceCost::Ammo {
+    ammo_type: AmmoType::Ammo9mm,
+    amount: 1,
+  }),
+];
+
+/// Immutable typed profile for the current Pistol ordinary-fire policy.
+pub const PISTOL_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(PISTOL_BEHAVIOR_SPECS);
+
 /// Current Rust grid displacement for a surviving standard Shotgun hit.
 pub const SHOTGUN_KNOCKBACK_DISTANCE: u32 = 1;
 
@@ -1227,6 +1241,16 @@ mod tests {
         BehaviorSpec::Cost(ResourceCost::Ammo {
           ammo_type: AmmoType::Shells,
           amount: 2,
+        }),
+      ]
+    );
+    assert_eq!(
+      PISTOL_BEHAVIOR.specs(),
+      &[
+        BehaviorSpec::Attack(AttackEffect::ProjectileCount(PISTOL_PROJECTILE_COUNT)),
+        BehaviorSpec::Cost(ResourceCost::Ammo {
+          ammo_type: AmmoType::Ammo9mm,
+          amount: 1,
         }),
       ]
     );
