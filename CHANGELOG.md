@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.215]
+
+- Extended `COMBAT_SHOTGUN_BEHAVIOR` with the evidence-backed ordinary
+  pump-only chamber action (`200` action units), preserving dedicated chamber
+  and reload execution ownership. Exact timing, partial-reserve, runtime, and
+  audiovisual parity remain deferred.
+
 ## [0.2.214]
 
 - Added an immutable `ASSAULT_SHOTGUN_BEHAVIOR` profile for the evidence-backed
@@ -21,8 +28,9 @@ documented in this file.
 
 - Added an immutable `COMBAT_SHOTGUN_BEHAVIOR` profile for the evidence-backed
   ordinary single-shell reload and capped full-deficit reload (`2,500`)
-  policies while retaining dedicated execution ownership. Pump/chamber,
-  runtime, and audiovisual parity remain deferred.
+  policies while retaining dedicated execution ownership. The pump-only
+  chamber action was typed subsequently in `0.2.215`; runtime and audiovisual
+  parity remain deferred.
 
 ## [0.2.211]
 

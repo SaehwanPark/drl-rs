@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.214`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.215`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -86,15 +86,17 @@ replays, and regression testing.
     Jackhammer, Lava Armor, Malek's Armor, Blaster, Nuclear Plasma Rifle,
     Missile Launcher, Combat Shotgun, Assault Shotgun, Revenant's Launcher,
     standard BFG 9000, Nuclear BFG 9000, and BFG 10K profiles for typed
-    periodic/alternate, exact-hit, projectile-count, ammunition-cost, and
-    delayed-explosion schedule boundaries (Acid Spitter Acid-to-Water reload,
+    ordinary-action, periodic/alternate, exact-hit, projectile-count,
+    ammunition-cost, and delayed-explosion schedule boundaries (Acid Spitter
+    Acid-to-Water reload,
     one round, and score cost 1,000; Grammaton Single/Burst/Auto modes and
     score cost 200; Jackhammer Single/Burst modes and score cost 1; Lava Armor
     terrain-gated durability recharge interval 5/amount 3 on `TileKind::Lava`;
     Malek's Armor durability recharge delay 50/cadence 5/amount 1; Missile
     Launcher ordinary single-rocket reload plus full-deficit reload capped at
     2,500 score-count units; Combat Shotgun ordinary single-shell reload plus
-    full-deficit reload capped at 2,500 score-count units; Assault Shotgun
+    full-deficit reload capped at 2,500 score-count units; Combat Shotgun's
+    typed pump-only chamber cycle costs 200 action units; Assault Shotgun
     ordinary single-shell reload plus full-deficit reload capped at 2,500
     score-count units; Revenant's Launcher
     exact-hit policy; Blaster
@@ -210,9 +212,10 @@ replays, and regression testing.
     deficit in one accepted `AltReload`, consumes exactly the loose rockets,
     caps the action cost at 2,500 units, and preserves atomic rejection and
     scenario/replay/browser-boundary parity;
-    the Combat Shotgun's immutable reload profile records one-shell ordinary
-    reload and capped full-deficit reload while its dedicated planner and
-    pump-action state retain execution ownership;
+    the Combat Shotgun's immutable profile records its 200-unit pump-only
+    chamber cycle, one-shell ordinary reload, and capped full-deficit reload
+    while its dedicated planner and pump-action state retain execution
+    ownership;
     Malek’s Armor now owns a typed delay-50/cadence-5 durability-recharge
     timer: it restores one point at accepted command tick 55 and every five
     ticks below maximum, resets on received damage, and emits a neutral

@@ -4,7 +4,8 @@
 //! It is not a callback registry and does not execute legacy Lua.
 
 use drl_protocol::{
-  AmmoType, DamageType, EquipmentSlot, HitPoints, ItemArchetype, TileKind, WeaponFireMode,
+  ActionCost, AmmoType, DamageType, EquipmentSlot, HitPoints, ItemArchetype, TileKind,
+  WeaponFireMode,
 };
 
 use crate::acid_spitter::{ACID_SPITTER_RELOAD_AMOUNT, ACID_SPITTER_RELOAD_SCORE_COST};
@@ -20,6 +21,7 @@ use crate::null_pointer::{
   NULL_POINTER_BOSS_SCORE_COST, NULL_POINTER_EXPLOSION_DELAY, NULL_POINTER_EXPLOSION_RADIUS,
   NULL_POINTER_MIN_SCORE_COUNT, NULL_POINTER_TARGET_SCORE_COST,
 };
+use crate::pump_action::PUMP_ACTION_COST;
 use crate::subtle_knife::{
   SUBTLE_KNIFE_HP_COST, SUBTLE_KNIFE_SCORE_COST, SUBTLE_KNIFE_TARGET_DAMAGE,
 };
@@ -44,6 +46,8 @@ pub enum BehaviorSpec {
   Hit(HitEffect),
   /// An effect emitted when an attack kills its target.
   Kill(KillEffect),
+  /// An explicit ordinary-command action transition.
+  Action(ActionEffect),
   /// An explicitly typed alternate fire/reload/use action.
   Alternate(AlternateAction),
   /// A deterministic periodic or recharge transition.
@@ -52,6 +56,13 @@ pub enum BehaviorSpec {
   Cost(ResourceCost),
   /// A deterministic target-selection policy.
   Targeting(TargetSelectionPolicy),
+}
+
+/// Effects attached to ordinary command-driven action transitions.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum ActionEffect {
+  /// Cycle an empty pump-action chamber without consuming reserve ammunition.
+  Pump { cost: ActionCost },
 }
 
 /// Immutable collection of behavior fragments for one item or actor profile.
@@ -575,6 +586,9 @@ pub const MISSILE_LAUNCHER_BEHAVIOR: BehaviorProfile =
   BehaviorProfile::new(MISSILE_LAUNCHER_BEHAVIOR_SPECS);
 
 const COMBAT_SHOTGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Action(ActionEffect::Pump {
+    cost: PUMP_ACTION_COST,
+  }),
   BehaviorSpec::Alternate(AlternateAction::Reload),
   BehaviorSpec::Alternate(AlternateAction::FullReload {
     cost_cap: COMBAT_SHOTGUN_ALT_RELOAD_CAP,
@@ -901,6 +915,9 @@ mod tests {
       BehaviorSpec::Attack(AttackEffect::ExactHit),
       BehaviorSpec::Hit(HitEffect::Knockback { distance: 1 }),
       BehaviorSpec::Kill(KillEffect::Drop(ItemArchetype::SmallMedPack)),
+      BehaviorSpec::Action(ActionEffect::Pump {
+        cost: PUMP_ACTION_COST,
+      }),
       BehaviorSpec::Alternate(AlternateAction::Fire(WeaponFireMode::Burst)),
       BehaviorSpec::Alternate(AlternateAction::TerrainReload {
         required_terrain: TileKind::Acid,
@@ -929,7 +946,7 @@ mod tests {
     ];
     let profile = BehaviorProfile::new(SPECS);
 
-    assert_eq!(profile.specs().len(), 13);
+    assert_eq!(profile.specs().len(), 14);
     assert!(matches!(
       profile.specs()[0],
       BehaviorSpec::Passive(PassiveModifier {
@@ -1152,6 +1169,9 @@ mod tests {
     assert_eq!(
       COMBAT_SHOTGUN_BEHAVIOR.specs(),
       &[
+        BehaviorSpec::Action(ActionEffect::Pump {
+          cost: PUMP_ACTION_COST,
+        }),
         BehaviorSpec::Alternate(AlternateAction::Reload),
         BehaviorSpec::Alternate(AlternateAction::FullReload {
           cost_cap: COMBAT_SHOTGUN_ALT_RELOAD_CAP,
