@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.197`
+Current project version: `0.2.198`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.197)
+## 3. Current Progress Summary (`VERSION` 0.2.198)
 
 ### Delivered Foundations
 
@@ -584,6 +584,12 @@ verification item uses explicit status semantics:
   hit/action/turn event ordering, and final-state equality. Projectile routing,
   explosions, controlled legacy runtime, browser capture, and audiovisual parity
   remain explicitly open.
+- **M9 Nuclear BFG 9000 recharge MCP boundary (`0.2.198`):** The existing
+  delay-0/cadence-5/amount-1 recharge encounter now has MCP parity coverage
+  across one accepted shot and four waits, including per-step event,
+  observation, state, replay, and determinism equality. Wall-clock legacy
+  cadence, controlled runtime, browser capture, and audiovisual parity remain
+  explicitly open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1073,6 +1079,11 @@ scripting.
   forty-cell one-shot policy through deterministic scenario/replay, MCP, and
   BrowserSession/direct-core parity; alternate overload, recharge timing,
   projectile/explosion routing, runtime, and audiovisual parity remain open.
+- [x] Nuclear BFG 9000 recharge MCP boundary preserves the typed
+  delay-0/cadence-5/amount-1 policy across one accepted shot and four waits,
+  with per-step event/observation/state equality and deterministic replay;
+  wall-clock legacy cadence, controlled runtime, browser capture, and
+  audiovisual parity remain open.
 - [x] Vertical standard BFG 9000 shot-cost encounter preserves the typed
   forty-cell one-shot policy through deterministic scenario/replay, MCP, and
   BrowserSession/direct-core parity; projectile/explosion routing, runtime,

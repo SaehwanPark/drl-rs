@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.198]
+
+- Added deterministic MCP vertical-boundary coverage for Nuclear BFG 9000
+  periodic recharge. The delay-0/cadence-5/amount-1 policy now matches direct
+  core across five commands with final-state, event, observation, and replay
+  determinism assertions; runtime wall-clock and audiovisual parity remain
+  explicitly deferred.
+
 ## [0.2.197]
 
 - Added a deterministic vertical standard BFG 9000 forty-cell shot-cost
