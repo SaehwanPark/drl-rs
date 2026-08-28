@@ -21,16 +21,17 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// Gameplay semantics identifier expected by the current replay engine.
 ///
 /// This advances independently from the wire/schema and RNG-sampling versions
-/// when other deterministic simulation rules change. Version `43` includes
-/// the Plasma Shotgun's three-cell ordinary-fire cost, the version 42 Double
-/// Shotgun's two-projectile dual-shot policy, version 41's typed exact-hit
-/// policies, BFG 10K's five-projectile volley and delayed explosion schedules,
-/// standard and Nuclear BFG 9000's forty-cell shot costs and delayed
-/// explosion schedules, Nuclear BFG 9000's recharge/overload, Revenant's
-/// Launcher exact-hit resolution, Nuclear Plasma alternate overload/recharge,
-/// the `IF_NORELOAD` policy, Blaster recharge, and the prior Malek's Armor,
-/// Missile Launcher, and Combat Shotgun policies.
-pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 43;
+/// when other deterministic simulation rules change. Version `44` includes
+/// the Frag Shotgun's two-round ordinary-fire cost, the version 43 Plasma
+/// Shotgun's three-cell ordinary-fire cost, the version 42 Double Shotgun's
+/// two-projectile dual-shot policy, version 41's typed exact-hit policies, BFG
+/// 10K's five-projectile volley and delayed explosion schedules, standard and
+/// Nuclear BFG 9000's forty-cell shot costs and delayed explosion schedules,
+/// Nuclear BFG 9000's recharge/overload, Revenant's Launcher exact-hit
+/// resolution, Nuclear Plasma alternate overload/recharge, the `IF_NORELOAD`
+/// policy, Blaster recharge, and the prior Malek's Armor, Missile Launcher,
+/// and Combat Shotgun policies.
+pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 44;
 
 /// Procedural-generation semantics identifier expected for replays that carry
 /// a procedural generation configuration. Version 2 includes the exact
@@ -50,15 +51,15 @@ pub struct ReplayMetadata {
   /// Engine crate version string.
   pub engine_version: String,
   /// Gameplay semantics version required to interpret the command history.
-  /// Version 43 includes the Plasma Shotgun's three-cell ordinary-fire cost,
-  /// the version 42 Double Shotgun's two-projectile dual-shot policy, plus
-  /// typed exact-hit policies, BFG 10K's five-projectile volley and delayed
-  /// explosion schedules, standard and Nuclear BFG 9000's forty-cell shot
-  /// costs and delayed explosion schedules, Nuclear BFG 9000's
-  /// recharge/overload, Revenant's Launcher exact-hit resolution, Nuclear
-  /// Plasma alternate overload/recharge, the `IF_NORELOAD` policy, Blaster
-  /// recharge, and the prior Malek's Armor, Missile Launcher, and Combat
-  /// Shotgun policies.
+  /// Version 44 includes the Frag Shotgun's two-round ordinary-fire cost, the
+  /// version 43 Plasma Shotgun's three-cell ordinary-fire cost, the version 42
+  /// Double Shotgun's two-projectile dual-shot policy, plus typed exact-hit
+  /// policies, BFG 10K's five-projectile volley and delayed explosion
+  /// schedules, standard and Nuclear BFG 9000's forty-cell shot costs and
+  /// delayed explosion schedules, Nuclear BFG 9000's recharge/overload,
+  /// Revenant's Launcher exact-hit resolution, Nuclear Plasma alternate
+  /// overload/recharge, the `IF_NORELOAD` policy, Blaster recharge, and the
+  /// prior Malek's Armor, Missile Launcher, and Combat Shotgun policies.
   pub gameplay_semantics_version: u32,
   /// RNG sampling semantics required to reproduce bounded random choices.
   pub rng_sampling_semantics_version: u32,

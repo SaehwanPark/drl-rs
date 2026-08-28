@@ -79,6 +79,20 @@ fn equipped_double_shotgun(seed: u64) -> (Game, ItemId) {
   (game, weapon_id)
 }
 
+fn equipped_frag_shotgun(seed: u64) -> (Game, ItemId) {
+  let mut game = Game::new(seed, 10, 6, Position::new(2, 2)).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let weapon_id = game.world_mut().allocate_item_id();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, Item::frag_shotgun(weapon_id))
+    .unwrap();
+  (game, weapon_id)
+}
+
 fn equipped_plasma_shotgun(seed: u64) -> (Game, ItemId) {
   let mut game = Game::new(seed, 10, 6, Position::new(2, 2)).unwrap();
   let player_id = game.world().player_id().unwrap();
@@ -488,6 +502,72 @@ fn double_shotgun_below_dual_shot_cost_rejection_is_atomic() {
   game
     .world_mut()
     .spawn_monster(target, "Static Target", 500, 1, (9, 27))
+    .unwrap();
+  let player_id = game.world().player_id().unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 1;
+  let before = game.clone();
+
+  assert_eq!(
+    game.step(Command::AttackRanged(target)).unwrap_err(),
+    CommandError::NoAmmoInClip
+  );
+  assert_eq!(game, before);
+}
+
+#[test]
+fn frag_shotgun_consumes_two_9mm_rounds_per_ordinary_shot() {
+  let (mut game, _weapon_id) = equipped_frag_shotgun(2_220);
+  let target = Position::new(5, 2);
+  game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 500, 1, (2, 4))
+    .unwrap();
+  let player_id = game.world().player_id().unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 2;
+
+  game
+    .step(Command::AttackRanged(target))
+    .expect("two-round Frag Shotgun shot should resolve");
+  assert_eq!(
+    game
+      .world()
+      .player()
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .current_clip,
+    0
+  );
+}
+
+#[test]
+fn frag_shotgun_below_two_round_cost_rejection_is_atomic() {
+  let (mut game, _weapon_id) = equipped_frag_shotgun(2_221);
+  let target = Position::new(5, 2);
+  game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 500, 1, (2, 4))
     .unwrap();
   let player_id = game.world().player_id().unwrap();
   game

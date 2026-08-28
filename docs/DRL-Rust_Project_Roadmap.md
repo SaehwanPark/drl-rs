@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.221`
+Current project version: `0.2.222`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.221)
+## 3. Current Progress Summary (`VERSION` 0.2.222)
 
 ### Delivered Foundations
 
@@ -718,6 +718,13 @@ verification item uses explicit status semantics:
   replay metadata is rejected before execution. Full spread/falloff/knockback
   semantics, exact legacy timing/accuracy, runtime, and audiovisual parity
   remain open.
+- **M9 Frag Shotgun ordinary-fire cost (`0.2.222`):** The immutable
+  `FRAG_SHOTGUN_BEHAVIOR` profile records one ordered projectile and a
+  two-round 9mm cost, and generic ranged execution now preflights that cost
+  before mutation. Gameplay semantics advance to `44`, so stale semantics-43
+  replay metadata is rejected before execution. Full spread/falloff/knockback
+  semantics, exact legacy timing/accuracy, runtime, and audiovisual parity
+  remain open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1285,6 +1292,11 @@ scripting.
   timing/accuracy, runtime, and audiovisual parity remain open.
 - [x] Plasma Shotgun has an immutable behavior profile for its current
   one-projectile ordinary fire and three-cell clip cost; generic ranged
+  execution preflights the cost and preserves atomic below-cost rejection while
+  full spread/falloff/knockback semantics, exact legacy timing/accuracy,
+  runtime, and audiovisual parity remain open.
+- [x] Frag Shotgun has an immutable behavior profile for its current
+  one-projectile ordinary fire and two-round 9mm cost; generic ranged
   execution preflights the cost and preserves atomic below-cost rejection while
   full spread/falloff/knockback semantics, exact legacy timing/accuracy,
   runtime, and audiovisual parity remain open.
