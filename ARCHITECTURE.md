@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.199`
+Current project version: `0.2.200`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -37,9 +37,10 @@ invariants:
   conversion evidence only; no Lua runtime exists in the WASM browser bundle.
 
 Typed behavior profiles remain immutable compile-time descriptions. The BFG
-family profiles record exact-hit, one-projectile, and typed ammunition-cost
+family profiles record exact-hit, typed projectile-count, and ammunition-cost
 boundaries while dedicated runtime command paths remain the execution
-authority; legacy projectile volleys are not inferred from these profiles.
+authority; scatter and projectile routing are not inferred from these
+profiles.
 
 ---
 
@@ -209,9 +210,9 @@ Presentation Boundary
     Nuclear BFG 9000 shares the typed forty-cell shot-cost policy with the
     standard BFG while preserving its exact-hit, recharge, and overload state;
     projectile routing, explosions, and NukeRun remain separate policy work.
-    BFG 10K opts into the typed exact-hit and five-cell shot-cost policies;
-    its scatter, five-shot volley, chainfire, and explosion behavior remains
-    separate policy work.
+    BFG 10K opts into typed exact-hit, five-projectile direct-target volley, and
+    five-cell-per-projectile shot-cost policies; scatter, projectile routing,
+    chainfire, and explosion behavior remain separate policy work.
     The pinned `IF_NORELOAD` families use an explicit item policy that rejects
     ordinary `Reload` before mutation; this remains separate from alternate
     reload and automatic recharge behavior.

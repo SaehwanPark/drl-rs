@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.199`
+Current project version: `0.2.200`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — BFG Exact-Hit MCP Boundaries
+## 2. Active Implementation Slice: M9 — BFG 10K Five-Projectile Volley
 
 ### 2.1 Objective
 
-Carry the already-delivered standard and Nuclear BFG 9000 exact-hit policies
-through deterministic MCP vertical boundaries alongside their existing
-ScenarioRunner/replay and BrowserSession evidence without changing gameplay
-semantics or adding runtime callbacks, string-keyed dispatch, or a new gameplay
+Carry the pinned BFG 10K `shots=5` policy into the typed deterministic core.
+The bounded path resolves five exact-hit damage rolls against the submitted
+visible target and charges the evidence-backed five-cell cost per projectile,
+without introducing scatter routing, runtime callbacks, or a new gameplay
 surface.
 
 ### 2.1a Scope and steering gate
@@ -41,31 +41,35 @@ surface.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, Gate C catalog ownership, and Gate D callback behavior
   evidence remain closed for this contract-only slice.
-- **Observable outcome:** A deterministic MCP fixture covers one standard BFG
-  and one Nuclear BFG exact-hit shot at the existing vertical target setup.
-  Each session matches direct-core events, observations, state, clip result,
-  and replay output bit-exactly.
-- **Gameplay/replay impact:** Gameplay semantics remain `37`; replay wire
-  schema, RNG, generator, and ruleset identities remain unchanged. Project
-  version advances from `0.2.198` to `0.2.199` for the MCP boundary tests.
+- **Observable outcome:** A deterministic BFG 10K fixture starts with a
+  fifty-cell clip and one visible static target. One accepted ranged command
+  emits five ordered exact-hit attack resolutions, applies five deterministic
+  damage rolls, consumes twenty-five clip cells, and matches direct-core,
+  ScenarioRunner, MCP, BrowserSession, replay, and determinism evidence.
+- **Gameplay/replay impact:** Gameplay semantics advance from `37` to `38`;
+  replay wire/schema, RNG sampling, generator, and ruleset identities remain
+  unchanged. Project version advances from `0.2.199` to `0.2.200` for the
+  typed volley behavior.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary
   and profiles; protocol, MCP, render, audio, and browser layers receive no new
   gameplay balance or dispatch surface in this slice.
-- **Evidence boundary:** Pinned standard/Nuclear BFG exact-hit evidence in
-  `docs/legacy-behavior/bfg9000-exact-hit.md` is authoritative. Controlled
+- **Evidence boundary:** Pinned BFG 10K exact-hit and shot-cost evidence in
+  `docs/legacy-behavior/bfg10k-exact-hit.md` and
+  `docs/legacy-behavior/bfg10k-shot-cost.md` is authoritative. Controlled
   legacy runtime, browser capture, and audiovisual comparisons remain
   `NOT_RUN`.
-- **Non-goals:** Reworking existing behavior transitions, adding new gameplay
-  effects, replay-file IO/migrations, runtime Lua, generic callback/event
+- **Non-goals:** Scatter and projectile routing, delayed explosions, chainfire,
+  mods, replay-file IO/migrations, runtime Lua, generic callback/event
   registries, and browser/audio/WebGPU parity.
 
 ### 2.2 Why this slice is bounded
 
-Both BFG transitions already have explicit Rust exact-hit behavior plus direct
-core, ScenarioRunner/replay, and BrowserSession tests. This slice adds only the
-missing MCP boundary evidence: a small deterministic fixture that exercises the
-existing paths through the session adapter. It does not reinterpret either
-transition or add a runtime dispatcher, so no gameplay behavior changes.
+The existing ranged command already resolves a bounded number of shots and
+charges the per-projectile clip cost. This slice makes the BFG 10K's pinned
+five-shot count explicit in the item boundary, updates its typed profile, and
+extends the existing deterministic fixtures to assert five ordered hits. It
+does not implement scatter or a projectile system, so the change stays within
+the current direct-target event contract.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -1922,7 +1926,7 @@ contract must:
   WebGPU, and controlled-legacy behavior unchanged or `NOT_RUN` where
   comparison evidence is unavailable.
 
-### 2.7bu Current BFG exact-hit MCP-boundary delivery target
+### 2.7bu Previous BFG exact-hit MCP-boundary delivery target
 
 The bounded implementation target for this revision is a deterministic MCP
 vertical boundary for the existing standard and Nuclear BFG 9000 exact-hit
@@ -1938,6 +1942,27 @@ policies. Its contract must:
   and deterministic verification for both families;
 - [x] keep gameplay semantics, replay schema, RNG, protocol, browser, audio,
   WebGPU, and controlled-legacy behavior unchanged or `NOT_RUN` where
+  comparison evidence is unavailable.
+
+### 2.7bv Current BFG 10K five-projectile volley delivery target
+
+The bounded implementation target for this revision is the pinned BFG 10K
+five-projectile count and five-cell per-projectile cost on the existing direct
+target path. Its contract must:
+
+- [x] expose a typed BFG 10K projectile count of five while leaving ordinary
+  weapon fire modes unchanged;
+- [x] preflight and consume exactly twenty-five cells for a valid full-clip
+  volley, rejecting clips below twenty-five atomically;
+- [x] resolve five ordered exact-hit attack/damage pairs against the selected
+  target, preserving deterministic RNG consumption and one action-cost/turn-end
+  sequence;
+- [x] assert ScenarioRunner/replay, MCP, and BrowserSession/direct-core state,
+  observation, event, clip, and determinism equality;
+- [x] advance gameplay semantics to `38` and reject stale replay metadata before
+  simulation;
+- [x] keep scatter, projectile routing, explosions, chainfire, mods, protocol,
+  audio, WebGPU, and controlled-legacy behavior unchanged or `NOT_RUN` where
   comparison evidence is unavailable.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
@@ -2072,6 +2097,13 @@ The `0.2.192` successor exercises the typed Nuclear BFG 9000 forty-cell
 shot-cost policy in the same canonical vertical boundary sequence. Gameplay
 semantics remain `37`; controlled legacy runtime, browser capture, and
 audiovisual parity remain `NOT_RUN`.
+
+The `0.2.200` successor carries the pinned BFG 10K `shots=5` policy through the
+existing direct-target ranged path. One accepted command now resolves five
+ordered exact-hit damage rolls and charges five cells per projectile (twenty-
+five cells from the full clip), with deterministic ScenarioRunner/replay, MCP,
+and BrowserSession/direct-core parity. Scatter, projectile routing, explosions,
+chainfire, runtime, and audiovisual parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity

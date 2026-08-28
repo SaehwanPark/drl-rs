@@ -2032,6 +2032,58 @@ mod tests {
   use super::*;
   use drl_protocol::{ItemArchetype, ItemCategory, PlayerSpawnConfig, Position, TileKind};
 
+  fn assert_bfg10k_volley_events(
+    events: &[drl_protocol::GameEvent],
+    attacker_id: drl_protocol::EntityId,
+    target_id: drl_protocol::EntityId,
+  ) {
+    let mut attacks = Vec::new();
+    let mut damages = Vec::new();
+    for (index, event) in events.iter().enumerate() {
+      match event {
+        drl_protocol::GameEvent::AttackResolved {
+          attacker_id: event_attacker,
+          target_id: event_target,
+          outcome: drl_protocol::AttackOutcome::Hit { damage, .. },
+          is_ranged: true,
+        } if *event_attacker == attacker_id && *event_target == target_id => {
+          attacks.push((index, *damage));
+        }
+        drl_protocol::GameEvent::DamageApplied {
+          target_id: event_target,
+          amount,
+          ..
+        } if *event_target == target_id => damages.push((index, *amount)),
+        _ => {}
+      }
+    }
+
+    assert_eq!(attacks.len(), 5, "BFG 10K volley must resolve five hits");
+    assert_eq!(
+      damages.len(),
+      5,
+      "BFG 10K volley must apply five damage events"
+    );
+    assert_eq!(
+      attacks
+        .iter()
+        .map(|(_, damage)| *damage)
+        .collect::<Vec<_>>(),
+      damages
+        .iter()
+        .map(|(_, amount)| *amount)
+        .collect::<Vec<_>>(),
+      "each projectile's resolved damage must be applied in order"
+    );
+    for ((attack_index, _), (damage_index, _)) in attacks.iter().zip(damages.iter()) {
+      assert_eq!(
+        *damage_index,
+        *attack_index + 1,
+        "each BFG 10K attack must be followed immediately by its damage event"
+      );
+    }
+  }
+
   fn test_item(name: &str) -> ItemView {
     ItemView {
       id: ItemId::new(7),
@@ -7277,6 +7329,14 @@ mod tests {
     let (initial, setup_events) =
       drl_core::ReplayEngine::run(&setup_replay).expect("BFG 10K exact-hit replay setup");
     assert!(setup_events.is_empty());
+    let player_id = initial.world().player_id().expect("player identity");
+    let target_id = initial
+      .world()
+      .actors()
+      .values()
+      .find(|actor| !actor.is_player())
+      .expect("BFG 10K target")
+      .id();
 
     let command = Command::AttackRanged(target_position);
     let mut direct = initial.clone();
@@ -7294,6 +7354,20 @@ mod tests {
       )
     }));
     assert_eq!(
+      expected_events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          drl_protocol::GameEvent::AttackResolved {
+            is_ranged: true,
+            ..
+          }
+        ))
+        .count(),
+      5
+    );
+    assert_bfg10k_volley_events(&expected_events, player_id, target_id);
+    assert_eq!(
       direct
         .world()
         .player()
@@ -7304,7 +7378,7 @@ mod tests {
         .weapon_properties()
         .unwrap()
         .current_clip,
-      45
+      25
     );
 
     let mut browser = BrowserSession::from_game(initial);
@@ -7357,6 +7431,14 @@ mod tests {
     let (initial, setup_events) =
       drl_core::ReplayEngine::run(&setup_replay).expect("BFG 10K vertical replay setup");
     assert!(setup_events.is_empty());
+    let player_id = initial.world().player_id().expect("player identity");
+    let target_id = initial
+      .world()
+      .actors()
+      .values()
+      .find(|actor| !actor.is_player())
+      .expect("BFG 10K target")
+      .id();
 
     let command = Command::AttackRanged(target_position);
     let mut direct = initial.clone();
@@ -7373,6 +7455,20 @@ mod tests {
         }
       )
     }));
+    assert_eq!(
+      expected_events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          drl_protocol::GameEvent::AttackResolved {
+            is_ranged: true,
+            ..
+          }
+        ))
+        .count(),
+      5
+    );
+    assert_bfg10k_volley_events(&expected_events, player_id, target_id);
     assert!(
       expected_events
         .iter()
@@ -7403,7 +7499,7 @@ mod tests {
         .weapon_properties()
         .unwrap()
         .current_clip,
-      45
+      25
     );
 
     let mut browser = BrowserSession::from_game(initial);

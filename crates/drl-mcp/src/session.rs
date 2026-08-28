@@ -1687,6 +1687,58 @@ fn replay_log_for_scenario(scenario: &Scenario) -> ReplayLog {
 mod tests {
   use super::*;
 
+  fn assert_bfg10k_volley_events(
+    events: &[GameEvent],
+    attacker_id: drl_protocol::EntityId,
+    target_id: drl_protocol::EntityId,
+  ) {
+    let mut attacks = Vec::new();
+    let mut damages = Vec::new();
+    for (index, event) in events.iter().enumerate() {
+      match event {
+        GameEvent::AttackResolved {
+          attacker_id: event_attacker,
+          target_id: event_target,
+          outcome: drl_protocol::AttackOutcome::Hit { damage, .. },
+          is_ranged: true,
+        } if *event_attacker == attacker_id && *event_target == target_id => {
+          attacks.push((index, *damage));
+        }
+        GameEvent::DamageApplied {
+          target_id: event_target,
+          amount,
+          ..
+        } if *event_target == target_id => damages.push((index, *amount)),
+        _ => {}
+      }
+    }
+
+    assert_eq!(attacks.len(), 5, "BFG 10K volley must resolve five hits");
+    assert_eq!(
+      damages.len(),
+      5,
+      "BFG 10K volley must apply five damage events"
+    );
+    assert_eq!(
+      attacks
+        .iter()
+        .map(|(_, damage)| *damage)
+        .collect::<Vec<_>>(),
+      damages
+        .iter()
+        .map(|(_, amount)| *amount)
+        .collect::<Vec<_>>(),
+      "each projectile's resolved damage must be applied in order"
+    );
+    for ((attack_index, _), (damage_index, _)) in attacks.iter().zip(damages.iter()) {
+      assert_eq!(
+        *damage_index,
+        *attack_index + 1,
+        "each BFG 10K attack must be followed immediately by its damage event"
+      );
+    }
+  }
+
   #[test]
   fn acid_spitter_reload_event_projects_to_mcp_json() {
     let value = game_event_to_json(&GameEvent::AcidSpitterReloaded {
@@ -2685,7 +2737,7 @@ mod tests {
         .weapon_properties()
         .unwrap()
         .current_clip,
-      45
+      25
     );
   }
 
@@ -2717,6 +2769,14 @@ mod tests {
       .load_replay(setup_replay.clone())
       .expect("load canonical BFG 10K replay setup");
     let initial = session.game.as_ref().unwrap().clone();
+    let player_id = initial.world().player_id().expect("player identity");
+    let target_id = initial
+      .world()
+      .actors()
+      .values()
+      .find(|actor| !actor.is_player())
+      .expect("BFG 10K target")
+      .id();
     let command = Command::AttackRanged(target_position);
     let mut direct = initial.clone();
     let expected_events = direct
@@ -2729,6 +2789,20 @@ mod tests {
     assert_eq!(observation, direct.observe_player());
     assert_eq!(outcome, None);
     assert_eq!(
+      events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          GameEvent::AttackResolved {
+            is_ranged: true,
+            ..
+          }
+        ))
+        .count(),
+      5
+    );
+    assert_bfg10k_volley_events(&events, player_id, target_id);
+    assert_eq!(
       direct
         .world()
         .player()
@@ -2739,7 +2813,7 @@ mod tests {
         .weapon_properties()
         .unwrap()
         .current_clip,
-      45
+      25
     );
     let attack_index = events
       .iter()

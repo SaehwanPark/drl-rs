@@ -372,16 +372,31 @@ impl Item {
 
   /// Returns the typed per-projectile clip cost for ranged fire.
   ///
-  /// The typed BFG families use their pinned per-shot clip costs; all other
-  /// weapons consume one clip unit per emitted projectile. BFG 10K's legacy
-  /// five-shot volley remains a separate behavior policy, so this cost applies
-  /// to the current Rust single-shot path only.
+  /// The typed BFG families use their pinned per-projectile clip costs; all
+  /// other weapons consume one clip unit per emitted projectile. BFG 10K's
+  /// five-projectile direct-target volley therefore charges five cells for
+  /// each emitted projectile.
   #[must_use]
   pub(crate) const fn shot_cost(&self) -> u32 {
     match self.archetype {
       ItemArchetype::Bfg9000 | ItemArchetype::NuclearBfg9000 => 40,
       ItemArchetype::Bfg10k => 5,
       _ => 1,
+    }
+  }
+
+  /// Returns the typed number of projectiles resolved by one ranged command.
+  ///
+  /// BFG 10K keeps its pinned five-projectile volley independent of the
+  /// ordinary fire-mode count used by mode-selectable weapons. Scatter and
+  /// projectile routing remain outside this direct-target contract.
+  pub(crate) const fn projectile_count(&self) -> u32 {
+    match self.archetype {
+      ItemArchetype::Bfg10k => 5,
+      _ => match &self.kind {
+        ItemKind::Weapon(properties) => properties.shot_count(),
+        _ => 1,
+      },
     }
   }
 
@@ -1036,6 +1051,16 @@ mod tests {
     assert_eq!(Item::nuclear_bfg9000(ItemId::new(5)).shot_cost(), 40);
     assert_eq!(Item::bfg10k(ItemId::new(7)).shot_cost(), 5);
     assert_eq!(Item::pistol(ItemId::new(6)).shot_cost(), 1);
+  }
+
+  #[test]
+  fn bfg10k_has_five_projectiles_without_changing_fire_mode_counts() {
+    assert_eq!(Item::bfg10k(ItemId::new(8)).projectile_count(), 5);
+    assert_eq!(Item::pistol(ItemId::new(9)).projectile_count(), 1);
+    assert_eq!(
+      Item::grammaton_beretta(ItemId::new(10)).projectile_count(),
+      1
+    );
   }
 
   #[test]

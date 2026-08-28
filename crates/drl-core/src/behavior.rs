@@ -361,17 +361,15 @@ pub const NULL_POINTER_BEHAVIOR: BehaviorProfile =
 
 const BFG10K_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
   BehaviorSpec::Attack(AttackEffect::ExactHit),
-  // The current Rust path emits one projectile; the legacy five-projectile
-  // volley remains an explicitly deferred behavior rather than an implicit
-  // interpretation of the catalog scalar.
-  BehaviorSpec::Attack(AttackEffect::ProjectileCount(1)),
+  // Scatter and projectile routing remain separate from the typed count.
+  BehaviorSpec::Attack(AttackEffect::ProjectileCount(5)),
   BehaviorSpec::Cost(ResourceCost::Ammo {
     ammo_type: AmmoType::Cell,
     amount: 5,
   }),
 ];
 
-/// Immutable typed profile for the current BFG 10K one-shot behavior.
+/// Immutable typed profile for the current BFG 10K five-projectile behavior.
 pub const BFG10K_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(BFG10K_BEHAVIOR_SPECS);
 
 const BFG9000_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
@@ -818,7 +816,7 @@ mod tests {
       BFG10K_BEHAVIOR.specs(),
       &[
         BehaviorSpec::Attack(AttackEffect::ExactHit),
-        BehaviorSpec::Attack(AttackEffect::ProjectileCount(1)),
+        BehaviorSpec::Attack(AttackEffect::ProjectileCount(5)),
         BehaviorSpec::Cost(ResourceCost::Ammo {
           ammo_type: AmmoType::Cell,
           amount: 5,

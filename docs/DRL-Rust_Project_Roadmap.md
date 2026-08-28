@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.199`
+Current project version: `0.2.200`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.199)
+## 3. Current Progress Summary (`VERSION` 0.2.200)
 
 ### Delivered Foundations
 
@@ -595,6 +595,12 @@ verification item uses explicit status semantics:
   clip results, replay output, and determinism through the MCP session boundary.
   Projectile routing, controlled legacy runtime, and audiovisual parity remain
   explicitly open.
+- **M9 BFG 10K five-projectile volley (`0.2.200`):** The typed BFG 10K path now
+  resolves five ordered exact-hit direct-target shots and charges five cells per
+  projectile, consuming twenty-five cells from a full clip. Scenario/replay,
+  MCP, and BrowserSession/direct-core evidence preserve state, observations,
+  event ordering, and determinism; scatter, projectile routing, explosions,
+  chainfire, runtime, and audiovisual parity remain explicitly open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and

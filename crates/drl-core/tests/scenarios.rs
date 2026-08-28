@@ -8,6 +8,58 @@ use drl_protocol::{
   PlayerSpawnConfig, Position, RunOutcome, ScenarioFixture, TileKind,
 };
 
+fn assert_bfg10k_volley_events(
+  events: &[GameEvent],
+  attacker_id: drl_protocol::EntityId,
+  target_id: drl_protocol::EntityId,
+) {
+  let mut attacks = Vec::new();
+  let mut damages = Vec::new();
+  for (index, event) in events.iter().enumerate() {
+    match event {
+      GameEvent::AttackResolved {
+        attacker_id: event_attacker,
+        target_id: event_target,
+        outcome: AttackOutcome::Hit { damage, .. },
+        is_ranged: true,
+      } if *event_attacker == attacker_id && *event_target == target_id => {
+        attacks.push((index, *damage));
+      }
+      GameEvent::DamageApplied {
+        target_id: event_target,
+        amount,
+        ..
+      } if *event_target == target_id => damages.push((index, *amount)),
+      _ => {}
+    }
+  }
+
+  assert_eq!(attacks.len(), 5, "BFG 10K volley must resolve five hits");
+  assert_eq!(
+    damages.len(),
+    5,
+    "BFG 10K volley must apply five damage events"
+  );
+  assert_eq!(
+    attacks
+      .iter()
+      .map(|(_, damage)| *damage)
+      .collect::<Vec<_>>(),
+    damages
+      .iter()
+      .map(|(_, amount)| *amount)
+      .collect::<Vec<_>>(),
+    "each projectile's resolved damage must be applied in order"
+  );
+  for ((attack_index, _), (damage_index, _)) in attacks.iter().zip(damages.iter()) {
+    assert_eq!(
+      *damage_index,
+      *attack_index + 1,
+      "each BFG 10K attack must be followed immediately by its damage event"
+    );
+  }
+}
+
 #[test]
 fn test_ascii_scenario_complex_arena() {
   let ascii = r#"
@@ -754,7 +806,7 @@ fn revenants_launcher_exact_hit_vertical_scenario_preserves_replay() {
 fn bfg10k_exact_hit_vertical_scenario_preserves_replay() {
   let mut scenario = Scenario::from_ascii(
     "Bfg10kExactHitVertical",
-    "BFG 10K bypasses only to-hit sampling",
+    "BFG 10K resolves its exact-hit five-projectile volley",
     "########\n#@...h.#\n#......#\n########\n",
   )
   .unwrap();
@@ -796,6 +848,20 @@ fn bfg10k_exact_hit_vertical_scenario_preserves_replay() {
     )
   }));
   assert_eq!(
+    events
+      .iter()
+      .filter(|event| matches!(
+        event,
+        GameEvent::AttackResolved {
+          is_ranged: true,
+          ..
+        }
+      ))
+      .count(),
+    5
+  );
+  assert_bfg10k_volley_events(&events, player_id, target_id);
+  assert_eq!(
     game
       .world()
       .player()
@@ -806,7 +872,7 @@ fn bfg10k_exact_hit_vertical_scenario_preserves_replay() {
       .weapon_properties()
       .unwrap()
       .current_clip,
-    45
+    25
   );
   assert!(game.world().get_actor(target_id).unwrap().hp().current < 500);
   assert_eq!(replay.commands, commands);
@@ -902,7 +968,7 @@ fn standard_bfg_shot_cost_vertical_scenario_preserves_clip_and_replay() {
 fn bfg10k_shot_cost_vertical_scenario_preserves_clip_and_replay() {
   let mut scenario = Scenario::from_ascii(
     "Bfg10kShotCostVertical",
-    "BFG 10K consumes five cells in the canonical one-shot path",
+    "BFG 10K consumes twenty-five cells across its canonical volley",
     "########\n#@...h.#\n#......#\n########\n",
   )
   .unwrap();
@@ -943,6 +1009,20 @@ fn bfg10k_shot_cost_vertical_scenario_preserves_clip_and_replay() {
       } if *attacker_id == player_id && *event_target == target_id
     )
   }));
+  assert_eq!(
+    events
+      .iter()
+      .filter(|event| matches!(
+        event,
+        GameEvent::AttackResolved {
+          is_ranged: true,
+          ..
+        }
+      ))
+      .count(),
+    5
+  );
+  assert_bfg10k_volley_events(&events, player_id, target_id);
   let attack_index = events
     .iter()
     .position(|event| matches!(event, GameEvent::AttackResolved { .. }))
@@ -968,7 +1048,7 @@ fn bfg10k_shot_cost_vertical_scenario_preserves_clip_and_replay() {
       .weapon_properties()
       .unwrap()
       .current_clip,
-    45
+    25
   );
   assert!(game.world().get_actor(target_id).unwrap().hp().current < 500);
   assert_eq!(replay.commands, commands);
