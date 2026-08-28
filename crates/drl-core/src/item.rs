@@ -372,9 +372,9 @@ impl Item {
 
   /// Returns the typed per-projectile clip cost for ranged fire.
   ///
-  /// The typed BFG families, Frag Shotgun, Plasma Shotgun, and Railgun use
-  /// their pinned per-projectile clip costs; all other weapons consume one
-  /// clip unit per emitted projectile.
+  /// The typed BFG families, Frag Shotgun, Plasma Shotgun, Railgun, and Null
+  /// Pointer use their pinned per-projectile clip costs; all other weapons
+  /// consume one clip unit per emitted projectile.
   /// BFG 10K's five-projectile direct-target volley therefore charges five
   /// cells for each emitted projectile.
   #[must_use]
@@ -385,6 +385,7 @@ impl Item {
       ItemArchetype::FragShotgun => 2,
       ItemArchetype::PlasmaShotgun => 3,
       ItemArchetype::Railgun => 5,
+      ItemArchetype::NullPointer => 10,
       _ => 1,
     }
   }
@@ -1058,6 +1059,7 @@ mod tests {
     assert_eq!(Item::frag_shotgun(ItemId::new(8)).shot_cost(), 2);
     assert_eq!(Item::plasma_shotgun(ItemId::new(9)).shot_cost(), 3);
     assert_eq!(Item::railgun(ItemId::new(10)).shot_cost(), 5);
+    assert_eq!(Item::null_pointer(ItemId::new(11)).shot_cost(), 10);
     assert_eq!(Item::pistol(ItemId::new(6)).shot_cost(), 1);
   }
 

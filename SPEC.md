@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.223`
+Current project version: `0.2.224`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,13 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Railgun Ordinary-Fire Cost
+## 2. Active Implementation Slice: M9 — Null Pointer Ordinary-Fire Cost
 
 ### 2.1 Objective
 
-Carry the already-delivered Railgun ordinary-fire policy into an immutable typed
-behavior profile. The profile describes one ordered projectile and a five-cell
-clip cost while retaining generic command execution ownership.
+Carry the already-delivered Null Pointer ordinary-fire policy into an immutable
+typed behavior profile. The profile describes one ordered projectile and a
+ten-cell clip cost while retaining generic command execution ownership and the
+existing target-score/explosion transition.
 
 ### 2.1a Scope and steering gate
 
@@ -39,26 +40,26 @@ clip cost while retaining generic command execution ownership.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, Gate C catalog ownership, and Gate D callback behavior
   evidence remain closed for this contract-only slice.
-- **Observable outcome:** `RAILGUN_BEHAVIOR` exposes ordered typed
+- **Observable outcome:** `NULL_POINTER_BEHAVIOR` exposes ordered typed
   `AttackEffect::ProjectileCount(1)` and
-  `ResourceCost::Ammo { ammo_type: Cell, amount: 5 }` fragments; the exact
+  `ResourceCost::Ammo { ammo_type: Cell, amount: 10 }` fragments; the exact
   profile order is asserted by the behavior contract test and generic ranged
-  execution consumes five cells per accepted shot.
-- **Gameplay/replay impact:** Gameplay semantics advance from `44` to `45` so
-  replays recorded before the five-cell cost cannot be reinterpreted under the
+  execution consumes ten cells per accepted shot.
+- **Gameplay/replay impact:** Gameplay semantics advance from `45` to `46` so
+  replays recorded before the ten-cell cost cannot be reinterpreted under the
   new deterministic clip policy. Replay wire/schema, RNG sampling, generator,
   and ruleset identities remain unchanged. Project version advances from
-  `0.2.222` to `0.2.223`.
+  `0.2.223` to `0.2.224`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary
   and profiles; `drl-protocol`, MCP, render, audio, and browser boundaries remain
   unchanged. No new command, event, or runtime dispatch surface is introduced;
-  the pinned five-cell cost is this slice's only gameplay-policy change.
-- **Evidence boundary:** Pinned Railgun source evidence in
-  `docs/legacy-behavior/railgun-profile.md` plus the delivered single-target
-  ranged contract is authoritative. Ray/piercing routing is intentionally not
-  imported; controlled legacy
+  the pinned ten-cell cost is this slice's only gameplay-policy change.
+- **Evidence boundary:** Pinned Null Pointer source evidence in
+  `docs/legacy-behavior/null-pointer-profile.md` plus the delivered
+  single-target ranged contract is authoritative. The existing target-score
+  and deferred explosion transition remain dedicated; controlled legacy
   runtime, browser capture, and audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** Full spread/falloff and knockback callback semantics, exact
+- **Non-goals:** Delayed explosion geometry and full callback semantics, exact
   legacy timing/accuracy, audiovisual presentation comparison, new command or
   callback registries, unrelated gameplay balance or protocol changes,
   replay-file IO/migrations, runtime Lua, and browser/audio/WebGPU parity.
@@ -66,11 +67,11 @@ clip cost while retaining generic command execution ownership.
 ### 2.2 Why this slice is bounded
 
 The existing ranged command path already performs complete preflight,
-transactional clip validation, single-projectile resolution, and typed clip
-consumption for the Railgun. This slice records the delivered five-cell cost in
-an immutable profile and the existing cost helper; it does not add a generic
-dispatcher or alter RNG sampling, so replay behavior stays deterministic and
-reviewable.
+transactional clip validation, single-projectile resolution, typed clip
+consumption, and Null Pointer hit effects. This slice records the delivered
+ten-cell cost in an immutable profile and the existing cost helper; it does not
+add a generic dispatcher or alter RNG sampling, so replay behavior stays
+deterministic and reviewable.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -2394,7 +2395,7 @@ must:
   semantics from `43` to `44`, preserving replay schema, RNG, generator, and
   ruleset identities.
 
-### 2.7cs Current Railgun ordinary-fire cost delivery target
+### 2.7cs Historical Railgun ordinary-fire cost delivery target
 
 The bounded implementation target for this revision is an immutable profile
 for the already-delivered Railgun ordinary ranged action. Its contract must:
@@ -2413,6 +2414,29 @@ for the already-delivered Railgun ordinary ranged action. Its contract must:
   comparison evidence is unavailable;
 - [x] advance project version from `0.2.222` to `0.2.223` and gameplay
   semantics from `44` to `45`, preserving replay schema, RNG, generator, and
+  ruleset identities.
+
+### 2.7ct Current Null Pointer ordinary-fire cost delivery target
+
+The bounded implementation target for this revision is an immutable profile
+for the already-delivered Charch's Null Pointer ordinary ranged action. Its
+contract must:
+
+- [x] expose ordered typed `AttackEffect::ProjectileCount(1)` and
+  `ResourceCost::Ammo { ammo_type: Cell, amount: 10 }` fragments;
+- [x] retain generic ranged execution ownership for target/LOS/range
+  validation, damage RNG, event ordering, the existing target-score branch,
+  deferred explosion scheduling, and transactional clip consumption;
+- [x] enforce the ten-cell cost before mutation, reject clips below the cost
+  atomically, and preserve the existing one-projectile event contract;
+- [x] assert exact profile declaration order without adding an alternate-fire
+  command, callback registry, or replay-wire field; stale gameplay semantics
+  `45` replays are rejected before execution;
+- [x] keep delayed explosion geometry, full callback parity, exact legacy
+  timing/accuracy, controlled runtime, and audiovisual parity `NOT_RUN` where
+  comparison evidence is unavailable;
+- [x] advance project version from `0.2.223` to `0.2.224` and gameplay
+  semantics from `45` to `46`, preserving replay schema, RNG, generator, and
   ruleset identities.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
@@ -2673,6 +2697,13 @@ the delivered one-projectile ordinary fire and five-cell clip cost. Generic
 ranged execution now enforces the cost before mutation; ray/piercing routing,
 spread/falloff semantics, exact legacy timing/accuracy, controlled runtime, and
 audiovisual parity remain open.
+
+The `0.2.224` successor records the immutable `NULL_POINTER_BEHAVIOR` profile
+for the delivered one-projectile ordinary fire and ten-cell clip cost. Generic
+ranged execution now enforces the cost before mutation while retaining the
+typed target-score branch and deferred explosion schedule; delayed explosion
+geometry, full callback parity, controlled runtime, and audiovisual parity
+remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity

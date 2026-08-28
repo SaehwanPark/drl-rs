@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.223`
+Current project version: `0.2.224`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.223)
+## 3. Current Progress Summary (`VERSION` 0.2.224)
 
 ### Delivered Foundations
 
@@ -731,6 +731,13 @@ verification item uses explicit status semantics:
   Gameplay semantics advance to `45`, so stale semantics-44 replay metadata is
   rejected before execution. Ray/piercing routing, spread/falloff semantics,
   exact legacy timing/accuracy, runtime, and audiovisual parity remain open.
+- **M9 Null Pointer ordinary-fire cost (`0.2.224`):** The immutable
+  `NULL_POINTER_BEHAVIOR` profile records one ordered projectile and a
+  ten-cell cost, and generic ranged execution now preflights that cost before
+  mutation. Gameplay semantics advance to `46`, so stale semantics-45 replay
+  metadata is rejected before execution. The existing target-score branch and
+  deferred explosion schedule remain authoritative; delayed explosion geometry,
+  full callback parity, runtime, and audiovisual parity remain open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1311,6 +1318,11 @@ scripting.
   cost and preserves atomic below-cost rejection while ray/piercing routing,
   spread/falloff semantics, exact legacy timing/accuracy, runtime, and
   audiovisual parity remain open.
+- [x] Null Pointer has an immutable behavior profile for its current
+  one-projectile ordinary fire and ten-cell cost; generic ranged execution
+  preflights the cost and preserves atomic below-cost rejection while its
+  target-score branch, deferred explosion geometry, full callback parity,
+  exact legacy timing/accuracy, runtime, and audiovisual parity remain open.
 - [x] Revenant's Launcher has an immutable behavior profile for its pinned
   exact-hit attack policy; dedicated combat execution remains authoritative and
   homing, projectile routing, delayed explosions, runtime, and audiovisual

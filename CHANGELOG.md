@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.224]
+
+- Added the immutable `NULL_POINTER_BEHAVIOR` profile and enforced its pinned
+  ten-cell ordinary-fire cost before clip/RNG mutation, including atomic
+  below-cost rejection coverage. Gameplay semantics advance to `46`; stale
+  semantics-45 replays are rejected before execution. The existing target-score
+  branch and deferred explosion schedule remain authoritative; full delayed
+  geometry and callback/runtime parity remain deferred.
+
 ## [0.2.223]
 
 - Added the immutable `RAILGUN_BEHAVIOR` profile and enforced its pinned

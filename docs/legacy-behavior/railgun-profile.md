@@ -1,6 +1,6 @@
 # Railgun typed behavior-profile evidence
 
-Status: active ordinary-fire cost profile target for `0.2.223`; ray/piercing,
+Status: delivered ordinary-fire cost profile for `0.2.223`; ray/piercing,
 exact legacy timing/accuracy, controlled runtime comparison, and audiovisual
 parity remain `NOT_RUN`.
 

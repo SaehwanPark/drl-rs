@@ -83,7 +83,7 @@ fn replay_metadata_compatibility_matrix_is_explicit() {
   assert!(error.contains("replay schema version"));
 
   let mut stale_gameplay = current.clone();
-  stale_gameplay.metadata.gameplay_semantics_version = 44;
+  stale_gameplay.metadata.gameplay_semantics_version = 45;
   let error = ReplayEngine::validate(&stale_gameplay).unwrap_err();
   assert!(error.contains("unsupported gameplay semantics version"));
 

@@ -1535,7 +1535,7 @@ fn null_pointer_vertical_scenario_preserves_boss_hit_and_replay() {
       .weapon_properties()
       .unwrap()
       .current_clip,
-    59
+    50
   );
   assert_eq!(replay.commands, vec![command]);
 

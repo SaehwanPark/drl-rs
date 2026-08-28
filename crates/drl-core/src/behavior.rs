@@ -384,7 +384,17 @@ const TRIGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
 /// Declarative profile for the existing Trigun transition.
 pub const TRIGUN_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(TRIGUN_BEHAVIOR_SPECS);
 
+/// Current Rust projectile count for an ordinary Null Pointer shot.
+pub const NULL_POINTER_PROJECTILE_COUNT: u32 = 1;
+/// Pinned per-projectile clip cost for an ordinary Null Pointer shot.
+pub const NULL_POINTER_SHOT_COST: u32 = 10;
+
 const NULL_POINTER_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Attack(AttackEffect::ProjectileCount(NULL_POINTER_PROJECTILE_COUNT)),
+  BehaviorSpec::Cost(ResourceCost::Ammo {
+    ammo_type: AmmoType::Cell,
+    amount: NULL_POINTER_SHOT_COST,
+  }),
   BehaviorSpec::Targeting(TargetSelectionPolicy::Single {
     source: TargetSource::CurrentSimulation,
     order: TargetOrder::EntityIdAscending,
@@ -1146,6 +1156,11 @@ mod tests {
     assert_eq!(
       NULL_POINTER_BEHAVIOR.specs(),
       &[
+        BehaviorSpec::Attack(AttackEffect::ProjectileCount(NULL_POINTER_PROJECTILE_COUNT,)),
+        BehaviorSpec::Cost(ResourceCost::Ammo {
+          ammo_type: AmmoType::Cell,
+          amount: NULL_POINTER_SHOT_COST,
+        }),
         BehaviorSpec::Targeting(TargetSelectionPolicy::Single {
           source: TargetSource::CurrentSimulation,
           order: TargetOrder::EntityIdAscending,
