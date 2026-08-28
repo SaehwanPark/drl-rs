@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.211`
+Current project version: `0.2.212`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,11 +25,11 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Missile Launcher Behavior Profile
+## 2. Active Implementation Slice: M9 — Combat Shotgun Behavior Profile
 
 ### 2.1 Objective
 
-Carry the already-delivered Missile Launcher reload transitions into an
+Carry the already-delivered Combat Shotgun reload transitions into an
 immutable typed behavior profile. The profile describes the evidence-backed
 ordinary and alternate policies without changing command handling, replay wire
 data, or runtime ownership.
@@ -40,34 +40,34 @@ data, or runtime ownership.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, Gate C catalog ownership, and Gate D callback behavior
   evidence remain closed for this contract-only slice.
-- **Observable outcome:** `MISSILE_LAUNCHER_BEHAVIOR` exposes ordered typed
+- **Observable outcome:** `COMBAT_SHOTGUN_BEHAVIOR` exposes ordered typed
   `AlternateAction::Reload` and `AlternateAction::FullReload { cost_cap: 2500 }`
   fragments; exact profile declaration order is asserted while the existing
-  dedicated reload transitions and planner remain unchanged.
+  dedicated reload, planner, and pump-action transitions remain unchanged.
 - **Gameplay/replay impact:** Gameplay semantics remain `41`;
   replay wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.210` to `0.2.211` for the
+  unchanged. Project version advances from `0.2.211` to `0.2.212` for the
   profile-only contract.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary
   and profiles; `drl-protocol`, MCP, render, audio, and browser boundaries remain
   unchanged. No new gameplay balance, command, event, or runtime dispatch
   surface is introduced in this slice.
-- **Evidence boundary:** Pinned Missile Launcher reload evidence in
-  `docs/legacy-behavior/missile-launcher-profile.md` plus the delivered
+- **Evidence boundary:** Pinned Combat Shotgun reload/pump evidence in
+  `docs/legacy-behavior/combat-shotgun-profile.md` plus the delivered
   transition/planner contract is authoritative. Controlled legacy runtime,
   browser capture, and audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** Rocket-jump and explosion behavior, new command or callback
-  registries, gameplay balance changes, replay-file IO/migrations, runtime Lua,
-  unrelated protocol changes, and browser/audio/WebGPU parity.
+- **Non-goals:** New command or callback registries, gameplay balance changes,
+  replay-file IO/migrations, runtime Lua, unrelated protocol changes, and
+  browser/audio/WebGPU parity beyond the existing pump/chamber contract.
 
 ### 2.2 Why this slice is bounded
 
-The existing Missile Launcher ordinary reload and alternate/full-reload paths
-already have dedicated deterministic execution and planning. This slice adds
-only their immutable descriptive profile, keeping command validation, reserve
-mutation, and capped-cost calculation in the focused modules. It does not add
-a generic dispatcher or alter reload policy, so the change stays within the
-current typed behavior boundary.
+The existing Combat Shotgun ordinary reload, alternate/full-reload planner, and
+pump-action state already have dedicated deterministic execution. This slice
+adds only their immutable descriptive profile, keeping command validation,
+reserve/chamber mutation, and capped-cost calculation in the focused modules.
+It does not add a generic dispatcher or alter reload policy, so the change
+stays within the current typed behavior boundary.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -2136,7 +2136,7 @@ contract must:
   gameplay semantics `41`, replay schema, RNG, generator, and ruleset
   identities unchanged.
 
-### 2.7cf Current Acid Spitter behavior-profile delivery target
+### 2.7cf Historical Acid Spitter behavior-profile delivery target
 
 The bounded implementation target for this revision is an immutable profile
 for the already-delivered Acid Spitter terrain-reload transition. Its contract
@@ -2155,7 +2155,7 @@ must:
   gameplay semantics `41`, replay schema, RNG, generator, and ruleset
   identities unchanged.
 
-### 2.7cg Current Missile Launcher behavior-profile delivery target
+### 2.7cg Historical Missile Launcher behavior-profile delivery target
 
 The bounded implementation target for this revision is an immutable profile
 for the already-delivered Missile Launcher ordinary and alternate/full reload
@@ -2172,6 +2172,26 @@ transitions. Its contract must:
   and controlled-legacy behavior unchanged or `NOT_RUN` where comparison
   evidence is unavailable;
 - [x] advance project version from `0.2.210` to `0.2.211` while keeping
+  gameplay semantics `41`, replay schema, RNG, generator, and ruleset
+  identities unchanged.
+
+### 2.7ch Current Combat Shotgun behavior-profile delivery target
+
+The bounded implementation target for this revision is an immutable profile
+for the already-delivered Combat Shotgun ordinary and alternate/full reload
+transitions. Its contract must:
+
+- [x] expose ordered typed `AlternateAction::Reload` and
+  `AlternateAction::FullReload { cost_cap: 2500 }` fragments;
+- [x] retain dedicated normal reload, `CombatShotgunTransition` planner, and
+  pump-action state ownership for one-shell, full-deficit, reserve, chamber,
+  and capped-cost execution;
+- [x] assert exact profile declaration order without adding a runtime command,
+  callback registry, or replay-wire field;
+- [x] keep gameplay balance, exact legacy timing, runtime, audio, WebGPU,
+  chamber presentation, and controlled-legacy behavior unchanged or `NOT_RUN`
+  where comparison evidence is unavailable;
+- [x] advance project version from `0.2.211` to `0.2.212` while keeping
   gameplay semantics `41`, replay schema, RNG, generator, and ruleset
   identities unchanged.
 
@@ -2371,6 +2391,12 @@ The `0.2.211` successor records the immutable `MISSILE_LAUNCHER_BEHAVIOR`
 profile with ordinary single-rocket reload and capped full-deficit reload
 fragments. Dedicated reload/planner paths remain authoritative; rocket-jump,
 explosion, runtime, and audiovisual parity remain open.
+
+The `0.2.212` successor records the immutable `COMBAT_SHOTGUN_BEHAVIOR`
+profile with ordinary single-shell reload and capped full-deficit reload
+fragments. Dedicated reload/planner and pump-action paths remain authoritative;
+exact legacy timing, runtime, chamber presentation, and audiovisual parity
+remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity

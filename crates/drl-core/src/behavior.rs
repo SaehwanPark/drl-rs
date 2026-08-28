@@ -8,6 +8,7 @@ use drl_protocol::{
 };
 
 use crate::acid_spitter::{ACID_SPITTER_RELOAD_AMOUNT, ACID_SPITTER_RELOAD_SCORE_COST};
+use crate::combat_shotgun::COMBAT_SHOTGUN_ALT_RELOAD_CAP;
 use crate::grammaton::GRAMMATON_MODE_SCORE_COST;
 use crate::jackhammer::JACKHAMMER_MODE_SCORE_COST;
 use crate::malek_armor::{
@@ -565,6 +566,17 @@ const MISSILE_LAUNCHER_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
 pub const MISSILE_LAUNCHER_BEHAVIOR: BehaviorProfile =
   BehaviorProfile::new(MISSILE_LAUNCHER_BEHAVIOR_SPECS);
 
+const COMBAT_SHOTGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Alternate(AlternateAction::Reload),
+  BehaviorSpec::Alternate(AlternateAction::FullReload {
+    cost_cap: COMBAT_SHOTGUN_ALT_RELOAD_CAP,
+  }),
+];
+
+/// Immutable typed profile for the current Combat Shotgun reload policies.
+pub const COMBAT_SHOTGUN_BEHAVIOR: BehaviorProfile =
+  BehaviorProfile::new(COMBAT_SHOTGUN_BEHAVIOR_SPECS);
+
 /// Medical Powerarmor begins repair only while durability is strictly above
 /// the legacy callback's `20`-point guard.
 pub const MEDICAL_REPAIR_MIN_DURABILITY_EXCLUSIVE: u32 = 20;
@@ -1115,6 +1127,15 @@ mod tests {
         BehaviorSpec::Alternate(AlternateAction::Reload),
         BehaviorSpec::Alternate(AlternateAction::FullReload {
           cost_cap: MISSILE_LAUNCHER_ALT_RELOAD_CAP,
+        }),
+      ]
+    );
+    assert_eq!(
+      COMBAT_SHOTGUN_BEHAVIOR.specs(),
+      &[
+        BehaviorSpec::Alternate(AlternateAction::Reload),
+        BehaviorSpec::Alternate(AlternateAction::FullReload {
+          cost_cap: COMBAT_SHOTGUN_ALT_RELOAD_CAP,
         }),
       ]
     );

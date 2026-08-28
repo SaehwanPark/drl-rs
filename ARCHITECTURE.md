@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.211`
+Current project version: `0.2.212`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -43,7 +43,9 @@ records its typed Burst/Single mode and score-cost fragments; Lava Armor records
 its typed terrain-gated durability-recharge fragment; Malek's Armor records its
 typed durability-recharge fragment; Blaster records its
 typed periodic-recharge fragment; Missile Launcher records its typed ordinary
-single-rocket reload and capped full-deficit reload fragments; Nuclear Plasma records its typed
+single-rocket reload and capped full-deficit reload fragments; Combat Shotgun
+records its typed ordinary single-shell reload and capped full-deficit reload
+fragments; Nuclear Plasma records its typed
 alternate-overload and periodic-recharge fragments; the BFG family profiles
 record exact-hit, typed projectile-count,
 ammunition-cost, and delayed-explosion metadata. Dedicated runtime command
@@ -194,6 +196,9 @@ Presentation Boundary
     Missile Launcher's immutable profile records ordinary `Reload` and
     capped `FullReload` fragments; its dedicated planner remains responsible
     for reserve, deficit, cost, and transactional validation.
+    Combat Shotgun's immutable profile records the same ordered reload
+    fragments; its dedicated planner and pump-action state remain responsible
+    for reserve, deficit, chamber, cost, and transactional validation.
     The exotic Missile Launcher uses the explicit single-shell reload policy,
     loading one rocket per accepted `Reload` while retaining the shared
     `WeaponReloaded` event and atomic rejection contract. Its alternate/full
