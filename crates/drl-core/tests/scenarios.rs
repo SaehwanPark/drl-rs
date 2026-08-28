@@ -818,6 +818,87 @@ fn bfg10k_exact_hit_vertical_scenario_preserves_replay() {
 }
 
 #[test]
+fn standard_bfg_shot_cost_vertical_scenario_preserves_clip_and_replay() {
+  let mut scenario = Scenario::from_ascii(
+    "StandardBfgShotCostVertical",
+    "Standard BFG 9000 consumes forty cells in the canonical one-shot path",
+    "########\n#@...h.#\n#......#\n########\n",
+  )
+  .unwrap();
+  scenario.seed = 0;
+  scenario.monsters[0].name = "Static Target".to_string();
+  scenario.monsters[0].hp = 500;
+  scenario.monsters[0].speed = 1;
+  scenario.player_config = Some(PlayerSpawnConfig {
+    hp: 50,
+    max_hp: 50,
+    speed: 100,
+    initial_items: Vec::new(),
+    equipped_weapon: Some(ItemSpawnKind::Bfg9000),
+    equipped_armor: None,
+    equipped_armor_durability: None,
+  });
+
+  let target = Position::new(5, 1);
+  let commands = [Command::AttackRanged(target)];
+  let (game, events, _metrics, replay) =
+    ScenarioRunner::run_commands(&scenario, &commands).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let target_id = game
+    .world()
+    .actors()
+    .values()
+    .find(|actor| !actor.is_player())
+    .unwrap()
+    .id();
+  assert!(events.iter().any(|event| {
+    matches!(
+      event,
+      GameEvent::AttackResolved {
+        attacker_id,
+        target_id: event_target,
+        outcome: AttackOutcome::Hit { .. },
+        is_ranged: true,
+      } if *attacker_id == player_id && *event_target == target_id
+    )
+  }));
+  let attack_index = events
+    .iter()
+    .position(|event| matches!(event, GameEvent::AttackResolved { .. }))
+    .expect("accepted standard BFG shot must resolve an attack");
+  let cost_index = events
+    .iter()
+    .position(|event| matches!(event, GameEvent::ActionCostPaid { entity_id, .. } if *entity_id == player_id))
+    .expect("accepted standard BFG shot must pay an action cost");
+  let turn_end_index = events
+    .iter()
+    .position(|event| matches!(event, GameEvent::TurnEnded { .. }))
+    .expect("accepted standard BFG shot must end its turn");
+  assert!(attack_index < cost_index);
+  assert!(cost_index < turn_end_index);
+  assert_eq!(
+    game
+      .world()
+      .player()
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .current_clip,
+    60
+  );
+  assert!(game.world().get_actor(target_id).unwrap().hp().current < 500);
+  assert_eq!(replay.commands, commands);
+
+  let (replayed_game, replay_events) = ReplayEngine::run(&replay).unwrap();
+  assert_eq!(replayed_game, game);
+  assert_eq!(replay_events, events);
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}
+
+#[test]
 fn bfg10k_shot_cost_vertical_scenario_preserves_clip_and_replay() {
   let mut scenario = Scenario::from_ascii(
     "Bfg10kShotCostVertical",
