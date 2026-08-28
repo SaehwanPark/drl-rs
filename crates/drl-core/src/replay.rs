@@ -409,14 +409,14 @@ mod tests {
   #[test]
   fn test_replay_validation_rejects_incompatible_semantics() {
     let mut replay = ReplayLog::new(1234, 10, 10, Position::new(1, 1));
-    // Version 45 predates the Null Pointer's ten-cell cost and must not be
-    // interpreted by the version-46 engine without an explicit migration.
-    assert_eq!(drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION, 46);
+    // Version 46 predates the Tristar Blaster's three-projectile volley and
+    // must not be interpreted by the version-47 engine without migration.
+    assert_eq!(drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION, 47);
     assert_eq!(
       drl_protocol::CURRENT_RNG_SAMPLING_SEMANTICS_VERSION,
       crate::rng::RNG_SAMPLING_SEMANTICS_VERSION
     );
-    replay.metadata.gameplay_semantics_version = 45;
+    replay.metadata.gameplay_semantics_version = 46;
     let error = ReplayEngine::validate(&replay).unwrap_err();
     assert!(error.contains("unsupported gameplay semantics version"));
 

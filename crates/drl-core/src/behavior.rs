@@ -507,6 +507,25 @@ const RAILGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
 /// Immutable typed profile for the current Railgun ordinary-fire cost.
 pub const RAILGUN_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(RAILGUN_BEHAVIOR_SPECS);
 
+/// Pinned projectile count for an ordinary Tristar Blaster shot.
+pub const TRISTAR_BLASTER_PROJECTILE_COUNT: u32 = 3;
+/// Pinned per-projectile clip cost for an ordinary Tristar Blaster shot.
+pub const TRISTAR_BLASTER_SHOT_COST: u32 = 5;
+
+const TRISTAR_BLASTER_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Attack(AttackEffect::ProjectileCount(
+    TRISTAR_BLASTER_PROJECTILE_COUNT,
+  )),
+  BehaviorSpec::Cost(ResourceCost::Ammo {
+    ammo_type: AmmoType::Cell,
+    amount: TRISTAR_BLASTER_SHOT_COST,
+  }),
+];
+
+/// Immutable typed profile for the current Tristar Blaster ordinary-fire volley.
+pub const TRISTAR_BLASTER_BEHAVIOR: BehaviorProfile =
+  BehaviorProfile::new(TRISTAR_BLASTER_BEHAVIOR_SPECS);
+
 /// Current Rust projectile count for an ordinary Combat Pistol shot.
 pub const COMBAT_PISTOL_PROJECTILE_COUNT: u32 = 1;
 
@@ -1362,6 +1381,18 @@ mod tests {
         BehaviorSpec::Cost(ResourceCost::Ammo {
           ammo_type: AmmoType::Cell,
           amount: 5,
+        }),
+      ]
+    );
+    assert_eq!(
+      TRISTAR_BLASTER_BEHAVIOR.specs(),
+      &[
+        BehaviorSpec::Attack(AttackEffect::ProjectileCount(
+          TRISTAR_BLASTER_PROJECTILE_COUNT,
+        )),
+        BehaviorSpec::Cost(ResourceCost::Ammo {
+          ammo_type: AmmoType::Cell,
+          amount: TRISTAR_BLASTER_SHOT_COST,
         }),
       ]
     );

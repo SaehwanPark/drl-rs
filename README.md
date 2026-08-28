@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.224`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.225`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -192,7 +192,8 @@ replays, and regression testing.
     Jackhammer's typed burst/single fire-mode toggle and immutable mode profile,
     Lava Armor's five-tick Lava recharge and immutable
     terrain-gated behavior profile, Null Pointer's target-dependent on-hit
-    score branch and ten-cell ordinary-fire cost, plus baseline Acid/Lava entered-cell
+    score branch and ten-cell ordinary-fire cost, Tristar Blaster's
+    three-projectile/five-cell volley, plus baseline Acid/Lava entered-cell
     contact damage, Acid/Lava/Water's typed 1250-unit movement policy, Mud's
     typed 1650-unit movement policy, and optional Acid/Fire damage-type
     projection, are

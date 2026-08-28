@@ -372,9 +372,9 @@ impl Item {
 
   /// Returns the typed per-projectile clip cost for ranged fire.
   ///
-  /// The typed BFG families, Frag Shotgun, Plasma Shotgun, Railgun, and Null
-  /// Pointer use their pinned per-projectile clip costs; all other weapons
-  /// consume one clip unit per emitted projectile.
+  /// The typed BFG families, Frag Shotgun, Plasma Shotgun, Railgun, Null
+  /// Pointer, and Tristar Blaster use their pinned per-projectile clip costs;
+  /// all other weapons consume one clip unit per emitted projectile.
   /// BFG 10K's five-projectile direct-target volley therefore charges five
   /// cells for each emitted projectile.
   #[must_use]
@@ -386,6 +386,7 @@ impl Item {
       ItemArchetype::PlasmaShotgun => 3,
       ItemArchetype::Railgun => 5,
       ItemArchetype::NullPointer => 10,
+      ItemArchetype::TristarBlaster => 5,
       _ => 1,
     }
   }
@@ -399,6 +400,7 @@ impl Item {
     match self.archetype {
       ItemArchetype::Bfg10k => 5,
       ItemArchetype::DoubleShotgun => 2,
+      ItemArchetype::TristarBlaster => 3,
       _ => match &self.kind {
         ItemKind::Weapon(properties) => properties.shot_count(),
         _ => 1,
@@ -1060,6 +1062,7 @@ mod tests {
     assert_eq!(Item::plasma_shotgun(ItemId::new(9)).shot_cost(), 3);
     assert_eq!(Item::railgun(ItemId::new(10)).shot_cost(), 5);
     assert_eq!(Item::null_pointer(ItemId::new(11)).shot_cost(), 10);
+    assert_eq!(Item::tristar_blaster(ItemId::new(12)).shot_cost(), 5);
     assert_eq!(Item::pistol(ItemId::new(6)).shot_cost(), 1);
   }
 
@@ -1068,6 +1071,7 @@ mod tests {
     assert_eq!(Item::bfg10k(ItemId::new(8)).projectile_count(), 5);
     assert_eq!(Item::double_shotgun(ItemId::new(11)).projectile_count(), 2);
     assert_eq!(Item::pistol(ItemId::new(9)).projectile_count(), 1);
+    assert_eq!(Item::tristar_blaster(ItemId::new(12)).projectile_count(), 3);
     assert_eq!(
       Item::grammaton_beretta(ItemId::new(10)).projectile_count(),
       1
