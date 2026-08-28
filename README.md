@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.208`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.209`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -82,16 +82,17 @@ replays, and regression testing.
   - Stable item identity, names, catalog order, and normalized replay spawn
     families derive from one protocol declaration; gameplay definitions,
     count-sensitive reconstruction, and presentation policy remain explicit.
-  - The typed behavior vocabulary includes immutable Jackhammer, Lava Armor,
-    Malek's Armor, Blaster, Nuclear Plasma Rifle, standard BFG 9000, Nuclear
-    BFG 9000, and BFG 10K profiles for typed periodic/alternate, exact-hit,
-    projectile-count, ammunition-cost, and delayed-explosion schedule
-    boundaries (Jackhammer Single/Burst modes and score cost 1; Lava Armor
-    terrain-gated durability recharge interval 5/amount 3 on `TileKind::Lava`;
-    Malek's Armor durability recharge delay 50/cadence 5/amount 1; Blaster
-    recharge delay 30/cadence 10/amount 1; Nuclear Plasma recharge delay
-    40/cadence 2/amount 1; standard and Nuclear BFG 9000 delay 33/radius
-    8/knockback 16; BFG 10K delay 25/radius 2/knockback 16);
+  - The typed behavior vocabulary includes immutable Grammaton, Jackhammer,
+    Lava Armor, Malek's Armor, Blaster, Nuclear Plasma Rifle, standard BFG
+    9000, Nuclear BFG 9000, and BFG 10K profiles for typed periodic/alternate,
+    exact-hit, projectile-count, ammunition-cost, and delayed-explosion
+    schedule boundaries (Grammaton Single/Burst/Auto modes and score cost 200;
+    Jackhammer Single/Burst modes and score cost 1; Lava Armor terrain-gated
+    durability recharge interval 5/amount 3 on `TileKind::Lava`; Malek's Armor
+    durability recharge delay 50/cadence 5/amount 1; Blaster recharge delay
+    30/cadence 10/amount 1; Nuclear Plasma recharge delay 40/cadence 2/amount
+    1; standard and Nuclear BFG 9000 delay 33/radius 8/knockback 16; BFG 10K
+    delay 25/radius 2/knockback 16);
     Nuclear BFG recharge/overload is explicit, while scatter and
     projectile-routing semantics remain deferred.
   - Rejected `Game::step` commands restore turn, world, and RNG state through a
@@ -170,8 +171,9 @@ replays, and regression testing.
     coverage;
     Medical Powerarmor's periodic repair, Subtle Knife's alternate invoke,
     Trigun's confirmed alternate reload/nuke transition, Grammaton's typed
-    single/burst/auto fire-mode cycle, Jackhammer's typed burst/single
-    fire-mode toggle and immutable mode profile, Lava Armor's five-tick Lava recharge and immutable
+    single/burst/auto fire-mode cycle and immutable Grammaton mode profile,
+    Jackhammer's typed burst/single fire-mode toggle and immutable mode profile,
+    Lava Armor's five-tick Lava recharge and immutable
     terrain-gated behavior profile, and Null Pointer's target-dependent on-hit
     score branch, plus baseline Acid/Lava entered-cell
     contact damage, Acid/Lava/Water's typed 1250-unit movement policy, Mud's

@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.209]
+
+- Added an immutable `GRAMMATON_BEHAVIOR` profile for the evidence-backed
+  Single/Burst/Auto mode fragments and 200-point score-count cost while
+  retaining dedicated execution ownership. Legacy accuracy equations, exact
+  timing, runtime, and audiovisual parity remain deferred.
+
 ## [0.2.208]
 
 - Added an immutable `JACKHAMMER_BEHAVIOR` profile for the evidence-backed

@@ -7,6 +7,7 @@ use drl_protocol::{
   AmmoType, DamageType, EquipmentSlot, HitPoints, ItemArchetype, TileKind, WeaponFireMode,
 };
 
+use crate::grammaton::GRAMMATON_MODE_SCORE_COST;
 use crate::jackhammer::JACKHAMMER_MODE_SCORE_COST;
 use crate::malek_armor::{
   MALEK_ARMOR_RECHARGE_AMOUNT, MALEK_ARMOR_RECHARGE_DELAY, MALEK_ARMOR_RECHARGE_TICK,
@@ -515,6 +516,18 @@ const JACKHAMMER_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
 
 /// Immutable typed profile for the current Jackhammer burst/single toggle.
 pub const JACKHAMMER_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(JACKHAMMER_BEHAVIOR_SPECS);
+
+const GRAMMATON_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Alternate(AlternateAction::Fire(WeaponFireMode::Single)),
+  BehaviorSpec::Alternate(AlternateAction::Fire(WeaponFireMode::Burst)),
+  BehaviorSpec::Alternate(AlternateAction::Fire(WeaponFireMode::Auto)),
+  BehaviorSpec::Cost(ResourceCost::Score {
+    amount: GRAMMATON_MODE_SCORE_COST,
+  }),
+];
+
+/// Immutable typed profile for the current Grammaton Single/Burst/Auto cycle.
+pub const GRAMMATON_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(GRAMMATON_BEHAVIOR_SPECS);
 
 /// Medical Powerarmor begins repair only while durability is strictly above
 /// the legacy callback's `20`-point guard.
@@ -1027,6 +1040,17 @@ mod tests {
         BehaviorSpec::Alternate(AlternateAction::Fire(WeaponFireMode::Burst)),
         BehaviorSpec::Cost(ResourceCost::Score {
           amount: JACKHAMMER_MODE_SCORE_COST,
+        }),
+      ]
+    );
+    assert_eq!(
+      GRAMMATON_BEHAVIOR.specs(),
+      &[
+        BehaviorSpec::Alternate(AlternateAction::Fire(WeaponFireMode::Single)),
+        BehaviorSpec::Alternate(AlternateAction::Fire(WeaponFireMode::Burst)),
+        BehaviorSpec::Alternate(AlternateAction::Fire(WeaponFireMode::Auto)),
+        BehaviorSpec::Cost(ResourceCost::Score {
+          amount: GRAMMATON_MODE_SCORE_COST,
         }),
       ]
     );

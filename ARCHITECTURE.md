@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.208`
+Current project version: `0.2.209`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -36,7 +36,8 @@ invariants:
 - **No Runtime Scripting**: Lua is treated as build-time reference and
   conversion evidence only; no Lua runtime exists in the WASM browser bundle.
 
-Typed behavior profiles remain immutable compile-time descriptions. Jackhammer
+Typed behavior profiles remain immutable compile-time descriptions. Grammaton
+records its typed Single/Burst/Auto mode and score-cost fragments; Jackhammer
 records its typed Burst/Single mode and score-cost fragments; Lava Armor records
 its typed terrain-gated durability-recharge fragment; Malek's Armor records its
 typed durability-recharge fragment; Blaster records its
@@ -178,8 +179,9 @@ Presentation Boundary
     The `behavior` module also exposes a compile-time `BehaviorSpec` vocabulary
     and immutable profiles for passive/equipment, attack/hit/kill,
     alternate-action, periodic, explicit-cost, and deterministic-target
-    concepts, including target-dependent score branches. Jackhammer's immutable
-    profile records its mode and score-cost fragments; Lava Armor's
+    concepts, including target-dependent score branches. Grammaton's immutable
+    profile records its mode and score-cost fragments; Jackhammer's profile
+    records its mode and score-cost fragments; Lava Armor's
     immutable profile records its terrain-gated durability-recharge fragment;
     Malek's Armor's profile records its durability-recharge fragment; Blaster's
     profile records its recharge fragment, while Nuclear Plasma's profile
