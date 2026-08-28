@@ -7,6 +7,7 @@ use drl_protocol::{
   AmmoType, DamageType, EquipmentSlot, HitPoints, ItemArchetype, TileKind, WeaponFireMode,
 };
 
+use crate::jackhammer::JACKHAMMER_MODE_SCORE_COST;
 use crate::malek_armor::{
   MALEK_ARMOR_RECHARGE_AMOUNT, MALEK_ARMOR_RECHARGE_DELAY, MALEK_ARMOR_RECHARGE_TICK,
 };
@@ -503,6 +504,17 @@ const LAVA_ARMOR_BEHAVIOR_SPECS: &[BehaviorSpec] =
 
 /// Immutable typed profile for the current Lava Armor behavior.
 pub const LAVA_ARMOR_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(LAVA_ARMOR_BEHAVIOR_SPECS);
+
+const JACKHAMMER_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Alternate(AlternateAction::Fire(WeaponFireMode::Single)),
+  BehaviorSpec::Alternate(AlternateAction::Fire(WeaponFireMode::Burst)),
+  BehaviorSpec::Cost(ResourceCost::Score {
+    amount: JACKHAMMER_MODE_SCORE_COST,
+  }),
+];
+
+/// Immutable typed profile for the current Jackhammer burst/single toggle.
+pub const JACKHAMMER_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(JACKHAMMER_BEHAVIOR_SPECS);
 
 /// Medical Powerarmor begins repair only while durability is strictly above
 /// the legacy callback's `20`-point guard.
@@ -1007,6 +1019,16 @@ mod tests {
         amount: LAVA_RECHARGE_AMOUNT,
         terrain: TileKind::Lava,
       })]
+    );
+    assert_eq!(
+      JACKHAMMER_BEHAVIOR.specs(),
+      &[
+        BehaviorSpec::Alternate(AlternateAction::Fire(WeaponFireMode::Single)),
+        BehaviorSpec::Alternate(AlternateAction::Fire(WeaponFireMode::Burst)),
+        BehaviorSpec::Cost(ResourceCost::Score {
+          amount: JACKHAMMER_MODE_SCORE_COST,
+        }),
+      ]
     );
   }
 
