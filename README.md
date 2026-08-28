@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.199`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.200`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -83,9 +83,9 @@ replays, and regression testing.
     families derive from one protocol declaration; gameplay definitions,
     count-sensitive reconstruction, and presentation policy remain explicit.
   - The typed behavior vocabulary includes immutable standard BFG 9000, Nuclear
-    BFG 9000, and BFG 10K profiles for their exact-hit and one-shot cost
-    boundaries; Nuclear BFG recharge/overload is explicit, while legacy volleys,
-    scatter, and projectile-routing semantics remain deferred.
+    BFG 9000, and BFG 10K profiles for exact-hit, projectile-count, and typed
+    ammunition-cost boundaries; Nuclear BFG recharge/overload is explicit,
+    while scatter and projectile-routing semantics remain deferred.
   - Rejected `Game::step` commands restore turn, world, and RNG state through a
     bounded transaction guard; focused command-atomicity tests cover the
     invariant.
@@ -212,10 +212,10 @@ replays, and regression testing.
     valid ordinary fire while retaining exact-hit, recharge, and overload
     behavior; projectile routing, explosions, NukeRun, and other shot costs
     remain open;
-    BFG 10K now shares the typed exact-hit policy and consumes its typed
-    five-cell shot cost while retaining the existing single-shot Rust path;
-    scatter, five-shot volley, chainfire, projectile routing, and explosions
-    remain open; the shot-cost path is exercised end-to-end through a
+    BFG 10K now shares the typed exact-hit policy, resolves a typed five-
+    projectile direct-target volley, and consumes five cells per projectile;
+    scatter, chainfire, projectile routing, and explosions remain open; the
+    volley path is exercised end-to-end through a
     deterministic scenario, replay, MCP, and BrowserSession boundary fixture;
     the Nuclear BFG 9000's typed forty-cell shot-cost path is likewise exercised
     through the aligned deterministic scenario, replay, MCP, and BrowserSession

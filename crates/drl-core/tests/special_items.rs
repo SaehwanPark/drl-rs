@@ -65,6 +65,58 @@ fn equipped_bfg10k(seed: u64) -> (Game, ItemId) {
   (game, weapon_id)
 }
 
+fn assert_bfg10k_volley_events(
+  events: &[GameEvent],
+  attacker_id: drl_protocol::EntityId,
+  target_id: drl_protocol::EntityId,
+) {
+  let mut attacks = Vec::new();
+  let mut damages = Vec::new();
+  for (index, event) in events.iter().enumerate() {
+    match event {
+      GameEvent::AttackResolved {
+        attacker_id: event_attacker,
+        target_id: event_target,
+        outcome: drl_protocol::AttackOutcome::Hit { damage, .. },
+        is_ranged: true,
+      } if *event_attacker == attacker_id && *event_target == target_id => {
+        attacks.push((index, *damage));
+      }
+      GameEvent::DamageApplied {
+        target_id: event_target,
+        amount,
+        ..
+      } if *event_target == target_id => damages.push((index, *amount)),
+      _ => {}
+    }
+  }
+
+  assert_eq!(attacks.len(), 5, "BFG 10K volley must resolve five hits");
+  assert_eq!(
+    damages.len(),
+    5,
+    "BFG 10K volley must apply five damage events"
+  );
+  assert_eq!(
+    attacks
+      .iter()
+      .map(|(_, damage)| *damage)
+      .collect::<Vec<_>>(),
+    damages
+      .iter()
+      .map(|(_, amount)| *amount)
+      .collect::<Vec<_>>(),
+    "each projectile's resolved damage must be applied in order"
+  );
+  for ((attack_index, _), (damage_index, _)) in attacks.iter().zip(damages.iter()) {
+    assert_eq!(
+      *damage_index,
+      *attack_index + 1,
+      "each BFG 10K attack must be followed immediately by its damage event"
+    );
+  }
+}
+
 fn equipped_nuclear_bfg_wide(seed: u64) -> (Game, ItemId) {
   let mut game = Game::new_arena(seed, 24, 12).unwrap();
   let player_id = game.world().player_id().unwrap();
@@ -421,6 +473,20 @@ fn bfg10k_exact_hit_resolves_even_at_zero_accuracy() {
     )
   }));
   assert_eq!(
+    events
+      .iter()
+      .filter(|event| matches!(
+        event,
+        GameEvent::AttackResolved {
+          is_ranged: true,
+          ..
+        }
+      ))
+      .count(),
+    5
+  );
+  assert_bfg10k_volley_events(&events, player_id, target_id);
+  assert_eq!(
     game
       .world()
       .get_actor(player_id)
@@ -431,12 +497,12 @@ fn bfg10k_exact_hit_resolves_even_at_zero_accuracy() {
       .weapon_properties()
       .unwrap()
       .current_clip,
-    45
+    25
   );
 }
 
 #[test]
-fn bfg10k_shot_cost_accepts_five_cells_and_consumes_them_once() {
+fn bfg10k_volley_consumes_twenty_five_cells_and_resolves_five_hits() {
   let target = Position::new(5, 2);
   let (mut game, _) = equipped_bfg10k(16);
   game
@@ -453,11 +519,12 @@ fn bfg10k_shot_cost_accepts_five_cells_and_consumes_them_once() {
     .unwrap()
     .weapon_properties_mut()
     .unwrap()
-    .current_clip = 5;
+    .current_clip = 25;
+  let rng_before = game.rng().clone();
 
   let events = game
     .step(Command::AttackRanged(target))
-    .expect("five-cell BFG 10K shot should resolve");
+    .expect("five-projectile BFG 10K volley should resolve");
   assert!(events.iter().any(|event| matches!(
     event,
     GameEvent::AttackResolved {
@@ -466,6 +533,36 @@ fn bfg10k_shot_cost_accepts_five_cells_and_consumes_them_once() {
       ..
     }
   )));
+  assert_eq!(
+    events
+      .iter()
+      .filter(|event| matches!(
+        event,
+        GameEvent::AttackResolved {
+          is_ranged: true,
+          ..
+        }
+      ))
+      .count(),
+    5
+  );
+  let target_id = game
+    .world()
+    .actors()
+    .values()
+    .find(|actor| !actor.is_player())
+    .expect("BFG 10K target")
+    .id();
+  assert_bfg10k_volley_events(&events, player_id, target_id);
+  let mut expected_rng = rng_before;
+  for _ in 0..5 {
+    expected_rng.gen_range(6..25);
+  }
+  assert_eq!(
+    game.rng(),
+    &expected_rng,
+    "the five exact-hit projectiles must consume five ordered damage draws"
+  );
   assert_eq!(
     game
       .world()
@@ -522,7 +619,7 @@ fn bfg10k_exact_hit_rejections_are_atomic() {
     .unwrap()
     .weapon_properties_mut()
     .unwrap()
-    .current_clip = 4;
+    .current_clip = 24;
   let before_under_cost = under_cost.clone();
   assert_eq!(
     under_cost.step(Command::AttackRanged(target)).unwrap_err(),

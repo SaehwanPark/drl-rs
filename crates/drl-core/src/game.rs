@@ -1701,9 +1701,9 @@ impl Game {
       if distance > props.range {
         return Err(CommandError::TargetOutOfRange(target_pos));
       }
-      let shot_count = props.shot_count();
-      // Keep emitted projectile count separate from typed clip cost (the
-      // standard BFG emits one shot while consuming forty cells).
+      let shot_count = weapon.projectile_count();
+      // Keep emitted projectile count separate from typed clip cost (BFG
+      // families charge their evidence-backed per-projectile amounts).
       let ammo_cost = shot_count.saturating_mul(weapon.shot_cost());
       if props.current_clip < ammo_cost {
         return Err(CommandError::NoAmmoInClip);

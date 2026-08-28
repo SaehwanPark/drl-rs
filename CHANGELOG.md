@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.200]
+
+- Implemented the pinned BFG 10K five-projectile direct-target volley in the
+  typed core. Each exact-hit projectile consumes five cells, so a full volley
+  spends twenty-five cells while preserving one action-cost/turn-end sequence;
+  scenario/replay, MCP, and BrowserSession boundary parity now assert the five
+  ordered resolutions. Scatter, routing, explosions, runtime, and audiovisual
+  parity remain explicitly deferred.
+
 ## [0.2.199]
 
 - Added MCP vertical-boundary coverage for standard and Nuclear BFG exact-hit
