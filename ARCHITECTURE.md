@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.205`
+Current project version: `0.2.206`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -36,8 +36,9 @@ invariants:
 - **No Runtime Scripting**: Lua is treated as build-time reference and
   conversion evidence only; no Lua runtime exists in the WASM browser bundle.
 
-Typed behavior profiles remain immutable compile-time descriptions. Blaster
-records its typed periodic-recharge fragment; Nuclear Plasma records its typed
+Typed behavior profiles remain immutable compile-time descriptions. Malek's
+Armor records its typed durability-recharge fragment; Blaster records its
+typed periodic-recharge fragment; Nuclear Plasma records its typed
 alternate-overload and periodic-recharge fragments; the BFG family profiles
 record exact-hit, typed projectile-count,
 ammunition-cost, and delayed-explosion metadata. Dedicated runtime command
@@ -175,7 +176,8 @@ Presentation Boundary
     The `behavior` module also exposes a compile-time `BehaviorSpec` vocabulary
     and immutable profiles for passive/equipment, attack/hit/kill,
     alternate-action, periodic, explicit-cost, and deterministic-target
-    concepts, including target-dependent score branches. Blaster's immutable
+    concepts, including target-dependent score branches. Malek's Armor's
+    immutable profile records its durability-recharge fragment; Blaster's
     profile records its recharge fragment, while Nuclear Plasma's profile
     records overload and recharge without claiming chainfire. Profiles describe
     behavior without string keys or runtime callbacks; dedicated transition

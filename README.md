@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.205`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.206`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -82,12 +82,13 @@ replays, and regression testing.
   - Stable item identity, names, catalog order, and normalized replay spawn
     families derive from one protocol declaration; gameplay definitions,
     count-sensitive reconstruction, and presentation policy remain explicit.
-  - The typed behavior vocabulary includes immutable Blaster, Nuclear Plasma
-    Rifle, standard BFG 9000, Nuclear BFG 9000, and BFG 10K profiles for typed
+  - The typed behavior vocabulary includes immutable Malek's Armor, Blaster,
+    Nuclear Plasma Rifle, standard BFG 9000, Nuclear BFG 9000, and BFG 10K profiles for typed
     periodic/alternate, exact-hit, projectile-count, ammunition-cost, and
-    delayed-explosion schedule boundaries (Blaster recharge delay 30/cadence
-    10/amount 1; Nuclear Plasma recharge delay 40/cadence 2/amount 1; standard
-    and Nuclear BFG 9000 delay 33/radius 8/knockback 16; BFG 10K delay 25/radius
+    delayed-explosion schedule boundaries (Malek's Armor durability recharge
+    delay 50/cadence 5/amount 1; Blaster recharge delay 30/cadence 10/amount
+    1; Nuclear Plasma recharge delay 40/cadence 2/amount 1; standard and
+    Nuclear BFG 9000 delay 33/radius 8/knockback 16; BFG 10K delay 25/radius
     2/knockback 16);
     Nuclear BFG recharge/overload is explicit, while scatter and
     projectile-routing semantics remain deferred.
@@ -181,6 +182,9 @@ replays, and regression testing.
     the Nuclear Plasma Rifle's typed periodic cell recharge restores one cell
     after 42 accepted commands and every 2 commands thereafter, with
     scenario/replay and browser-boundary parity coverage;
+    Malek's Armor's typed periodic durability recharge uses the
+    delay-50/cadence-5/amount-1 policy, with dedicated transition ownership
+    and explicit deferred resistance/degradation and presentation parity;
     the Nuclear BFG 9000's typed periodic cell recharge restores one cell after
     5 accepted commands and every 5 commands thereafter, with scenario/replay
     browser-boundary parity, and MCP boundary parity coverage;

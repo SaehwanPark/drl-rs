@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.206]
+
+- Added an immutable `MALEK_ARMOR_BEHAVIOR` profile for the evidence-backed
+  delay-50/cadence-5/amount-1 durability-recharge transition while retaining
+  dedicated execution ownership. Armor resistance/degradation, runtime, and
+  audiovisual parity remain deferred.
+
 ## [0.2.205]
 
 - Added an immutable `BLASTER_BEHAVIOR` profile for the evidence-backed
