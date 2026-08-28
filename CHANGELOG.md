@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.191]
+
+- Added a deterministic vertical BFG 10K shot-cost encounter. The same
+  one-shot command is exercised through ScenarioRunner, replay, MCP, and
+  BrowserSession/direct-core boundary checks, preserving exact-hit resolution,
+  five-cell clip consumption, event ordering, and final-state equality.
+  Legacy volley/scatter/projectile and controlled runtime or audiovisual parity
+  remain open.
+
 ## [0.2.190]
 
 - Added typed BFG 10K shot-cost behavior: each valid Rust one-shot attack

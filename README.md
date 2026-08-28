@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.190`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.191`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -211,7 +211,8 @@ replays, and regression testing.
     BFG 10K now shares the typed exact-hit policy and consumes its typed
     five-cell shot cost while retaining the existing single-shot Rust path;
     scatter, five-shot volley, chainfire, projectile routing, and explosions
-    remain open;
+    remain open; the shot-cost path is exercised end-to-end through a
+    deterministic scenario, replay, MCP, and BrowserSession boundary fixture;
     manual reload is explicitly denied for the pinned Blaster, Nuclear Plasma
     Rifle, and Nuclear BFG 9000 `IF_NORELOAD` families before any state/RNG
     mutation, with atomic core and MCP/browser-boundary coverage;
