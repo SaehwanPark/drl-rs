@@ -2458,6 +2458,96 @@ mod tests {
   }
 
   #[test]
+  fn bfg_family_exact_hit_vertical_mcp_boundaries_match_direct_core() {
+    for (kind, expected_clip) in [
+      (drl_protocol::ItemSpawnKind::Bfg9000, 60),
+      (drl_protocol::ItemSpawnKind::NuclearBfg9000, 0),
+    ] {
+      let player_position = Position::new(1, 1);
+      let target_position = Position::new(5, 1);
+      let player_config = drl_protocol::PlayerSpawnConfig {
+        hp: 50,
+        max_hp: 50,
+        speed: 100,
+        initial_items: Vec::new(),
+        equipped_weapon: Some(kind),
+        equipped_armor: None,
+        equipped_armor_durability: None,
+      };
+      let mut setup_replay =
+        ReplayLog::new(0, 8, 4, player_position).with_player_config(player_config);
+      setup_replay.record_monster(drl_protocol::MonsterSpawnSpec::new(
+        target_position,
+        "Static Target",
+        500,
+        1,
+        (2, 4),
+      ));
+
+      let mut session = McpSession::new();
+      session
+        .load_replay(setup_replay.clone())
+        .expect("load BFG exact-hit replay setup");
+      let player_id = session.game.as_ref().unwrap().world().player_id().unwrap();
+      let initial = session.game.as_ref().unwrap().clone();
+      let command = Command::AttackRanged(target_position);
+      let mut direct = initial.clone();
+      let expected_events = direct.step(command).expect("direct BFG exact-hit command");
+      let (events, observation, outcome) = session.step(command).expect("MCP BFG exact-hit shot");
+
+      assert_eq!(events, expected_events);
+      assert_eq!(session.game.as_ref().unwrap(), &direct);
+      assert_eq!(observation, direct.observe_player());
+      assert_eq!(outcome, None);
+      assert!(events.iter().any(|event| {
+        matches!(
+          event,
+          GameEvent::AttackResolved {
+            attacker_id,
+            outcome: drl_protocol::AttackOutcome::Hit { .. },
+            is_ranged: true,
+            ..
+          } if *attacker_id == player_id
+        )
+      }));
+      assert_eq!(
+        direct
+          .world()
+          .player()
+          .unwrap()
+          .equipment()
+          .weapon()
+          .unwrap()
+          .weapon_properties()
+          .unwrap()
+          .current_clip,
+        expected_clip
+      );
+      let attack_index = events
+        .iter()
+        .position(|event| matches!(event, GameEvent::AttackResolved { .. }))
+        .expect("MCP BFG exact-hit shot must resolve an attack");
+      let cost_index = events
+        .iter()
+        .position(|event| matches!(event, GameEvent::ActionCostPaid { .. }))
+        .expect("MCP BFG exact-hit shot must pay an action cost");
+      let turn_end_index = events
+        .iter()
+        .position(|event| matches!(event, GameEvent::TurnEnded { .. }))
+        .expect("MCP BFG exact-hit shot must end its turn");
+      assert!(attack_index < cost_index);
+      assert!(cost_index < turn_end_index);
+
+      let replay = session.export_replay().expect("MCP replay export");
+      assert_eq!(replay.commands, vec![command]);
+      let (replayed, replay_events) = ReplayEngine::run(replay).expect("MCP BFG exact-hit replay");
+      assert_eq!(replayed, direct);
+      assert_eq!(replay_events, expected_events);
+      assert!(ReplayEngine::verify_determinism(replay).expect("replay determinism"));
+    }
+  }
+
+  #[test]
   fn revenants_launcher_exact_hit_is_exposed_through_mcp_fire_action() {
     let mut session = McpSession::new();
     session

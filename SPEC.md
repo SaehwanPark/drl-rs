@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.198`
+Current project version: `0.2.199`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,15 +25,15 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Nuclear BFG Recharge MCP Boundary
+## 2. Active Implementation Slice: M9 — BFG Exact-Hit MCP Boundaries
 
 ### 2.1 Objective
 
-Carry the already-delivered Nuclear BFG 9000 delay-0/cadence-5/amount-1
-recharge policy through a deterministic MCP vertical boundary alongside its
-existing ScenarioRunner/replay and BrowserSession evidence without changing
-gameplay semantics or adding runtime callbacks, string-keyed dispatch, or a new
-gameplay surface.
+Carry the already-delivered standard and Nuclear BFG 9000 exact-hit policies
+through deterministic MCP vertical boundaries alongside their existing
+ScenarioRunner/replay and BrowserSession evidence without changing gameplay
+semantics or adding runtime callbacks, string-keyed dispatch, or a new gameplay
+surface.
 
 ### 2.1a Scope and steering gate
 
@@ -41,29 +41,30 @@ gameplay surface.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, Gate C catalog ownership, and Gate D callback behavior
   evidence remain closed for this contract-only slice.
-- **Observable outcome:** A deterministic MCP fixture carries one Nuclear BFG
-  shot followed by four waits through the existing delay-0/cadence-5 recharge
-  path. Each MCP step matches direct-core events, observations, and state; the
-  final replay matches the direct final state and event stream bit-exactly.
+- **Observable outcome:** A deterministic MCP fixture covers one standard BFG
+  and one Nuclear BFG exact-hit shot at the existing vertical target setup.
+  Each session matches direct-core events, observations, state, clip result,
+  and replay output bit-exactly.
 - **Gameplay/replay impact:** Gameplay semantics remain `37`; replay wire
   schema, RNG, generator, and ruleset identities remain unchanged. Project
-  version advances from `0.2.197` to `0.2.198` for the MCP boundary test.
+  version advances from `0.2.198` to `0.2.199` for the MCP boundary tests.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary
   and profiles; protocol, MCP, render, audio, and browser layers receive no new
   gameplay balance or dispatch surface in this slice.
-- **Evidence boundary:** Pinned Nuclear BFG recharge evidence in
-  `docs/legacy-behavior/nuclear-bfg.md` is authoritative. Controlled legacy
-  runtime, browser capture, and audiovisual comparisons remain `NOT_RUN`.
+- **Evidence boundary:** Pinned standard/Nuclear BFG exact-hit evidence in
+  `docs/legacy-behavior/bfg9000-exact-hit.md` is authoritative. Controlled
+  legacy runtime, browser capture, and audiovisual comparisons remain
+  `NOT_RUN`.
 - **Non-goals:** Reworking existing behavior transitions, adding new gameplay
   effects, replay-file IO/migrations, runtime Lua, generic callback/event
   registries, and browser/audio/WebGPU parity.
 
 ### 2.2 Why this slice is bounded
 
-The Nuclear BFG transition already has explicit Rust recharge behavior plus
-ScenarioRunner/replay and BrowserSession tests. This slice adds only the
+Both BFG transitions already have explicit Rust exact-hit behavior plus direct
+core, ScenarioRunner/replay, and BrowserSession tests. This slice adds only the
 missing MCP boundary evidence: a small deterministic fixture that exercises the
-existing path through the session adapter. It does not reinterpret the
+existing paths through the session adapter. It does not reinterpret either
 transition or add a runtime dispatcher, so no gameplay behavior changes.
 
 Additional broad scalar-only family additions remain gated by the open behavior
@@ -1902,7 +1903,7 @@ policy through every supported boundary. Its contract must:
   audio, WebGPU, and controlled-legacy behavior unchanged or `NOT_RUN` where
   comparison evidence is unavailable.
 
-### 2.7bt Current Nuclear BFG recharge MCP-boundary delivery target
+### 2.7bt Previous Nuclear BFG recharge MCP-boundary delivery target
 
 The bounded implementation target for this revision is a deterministic MCP
 vertical boundary for the existing Nuclear BFG 9000 recharge policy. Its
@@ -1917,6 +1918,24 @@ contract must:
   every command;
 - [x] assert the exported replay contains the command sequence and reproduces
   the direct final state and event stream deterministically;
+- [x] keep gameplay semantics, replay schema, RNG, protocol, browser, audio,
+  WebGPU, and controlled-legacy behavior unchanged or `NOT_RUN` where
+  comparison evidence is unavailable.
+
+### 2.7bu Current BFG exact-hit MCP-boundary delivery target
+
+The bounded implementation target for this revision is a deterministic MCP
+vertical boundary for the existing standard and Nuclear BFG 9000 exact-hit
+policies. Its contract must:
+
+- [x] load each BFG family with a visible static target in a legal ranged
+  position through the canonical replay setup;
+- [x] accept one ordinary shot for each family, preserve the exact-hit and
+  one-projectile Rust paths, and assert the expected post-shot clip;
+- [x] assert MCP events, observations, outcomes, and full core-state equality;
+- [x] assert attack, action-cost, and turn-end event ordering;
+- [x] assert the exported replay command sequence, final state, event stream,
+  and deterministic verification for both families;
 - [x] keep gameplay semantics, replay schema, RNG, protocol, browser, audio,
   WebGPU, and controlled-legacy behavior unchanged or `NOT_RUN` where
   comparison evidence is unavailable.

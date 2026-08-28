@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.199]
+
+- Added MCP vertical-boundary coverage for standard and Nuclear BFG exact-hit
+  shots. Both families now match direct-core events, observations, state,
+  clip results, replay output, and determinism under the exact-hit path;
+  projectile routing and audiovisual parity remain explicitly deferred.
+
 ## [0.2.198]
 
 - Added deterministic MCP vertical-boundary coverage for Nuclear BFG 9000

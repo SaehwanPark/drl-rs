@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.198`
+Current project version: `0.2.199`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.198)
+## 3. Current Progress Summary (`VERSION` 0.2.199)
 
 ### Delivered Foundations
 
@@ -589,6 +589,11 @@ verification item uses explicit status semantics:
   across one accepted shot and four waits, including per-step event,
   observation, state, replay, and determinism equality. Wall-clock legacy
   cadence, controlled runtime, browser capture, and audiovisual parity remain
+  explicitly open.
+- **M9 BFG exact-hit MCP vertical boundaries (`0.2.199`):** Standard and
+  Nuclear BFG exact-hit shots now match direct-core events, observations, state,
+  clip results, replay output, and determinism through the MCP session boundary.
+  Projectile routing, controlled legacy runtime, and audiovisual parity remain
   explicitly open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
