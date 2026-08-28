@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.220`
+Current project version: `0.2.221`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,13 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Combat Pistol Ordinary-Fire Profile
+## 2. Active Implementation Slice: M9 — Plasma Shotgun Ordinary-Fire Cost
 
 ### 2.1 Objective
 
-Carry the already-delivered Combat Pistol ordinary-fire policy into an
+Carry the already-delivered Plasma Shotgun ordinary-fire policy into an
 immutable typed behavior profile. The profile describes one ordered projectile
-and one 9mm round cost without changing command handling, replay wire shape, or
-runtime ownership.
+and a three-cell clip cost while retaining generic command execution ownership.
 
 ### 2.1a Scope and steering gate
 
@@ -40,35 +39,37 @@ runtime ownership.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, Gate C catalog ownership, and Gate D callback behavior
   evidence remain closed for this contract-only slice.
-- **Observable outcome:** `COMBAT_PISTOL_BEHAVIOR` exposes ordered typed
+- **Observable outcome:** `PLASMA_SHOTGUN_BEHAVIOR` exposes ordered typed
   `AttackEffect::ProjectileCount(1)` and
-  `ResourceCost::Ammo { ammo_type: Ammo9mm, amount: 1 }` fragments; the exact
-  profile order is asserted by the behavior contract test.
-- **Gameplay/replay impact:** Gameplay semantics remain `42`;
-  replay wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.219` to `0.2.220` for the
-  profile-only contract.
+  `ResourceCost::Ammo { ammo_type: Cell, amount: 3 }` fragments; the exact
+  profile order is asserted by the behavior contract test and generic ranged
+  execution consumes three clip cells per accepted shot.
+- **Gameplay/replay impact:** Gameplay semantics advance from `42` to `43` so
+  replays recorded before the three-cell cost cannot be reinterpreted under the
+  new deterministic clip policy. Replay wire/schema, RNG sampling, generator,
+  and ruleset identities remain unchanged. Project version advances from
+  `0.2.220` to `0.2.221`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary
   and profiles; `drl-protocol`, MCP, render, audio, and browser boundaries remain
-  unchanged. No new gameplay balance, command, event, or runtime dispatch
-  surface is introduced in this slice.
-- **Evidence boundary:** Pinned Combat Pistol source evidence in
-  `docs/legacy-behavior/combat-pistol-profile.md` plus the delivered
+  unchanged. No new command, event, or runtime dispatch surface is introduced;
+  the pinned three-cell cost is this slice's only gameplay-policy change.
+- **Evidence boundary:** Pinned Plasma Shotgun source evidence in
+  `docs/legacy-behavior/plasma-shotgun-profile.md` plus the delivered
   single-target ranged contract is authoritative. Controlled legacy runtime,
   browser capture, and audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** Aimed-fire callback semantics, exact legacy timing/accuracy,
-  and audiovisual presentation comparison,
-  new command or callback registries, gameplay balance changes, replay-file
-  IO/migrations, runtime Lua, unrelated protocol changes, and browser/audio/
-  WebGPU parity.
+- **Non-goals:** Full spread/falloff and knockback callback semantics, exact
+  legacy timing/accuracy, audiovisual presentation comparison, new command or
+  callback registries, unrelated gameplay balance or protocol changes,
+  replay-file IO/migrations, runtime Lua, and browser/audio/WebGPU parity.
 
 ### 2.2 Why this slice is bounded
 
 The existing ranged command path already performs complete preflight,
-transactional clip validation, single-projectile resolution, and one-9mm-round
-ammunition consumption for the Combat Pistol. This slice records that delivered
-policy in an immutable profile; it does not add a generic dispatcher or alter
-RNG sampling, so replay behavior stays deterministic and reviewable.
+transactional clip validation, single-projectile resolution, and typed clip
+consumption for the Plasma Shotgun. This slice records the delivered three-cell
+cost in an immutable profile and the existing cost helper; it does not add a
+generic dispatcher or alter RNG sampling, so replay behavior stays deterministic
+and reviewable.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -2329,7 +2330,7 @@ must:
   gameplay semantics `42`, replay schema, RNG, generator, and ruleset
   identities unchanged.
 
-### 2.7cp Current Combat Pistol ordinary-fire profile delivery target
+### 2.7cp Historical Combat Pistol ordinary-fire profile delivery target
 
 The bounded implementation target for this revision is an immutable profile
 for the already-delivered Combat Pistol ordinary ranged action. Its contract
@@ -2347,6 +2348,28 @@ must:
 - [x] advance project version from `0.2.219` to `0.2.220` while keeping
   gameplay semantics `42`, replay schema, RNG, generator, and ruleset
   identities unchanged.
+
+### 2.7cq Current Plasma Shotgun ordinary-fire cost delivery target
+
+The bounded implementation target for this revision is an immutable profile
+for the already-delivered Plasma Shotgun ordinary ranged action. Its contract
+must:
+
+- [x] expose ordered typed `AttackEffect::ProjectileCount(1)` and
+  `ResourceCost::Ammo { ammo_type: Cell, amount: 3 }` fragments;
+- [x] retain generic ranged execution ownership for target/LOS/range
+  validation, damage RNG, event ordering, and transactional clip consumption;
+- [x] enforce the three-cell cost before mutation, reject clips below the cost
+  atomically, and preserve the existing one-projectile event contract;
+- [x] assert exact profile declaration order without adding an alternate-fire
+  command, callback registry, or replay-wire field; stale gameplay semantics
+  `42` replays are rejected before execution;
+- [x] keep spread/falloff/knockback callback semantics, exact legacy
+  timing/accuracy, controlled runtime, and audiovisual parity `NOT_RUN` where
+  comparison evidence is unavailable;
+- [x] advance project version from `0.2.220` to `0.2.221` and gameplay
+  semantics from `42` to `43`, preserving replay schema, RNG, generator, and
+  ruleset identities.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
@@ -2587,6 +2610,12 @@ controlled runtime, and audiovisual parity remain open.
 The `0.2.220` successor records the immutable `COMBAT_PISTOL_BEHAVIOR`
 profile for the delivered one-projectile ordinary fire and one-9mm-round cost.
 Aimed-fire callback semantics, exact legacy timing/accuracy, controlled
+runtime, and audiovisual parity remain open.
+
+The `0.2.221` successor records the immutable `PLASMA_SHOTGUN_BEHAVIOR`
+profile for the delivered one-projectile ordinary fire and three-cell clip
+cost. Generic ranged execution now enforces the cost before mutation; full
+spread/falloff/knockback semantics, exact legacy timing/accuracy, controlled
 runtime, and audiovisual parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
