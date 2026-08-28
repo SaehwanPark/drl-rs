@@ -32,8 +32,9 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// forty-cell shot costs and delayed explosion schedules, Nuclear BFG 9000's
 /// recharge/overload, Revenant's Launcher exact-hit resolution, Nuclear Plasma
 /// alternate overload/recharge, the `IF_NORELOAD` policy, Blaster recharge,
-/// and the prior Malek's Armor, Missile Launcher, and Combat Shotgun policies.
-pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 47;
+/// the prior Malek's Armor, Missile Launcher, and Combat Shotgun policies, and
+/// the typed ordinary-fire cost policies through Acid Spitter.
+pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 48;
 
 /// Procedural-generation semantics identifier expected for replays that carry
 /// a procedural generation configuration. Version 2 includes the exact

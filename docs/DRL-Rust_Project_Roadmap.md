@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.225`
+Current project version: `0.2.226`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.225)
+## 3. Current Progress Summary (`VERSION` 0.2.226)
 
 ### Delivered Foundations
 
@@ -745,6 +745,13 @@ verification item uses explicit status semantics:
   `47`, so stale semantics-46 replay metadata is rejected before execution.
   Spread routing, delayed explosion geometry, callback parity, runtime, and
   audiovisual parity remain open.
+- **M9 Acid Spitter ordinary-fire cost (`0.2.226`):** The immutable
+  `ACID_SPITTER_BEHAVIOR` profile now records one ordered projectile and a
+  ten-rocket clip cost alongside the existing terrain-reload fragments.
+  Generic ranged execution preflights the ten-rocket cost before mutation;
+  gameplay semantics advance to `48`, so stale semantics-47 replay metadata is
+  rejected before execution. Acid reload, explosion geometry/content,
+  spread/falloff, callback parity, runtime, and audiovisual parity remain open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1277,10 +1284,12 @@ scripting.
   ordered Single/Burst/Auto mode fragments and 200-point score-count cost; the
   dedicated transition remains authoritative and legacy accuracy equations,
   exact timing, runtime, and audiovisual parity remain open.
-- [x] Acid Spitter has an immutable behavior profile for its Acid-to-Water
-  one-round terrain reload and 1,000-point score-count cost; the dedicated
-  transition remains authoritative and hazard damage/resistance, fluid
-  movement cost, runtime, and audiovisual parity remain open.
+- [x] Acid Spitter has an immutable behavior profile for its one-projectile
+  ordinary fire and ten-rocket cost alongside the Acid-to-Water one-round
+  terrain reload and 1,000-point score-count cost; generic ranged execution
+  preflights the ordinary cost while dedicated reload execution remains
+  authoritative. Hazard damage/resistance, fluid movement cost, explosion
+  geometry/content, runtime, and audiovisual parity remain open.
 - [x] Missile Launcher has an immutable behavior profile for ordinary
   single-rocket reload and capped full-deficit reload (`2,500` score-count
   units); dedicated reload/planner paths remain authoritative and rocket-jump,
