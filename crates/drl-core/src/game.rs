@@ -9,8 +9,9 @@ use drl_protocol::{
 use crate::acid_spitter::{ACID_SPITTER_RELOAD_AMOUNT, AcidSpitterReloadError};
 use crate::assault_shotgun::{AssaultShotgunReloadPlan, AssaultShotgunTransition};
 use crate::behavior::{
-  BFG10K_EXPLOSION_DELAY, BFG10K_EXPLOSION_KNOCKBACK, BFG10K_EXPLOSION_RADIUS, LavaRechargeOutcome,
-  MedicalRepairOutcome, WeaponRechargeOutcome,
+  BFG10K_EXPLOSION_DELAY, BFG10K_EXPLOSION_KNOCKBACK, BFG10K_EXPLOSION_RADIUS,
+  BFG9000_EXPLOSION_DELAY, BFG9000_EXPLOSION_KNOCKBACK, BFG9000_EXPLOSION_RADIUS,
+  LavaRechargeOutcome, MedicalRepairOutcome, WeaponRechargeOutcome,
 };
 use crate::combat::CombatResolver;
 use crate::combat_shotgun::{CombatShotgunReloadPlan, CombatShotgunTransition};
@@ -1678,7 +1679,14 @@ impl Game {
     let distance = p_pos.distance_chebyshev(target_pos);
 
     // Prepare the full validation boundary before consuming ammo or RNG.
-    let (fire_cost, shot_count, ammo_cost, null_pointer_item_id, weapon_is_bfg10k) = {
+    let (
+      fire_cost,
+      shot_count,
+      ammo_cost,
+      null_pointer_item_id,
+      weapon_is_bfg10k,
+      weapon_is_bfg9000,
+    ) = {
       let player = self
         .state
         .world
@@ -1715,12 +1723,14 @@ impl Game {
       let null_pointer_item_id =
         (weapon.archetype() == drl_protocol::ItemArchetype::NullPointer).then_some(weapon.id());
       let weapon_is_bfg10k = weapon.archetype() == drl_protocol::ItemArchetype::Bfg10k;
+      let weapon_is_bfg9000 = weapon.archetype() == drl_protocol::ItemArchetype::Bfg9000;
       (
         props.fire_cost,
         shot_count,
         ammo_cost,
         null_pointer_item_id,
         weapon_is_bfg10k,
+        weapon_is_bfg9000,
       )
     };
 
@@ -1820,6 +1830,14 @@ impl Game {
           delay: BFG10K_EXPLOSION_DELAY,
           radius: BFG10K_EXPLOSION_RADIUS,
           knockback: BFG10K_EXPLOSION_KNOCKBACK,
+        });
+      } else if weapon_is_bfg9000 {
+        events.push(GameEvent::Bfg9000ExplosionScheduled {
+          entity_id: player_id,
+          target_id: target_monster_id,
+          delay: BFG9000_EXPLOSION_DELAY,
+          radius: BFG9000_EXPLOSION_RADIUS,
+          knockback: BFG9000_EXPLOSION_KNOCKBACK,
         });
       }
 

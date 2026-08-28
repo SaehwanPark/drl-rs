@@ -145,6 +145,63 @@ fn assert_bfg10k_volley_events(
   }
 }
 
+fn assert_standard_bfg_schedule_event(
+  events: &[GameEvent],
+  attacker_id: drl_protocol::EntityId,
+  target_id: drl_protocol::EntityId,
+) {
+  let attack_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::AttackResolved {
+          attacker_id: event_attacker,
+          target_id: event_target,
+          outcome: drl_protocol::AttackOutcome::Hit { .. },
+          is_ranged: true,
+        } if *event_attacker == attacker_id && *event_target == target_id
+      )
+    })
+    .expect("standard BFG shot must resolve a hit");
+  let damage_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::DamageApplied { target_id: event_target, .. }
+          if *event_target == target_id
+      )
+    })
+    .expect("standard BFG shot must apply damage");
+  let (schedule_index, delay, radius, knockback) = events
+    .iter()
+    .enumerate()
+    .find_map(|(index, event)| match event {
+      GameEvent::Bfg9000ExplosionScheduled {
+        entity_id,
+        target_id: event_target,
+        delay,
+        radius,
+        knockback,
+      } if *entity_id == attacker_id && *event_target == target_id => {
+        Some((index, *delay, *radius, *knockback))
+      }
+      _ => None,
+    })
+    .expect("standard BFG shot must schedule its delayed explosion");
+  assert_eq!(damage_index, attack_index + 1);
+  assert_eq!(schedule_index, damage_index + 1);
+  assert_eq!((delay, radius, knockback), (33, 8, 16));
+  assert_eq!(
+    events
+      .iter()
+      .filter(|event| matches!(event, GameEvent::Bfg9000ExplosionScheduled { .. }))
+      .count(),
+    1
+  );
+}
+
 fn equipped_nuclear_bfg_wide(seed: u64) -> (Game, ItemId) {
   let mut game = Game::new_arena(seed, 24, 12).unwrap();
   let player_id = game.world().player_id().unwrap();
@@ -221,6 +278,7 @@ fn standard_bfg_exact_hit_resolves_even_at_zero_accuracy() {
         })
         .expect("BFG hit should apply damage")
   );
+  assert_standard_bfg_schedule_event(&events, player_id, target_id);
 }
 
 #[test]
@@ -298,6 +356,7 @@ fn standard_bfg_shot_cost_accepts_forty_cells_and_consumes_them_once() {
       } if *attacker_id == player_id && *event_target == target_id
     )
   }));
+  assert_standard_bfg_schedule_event(&events, player_id, target_id);
   assert!(events.iter().any(|event| {
     matches!(
       event,

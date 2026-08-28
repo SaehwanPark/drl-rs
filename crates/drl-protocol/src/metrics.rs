@@ -146,6 +146,7 @@ impl EpisodeMetrics {
       | GameEvent::NullPointerHit { .. }
       | GameEvent::NullPointerExplosionScheduled { .. }
       | GameEvent::Bfg10kExplosionScheduled { .. }
+      | GameEvent::Bfg9000ExplosionScheduled { .. }
       | GameEvent::NukeActivated { .. }
       | GameEvent::LevelNuked { .. }
       | GameEvent::ActorKnockedBack { .. }

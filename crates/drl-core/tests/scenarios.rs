@@ -88,6 +88,63 @@ fn assert_bfg10k_volley_events(
   }
 }
 
+fn assert_standard_bfg_schedule_event(
+  events: &[GameEvent],
+  attacker_id: drl_protocol::EntityId,
+  target_id: drl_protocol::EntityId,
+) {
+  let attack_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::AttackResolved {
+          attacker_id: event_attacker,
+          target_id: event_target,
+          outcome: AttackOutcome::Hit { .. },
+          is_ranged: true,
+        } if *event_attacker == attacker_id && *event_target == target_id
+      )
+    })
+    .expect("standard BFG shot must resolve a hit");
+  let damage_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::DamageApplied { target_id: event_target, .. }
+          if *event_target == target_id
+      )
+    })
+    .expect("standard BFG shot must apply damage");
+  let (schedule_index, delay, radius, knockback) = events
+    .iter()
+    .enumerate()
+    .find_map(|(index, event)| match event {
+      GameEvent::Bfg9000ExplosionScheduled {
+        entity_id,
+        target_id: event_target,
+        delay,
+        radius,
+        knockback,
+      } if *entity_id == attacker_id && *event_target == target_id => {
+        Some((index, *delay, *radius, *knockback))
+      }
+      _ => None,
+    })
+    .expect("standard BFG shot must schedule its delayed explosion");
+  assert_eq!(damage_index, attack_index + 1);
+  assert_eq!(schedule_index, damage_index + 1);
+  assert_eq!((delay, radius, knockback), (33, 8, 16));
+  assert_eq!(
+    events
+      .iter()
+      .filter(|event| matches!(event, GameEvent::Bfg9000ExplosionScheduled { .. }))
+      .count(),
+    1
+  );
+}
+
 #[test]
 fn test_ascii_scenario_complex_arena() {
   let ascii = r#"
@@ -656,6 +713,7 @@ fn standard_bfg_exact_hit_vertical_scenario_preserves_replay() {
       } if *attacker_id == player_id && *event_target == target_id
     )
   }));
+  assert_standard_bfg_schedule_event(&events, player_id, target_id);
   assert!(events.iter().any(|event| {
     matches!(
       event,
@@ -956,6 +1014,7 @@ fn standard_bfg_shot_cost_vertical_scenario_preserves_clip_and_replay() {
       } if *attacker_id == player_id && *event_target == target_id
     )
   }));
+  assert_standard_bfg_schedule_event(&events, player_id, target_id);
   let attack_index = events
     .iter()
     .position(|event| matches!(event, GameEvent::AttackResolved { .. }))

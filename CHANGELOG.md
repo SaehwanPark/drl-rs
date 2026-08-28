@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.202]
+
+- Added typed standard BFG 9000 delayed-explosion schedule metadata after its
+  direct-target hit. The event carries the pinned delay `33`, radius `8`, and
+  knockback `16` payload with ScenarioRunner/replay, MCP, and BrowserSession
+  parity; explosion geometry, splash damage, knockback application, routing,
+  runtime, and audiovisual parity remain deferred.
+
 ## [0.2.201]
 
 - Added typed BFG 10K delayed-explosion schedule metadata after each direct-
