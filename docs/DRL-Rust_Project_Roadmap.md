@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.216`
+Current project version: `0.2.217`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.216)
+## 3. Current Progress Summary (`VERSION` 0.2.217)
 
 ### Delivered Foundations
 
@@ -689,6 +689,11 @@ verification item uses explicit status semantics:
   with an immutable `DOUBLE_SHOTGUN_BEHAVIOR` profile and deterministic
   scenario/replay/MCP/BrowserSession parity. Spread/falloff, exact timing,
   runtime, and audiovisual parity remain open.
+- **M9 Standard Shotgun knockback profile (`0.2.217`):** The immutable
+  `SHOTGUN_BEHAVIOR` profile now records the current one-cell knockback hit and
+  one-shell cost while generic ranged execution remains authoritative for
+  collision-aware displacement and transaction safety. Exact legacy force,
+  timing, spread/falloff, runtime, and audiovisual parity remain open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1238,6 +1243,10 @@ scripting.
   consumes two shells per accepted command through deterministic
   ScenarioRunner/replay/MCP/BrowserSession parity; spread/falloff, exact timing,
   runtime, and audiovisual parity remain open.
+- [x] Standard Shotgun has an immutable behavior profile for its current
+  one-cell knockback hit and one-shell cost; generic ranged execution remains
+  authoritative while exact legacy force/timing, spread/falloff, runtime, and
+  audiovisual parity remain open.
 - [x] Revenant's Launcher has an immutable behavior profile for its pinned
   exact-hit attack policy; dedicated combat execution remains authoritative and
   homing, projectile routing, delayed explosions, runtime, and audiovisual
@@ -1276,8 +1285,9 @@ scripting.
 - [x] Typed `usjack`, `udshotgun`, and `utrigun` preserve pinned
   heavy-shotgun descriptions, shell/cell relations, clips/damage/range
   scalars, replay kinds, and measured combat-shotgun/double-shotgun atlas
-  slots; Double Shotgun dual-shot behavior is covered in `0.2.216`; alternate
-  reload, spread, chainfire, shot-cost, explosions, and callbacks remain open.
+  slots; Double Shotgun dual-shot behavior is covered in `0.2.216` and
+  Standard Shotgun knockback in `0.2.217`; alternate reload, spread, chainfire,
+  shot-cost, explosions, and callbacks remain open.
 - [x] Typed `ubutcher`, `umjoll`, and `usubtle` preserve pinned unique-melee
   descriptions, damage/range scalars, replay kinds, and measured cleaver/knife
   atlas slots; blade/throw/alt-fire perks, callbacks, sound/UI, and exact
