@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
-Last reviewed: 2026-08-27
-Current project version: `0.2.192`
+Last reviewed: 2026-08-28
+Current project version: `0.2.193`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.192)
+## 3. Current Progress Summary (`VERSION` 0.2.193)
 
 ### Delivered Foundations
 
@@ -556,6 +556,12 @@ verification item uses explicit status semantics:
   post-shot clip, hit/action/turn event ordering, and final-state equality.
   Alternate overload, recharge timing, projectile/explosion routing,
   controlled runtime, browser capture, and audiovisual parity remain open.
+- **M9 typed behavior vocabulary contract (`0.2.193`):** `drl-core` now exposes
+  compiler-checked behavior fragments and immutable profiles for passive,
+  equip/unequip, attack/hit/kill, alternate action, periodic, explicit-cost,
+  and deterministic-target concepts. Medical Powerarmor, Subtle Knife, and
+  Trigun profiles compose the existing dedicated transitions without runtime
+  callbacks; controlled legacy runtime and presentation parity remain open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1097,6 +1103,11 @@ scripting.
   nuke transition, terminal internal damage, and ordered events without
   destroying the weapon. Legacy runtime, explosion/map effects, and
   presentation parity remain `NOT_RUN`/open.
+- [x] A compile-time typed behavior vocabulary and immutable profiles represent
+  passive/equipment, attack/hit/kill, alternate-action, periodic, explicit
+  resource/status-cost, and deterministic-target concepts without a callback
+  registry; existing stress-case transitions remain explicit and parity work is
+  still open.
 - [x] Grammaton Cleric Beretta alternate reload is behavior-covered by a typed
   fire-mode cycle with deterministic single/burst/auto profiles, a bounded
   200 score-count cost, ordered multi-shot resolution, and replay/MCP event

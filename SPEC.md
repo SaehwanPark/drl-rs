@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.192`
+Current project version: `0.2.193`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,49 +25,48 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Vertical Nuclear BFG Shot-Cost Encounter
+## 2. Active Implementation Slice: M9 — Typed Behavior Vocabulary Contract
 
 ### 2.1 Objective
 
-Exercise the delivered typed Nuclear BFG 9000 `shotcost=40` behavior end-to-end
-in one deterministic canonical encounter, preserving the direct-core command
-result through ScenarioRunner, replay, MCP, and BrowserSession boundaries.
+Define a small, explicit, compile-time typed behavior vocabulary that can
+describe the callback-derived effects already delivered for the selected
+Medical Powerarmor, Subtle Knife, and Trigun stress cases without introducing
+runtime callbacks, string-keyed dispatch, or gameplay changes.
 
 ### 2.1a Scope and steering gate
 
-- **Steering priority:** Vertical canonical fidelity and typed legacy behavior.
+- **Steering priority:** Typed legacy behavior and vertical canonical fidelity.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
-  compatibility, and Gate D callback behavior evidence.
-- **Observable outcome:** A fixed ASCII encounter equips a Nuclear BFG 9000,
-  places a visible static target at a legal ranged position, and accepts one
-  attack that consumes exactly forty cells while preserving exact-hit, damage,
-  action cost, and event ordering. ScenarioRunner, replay, MCP, and
-  BrowserSession all expose the same accepted result and final state.
+  compatibility, Gate C catalog ownership, and Gate D callback behavior
+  evidence remain closed for this contract-only slice.
+- **Observable outcome:** `drl-core` exposes typed behavior specs for passive,
+  equip/unequip, attack/hit/kill, alternate action, periodic, explicit-cost,
+  and deterministic-target concepts. The selected stress cases have immutable
+  profiles composed from those specs, and unit tests prove the profile data is
+  exhaustive, deterministic, and free of dynamic callback keys.
 - **Gameplay/replay impact:** Gameplay semantics remain `37`; replay wire
   schema, RNG, generator, and ruleset identities remain unchanged. Project
-  version advances from `0.2.191` to `0.2.192` for the added executable
-  vertical coverage.
-- **Protocol/domain ownership:** `drl-core` continues to own typed exact-hit
-  and shot-cost policies; protocol, MCP, render, audio, and browser layers
-  project the existing stable command/event contracts without new gameplay
-  balance.
+  version advances from `0.2.192` to `0.2.193` for the new typed contract and
+  executable vocabulary tests.
+- **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary
+  and profiles; protocol, MCP, render, audio, and browser layers receive no new
+  gameplay balance or dispatch surface in this slice.
 - **Evidence boundary:** Pinned legacy source at revision
-  `17d9be1204751899b2d69d8d3a2dde247bd0cc5c` plus core, scenario, replay, MCP,
-  and browser-boundary tests are authoritative. Controlled legacy runtime and
-  audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** Nuclear BFG alternate overload, projectile-path routing,
-  radius and falloff, delayed explosions, recharge timing changes, mod
-  behavior, additional shot-cost families, replay-file IO/migrations, exact
-  legacy runtime behavior, browser capture, and audiovisual parity.
+  `17d9be1204751899b2d69d8d3a2dde247bd0cc5c` and the existing stress-case
+  evidence notes are authoritative. Controlled legacy runtime and audiovisual
+  comparisons remain `NOT_RUN`.
+- **Non-goals:** Reworking existing behavior transitions, adding new gameplay
+  effects, replay-file IO/migrations, runtime Lua, generic callback/event
+  registries, and browser/audio/WebGPU parity.
 
 ### 2.2 Why this slice is bounded
 
-The pinned Nuclear BFG 9000 carries `shotcost=40` alongside exact-hit,
-recharge, overload, and explosion behavior. This slice composes the already
-delivered typed shot-cost policy with the existing vertical scenario/replay and
-browser-boundary harnesses, preserving exact-hit, LOS/range/clip preflight,
-damage RNG, and event flow. Alternate overload, projectile routing, explosions,
-and audiovisual effects remain separate evidence and implementation slices.
+The selected callback-heavy cases already have explicit Rust state machines and
+transitions. This slice supplies the missing declarative vocabulary around them:
+small enums and immutable profiles whose payloads are compiler-checked and
+directly testable. It does not reinterpret those transitions or add a runtime
+dispatcher, so no replay or gameplay behavior changes.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -439,11 +438,14 @@ insufficient.
   retaining explicit loose-ammo count reconstruction and rejection coverage.
 - [x] Keep genuinely behavioral code explicit and reviewable rather than
   embedding arbitrary callbacks in the catalog.
-- [ ] Define a typed behavior vocabulary that can represent at least:
-  **Partial in `0.2.120`:** explicit Medical Powerarmor periodic repair and
-  Subtle Knife alternate invoke transitions are delivered; the Trigun
-  alternate-reload transition is delivered in `0.2.121` and the broader
-  vocabulary remains open.
+- [x] Define a typed behavior vocabulary that can represent at least:
+  **Delivered in `0.2.193`:** explicit `BehaviorSpec` fragments and immutable
+  `BehaviorProfile` compositions cover passive stat/resistance modifiers,
+  reversible equip/unequip effects and item-set membership, attack/hit/kill
+  effects, alternate fire/reload/use actions, periodic/recharge effects,
+  explicit resource/status costs, and deterministic target selection. Existing
+  Medical Powerarmor, Subtle Knife, and Trigun transitions remain dedicated
+  typed state machines; runtime and presentation parity remain open.
   - passive stat/resistance modifiers;
   - equip/unequip effects and item-set membership;
   - attack/hit/kill effects;
@@ -1795,7 +1797,7 @@ presentation boundaries. Its vertical slice must:
   scatter, projectile routing, explosion geometry, controlled legacy runtime,
   browser capture, audio, WebGPU, and audiovisual parity as `NOT_RUN`.
 
-### 2.7bn Current vertical Nuclear BFG 9000 shot-cost delivery target
+### 2.7bn Previous vertical Nuclear BFG 9000 shot-cost delivery target
 
 The bounded implementation target for this revision is a canonical Nuclear BFG
 9000 shot-cost encounter across the declarative scenario, replay, MCP, and
@@ -1813,6 +1815,24 @@ browser presentation boundaries. Its vertical slice must:
 - [x] keep gameplay semantics unchanged while recording alternate overload,
   recharge timing, projectile routing, explosion geometry, controlled legacy
   runtime, browser capture, audio, WebGPU, and audiovisual parity as `NOT_RUN`.
+
+### 2.7bo Current typed behavior vocabulary delivery target
+
+The bounded implementation target for this revision is an explicit
+compile-time vocabulary and immutable profiles for the selected callback-heavy
+stress cases. Its contract must:
+
+- [x] represent passive stat/resistance modifiers and reversible equip/unequip
+  effects, including typed item-set membership;
+- [x] represent attack, hit, and kill effects plus alternate fire/reload/use
+  actions without string-keyed dispatch;
+- [x] represent periodic/recharge effects and explicit HP, energy, ammo, and
+  status costs with typed payloads;
+- [x] represent deterministic target-selection policies over fair observation
+  or current simulation state;
+- [x] compose the Medical Powerarmor, Subtle Knife, and Trigun profiles while
+  preserving their existing runtime transitions and recording runtime,
+  audiovisual, and controlled-legacy comparisons as `NOT_RUN`.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
