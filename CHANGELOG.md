@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.211]
+
+- Added an immutable `MISSILE_LAUNCHER_BEHAVIOR` profile for the evidence-backed
+  ordinary reload and capped full-deficit reload (`2,500`) policies while
+  retaining dedicated execution ownership. Rocket-jump, explosion, runtime,
+  and audiovisual parity remain deferred.
+
 ## [0.2.210]
 
 - Added an immutable `ACID_SPITTER_BEHAVIOR` profile for the evidence-backed

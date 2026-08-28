@@ -13,6 +13,7 @@ use crate::jackhammer::JACKHAMMER_MODE_SCORE_COST;
 use crate::malek_armor::{
   MALEK_ARMOR_RECHARGE_AMOUNT, MALEK_ARMOR_RECHARGE_DELAY, MALEK_ARMOR_RECHARGE_TICK,
 };
+use crate::missile_launcher::MISSILE_LAUNCHER_ALT_RELOAD_CAP;
 use crate::null_pointer::{
   NULL_POINTER_BOSS_SCORE_COST, NULL_POINTER_EXPLOSION_DELAY, NULL_POINTER_EXPLOSION_RADIUS,
   NULL_POINTER_MIN_SCORE_COUNT, NULL_POINTER_TARGET_SCORE_COST,
@@ -188,6 +189,8 @@ pub enum AlternateAction {
   Fire(WeaponFireMode),
   /// Select an alternate reload transition.
   Reload,
+  /// Select a full-deficit reload with an explicit action-cost cap.
+  FullReload { cost_cap: u32 },
   /// Select Trigun's alternate reload and arm its terminal countdown.
   ReloadAndTriggerNuke { countdown: u32 },
   /// Select an alternate use transition.
@@ -551,6 +554,17 @@ const ACID_SPITTER_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
 pub const ACID_SPITTER_BEHAVIOR: BehaviorProfile =
   BehaviorProfile::new(ACID_SPITTER_BEHAVIOR_SPECS);
 
+const MISSILE_LAUNCHER_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Alternate(AlternateAction::Reload),
+  BehaviorSpec::Alternate(AlternateAction::FullReload {
+    cost_cap: MISSILE_LAUNCHER_ALT_RELOAD_CAP,
+  }),
+];
+
+/// Immutable typed profile for the current Missile Launcher reload policies.
+pub const MISSILE_LAUNCHER_BEHAVIOR: BehaviorProfile =
+  BehaviorProfile::new(MISSILE_LAUNCHER_BEHAVIOR_SPECS);
+
 /// Medical Powerarmor begins repair only while durability is strictly above
 /// the legacy callback's `20`-point guard.
 pub const MEDICAL_REPAIR_MIN_DURABILITY_EXCLUSIVE: u32 = 20;
@@ -862,6 +876,7 @@ mod tests {
         resulting_terrain: TileKind::Water,
         amount: 1,
       }),
+      BehaviorSpec::Alternate(AlternateAction::FullReload { cost_cap: 2_500 }),
       BehaviorSpec::Periodic(PeriodicEffect::Recharge {
         delay: 30,
         cadence: 10,
@@ -883,7 +898,7 @@ mod tests {
     ];
     let profile = BehaviorProfile::new(SPECS);
 
-    assert_eq!(profile.specs().len(), 12);
+    assert_eq!(profile.specs().len(), 13);
     assert!(matches!(
       profile.specs()[0],
       BehaviorSpec::Passive(PassiveModifier {
@@ -1091,6 +1106,15 @@ mod tests {
         }),
         BehaviorSpec::Cost(ResourceCost::Score {
           amount: ACID_SPITTER_RELOAD_SCORE_COST,
+        }),
+      ]
+    );
+    assert_eq!(
+      MISSILE_LAUNCHER_BEHAVIOR.specs(),
+      &[
+        BehaviorSpec::Alternate(AlternateAction::Reload),
+        BehaviorSpec::Alternate(AlternateAction::FullReload {
+          cost_cap: MISSILE_LAUNCHER_ALT_RELOAD_CAP,
         }),
       ]
     );

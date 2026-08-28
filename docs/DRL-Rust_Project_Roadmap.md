@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.210`
+Current project version: `0.2.211`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.210)
+## 3. Current Progress Summary (`VERSION` 0.2.211)
 
 ### Delivered Foundations
 
@@ -659,6 +659,11 @@ verification item uses explicit status semantics:
   terrain reload and 1,000-point score-count cost. The dedicated transition
   remains authoritative; hazard damage/resistance, runtime, and audiovisual
   parity remain explicitly open.
+- **M9 Missile Launcher behavior profile (`0.2.211`):** The immutable
+  `MISSILE_LAUNCHER_BEHAVIOR` profile now records ordinary single-rocket
+  reload and capped full-deficit reload (`2,500` score-count units). The
+  dedicated planner remains authoritative; rocket-jump, explosion, runtime,
+  and audiovisual parity remain explicitly open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1195,6 +1200,10 @@ scripting.
   one-round terrain reload and 1,000-point score-count cost; the dedicated
   transition remains authoritative and hazard damage/resistance, fluid
   movement cost, runtime, and audiovisual parity remain open.
+- [x] Missile Launcher has an immutable behavior profile for ordinary
+  single-rocket reload and capped full-deficit reload (`2,500` score-count
+  units); dedicated reload/planner paths remain authoritative and rocket-jump,
+  explosion, runtime, and audiovisual parity remain open.
 - [x] Vertical Nuclear BFG 9000 shot-cost encounter preserves the typed
   forty-cell one-shot policy through deterministic scenario/replay, MCP, and
   BrowserSession/direct-core parity; alternate overload, recharge timing,
