@@ -7,6 +7,7 @@ use drl_protocol::{
   AmmoType, DamageType, EquipmentSlot, HitPoints, ItemArchetype, TileKind, WeaponFireMode,
 };
 
+use crate::acid_spitter::{ACID_SPITTER_RELOAD_AMOUNT, ACID_SPITTER_RELOAD_SCORE_COST};
 use crate::grammaton::GRAMMATON_MODE_SCORE_COST;
 use crate::jackhammer::JACKHAMMER_MODE_SCORE_COST;
 use crate::malek_armor::{
@@ -195,6 +196,12 @@ pub enum AlternateAction {
   Invoke,
   /// Select a confirmed destructive overload transition.
   Overload,
+  /// Reload ammunition while replacing one required terrain with another.
+  TerrainReload {
+    required_terrain: TileKind,
+    resulting_terrain: TileKind,
+    amount: u32,
+  },
 }
 
 /// Explicit periodic and recharge policies.
@@ -529,6 +536,21 @@ const GRAMMATON_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
 /// Immutable typed profile for the current Grammaton Single/Burst/Auto cycle.
 pub const GRAMMATON_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(GRAMMATON_BEHAVIOR_SPECS);
 
+const ACID_SPITTER_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Alternate(AlternateAction::TerrainReload {
+    required_terrain: TileKind::Acid,
+    resulting_terrain: TileKind::Water,
+    amount: ACID_SPITTER_RELOAD_AMOUNT,
+  }),
+  BehaviorSpec::Cost(ResourceCost::Score {
+    amount: ACID_SPITTER_RELOAD_SCORE_COST,
+  }),
+];
+
+/// Immutable typed profile for the current Acid Spitter terrain reload.
+pub const ACID_SPITTER_BEHAVIOR: BehaviorProfile =
+  BehaviorProfile::new(ACID_SPITTER_BEHAVIOR_SPECS);
+
 /// Medical Powerarmor begins repair only while durability is strictly above
 /// the legacy callback's `20`-point guard.
 pub const MEDICAL_REPAIR_MIN_DURABILITY_EXCLUSIVE: u32 = 20;
@@ -835,6 +857,11 @@ mod tests {
       BehaviorSpec::Hit(HitEffect::Knockback { distance: 1 }),
       BehaviorSpec::Kill(KillEffect::Drop(ItemArchetype::SmallMedPack)),
       BehaviorSpec::Alternate(AlternateAction::Fire(WeaponFireMode::Burst)),
+      BehaviorSpec::Alternate(AlternateAction::TerrainReload {
+        required_terrain: TileKind::Acid,
+        resulting_terrain: TileKind::Water,
+        amount: 1,
+      }),
       BehaviorSpec::Periodic(PeriodicEffect::Recharge {
         delay: 30,
         cadence: 10,
@@ -856,7 +883,7 @@ mod tests {
     ];
     let profile = BehaviorProfile::new(SPECS);
 
-    assert_eq!(profile.specs().len(), 11);
+    assert_eq!(profile.specs().len(), 12);
     assert!(matches!(
       profile.specs()[0],
       BehaviorSpec::Passive(PassiveModifier {
@@ -1051,6 +1078,19 @@ mod tests {
         BehaviorSpec::Alternate(AlternateAction::Fire(WeaponFireMode::Auto)),
         BehaviorSpec::Cost(ResourceCost::Score {
           amount: GRAMMATON_MODE_SCORE_COST,
+        }),
+      ]
+    );
+    assert_eq!(
+      ACID_SPITTER_BEHAVIOR.specs(),
+      &[
+        BehaviorSpec::Alternate(AlternateAction::TerrainReload {
+          required_terrain: TileKind::Acid,
+          resulting_terrain: TileKind::Water,
+          amount: ACID_SPITTER_RELOAD_AMOUNT,
+        }),
+        BehaviorSpec::Cost(ResourceCost::Score {
+          amount: ACID_SPITTER_RELOAD_SCORE_COST,
         }),
       ]
     );

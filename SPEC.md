@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.209`
+Current project version: `0.2.210`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Grammaton Behavior Profile
+## 2. Active Implementation Slice: M9 — Acid Spitter Behavior Profile
 
 ### 2.1 Objective
 
-Carry the already-delivered Grammaton Single/Burst/Auto fire-mode transition
-into an immutable typed behavior profile. The profile describes the
-evidence-backed policy without changing command handling, replay wire data, or
-runtime ownership.
+Carry the already-delivered Acid Spitter terrain-reload transition into an
+immutable typed behavior profile. The profile describes the evidence-backed
+policy without changing command handling, replay wire data, or runtime
+ownership.
 
 ### 2.1a Scope and steering gate
 
@@ -40,34 +40,34 @@ runtime ownership.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, Gate C catalog ownership, and Gate D callback behavior
   evidence remain closed for this contract-only slice.
-- **Observable outcome:** `GRAMMATON_BEHAVIOR` exposes ordered typed
-  `AlternateAction::Fire` fragments for `WeaponFireMode::Single`, `Burst`, and
-  `Auto`, followed by a `ResourceCost::Score` of `200`; exact profile
-  declaration order is asserted while the existing dedicated transition
-  remains unchanged.
+- **Observable outcome:** `ACID_SPITTER_BEHAVIOR` exposes one typed
+  `AlternateAction::TerrainReload` fragment requiring `TileKind::Acid`,
+  producing `TileKind::Water`, and loading one round, followed by a
+  `ResourceCost::Score` of `1000`; exact profile declaration order is asserted
+  while the existing dedicated transition remains unchanged.
 - **Gameplay/replay impact:** Gameplay semantics remain `41`;
   replay wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.208` to `0.2.209` for the
+  unchanged. Project version advances from `0.2.209` to `0.2.210` for the
   profile-only contract.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary
   and profiles; `drl-protocol`, MCP, render, audio, and browser boundaries remain
   unchanged. No new gameplay balance, command, event, or runtime dispatch
   surface is introduced in this slice.
-- **Evidence boundary:** Pinned Grammaton mode evidence in
-  `docs/legacy-behavior/grammaton-profile.md` plus the delivered transition
+- **Evidence boundary:** Pinned Acid Spitter reload evidence in
+  `docs/legacy-behavior/acid-spitter-profile.md` plus the delivered transition
   contract is authoritative. Controlled legacy runtime, browser capture, and
   audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** Legacy accuracy equations, exact timing, new command or
+- **Non-goals:** Acid hazard/resistance, fluid movement cost, new command or
   callback registries, gameplay balance changes, replay-file IO/migrations,
   runtime Lua, unrelated protocol changes, and browser/audio/WebGPU parity.
 
 ### 2.2 Why this slice is bounded
 
-The existing Grammaton mode transition already has a dedicated deterministic
-execution path. This slice adds only its immutable descriptive profile,
-keeping command validation and state mutation in the focused module. It does
-not add a generic dispatcher or alter mode policy, so the change stays within
-the current typed behavior boundary.
+The existing Acid Spitter terrain-reload transition already has a dedicated
+deterministic execution path. This slice adds only its immutable descriptive
+profile, keeping command validation and state mutation in the focused module.
+It does not add a generic dispatcher or alter terrain policy, so the change
+stays within the current typed behavior boundary.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -2117,7 +2117,7 @@ contract must:
   gameplay semantics `41`, replay schema, RNG, generator, and ruleset
   identities unchanged.
 
-### 2.7ce Current Grammaton behavior-profile delivery target
+### 2.7ce Historical Grammaton behavior-profile delivery target
 
 The bounded implementation target for this revision is an immutable profile
 for the already-delivered Grammaton Single/Burst/Auto fire-mode transition. Its
@@ -2133,6 +2133,25 @@ contract must:
   audio, WebGPU, and controlled-legacy behavior unchanged or `NOT_RUN` where
   comparison evidence is unavailable;
 - [x] advance project version from `0.2.208` to `0.2.209` while keeping
+  gameplay semantics `41`, replay schema, RNG, generator, and ruleset
+  identities unchanged.
+
+### 2.7cf Current Acid Spitter behavior-profile delivery target
+
+The bounded implementation target for this revision is an immutable profile
+for the already-delivered Acid Spitter terrain-reload transition. Its contract
+must:
+
+- [x] expose one typed `AlternateAction::TerrainReload` fragment requiring
+  `TileKind::Acid`, producing `TileKind::Water`, and loading one round;
+- [x] preserve the 1,000-point score-count cost from the pinned callback while
+  retaining dedicated `acid_spitter` transition ownership;
+- [x] assert exact profile declaration order without adding a runtime command,
+  callback registry, or replay-wire field;
+- [x] keep Acid hazard/resistance, fluid movement cost, gameplay balance,
+  runtime, audio, WebGPU, and controlled-legacy behavior unchanged or `NOT_RUN`
+  where comparison evidence is unavailable;
+- [x] advance project version from `0.2.209` to `0.2.210` while keeping
   gameplay semantics `41`, replay schema, RNG, generator, and ruleset
   identities unchanged.
 
@@ -2322,6 +2341,11 @@ The `0.2.209` successor records the immutable `GRAMMATON_BEHAVIOR` profile
 with ordered Single/Burst/Auto mode fragments and the 200-point score-count
 cost. The dedicated transition remains authoritative; legacy accuracy
 equations, exact timing, runtime, and audiovisual parity remain open.
+
+The `0.2.210` successor records the immutable `ACID_SPITTER_BEHAVIOR` profile
+with the Acid-to-Water terrain reload and one-round amount plus the 1,000-point
+score-count cost. The dedicated transition remains authoritative; hazard
+damage, resistance, runtime, and audiovisual parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity

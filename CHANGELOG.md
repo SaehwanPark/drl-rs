@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.210]
+
+- Added an immutable `ACID_SPITTER_BEHAVIOR` profile for the evidence-backed
+  Acid-to-Water one-round terrain reload and 1,000-point score-count cost
+  while retaining dedicated execution ownership. Hazard damage/resistance,
+  runtime, and audiovisual parity remain deferred.
+
 ## [0.2.209]
 
 - Added an immutable `GRAMMATON_BEHAVIOR` profile for the evidence-backed
