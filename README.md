@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.198`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.199`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -223,6 +223,8 @@ replays, and regression testing.
     the standard BFG 9000's typed forty-cell shot-cost path is likewise
     exercised through the aligned deterministic scenario, replay, MCP, and
     BrowserSession boundary fixture;
+    standard and Nuclear BFG exact-hit paths are also exercised through MCP
+    vertical boundaries with direct-core and replay equality;
     `drl-core` exposes a compile-time `BehaviorSpec` vocabulary and immutable
     stress-case profiles for passive/equipment, attack/hit/kill, alternate,
     periodic, explicit-cost, and deterministic-target behavior, including the
