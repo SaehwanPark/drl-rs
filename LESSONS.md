@@ -13,8 +13,8 @@ truth.
   with the default range instead of the weapon's evidenced radius.
 - **Resolution:** Trace both the item declaration and the native assignment
   site; record the resulting typed event only after the complete payload is
-  established. For standard BFG 9000, the ranged path copies item radius `8`
-  into the explosion range alongside delay `33` and knockback `16`.
+  established. For standard and Nuclear BFG 9000, the ranged path copies item
+  radius `8` into the explosion range alongside delay `33` and knockback `16`.
 - **Prevention:** Keep source provenance for each payload field in the slice
   evidence and test the complete event tuple at every boundary.
 

@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.202`
+Current project version: `0.2.203`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -205,8 +205,10 @@ Presentation Boundary
     explosion geometry, splash, knockback application, and projectile routing
     remain separate policy work.
     Nuclear BFG 9000 opts into the same typed exact-hit policy without changing
-    its recharge or alternate-overload state; its shot-cost, projectile, and
-    NukeRun effects remain separate policy work.
+    its recharge or alternate-overload state; its direct-target hit now emits
+    one typed `NuclearBfg9000ExplosionScheduled` event with delay 33, radius 8,
+    and knockback 16. Explosion geometry, splash, projectile routing, NukeRun,
+    and the recharge/overload effects remain separate policy work.
     Revenant’s Launcher opts into the same typed exact-hit policy without
     changing its one-rocket clip or damage policy; homing, projectile routing,
     delayed explosions, and timing remain separate policy work.

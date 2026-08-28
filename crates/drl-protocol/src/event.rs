@@ -168,6 +168,14 @@ pub enum GameEvent {
     radius: u32,
     knockback: u32,
   },
+  /// Nuclear BFG 9000 recorded its evidence-backed delayed explosion payload.
+  NuclearBfg9000ExplosionScheduled {
+    entity_id: EntityId,
+    target_id: EntityId,
+    delay: u32,
+    radius: u32,
+    knockback: u32,
+  },
   /// A typed level nuke was scheduled at an accepted command boundary.
   NukeActivated { level_id: LevelId, countdown: u32 },
   /// The scheduled level nuke resolved before its internal player damage.
