@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.213`
+Current project version: `0.2.214`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -45,7 +45,9 @@ typed durability-recharge fragment; Blaster records its
 typed periodic-recharge fragment; Missile Launcher records its typed ordinary
 single-rocket reload and capped full-deficit reload fragments; Combat Shotgun
 records its typed ordinary single-shell reload and capped full-deficit reload
-fragments; Revenant's Launcher records its typed exact-hit attack fragment;
+fragments; Assault Shotgun records its typed ordinary single-shell reload and
+capped full-deficit reload fragments; Revenant's Launcher records its typed
+exact-hit attack fragment;
 Nuclear Plasma records its typed
 alternate-overload and periodic-recharge fragments; the BFG family profiles
 record exact-hit, typed projectile-count,
@@ -200,6 +202,9 @@ Presentation Boundary
     Combat Shotgun's immutable profile records the same ordered reload
     fragments; its dedicated planner and pump-action state remain responsible
     for reserve, deficit, chamber, cost, and transactional validation.
+    Assault Shotgun's immutable profile records the ordered reload fragments;
+    its dedicated planner remains responsible for reserve, deficit, cost, and
+    transactional validation.
     Revenant's Launcher's immutable profile records the exact-hit fragment;
     dedicated combat resolution remains responsible for LOS, range, clip,
     damage RNG, and event ordering.

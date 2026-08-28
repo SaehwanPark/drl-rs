@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.214]
+
+- Added an immutable `ASSAULT_SHOTGUN_BEHAVIOR` profile for the evidence-backed
+  ordinary single-shell reload and capped full-deficit reload (`2,500`)
+  policies while retaining dedicated execution ownership. Runtime and
+  audiovisual parity remain deferred.
+
 ## [0.2.213]
 
 - Added an immutable `REVENANTS_LAUNCHER_BEHAVIOR` profile for the pinned

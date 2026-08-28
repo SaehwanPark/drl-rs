@@ -1,5 +1,8 @@
 # Assault Shotgun reload evidence
 
+Status: delivered typed reload behavior profile through `0.2.214`; controlled
+legacy runtime comparison and audiovisual parity remain `NOT_RUN`.
+
 ## Pinned source
 
 - Legacy repository: `/Users/saehwan/repos/doom-the-roughlike-original`
@@ -27,6 +30,7 @@ the replay wire schema, while the dedicated alternate-reload transition
 preflights and fills the complete clip deficit atomically. A successful
 alternate reload emits one aggregate `WeaponReloaded` event and pays
 `min(deficit * reload_cost, 2500)`; under-supplied and full clips reject before
-mutation. Gameplay semantics advance from `19` to `20`; ammo-pack behavior,
-partial-reserve policy, exact legacy timing, runtime comparison, and
-presentation parity remain `NOT_RUN`.
+mutation. The earlier transition delivery advanced gameplay semantics from
+`19` to `20`; this profile-only `0.2.214` revision keeps current semantics
+`41` unchanged. Ammo-pack behavior, partial-reserve policy, exact legacy
+timing, runtime comparison, and presentation parity remain `NOT_RUN`.
