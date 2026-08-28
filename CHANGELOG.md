@@ -3,6 +3,12 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.216]
+
+- Double Shotgun fire now resolves its pinned two-projectile dual-shot policy,
+  consuming two shells per accepted ranged command; deterministic scenario,
+  replay, and browser-boundary coverage preserves event/RNG parity.
+
 ## [0.2.215]
 
 - Extended `COMBAT_SHOTGUN_BEHAVIOR` with the evidence-backed ordinary

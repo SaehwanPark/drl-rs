@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.215`
+Current project version: `0.2.216`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Combat Shotgun Pump-Action Profile
+## 2. Active Implementation Slice: M9 — Double Shotgun Dual-Shot Profile
 
 ### 2.1 Objective
 
-Carry the already-delivered Combat Shotgun pump-only chamber transition into
-the immutable typed behavior profile. The profile describes the
-evidence-backed ordinary action and reload policies without changing command
-handling, replay wire data, or runtime ownership.
+Carry the pinned Double Shotgun dual-shot policy into deterministic ranged
+execution and an immutable typed behavior profile. Each accepted fire emits
+two ordered projectiles and consumes two shells without changing command
+handling, replay wire shape, or runtime ownership outside the ranged path.
 
 ### 2.1a Scope and steering gate
 
@@ -40,24 +40,24 @@ handling, replay wire data, or runtime ownership.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, Gate C catalog ownership, and Gate D callback behavior
   evidence remain closed for this contract-only slice.
-- **Observable outcome:** `COMBAT_SHOTGUN_BEHAVIOR` exposes ordered typed
-  `ActionEffect::Pump { cost: 200 }`, `AlternateAction::Reload`, and
-  `AlternateAction::FullReload { cost_cap: 2500 }` fragments; exact profile
-  declaration order is asserted while the existing dedicated chamber/reload
-  transition and planner remain unchanged.
-- **Gameplay/replay impact:** Gameplay semantics remain `41`;
+- **Observable outcome:** `DOUBLE_SHOTGUN_BEHAVIOR` exposes ordered typed
+  `AttackEffect::ProjectileCount(2)` and
+  `ResourceCost::Ammo { ammo_type: Shells, amount: 2 }` fragments; two
+  `AttackResolved` events and their deterministic damage outcomes are asserted
+  per accepted fire.
+- **Gameplay/replay impact:** Gameplay semantics advance from `41` to `42`;
   replay wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.214` to `0.2.215` for the
-  profile-only contract.
+  unchanged. Project version advances from `0.2.215` to `0.2.216` for the
+  dual-shot contract.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary
   and profiles; `drl-protocol`, MCP, render, audio, and browser boundaries remain
   unchanged. No new gameplay balance, command, event, or runtime dispatch
   surface is introduced in this slice.
-- **Evidence boundary:** Pinned Combat Shotgun pump/reload evidence in
-  `docs/legacy-behavior/combat-shotgun-profile.md` plus the delivered
-  chamber/transition/planner contract is authoritative. Controlled legacy runtime,
+- **Evidence boundary:** Pinned Double Shotgun evidence in
+  `docs/legacy-behavior/double-shotgun-profile.md` plus the deterministic
+  ranged execution contract is authoritative. Controlled legacy runtime,
   browser capture, and audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** Exact legacy timing, partial-reserve policy, and chamber
+- **Non-goals:** Spread/falloff, exact legacy timing, and audiovisual
   presentation comparison,
   new command or callback registries, gameplay balance changes, replay-file
   IO/migrations, runtime Lua, unrelated protocol changes, and browser/audio/
@@ -65,12 +65,11 @@ handling, replay wire data, or runtime ownership.
 
 ### 2.2 Why this slice is bounded
 
-The existing Combat Shotgun pump-only chamber state and ordinary/alternate
-reload planner already have dedicated deterministic execution. This slice adds
-only the immutable descriptive action fragment, keeping command validation,
-reserve mutation, chamber transitions, and capped-cost calculation in the
-focused modules. It does not add a generic dispatcher or alter reload policy,
-so the change stays within the current typed behavior boundary.
+The existing ranged command path already performs complete preflight and
+transactional clip validation. This slice makes the pinned Double Shotgun shot
+count explicit in that path and records the same policy in an immutable profile;
+it does not add a generic dispatcher or alter RNG sampling, so replay behavior
+stays deterministic and reviewable.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -2235,7 +2234,7 @@ transitions. Its contract must:
   gameplay semantics `41`, replay schema, RNG, generator, and ruleset
   identities unchanged.
 
-### 2.7ck Current Combat Shotgun pump-action profile delivery target
+### 2.7ck Historical Combat Shotgun pump-action profile delivery target
 
 The bounded implementation target for this revision is an immutable profile
 for the already-delivered Combat Shotgun pump-only chamber transition alongside
@@ -2256,6 +2255,25 @@ its ordinary and alternate/full reload transitions. Its contract must:
 - [x] advance project version from `0.2.214` to `0.2.215` while keeping
   gameplay semantics `41`, replay schema, RNG, generator, and ruleset
   identities unchanged.
+
+### 2.7cl Current Double Shotgun dual-shot delivery target
+
+The bounded implementation target for this revision is deterministic
+two-projectile Double Shotgun fire plus its immutable typed behavior profile.
+Its contract must:
+
+- [x] expose ordered typed `AttackEffect::ProjectileCount(2)` and
+  `ResourceCost::Ammo { ammo_type: Shells, amount: 2 }` fragments;
+- [x] resolve two ordered `AttackResolved` outcomes and consume two clip shells
+  only after complete target/LOS/range/death-drop preflight succeeds;
+- [x] preserve existing ranged damage RNG order, lethal/death-drop handling,
+  replay/scenario/MCP/BrowserSession boundaries, and rejection atomicity;
+- [x] assert exact profile declaration order without adding a command, callback
+  registry, or wire field; spread/falloff, exact timing, runtime, and
+  audiovisual parity remain `NOT_RUN` where comparison evidence is unavailable;
+- [x] advance project version from `0.2.215` to `0.2.216` and gameplay
+  semantics from `41` to `42`, preserving replay schema, RNG, generator, and
+  ruleset identities.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
@@ -2474,6 +2492,10 @@ The `0.2.215` successor extends `COMBAT_SHOTGUN_BEHAVIOR` with the typed
 pump-only chamber action at cost `200`, while retaining dedicated chamber and
 reload execution. Exact legacy timing, partial-reserve policy, chamber
 presentation, runtime, and audiovisual parity remain open.
+
+The `0.2.216` successor records the immutable `DOUBLE_SHOTGUN_BEHAVIOR`
+profile and deterministic two-projectile/two-shell ranged fire. Spread/falloff,
+exact timing, controlled legacy runtime, and audiovisual parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity

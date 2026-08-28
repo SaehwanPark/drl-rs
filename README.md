@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.215`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.216`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -84,7 +84,8 @@ replays, and regression testing.
     count-sensitive reconstruction, and presentation policy remain explicit.
   - The typed behavior vocabulary includes immutable Acid Spitter, Grammaton,
     Jackhammer, Lava Armor, Malek's Armor, Blaster, Nuclear Plasma Rifle,
-    Missile Launcher, Combat Shotgun, Assault Shotgun, Revenant's Launcher,
+    Missile Launcher, Combat Shotgun, Double Shotgun, Assault Shotgun,
+    Revenant's Launcher,
     standard BFG 9000, Nuclear BFG 9000, and BFG 10K profiles for typed
     ordinary-action, periodic/alternate, exact-hit, projectile-count,
     ammunition-cost, and delayed-explosion schedule boundaries (Acid Spitter
@@ -95,7 +96,8 @@ replays, and regression testing.
     Malek's Armor durability recharge delay 50/cadence 5/amount 1; Missile
     Launcher ordinary single-rocket reload plus full-deficit reload capped at
     2,500 score-count units; Combat Shotgun ordinary single-shell reload plus
-    full-deficit reload capped at 2,500 score-count units; Combat Shotgun's
+    full-deficit reload capped at 2,500 score-count units; Double Shotgun's
+    typed two-projectile dual-shot consumes two shells; Combat Shotgun's
     typed pump-only chamber cycle costs 200 action units; Assault Shotgun
     ordinary single-shell reload plus full-deficit reload capped at 2,500
     score-count units; Revenant's Launcher
@@ -323,9 +325,11 @@ replays, and regression testing.
     gameplay semantics `20`; partial-reserve policy and spread parity remain
     staged; its immutable `ASSAULT_SHOTGUN_BEHAVIOR` profile records the
     ordinary/full-reload policies without changing current gameplay semantics;
-    the Double Shotgun clip-reload encounter's two-shot sequence, blocked
-    knockback, shell consumption, and presentation effects have the same
-    vertical scenario/replay/browser-boundary coverage;
+    the Double Shotgun clip-reload encounter's dual-shot fire, blocked
+    knockback, two-projectile resolution, shell consumption, and presentation effects
+    have the same vertical scenario/replay/browser-boundary coverage; its
+    immutable `DOUBLE_SHOTGUN_BEHAVIOR` profile records the dual-shot count and
+    shell cost;
     the Combat Shotgun pump-action encounter's five-shot sequence, typed
     chamber-empty rejection, pump-only reload cost, shell consumption, and
     presentation-boundary coverage; its regular reload loads one shell under

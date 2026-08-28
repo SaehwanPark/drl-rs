@@ -452,6 +452,18 @@ const BFG10K_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
 /// Immutable typed profile for the current BFG 10K five-projectile behavior.
 pub const BFG10K_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(BFG10K_BEHAVIOR_SPECS);
 
+const DOUBLE_SHOTGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Attack(AttackEffect::ProjectileCount(2)),
+  BehaviorSpec::Cost(ResourceCost::Ammo {
+    ammo_type: AmmoType::Shells,
+    amount: 2,
+  }),
+];
+
+/// Immutable typed profile for the current Double Shotgun dual-shot behavior.
+pub const DOUBLE_SHOTGUN_BEHAVIOR: BehaviorProfile =
+  BehaviorProfile::new(DOUBLE_SHOTGUN_BEHAVIOR_SPECS);
+
 const BFG9000_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
   BehaviorSpec::Attack(AttackEffect::ExactHit),
   BehaviorSpec::Attack(AttackEffect::ProjectileCount(1)),
@@ -918,6 +930,7 @@ mod tests {
       BehaviorSpec::Action(ActionEffect::Pump {
         cost: PUMP_ACTION_COST,
       }),
+      BehaviorSpec::Attack(AttackEffect::ProjectileCount(2)),
       BehaviorSpec::Alternate(AlternateAction::Fire(WeaponFireMode::Burst)),
       BehaviorSpec::Alternate(AlternateAction::TerrainReload {
         required_terrain: TileKind::Acid,
@@ -946,7 +959,7 @@ mod tests {
     ];
     let profile = BehaviorProfile::new(SPECS);
 
-    assert_eq!(profile.specs().len(), 14);
+    assert_eq!(profile.specs().len(), 15);
     assert!(matches!(
       profile.specs()[0],
       BehaviorSpec::Passive(PassiveModifier {
@@ -1188,6 +1201,16 @@ mod tests {
         BehaviorSpec::Alternate(AlternateAction::Reload),
         BehaviorSpec::Alternate(AlternateAction::FullReload {
           cost_cap: ASSAULT_SHOTGUN_ALT_RELOAD_CAP,
+        }),
+      ]
+    );
+    assert_eq!(
+      DOUBLE_SHOTGUN_BEHAVIOR.specs(),
+      &[
+        BehaviorSpec::Attack(AttackEffect::ProjectileCount(2)),
+        BehaviorSpec::Cost(ResourceCost::Ammo {
+          ammo_type: AmmoType::Shells,
+          amount: 2,
         }),
       ]
     );

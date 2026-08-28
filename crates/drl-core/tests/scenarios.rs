@@ -88,6 +88,54 @@ fn assert_bfg10k_volley_events(
   }
 }
 
+fn assert_double_shotgun_dual_shot_events(
+  events: &[GameEvent],
+  attacker_id: drl_protocol::EntityId,
+  target_id: drl_protocol::EntityId,
+) {
+  let mut attacks = Vec::new();
+  let mut damages = Vec::new();
+  for (index, event) in events.iter().enumerate() {
+    match event {
+      GameEvent::AttackResolved {
+        attacker_id: event_attacker,
+        target_id: event_target,
+        outcome,
+        is_ranged: true,
+      } if *event_attacker == attacker_id && *event_target == target_id => {
+        attacks.push((index, *outcome));
+      }
+      GameEvent::DamageApplied {
+        target_id: event_target,
+        amount,
+        ..
+      } if *event_target == target_id => damages.push((index, *amount)),
+      _ => {}
+    }
+  }
+
+  assert_eq!(
+    attacks.len(),
+    2,
+    "Double Shotgun must resolve two projectiles"
+  );
+  assert_eq!(
+    damages.len(),
+    1,
+    "the seeded dual-shot fixture must hit once"
+  );
+  let hit = attacks
+    .iter()
+    .find_map(|(index, outcome)| match outcome {
+      AttackOutcome::Hit { damage, .. } => Some((*index, *damage)),
+      _ => None,
+    })
+    .expect("the seeded dual-shot fixture must contain one hit");
+  assert_eq!(hit.1, 26, "the seeded dual-shot damage must remain stable");
+  assert_eq!(damages[0].1, hit.1);
+  assert_eq!(damages[0].0, hit.0 + 1);
+}
+
 fn assert_standard_bfg_schedule_event(
   events: &[GameEvent],
   attacker_id: drl_protocol::EntityId,
@@ -3823,7 +3871,6 @@ fn shotgun_reload_vertical_scenario_preserves_shells_and_replay() {
       .count(),
     2
   );
-
   let reload_index = events
     .iter()
     .position(|event| {
@@ -4193,11 +4240,11 @@ fn double_shotgun_vertical_scenario_preserves_shells_and_replay() {
   );
 
   let target = Position::new(7, 1);
-  let mut commands = vec![Command::AttackRanged(target); 2];
+  let mut commands = vec![Command::AttackRanged(target)];
   commands.push(Command::Reload);
   let (game, events, metrics, replay) = ScenarioRunner::run_commands(&scenario, &commands).unwrap();
   assert_eq!(metrics.outcome, RunOutcome::InProgress);
-  assert_eq!(metrics.turns_survived, 2);
+  assert_eq!(metrics.turns_survived, 1);
   assert_eq!(metrics.shots_fired, 2);
   assert_eq!(metrics.shots_hit, 1);
   assert_eq!(metrics.damage_dealt, 26);
@@ -4233,6 +4280,7 @@ fn double_shotgun_vertical_scenario_preserves_shells_and_replay() {
       .count(),
     2
   );
+  assert_double_shotgun_dual_shot_events(&events, player_id, target_id);
 
   let reload_index = events
     .iter()
