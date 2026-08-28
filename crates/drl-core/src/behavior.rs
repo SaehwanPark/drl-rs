@@ -478,6 +478,23 @@ const PISTOL_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
 /// Immutable typed profile for the current Pistol ordinary-fire policy.
 pub const PISTOL_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(PISTOL_BEHAVIOR_SPECS);
 
+/// Current Rust projectile count for an ordinary Rocket Launcher shot.
+pub const ROCKET_LAUNCHER_PROJECTILE_COUNT: u32 = 1;
+
+const ROCKET_LAUNCHER_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Attack(AttackEffect::ProjectileCount(
+    ROCKET_LAUNCHER_PROJECTILE_COUNT,
+  )),
+  BehaviorSpec::Cost(ResourceCost::Ammo {
+    ammo_type: AmmoType::Rocket,
+    amount: 1,
+  }),
+];
+
+/// Immutable typed profile for the current Rocket Launcher ordinary-fire policy.
+pub const ROCKET_LAUNCHER_BEHAVIOR: BehaviorProfile =
+  BehaviorProfile::new(ROCKET_LAUNCHER_BEHAVIOR_SPECS);
+
 /// Current Rust grid displacement for a surviving standard Shotgun hit.
 pub const SHOTGUN_KNOCKBACK_DISTANCE: u32 = 1;
 
@@ -1250,6 +1267,16 @@ mod tests {
         BehaviorSpec::Attack(AttackEffect::ProjectileCount(PISTOL_PROJECTILE_COUNT)),
         BehaviorSpec::Cost(ResourceCost::Ammo {
           ammo_type: AmmoType::Ammo9mm,
+          amount: 1,
+        }),
+      ]
+    );
+    assert_eq!(
+      ROCKET_LAUNCHER_BEHAVIOR.specs(),
+      &[
+        BehaviorSpec::Attack(AttackEffect::ProjectileCount(1)),
+        BehaviorSpec::Cost(ResourceCost::Ammo {
+          ammo_type: AmmoType::Rocket,
           amount: 1,
         }),
       ]
