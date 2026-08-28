@@ -481,6 +481,22 @@ const FRAG_SHOTGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
 pub const FRAG_SHOTGUN_BEHAVIOR: BehaviorProfile =
   BehaviorProfile::new(FRAG_SHOTGUN_BEHAVIOR_SPECS);
 
+/// Current Rust projectile count for an ordinary Railgun shot.
+pub const RAILGUN_PROJECTILE_COUNT: u32 = 1;
+/// Pinned per-projectile clip cost for an ordinary Railgun shot.
+pub const RAILGUN_SHOT_COST: u32 = 5;
+
+const RAILGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Attack(AttackEffect::ProjectileCount(RAILGUN_PROJECTILE_COUNT)),
+  BehaviorSpec::Cost(ResourceCost::Ammo {
+    ammo_type: AmmoType::Cell,
+    amount: RAILGUN_SHOT_COST,
+  }),
+];
+
+/// Immutable typed profile for the current Railgun ordinary-fire cost.
+pub const RAILGUN_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(RAILGUN_BEHAVIOR_SPECS);
+
 /// Current Rust projectile count for an ordinary Combat Pistol shot.
 pub const COMBAT_PISTOL_PROJECTILE_COUNT: u32 = 1;
 
@@ -1321,6 +1337,16 @@ mod tests {
         BehaviorSpec::Cost(ResourceCost::Ammo {
           ammo_type: AmmoType::Ammo9mm,
           amount: 2,
+        }),
+      ]
+    );
+    assert_eq!(
+      RAILGUN_BEHAVIOR.specs(),
+      &[
+        BehaviorSpec::Attack(AttackEffect::ProjectileCount(1)),
+        BehaviorSpec::Cost(ResourceCost::Ammo {
+          ammo_type: AmmoType::Cell,
+          amount: 5,
         }),
       ]
     );

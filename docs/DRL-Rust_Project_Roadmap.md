@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.222`
+Current project version: `0.2.223`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.222)
+## 3. Current Progress Summary (`VERSION` 0.2.223)
 
 ### Delivered Foundations
 
@@ -725,6 +725,12 @@ verification item uses explicit status semantics:
   replay metadata is rejected before execution. Full spread/falloff/knockback
   semantics, exact legacy timing/accuracy, runtime, and audiovisual parity
   remain open.
+- **M9 Railgun ordinary-fire cost (`0.2.223`):** The immutable
+  `RAILGUN_BEHAVIOR` profile records one ordered projectile and a five-cell
+  cost, and generic ranged execution now preflights that cost before mutation.
+  Gameplay semantics advance to `45`, so stale semantics-44 replay metadata is
+  rejected before execution. Ray/piercing routing, spread/falloff semantics,
+  exact legacy timing/accuracy, runtime, and audiovisual parity remain open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1300,6 +1306,11 @@ scripting.
   execution preflights the cost and preserves atomic below-cost rejection while
   full spread/falloff/knockback semantics, exact legacy timing/accuracy,
   runtime, and audiovisual parity remain open.
+- [x] Railgun has an immutable behavior profile for its current one-projectile
+  ordinary fire and five-cell cost; generic ranged execution preflights the
+  cost and preserves atomic below-cost rejection while ray/piercing routing,
+  spread/falloff semantics, exact legacy timing/accuracy, runtime, and
+  audiovisual parity remain open.
 - [x] Revenant's Launcher has an immutable behavior profile for its pinned
   exact-hit attack policy; dedicated combat execution remains authoritative and
   homing, projectile routing, delayed explosions, runtime, and audiovisual
