@@ -3,8 +3,9 @@
 **Domain:** alternate reload and ranged-fire mode
 **Milestone relevance:** M9 / Gate D behavior stress cases
 **Last updated:** 2026-08-25
-**Status:** Typed behavior-covered in DRL-Rust `0.2.128`; controlled legacy
-runtime parity remains `NOT_RUN`
+**Status:** Typed behavior-covered in DRL-Rust `0.2.128`, with an immutable
+behavior profile delivered in `0.2.209`; controlled legacy runtime parity
+remains `NOT_RUN`
 
 ## Evidence identity and scope
 

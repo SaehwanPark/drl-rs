@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.208`
+Current project version: `0.2.209`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Jackhammer Behavior Profile
+## 2. Active Implementation Slice: M9 — Grammaton Behavior Profile
 
 ### 2.1 Objective
 
-Carry the already-delivered Jackhammer burst/single fire-mode transition into
-an immutable typed behavior profile. The profile describes the evidence-backed
-policy without changing command handling, replay wire data, or runtime
-ownership.
+Carry the already-delivered Grammaton Single/Burst/Auto fire-mode transition
+into an immutable typed behavior profile. The profile describes the
+evidence-backed policy without changing command handling, replay wire data, or
+runtime ownership.
 
 ### 2.1a Scope and steering gate
 
@@ -40,30 +40,30 @@ ownership.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, Gate C catalog ownership, and Gate D callback behavior
   evidence remain closed for this contract-only slice.
-- **Observable outcome:** `JACKHAMMER_BEHAVIOR` exposes ordered typed
-  `AlternateAction::Fire` fragments for `WeaponFireMode::Single` and
-  `WeaponFireMode::Burst`, followed by a one-point `ResourceCost::Score`;
-  exact profile declaration order is asserted while the existing dedicated
-  transition remains unchanged.
+- **Observable outcome:** `GRAMMATON_BEHAVIOR` exposes ordered typed
+  `AlternateAction::Fire` fragments for `WeaponFireMode::Single`, `Burst`, and
+  `Auto`, followed by a `ResourceCost::Score` of `200`; exact profile
+  declaration order is asserted while the existing dedicated transition
+  remains unchanged.
 - **Gameplay/replay impact:** Gameplay semantics remain `41`;
   replay wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.207` to `0.2.208` for the
+  unchanged. Project version advances from `0.2.208` to `0.2.209` for the
   profile-only contract.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary
   and profiles; `drl-protocol`, MCP, render, audio, and browser boundaries remain
   unchanged. No new gameplay balance, command, event, or runtime dispatch
   surface is introduced in this slice.
-- **Evidence boundary:** Pinned Jackhammer mode evidence in
-  `docs/legacy-behavior/jackhammer-profile.md` plus the delivered transition
+- **Evidence boundary:** Pinned Grammaton mode evidence in
+  `docs/legacy-behavior/grammaton-profile.md` plus the delivered transition
   contract is authoritative. Controlled legacy runtime, browser capture, and
   audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** Spread/falloff, exact timing/accuracy, new command or callback
-  registries, gameplay balance changes, replay-file IO/migrations, runtime Lua,
-  unrelated protocol changes, and browser/audio/WebGPU parity.
+- **Non-goals:** Legacy accuracy equations, exact timing, new command or
+  callback registries, gameplay balance changes, replay-file IO/migrations,
+  runtime Lua, unrelated protocol changes, and browser/audio/WebGPU parity.
 
 ### 2.2 Why this slice is bounded
 
-The existing Jackhammer mode transition already has a dedicated deterministic
+The existing Grammaton mode transition already has a dedicated deterministic
 execution path. This slice adds only its immutable descriptive profile,
 keeping command validation and state mutation in the focused module. It does
 not add a generic dispatcher or alter mode policy, so the change stays within
@@ -2098,7 +2098,7 @@ transition. Its contract must:
   gameplay semantics `41`, replay schema, RNG, generator, and ruleset
   identities unchanged.
 
-### 2.7cd Current Jackhammer behavior-profile delivery target
+### 2.7cd Historical Jackhammer behavior-profile delivery target
 
 The bounded implementation target for this revision is an immutable profile
 for the already-delivered Jackhammer burst/single fire-mode transition. Its
@@ -2114,6 +2114,25 @@ contract must:
   audio, WebGPU, and controlled-legacy behavior unchanged or `NOT_RUN` where
   comparison evidence is unavailable;
 - [x] advance project version from `0.2.207` to `0.2.208` while keeping
+  gameplay semantics `41`, replay schema, RNG, generator, and ruleset
+  identities unchanged.
+
+### 2.7ce Current Grammaton behavior-profile delivery target
+
+The bounded implementation target for this revision is an immutable profile
+for the already-delivered Grammaton Single/Burst/Auto fire-mode transition. Its
+contract must:
+
+- [x] expose ordered typed `AlternateAction::Fire` fragments for
+  `WeaponFireMode::Single`, `Burst`, and `Auto`;
+- [x] preserve the 200-point score-count cost from the pinned callback while
+  retaining dedicated `GrammatonTransition` ownership;
+- [x] assert exact profile declaration order without adding a runtime command,
+  callback registry, or replay-wire field;
+- [x] keep legacy accuracy equations, exact timing, gameplay balance, runtime,
+  audio, WebGPU, and controlled-legacy behavior unchanged or `NOT_RUN` where
+  comparison evidence is unavailable;
+- [x] advance project version from `0.2.208` to `0.2.209` while keeping
   gameplay semantics `41`, replay schema, RNG, generator, and ruleset
   identities unchanged.
 
@@ -2298,6 +2317,11 @@ The `0.2.208` successor records the immutable `JACKHAMMER_BEHAVIOR` profile
 with ordered Single/Burst mode fragments and the one-point score-count cost.
 The dedicated transition remains authoritative; spread/falloff, exact timing,
 runtime, and audiovisual parity remain open.
+
+The `0.2.209` successor records the immutable `GRAMMATON_BEHAVIOR` profile
+with ordered Single/Burst/Auto mode fragments and the 200-point score-count
+cost. The dedicated transition remains authoritative; legacy accuracy
+equations, exact timing, runtime, and audiovisual parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity
