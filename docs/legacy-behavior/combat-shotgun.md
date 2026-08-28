@@ -1,5 +1,8 @@
 # Combat Shotgun reload and pump-action evidence
 
+Status: delivered typed reload behavior profile through `0.2.212`; controlled
+legacy runtime comparison and audiovisual parity remain `NOT_RUN`.
+
 ## Pinned source
 
 - Legacy repository: `/Users/saehwan/repos/doom-the-roughlike-original`
