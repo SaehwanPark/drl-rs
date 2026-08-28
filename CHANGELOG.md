@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.219]
+
+- Added the immutable `ROCKET_LAUNCHER_BEHAVIOR` profile for the current
+  one-projectile ordinary fire and one-rocket cost, preserving generic ranged
+  execution and existing replay semantics. Rocket-jump/explosion callbacks and
+  controlled runtime parity remain deferred.
+
 ## [0.2.218]
 
 - Added the immutable `PISTOL_BEHAVIOR` profile for the current

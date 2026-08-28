@@ -1274,9 +1274,7 @@ mod tests {
     assert_eq!(
       ROCKET_LAUNCHER_BEHAVIOR.specs(),
       &[
-        BehaviorSpec::Attack(AttackEffect::ProjectileCount(
-          ROCKET_LAUNCHER_PROJECTILE_COUNT,
-        )),
+        BehaviorSpec::Attack(AttackEffect::ProjectileCount(1)),
         BehaviorSpec::Cost(ResourceCost::Ammo {
           ammo_type: AmmoType::Rocket,
           amount: 1,
