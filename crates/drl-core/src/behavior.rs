@@ -359,6 +359,21 @@ const NULL_POINTER_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
 pub const NULL_POINTER_BEHAVIOR: BehaviorProfile =
   BehaviorProfile::new(NULL_POINTER_BEHAVIOR_SPECS);
 
+const BFG10K_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Attack(AttackEffect::ExactHit),
+  // The current Rust path emits one projectile; the legacy five-projectile
+  // volley remains an explicitly deferred behavior rather than an implicit
+  // interpretation of the catalog scalar.
+  BehaviorSpec::Attack(AttackEffect::ProjectileCount(1)),
+  BehaviorSpec::Cost(ResourceCost::Ammo {
+    ammo_type: AmmoType::Cell,
+    amount: 5,
+  }),
+];
+
+/// Immutable typed profile for the current BFG 10K one-shot behavior.
+pub const BFG10K_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(BFG10K_BEHAVIOR_SPECS);
+
 /// Medical Powerarmor begins repair only while durability is strictly above
 /// the legacy callback's `20`-point guard.
 pub const MEDICAL_REPAIR_MIN_DURABILITY_EXCLUSIVE: u32 = 20;
@@ -765,6 +780,17 @@ mod tests {
         BehaviorSpec::Hit(HitEffect::ScheduleExplosion {
           delay: NULL_POINTER_EXPLOSION_DELAY,
           radius: NULL_POINTER_EXPLOSION_RADIUS,
+        }),
+      ]
+    );
+    assert_eq!(
+      BFG10K_BEHAVIOR.specs(),
+      &[
+        BehaviorSpec::Attack(AttackEffect::ExactHit),
+        BehaviorSpec::Attack(AttackEffect::ProjectileCount(1)),
+        BehaviorSpec::Cost(ResourceCost::Ammo {
+          ammo_type: AmmoType::Cell,
+          amount: 5,
         }),
       ]
     );

@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.194`
+Current project version: `0.2.195`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -35,6 +35,11 @@ invariants:
   network, or MCP libraries.
 - **No Runtime Scripting**: Lua is treated as build-time reference and
   conversion evidence only; no Lua runtime exists in the WASM browser bundle.
+
+Typed behavior profiles remain immutable compile-time descriptions. The BFG 10K
+profile records the current exact-hit, one-projectile, five-cell one-shot
+boundary while its dedicated runtime command path remains the execution
+authority; the legacy five-projectile volley is not inferred from the profile.
 
 ---
 

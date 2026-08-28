@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.194`
+Current project version: `0.2.195`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Null Pointer Target-Branch Behavior Profile
+## 2. Active Implementation Slice: M9 — BFG 10K Behavior Profile
 
 ### 2.1 Objective
 
-Extend the compile-time typed behavior vocabulary with an immutable Null Pointer
-profile that describes its deterministic target selection, boss/non-boss
-score-count branch, and deferred explosion schedule without introducing runtime
-callbacks, string-keyed dispatch, or gameplay changes.
+Extend the compile-time typed behavior vocabulary with an immutable BFG 10K
+profile that composes the current exact-hit, one-projectile, and five-cell
+one-shot policies without introducing runtime callbacks, string-keyed dispatch,
+or gameplay changes.
 
 ### 2.1a Scope and steering gate
 
@@ -40,31 +40,31 @@ callbacks, string-keyed dispatch, or gameplay changes.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, Gate C catalog ownership, and Gate D callback behavior
   evidence remain closed for this contract-only slice.
-- **Observable outcome:** `drl-core` exposes a typed `TargetProperty::IsBoss`
-  score branch and an immutable `NULL_POINTER_BEHAVIOR` profile composed from
-  deterministic target-selection, target-score-cost, and deferred-explosion
+- **Observable outcome:** `drl-core` exposes an immutable `BFG10K_BEHAVIOR`
+  profile composed from exact-hit, one-projectile, and five-cell cell-cost
   specs. Exact profile content and declaration order are unit-tested alongside
   the existing stress profiles.
 - **Gameplay/replay impact:** Gameplay semantics remain `37`; replay wire
   schema, RNG, generator, and ruleset identities remain unchanged. Project
-  version advances from `0.2.193` to `0.2.194` for the new typed profile and
+  version advances from `0.2.194` to `0.2.195` for the new typed profile and
   executable vocabulary tests.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary
   and profiles; protocol, MCP, render, audio, and browser layers receive no new
   gameplay balance or dispatch surface in this slice.
-- **Evidence boundary:** Pinned Null Pointer evidence at revision
-  `17d9be1204751899b2d69d8d3a2dde247bd0cc5c` in
-  `docs/legacy-behavior/null-pointer.md` is authoritative. Controlled legacy
-  runtime and audiovisual comparisons remain `NOT_RUN`.
+- **Evidence boundary:** Pinned BFG 10K exact-hit and shot-cost evidence at
+  revision `17d9be1204751899b2d8d3a2dde247bd0cc5c` in
+  `docs/legacy-behavior/bfg10k-exact-hit.md` and
+  `docs/legacy-behavior/bfg10k-shot-cost.md` is authoritative. Controlled
+  legacy runtime and audiovisual comparisons remain `NOT_RUN`.
 - **Non-goals:** Reworking existing behavior transitions, adding new gameplay
   effects, replay-file IO/migrations, runtime Lua, generic callback/event
   registries, and browser/audio/WebGPU parity.
 
 ### 2.2 Why this slice is bounded
 
-The Null Pointer transition already has an explicit Rust state machine. This
-slice adds only the missing declarative target-branch profile: small enums and
-an immutable fragment list whose payloads are compiler-checked and directly
+The BFG 10K transition already has explicit Rust exact-hit and shot-cost
+behavior. This slice adds only the missing declarative profile: a small
+immutable fragment list whose payloads are compiler-checked and directly
 testable. It does not reinterpret the transition or add a runtime dispatcher,
 so no replay or gameplay behavior changes.
 
@@ -1834,7 +1834,7 @@ stress cases. Its contract must:
   preserving their existing runtime transitions and recording runtime,
   audiovisual, and controlled-legacy comparisons as `NOT_RUN`.
 
-### 2.7bp Current Null Pointer behavior-profile delivery target
+### 2.7bp Previous Null Pointer behavior-profile delivery target
 
 The bounded implementation target for this revision is an immutable typed
 profile for Charch's Null Pointer on-hit behavior. Its contract must:
@@ -1847,6 +1847,22 @@ profile for Charch's Null Pointer on-hit behavior. Its contract must:
   claiming delayed area-damage geometry or runtime parity;
 - [x] assert exact profile content and declaration order while preserving the
   existing dedicated `NullPointerHitTransition` runtime state machine;
+- [x] keep gameplay semantics, replay schema, RNG, protocol, MCP, browser,
+  audio, WebGPU, and controlled-legacy behavior unchanged or `NOT_RUN` where
+  comparison evidence is unavailable.
+
+### 2.7bq Current BFG 10K behavior-profile delivery target
+
+The bounded implementation target for this revision is an immutable typed
+profile for the current BFG 10K one-shot path. Its contract must:
+
+- [x] represent the delivered exact-hit policy as a typed attack effect;
+- [x] represent the current Rust one-projectile boundary while leaving the
+  legacy five-projectile volley explicitly deferred;
+- [x] represent the delivered five-cell cell-ammunition cost as a typed
+  resource cost;
+- [x] assert exact profile content and declaration order while preserving the
+  existing dedicated ranged-command runtime path;
 - [x] keep gameplay semantics, replay schema, RNG, protocol, MCP, browser,
   audio, WebGPU, and controlled-legacy behavior unchanged or `NOT_RUN` where
   comparison evidence is unavailable.
