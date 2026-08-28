@@ -6852,16 +6852,21 @@ mod tests {
       .expect("static target")
       .id();
     let target = Position::new(7, 1);
-    let mut commands = vec![Command::AttackRanged(target); 2];
+    let mut commands = vec![Command::AttackRanged(target)];
     commands.push(Command::Reload);
     let ranged_attack = drl_render::EffectSpan {
       effect: drl_render::PresentationEffect::RangedAttack,
       start_tick: 0,
       duration_ticks: 2,
     };
+    let ranged_attack_follow_up = drl_render::EffectSpan {
+      effect: drl_render::PresentationEffect::RangedAttack,
+      start_tick: 2,
+      duration_ticks: 2,
+    };
     let hit = drl_render::EffectSpan {
       effect: drl_render::PresentationEffect::Hit,
-      start_tick: 2,
+      start_tick: 4,
       duration_ticks: 1,
     };
     let reload = drl_render::EffectSpan {
@@ -6869,7 +6874,10 @@ mod tests {
       start_tick: 0,
       duration_ticks: 3,
     };
-    let expected_effects = [vec![ranged_attack], vec![ranged_attack, hit], vec![reload]];
+    let expected_effects = [
+      vec![ranged_attack, ranged_attack_follow_up, hit],
+      vec![reload],
+    ];
     let mut direct = initial.clone();
     let mut browser = BrowserSession::from_game(initial);
     let mut all_events = Vec::new();
@@ -6955,6 +6963,38 @@ mod tests {
         .count(),
       2
     );
+    let mut attacks = Vec::new();
+    let mut damages = Vec::new();
+    for (index, event) in all_events.iter().enumerate() {
+      match event {
+        drl_protocol::GameEvent::AttackResolved {
+          attacker_id: event_attacker,
+          target_id: event_target,
+          outcome,
+          is_ranged: true,
+        } if *event_attacker == player_id && *event_target == target_id => {
+          attacks.push((index, *outcome));
+        }
+        drl_protocol::GameEvent::DamageApplied {
+          target_id: event_target,
+          amount,
+          ..
+        } if *event_target == target_id => damages.push((index, *amount)),
+        _ => {}
+      }
+    }
+    assert_eq!(attacks.len(), 2);
+    assert_eq!(damages.len(), 1);
+    let hit = attacks
+      .iter()
+      .find_map(|(index, outcome)| match outcome {
+        drl_protocol::AttackOutcome::Hit { damage, .. } => Some((*index, *damage)),
+        _ => None,
+      })
+      .expect("the seeded dual-shot fixture must contain one hit");
+    assert_eq!(hit.1, 26);
+    assert_eq!(damages[0].1, hit.1);
+    assert_eq!(damages[0].0, hit.0 + 1);
     let reload_index = all_events
       .iter()
       .position(|event| {

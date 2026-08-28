@@ -393,6 +393,7 @@ impl Item {
   pub(crate) const fn projectile_count(&self) -> u32 {
     match self.archetype {
       ItemArchetype::Bfg10k => 5,
+      ItemArchetype::DoubleShotgun => 2,
       _ => match &self.kind {
         ItemKind::Weapon(properties) => properties.shot_count(),
         _ => 1,
@@ -1056,6 +1057,7 @@ mod tests {
   #[test]
   fn bfg10k_has_five_projectiles_without_changing_fire_mode_counts() {
     assert_eq!(Item::bfg10k(ItemId::new(8)).projectile_count(), 5);
+    assert_eq!(Item::double_shotgun(ItemId::new(11)).projectile_count(), 2);
     assert_eq!(Item::pistol(ItemId::new(9)).projectile_count(), 1);
     assert_eq!(
       Item::grammaton_beretta(ItemId::new(10)).projectile_count(),
