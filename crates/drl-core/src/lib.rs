@@ -63,9 +63,9 @@ pub use behavior::{
   MedicalRepairState, NUCLEAR_BFG_RECHARGE_AMOUNT, NUCLEAR_BFG_RECHARGE_DELAY,
   NUCLEAR_BFG_RECHARGE_TICK, NUCLEAR_BFG9000_BEHAVIOR, NUCLEAR_PLASMA_BEHAVIOR,
   NUCLEAR_PLASMA_RECHARGE_AMOUNT, NUCLEAR_PLASMA_RECHARGE_DELAY, NUCLEAR_PLASMA_RECHARGE_TICK,
-  NULL_POINTER_BEHAVIOR, PassiveModifier, PassiveStat, PeriodicEffect, ResourceCost,
-  SUBTLE_KNIFE_BEHAVIOR, StatusCost, StatusEffect, TRIGUN_BEHAVIOR, TargetOrder, TargetProperty,
-  TargetSelectionPolicy, TargetSource, WeaponRechargeOutcome, WeaponRechargePolicy,
+  NULL_POINTER_BEHAVIOR, PassiveModifier, PassiveStat, PeriodicEffect, REVENANTS_LAUNCHER_BEHAVIOR,
+  ResourceCost, SUBTLE_KNIFE_BEHAVIOR, StatusCost, StatusEffect, TRIGUN_BEHAVIOR, TargetOrder,
+  TargetProperty, TargetSelectionPolicy, TargetSource, WeaponRechargeOutcome, WeaponRechargePolicy,
   WeaponRechargeState,
 };
 pub use combat::CombatResolver;

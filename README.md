@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.212`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.213`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -84,7 +84,7 @@ replays, and regression testing.
     count-sensitive reconstruction, and presentation policy remain explicit.
   - The typed behavior vocabulary includes immutable Acid Spitter, Grammaton,
     Jackhammer, Lava Armor, Malek's Armor, Blaster, Nuclear Plasma Rifle,
-    Missile Launcher, Combat Shotgun,
+    Missile Launcher, Combat Shotgun, Revenant's Launcher,
     standard BFG 9000, Nuclear BFG 9000, and BFG 10K profiles for typed
     periodic/alternate, exact-hit, projectile-count, ammunition-cost, and
     delayed-explosion schedule boundaries (Acid Spitter Acid-to-Water reload,
@@ -94,7 +94,8 @@ replays, and regression testing.
     Malek's Armor durability recharge delay 50/cadence 5/amount 1; Missile
     Launcher ordinary single-rocket reload plus full-deficit reload capped at
     2,500 score-count units; Combat Shotgun ordinary single-shell reload plus
-    full-deficit reload capped at 2,500 score-count units; Blaster
+    full-deficit reload capped at 2,500 score-count units; Revenant's Launcher
+    exact-hit policy; Blaster
     recharge delay 30/cadence 10/amount 1; Nuclear Plasma recharge delay
     40/cadence 2/amount 1; standard and Nuclear BFG 9000 delay 33/radius
     8/knockback 16; BFG 10K delay 25/radius 2/knockback 16);
@@ -231,9 +232,10 @@ replays, and regression testing.
     own recharge and overload behavior; its typed direct-target hit now emits
     a delayed-explosion schedule event; explosion geometry, splash, projectile
     routing, NukeRun, runtime, and audiovisual parity remain open;
-    Revenant’s Launcher now shares the typed exact-hit policy while retaining
-    its one-rocket clip and damage RNG; homing, projectile routing, delayed
-    explosions, runtime, and audiovisual parity remain open;
+    Revenant’s Launcher now shares the typed exact-hit policy and immutable
+    behavior profile while retaining its one-rocket clip and damage RNG;
+    homing, projectile routing, delayed explosions, runtime, and audiovisual
+    parity remain open;
     Nuclear BFG 9000 now consumes its typed forty-cell shot cost for each
     valid ordinary fire while retaining exact-hit, recharge, and overload
     behavior; projectile routing, explosions, NukeRun, and other shot costs
