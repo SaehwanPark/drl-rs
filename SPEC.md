@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.216`
+Current project version: `0.2.217`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Double Shotgun Dual-Shot Profile
+## 2. Active Implementation Slice: M9 — Standard Shotgun Knockback Profile
 
 ### 2.1 Objective
 
-Carry the pinned Double Shotgun dual-shot policy into deterministic ranged
-execution and an immutable typed behavior profile. Each accepted fire emits
-two ordered projectiles and consumes two shells without changing command
-handling, replay wire shape, or runtime ownership outside the ranged path.
+Carry the already-delivered standard Shotgun one-cell knockback policy into an
+immutable typed behavior profile. The profile describes the current hit effect
+and one-shell cost without changing command handling, replay wire shape, or
+runtime ownership.
 
 ### 2.1a Scope and steering gate
 
@@ -40,24 +40,23 @@ handling, replay wire shape, or runtime ownership outside the ranged path.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, Gate C catalog ownership, and Gate D callback behavior
   evidence remain closed for this contract-only slice.
-- **Observable outcome:** `DOUBLE_SHOTGUN_BEHAVIOR` exposes ordered typed
-  `AttackEffect::ProjectileCount(2)` and
-  `ResourceCost::Ammo { ammo_type: Shells, amount: 2 }` fragments; two
-  `AttackResolved` events and their deterministic damage outcomes are asserted
-  per accepted fire.
-- **Gameplay/replay impact:** Gameplay semantics advance from `41` to `42`;
+- **Observable outcome:** `SHOTGUN_BEHAVIOR` exposes ordered typed
+  `HitEffect::Knockback { distance: 1 }` and
+  `ResourceCost::Ammo { ammo_type: Shells, amount: 1 }` fragments; the exact
+  profile order is asserted alongside the existing knockback scenario evidence.
+- **Gameplay/replay impact:** Gameplay semantics remain `42`;
   replay wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.215` to `0.2.216` for the
-  dual-shot contract.
+  unchanged. Project version advances from `0.2.216` to `0.2.217` for the
+  profile-only contract.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary
   and profiles; `drl-protocol`, MCP, render, audio, and browser boundaries remain
   unchanged. No new gameplay balance, command, event, or runtime dispatch
   surface is introduced in this slice.
-- **Evidence boundary:** Pinned Double Shotgun evidence in
-  `docs/legacy-behavior/double-shotgun-profile.md` plus the deterministic
-  ranged execution contract is authoritative. Controlled legacy runtime,
-  browser capture, and audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** Spread/falloff, exact legacy timing, and audiovisual
+- **Evidence boundary:** Pinned standard Shotgun evidence in
+  `docs/legacy-behavior/shotgun-knockback-profile.md` plus the delivered
+  collision-aware knockback contract is authoritative. Controlled legacy
+  runtime, browser capture, and audiovisual comparisons remain `NOT_RUN`.
+- **Non-goals:** Exact legacy force/timing, spread/falloff, and audiovisual
   presentation comparison,
   new command or callback registries, gameplay balance changes, replay-file
   IO/migrations, runtime Lua, unrelated protocol changes, and browser/audio/
@@ -65,11 +64,11 @@ handling, replay wire shape, or runtime ownership outside the ranged path.
 
 ### 2.2 Why this slice is bounded
 
-The existing ranged command path already performs complete preflight and
-transactional clip validation. This slice makes the pinned Double Shotgun shot
-count explicit in that path and records the same policy in an immutable profile;
-it does not add a generic dispatcher or alter RNG sampling, so replay behavior
-stays deterministic and reviewable.
+The existing ranged command path already performs complete preflight,
+transactional clip validation, and collision-aware one-cell knockback. This
+slice records that delivered policy in an immutable profile; it does not add a
+generic dispatcher or alter RNG sampling, so replay behavior stays deterministic
+and reviewable.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -2256,7 +2255,7 @@ its ordinary and alternate/full reload transitions. Its contract must:
   gameplay semantics `41`, replay schema, RNG, generator, and ruleset
   identities unchanged.
 
-### 2.7cl Current Double Shotgun dual-shot delivery target
+### 2.7cl Historical Double Shotgun dual-shot delivery target
 
 The bounded implementation target for this revision is deterministic
 two-projectile Double Shotgun fire plus its immutable typed behavior profile.
@@ -2274,6 +2273,24 @@ Its contract must:
 - [x] advance project version from `0.2.215` to `0.2.216` and gameplay
   semantics from `41` to `42`, preserving replay schema, RNG, generator, and
   ruleset identities.
+
+### 2.7cm Current Standard Shotgun knockback profile delivery target
+
+The bounded implementation target for this revision is an immutable profile
+for the already-delivered standard Shotgun one-cell knockback hit and shell
+cost. Its contract must:
+
+- [x] expose ordered typed `HitEffect::Knockback { distance: 1 }` and
+  `ResourceCost::Ammo { ammo_type: Shells, amount: 1 }` fragments;
+- [x] retain generic ranged execution ownership for target validation, damage,
+  collision-aware displacement, and transactional rejection behavior;
+- [x] assert exact profile declaration order without adding a command, callback
+  registry, replay-wire field, or gameplay semantics change;
+- [x] keep exact legacy force/timing, spread/falloff, controlled runtime, and
+  audiovisual parity `NOT_RUN` where comparison evidence is unavailable;
+- [x] advance project version from `0.2.216` to `0.2.217` while keeping
+  gameplay semantics `42`, replay schema, RNG, generator, and ruleset
+  identities unchanged.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
@@ -2496,6 +2513,10 @@ presentation, runtime, and audiovisual parity remain open.
 The `0.2.216` successor records the immutable `DOUBLE_SHOTGUN_BEHAVIOR`
 profile and deterministic two-projectile/two-shell ranged fire. Spread/falloff,
 exact timing, controlled legacy runtime, and audiovisual parity remain open.
+
+The `0.2.217` successor records the immutable `SHOTGUN_BEHAVIOR` profile for
+the delivered one-cell knockback hit and one-shell cost. Exact legacy force and
+timing, spread/falloff, controlled runtime, and audiovisual parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity

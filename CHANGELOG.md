@@ -3,6 +3,12 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.217]
+
+- Added the immutable `SHOTGUN_BEHAVIOR` profile for the current one-cell
+  knockback hit and one-shell ranged cost, preserving generic collision-aware
+  execution and existing replay semantics.
+
 ## [0.2.216]
 
 - Double Shotgun fire now resolves its pinned two-projectile dual-shot policy,

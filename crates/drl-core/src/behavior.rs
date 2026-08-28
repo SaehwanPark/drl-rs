@@ -464,6 +464,22 @@ const DOUBLE_SHOTGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
 pub const DOUBLE_SHOTGUN_BEHAVIOR: BehaviorProfile =
   BehaviorProfile::new(DOUBLE_SHOTGUN_BEHAVIOR_SPECS);
 
+/// Current Rust grid displacement for a surviving standard Shotgun hit.
+pub const SHOTGUN_KNOCKBACK_DISTANCE: u32 = 1;
+
+const SHOTGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Hit(HitEffect::Knockback {
+    distance: SHOTGUN_KNOCKBACK_DISTANCE,
+  }),
+  BehaviorSpec::Cost(ResourceCost::Ammo {
+    ammo_type: AmmoType::Shells,
+    amount: 1,
+  }),
+];
+
+/// Immutable typed profile for the current standard Shotgun hit policy.
+pub const SHOTGUN_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(SHOTGUN_BEHAVIOR_SPECS);
+
 const BFG9000_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
   BehaviorSpec::Attack(AttackEffect::ExactHit),
   BehaviorSpec::Attack(AttackEffect::ProjectileCount(1)),
@@ -1211,6 +1227,18 @@ mod tests {
         BehaviorSpec::Cost(ResourceCost::Ammo {
           ammo_type: AmmoType::Shells,
           amount: 2,
+        }),
+      ]
+    );
+    assert_eq!(
+      SHOTGUN_BEHAVIOR.specs(),
+      &[
+        BehaviorSpec::Hit(HitEffect::Knockback {
+          distance: SHOTGUN_KNOCKBACK_DISTANCE,
+        }),
+        BehaviorSpec::Cost(ResourceCost::Ammo {
+          ammo_type: AmmoType::Shells,
+          amount: 1,
         }),
       ]
     );

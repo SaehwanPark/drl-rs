@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.216`
+Current project version: `0.2.217`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -46,9 +46,10 @@ typed periodic-recharge fragment; Missile Launcher records its typed ordinary
 single-rocket reload and capped full-deficit reload fragments; Combat Shotgun
 records its typed pump-only chamber action (200 units), ordinary single-shell
 reload, and capped full-deficit reload fragments; Double Shotgun records its
-typed two-projectile dual-shot and two-shell ammo-cost fragments; Assault
-Shotgun records its typed ordinary single-shell reload and capped full-deficit
-reload fragments;
+typed two-projectile dual-shot and two-shell ammo-cost fragments; Standard
+Shotgun records its typed one-cell knockback hit and one-shell ammo-cost
+fragments; Assault Shotgun records its typed ordinary single-shell reload and
+capped full-deficit reload fragments;
 Revenant's Launcher records its typed
 exact-hit attack fragment;
 Nuclear Plasma records its typed
@@ -209,6 +210,9 @@ Presentation Boundary
     Double Shotgun's immutable profile records the typed two-projectile count
     and two-shell cost; generic ranged execution remains responsible for target
     validation, damage RNG, event ordering, and rejection atomicity.
+    Standard Shotgun's immutable profile records the current one-cell
+    knockback hit and one-shell cost; generic ranged execution remains
+    responsible for collision-aware displacement and transactional validation.
     Assault Shotgun's immutable profile records the ordered reload fragments;
     its dedicated planner remains responsible for reserve, deficit, cost, and
     transactional validation.
