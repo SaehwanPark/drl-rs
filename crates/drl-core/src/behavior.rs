@@ -145,8 +145,12 @@ pub enum HitEffect {
   },
   /// Apply deterministic displacement.
   Knockback { distance: u32 },
-  /// Schedule a typed delayed explosion.
-  ScheduleExplosion { delay: u32, radius: u32 },
+  /// Schedule a typed delayed explosion with optional knockback metadata.
+  ScheduleExplosion {
+    delay: u32,
+    radius: u32,
+    knockback: Option<u32>,
+  },
   /// Apply a target-dependent score cost.
   ScoreCost { amount: i32 },
   /// Apply a score branch selected by one explicit target property.
@@ -352,6 +356,7 @@ const NULL_POINTER_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
   BehaviorSpec::Hit(HitEffect::ScheduleExplosion {
     delay: NULL_POINTER_EXPLOSION_DELAY,
     radius: NULL_POINTER_EXPLOSION_RADIUS,
+    knockback: None,
   }),
 ];
 
@@ -359,10 +364,22 @@ const NULL_POINTER_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
 pub const NULL_POINTER_BEHAVIOR: BehaviorProfile =
   BehaviorProfile::new(NULL_POINTER_BEHAVIOR_SPECS);
 
+/// Pinned BFG 10K delayed explosion interval.
+pub const BFG10K_EXPLOSION_DELAY: u32 = 25;
+/// Pinned BFG 10K delayed explosion radius.
+pub const BFG10K_EXPLOSION_RADIUS: u32 = 2;
+/// Pinned BFG 10K delayed explosion knockback payload.
+pub const BFG10K_EXPLOSION_KNOCKBACK: u32 = 16;
+
 const BFG10K_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
   BehaviorSpec::Attack(AttackEffect::ExactHit),
   // Scatter and projectile routing remain separate from the typed count.
   BehaviorSpec::Attack(AttackEffect::ProjectileCount(5)),
+  BehaviorSpec::Hit(HitEffect::ScheduleExplosion {
+    delay: BFG10K_EXPLOSION_DELAY,
+    radius: BFG10K_EXPLOSION_RADIUS,
+    knockback: Some(BFG10K_EXPLOSION_KNOCKBACK),
+  }),
   BehaviorSpec::Cost(ResourceCost::Ammo {
     ammo_type: AmmoType::Cell,
     amount: 5,
@@ -809,6 +826,7 @@ mod tests {
         BehaviorSpec::Hit(HitEffect::ScheduleExplosion {
           delay: NULL_POINTER_EXPLOSION_DELAY,
           radius: NULL_POINTER_EXPLOSION_RADIUS,
+          knockback: None,
         }),
       ]
     );
@@ -817,6 +835,11 @@ mod tests {
       &[
         BehaviorSpec::Attack(AttackEffect::ExactHit),
         BehaviorSpec::Attack(AttackEffect::ProjectileCount(5)),
+        BehaviorSpec::Hit(HitEffect::ScheduleExplosion {
+          delay: BFG10K_EXPLOSION_DELAY,
+          radius: BFG10K_EXPLOSION_RADIUS,
+          knockback: Some(BFG10K_EXPLOSION_KNOCKBACK),
+        }),
         BehaviorSpec::Cost(ResourceCost::Ammo {
           ammo_type: AmmoType::Cell,
           amount: 5,

@@ -2039,6 +2039,7 @@ mod tests {
   ) {
     let mut attacks = Vec::new();
     let mut damages = Vec::new();
+    let mut schedules = Vec::new();
     for (index, event) in events.iter().enumerate() {
       match event {
         drl_protocol::GameEvent::AttackResolved {
@@ -2054,6 +2055,15 @@ mod tests {
           amount,
           ..
         } if *event_target == target_id => damages.push((index, *amount)),
+        drl_protocol::GameEvent::Bfg10kExplosionScheduled {
+          entity_id,
+          target_id: event_target,
+          delay,
+          radius,
+          knockback,
+        } if *entity_id == attacker_id && *event_target == target_id => {
+          schedules.push((index, *delay, *radius, *knockback));
+        }
         _ => {}
       }
     }
@@ -2075,11 +2085,29 @@ mod tests {
         .collect::<Vec<_>>(),
       "each projectile's resolved damage must be applied in order"
     );
-    for ((attack_index, _), (damage_index, _)) in attacks.iter().zip(damages.iter()) {
+    assert_eq!(
+      schedules.len(),
+      5,
+      "BFG 10K volley must schedule five delayed explosions"
+    );
+    assert!(
+      schedules
+        .iter()
+        .all(|(_, delay, radius, knockback)| (*delay, *radius, *knockback) == (25, 2, 16)),
+      "each BFG 10K schedule must preserve delay 25, radius 2, and knockback 16"
+    );
+    for (((attack_index, _), (damage_index, _)), (schedule_index, _, _, _)) in
+      attacks.iter().zip(damages.iter()).zip(schedules.iter())
+    {
       assert_eq!(
         *damage_index,
         *attack_index + 1,
         "each BFG 10K attack must be followed immediately by its damage event"
+      );
+      assert_eq!(
+        *schedule_index,
+        *damage_index + 1,
+        "each BFG 10K damage event must be followed immediately by its schedule"
       );
     }
   }

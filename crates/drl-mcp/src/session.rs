@@ -1144,6 +1144,23 @@ pub fn game_event_to_json(event: &GameEvent) -> JsonValue {
       map.insert("radius".to_string(), JsonValue::from(*radius));
       map.insert("damage".to_string(), JsonValue::from(*damage));
     }
+    GameEvent::Bfg10kExplosionScheduled {
+      entity_id,
+      target_id,
+      delay,
+      radius,
+      knockback,
+    } => {
+      map.insert(
+        "type".to_string(),
+        JsonValue::from("Bfg10kExplosionScheduled"),
+      );
+      map.insert("entity_id".to_string(), JsonValue::from(entity_id.as_u64()));
+      map.insert("target_id".to_string(), JsonValue::from(target_id.as_u64()));
+      map.insert("delay".to_string(), JsonValue::from(*delay));
+      map.insert("radius".to_string(), JsonValue::from(*radius));
+      map.insert("knockback".to_string(), JsonValue::from(*knockback));
+    }
     GameEvent::NukeActivated {
       level_id,
       countdown,
@@ -1694,6 +1711,7 @@ mod tests {
   ) {
     let mut attacks = Vec::new();
     let mut damages = Vec::new();
+    let mut schedules = Vec::new();
     for (index, event) in events.iter().enumerate() {
       match event {
         GameEvent::AttackResolved {
@@ -1709,6 +1727,15 @@ mod tests {
           amount,
           ..
         } if *event_target == target_id => damages.push((index, *amount)),
+        GameEvent::Bfg10kExplosionScheduled {
+          entity_id,
+          target_id: event_target,
+          delay,
+          radius,
+          knockback,
+        } if *entity_id == attacker_id && *event_target == target_id => {
+          schedules.push((index, *delay, *radius, *knockback));
+        }
         _ => {}
       }
     }
@@ -1730,11 +1757,29 @@ mod tests {
         .collect::<Vec<_>>(),
       "each projectile's resolved damage must be applied in order"
     );
-    for ((attack_index, _), (damage_index, _)) in attacks.iter().zip(damages.iter()) {
+    assert_eq!(
+      schedules.len(),
+      5,
+      "BFG 10K volley must schedule five delayed explosions"
+    );
+    assert!(
+      schedules
+        .iter()
+        .all(|(_, delay, radius, knockback)| (*delay, *radius, *knockback) == (25, 2, 16)),
+      "each BFG 10K schedule must preserve delay 25, radius 2, and knockback 16"
+    );
+    for (((attack_index, _), (damage_index, _)), (schedule_index, _, _, _)) in
+      attacks.iter().zip(damages.iter()).zip(schedules.iter())
+    {
       assert_eq!(
         *damage_index,
         *attack_index + 1,
         "each BFG 10K attack must be followed immediately by its damage event"
+      );
+      assert_eq!(
+        *schedule_index,
+        *damage_index + 1,
+        "each BFG 10K damage event must be followed immediately by its schedule"
       );
     }
   }
@@ -1773,6 +1818,29 @@ mod tests {
         .and_then(JsonValue::as_i64),
       Some(3)
     );
+  }
+
+  #[test]
+  fn bfg10k_explosion_schedule_event_projects_to_mcp_json() {
+    let value = game_event_to_json(&GameEvent::Bfg10kExplosionScheduled {
+      entity_id: drl_protocol::EntityId::new(1),
+      target_id: drl_protocol::EntityId::new(2),
+      delay: 25,
+      radius: 2,
+      knockback: 16,
+    });
+    let JsonValue::Object(map) = value else {
+      panic!("event projection must be an object");
+    };
+    assert_eq!(
+      map.get("type").and_then(JsonValue::as_str),
+      Some("Bfg10kExplosionScheduled")
+    );
+    assert_eq!(map.get("entity_id").and_then(JsonValue::as_i64), Some(1));
+    assert_eq!(map.get("target_id").and_then(JsonValue::as_i64), Some(2));
+    assert_eq!(map.get("delay").and_then(JsonValue::as_i64), Some(25));
+    assert_eq!(map.get("radius").and_then(JsonValue::as_i64), Some(2));
+    assert_eq!(map.get("knockback").and_then(JsonValue::as_i64), Some(16));
   }
 
   #[test]

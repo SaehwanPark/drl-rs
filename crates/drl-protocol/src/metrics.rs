@@ -145,6 +145,7 @@ impl EpisodeMetrics {
       | GameEvent::JackhammerFireModeChanged { .. }
       | GameEvent::NullPointerHit { .. }
       | GameEvent::NullPointerExplosionScheduled { .. }
+      | GameEvent::Bfg10kExplosionScheduled { .. }
       | GameEvent::NukeActivated { .. }
       | GameEvent::LevelNuked { .. }
       | GameEvent::ActorKnockedBack { .. }

@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.200`
+Current project version: `0.2.201`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.200)
+## 3. Current Progress Summary (`VERSION` 0.2.201)
 
 ### Delivered Foundations
 
@@ -603,6 +603,12 @@ verification item uses explicit status semantics:
   MCP, and BrowserSession/direct-core evidence preserve state, observations,
   event ordering, and determinism; scatter, projectile routing, explosions,
   chainfire, runtime, and audiovisual parity remain explicitly open.
+- **M9 BFG 10K explosion schedule metadata (`0.2.201`):** Each direct-target
+  volley hit now emits one ordered `Bfg10kExplosionScheduled` event carrying the
+  pinned delay `25`, radius `2`, and knockback `16` payload. Scenario/replay,
+  MCP, and BrowserSession boundary evidence preserve event ordering and
+  determinism; explosion geometry, splash damage, knockback application,
+  routing, runtime, and audiovisual parity remain explicitly open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1096,6 +1102,11 @@ scripting.
   and preserves ScenarioRunner/replay, MCP, BrowserSession, and deterministic
   RNG parity; scatter, projectile routing, explosions, chainfire, runtime, and
   audiovisual parity remain open.
+- [x] BFG 10K direct-target volley emits five ordered delayed-explosion schedule
+  events carrying delay `25`, radius `2`, and knockback `16`, with
+  ScenarioRunner/replay, MCP, BrowserSession, and deterministic parity
+  evidence; explosion geometry, splash damage, knockback application, scatter,
+  routing, chainfire, runtime, and audiovisual parity remain open.
 - [x] Vertical Nuclear BFG 9000 shot-cost encounter preserves the typed
   forty-cell one-shot policy through deterministic scenario/replay, MCP, and
   BrowserSession/direct-core parity; alternate overload, recharge timing,
