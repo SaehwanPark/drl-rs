@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.197`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.198`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -178,7 +178,7 @@ replays, and regression testing.
     scenario/replay and browser-boundary parity coverage;
     the Nuclear BFG 9000's typed periodic cell recharge restores one cell after
     5 accepted commands and every 5 commands thereafter, with scenario/replay
-    and browser-boundary parity coverage;
+    browser-boundary parity, and MCP boundary parity coverage;
     the exotic Missile Launcher's pinned single-shell reload now loads exactly
     one rocket per accepted `Reload`, with atomic full/no-reserve rejection and
     scenario/replay/browser-boundary parity coverage;

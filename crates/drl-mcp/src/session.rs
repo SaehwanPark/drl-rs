@@ -2823,6 +2823,99 @@ mod tests {
   }
 
   #[test]
+  fn nuclear_bfg_recharge_vertical_mcp_boundary_matches_direct_core() {
+    let player_position = Position::new(1, 1);
+    let target_position = Position::new(2, 1);
+    let player_config = drl_protocol::PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: Vec::new(),
+      equipped_weapon: Some(drl_protocol::ItemSpawnKind::NuclearBfg9000),
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    };
+    let mut setup_replay =
+      ReplayLog::new(33, 8, 4, player_position).with_player_config(player_config);
+    setup_replay.record_monster(drl_protocol::MonsterSpawnSpec::new(
+      target_position,
+      "Recharge Target",
+      1_000,
+      1,
+      (0, 0),
+    ));
+
+    let mut session = McpSession::new();
+    session
+      .load_replay(setup_replay.clone())
+      .expect("load canonical Nuclear BFG recharge replay setup");
+    let initial = session.game.as_ref().unwrap().clone();
+    let mut direct = initial.clone();
+    let commands = [
+      Command::AttackRanged(target_position),
+      Command::Wait,
+      Command::Wait,
+      Command::Wait,
+      Command::Wait,
+    ];
+    let mut expected_events = Vec::new();
+    for (index, command) in commands.iter().copied().enumerate() {
+      let direct_events = direct
+        .step(command)
+        .expect("direct Nuclear BFG recharge command");
+      let (events, observation, outcome) = session
+        .step(command)
+        .expect("MCP Nuclear BFG recharge command");
+      assert_eq!(events, direct_events);
+      assert_eq!(session.game.as_ref().unwrap(), &direct);
+      assert_eq!(observation, direct.observe_player());
+      assert_eq!(outcome, None);
+      if index < 4 {
+        assert!(
+          !events
+            .iter()
+            .any(|event| { matches!(event, GameEvent::WeaponRecharged { .. }) })
+        );
+      } else {
+        assert!(events.iter().any(|event| {
+          matches!(
+            event,
+            GameEvent::WeaponRecharged {
+              ammo_recharged: 1,
+              current_clip: 1,
+              max_clip: 40,
+              timer: 0,
+              ..
+            }
+          )
+        }));
+      }
+      expected_events.extend(events);
+    }
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .current_clip,
+      1
+    );
+
+    let replay = session.export_replay().expect("MCP replay export");
+    assert_eq!(replay.commands, commands);
+    let (replayed, replay_events) =
+      ReplayEngine::run(replay).expect("MCP Nuclear BFG recharge replay");
+    assert_eq!(replayed, direct);
+    assert_eq!(replay_events, expected_events);
+    assert!(ReplayEngine::verify_determinism(replay).expect("replay determinism"));
+  }
+
+  #[test]
   fn test_legal_action_catalog_and_events_include_nuclear_plasma_overload() {
     let mut session = McpSession::new();
     session
