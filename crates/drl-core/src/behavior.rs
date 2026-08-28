@@ -5,6 +5,9 @@
 
 use drl_protocol::{AmmoType, DamageType, EquipmentSlot, HitPoints, ItemArchetype, WeaponFireMode};
 
+use crate::malek_armor::{
+  MALEK_ARMOR_RECHARGE_AMOUNT, MALEK_ARMOR_RECHARGE_DELAY, MALEK_ARMOR_RECHARGE_TICK,
+};
 use crate::null_pointer::{
   NULL_POINTER_BOSS_SCORE_COST, NULL_POINTER_EXPLOSION_DELAY, NULL_POINTER_EXPLOSION_RADIUS,
   NULL_POINTER_MIN_SCORE_COUNT, NULL_POINTER_TARGET_SCORE_COST,
@@ -195,6 +198,12 @@ pub enum AlternateAction {
 pub enum PeriodicEffect {
   /// Restore ammunition after a delay and cadence.
   Recharge {
+    delay: u32,
+    cadence: u32,
+    amount: u32,
+  },
+  /// Restore armor durability after a delay and cadence.
+  DurabilityRecharge {
     delay: u32,
     cadence: u32,
     amount: u32,
@@ -466,6 +475,16 @@ const BLASTER_BEHAVIOR_SPECS: &[BehaviorSpec] =
 
 /// Immutable typed profile for the current Blaster behavior.
 pub const BLASTER_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(BLASTER_BEHAVIOR_SPECS);
+
+const MALEK_ARMOR_BEHAVIOR_SPECS: &[BehaviorSpec] =
+  &[BehaviorSpec::Periodic(PeriodicEffect::DurabilityRecharge {
+    delay: MALEK_ARMOR_RECHARGE_DELAY,
+    cadence: MALEK_ARMOR_RECHARGE_TICK,
+    amount: MALEK_ARMOR_RECHARGE_AMOUNT,
+  })];
+
+/// Immutable typed profile for the current Malek's Armor behavior.
+pub const MALEK_ARMOR_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(MALEK_ARMOR_BEHAVIOR_SPECS);
 
 /// Medical Powerarmor begins repair only while durability is strictly above
 /// the legacy callback's `20`-point guard.
@@ -948,6 +967,14 @@ mod tests {
         delay: BLASTER_RECHARGE_DELAY,
         cadence: BLASTER_RECHARGE_TICK,
         amount: BLASTER_RECHARGE_AMOUNT,
+      })]
+    );
+    assert_eq!(
+      MALEK_ARMOR_BEHAVIOR.specs(),
+      &[BehaviorSpec::Periodic(PeriodicEffect::DurabilityRecharge {
+        delay: MALEK_ARMOR_RECHARGE_DELAY,
+        cadence: MALEK_ARMOR_RECHARGE_TICK,
+        amount: MALEK_ARMOR_RECHARGE_AMOUNT,
       })]
     );
   }

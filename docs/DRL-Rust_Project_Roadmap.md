@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.205`
+Current project version: `0.2.206`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.205)
+## 3. Current Progress Summary (`VERSION` 0.2.206)
 
 ### Delivered Foundations
 
@@ -634,6 +634,11 @@ verification item uses explicit status semantics:
   amount-1 recharge fragment. The dedicated weapon-recharge transition remains
   authoritative; aimed fire, runtime, and audiovisual parity remain explicitly
   open.
+- **M9 Malek's Armor behavior profile (`0.2.206`):** The immutable
+  `MALEK_ARMOR_BEHAVIOR` profile now records the delivered
+  delay-50/cadence-5/amount-1 durability-recharge fragment. The dedicated
+  armor transition remains authoritative; resistance/degradation, runtime, and
+  audiovisual parity remain explicitly open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1150,6 +1155,10 @@ scripting.
 - [x] Blaster has an immutable behavior profile for its delay-30/cadence-10/
   amount-1 recharge fragment; the dedicated transition remains authoritative
   and aimed fire, runtime, and audiovisual parity remain open.
+- [x] Malek's Armor has an immutable behavior profile for its
+  delay-50/cadence-5/amount-1 durability-recharge fragment; the dedicated
+  transition remains authoritative and armor resistance/degradation, runtime,
+  and audiovisual parity remain open.
 - [x] Vertical Nuclear BFG 9000 shot-cost encounter preserves the typed
   forty-cell one-shot policy through deterministic scenario/replay, MCP, and
   BrowserSession/direct-core parity; alternate overload, recharge timing,
