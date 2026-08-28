@@ -51,18 +51,16 @@ and a three-cell clip cost while retaining generic command execution ownership.
   `0.2.220` to `0.2.221`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary
   and profiles; `drl-protocol`, MCP, render, audio, and browser boundaries remain
-  unchanged. No new gameplay balance, command, event, or runtime dispatch
-  surface is introduced in this slice.
+  unchanged. No new command, event, or runtime dispatch surface is introduced;
+  the pinned three-cell cost is this slice's only gameplay-policy change.
 - **Evidence boundary:** Pinned Plasma Shotgun source evidence in
   `docs/legacy-behavior/plasma-shotgun-profile.md` plus the delivered
   single-target ranged contract is authoritative. Controlled legacy runtime,
   browser capture, and audiovisual comparisons remain `NOT_RUN`.
 - **Non-goals:** Full spread/falloff and knockback callback semantics, exact
-  legacy timing/accuracy,
-  and audiovisual presentation comparison,
-  new command or callback registries, gameplay balance changes, replay-file
-  IO/migrations, runtime Lua, unrelated protocol changes, and browser/audio/
-  WebGPU parity.
+  legacy timing/accuracy, audiovisual presentation comparison, new command or
+  callback registries, unrelated gameplay balance or protocol changes,
+  replay-file IO/migrations, runtime Lua, and browser/audio/WebGPU parity.
 
 ### 2.2 Why this slice is bounded
 
