@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.222]
+
+- Added the immutable `FRAG_SHOTGUN_BEHAVIOR` profile and enforced its pinned
+  two-round ordinary-fire cost before clip/RNG mutation, including atomic
+  below-cost rejection coverage. Gameplay semantics advance to `44`; stale
+  semantics-43 replays are rejected before execution. Full
+  spread/falloff/knockback parity remains deferred.
+
 ## [0.2.221]
 
 - Added the immutable `PLASMA_SHOTGUN_BEHAVIOR` profile and enforced its
