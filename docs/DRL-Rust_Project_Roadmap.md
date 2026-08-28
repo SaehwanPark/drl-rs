@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.194`
+Current project version: `0.2.195`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.194)
+## 3. Current Progress Summary (`VERSION` 0.2.195)
 
 ### Delivered Foundations
 
@@ -567,6 +567,11 @@ verification item uses explicit status semantics:
   selection, an explicit boss/non-boss score-count branch and floor, and the
   deferred range-1/delay-50 explosion schedule. The existing dedicated
   transition and all gameplay/replay semantics remain unchanged.
+- **M9 BFG 10K behavior profile (`0.2.195`):** The typed vocabulary now
+  includes an immutable BFG 10K profile for the current exact-hit,
+  one-projectile, five-cell one-shot boundary. The legacy five-projectile
+  volley, scatter, projectile routing, runtime, and audiovisual parity remain
+  explicitly open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and

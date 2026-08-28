@@ -54,7 +54,7 @@ pub use batch::{
   CohortReportError, CohortTolerances, EpisodeRecord,
 };
 pub use behavior::{
-  AlternateAction, AttackEffect, BLASTER_RECHARGE_AMOUNT, BLASTER_RECHARGE_DELAY,
+  AlternateAction, AttackEffect, BFG10K_BEHAVIOR, BLASTER_RECHARGE_AMOUNT, BLASTER_RECHARGE_DELAY,
   BLASTER_RECHARGE_TICK, BehaviorProfile, BehaviorSpec, EquipEffect, HitEffect, ItemSetId,
   KillEffect, MEDICAL_POWERARMOR_BEHAVIOR, MEDICAL_REPAIR_INTERVAL,
   MEDICAL_REPAIR_MIN_DURABILITY_EXCLUSIVE, MEDICAL_REPAIR_TIMER_AFTER_REPAIR, MedicalRepairOutcome,

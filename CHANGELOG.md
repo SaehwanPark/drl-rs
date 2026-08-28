@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.195]
+
+- Added an immutable typed BFG 10K behavior profile composing the current
+  exact-hit, one-projectile, and five-cell one-shot policies. The legacy
+  five-projectile volley, scatter, and projectile routing remain deferred;
+  runtime and replay semantics are unchanged.
+
 ## [0.2.193]
 
 - Added a compile-time typed behavior vocabulary and immutable profiles for the
