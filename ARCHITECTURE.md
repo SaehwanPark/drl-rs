@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.219`
+Current project version: `0.2.220`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -48,9 +48,11 @@ records its typed pump-only chamber action (200 units), ordinary single-shell
 reload, and capped full-deficit reload fragments; Double Shotgun records its
 typed two-projectile dual-shot and two-shell ammo-cost fragments; Standard
 Shotgun records its typed one-cell knockback hit and one-shell ammo-cost
-fragments; Pistol records its typed one-projectile ordinary-fire and one-round
-9mm ammo-cost fragments; Rocket Launcher records its typed one-projectile
-ordinary-fire and one-rocket ammo-cost fragments; Assault Shotgun records its typed ordinary single-shell reload and
+fragments; Combat Pistol records its typed one-projectile ordinary-fire and
+one-round 9mm ammo-cost fragments; Pistol records its typed one-projectile
+ordinary-fire and one-round 9mm ammo-cost fragments; Rocket Launcher records
+its typed one-projectile ordinary-fire and one-rocket ammo-cost fragments;
+Assault Shotgun records its typed ordinary single-shell reload and
 capped full-deficit reload fragments;
 Revenant's Launcher records its typed
 exact-hit attack fragment;

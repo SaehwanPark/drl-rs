@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.220]
+
+- Added the immutable `COMBAT_PISTOL_BEHAVIOR` profile for the current
+  one-projectile ordinary fire and one-9mm-round cost, preserving generic
+  ranged execution and existing replay semantics. Aimed-fire callback and
+  controlled runtime parity remain deferred.
+
 ## [0.2.219]
 
 - Added the immutable `ROCKET_LAUNCHER_BEHAVIOR` profile for the current
