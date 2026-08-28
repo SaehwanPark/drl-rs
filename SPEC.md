@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.196`
+Current project version: `0.2.197`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,52 +25,49 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — BFG-Family Behavior Profiles
+## 2. Active Implementation Slice: M9 — Vertical Standard BFG Shot-Cost Encounter
 
 ### 2.1 Objective
 
-Extend the compile-time typed behavior vocabulary with immutable standard and
-Nuclear BFG 9000 profiles that compose the current exact-hit, one-projectile,
-and forty-cell one-shot policies. The Nuclear profile also records its existing
-typed recharge and overload boundaries without introducing runtime callbacks,
-string-keyed dispatch, or gameplay changes.
+Carry the already-delivered standard BFG 9000 forty-cell shot-cost policy
+through a deterministic vertical encounter spanning ScenarioRunner/replay, MCP,
+and BrowserSession boundaries without changing gameplay semantics or adding
+runtime callbacks, string-keyed dispatch, or a new gameplay surface.
 
 ### 2.1a Scope and steering gate
 
-- **Steering priority:** Typed legacy behavior and vertical canonical fidelity.
+- **Steering priority:** Vertical canonical fidelity with typed legacy behavior.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, Gate C catalog ownership, and Gate D callback behavior
   evidence remain closed for this contract-only slice.
-- **Observable outcome:** `drl-core` exposes immutable `BFG9000_BEHAVIOR` and
-  `NUCLEAR_BFG9000_BEHAVIOR` profiles composed from exact-hit,
-  one-projectile, forty-cell cell-cost, and (for Nuclear BFG) typed overload
-  and recharge specs. Exact profile content and declaration order are
-  unit-tested alongside the existing stress profiles.
+- **Observable outcome:** A deterministic `StandardBfgShotCostVertical`
+  fixture carries one accepted standard BFG 9000 shot through ScenarioRunner,
+  replay, MCP, and BrowserSession/direct-core boundaries. The fixture asserts
+  exact forty-cell clip debit, hit/action/turn event ordering, final-state
+  equality, and bit-exact replay verification.
 - **Gameplay/replay impact:** Gameplay semantics remain `37`; replay wire
   schema, RNG, generator, and ruleset identities remain unchanged. Project
-  version advances from `0.2.195` to `0.2.196` for the new typed profiles and
-  executable vocabulary tests.
+  version advances from `0.2.196` to `0.2.197` for the vertical scenario and
+  boundary tests.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary
   and profiles; protocol, MCP, render, audio, and browser layers receive no new
   gameplay balance or dispatch surface in this slice.
-- **Evidence boundary:** Pinned standard/Nuclear BFG exact-hit, shot-cost,
-  recharge, and overload evidence in
-  `docs/legacy-behavior/bfg9000-exact-hit.md`,
-  `docs/legacy-behavior/bfg9000-shot-cost.md`,
-  `docs/legacy-behavior/nuclear-bfg.md`, and
-  `docs/legacy-behavior/nuclear-bfg-overload.md` is authoritative. Controlled
-  legacy runtime and audiovisual comparisons remain `NOT_RUN`.
+- **Evidence boundary:** Pinned standard BFG 9000 exact-hit and shot-cost
+  evidence in `docs/legacy-behavior/bfg9000-exact-hit.md` and
+  `docs/legacy-behavior/bfg9000-shot-cost.md` is authoritative. Controlled
+  legacy runtime, browser capture, and audiovisual comparisons remain
+  `NOT_RUN`.
 - **Non-goals:** Reworking existing behavior transitions, adding new gameplay
   effects, replay-file IO/migrations, runtime Lua, generic callback/event
   registries, and browser/audio/WebGPU parity.
 
 ### 2.2 Why this slice is bounded
 
-The standard and Nuclear BFG transitions already have explicit Rust exact-hit,
-shot-cost, recharge, and overload behavior. This slice adds only the missing
-declarative profiles: small immutable fragment lists whose payloads are
-compiler-checked and directly testable. It does not reinterpret the transitions
-or add a runtime dispatcher, so no replay or gameplay behavior changes.
+The standard BFG transition already has explicit Rust exact-hit and shot-cost
+behavior plus direct core tests. This slice adds only the missing vertical
+boundary evidence: a small deterministic fixture that exercises the existing
+path through replay, MCP, and BrowserSession adapters. It does not reinterpret
+the transition or add a runtime dispatcher, so no gameplay behavior changes.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -1871,7 +1868,7 @@ profile for the current BFG 10K one-shot path. Its contract must:
   audio, WebGPU, and controlled-legacy behavior unchanged or `NOT_RUN` where
   comparison evidence is unavailable.
 
-### 2.7br Current BFG-family behavior-profile delivery target
+### 2.7br Previous BFG-family behavior-profile delivery target
 
 The bounded implementation target for this revision is immutable typed
 profiles for the standard and Nuclear BFG 9000 current one-shot paths. Their
@@ -1885,6 +1882,25 @@ contracts must:
   alternate overload as typed fragments;
 - [x] assert exact profile content/declaration order while preserving the
   dedicated ranged/overload runtime paths;
+- [x] keep gameplay semantics, replay schema, RNG, protocol, MCP, browser,
+  audio, WebGPU, and controlled-legacy behavior unchanged or `NOT_RUN` where
+  comparison evidence is unavailable.
+
+### 2.7bs Current vertical standard BFG shot-cost delivery target
+
+The bounded implementation target for this revision is a deterministic vertical
+standard BFG 9000 encounter that carries the existing forty-cell shot-cost
+policy through every supported boundary. Its contract must:
+
+- [x] instantiate a standard BFG 9000 with a visible static target in a legal
+  ranged position;
+- [x] accept one ordinary shot, debit exactly forty clip cells, and preserve
+  the existing exact-hit and one-projectile Rust path;
+- [x] assert attack, action-cost, and turn-end event ordering in the scenario;
+- [x] prove replay determinism and final-state/event equality through
+  `ReplayEngine`;
+- [x] prove MCP and BrowserSession/direct-core boundary equality, including
+  observations, effects, scene projection, and replay logs;
 - [x] keep gameplay semantics, replay schema, RNG, protocol, MCP, browser,
   audio, WebGPU, and controlled-legacy behavior unchanged or `NOT_RUN` where
   comparison evidence is unavailable.

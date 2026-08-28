@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.197]
+
+- Added a deterministic vertical standard BFG 9000 forty-cell shot-cost
+  encounter through ScenarioRunner/replay, MCP, and BrowserSession boundaries.
+  The accepted hit preserves attack/action/turn ordering, consumes exactly
+  forty cells, and replays bit-exactly; runtime and audiovisual parity remain
+  explicitly deferred.
+
 ## [0.2.196]
 
 - Added immutable typed profiles for standard BFG 9000 and Nuclear BFG 9000.
