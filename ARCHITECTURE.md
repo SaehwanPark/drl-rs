@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.214`
+Current project version: `0.2.215`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -44,9 +44,10 @@ its typed terrain-gated durability-recharge fragment; Malek's Armor records its
 typed durability-recharge fragment; Blaster records its
 typed periodic-recharge fragment; Missile Launcher records its typed ordinary
 single-rocket reload and capped full-deficit reload fragments; Combat Shotgun
-records its typed ordinary single-shell reload and capped full-deficit reload
-fragments; Assault Shotgun records its typed ordinary single-shell reload and
-capped full-deficit reload fragments; Revenant's Launcher records its typed
+records its typed pump-only chamber action (200 units), ordinary single-shell
+reload, and capped full-deficit reload fragments; Assault Shotgun records its
+typed ordinary single-shell reload and capped full-deficit reload fragments;
+Revenant's Launcher records its typed
 exact-hit attack fragment;
 Nuclear Plasma records its typed
 alternate-overload and periodic-recharge fragments; the BFG family profiles
@@ -199,9 +200,10 @@ Presentation Boundary
     Missile Launcher's immutable profile records ordinary `Reload` and
     capped `FullReload` fragments; its dedicated planner remains responsible
     for reserve, deficit, cost, and transactional validation.
-    Combat Shotgun's immutable profile records the same ordered reload
-    fragments; its dedicated planner and pump-action state remain responsible
-    for reserve, deficit, chamber, cost, and transactional validation.
+    Combat Shotgun's immutable profile records the ordered pump-only chamber
+    action and reload fragments; its dedicated planner and pump-action state
+    remain responsible for reserve, deficit, chamber, cost, and transactional
+    validation.
     Assault Shotgun's immutable profile records the ordered reload fragments;
     its dedicated planner remains responsible for reserve, deficit, cost, and
     transactional validation.

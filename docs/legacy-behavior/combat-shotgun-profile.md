@@ -1,8 +1,8 @@
 # Combat Shotgun typed behavior-profile evidence
 
-Status: delivered typed behavior profile for `0.2.212`; exact legacy timing,
-controlled runtime comparison, chamber presentation, and audiovisual parity
-remain `NOT_RUN`.
+Status: delivered typed behavior profile through `0.2.215`; exact legacy
+timing, partial-reserve policy, controlled runtime comparison, chamber
+presentation, and audiovisual parity remain `NOT_RUN`.
 
 ## Pinned source
 
@@ -19,7 +19,8 @@ at revision `17d9be1204751899b2d69d8d3a2dde247bd0cc5c`.
 ## DRL-Rust boundary
 
 The immutable `drl_core::behavior::COMBAT_SHOTGUN_BEHAVIOR` profile records
-ordered `AlternateAction::Reload` and
+ordered `Action(ActionEffect::Pump { cost: 200 })`,
+`AlternateAction::Reload`, and
 `AlternateAction::FullReload { cost_cap: 2500 }` fragments. Dedicated normal
 reload, `CombatShotgunTransition`, and pump-action state remain execution
 authority for one-shell loading, full-deficit reserve checks, chamber

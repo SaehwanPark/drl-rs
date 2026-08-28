@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.214`
+Current project version: `0.2.215`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.214)
+## 3. Current Progress Summary (`VERSION` 0.2.215)
 
 ### Delivered Foundations
 
@@ -679,6 +679,11 @@ verification item uses explicit status semantics:
   and capped full-deficit reload (`2,500` score-count units). The dedicated
   planner remains authoritative; runtime and audiovisual parity remain
   explicitly open.
+- **M9 Combat Shotgun pump-action profile (`0.2.215`):** The immutable
+  `COMBAT_SHOTGUN_BEHAVIOR` profile now also records the pump-only chamber
+  action at cost `200`, alongside ordinary and capped full-deficit reload
+  fragments. Dedicated chamber/reload execution remains authoritative; exact
+  timing, partial-reserve, runtime, and presentation parity remain open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1220,9 +1225,10 @@ scripting.
   units); dedicated reload/planner paths remain authoritative and rocket-jump,
   explosion, runtime, and audiovisual parity remain open.
 - [x] Combat Shotgun has an immutable behavior profile for ordinary
-  single-shell reload and capped full-deficit reload (`2,500` score-count
-  units); dedicated reload/planner and pump-action paths remain authoritative
-  and runtime, chamber presentation, and audiovisual parity remain open.
+  pump-only chamber action (`200` action units), single-shell reload, and capped
+  full-deficit reload (`2,500` score-count units); dedicated reload/planner and
+  pump-action paths remain authoritative and runtime, chamber presentation, and
+  audiovisual parity remain open.
 - [x] Revenant's Launcher has an immutable behavior profile for its pinned
   exact-hit attack policy; dedicated combat execution remains authoritative and
   homing, projectile routing, delayed explosions, runtime, and audiovisual
