@@ -18,6 +18,19 @@ truth.
 - **Prevention:** Keep source provenance for each payload field in the slice
   evidence and test the complete event tuple at every boundary.
 
+## Keep behavior profiles descriptive and execution-owned
+
+- **Context:** A typed profile can describe a callback-derived transition while
+  the dedicated Rust state machine remains its execution authority.
+- **Symptom:** Moving profile fragments into a generic dispatcher would blur
+  ownership and make replay or rejection guarantees harder to audit.
+- **Resolution:** Add only evidence-backed `BehaviorSpec` fragments to the
+  immutable profile; keep command validation, state mutation, and rollback in
+  the focused transition module.
+- **Prevention:** Test exact profile declaration order and document deferred
+  callbacks such as Nuclear Plasma chainfire separately from delivered
+  recharge/overload behavior.
+
 ## Separate current-Rust evidence from legacy parity
 
 - **Context:** Many slices use the pinned Pascal/Lua project as behavioral

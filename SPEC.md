@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.203`
+Current project version: `0.2.204`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,15 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Nuclear BFG 9000 Explosion Schedule Metadata
+## 2. Active Implementation Slice: M9 — Nuclear Plasma Rifle Behavior Profile
 
 ### 2.1 Objective
 
-Carry the pinned Nuclear BFG 9000 delayed explosion payload into the typed
-deterministic core. After its direct-target hit, the bounded path emits
-deterministic schedule metadata for the evidence-backed delay, radius, and
-knockback without introducing explosion geometry, splash damage, projectile
-routing, runtime callbacks, or a new gameplay surface.
+Carry the already-delivered Nuclear Plasma Rifle recharge and alternate
+overload transitions into an immutable typed behavior profile. The profile
+describes the evidence-backed policy without changing command handling,
+replay wire data, or runtime ownership.
 
 ### 2.1a Scope and steering gate
 
@@ -41,39 +40,34 @@ routing, runtime callbacks, or a new gameplay surface.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, Gate C catalog ownership, and Gate D callback behavior
   evidence remain closed for this contract-only slice.
-- **Observable outcome:** A deterministic Nuclear BFG 9000 fixture starts with
-  a full forty-cell clip and one visible static target. One accepted ranged
-  command emits one exact-hit attack/damage pair followed by one typed
-  explosion-schedule event carrying delay `33`, radius `8`, and knockback `16`;
-  it consumes forty clip cells and matches direct-core, ScenarioRunner, MCP,
-  BrowserSession, replay, and determinism evidence.
-- **Gameplay/replay impact:** Gameplay semantics advance from `40` to `41`;
+- **Observable outcome:** `NUCLEAR_PLASMA_BEHAVIOR` exposes ordered typed
+  `AlternateAction::Overload` and `PeriodicEffect::Recharge` fragments with
+  delay `40`, cadence `2`, and amount `1`; exact profile declaration order is
+  asserted while the existing dedicated transitions remain unchanged.
+- **Gameplay/replay impact:** Gameplay semantics remain `41`;
   replay wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.202` to `0.2.203` for the
-  Nuclear-BFG schedule metadata.
+  unchanged. Project version advances from `0.2.203` to `0.2.204` for the
+  profile-only contract.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary
-  and profiles; `drl-protocol` carries the one typed schedule event while MCP,
-  render, audio, and browser layers only project or ignore it. No new gameplay
-  balance or runtime dispatch surface is introduced in this slice.
-- **Evidence boundary:** Pinned Nuclear BFG 9000 exact-hit, shot-cost, and
-  explosion evidence in `docs/legacy-behavior/nuclear-bfg9000-explosion.md` plus the
-  delivered exact-hit/shot-cost contracts is authoritative. Controlled
-  legacy runtime, browser capture, and audiovisual comparisons remain
-  `NOT_RUN`.
-- **Non-goals:** Explosion geometry and splash damage, knockback application,
-  projectile routing, recharge, alternate overload, NukeRun, mods, replay-file IO/migrations,
-  runtime Lua, generic callback/event registries, unrelated protocol changes,
-  and browser/audio/WebGPU parity.
+  and profiles; `drl-protocol`, MCP, render, audio, and browser boundaries remain
+  unchanged. No new gameplay balance, command, event, or runtime dispatch
+  surface is introduced in this slice.
+- **Evidence boundary:** Pinned Nuclear Plasma recharge and overload evidence
+  in `docs/legacy-behavior/nuclear-plasma-profile.md` plus the delivered
+  transition contracts is authoritative. Controlled legacy runtime, browser
+  capture, and audiovisual comparisons remain `NOT_RUN`.
+- **Non-goals:** Chainfire, dynamic target rotation, new command or callback
+  registries, gameplay balance changes, replay-file IO/migrations, runtime Lua,
+  unrelated protocol changes, and browser/audio/WebGPU parity.
 
 ### 2.2 Why this slice is bounded
 
-The existing ranged command already resolves one Nuclear BFG 9000 direct hit
-and charges its typed forty-cell cost. This slice adds only the evidence-backed
-schedule payload as an ordered event after that direct-target hit, keeping
-explosion execution outside the simulation until geometry and splash semantics
-have their own evidence-backed contract. It does not implement a projectile
-system or recharge/alternate overload, so the change stays within the current
-direct-target event contract.
+The existing Nuclear Plasma recharge and overload transitions already have
+dedicated deterministic execution paths. This slice adds only their immutable
+descriptive profile, keeping command validation and state mutation in those
+focused modules. It does not implement the legacy chainfire callback or a
+generic dispatcher, so the change stays within the current typed behavior
+boundary.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -2010,7 +2004,7 @@ contract must:
   WebGPU, and controlled-legacy behavior unchanged or `NOT_RUN` where
   comparison evidence is unavailable.
 
-### 2.7by Current Nuclear BFG 9000 explosion-schedule metadata delivery target
+### 2.7by Historical Nuclear BFG 9000 explosion-schedule metadata delivery target
 
 The bounded implementation target for this revision is the pinned Nuclear BFG
 9000 delayed explosion payload on the existing direct-target shot path. Its
@@ -2030,6 +2024,25 @@ contract must:
   splash damage, knockback application, projectile routing, mods, generic
   protocol registries, audio, WebGPU, and controlled-legacy behavior unchanged
   or `NOT_RUN` where comparison evidence is unavailable.
+
+### 2.7bz Current Nuclear Plasma Rifle behavior-profile delivery target
+
+The bounded implementation target for this revision is an immutable profile for
+the already-delivered Nuclear Plasma Rifle recharge and alternate-overload
+transitions. Its contract must:
+
+- [x] expose ordered `AlternateAction::Overload` and
+  `PeriodicEffect::Recharge` fragments;
+- [x] preserve delay `40`, cadence `2`, and amount `1` from the pinned legacy
+  recharge callback while retaining dedicated transition ownership;
+- [x] assert exact profile declaration order without adding a runtime command,
+  callback registry, or replay-wire field;
+- [x] keep chainfire, dynamic target rotation, gameplay balance, runtime, audio,
+  WebGPU, and controlled-legacy behavior unchanged or `NOT_RUN` where
+  comparison evidence is unavailable;
+- [x] advance project version from `0.2.203` to `0.2.204` while keeping
+  gameplay semantics `41`, replay schema, RNG, generator, and ruleset
+  identities unchanged.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
@@ -2183,11 +2196,16 @@ payload after its direct-target hit as a `Bfg9000ExplosionScheduled` event
 knockback application, projectile routing, alternate overload, runtime, and
 audiovisual parity remain open.
 
-The `0.2.203` successor records the pinned Nuclear BFG 9000 delayed explosion
+The `0.2.203` revision recorded the pinned Nuclear BFG 9000 delayed explosion
 payload after its direct-target hit as a `NuclearBfg9000ExplosionScheduled`
 event (delay `33`, radius `8`, knockback `16`). Recharge timing, alternate
 overload, NukeRun, explosion geometry, splash damage, knockback application,
 projectile routing, runtime, and audiovisual parity remain open.
+
+The `0.2.204` successor records the immutable `NUCLEAR_PLASMA_BEHAVIOR`
+profile with ordered alternate-overload and delay-40/cadence-2/amount-1
+recharge fragments. Dedicated transition modules remain authoritative;
+chainfire, runtime, and audiovisual parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity

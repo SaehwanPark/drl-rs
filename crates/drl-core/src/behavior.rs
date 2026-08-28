@@ -444,6 +444,19 @@ const NUCLEAR_BFG9000_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
 pub const NUCLEAR_BFG9000_BEHAVIOR: BehaviorProfile =
   BehaviorProfile::new(NUCLEAR_BFG9000_BEHAVIOR_SPECS);
 
+const NUCLEAR_PLASMA_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Alternate(AlternateAction::Overload),
+  BehaviorSpec::Periodic(PeriodicEffect::Recharge {
+    delay: NUCLEAR_PLASMA_RECHARGE_DELAY,
+    cadence: NUCLEAR_PLASMA_RECHARGE_TICK,
+    amount: NUCLEAR_PLASMA_RECHARGE_AMOUNT,
+  }),
+];
+
+/// Immutable typed profile for the current Nuclear Plasma Rifle behavior.
+pub const NUCLEAR_PLASMA_BEHAVIOR: BehaviorProfile =
+  BehaviorProfile::new(NUCLEAR_PLASMA_BEHAVIOR_SPECS);
+
 /// Medical Powerarmor begins repair only while durability is strictly above
 /// the legacy callback's `20`-point guard.
 pub const MEDICAL_REPAIR_MIN_DURABILITY_EXCLUSIVE: u32 = 20;
@@ -905,6 +918,17 @@ mod tests {
           delay: NUCLEAR_BFG_RECHARGE_DELAY,
           cadence: NUCLEAR_BFG_RECHARGE_TICK,
           amount: NUCLEAR_BFG_RECHARGE_AMOUNT,
+        }),
+      ]
+    );
+    assert_eq!(
+      NUCLEAR_PLASMA_BEHAVIOR.specs(),
+      &[
+        BehaviorSpec::Alternate(AlternateAction::Overload),
+        BehaviorSpec::Periodic(PeriodicEffect::Recharge {
+          delay: NUCLEAR_PLASMA_RECHARGE_DELAY,
+          cadence: NUCLEAR_PLASMA_RECHARGE_TICK,
+          amount: NUCLEAR_PLASMA_RECHARGE_AMOUNT,
         }),
       ]
     );
