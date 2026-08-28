@@ -3,7 +3,9 @@
 //! This module intentionally models behavior as explicit state transitions.
 //! It is not a callback registry and does not execute legacy Lua.
 
-use drl_protocol::{AmmoType, DamageType, EquipmentSlot, HitPoints, ItemArchetype, WeaponFireMode};
+use drl_protocol::{
+  AmmoType, DamageType, EquipmentSlot, HitPoints, ItemArchetype, TileKind, WeaponFireMode,
+};
 
 use crate::malek_armor::{
   MALEK_ARMOR_RECHARGE_AMOUNT, MALEK_ARMOR_RECHARGE_DELAY, MALEK_ARMOR_RECHARGE_TICK,
@@ -207,6 +209,12 @@ pub enum PeriodicEffect {
     delay: u32,
     cadence: u32,
     amount: u32,
+  },
+  /// Restore armor durability at an interval while standing on one terrain.
+  TerrainRecharge {
+    interval: u32,
+    amount: u32,
+    terrain: TileKind,
   },
   /// Repair health while spending durability at an interval.
   Repair {
@@ -485,6 +493,16 @@ const MALEK_ARMOR_BEHAVIOR_SPECS: &[BehaviorSpec] =
 
 /// Immutable typed profile for the current Malek's Armor behavior.
 pub const MALEK_ARMOR_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(MALEK_ARMOR_BEHAVIOR_SPECS);
+
+const LAVA_ARMOR_BEHAVIOR_SPECS: &[BehaviorSpec] =
+  &[BehaviorSpec::Periodic(PeriodicEffect::TerrainRecharge {
+    interval: LAVA_RECHARGE_INTERVAL,
+    amount: LAVA_RECHARGE_AMOUNT,
+    terrain: TileKind::Lava,
+  })];
+
+/// Immutable typed profile for the current Lava Armor behavior.
+pub const LAVA_ARMOR_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(LAVA_ARMOR_BEHAVIOR_SPECS);
 
 /// Medical Powerarmor begins repair only while durability is strictly above
 /// the legacy callback's `20`-point guard.
@@ -797,6 +815,11 @@ mod tests {
         cadence: 10,
         amount: 1,
       }),
+      BehaviorSpec::Periodic(PeriodicEffect::TerrainRecharge {
+        interval: 5,
+        amount: 3,
+        terrain: TileKind::Lava,
+      }),
       BehaviorSpec::Cost(ResourceCost::Ammo {
         ammo_type: AmmoType::Cell,
         amount: 5,
@@ -808,7 +831,7 @@ mod tests {
     ];
     let profile = BehaviorProfile::new(SPECS);
 
-    assert_eq!(profile.specs().len(), 10);
+    assert_eq!(profile.specs().len(), 11);
     assert!(matches!(
       profile.specs()[0],
       BehaviorSpec::Passive(PassiveModifier {
@@ -975,6 +998,14 @@ mod tests {
         delay: MALEK_ARMOR_RECHARGE_DELAY,
         cadence: MALEK_ARMOR_RECHARGE_TICK,
         amount: MALEK_ARMOR_RECHARGE_AMOUNT,
+      })]
+    );
+    assert_eq!(
+      LAVA_ARMOR_BEHAVIOR.specs(),
+      &[BehaviorSpec::Periodic(PeriodicEffect::TerrainRecharge {
+        interval: LAVA_RECHARGE_INTERVAL,
+        amount: LAVA_RECHARGE_AMOUNT,
+        terrain: TileKind::Lava,
       })]
     );
   }
