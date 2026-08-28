@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.224`
+Current project version: `0.2.225`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.224)
+## 3. Current Progress Summary (`VERSION` 0.2.225)
 
 ### Delivered Foundations
 
@@ -738,6 +738,13 @@ verification item uses explicit status semantics:
   metadata is rejected before execution. The existing target-score branch and
   deferred explosion schedule remain authoritative; delayed explosion geometry,
   full callback parity, runtime, and audiovisual parity remain open.
+- **M9 Tristar Blaster ordinary-fire volley (`0.2.225`):** The immutable
+  `TRISTAR_BLASTER_BEHAVIOR` profile records three ordered projectiles and a
+  five-cell per-projectile cost, and generic ranged execution now preflights
+  the fifteen-cell volley cost before mutation. Gameplay semantics advance to
+  `47`, so stale semantics-46 replay metadata is rejected before execution.
+  Spread routing, delayed explosion geometry, callback parity, runtime, and
+  audiovisual parity remain open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1323,6 +1330,12 @@ scripting.
   preflights the cost and preserves atomic below-cost rejection while its
   target-score branch, deferred explosion geometry, full callback parity,
   exact legacy timing/accuracy, runtime, and audiovisual parity remain open.
+- [x] Tristar Blaster has an immutable behavior profile for its current
+  three-projectile ordinary fire and five-cell per-projectile cost; generic
+  ranged execution resolves the ordered volley, preflights its fifteen-cell
+  total cost, and preserves atomic below-cost rejection while spread routing,
+  delayed explosion geometry, callback parity, exact legacy timing/accuracy,
+  runtime, and audiovisual parity remain open.
 - [x] Revenant's Launcher has an immutable behavior profile for its pinned
   exact-hit attack policy; dedicated combat execution remains authoritative and
   homing, projectile routing, delayed explosions, runtime, and audiovisual

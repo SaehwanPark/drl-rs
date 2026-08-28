@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.225]
+
+- Added the immutable `TRISTAR_BLASTER_BEHAVIOR` profile and enforced its
+  pinned three-projectile/five-cell ordinary-fire volley, including atomic
+  below-cost rejection coverage. Gameplay semantics advance to `47`; stale
+  semantics-46 replays are rejected before execution. Spread routing and
+  delayed explosion geometry remain deferred.
+
 ## [0.2.224]
 
 - Added the immutable `NULL_POINTER_BEHAVIOR` profile and enforced its pinned

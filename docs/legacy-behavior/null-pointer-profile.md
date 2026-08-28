@@ -1,6 +1,6 @@
 # Charch's Null Pointer ordinary-fire cost evidence
 
-Status: active ordinary-fire cost profile target for `0.2.224`; target-score
+Status: delivered ordinary-fire cost profile for `0.2.224`; target-score
 and deferred explosion behavior remain implemented separately.
 
 The pinned legacy revision is

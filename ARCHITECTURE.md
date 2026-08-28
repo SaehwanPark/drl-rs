@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.224`
+Current project version: `0.2.225`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -55,7 +55,8 @@ one-projectile ordinary-fire and one-round 9mm ammo-cost fragments; Railgun
 records its typed one-projectile ordinary-fire and five-cell ammo-cost
 fragments; Null Pointer records its typed one-projectile ordinary-fire and
 ten-cell ammo-cost fragments alongside its target-score and deferred explosion
-fragments; Pistol
+fragments; Tristar Blaster records its typed three-projectile ordinary-fire and
+five-cell per-projectile ammo-cost fragments; Pistol
 records its typed one-projectile ordinary-fire and one-round 9mm ammo-cost
 fragments; Rocket Launcher records
 its typed one-projectile ordinary-fire and one-rocket ammo-cost fragments;

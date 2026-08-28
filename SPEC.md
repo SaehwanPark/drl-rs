@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.224`
+Current project version: `0.2.225`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Null Pointer Ordinary-Fire Cost
+## 2. Active Implementation Slice: M9 — Tristar Blaster Ordinary-Fire Volley
 
 ### 2.1 Objective
 
-Carry the already-delivered Null Pointer ordinary-fire policy into an immutable
-typed behavior profile. The profile describes one ordered projectile and a
-ten-cell clip cost while retaining generic command execution ownership and the
-existing target-score/explosion transition.
+Carry the already-delivered Tristar Blaster ordinary-fire policy into an
+immutable typed behavior profile. The profile describes three ordered
+projectiles and a five-cell per-projectile cost while retaining generic command
+execution ownership.
 
 ### 2.1a Scope and steering gate
 
@@ -40,38 +40,39 @@ existing target-score/explosion transition.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, Gate C catalog ownership, and Gate D callback behavior
   evidence remain closed for this contract-only slice.
-- **Observable outcome:** `NULL_POINTER_BEHAVIOR` exposes ordered typed
-  `AttackEffect::ProjectileCount(1)` and
-  `ResourceCost::Ammo { ammo_type: Cell, amount: 10 }` fragments; the exact
+- **Observable outcome:** `TRISTAR_BLASTER_BEHAVIOR` exposes ordered typed
+  `AttackEffect::ProjectileCount(3)` and
+  `ResourceCost::Ammo { ammo_type: Cell, amount: 5 }` fragments; the exact
   profile order is asserted by the behavior contract test and generic ranged
-  execution consumes ten cells per accepted shot.
-- **Gameplay/replay impact:** Gameplay semantics advance from `45` to `46` so
-  replays recorded before the ten-cell cost cannot be reinterpreted under the
+  execution consumes fifteen cells per accepted volley.
+- **Gameplay/replay impact:** Gameplay semantics advance from `46` to `47` so
+  replays recorded before the three-projectile volley cannot be reinterpreted under the
   new deterministic clip policy. Replay wire/schema, RNG sampling, generator,
   and ruleset identities remain unchanged. Project version advances from
-  `0.2.223` to `0.2.224`.
+  `0.2.224` to `0.2.225`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary
   and profiles; `drl-protocol`, MCP, render, audio, and browser boundaries remain
   unchanged. No new command, event, or runtime dispatch surface is introduced;
-  the pinned ten-cell cost is this slice's only gameplay-policy change.
-- **Evidence boundary:** Pinned Null Pointer source evidence in
-  `docs/legacy-behavior/null-pointer-profile.md` plus the delivered
-  single-target ranged contract is authoritative. The existing target-score
-  and deferred explosion transition remain dedicated; controlled legacy
+  the pinned three-projectile/five-cell volley is this slice's only
+  gameplay-policy change.
+- **Evidence boundary:** Pinned Tristar Blaster source evidence in
+  `docs/legacy-behavior/tristar-blaster-profile.md` plus the delivered
+  direct-target ranged contract is authoritative. Spread and delayed explosion
+  routing remain deferred; controlled legacy
   runtime, browser capture, and audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** Delayed explosion geometry and full callback semantics, exact
-  legacy timing/accuracy, audiovisual presentation comparison, new command or
-  callback registries, unrelated gameplay balance or protocol changes,
+- **Non-goals:** Spread routing, delayed explosion geometry and full callback
+  semantics, exact legacy timing/accuracy, audiovisual presentation comparison,
+  new command or callback registries, unrelated gameplay balance or protocol changes,
   replay-file IO/migrations, runtime Lua, and browser/audio/WebGPU parity.
 
 ### 2.2 Why this slice is bounded
 
 The existing ranged command path already performs complete preflight,
-transactional clip validation, single-projectile resolution, typed clip
-consumption, and Null Pointer hit effects. This slice records the delivered
-ten-cell cost in an immutable profile and the existing cost helper; it does not
-add a generic dispatcher or alter RNG sampling, so replay behavior stays
-deterministic and reviewable.
+transactional clip validation and typed clip consumption for multiple ordered
+projectiles. This slice records the delivered three-projectile/five-cell cost in
+an immutable profile and the existing cost helper; it does not add a generic
+dispatcher or alter RNG sampling, so replay behavior stays deterministic and
+reviewable.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -2416,7 +2417,7 @@ for the already-delivered Railgun ordinary ranged action. Its contract must:
   semantics from `44` to `45`, preserving replay schema, RNG, generator, and
   ruleset identities.
 
-### 2.7ct Current Null Pointer ordinary-fire cost delivery target
+### 2.7ct Historical Null Pointer ordinary-fire cost delivery target
 
 The bounded implementation target for this revision is an immutable profile
 for the already-delivered Charch's Null Pointer ordinary ranged action. Its
@@ -2437,6 +2438,29 @@ contract must:
   comparison evidence is unavailable;
 - [x] advance project version from `0.2.223` to `0.2.224` and gameplay
   semantics from `45` to `46`, preserving replay schema, RNG, generator, and
+  ruleset identities.
+
+### 2.7cu Current Tristar Blaster ordinary-fire volley delivery target
+
+The bounded implementation target for this revision is an immutable profile
+for the already-delivered Tristar Blaster ordinary ranged action. Its contract
+must:
+
+- [x] expose ordered typed `AttackEffect::ProjectileCount(3)` and
+  `ResourceCost::Ammo { ammo_type: Cell, amount: 5 }` fragments;
+- [x] retain generic ranged execution ownership for target/LOS/range
+  validation, damage RNG, event ordering, and transactional clip consumption;
+- [x] enforce the fifteen-cell total cost before mutation, reject clips below
+  the cost atomically, and preserve the existing three-projectile event
+  contract;
+- [x] assert exact profile declaration order without adding an alternate-fire
+  command, callback registry, or replay-wire field; stale gameplay semantics
+  `46` replays are rejected before execution;
+- [x] keep spread routing, delayed explosion geometry, exact legacy
+  timing/accuracy, controlled runtime, and audiovisual parity `NOT_RUN` where
+  comparison evidence is unavailable;
+- [x] advance project version from `0.2.224` to `0.2.225` and gameplay
+  semantics from `46` to `47`, preserving replay schema, RNG, generator, and
   ruleset identities.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
@@ -2704,6 +2728,13 @@ ranged execution now enforces the cost before mutation while retaining the
 typed target-score branch and deferred explosion schedule; delayed explosion
 geometry, full callback parity, controlled runtime, and audiovisual parity
 remain open.
+
+The `0.2.225` successor records the immutable `TRISTAR_BLASTER_BEHAVIOR`
+profile for the delivered three-projectile ordinary fire and five-cell
+per-projectile cost. Generic ranged execution now resolves the ordered volley
+and enforces its fifteen-cell total cost before mutation; spread routing,
+delayed explosion geometry, callback parity, controlled runtime, and
+audiovisual parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity
