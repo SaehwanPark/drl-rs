@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.204`
+Current project version: `0.2.205`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,13 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Nuclear Plasma Rifle Behavior Profile
+## 2. Active Implementation Slice: M9 — Blaster Behavior Profile
 
 ### 2.1 Objective
 
-Carry the already-delivered Nuclear Plasma Rifle recharge and alternate
-overload transitions into an immutable typed behavior profile. The profile
-describes the evidence-backed policy without changing command handling,
-replay wire data, or runtime ownership.
+Carry the already-delivered Blaster recharge transition into an immutable typed
+behavior profile. The profile describes the evidence-backed policy without
+changing command handling, replay wire data, or runtime ownership.
 
 ### 2.1a Scope and steering gate
 
@@ -40,34 +39,33 @@ replay wire data, or runtime ownership.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, Gate C catalog ownership, and Gate D callback behavior
   evidence remain closed for this contract-only slice.
-- **Observable outcome:** `NUCLEAR_PLASMA_BEHAVIOR` exposes ordered typed
-  `AlternateAction::Overload` and `PeriodicEffect::Recharge` fragments with
-  delay `40`, cadence `2`, and amount `1`; exact profile declaration order is
-  asserted while the existing dedicated transitions remain unchanged.
+- **Observable outcome:** `BLASTER_BEHAVIOR` exposes one typed
+  `PeriodicEffect::Recharge` fragment with delay `30`, cadence `10`, and
+  amount `1`; exact profile declaration order is asserted while the existing
+  dedicated transition remains unchanged.
 - **Gameplay/replay impact:** Gameplay semantics remain `41`;
   replay wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.203` to `0.2.204` for the
+  unchanged. Project version advances from `0.2.204` to `0.2.205` for the
   profile-only contract.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary
   and profiles; `drl-protocol`, MCP, render, audio, and browser boundaries remain
   unchanged. No new gameplay balance, command, event, or runtime dispatch
   surface is introduced in this slice.
-- **Evidence boundary:** Pinned Nuclear Plasma recharge and overload evidence
-  in `docs/legacy-behavior/nuclear-plasma-profile.md` plus the delivered
-  transition contracts is authoritative. Controlled legacy runtime, browser
-  capture, and audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** Chainfire, dynamic target rotation, new command or callback
-  registries, gameplay balance changes, replay-file IO/migrations, runtime Lua,
-  unrelated protocol changes, and browser/audio/WebGPU parity.
+- **Evidence boundary:** Pinned Blaster recharge evidence in
+  `docs/legacy-behavior/blaster-profile.md` plus the delivered transition
+  contract is authoritative. Controlled legacy runtime, browser capture, and
+  audiovisual comparisons remain `NOT_RUN`.
+- **Non-goals:** Aimed fire, new command or callback registries, gameplay
+  balance changes, replay-file IO/migrations, runtime Lua, unrelated protocol
+  changes, and browser/audio/WebGPU parity.
 
 ### 2.2 Why this slice is bounded
 
-The existing Nuclear Plasma recharge and overload transitions already have
-dedicated deterministic execution paths. This slice adds only their immutable
-descriptive profile, keeping command validation and state mutation in those
-focused modules. It does not implement the legacy chainfire callback or a
-generic dispatcher, so the change stays within the current typed behavior
-boundary.
+The existing Blaster recharge transition already has a dedicated deterministic
+execution path. This slice adds only its immutable descriptive profile,
+keeping command validation and state mutation in the focused module. It does
+not implement the legacy aimed-fire callback or a generic dispatcher, so the
+change stays within the current typed behavior boundary.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -2025,7 +2023,7 @@ contract must:
   protocol registries, audio, WebGPU, and controlled-legacy behavior unchanged
   or `NOT_RUN` where comparison evidence is unavailable.
 
-### 2.7bz Current Nuclear Plasma Rifle behavior-profile delivery target
+### 2.7bz Historical Nuclear Plasma Rifle behavior-profile delivery target
 
 The bounded implementation target for this revision is an immutable profile for
 the already-delivered Nuclear Plasma Rifle recharge and alternate-overload
@@ -2041,6 +2039,23 @@ transitions. Its contract must:
   WebGPU, and controlled-legacy behavior unchanged or `NOT_RUN` where
   comparison evidence is unavailable;
 - [x] advance project version from `0.2.203` to `0.2.204` while keeping
+  gameplay semantics `41`, replay schema, RNG, generator, and ruleset
+  identities unchanged.
+
+### 2.7ca Current Blaster behavior-profile delivery target
+
+The bounded implementation target for this revision is an immutable profile for
+the already-delivered Blaster recharge transition. Its contract must:
+
+- [x] expose one typed `PeriodicEffect::Recharge` fragment;
+- [x] preserve delay `30`, cadence `10`, and amount `1` from the pinned legacy
+  recharge callback while retaining dedicated transition ownership;
+- [x] assert exact profile declaration order without adding a runtime command,
+  callback registry, or replay-wire field;
+- [x] keep aimed fire, gameplay balance, runtime, audio, WebGPU, and
+  controlled-legacy behavior unchanged or `NOT_RUN` where comparison evidence
+  is unavailable;
+- [x] advance project version from `0.2.204` to `0.2.205` while keeping
   gameplay semantics `41`, replay schema, RNG, generator, and ruleset
   identities unchanged.
 
@@ -2202,10 +2217,14 @@ event (delay `33`, radius `8`, knockback `16`). Recharge timing, alternate
 overload, NukeRun, explosion geometry, splash damage, knockback application,
 projectile routing, runtime, and audiovisual parity remain open.
 
-The `0.2.204` successor records the immutable `NUCLEAR_PLASMA_BEHAVIOR`
+The `0.2.204` revision recorded the immutable `NUCLEAR_PLASMA_BEHAVIOR`
 profile with ordered alternate-overload and delay-40/cadence-2/amount-1
 recharge fragments. Dedicated transition modules remain authoritative;
 chainfire, runtime, and audiovisual parity remain open.
+
+The `0.2.205` successor records the immutable `BLASTER_BEHAVIOR` profile with
+the delay-30/cadence-10/amount-1 recharge fragment. The dedicated transition
+remains authoritative; aimed fire, runtime, and audiovisual parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity
