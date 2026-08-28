@@ -3,7 +3,322 @@
 //! This module intentionally models behavior as explicit state transitions.
 //! It is not a callback registry and does not execute legacy Lua.
 
-use drl_protocol::HitPoints;
+use drl_protocol::{AmmoType, DamageType, EquipmentSlot, HitPoints, ItemArchetype, WeaponFireMode};
+
+use crate::subtle_knife::{
+  SUBTLE_KNIFE_HP_COST, SUBTLE_KNIFE_SCORE_COST, SUBTLE_KNIFE_TARGET_DAMAGE,
+};
+use crate::trigun::{
+  TRIGUN_HP_COST, TRIGUN_MAX_HP_COST, TRIGUN_MIN_HP, TRIGUN_MIN_MAX_HP, TRIGUN_NUKE_TIMER,
+  TRIGUN_SCORE_COST,
+};
+
+/// A compiler-checked behavior fragment. Each variant names one explicit
+/// trigger or effect category; there is no string key or runtime callback.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum BehaviorSpec {
+  /// A persistent stat or resistance adjustment.
+  Passive(PassiveModifier),
+  /// An effect applied when an item is equipped.
+  Equip(EquipEffect),
+  /// The inverse effect applied when an item is unequipped.
+  Unequip(EquipEffect),
+  /// An effect emitted when an attack is prepared or fired.
+  Attack(AttackEffect),
+  /// An effect emitted when an attack connects.
+  Hit(HitEffect),
+  /// An effect emitted when an attack kills its target.
+  Kill(KillEffect),
+  /// An explicitly typed alternate fire/reload/use action.
+  Alternate(AlternateAction),
+  /// A deterministic periodic or recharge transition.
+  Periodic(PeriodicEffect),
+  /// A resource or status cost paid by an accepted action.
+  Cost(ResourceCost),
+  /// A deterministic target-selection policy.
+  Targeting(TargetSelectionPolicy),
+}
+
+/// Immutable collection of behavior fragments for one item or actor profile.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct BehaviorProfile {
+  specs: &'static [BehaviorSpec],
+}
+
+impl BehaviorProfile {
+  /// Creates a profile from an immutable compile-time fragment list.
+  #[must_use]
+  pub const fn new(specs: &'static [BehaviorSpec]) -> Self {
+    Self { specs }
+  }
+
+  /// Returns the profile's immutable behavior fragments in declaration order.
+  #[must_use]
+  pub const fn specs(self) -> &'static [BehaviorSpec] {
+    self.specs
+  }
+}
+
+/// A stat or resistance adjustment that can be applied and reversed explicitly.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct PassiveModifier {
+  /// Stat or resistance being adjusted.
+  pub stat: PassiveStat,
+  /// Signed adjustment amount.
+  pub amount: i32,
+}
+
+/// Supported passive stat and resistance dimensions.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum PassiveStat {
+  /// Accuracy percentage points.
+  Accuracy,
+  /// Flat armor protection.
+  Protection,
+  /// Scheduler speed.
+  Speed,
+  /// Maximum hit points.
+  MaxHealth,
+  /// Knockback resistance/strength.
+  Knockback,
+  /// Damage-type resistance percentage points.
+  Resistance(DamageType),
+}
+
+/// Explicit equip/unequip effects, including typed item-set membership.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum EquipEffect {
+  /// Apply one passive modifier.
+  GrantPassive(PassiveModifier),
+  /// Add or remove membership in one typed item set.
+  SetMembership(ItemSetId),
+  /// Identify the equipment slot affected by the transition.
+  Slot(EquipmentSlot),
+}
+
+/// Opaque, non-string item-set identity owned by the behavior vocabulary.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct ItemSetId(u16);
+
+impl ItemSetId {
+  /// The set used by the Medical Powerarmor profile.
+  pub const MEDICAL_POWERARMOR: Self = Self(1);
+  /// The set used by the Trigun profile's explicit weapon membership.
+  pub const TRIGUN: Self = Self(2);
+
+  /// Creates a stable numeric set identity for a build-time catalog entry.
+  #[must_use]
+  pub const fn new(raw: u16) -> Self {
+    Self(raw)
+  }
+
+  /// Returns the stable numeric identity.
+  #[must_use]
+  pub const fn as_u16(self) -> u16 {
+    self.0
+  }
+}
+
+/// Effects that can be attached to attack preparation or firing.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum AttackEffect {
+  /// Add or subtract an accuracy amount before resolution.
+  AccuracyModifier(i32),
+  /// Emit a typed number of projectiles.
+  ProjectileCount(u32),
+  /// Declare an explicit exact-hit policy.
+  ExactHit,
+}
+
+/// Effects that can be attached to a successful hit.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum HitEffect {
+  /// Apply typed damage with an explicit armor policy.
+  Damage {
+    amount: u32,
+    damage_type: DamageType,
+    bypass_armor: bool,
+  },
+  /// Apply deterministic displacement.
+  Knockback { distance: u32 },
+  /// Schedule a typed delayed explosion.
+  ScheduleExplosion { delay: u32, radius: u32 },
+  /// Apply a target-dependent score cost.
+  ScoreCost { amount: i32 },
+}
+
+/// Effects that can be attached to a lethal hit.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum KillEffect {
+  /// Award or remove score count.
+  ScoreDelta { amount: i32 },
+  /// Spawn a typed drop archetype.
+  Drop(ItemArchetype),
+  /// Trigger a typed terminal countdown.
+  TriggerNuke { countdown: u32 },
+}
+
+/// Explicit alternate action families; behavior remains in dedicated handlers.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum AlternateAction {
+  /// Select a typed alternate fire mode.
+  Fire(WeaponFireMode),
+  /// Select an alternate reload transition.
+  Reload,
+  /// Select Trigun's alternate reload and arm its terminal countdown.
+  ReloadAndTriggerNuke { countdown: u32 },
+  /// Select an alternate use transition.
+  Use,
+  /// Select an alternate invoke transition.
+  Invoke,
+  /// Select a confirmed destructive overload transition.
+  Overload,
+}
+
+/// Explicit periodic and recharge policies.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum PeriodicEffect {
+  /// Restore ammunition after a delay and cadence.
+  Recharge {
+    delay: u32,
+    cadence: u32,
+    amount: u32,
+  },
+  /// Repair health while spending durability at an interval.
+  Repair {
+    interval: u32,
+    amount: u32,
+    durability_cost: u32,
+  },
+}
+
+/// Explicit action resource costs, including status transitions.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum ResourceCost {
+  /// Current HP cost with a minimum remaining floor.
+  HitPoints { amount: u32, minimum: u32 },
+  /// Maximum HP cost with a minimum remaining floor.
+  MaxHitPoints { amount: u32, minimum: u32 },
+  /// Scheduler energy cost.
+  Energy { amount: u32 },
+  /// Reserve or clip ammunition cost.
+  Ammo { ammo_type: AmmoType, amount: u32 },
+  /// Signed score-count cost.
+  Score { amount: i32 },
+  /// Explicit status application/removal cost.
+  Status(StatusCost),
+}
+
+/// Status transitions that may be represented as an action cost.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum StatusCost {
+  /// Apply a status to the actor.
+  Apply(StatusEffect),
+  /// Remove a status from the actor.
+  Remove(StatusEffect),
+}
+
+/// Typed status vocabulary used by current callback-derived cases.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum StatusEffect {
+  /// Subtle Knife's one-use lockout status.
+  Tired,
+}
+
+/// Fair/current-state source for deterministic target selection.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum TargetSource {
+  /// Use the player's visibility-filtered observation.
+  FairObservation,
+  /// Use the current simulation state after visibility/legality checks.
+  CurrentSimulation,
+}
+
+/// Stable ordering for selected targets.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum TargetOrder {
+  /// Sort by stable entity identity.
+  EntityIdAscending,
+  /// Sort by distance, then stable entity identity.
+  DistanceThenEntityId,
+}
+
+/// Deterministic target-selection policies over an explicit state source.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum TargetSelectionPolicy {
+  /// Select one eligible target.
+  Single {
+    source: TargetSource,
+    order: TargetOrder,
+  },
+  /// Select all eligible visible living targets.
+  AllVisibleLiving {
+    source: TargetSource,
+    order: TargetOrder,
+  },
+  /// Select the actor's current cell for terrain-fed behavior.
+  CurrentCell,
+}
+
+const MEDICAL_POWERARMOR_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Equip(EquipEffect::SetMembership(ItemSetId::MEDICAL_POWERARMOR)),
+  BehaviorSpec::Periodic(PeriodicEffect::Repair {
+    interval: MEDICAL_REPAIR_INTERVAL,
+    amount: 1,
+    durability_cost: 1,
+  }),
+];
+
+/// Declarative profile for the existing Medical Powerarmor transition.
+pub const MEDICAL_POWERARMOR_BEHAVIOR: BehaviorProfile =
+  BehaviorProfile::new(MEDICAL_POWERARMOR_BEHAVIOR_SPECS);
+
+const SUBTLE_KNIFE_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Alternate(AlternateAction::Invoke),
+  BehaviorSpec::Cost(ResourceCost::HitPoints {
+    amount: SUBTLE_KNIFE_HP_COST,
+    minimum: 1,
+  }),
+  BehaviorSpec::Cost(ResourceCost::Score {
+    amount: SUBTLE_KNIFE_SCORE_COST as i32,
+  }),
+  BehaviorSpec::Cost(ResourceCost::Status(StatusCost::Apply(StatusEffect::Tired))),
+  BehaviorSpec::Targeting(TargetSelectionPolicy::AllVisibleLiving {
+    source: TargetSource::FairObservation,
+    order: TargetOrder::EntityIdAscending,
+  }),
+  BehaviorSpec::Hit(HitEffect::Damage {
+    amount: SUBTLE_KNIFE_TARGET_DAMAGE,
+    damage_type: DamageType::Physical,
+    bypass_armor: true,
+  }),
+];
+
+/// Declarative profile for the existing Subtle Knife transition.
+pub const SUBTLE_KNIFE_BEHAVIOR: BehaviorProfile =
+  BehaviorProfile::new(SUBTLE_KNIFE_BEHAVIOR_SPECS);
+
+const TRIGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Equip(EquipEffect::SetMembership(ItemSetId::TRIGUN)),
+  BehaviorSpec::Equip(EquipEffect::Slot(EquipmentSlot::Weapon)),
+  BehaviorSpec::Alternate(AlternateAction::ReloadAndTriggerNuke {
+    countdown: TRIGUN_NUKE_TIMER,
+  }),
+  BehaviorSpec::Cost(ResourceCost::HitPoints {
+    amount: TRIGUN_HP_COST,
+    minimum: TRIGUN_MIN_HP,
+  }),
+  BehaviorSpec::Cost(ResourceCost::MaxHitPoints {
+    amount: TRIGUN_MAX_HP_COST,
+    minimum: TRIGUN_MIN_MAX_HP,
+  }),
+  BehaviorSpec::Cost(ResourceCost::Score {
+    amount: TRIGUN_SCORE_COST,
+  }),
+];
+
+/// Declarative profile for the existing Trigun transition.
+pub const TRIGUN_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(TRIGUN_BEHAVIOR_SPECS);
 
 /// Medical Powerarmor begins repair only while durability is strictly above
 /// the legacy callback's `20`-point guard.
@@ -297,6 +612,105 @@ pub enum MedicalRepairOutcome {
 #[cfg(test)]
 mod tests {
   use super::*;
+
+  #[test]
+  fn behavior_vocabulary_covers_explicit_trigger_categories() {
+    const SPECS: &[BehaviorSpec] = &[
+      BehaviorSpec::Passive(PassiveModifier {
+        stat: PassiveStat::Resistance(DamageType::Fire),
+        amount: 25,
+      }),
+      BehaviorSpec::Equip(EquipEffect::SetMembership(ItemSetId::MEDICAL_POWERARMOR)),
+      BehaviorSpec::Unequip(EquipEffect::Slot(EquipmentSlot::Armor)),
+      BehaviorSpec::Attack(AttackEffect::ExactHit),
+      BehaviorSpec::Hit(HitEffect::Knockback { distance: 1 }),
+      BehaviorSpec::Kill(KillEffect::Drop(ItemArchetype::SmallMedPack)),
+      BehaviorSpec::Alternate(AlternateAction::Fire(WeaponFireMode::Burst)),
+      BehaviorSpec::Periodic(PeriodicEffect::Recharge {
+        delay: 30,
+        cadence: 10,
+        amount: 1,
+      }),
+      BehaviorSpec::Cost(ResourceCost::Ammo {
+        ammo_type: AmmoType::Cell,
+        amount: 5,
+      }),
+      BehaviorSpec::Targeting(TargetSelectionPolicy::AllVisibleLiving {
+        source: TargetSource::FairObservation,
+        order: TargetOrder::EntityIdAscending,
+      }),
+    ];
+    let profile = BehaviorProfile::new(SPECS);
+
+    assert_eq!(profile.specs().len(), 10);
+    assert!(matches!(
+      profile.specs()[0],
+      BehaviorSpec::Passive(PassiveModifier {
+        stat: PassiveStat::Resistance(DamageType::Fire),
+        amount: 25,
+      })
+    ));
+    assert_eq!(ItemSetId::new(42).as_u16(), 42);
+  }
+
+  #[test]
+  fn selected_stress_profiles_are_immutable_and_deterministically_composed() {
+    assert_eq!(
+      MEDICAL_POWERARMOR_BEHAVIOR.specs(),
+      &[
+        BehaviorSpec::Equip(EquipEffect::SetMembership(ItemSetId::MEDICAL_POWERARMOR)),
+        BehaviorSpec::Periodic(PeriodicEffect::Repair {
+          interval: MEDICAL_REPAIR_INTERVAL,
+          amount: 1,
+          durability_cost: 1,
+        }),
+      ]
+    );
+    assert_eq!(
+      SUBTLE_KNIFE_BEHAVIOR.specs(),
+      &[
+        BehaviorSpec::Alternate(AlternateAction::Invoke),
+        BehaviorSpec::Cost(ResourceCost::HitPoints {
+          amount: SUBTLE_KNIFE_HP_COST,
+          minimum: 1,
+        }),
+        BehaviorSpec::Cost(ResourceCost::Score {
+          amount: SUBTLE_KNIFE_SCORE_COST as i32,
+        }),
+        BehaviorSpec::Cost(ResourceCost::Status(StatusCost::Apply(StatusEffect::Tired))),
+        BehaviorSpec::Targeting(TargetSelectionPolicy::AllVisibleLiving {
+          source: TargetSource::FairObservation,
+          order: TargetOrder::EntityIdAscending,
+        }),
+        BehaviorSpec::Hit(HitEffect::Damage {
+          amount: SUBTLE_KNIFE_TARGET_DAMAGE,
+          damage_type: DamageType::Physical,
+          bypass_armor: true,
+        }),
+      ]
+    );
+    assert_eq!(
+      TRIGUN_BEHAVIOR.specs(),
+      &[
+        BehaviorSpec::Equip(EquipEffect::SetMembership(ItemSetId::TRIGUN)),
+        BehaviorSpec::Equip(EquipEffect::Slot(EquipmentSlot::Weapon)),
+        BehaviorSpec::Alternate(AlternateAction::ReloadAndTriggerNuke {
+          countdown: TRIGUN_NUKE_TIMER,
+        }),
+        BehaviorSpec::Cost(ResourceCost::HitPoints {
+          amount: TRIGUN_HP_COST,
+          minimum: TRIGUN_MIN_HP,
+        }),
+        BehaviorSpec::Cost(ResourceCost::MaxHitPoints {
+          amount: TRIGUN_MAX_HP_COST,
+          minimum: TRIGUN_MIN_MAX_HP,
+        }),
+        BehaviorSpec::Cost(ResourceCost::Score {
+          amount: TRIGUN_SCORE_COST,
+        }),
+      ]
+    );
+  }
 
   #[test]
   fn waits_then_repairs_and_retains_shortened_timer() {

@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.193]
+
+- Added a compile-time typed behavior vocabulary and immutable profiles for the
+  selected Medical Powerarmor, Subtle Knife, and Trigun stress cases. The
+  vocabulary covers passive/equipment, attack/hit/kill, alternate action,
+  periodic, explicit resource/status-cost, and deterministic-target concepts
+  without introducing runtime callbacks or changing gameplay/replay semantics.
+
 ## [0.2.192]
 
 - Added a deterministic vertical Nuclear BFG 9000 shot-cost encounter. The
