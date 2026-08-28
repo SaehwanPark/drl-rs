@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.213]
+
+- Added an immutable `REVENANTS_LAUNCHER_BEHAVIOR` profile for the pinned
+  exact-hit policy while retaining dedicated combat execution ownership.
+  Homing, projectile routing, delayed explosions, runtime, and audiovisual
+  parity remain deferred.
+
 ## [0.2.212]
 
 - Added an immutable `COMBAT_SHOTGUN_BEHAVIOR` profile for the evidence-backed

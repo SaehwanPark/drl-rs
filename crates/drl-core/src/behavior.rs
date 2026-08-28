@@ -394,6 +394,13 @@ const NULL_POINTER_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
 pub const NULL_POINTER_BEHAVIOR: BehaviorProfile =
   BehaviorProfile::new(NULL_POINTER_BEHAVIOR_SPECS);
 
+const REVENANTS_LAUNCHER_BEHAVIOR_SPECS: &[BehaviorSpec] =
+  &[BehaviorSpec::Attack(AttackEffect::ExactHit)];
+
+/// Immutable typed profile for Revenant's Launcher exact-hit policy.
+pub const REVENANTS_LAUNCHER_BEHAVIOR: BehaviorProfile =
+  BehaviorProfile::new(REVENANTS_LAUNCHER_BEHAVIOR_SPECS);
+
 /// Pinned BFG 10K delayed explosion interval.
 pub const BFG10K_EXPLOSION_DELAY: u32 = 25;
 /// Pinned BFG 10K delayed explosion radius.
@@ -1138,6 +1145,10 @@ mod tests {
           cost_cap: COMBAT_SHOTGUN_ALT_RELOAD_CAP,
         }),
       ]
+    );
+    assert_eq!(
+      REVENANTS_LAUNCHER_BEHAVIOR.specs(),
+      &[BehaviorSpec::Attack(AttackEffect::ExactHit)]
     );
   }
 
