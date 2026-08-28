@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.193`
+Current project version: `0.2.194`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Typed Behavior Vocabulary Contract
+## 2. Active Implementation Slice: M9 — Null Pointer Target-Branch Behavior Profile
 
 ### 2.1 Objective
 
-Define a small, explicit, compile-time typed behavior vocabulary that can
-describe the callback-derived effects already delivered for the selected
-Medical Powerarmor, Subtle Knife, and Trigun stress cases without introducing
-runtime callbacks, string-keyed dispatch, or gameplay changes.
+Extend the compile-time typed behavior vocabulary with an immutable Null Pointer
+profile that describes its deterministic target selection, boss/non-boss
+score-count branch, and deferred explosion schedule without introducing runtime
+callbacks, string-keyed dispatch, or gameplay changes.
 
 ### 2.1a Scope and steering gate
 
@@ -40,33 +40,33 @@ runtime callbacks, string-keyed dispatch, or gameplay changes.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, Gate C catalog ownership, and Gate D callback behavior
   evidence remain closed for this contract-only slice.
-- **Observable outcome:** `drl-core` exposes typed behavior specs for passive,
-  equip/unequip, attack/hit/kill, alternate action, periodic, explicit-cost,
-  and deterministic-target concepts. The selected stress cases have immutable
-  profiles composed from those specs, and unit tests prove the profile data is
-  exhaustive, deterministic, and free of dynamic callback keys.
+- **Observable outcome:** `drl-core` exposes a typed `TargetProperty::IsBoss`
+  score branch and an immutable `NULL_POINTER_BEHAVIOR` profile composed from
+  deterministic target-selection, target-score-cost, and deferred-explosion
+  specs. Exact profile content and declaration order are unit-tested alongside
+  the existing stress profiles.
 - **Gameplay/replay impact:** Gameplay semantics remain `37`; replay wire
   schema, RNG, generator, and ruleset identities remain unchanged. Project
-  version advances from `0.2.192` to `0.2.193` for the new typed contract and
+  version advances from `0.2.193` to `0.2.194` for the new typed profile and
   executable vocabulary tests.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary
   and profiles; protocol, MCP, render, audio, and browser layers receive no new
   gameplay balance or dispatch surface in this slice.
-- **Evidence boundary:** Pinned legacy source at revision
-  `17d9be1204751899b2d69d8d3a2dde247bd0cc5c` and the existing stress-case
-  evidence notes are authoritative. Controlled legacy runtime and audiovisual
-  comparisons remain `NOT_RUN`.
+- **Evidence boundary:** Pinned Null Pointer evidence at revision
+  `17d9be1204751899b2d69d8d3a2dde247bd0cc5c` in
+  `docs/legacy-behavior/null-pointer.md` is authoritative. Controlled legacy
+  runtime and audiovisual comparisons remain `NOT_RUN`.
 - **Non-goals:** Reworking existing behavior transitions, adding new gameplay
   effects, replay-file IO/migrations, runtime Lua, generic callback/event
   registries, and browser/audio/WebGPU parity.
 
 ### 2.2 Why this slice is bounded
 
-The selected callback-heavy cases already have explicit Rust state machines and
-transitions. This slice supplies the missing declarative vocabulary around them:
-small enums and immutable profiles whose payloads are compiler-checked and
-directly testable. It does not reinterpret those transitions or add a runtime
-dispatcher, so no replay or gameplay behavior changes.
+The Null Pointer transition already has an explicit Rust state machine. This
+slice adds only the missing declarative target-branch profile: small enums and
+an immutable fragment list whose payloads are compiler-checked and directly
+testable. It does not reinterpret the transition or add a runtime dispatcher,
+so no replay or gameplay behavior changes.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -1816,7 +1816,7 @@ browser presentation boundaries. Its vertical slice must:
   recharge timing, projectile routing, explosion geometry, controlled legacy
   runtime, browser capture, audio, WebGPU, and audiovisual parity as `NOT_RUN`.
 
-### 2.7bo Current typed behavior vocabulary delivery target
+### 2.7bo Previous typed behavior vocabulary delivery target
 
 The bounded implementation target for this revision is an explicit
 compile-time vocabulary and immutable profiles for the selected callback-heavy
@@ -1833,6 +1833,23 @@ stress cases. Its contract must:
 - [x] compose the Medical Powerarmor, Subtle Knife, and Trigun profiles while
   preserving their existing runtime transitions and recording runtime,
   audiovisual, and controlled-legacy comparisons as `NOT_RUN`.
+
+### 2.7bp Current Null Pointer behavior-profile delivery target
+
+The bounded implementation target for this revision is an immutable typed
+profile for Charch's Null Pointer on-hit behavior. Its contract must:
+
+- [x] select one deterministic target from current simulation state using the
+  stable entity-ID order;
+- [x] represent the explicit boss/non-boss score-count branch with its 1000
+  floor as a typed target property and payload;
+- [x] represent the deferred range-1, delay-50 explosion schedule without
+  claiming delayed area-damage geometry or runtime parity;
+- [x] assert exact profile content and declaration order while preserving the
+  existing dedicated `NullPointerHitTransition` runtime state machine;
+- [x] keep gameplay semantics, replay schema, RNG, protocol, MCP, browser,
+  audio, WebGPU, and controlled-legacy behavior unchanged or `NOT_RUN` where
+  comparison evidence is unavailable.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 

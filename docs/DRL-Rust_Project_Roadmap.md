@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.193`
+Current project version: `0.2.194`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.193)
+## 3. Current Progress Summary (`VERSION` 0.2.194)
 
 ### Delivered Foundations
 
@@ -562,6 +562,11 @@ verification item uses explicit status semantics:
   and deterministic-target concepts. Medical Powerarmor, Subtle Knife, and
   Trigun profiles compose the existing dedicated transitions without runtime
   callbacks; controlled legacy runtime and presentation parity remain open.
+- **M9 Null Pointer behavior profile (`0.2.194`):** The typed vocabulary now
+  includes an immutable Null Pointer profile with deterministic single-target
+  selection, an explicit boss/non-boss score-count branch and floor, and the
+  deferred range-1/delay-50 explosion schedule. The existing dedicated
+  transition and all gameplay/replay semantics remain unchanged.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1108,6 +1113,10 @@ scripting.
   resource/status-cost, and deterministic-target concepts without a callback
   registry; existing stress-case transitions remain explicit and parity work is
   still open.
+- [x] Null Pointer's target-dependent on-hit branch is represented by an
+  immutable typed profile with deterministic target ordering, an explicit
+  boss/non-boss score floor, and a deferred explosion schedule; its dedicated
+  runtime transition remains the execution authority.
 - [x] Grammaton Cleric Beretta alternate reload is behavior-covered by a typed
   fire-mode cycle with deterministic single/burst/auto profiles, a bounded
   200 score-count cost, ordered multi-shot resolution, and replay/MCP event
