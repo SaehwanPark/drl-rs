@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-27
-Current project version: `0.2.190`
+Current project version: `0.2.191`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.190)
+## 3. Current Progress Summary (`VERSION` 0.2.191)
 
 ### Delivered Foundations
 
@@ -542,6 +542,13 @@ verification item uses explicit status semantics:
   RNG, and existing attack/damage events. Its legacy five-shot volley, scatter,
   chainfire, projectile routing, explosions, runtime, and audiovisual parity
   remain open.
+- **M9 vertical BFG 10K shot-cost encounter (`0.2.191`):** A deterministic
+  `Bfg10kShotCostVertical` fixture now carries the same five-cell attack through
+  ScenarioRunner, replay, MCP, and BrowserSession/direct-core boundary checks,
+  preserving the 45-cell post-shot clip, hit/action/turn event ordering, and
+  final-state equality. The legacy volley, scatter, projectile/explosion
+  routing, controlled runtime, browser capture, and audiovisual parity remain
+  open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1023,6 +1030,10 @@ scripting.
   BFG's 40-cell shot cost in `0.2.188`, BFG10K exact-hit in `0.2.189`, and
   BFG10K's typed five-cell shot cost in `0.2.190`, while Nuclear Plasma
   exact-hit, chainfire, explosion, and mod callbacks remain open.
+- [x] Vertical BFG 10K shot-cost encounter preserves the typed five-cell
+  one-shot policy through deterministic scenario/replay, MCP, and
+  BrowserSession/direct-core parity; volley, scatter, projectile/explosion,
+  runtime, and audiovisual parity remain open.
 - [x] Typed `umega`, `uberetta`, and `ufshotgun` preserve pinned unique-firearm
   descriptions, 9mm relations, clips/damage/range scalars, replay kinds, and
   measured plasma/pistol/combat-shotgun atlas slots; mode switching, kill
