@@ -11,7 +11,8 @@ use crate::assault_shotgun::{AssaultShotgunReloadPlan, AssaultShotgunTransition}
 use crate::behavior::{
   BFG10K_EXPLOSION_DELAY, BFG10K_EXPLOSION_KNOCKBACK, BFG10K_EXPLOSION_RADIUS,
   BFG9000_EXPLOSION_DELAY, BFG9000_EXPLOSION_KNOCKBACK, BFG9000_EXPLOSION_RADIUS,
-  LavaRechargeOutcome, MedicalRepairOutcome, WeaponRechargeOutcome,
+  LavaRechargeOutcome, MedicalRepairOutcome, NUCLEAR_BFG9000_EXPLOSION_DELAY,
+  NUCLEAR_BFG9000_EXPLOSION_KNOCKBACK, NUCLEAR_BFG9000_EXPLOSION_RADIUS, WeaponRechargeOutcome,
 };
 use crate::combat::CombatResolver;
 use crate::combat_shotgun::{CombatShotgunReloadPlan, CombatShotgunTransition};
@@ -1686,6 +1687,7 @@ impl Game {
       null_pointer_item_id,
       weapon_is_bfg10k,
       weapon_is_bfg9000,
+      weapon_is_nuclear_bfg9000,
     ) = {
       let player = self
         .state
@@ -1724,6 +1726,8 @@ impl Game {
         (weapon.archetype() == drl_protocol::ItemArchetype::NullPointer).then_some(weapon.id());
       let weapon_is_bfg10k = weapon.archetype() == drl_protocol::ItemArchetype::Bfg10k;
       let weapon_is_bfg9000 = weapon.archetype() == drl_protocol::ItemArchetype::Bfg9000;
+      let weapon_is_nuclear_bfg9000 =
+        weapon.archetype() == drl_protocol::ItemArchetype::NuclearBfg9000;
       (
         props.fire_cost,
         shot_count,
@@ -1731,6 +1735,7 @@ impl Game {
         null_pointer_item_id,
         weapon_is_bfg10k,
         weapon_is_bfg9000,
+        weapon_is_nuclear_bfg9000,
       )
     };
 
@@ -1838,6 +1843,14 @@ impl Game {
           delay: BFG9000_EXPLOSION_DELAY,
           radius: BFG9000_EXPLOSION_RADIUS,
           knockback: BFG9000_EXPLOSION_KNOCKBACK,
+        });
+      } else if weapon_is_nuclear_bfg9000 {
+        events.push(GameEvent::NuclearBfg9000ExplosionScheduled {
+          entity_id: player_id,
+          target_id: target_monster_id,
+          delay: NUCLEAR_BFG9000_EXPLOSION_DELAY,
+          radius: NUCLEAR_BFG9000_EXPLOSION_RADIUS,
+          knockback: NUCLEAR_BFG9000_EXPLOSION_KNOCKBACK,
         });
       }
 

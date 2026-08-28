@@ -378,6 +378,13 @@ pub const BFG9000_EXPLOSION_RADIUS: u32 = 8;
 /// Pinned standard BFG 9000 delayed explosion knockback payload.
 pub const BFG9000_EXPLOSION_KNOCKBACK: u32 = 16;
 
+/// Pinned Nuclear BFG 9000 delayed explosion interval.
+pub const NUCLEAR_BFG9000_EXPLOSION_DELAY: u32 = 33;
+/// Pinned Nuclear BFG 9000 delayed explosion radius.
+pub const NUCLEAR_BFG9000_EXPLOSION_RADIUS: u32 = 8;
+/// Pinned Nuclear BFG 9000 delayed explosion knockback payload.
+pub const NUCLEAR_BFG9000_EXPLOSION_KNOCKBACK: u32 = 16;
+
 const BFG10K_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
   BehaviorSpec::Attack(AttackEffect::ExactHit),
   // Scatter and projectile routing remain separate from the typed count.
@@ -416,6 +423,11 @@ pub const BFG9000_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(BFG9000_BEHAV
 const NUCLEAR_BFG9000_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
   BehaviorSpec::Attack(AttackEffect::ExactHit),
   BehaviorSpec::Attack(AttackEffect::ProjectileCount(1)),
+  BehaviorSpec::Hit(HitEffect::ScheduleExplosion {
+    delay: NUCLEAR_BFG9000_EXPLOSION_DELAY,
+    radius: NUCLEAR_BFG9000_EXPLOSION_RADIUS,
+    knockback: Some(NUCLEAR_BFG9000_EXPLOSION_KNOCKBACK),
+  }),
   BehaviorSpec::Cost(ResourceCost::Ammo {
     ammo_type: AmmoType::Cell,
     amount: 40,
@@ -879,6 +891,11 @@ mod tests {
       &[
         BehaviorSpec::Attack(AttackEffect::ExactHit),
         BehaviorSpec::Attack(AttackEffect::ProjectileCount(1)),
+        BehaviorSpec::Hit(HitEffect::ScheduleExplosion {
+          delay: NUCLEAR_BFG9000_EXPLOSION_DELAY,
+          radius: NUCLEAR_BFG9000_EXPLOSION_RADIUS,
+          knockback: Some(NUCLEAR_BFG9000_EXPLOSION_KNOCKBACK),
+        }),
         BehaviorSpec::Cost(ResourceCost::Ammo {
           ammo_type: AmmoType::Cell,
           amount: 40,
