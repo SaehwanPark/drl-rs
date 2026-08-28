@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.223]
+
+- Added the immutable `RAILGUN_BEHAVIOR` profile and enforced its pinned
+  five-cell ordinary-fire cost before clip/RNG mutation, including atomic
+  below-cost rejection coverage. Gameplay semantics advance to `45`; stale
+  semantics-44 replays are rejected before execution. Ray/piercing routing and
+  full spread/falloff parity remain deferred.
+
 ## [0.2.222]
 
 - Added the immutable `FRAG_SHOTGUN_BEHAVIOR` profile and enforced its pinned
