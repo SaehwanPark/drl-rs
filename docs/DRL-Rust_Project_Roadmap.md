@@ -539,16 +539,18 @@ verification item uses explicit status semantics:
 - **M9 BFG 10K shot-cost behavior (`0.2.190`):** BFG 10K now preflights and
   consumes exactly five cells for each valid Rust one-shot attack, rejecting
   clips below five atomically while preserving exact-hit, action cost, damage
-  RNG, and existing attack/damage events. Its legacy five-shot volley, scatter,
-  chainfire, projectile routing, explosions, runtime, and audiovisual parity
-  remain open.
+  RNG, and existing attack/damage events. At that revision its legacy
+  five-shot volley, scatter, chainfire, projectile routing, explosions, runtime,
+  and audiovisual parity remained open; the direct-target five-projectile
+  volley was delivered subsequently in `0.2.200`.
 - **M9 vertical BFG 10K shot-cost encounter (`0.2.191`):** A deterministic
   `Bfg10kShotCostVertical` fixture now carries the same five-cell attack through
   ScenarioRunner, replay, MCP, and BrowserSession/direct-core boundary checks,
   preserving the 45-cell post-shot clip, hit/action/turn event ordering, and
-  final-state equality. The legacy volley, scatter, projectile/explosion
-  routing, controlled runtime, browser capture, and audiovisual parity remain
-  open.
+  final-state equality. At that revision the legacy volley, scatter,
+  projectile/explosion routing, controlled runtime, browser capture, and
+  audiovisual parity remained open; the direct-target five-projectile volley
+  was delivered subsequently in `0.2.200`.
 - **M9 vertical Nuclear BFG 9000 shot-cost encounter (`0.2.192`):** A
   deterministic `NuclearBfgShotCostVertical` fixture now carries the same
   forty-cell attack through ScenarioRunner, replay, MCP, and
@@ -568,10 +570,10 @@ verification item uses explicit status semantics:
   deferred range-1/delay-50 explosion schedule. The existing dedicated
   transition and all gameplay/replay semantics remain unchanged.
 - **M9 BFG 10K behavior profile (`0.2.195`):** The typed vocabulary now
-  includes an immutable BFG 10K profile for the current exact-hit,
-  one-projectile, five-cell one-shot boundary. The legacy five-projectile
-  volley, scatter, projectile routing, runtime, and audiovisual parity remain
-  explicitly open.
+  included an immutable BFG 10K profile for the exact-hit, one-projectile,
+  five-cell one-shot boundary. The typed five-projectile direct-target volley
+  was added in `0.2.200`; scatter, projectile routing, runtime, and
+  audiovisual parity remain explicitly open.
 - **M9 BFG-family behavior profiles (`0.2.196`):** The typed vocabulary now
   includes immutable standard and Nuclear BFG 9000 profiles for exact-hit,
   one-projectile, and forty-cell one-shot boundaries; Nuclear BFG also records
@@ -1080,12 +1082,20 @@ scripting.
   measured plasma/BFG/BFG10K atlas slots; Nuclear Plasma recharge is
   behavior-covered in `0.2.177`, Nuclear BFG exact-hit in `0.2.185`, Nuclear
   BFG's 40-cell shot cost in `0.2.188`, BFG10K exact-hit in `0.2.189`, and
-  BFG10K's typed five-cell shot cost in `0.2.190`, while Nuclear Plasma
-  exact-hit, chainfire, explosion, and mod callbacks remain open.
+  BFG10K's typed five-cell shot cost in `0.2.190`, and its typed
+  five-projectile direct-target volley in `0.2.200`; Nuclear Plasma exact-hit,
+  chainfire, explosion, and mod callbacks remain open.
 - [x] Vertical BFG 10K shot-cost encounter preserves the typed five-cell
   one-shot policy through deterministic scenario/replay, MCP, and
-  BrowserSession/direct-core parity; volley, scatter, projectile/explosion,
-  runtime, and audiovisual parity remain open.
+  BrowserSession/direct-core parity. The five-projectile direct-target volley
+  is covered by the `Bfg10kExactHitVertical` and `Bfg10kShotCostVertical`
+  fixtures in `0.2.200`; scatter, projectile/explosion routing, runtime, and
+  audiovisual parity remain open.
+- [x] BFG 10K five-projectile direct-target volley resolves five ordered
+  exact-hit attack/damage pairs, consumes twenty-five cells from a full clip,
+  and preserves ScenarioRunner/replay, MCP, BrowserSession, and deterministic
+  RNG parity; scatter, projectile routing, explosions, chainfire, runtime, and
+  audiovisual parity remain open.
 - [x] Vertical Nuclear BFG 9000 shot-cost encounter preserves the typed
   forty-cell one-shot policy through deterministic scenario/replay, MCP, and
   BrowserSession/direct-core parity; alternate overload, recharge timing,
