@@ -750,8 +750,9 @@ verification item uses explicit status semantics:
   ten-rocket clip cost alongside the existing terrain-reload fragments.
   Generic ranged execution preflights the ten-rocket cost before mutation;
   gameplay semantics advance to `48`, so stale semantics-47 replay metadata is
-  rejected before execution. Acid reload, explosion geometry/content,
-  spread/falloff, callback parity, runtime, and audiovisual parity remain open.
+  rejected before execution. The existing Acid-to-Water reload remains
+  authoritative; explosion geometry/content, spread/falloff, callback parity,
+  runtime, and audiovisual parity remain open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and

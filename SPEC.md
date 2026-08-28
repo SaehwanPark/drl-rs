@@ -58,9 +58,9 @@ ten-rocket clip cost while retaining generic command execution ownership.
   `docs/legacy-behavior/acid-spitter-profile.md` plus the delivered direct-target
   ranged contract is authoritative. The legacy `shotcost = 10` field, default
   one-shot count, and `getShotCost` minimum/callback ordering support the
-  ten-rocket preflight. Acid reload, explosion routing, and callback parity
-  remain deferred; controlled legacy runtime, browser capture, and audiovisual
-  comparisons remain `NOT_RUN`.
+  ten-rocket preflight. The existing Acid-to-Water reload remains authoritative;
+  explosion routing and callback parity remain deferred. Controlled legacy
+  runtime, browser capture, and audiovisual comparisons remain `NOT_RUN`.
 - **Non-goals:** Acid-to-Water reload changes, explosion geometry/content,
   spread/falloff, exact legacy timing/accuracy, audiovisual presentation
   comparison, new command or callback registries, unrelated gameplay balance or
@@ -2472,19 +2472,20 @@ The bounded implementation target for this revision is an immutable profile
 for the already-delivered Acid Spitter ordinary ranged action. Its contract
 must:
 
-- [ ] expose ordered typed `AttackEffect::ProjectileCount(1)` and
+- [x] expose ordered typed `AttackEffect::ProjectileCount(1)` and
   `ResourceCost::Ammo { ammo_type: Rocket, amount: 10 }` fragments;
-- [ ] retain generic ranged execution ownership for target/LOS/range
+- [x] retain generic ranged execution ownership for target/LOS/range
   validation, damage RNG, event ordering, and transactional clip consumption;
-- [ ] enforce the ten-rocket cost before mutation, reject clips below the cost
+- [x] enforce the ten-rocket cost before mutation, reject clips below the cost
   atomically, and preserve the existing one-projectile event contract;
-- [ ] assert exact profile declaration order without adding an alternate-fire
+- [x] assert exact profile declaration order without adding an alternate-fire
   command, callback registry, or replay-wire field; stale gameplay semantics
   `47` replays are rejected before execution;
-- [ ] keep Acid-to-Water reload, explosion geometry/content, spread/falloff,
-  exact legacy timing/accuracy, controlled runtime, and audiovisual parity
-  `NOT_RUN` where comparison evidence is unavailable;
-- [ ] advance project version from `0.2.225` to `0.2.226` and gameplay
+- [x] keep the existing Acid-to-Water reload transition authoritative while
+  leaving explosion geometry/content, spread/falloff, exact legacy
+  timing/accuracy, controlled runtime, and audiovisual parity `NOT_RUN` where
+  comparison evidence is unavailable;
+- [x] advance project version from `0.2.225` to `0.2.226` and gameplay
   semantics from `47` to `48`, preserving replay schema, RNG, generator, and
   ruleset identities.
 
