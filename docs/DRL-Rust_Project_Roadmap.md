@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.231`
+Current project version: `0.2.232`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.231)
+## 3. Current Progress Summary (`VERSION` 0.2.232)
 
 ### Delivered Foundations
 
@@ -783,6 +783,11 @@ verification item uses explicit status semantics:
   five-cell volley before mutation; gameplay semantics advance to `53`, so
   stale semantics-52 replay metadata is rejected before execution. Alternate
   chainfire, exact timing/accuracy, runtime, and audiovisual parity remain open.
+- **M9 Laser Rifle browser boundary (`0.2.232`):** The direct-core and
+  `BrowserSession` paths now reproduce a fixed five-projectile command's
+  events, fair observations, render effects, scene state, and replay state;
+  gameplay semantics remain `53` while controlled legacy runtime, browser
+  capture, alternate chainfire, and audiovisual parity remain open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1346,6 +1351,11 @@ scripting.
   resolves the ordered five-cell volley, preflights its aggregate cost, and
   preserves atomic below-cost rejection while alternate chainfire, exact
   timing/accuracy, runtime, and audiovisual parity remain open.
+- [x] Laser Rifle's delivered five-projectile ordinary-fire contract has a
+  deterministic direct-core/BrowserSession boundary check covering identical
+  events, fair observations, render effects, scene projections, five-cell clip
+  consumption, and replay determinism; controlled legacy runtime, browser
+  capture, alternate chainfire, and audiovisual parity remain open.
 - [x] Missile Launcher has an immutable behavior profile for ordinary
   single-rocket reload and capped full-deficit reload (`2,500` score-count
   units); dedicated reload/planner paths remain authoritative and rocket-jump,
