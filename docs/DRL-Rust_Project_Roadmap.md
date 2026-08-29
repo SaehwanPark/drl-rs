@@ -1359,9 +1359,11 @@ scripting.
   alternate-overload and delay-40/cadence-2/amount-1 recharge fragments;
   dedicated transitions remain authoritative and chainfire, runtime, and
   audiovisual parity remain open.
-- [x] Blaster has an immutable behavior profile for its delay-30/cadence-10/
-  amount-1 recharge fragment; the dedicated transition remains authoritative
-  and aimed fire, runtime, and audiovisual parity remain open.
+- [x] Blaster has an immutable behavior profile for its current one-projectile
+  ordinary fire and one-cell cost followed by its delay-30/cadence-10/amount-1
+  recharge fragment; generic ranged execution and the dedicated transition
+  remain authoritative while aimed fire, runtime, and audiovisual parity
+  remain open.
 - [x] Malek's Armor has an immutable behavior profile for its
   delay-50/cadence-5/amount-1 durability-recharge fragment; the dedicated
   transition remains authoritative and armor resistance/degradation, runtime,
@@ -1409,11 +1411,6 @@ scripting.
   resolves the ordered five-cell volley, preflights its aggregate cost, and
   preserves atomic below-cost rejection while alternate chainfire, exact
   timing/accuracy, runtime, and audiovisual parity remain open.
-- [x] Blaster has an immutable behavior profile for its current one-projectile
-  ordinary fire and one-cell cost, followed by its typed periodic recharge;
-  generic ranged execution and `WeaponRechargeState` remain authoritative while
-  aimed callback, exact timing/accuracy, runtime, and audiovisual parity remain
-  open.
 - [x] Laser Rifle's delivered five-projectile ordinary-fire contract has a
   deterministic direct-core/BrowserSession boundary check covering identical
   events, fair observations, render effects, scene projections, five-cell clip
