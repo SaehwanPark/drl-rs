@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.245]
+
+- Extended the typed aimed-fire command to the Combat Pistol, sharing the
+  pinned +3 accuracy bonus, doubled action cost, one projectile, and one 9mm
+  round consumed transactionally. Direct-core, replay/MCP JSON and catalog,
+  and `BrowserSession` parity are verified; gameplay semantics advance from
+  `54` to `55`, while exact legacy callback state/timing, controlled runtime,
+  browser capture, and audiovisual parity remain deferred.
+
 ## [0.2.244]
 
 - Added a typed Pistol-only aimed-fire command with the pinned +3 accuracy

@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.244`
+Current project version: `0.2.245`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -68,7 +68,7 @@ ten-cell ammo-cost fragments alongside its target-score and deferred explosion
 fragments; Tristar Blaster records its typed three-projectile ordinary-fire and
 five-cell per-projectile ammo-cost fragments; Pistol
 records its typed one-projectile ordinary-fire, one-round 9mm ammo-cost, and
-Pistol-only aimed-fire (+3 accuracy, 2× action-cost) fragments; Rocket Launcher records
+Pistol/Combat Pistol aimed-fire (+3 accuracy, 2× action-cost) fragments; Rocket Launcher records
 its typed one-projectile ordinary-fire and one-rocket ammo-cost fragments;
 Assault Shotgun records its typed ordinary single-shell reload and
 capped full-deficit reload fragments;

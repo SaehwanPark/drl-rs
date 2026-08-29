@@ -16,6 +16,9 @@ const ACTION_ALIASES: &[&str] = &[
   "attack_ranged",
   "fire",
   "shoot",
+  "aimed_fire",
+  "attack_ranged_aimed",
+  "aim",
   "reload",
   "invoke",
   "alt_reload",
@@ -27,7 +30,14 @@ const ACTION_ALIASES: &[&str] = &[
   "descend",
 ];
 const MOVE_ACTIONS: &[&str] = &["move", "attack_melee", "melee"];
-const RANGED_ACTIONS: &[&str] = &["attack_ranged", "fire", "shoot"];
+const RANGED_ACTIONS: &[&str] = &[
+  "attack_ranged",
+  "fire",
+  "shoot",
+  "aimed_fire",
+  "attack_ranged_aimed",
+  "aim",
+];
 const ITEM_ACTIONS: &[&str] = &["use", "equip", "drop", "invoke"];
 const ALT_RELOAD_ACTIONS: &[&str] = &["alt_reload"];
 const UNEQUIP_ACTIONS: &[&str] = &["unequip"];
@@ -245,14 +255,14 @@ pub fn game_step_action_schema() -> JsonValue {
     SchemaField::new(
       "target_x",
       "integer",
-      "Target X coordinate (for fire)",
+      "Target X coordinate (for fire or aimed_fire)",
       false,
     )
     .with_range(I32_MIN, I32_MAX),
     SchemaField::new(
       "target_y",
       "integer",
-      "Target Y coordinate (for fire)",
+      "Target Y coordinate (for fire or aimed_fire)",
       false,
     )
     .with_range(I32_MIN, I32_MAX),

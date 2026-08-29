@@ -69,23 +69,25 @@ DRL-Rust is a deterministic, headless, turn-based roguelike simulation of Doom t
    - Wait in place for 1 turn (costs 100 energy).
 4. `fire` (`target_x`: int, `target_y`: int)
    - Fire equipped ranged weapon at target grid coordinates.
-5. `reload`
+5. `aimed_fire` (`target_x`: int, `target_y`: int)
+   - Fire an equipped Pistol or Combat Pistol with +3 accuracy at double time cost.
+6. `reload`
    - Reload equipped ranged weapon from inventory ammunition.
-6. `invoke` (`item_id`: int)
+7. `invoke` (`item_id`: int)
    - Invoke the equipped Subtle Knife alternate action against visible targets.
-7. `alt_reload` (`item_id`: int, `confirmed`: bool)
+8. `alt_reload` (`item_id`: int, `confirmed`: bool)
    - Confirm the equipped Trigun alternate reload and its typed level nuke.
-8. `pickup`
+9. `pickup`
    - Pick up an item lying on the current ground tile into backpack.
-9. `use` (`item_id`: int)
+10. `use` (`item_id`: int)
    - Consume or activate an inventory item (e.g. MedPack or Phase Device).
-10. `equip` (`item_id`: int, `slot`: "Weapon" | "Armor")
+11. `equip` (`item_id`: int, `slot`: "Weapon" | "Armor")
    - Equip an item from backpack into active gear slot.
-11. `unequip` (`slot`: "Weapon" | "Armor")
+12. `unequip` (`slot`: "Weapon" | "Armor")
    - Unequip gear back into backpack inventory.
-12. `drop` (`item_id`: int)
+13. `drop` (`item_id`: int)
    - Drop an inventory item onto the current floor tile.
-13. `descend`
+14. `descend`
    - Descend down-stairs to enter the next dungeon depth.
 "#;
       Ok(wrap_resource_content(uri, "text/markdown", text))

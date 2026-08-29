@@ -617,6 +617,10 @@ const COMBAT_PISTOL_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
     ammo_type: AmmoType::Ammo9mm,
     amount: 1,
   }),
+  BehaviorSpec::Alternate(AlternateAction::AimedFire {
+    accuracy_bonus: PISTOL_AIMED_ACCURACY_BONUS,
+    fire_cost_multiplier: PISTOL_AIMED_FIRE_COST_MULTIPLIER,
+  }),
 ];
 
 /// Immutable typed profile for the current Combat Pistol ordinary-fire policy.
@@ -1577,6 +1581,10 @@ mod tests {
         BehaviorSpec::Cost(ResourceCost::Ammo {
           ammo_type: AmmoType::Ammo9mm,
           amount: 1,
+        }),
+        BehaviorSpec::Alternate(AlternateAction::AimedFire {
+          accuracy_bonus: PISTOL_AIMED_ACCURACY_BONUS,
+          fire_cost_multiplier: PISTOL_AIMED_FIRE_COST_MULTIPLIER,
         }),
       ]
     );

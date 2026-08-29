@@ -405,7 +405,17 @@ fn test_jsonrpc_tools_list_publishes_truthful_input_schemas() {
     .and_then(|field| field.get("enum"))
     .and_then(JsonValue::as_array)
     .expect("action enum");
-  for alias in ["move", "attack_melee", "melee", "fire", "shoot", "wait"] {
+  for alias in [
+    "move",
+    "attack_melee",
+    "melee",
+    "fire",
+    "shoot",
+    "aimed_fire",
+    "attack_ranged_aimed",
+    "aim",
+    "wait",
+  ] {
     assert!(
       action_enum
         .iter()
