@@ -1761,7 +1761,10 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
         };
         command
       };
-      if matches!(command, Command::AttackRanged(_)) {
+      if matches!(
+        command,
+        Command::AttackRanged(_) | Command::AttackRangedChainfire(_)
+      ) {
         TARGET.with(|target_slot| *target_slot.borrow_mut() = None);
       }
       match session.submit(command) {
