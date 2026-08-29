@@ -285,11 +285,15 @@ impl Game {
       }
       Command::AttackRanged(target_pos) => {
         action_cost =
-          self.execute_player_ranged_attack(player_id, target_pos, false, &mut events)?;
+          self.execute_player_ranged_attack(player_id, target_pos, false, false, &mut events)?;
       }
       Command::AttackRangedAimed(target_pos) => {
         action_cost =
-          self.execute_player_ranged_attack(player_id, target_pos, true, &mut events)?;
+          self.execute_player_ranged_attack(player_id, target_pos, true, false, &mut events)?;
+      }
+      Command::AttackRangedChainfire(target_pos) => {
+        action_cost =
+          self.execute_player_ranged_attack(player_id, target_pos, false, true, &mut events)?;
       }
       Command::Wait => {
         self.execute_player_wait(player_id, &mut events)?;
@@ -1666,6 +1670,7 @@ impl Game {
     player_id: drl_protocol::EntityId,
     target_pos: Position,
     aimed: bool,
+    chainfire: bool,
     events: &mut Vec<GameEvent>,
   ) -> Result<ActionCost, CommandError> {
     if !self.state.world.map().is_in_bounds(target_pos) {
@@ -1704,6 +1709,7 @@ impl Game {
       weapon_is_bfg9000,
       weapon_is_nuclear_bfg9000,
       weapon_is_anti_freak_jackal,
+      weapon_is_chaingun,
     ) = {
       let player = self
         .state
@@ -1720,6 +1726,18 @@ impl Game {
 
       if !props.is_ranged {
         return Err(CommandError::NoEquippedWeapon);
+      }
+      if chainfire {
+        if weapon.archetype() != drl_protocol::ItemArchetype::Chaingun {
+          return Err(CommandError::InvalidCommand(
+            "chainfire is only available for the Chaingun".to_string(),
+          ));
+        }
+        if !crate::chaingun::ChaingunTransition::can_chainfire(props) {
+          return Err(CommandError::InvalidCommand(
+            "higher Chaingun chainfire levels are deferred".to_string(),
+          ));
+        }
       }
       if aimed
         && !matches!(
@@ -1745,7 +1763,11 @@ impl Game {
       if distance > props.range {
         return Err(CommandError::TargetOutOfRange(target_pos));
       }
-      let shot_count = weapon.projectile_count();
+      let shot_count = if chainfire {
+        crate::chaingun::CHAINGUN_CHAINFIRE_PROJECTILE_COUNT
+      } else {
+        weapon.projectile_count()
+      };
       // Keep emitted projectile count separate from typed clip cost (BFG
       // families charge their evidence-backed per-projectile amounts).
       let ammo_cost = shot_count.saturating_mul(weapon.shot_cost());
@@ -1762,6 +1784,7 @@ impl Game {
         weapon.archetype() == drl_protocol::ItemArchetype::NuclearBfg9000;
       let weapon_is_anti_freak_jackal =
         weapon.archetype() == drl_protocol::ItemArchetype::AntiFreakJackal;
+      let weapon_is_chaingun = weapon.archetype() == drl_protocol::ItemArchetype::Chaingun;
       (
         props.fire_cost,
         shot_count,
@@ -1772,6 +1795,7 @@ impl Game {
         weapon_is_bfg9000,
         weapon_is_nuclear_bfg9000,
         weapon_is_anti_freak_jackal,
+        weapon_is_chaingun,
       )
     };
 
@@ -1988,6 +2012,19 @@ impl Game {
     {
       weapon.reset_weapon_recharge_timer();
       weapon.mark_pump_action_after_fire();
+      if chainfire && weapon_is_chaingun {
+        crate::chaingun::ChaingunTransition::advance(
+          weapon
+            .weapon_properties_mut()
+            .ok_or(CommandError::NoEquippedWeapon)?,
+        );
+      } else if !chainfire {
+        crate::chaingun::ChaingunTransition::reset(
+          weapon
+            .weapon_properties_mut()
+            .ok_or(CommandError::NoEquippedWeapon)?,
+        );
+      }
     }
 
     Ok(if aimed {

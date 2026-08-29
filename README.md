@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.256`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.257`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -101,7 +101,9 @@ replays, and regression testing.
     typed two-projectile dual-shot consumes two shells; Super Shotgun's typed
     two-projectile ordinary fire also consumes two shells; Minigun's typed
     eight-projectile ordinary fire consumes eight 9mm rounds; Chaingun's typed
-    four-projectile ordinary fire consumes four 9mm rounds; Laser Rifle's typed
+    four-projectile ordinary fire consumes four 9mm rounds and exposes a
+    bounded first-level three-projectile chainfire consuming three rounds;
+    Laser Rifle's typed
     five-projectile ordinary fire consumes five cells; Plasma Rifle's typed
     six-projectile ordinary fire consumes six cells; Nuclear Plasma Rifle's
     typed six-projectile ordinary fire consumes six cells; Anti-Freak Jackal's

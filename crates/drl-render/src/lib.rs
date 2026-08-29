@@ -1903,6 +1903,7 @@ mod tests {
       armor_value: Some(100),
       heal_amount: None,
       knockback: None,
+      chainfire_level: 0,
     };
     assert_eq!(equipped_colorization_tint(None), [0, 0, 0, 0]);
     assert_eq!(equipped_colorization_tint(Some(&armor)), [0, 255, 0, 255]);

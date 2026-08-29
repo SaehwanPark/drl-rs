@@ -21,7 +21,8 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// Gameplay semantics identifier expected by the current replay engine.
 ///
 /// This advances independently from the wire/schema and RNG-sampling versions
-/// when other deterministic simulation rules change. Version `66` includes
+/// when other deterministic simulation rules change. Version `67` includes
+/// Chaingun's typed first-level three-projectile chainfire burst, version `66` includes
 /// Null Pointer's typed actor-only radius-1 splash, version `65`'s Railgun
 /// typed ray/piercing traversal, version `64`'s Anti-Freak Jackal
 /// ground-item destruction, version `63`'s typed splash knockback, version
@@ -47,7 +48,7 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// alternate overload/recharge, the `IF_NORELOAD` policy, Blaster recharge,
 /// the prior Malek's Armor, Missile Launcher, and Combat Shotgun policies, and
 /// the typed ordinary-fire cost policies through Laser Rifle.
-pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 66;
+pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 67;
 
 /// Procedural-generation semantics identifier expected for replays that carry
 /// a procedural generation configuration. Version 2 includes the exact
@@ -67,7 +68,8 @@ pub struct ReplayMetadata {
   /// Engine crate version string.
   pub engine_version: String,
   /// Gameplay semantics version required to interpret the command history.
-  /// Version 66 includes Null Pointer's typed actor-only radius-1 splash,
+  /// Version 67 includes Chaingun's typed first-level three-projectile chainfire
+  /// burst; version 66 includes Null Pointer's typed actor-only radius-1 splash,
   /// version 65 includes Railgun's typed ray/piercing traversal, version 64
   /// includes Anti-Freak Jackal's typed ground-item destruction, version 63
   /// includes its typed splash knockback, version 62 includes its typed

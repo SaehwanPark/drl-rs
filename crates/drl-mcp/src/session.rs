@@ -137,6 +137,25 @@ pub fn compute_legal_actions(obs: &PlayerObservation) -> Vec<LegalAction> {
             params: JsonValue::Object(p),
           });
 
+          if weapon.archetype == ItemArchetype::Chaingun
+            && weapon.chainfire_level == 0
+            && weapon.clip.is_some_and(|(loaded, _)| loaded >= 3)
+          {
+            let mut chainfire_params = BTreeMap::new();
+            chainfire_params.insert("action".to_string(), JsonValue::from("chainfire"));
+            chainfire_params.insert("target_x".to_string(), JsonValue::from(actor.position.x));
+            chainfire_params.insert("target_y".to_string(), JsonValue::from(actor.position.y));
+            actions.push(LegalAction {
+              action: "Chainfire".to_string(),
+              description: format!(
+                "Chainfire {} at {} at ({}, {}) (3 projectiles, 3 rounds)",
+                weapon.name, actor.name, actor.position.x, actor.position.y
+              ),
+              command: Command::AttackRangedChainfire(actor.position),
+              params: JsonValue::Object(chainfire_params),
+            });
+          }
+
           if matches!(
             weapon.archetype,
             ItemArchetype::Pistol
@@ -535,6 +554,13 @@ pub fn json_to_command(val: &JsonValue) -> Result<Command, String> {
         target_x, target_y,
       )))
     }
+    "chainfire" | "attack_ranged_chainfire" => {
+      let target_x = required_exact_i32(obj, &["target_x", "x"], "target_x / x")?;
+      let target_y = required_exact_i32(obj, &["target_y", "y"], "target_y / y")?;
+      Ok(Command::AttackRangedChainfire(Position::new(
+        target_x, target_y,
+      )))
+    }
     "wait" => Ok(Command::Wait),
     "pickup" => Ok(Command::Pickup),
     "drop" => {
@@ -765,6 +791,10 @@ fn item_view_to_json(item: &ItemView) -> JsonValue {
     cm.insert("max".to_string(), JsonValue::from(max));
     map.insert("clip".to_string(), JsonValue::Object(cm));
   }
+  map.insert(
+    "chainfire_level".to_string(),
+    JsonValue::from(u32::from(item.chainfire_level)),
+  );
   if let Some((min_d, max_d)) = item.damage {
     let mut dm = BTreeMap::new();
     dm.insert("min".to_string(), JsonValue::from(min_d));
@@ -2404,6 +2434,44 @@ mod tests {
     assert_eq!(session.get_metrics(), &metrics_before);
     assert_eq!(session.export_replay().unwrap(), &replay_before);
     assert_eq!(session.recent_events(), events_before.as_slice());
+  }
+
+  #[test]
+  fn test_legal_action_catalog_advertises_first_chaingun_chainfire_only_once() {
+    let mut session = McpSession::new();
+    session
+      .load_scenario("\n#######\n#@.h..#\n#######\n", None)
+      .unwrap();
+    let player_id = session.game.as_ref().unwrap().world().player_id().unwrap();
+    session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .get_actor_mut(player_id)
+      .unwrap()
+      .equipment_mut()
+      .equip(
+        EquipmentSlot::Weapon,
+        drl_core::item::Item::chaingun(ItemId::new(100)),
+      )
+      .unwrap();
+
+    let observation = session.get_observation().unwrap();
+    let chainfire = compute_legal_actions(&observation)
+      .into_iter()
+      .find(|action| action.action == "Chainfire")
+      .expect("first Chaingun chainfire should be advertised");
+    assert_eq!(
+      chainfire.command,
+      Command::AttackRangedChainfire(Position::new(3, 1))
+    );
+    session.step(chainfire.command).expect("chainfire action");
+    assert!(
+      !compute_legal_actions(&session.get_observation().unwrap())
+        .iter()
+        .any(|action| action.action == "Chainfire")
+    );
   }
 
   #[test]
@@ -4334,6 +4402,13 @@ mod tests {
     assert_eq!(
       json_to_command(&aimed_fire).unwrap(),
       Command::AttackRangedAimed(Position::new(7, 11))
+    );
+
+    let chainfire =
+      JsonValue::parse(r#"{"action":"chainfire","target_x":7,"target_y":11}"#).unwrap();
+    assert_eq!(
+      json_to_command(&chainfire).unwrap(),
+      Command::AttackRangedChainfire(Position::new(7, 11))
     );
 
     let command_alias = JsonValue::parse(r#"{"command":"wait"}"#).unwrap();
