@@ -1,7 +1,8 @@
 # Blaster typed behavior-profile evidence
 
-Status: delivered typed behavior profile for `0.2.205`; aimed fire, controlled
-legacy runtime comparison, and audiovisual parity remain `NOT_RUN`.
+Status: delivered typed behavior profile and `0.2.243` direct-core/
+`BrowserSession` ordinary-fire boundary; aimed fire, controlled legacy runtime
+comparison, and audiovisual parity remain `NOT_RUN`.
 
 ## Pinned source
 
@@ -13,6 +14,10 @@ evidence.
 - `bin/data/drl/items/eitems.lua:135-169` defines `ublaster` with a ten-cell
   clip, `IF_NORELOAD`, and `perk_weapon_recharge`; its creation callback sets
   recharge delay `30` and amount `1`.
+- The same definition has no `shots` or `shotcost` field. `src/dfitem.pas:249-252`
+  therefore supplies zero defaults, `src/dfbeing.pas:1477-1481` resolves the
+  ordinary path to one projectile, and `src/dfitem.pas:627-634` clamps its
+  per-projectile cost to one cell before callback multipliers.
 - `bin/data/drl/perks.lua:350-386` increments the equipped recharge timer per
   item tick, restores one cell at delay plus cadence, clamps at capacity, and
   resets the timer after firing.
@@ -22,10 +27,12 @@ evidence.
 
 ## DRL-Rust boundary
 
-The immutable `BLASTER_BEHAVIOR` profile records the existing typed periodic
-recharge fragment (delay `30`, cadence `10`, amount `1`). The dedicated
-`WeaponRechargeState` transition remains the execution authority; no new
-command, callback registry, replay-wire field, or gameplay timing is added.
+The immutable `BLASTER_BEHAVIOR` profile records the current one-projectile,
+one-cell ordinary-fire fragments followed by the typed periodic recharge
+fragment (delay `30`, cadence `10`, amount `1`). Generic ranged execution and
+the dedicated `WeaponRechargeState` transition remain the execution
+authorities; no new command, callback registry, replay-wire field, or gameplay
+timing is added.
 
 The profile intentionally does not claim the legacy aimed-fire callback,
 manual-reload policy, or other deferred weapon behavior. Those remain separate

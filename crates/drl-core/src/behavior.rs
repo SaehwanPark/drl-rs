@@ -738,12 +738,23 @@ const NUCLEAR_PLASMA_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
 pub const NUCLEAR_PLASMA_BEHAVIOR: BehaviorProfile =
   BehaviorProfile::new(NUCLEAR_PLASMA_BEHAVIOR_SPECS);
 
-const BLASTER_BEHAVIOR_SPECS: &[BehaviorSpec] =
-  &[BehaviorSpec::Periodic(PeriodicEffect::Recharge {
+/// Current Rust projectile count for an ordinary Blaster shot.
+pub const BLASTER_PROJECTILE_COUNT: u32 = 1;
+/// Current Rust per-projectile clip cost for an ordinary Blaster shot.
+pub const BLASTER_SHOT_COST: u32 = 1;
+
+const BLASTER_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Attack(AttackEffect::ProjectileCount(BLASTER_PROJECTILE_COUNT)),
+  BehaviorSpec::Cost(ResourceCost::Ammo {
+    ammo_type: AmmoType::Cell,
+    amount: BLASTER_SHOT_COST,
+  }),
+  BehaviorSpec::Periodic(PeriodicEffect::Recharge {
     delay: BLASTER_RECHARGE_DELAY,
     cadence: BLASTER_RECHARGE_TICK,
     amount: BLASTER_RECHARGE_AMOUNT,
-  })];
+  }),
+];
 
 /// Immutable typed profile for the current Blaster behavior.
 pub const BLASTER_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(BLASTER_BEHAVIOR_SPECS);
@@ -1350,11 +1361,18 @@ mod tests {
     );
     assert_eq!(
       BLASTER_BEHAVIOR.specs(),
-      &[BehaviorSpec::Periodic(PeriodicEffect::Recharge {
-        delay: BLASTER_RECHARGE_DELAY,
-        cadence: BLASTER_RECHARGE_TICK,
-        amount: BLASTER_RECHARGE_AMOUNT,
-      })]
+      &[
+        BehaviorSpec::Attack(AttackEffect::ProjectileCount(BLASTER_PROJECTILE_COUNT)),
+        BehaviorSpec::Cost(ResourceCost::Ammo {
+          ammo_type: AmmoType::Cell,
+          amount: BLASTER_SHOT_COST,
+        }),
+        BehaviorSpec::Periodic(PeriodicEffect::Recharge {
+          delay: BLASTER_RECHARGE_DELAY,
+          cadence: BLASTER_RECHARGE_TICK,
+          amount: BLASTER_RECHARGE_AMOUNT,
+        }),
+      ]
     );
     assert_eq!(
       MALEK_ARMOR_BEHAVIOR.specs(),
