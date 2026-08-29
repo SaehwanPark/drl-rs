@@ -2578,20 +2578,20 @@ for the pinned Chaingun ordinary ranged action. Its contract must:
 The bounded implementation target for this revision is an immutable profile
 for the pinned Laser Rifle ordinary ranged action. Its contract must:
 
-- [ ] expose ordered typed `AttackEffect::ProjectileCount(5)` and
+- [x] expose ordered typed `AttackEffect::ProjectileCount(5)` and
   `ResourceCost::Ammo { ammo_type: Cell, amount: 1 }` fragments;
-- [ ] retain generic ranged execution ownership for target/LOS/range
+- [x] retain generic ranged execution ownership for target/LOS/range
   validation, damage RNG, event ordering, and transactional clip consumption;
-- [ ] enforce the five-cell aggregate cost before mutation, reject clips below
+- [x] enforce the five-cell aggregate cost before mutation, reject clips below
   the cost atomically, and preserve the existing five-projectile event
   contract;
-- [ ] assert exact profile declaration order without adding an alternate-fire
+- [x] assert exact profile declaration order without adding an alternate-fire
   command, callback registry, or replay-wire field; stale gameplay semantics
   `52` replays are rejected before execution;
-- [ ] keep alternate chainfire, spread/falloff, exact legacy timing/accuracy,
+- [x] keep alternate chainfire, spread/falloff, exact legacy timing/accuracy,
   controlled runtime, and audiovisual parity `NOT_RUN` where comparison
   evidence is unavailable;
-- [ ] advance project version from `0.2.230` to `0.2.231` and gameplay
+- [x] advance project version from `0.2.230` to `0.2.231` and gameplay
   semantics from `52` to `53`, preserving replay schema, RNG, generator, and
   ruleset identities.
 
