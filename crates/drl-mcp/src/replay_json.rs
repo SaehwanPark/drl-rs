@@ -9,7 +9,7 @@ use std::collections::BTreeMap;
 
 pub use crate::replay_json_decode::from_json_value;
 
-const FORMAT: &str = "drl-rust-replay-v2";
+const FORMAT: &str = "drl-rs-replay-v2";
 const SCHEMA_VERSION: u32 = 2;
 pub(crate) const MAX_REPLAY_DIMENSION: u32 = 512;
 pub(crate) const MAX_PROCEDURAL_ROOMS: u32 = 64;

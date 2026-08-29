@@ -1,10 +1,14 @@
 /target
 /_workspace
 /dist
+/_site
+/.jekyll-cache
+/__pycache__
+*.pyc
 
 # Assets
 /assets/*
-!/assets/drl-rust-banner.png
+!/assets/drl-rs-banner.png
 !/assets/README.md
 !/assets/legacy/
 !/assets/legacy/drl/

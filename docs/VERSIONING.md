@@ -1,6 +1,6 @@
 # Project versioning
 
-DRL-Rust currently reports version `0.2.258` and uses the three non-negative
+drl-rs currently reports version `0.2.259` and uses the three non-negative
 integer components in `VERSION` as its
 canonical project version. The workspace package metadata, MCP server metadata,
 and generated release manifest must agree with that value.

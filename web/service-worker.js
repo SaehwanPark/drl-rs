@@ -1,4 +1,4 @@
-const CACHE_NAMESPACE = "drl-rust-m10-";
+const CACHE_NAMESPACE = "drl-rs-m10-";
 const CACHE_VERSION = /* __CACHE_VERSION__ */ "v1";
 const CACHE_NAME = `${CACHE_NAMESPACE}${CACHE_VERSION}`;
 const PRECACHE_URLS = /* __PRECACHE_URLS__ */ [];

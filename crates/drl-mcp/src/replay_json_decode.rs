@@ -11,7 +11,8 @@ use drl_protocol::{
 };
 use std::collections::BTreeMap;
 
-const FORMAT: &str = "drl-rust-replay-v2";
+const FORMAT: &str = "drl-rs-replay-v2";
+const LEGACY_FORMAT: &str = "drl-rust-replay-v2";
 const MAX_INITIAL_ENTITIES: usize = 4_096;
 const MAX_CUSTOM_TILES: usize = 65_536;
 const MAX_COMMANDS: usize = 100_000;
@@ -23,8 +24,9 @@ const MAX_COMMANDS: usize = 100_000;
 /// an in-memory replay for read-only verification; it never activates a session.
 pub fn from_json_value(value: &JsonValue) -> Result<ReplayLog, String> {
   let object = object(value, "replay envelope")?;
-  if string(required(object, "format")?, "format")? != FORMAT {
-    return Err("replay format must be drl-rust-replay-v2".to_string());
+  let fmt = string(required(object, "format")?, "format")?;
+  if fmt != FORMAT && fmt != LEGACY_FORMAT {
+    return Err("replay format must be drl-rs-replay-v2".to_string());
   }
   if u64_value(required(object, "schema_version")?, "schema_version")? != 2 {
     return Err("replay schema_version must be 2".to_string());
@@ -502,7 +504,9 @@ fn validate_replay_safety(replay: &ReplayLog) -> Result<(), String> {
       drl_protocol::CURRENT_RNG_SAMPLING_SEMANTICS_VERSION
     ));
   }
-  if replay.metadata.ruleset_id != drl_protocol::CURRENT_RULESET_ID {
+  if replay.metadata.ruleset_id != drl_protocol::CURRENT_RULESET_ID
+    && replay.metadata.ruleset_id != "drl-rust-ruleset-v1"
+  {
     return Err(format!(
       "unsupported replay ruleset {:?}; expected {:?}",
       replay.metadata.ruleset_id,

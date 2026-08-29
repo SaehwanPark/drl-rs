@@ -1,4 +1,4 @@
-# DRL-Rust assets
+# drl-rs assets
 
 The tracked browser bundle currently contains only
 `legacy/drl/graphics/`, imported from the pinned legacy Git revision recorded

@@ -1,0 +1,15 @@
+title: "DRL-rs"
+tagline: "A deterministic Doom roguelike simulation & engine in Rust"
+description: "Player manuals, gameplay guides, armory references, and technical documentation for drl-rs, a ground-up Rust reimplementation of Doom the Roguelike."
+baseurl: "/drl-rs"
+url: "https://saehwanpark.github.io"
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: "default"

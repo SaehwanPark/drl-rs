@@ -61,7 +61,7 @@ case "$legacy_dirty_state" in
 esac
 
 case "$evidence_classification" in
-  observed|inferred|implementation-artifact|ambiguous|drl-rust-decision) ;;
+  observed|inferred|implementation-artifact|ambiguous|drl-rs-decision|drl-rust-decision) ;;
   *) error "unsupported evidence_classification: $evidence_classification" ;;
 esac
 

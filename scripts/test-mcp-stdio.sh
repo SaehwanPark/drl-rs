@@ -147,7 +147,7 @@ if responses[9].get("result", {}).get("data", {}).get("turns_survived") is None:
 if not responses[10].get("result", {}).get("data", {}).get("commands"):
     raise SystemExit("game_save_replay returned no commands")
 replay_data = responses[10]["result"]["data"]
-if replay_data.get("format") != "drl-rust-replay-v2" or replay_data.get("schema_version") != 2:
+if replay_data.get("format") != "drl-rs-replay-v2" or replay_data.get("schema_version") != 2:
     raise SystemExit("game_save_replay returned the wrong export schema")
 if replay_data["commands"][0].get("action") != "wait":
     raise SystemExit("game_save_replay did not export typed commands")

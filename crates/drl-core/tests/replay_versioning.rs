@@ -12,7 +12,7 @@ fn test_replay_version_and_metadata_headers() {
   let mut replay = ReplayLog::new(42, 20, 20, Position::new(5, 5));
   assert_eq!(replay.version, ReplayVersion::V2);
   assert_eq!(replay.metadata.version, ReplayVersion::V2);
-  assert_eq!(replay.metadata.engine_name, "DRL-Rust");
+  assert_eq!(replay.metadata.engine_name, "drl-rs");
   assert_eq!(
     replay.metadata.gameplay_semantics_version,
     drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION
@@ -25,7 +25,7 @@ fn test_replay_version_and_metadata_headers() {
 
   replay = replay.with_metadata(ReplayMetadata {
     version: ReplayVersion::V2,
-    engine_name: "DRL-Rust-TestHarness".to_string(),
+    engine_name: "drl-rs-TestHarness".to_string(),
     engine_version: "0.1.0".to_string(),
     gameplay_semantics_version: drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION,
     rng_sampling_semantics_version: drl_protocol::CURRENT_RNG_SAMPLING_SEMANTICS_VERSION,
@@ -33,7 +33,7 @@ fn test_replay_version_and_metadata_headers() {
     ruleset_id: drl_protocol::CURRENT_RULESET_ID.to_string(),
   });
 
-  assert_eq!(replay.metadata.engine_name, "DRL-Rust-TestHarness");
+  assert_eq!(replay.metadata.engine_name, "drl-rs-TestHarness");
 }
 
 #[test]

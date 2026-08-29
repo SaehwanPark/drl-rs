@@ -59,7 +59,9 @@ impl ReplayEngine {
         drl_protocol::CURRENT_RNG_SAMPLING_SEMANTICS_VERSION
       ));
     }
-    if replay.metadata.ruleset_id != drl_protocol::CURRENT_RULESET_ID {
+    if replay.metadata.ruleset_id != drl_protocol::CURRENT_RULESET_ID
+      && replay.metadata.ruleset_id != "drl-rust-ruleset-v1"
+    {
       return Err(format!(
         "unsupported replay ruleset {:?}; expected {:?}",
         replay.metadata.ruleset_id,

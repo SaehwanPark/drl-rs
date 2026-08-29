@@ -2,11 +2,11 @@
 
 ## What
 
-- DRL-Rust is a ground-up Rust reimplementation of Doom the Roguelike.
+- drl-rs is a ground-up Rust reimplementation of Doom the Roguelike.
 - The project is a Rust 2024 workspace with a deterministic headless kernel
   and a bounded browser/WASM playable slice; full audiovisual parity remains
   staged.
-- `docs/DRL-Rust_Project_Roadmap.md` is the canonical project plan and progress
+- `docs/DRL-RS_Project_Roadmap.md` is the canonical project plan and progress
   tracker. `docs/steering/current-priorities.md` constrains near-term slice
   selection while its stop gates remain open. `SPEC.md` expands only the active
   milestone slice.

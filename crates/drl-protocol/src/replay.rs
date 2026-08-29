@@ -58,7 +58,7 @@ pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 68;
 pub const CURRENT_GENERATOR_SEMANTICS_VERSION: u32 = 2;
 
 /// Ruleset/content identity expected by the current replay engine.
-pub const CURRENT_RULESET_ID: &str = "drl-rust-ruleset-v1";
+pub const CURRENT_RULESET_ID: &str = "drl-rs-ruleset-v1";
 
 /// Metadata header describing engine environment and replay context.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -119,7 +119,7 @@ impl Default for ReplayMetadata {
   fn default() -> Self {
     Self {
       version: ReplayVersion::V2,
-      engine_name: "DRL-Rust".to_string(),
+      engine_name: "drl-rs".to_string(),
       engine_version: env!("CARGO_PKG_VERSION").to_string(),
       gameplay_semantics_version: CURRENT_GAMEPLAY_SEMANTICS_VERSION,
       rng_sampling_semantics_version: CURRENT_RNG_SAMPLING_SEMANTICS_VERSION,

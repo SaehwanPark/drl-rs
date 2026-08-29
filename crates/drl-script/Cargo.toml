@@ -1,6 +1,6 @@
 [package]
 name = "drl-script"
-description = "Scripting and content integration boundary for DRL-Rust"
+description = "Scripting and content integration boundary for drl-rs"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

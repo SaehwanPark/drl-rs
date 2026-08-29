@@ -1,6 +1,6 @@
 [package]
 name = "drl-render"
-description = "Presentation and GPU rendering layer for DRL-Rust"
+description = "Presentation and GPU rendering layer for drl-rs"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

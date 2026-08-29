@@ -6,7 +6,7 @@ cd "$(dirname "$0")/.."
 
 worker=web/service-worker.js
 test -s "$worker"
-grep -F 'CACHE_NAMESPACE = "drl-rust-m10-"' "$worker" >/dev/null
+grep -F 'CACHE_NAMESPACE = "drl-rs-m10-"' "$worker" >/dev/null
 grep -F 'CACHE_VERSION = /* __CACHE_VERSION__ */ "v1"' "$worker" >/dev/null
 grep -F '/* __PRECACHE_URLS__ */ []' "$worker" >/dev/null
 grep -F 'request.method === "GET"' "$worker" >/dev/null

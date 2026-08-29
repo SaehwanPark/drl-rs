@@ -1,9 +1,9 @@
 # Specification
 
 Last reviewed: 2026-08-29
-Current project version: `0.2.258`
+Current project version: `0.2.259`
 
-The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
+The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
 [`docs/steering/`](docs/steering/README.md) govern which candidate work is
 eligible to become active while their stop gates remain open. This file expands
