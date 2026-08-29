@@ -505,6 +505,20 @@ const MINIGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
 /// Immutable typed profile for the current Minigun eight-shot behavior.
 pub const MINIGUN_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(MINIGUN_BEHAVIOR_SPECS);
 
+/// Pinned projectile count for an ordinary Chaingun shot.
+pub const CHAINGUN_PROJECTILE_COUNT: u32 = 4;
+
+const CHAINGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Attack(AttackEffect::ProjectileCount(CHAINGUN_PROJECTILE_COUNT)),
+  BehaviorSpec::Cost(ResourceCost::Ammo {
+    ammo_type: AmmoType::Ammo9mm,
+    amount: 1,
+  }),
+];
+
+/// Immutable typed profile for the current Chaingun four-shot behavior.
+pub const CHAINGUN_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(CHAINGUN_BEHAVIOR_SPECS);
+
 /// Current Rust projectile count for an ordinary Frag Shotgun shot.
 pub const FRAG_SHOTGUN_PROJECTILE_COUNT: u32 = 1;
 /// Pinned per-projectile clip cost for an ordinary Frag Shotgun shot.
@@ -1443,6 +1457,16 @@ mod tests {
       MINIGUN_BEHAVIOR.specs(),
       &[
         BehaviorSpec::Attack(AttackEffect::ProjectileCount(MINIGUN_PROJECTILE_COUNT)),
+        BehaviorSpec::Cost(ResourceCost::Ammo {
+          ammo_type: AmmoType::Ammo9mm,
+          amount: 1,
+        }),
+      ]
+    );
+    assert_eq!(
+      CHAINGUN_BEHAVIOR.specs(),
+      &[
+        BehaviorSpec::Attack(AttackEffect::ProjectileCount(CHAINGUN_PROJECTILE_COUNT)),
         BehaviorSpec::Cost(ResourceCost::Ammo {
           ammo_type: AmmoType::Ammo9mm,
           amount: 1,

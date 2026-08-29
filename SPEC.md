@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.229`
+Current project version: `0.2.230`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,12 +25,12 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Minigun Ordinary-Fire Volley
+## 2. Active Implementation Slice: M9 — Chaingun Ordinary-Fire Volley
 
 ### 2.1 Objective
 
-Carry the pinned Minigun ordinary-fire policy into an immutable typed behavior
-profile. The profile describes eight ordered projectiles and the default
+Carry the pinned Chaingun ordinary-fire policy into an immutable typed behavior
+profile. The profile describes four ordered projectiles and the default
 one-round-per-projectile cost while retaining generic command execution
 ownership.
 
@@ -40,26 +40,26 @@ ownership.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, Gate C catalog ownership, and Gate D callback behavior
   evidence remain closed for this contract-only slice.
-- **Observable outcome:** `MINIGUN_BEHAVIOR` exposes ordered typed
-  `AttackEffect::ProjectileCount(8)` and
+- **Observable outcome:** `CHAINGUN_BEHAVIOR` exposes ordered typed
+  `AttackEffect::ProjectileCount(4)` and
   `ResourceCost::Ammo { ammo_type: Ammo9mm, amount: 1 }` fragments; the exact
   profile order is asserted by the behavior contract test and generic ranged
-  execution consumes eight rounds per accepted volley.
-- **Gameplay/replay impact:** Gameplay semantics advance from `50` to `51` so
-  replays recorded before the eight-projectile Minigun volley cannot be
+  execution consumes four rounds per accepted volley.
+- **Gameplay/replay impact:** Gameplay semantics advance from `51` to `52` so
+  replays recorded before the four-projectile Chaingun volley cannot be
   reinterpreted under the new deterministic clip policy. Replay wire/schema,
   RNG sampling, generator, and ruleset identities remain unchanged. Project
-  version advances from `0.2.228` to `0.2.229`.
+  version advances from `0.2.229` to `0.2.230`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary
   and profiles; `drl-protocol`, MCP, render, audio, and browser boundaries remain
   unchanged. No new command, event, or runtime dispatch surface is introduced;
-  the pinned eight-projectile/eight-round cost is this slice's only gameplay-policy
+  the pinned four-projectile/four-round cost is this slice's only gameplay-policy
   change.
-- **Evidence boundary:** Pinned Minigun source evidence in
-  `docs/legacy-behavior/minigun-profile.md` plus the delivered direct-target
-  ranged contract is authoritative. The legacy `shots = 8`, absent `shotcost`,
+- **Evidence boundary:** Pinned Chaingun source evidence in
+  `docs/legacy-behavior/chaingun-profile.md` plus the delivered direct-target
+  ranged contract is authoritative. The legacy `shots = 4`, absent `shotcost`,
   default cost calculation, and one command's resolved shot count support the
-  eight-round preflight. Alternate chainfire, controlled legacy runtime,
+  four-round preflight. Alternate chainfire, controlled legacy runtime,
   browser capture, and audiovisual comparisons remain `NOT_RUN`.
 - **Non-goals:** Alternate chainfire, spread/falloff, exact legacy
   timing/accuracy, audiovisual presentation comparison, new command or callback
@@ -70,10 +70,10 @@ ownership.
 
 The existing ranged command path already performs complete preflight,
 transactional clip validation and typed clip consumption for ordered
-projectiles. This slice records the pinned eight-projectile/default one-round
+projectiles. This slice records the pinned four-projectile/default one-round
 cost in an immutable profile and the existing cost helper; it does not add a
 generic dispatcher or alter RNG sampling, so replay behavior stays deterministic
-and reviewable. Minigun alternate chainfire and presentation behavior remain
+and reviewable. Chaingun alternate chainfire and presentation behavior remain
 outside this ordinary-fire contract.
 
 Additional broad scalar-only family additions remain gated by the open behavior
@@ -2529,7 +2529,7 @@ for the pinned Super Shotgun ordinary ranged action. Its contract must:
   semantics from `49` to `50`, preserving replay schema, RNG, generator, and
   ruleset identities.
 
-### 2.7cy Current Minigun ordinary-fire volley delivery target
+### 2.7cy Historical Minigun ordinary-fire volley delivery target
 
 The bounded implementation target for this revision is an immutable profile
 for the pinned Minigun ordinary ranged action. Its contract must:
@@ -2549,6 +2549,28 @@ for the pinned Minigun ordinary ranged action. Its contract must:
   evidence is unavailable;
 - [x] advance project version from `0.2.228` to `0.2.229` and gameplay
   semantics from `50` to `51`, preserving replay schema, RNG, generator, and
+  ruleset identities.
+
+### 2.7cz Current Chaingun ordinary-fire volley delivery target
+
+The bounded implementation target for this revision is an immutable profile
+for the pinned Chaingun ordinary ranged action. Its contract must:
+
+- [x] expose ordered typed `AttackEffect::ProjectileCount(4)` and
+  `ResourceCost::Ammo { ammo_type: Ammo9mm, amount: 1 }` fragments;
+- [x] retain generic ranged execution ownership for target/LOS/range
+  validation, damage RNG, event ordering, and transactional clip consumption;
+- [x] enforce the four-round aggregate cost before mutation, reject clips
+  below the cost atomically, and preserve the existing four-projectile event
+  contract;
+- [x] assert exact profile declaration order without adding an alternate-fire
+  command, callback registry, or replay-wire field; stale gameplay semantics
+  `51` replays are rejected before execution;
+- [x] keep alternate chainfire, spread/falloff, exact legacy timing/accuracy,
+  controlled runtime, and audiovisual parity `NOT_RUN` where comparison
+  evidence is unavailable;
+- [x] advance project version from `0.2.229` to `0.2.230` and gameplay
+  semantics from `51` to `52`, preserving replay schema, RNG, generator, and
   ruleset identities.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
@@ -2846,6 +2868,12 @@ The `0.2.229` successor records the immutable `MINIGUN_BEHAVIOR` profile for
 the delivered eight-projectile ordinary fire and one-round per-projectile cost.
 Generic ranged execution now resolves the ordered volley and enforces its
 eight-round aggregate cost before mutation; alternate chainfire, spread/falloff,
+exact timing, controlled runtime, and audiovisual parity remain open.
+
+The `0.2.230` successor records the immutable `CHAINGUN_BEHAVIOR` profile for
+the delivered four-projectile ordinary fire and one-round per-projectile cost.
+Generic ranged execution now resolves the ordered volley and enforces its
+four-round aggregate cost before mutation; alternate chainfire, spread/falloff,
 exact timing, controlled runtime, and audiovisual parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy

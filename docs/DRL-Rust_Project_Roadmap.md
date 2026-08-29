@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.229`
+Current project version: `0.2.230`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.229)
+## 3. Current Progress Summary (`VERSION` 0.2.230)
 
 ### Delivered Foundations
 
@@ -771,6 +771,12 @@ verification item uses explicit status semantics:
   eight-round volley before mutation; gameplay semantics advance to `51`, so
   stale semantics-50 replay metadata is rejected before execution. Alternate
   chainfire, exact timing/accuracy, runtime, and audiovisual parity remain open.
+- **M9 Chaingun ordinary-fire volley (`0.2.230`):** The immutable
+  `CHAINGUN_BEHAVIOR` profile records four ordered projectiles and the default
+  one-round-per-projectile cost. Generic ranged execution preflights the
+  four-round volley before mutation; gameplay semantics advance to `52`, so
+  stale semantics-51 replay metadata is rejected before execution. Alternate
+  chainfire, exact timing/accuracy, runtime, and audiovisual parity remain open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1322,6 +1328,11 @@ scripting.
 - [x] Minigun has an immutable behavior profile for its eight-projectile
   ordinary fire and one-round per-projectile cost; generic ranged execution
   resolves the ordered eight-round volley, preflights its aggregate cost, and
+  preserves atomic below-cost rejection while alternate chainfire, exact
+  timing/accuracy, runtime, and audiovisual parity remain open.
+- [x] Chaingun has an immutable behavior profile for its four-projectile
+  ordinary fire and one-round per-projectile cost; generic ranged execution
+  resolves the ordered four-round volley, preflights its aggregate cost, and
   preserves atomic below-cost rejection while alternate chainfire, exact
   timing/accuracy, runtime, and audiovisual parity remain open.
 - [x] Missile Launcher has an immutable behavior profile for ordinary
