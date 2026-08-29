@@ -58,31 +58,51 @@ impl CombatResolver {
     accuracy_bonus: i32,
     rng: &mut GameRng,
   ) -> AttackOutcome {
-    let Some((min_dam, max_dam)) = attacker.ranged_damage() else {
+    if attacker.ranged_damage().is_none() || distance > attacker.ranged_range() {
       return AttackOutcome::Miss;
-    };
+    }
 
+    if !Self::roll_ranged_hit_with_accuracy(attacker, distance, accuracy_bonus, rng) {
+      AttackOutcome::Miss
+    } else {
+      let damage = Self::roll_ranged_damage(attacker, rng)
+        .expect("ranged damage was validated before hit resolution");
+      AttackOutcome::Hit {
+        damage,
+        is_lethal: damage >= defender.hp().current,
+      }
+    }
+  }
+
+  /// Rolls one ranged damage value from the attacker's equipped weapon.
+  ///
+  /// This is kept separate from hit determination so piercing weapons can
+  /// share one deterministic damage roll across multiple actor contacts.
+  pub(crate) fn roll_ranged_damage(attacker: &Actor, rng: &mut GameRng) -> Option<u32> {
+    let (min_dam, max_dam) = attacker.ranged_damage()?;
+    Some(if min_dam >= max_dam {
+      min_dam
+    } else {
+      rng.gen_range(min_dam..(max_dam + 1))
+    })
+  }
+
+  /// Rolls one ranged hit check without consuming damage RNG.
+  pub(crate) fn roll_ranged_hit_with_accuracy(
+    attacker: &Actor,
+    distance: u32,
+    accuracy_bonus: i32,
+    rng: &mut GameRng,
+  ) -> bool {
     if distance > attacker.ranged_range() {
-      return AttackOutcome::Miss;
+      return false;
     }
 
     // Distance penalty: 2% per tile beyond adjacent
     let penalty = distance.saturating_sub(1) * 2;
     let effective_accuracy =
       (attacker.accuracy() + accuracy_bonus - penalty as i32).clamp(5, 95) as u32;
-
-    let hits = attacker.ranged_exact_hit() || rng.gen_range(0..100) < effective_accuracy;
-    if hits {
-      let damage = if min_dam >= max_dam {
-        min_dam
-      } else {
-        rng.gen_range(min_dam..(max_dam + 1))
-      };
-      let is_lethal = damage >= defender.hp().current;
-      AttackOutcome::Hit { damage, is_lethal }
-    } else {
-      AttackOutcome::Miss
-    }
+    attacker.ranged_exact_hit() || rng.gen_range(0..100) < effective_accuracy
   }
 }
 

@@ -1699,6 +1699,7 @@ impl Game {
       shot_count,
       ammo_cost,
       null_pointer_item_id,
+      weapon_is_railgun,
       weapon_is_bfg10k,
       weapon_is_bfg9000,
       weapon_is_nuclear_bfg9000,
@@ -1754,6 +1755,7 @@ impl Game {
 
       let null_pointer_item_id =
         (weapon.archetype() == drl_protocol::ItemArchetype::NullPointer).then_some(weapon.id());
+      let weapon_is_railgun = weapon.archetype() == drl_protocol::ItemArchetype::Railgun;
       let weapon_is_bfg10k = weapon.archetype() == drl_protocol::ItemArchetype::Bfg10k;
       let weapon_is_bfg9000 = weapon.archetype() == drl_protocol::ItemArchetype::Bfg9000;
       let weapon_is_nuclear_bfg9000 =
@@ -1765,6 +1767,7 @@ impl Game {
         shot_count,
         ammo_cost,
         null_pointer_item_id,
+        weapon_is_railgun,
         weapon_is_bfg10k,
         weapon_is_bfg9000,
         weapon_is_nuclear_bfg9000,
@@ -1795,6 +1798,34 @@ impl Game {
       }
     }
 
+    let railgun_targets = if weapon_is_railgun {
+      let targets: Vec<_> = crate::fov::line_points(p_pos, target_pos)
+        .into_iter()
+        .skip(1)
+        .filter_map(|position| {
+          self
+            .state
+            .world
+            .living_actor_at(position)
+            .filter(|actor| !actor.is_player())
+            .map(|actor| (actor.id(), position))
+        })
+        .collect();
+      for (target_id, position) in &targets {
+        if self
+          .state
+          .world
+          .get_actor(*target_id)
+          .is_some_and(|target| target.death_drop().is_some())
+        {
+          self.validate_death_drop_position(*position)?;
+        }
+      }
+      targets
+    } else {
+      Vec::new()
+    };
+
     // Commit the prepared shot only after every fallible validation succeeds.
     {
       let player = self
@@ -1812,138 +1843,142 @@ impl Game {
       props.current_clip -= ammo_cost;
     }
 
-    for _ in 0..shot_count {
-      let (outcome, damage) = {
-        let player = self
+    if weapon_is_railgun {
+      self.execute_railgun_piercing(player_id, p_pos, &railgun_targets, events)?;
+    } else {
+      for _ in 0..shot_count {
+        let (outcome, damage) = {
+          let player = self
+            .state
+            .world
+            .get_actor(player_id)
+            .ok_or(CommandError::EntityNotFound(player_id))?;
+          let target_monster = self
+            .state
+            .world
+            .get_actor(target_monster_id)
+            .ok_or(CommandError::EntityNotFound(target_monster_id))?;
+
+          let outcome = CombatResolver::resolve_ranged_attack_with_accuracy(
+            player,
+            target_monster,
+            distance,
+            if aimed {
+              PISTOL_AIMED_ACCURACY_BONUS
+            } else {
+              0
+            },
+            &mut self.state.rng,
+          );
+          let damage = match outcome {
+            AttackOutcome::Hit { damage, .. } => damage,
+            _ => 0,
+          };
+          (outcome, damage)
+        };
+
+        events.push(GameEvent::AttackResolved {
+          attacker_id: player_id,
+          target_id: target_monster_id,
+          outcome,
+          is_ranged: true,
+        });
+
+        if let AttackOutcome::Hit { .. } = outcome
+          && let Some(item_id) = null_pointer_item_id
+        {
+          self.execute_null_pointer_hit(player_id, item_id, target_monster_id, events)?;
+        }
+
+        if damage == 0 {
+          continue;
+        }
+
+        let (taken, actual_lethal, death_cause) = self.state.world.apply_damage(
+          target_monster_id,
+          damage,
+          DamageSource::Actor(player_id),
+        )?;
+        let remaining = self
+          .state
+          .world
+          .get_actor(target_monster_id)
+          .map_or(0, |a| a.hp().current);
+        events.push(GameEvent::DamageApplied {
+          target_id: target_monster_id,
+          amount: taken,
+          remaining_hp: remaining,
+          source: DamageSource::Actor(player_id),
+          damage_type: None,
+        });
+
+        if weapon_is_bfg10k {
+          events.push(GameEvent::Bfg10kExplosionScheduled {
+            entity_id: player_id,
+            target_id: target_monster_id,
+            delay: BFG10K_EXPLOSION_DELAY,
+            radius: BFG10K_EXPLOSION_RADIUS,
+            knockback: BFG10K_EXPLOSION_KNOCKBACK,
+          });
+        } else if weapon_is_bfg9000 {
+          events.push(GameEvent::Bfg9000ExplosionScheduled {
+            entity_id: player_id,
+            target_id: target_monster_id,
+            delay: BFG9000_EXPLOSION_DELAY,
+            radius: BFG9000_EXPLOSION_RADIUS,
+            knockback: BFG9000_EXPLOSION_KNOCKBACK,
+          });
+        } else if weapon_is_nuclear_bfg9000 {
+          events.push(GameEvent::NuclearBfg9000ExplosionScheduled {
+            entity_id: player_id,
+            target_id: target_monster_id,
+            delay: NUCLEAR_BFG9000_EXPLOSION_DELAY,
+            radius: NUCLEAR_BFG9000_EXPLOSION_RADIUS,
+            knockback: NUCLEAR_BFG9000_EXPLOSION_KNOCKBACK,
+          });
+        } else if weapon_is_anti_freak_jackal {
+          events.push(GameEvent::AntiFreakJackalExplosionScheduled {
+            entity_id: player_id,
+            target_id: target_monster_id,
+            delay: ANTI_FREAK_JACKAL_EXPLOSION_DELAY,
+            radius: ANTI_FREAK_JACKAL_EXPLOSION_RADIUS,
+            knockback: ANTI_FREAK_JACKAL_EXPLOSION_KNOCKBACK,
+          });
+          self.execute_anti_freak_splash(target_pos, events)?;
+        }
+
+        if actual_lethal {
+          let death_drop = self
+            .state
+            .world
+            .get_actor(target_monster_id)
+            .and_then(|a| a.death_drop());
+          let death_position = self
+            .state
+            .world
+            .get_actor(target_monster_id)
+            .map(|a| a.position())
+            .unwrap_or(target_pos);
+          events.push(GameEvent::ActorDied {
+            entity_id: target_monster_id,
+            cause: death_cause.unwrap_or(DeathCause::RangedAttack {
+              attacker_id: player_id,
+            }),
+          });
+          if let Some(drop_kind) = death_drop {
+            self.spawn_death_drop(target_monster_id, death_position, drop_kind, events)?;
+          }
+          break;
+        }
+
+        let player_kb = self
           .state
           .world
           .get_actor(player_id)
-          .ok_or(CommandError::EntityNotFound(player_id))?;
-        let target_monster = self
-          .state
-          .world
-          .get_actor(target_monster_id)
-          .ok_or(CommandError::EntityNotFound(target_monster_id))?;
-
-        let outcome = CombatResolver::resolve_ranged_attack_with_accuracy(
-          player,
-          target_monster,
-          distance,
-          if aimed {
-            PISTOL_AIMED_ACCURACY_BONUS
-          } else {
-            0
-          },
-          &mut self.state.rng,
-        );
-        let damage = match outcome {
-          AttackOutcome::Hit { damage, .. } => damage,
-          _ => 0,
-        };
-        (outcome, damage)
-      };
-
-      events.push(GameEvent::AttackResolved {
-        attacker_id: player_id,
-        target_id: target_monster_id,
-        outcome,
-        is_ranged: true,
-      });
-
-      if let AttackOutcome::Hit { .. } = outcome
-        && let Some(item_id) = null_pointer_item_id
-      {
-        self.execute_null_pointer_hit(player_id, item_id, target_monster_id, events)?;
-      }
-
-      if damage == 0 {
-        continue;
-      }
-
-      let (taken, actual_lethal, death_cause) =
-        self
-          .state
-          .world
-          .apply_damage(target_monster_id, damage, DamageSource::Actor(player_id))?;
-      let remaining = self
-        .state
-        .world
-        .get_actor(target_monster_id)
-        .map_or(0, |a| a.hp().current);
-      events.push(GameEvent::DamageApplied {
-        target_id: target_monster_id,
-        amount: taken,
-        remaining_hp: remaining,
-        source: DamageSource::Actor(player_id),
-        damage_type: None,
-      });
-
-      if weapon_is_bfg10k {
-        events.push(GameEvent::Bfg10kExplosionScheduled {
-          entity_id: player_id,
-          target_id: target_monster_id,
-          delay: BFG10K_EXPLOSION_DELAY,
-          radius: BFG10K_EXPLOSION_RADIUS,
-          knockback: BFG10K_EXPLOSION_KNOCKBACK,
-        });
-      } else if weapon_is_bfg9000 {
-        events.push(GameEvent::Bfg9000ExplosionScheduled {
-          entity_id: player_id,
-          target_id: target_monster_id,
-          delay: BFG9000_EXPLOSION_DELAY,
-          radius: BFG9000_EXPLOSION_RADIUS,
-          knockback: BFG9000_EXPLOSION_KNOCKBACK,
-        });
-      } else if weapon_is_nuclear_bfg9000 {
-        events.push(GameEvent::NuclearBfg9000ExplosionScheduled {
-          entity_id: player_id,
-          target_id: target_monster_id,
-          delay: NUCLEAR_BFG9000_EXPLOSION_DELAY,
-          radius: NUCLEAR_BFG9000_EXPLOSION_RADIUS,
-          knockback: NUCLEAR_BFG9000_EXPLOSION_KNOCKBACK,
-        });
-      } else if weapon_is_anti_freak_jackal {
-        events.push(GameEvent::AntiFreakJackalExplosionScheduled {
-          entity_id: player_id,
-          target_id: target_monster_id,
-          delay: ANTI_FREAK_JACKAL_EXPLOSION_DELAY,
-          radius: ANTI_FREAK_JACKAL_EXPLOSION_RADIUS,
-          knockback: ANTI_FREAK_JACKAL_EXPLOSION_KNOCKBACK,
-        });
-        self.execute_anti_freak_splash(target_pos, events)?;
-      }
-
-      if actual_lethal {
-        let death_drop = self
-          .state
-          .world
-          .get_actor(target_monster_id)
-          .and_then(|a| a.death_drop());
-        let death_position = self
-          .state
-          .world
-          .get_actor(target_monster_id)
-          .map(|a| a.position())
-          .unwrap_or(target_pos);
-        events.push(GameEvent::ActorDied {
-          entity_id: target_monster_id,
-          cause: death_cause.unwrap_or(DeathCause::RangedAttack {
-            attacker_id: player_id,
-          }),
-        });
-        if let Some(drop_kind) = death_drop {
-          self.spawn_death_drop(target_monster_id, death_position, drop_kind, events)?;
+          .map_or(0, |a| a.knockback());
+        if player_kb > 0 {
+          self.apply_knockback(player_id, target_monster_id, player_kb, events)?;
         }
-        break;
-      }
-
-      let player_kb = self
-        .state
-        .world
-        .get_actor(player_id)
-        .map_or(0, |a| a.knockback());
-      if player_kb > 0 {
-        self.apply_knockback(player_id, target_monster_id, player_kb, events)?;
       }
     }
 
@@ -1963,6 +1998,132 @@ impl Game {
     } else {
       fire_cost
     })
+  }
+
+  /// Resolves one Railgun shot across every living actor on a clear ray.
+  ///
+  /// The legacy path rolls damage before traversing the ray, so each hit check
+  /// shares one deterministic damage value while continuing after lethal hits.
+  fn execute_railgun_piercing(
+    &mut self,
+    player_id: drl_protocol::EntityId,
+    player_position: Position,
+    targets: &[(drl_protocol::EntityId, Position)],
+    events: &mut Vec<GameEvent>,
+  ) -> Result<(), CommandError> {
+    // Preserve the existing single-target RNG order when no piercing contact
+    // exists; multi-contact shots use the legacy pre-traversal shared roll.
+    let shared_damage = if targets.len() > 1 {
+      let player = self
+        .state
+        .world
+        .get_actor(player_id)
+        .ok_or(CommandError::EntityNotFound(player_id))?;
+      Some(
+        CombatResolver::roll_ranged_damage(player, &mut self.state.rng)
+          .ok_or(CommandError::NoEquippedWeapon)?,
+      )
+    } else {
+      None
+    };
+
+    for (target_id, target_position) in targets {
+      let distance = player_position.distance_chebyshev(*target_position);
+      let (outcome, damage) = {
+        let player = self
+          .state
+          .world
+          .get_actor(player_id)
+          .ok_or(CommandError::EntityNotFound(player_id))?;
+        let target = self
+          .state
+          .world
+          .get_actor(*target_id)
+          .ok_or(CommandError::EntityNotFound(*target_id))?;
+        if let Some(shared_damage) = shared_damage {
+          let hit =
+            CombatResolver::roll_ranged_hit_with_accuracy(player, distance, 0, &mut self.state.rng);
+          if hit {
+            (
+              AttackOutcome::Hit {
+                damage: shared_damage,
+                is_lethal: shared_damage >= target.hp().current,
+              },
+              shared_damage,
+            )
+          } else {
+            (AttackOutcome::Miss, 0)
+          }
+        } else {
+          let outcome = CombatResolver::resolve_ranged_attack_with_accuracy(
+            player,
+            target,
+            distance,
+            0,
+            &mut self.state.rng,
+          );
+          let damage = match outcome {
+            AttackOutcome::Hit { damage, .. } => damage,
+            AttackOutcome::Miss | AttackOutcome::Blocked => 0,
+          };
+          (outcome, damage)
+        }
+      };
+
+      events.push(GameEvent::AttackResolved {
+        attacker_id: player_id,
+        target_id: *target_id,
+        outcome,
+        is_ranged: true,
+      });
+
+      if damage == 0 {
+        continue;
+      }
+
+      let (taken, actual_lethal, death_cause) =
+        self
+          .state
+          .world
+          .apply_damage(*target_id, damage, DamageSource::Actor(player_id))?;
+      let remaining = self
+        .state
+        .world
+        .get_actor(*target_id)
+        .map_or(0, |actor| actor.hp().current);
+      events.push(GameEvent::DamageApplied {
+        target_id: *target_id,
+        amount: taken,
+        remaining_hp: remaining,
+        source: DamageSource::Actor(player_id),
+        damage_type: None,
+      });
+
+      if actual_lethal {
+        let death_drop = self
+          .state
+          .world
+          .get_actor(*target_id)
+          .and_then(|actor| actor.death_drop());
+        let death_position = self
+          .state
+          .world
+          .get_actor(*target_id)
+          .map(|actor| actor.position())
+          .unwrap_or(*target_position);
+        events.push(GameEvent::ActorDied {
+          entity_id: *target_id,
+          cause: death_cause.unwrap_or(DeathCause::RangedAttack {
+            attacker_id: player_id,
+          }),
+        });
+        if let Some(drop_kind) = death_drop {
+          self.spawn_death_drop(*target_id, death_position, drop_kind, events)?;
+        }
+      }
+    }
+
+    Ok(())
   }
 
   /// Resolves the typed Anti-Freak Jackal radius-1 splash immediately after

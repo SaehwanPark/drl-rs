@@ -6238,8 +6238,16 @@ mod tests {
       equipped_armor_durability: None,
     };
     let target_position = Position::new(3, 1);
+    let intermediate_position = Position::new(2, 1);
     let mut setup_replay =
       ReplayLog::new(2_248, 8, 4, player_position).with_player_config(player_config);
+    setup_replay.record_monster(MonsterSpawnSpec::new(
+      intermediate_position,
+      "Intermediate Target",
+      500,
+      100,
+      (1, 7),
+    ));
     setup_replay.record_monster(MonsterSpawnSpec::new(
       target_position,
       "Static Target",
@@ -6252,13 +6260,6 @@ mod tests {
       drl_core::ReplayEngine::run(&setup_replay).expect("vertical replay setup");
     assert!(setup_events.is_empty());
     let player_id = initial.world().player_id().expect("player identity");
-    let target_id = initial
-      .world()
-      .actors()
-      .values()
-      .find(|actor| !actor.is_player())
-      .expect("static target")
-      .id();
     let cells_id = ItemId::new(4);
     let railgun_id = ItemId::new(5);
     assert_eq!(
@@ -6303,13 +6304,12 @@ mod tests {
           event,
           drl_protocol::GameEvent::AttackResolved {
             attacker_id,
-            target_id: event_target,
             is_ranged: true,
             ..
-          } if *attacker_id == player_id && *event_target == target_id
+          } if *attacker_id == player_id
         ))
         .count(),
-      1
+      2
     );
     assert_eq!(
       direct

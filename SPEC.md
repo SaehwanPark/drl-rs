@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-29
-Current project version: `0.2.254`
+Current project version: `0.2.255`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,18 +25,17 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Anti-Freak Jackal Ground-Item Destruction
+## 2. Active Implementation Slice: M9 — Railgun Ray/Piercing Traversal
 
 ### 2.1 Objective
 
-Verify the delivered Anti-Freak Jackal radius-1 splash item destruction at the
-typed direct-core, replay, generic MCP JSON event-serializer, and
-`BrowserSession` boundaries. A deterministic successful hit must preserve the
-existing schedule, eight-neighbor fanout, and radial knockback, then remove an
-ordinary loose-ammo stack from a blast cell only when its rolled damage exceeds
-the typed threshold, exposing identical events, fair player observations,
-render effects, scene state, and replay outcomes in both execution paths while
-retaining generic ranged command execution ownership.
+Verify the delivered Railgun ray/piercing traversal at the typed direct-core,
+replay, generic MCP JSON event-serializer, and `BrowserSession` boundaries. A
+deterministic successful shot must traverse a clear source-to-target ray,
+perform ordered hit checks for every living actor encountered, share one damage
+roll across successful impacts, and preserve identical events, fair player
+observations, render effects, scene state, and replay outcomes in both
+execution paths while retaining generic ranged command execution ownership.
 
 ### 2.1a Scope and steering gate
 
@@ -44,52 +43,46 @@ retaining generic ranged command execution ownership.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, Gate C catalog ownership, and Gate D callback behavior
   evidence remain closed for this contract-only slice.
-- **Observable outcome:** A fixed Anti-Freak Jackal replay setup produces a
-  typed delay-40/radius-1 schedule and a deterministic splash whose center and
-  eight neighboring cells are considered clockwise in stable order; eligible
-  actors with `damage / 8 >= 1` move one clear radial tile before their damage
-  event, while center actors and blocked destinations remain in place. An
-  ordinary loose-ammo stack at a blast cell is removed only when that cell's
-  rolled damage is greater than `10`, after actor damage and before death/drop
-  follow-up events. Direct core and `BrowserSession` expose identical events,
+- **Observable outcome:** A fixed Railgun replay setup produces one ordered
+  `AttackResolved` event per living actor on the clear source-to-target ray.
+  Successful impacts share one deterministic `8d8` damage result, continue
+  after lethal intermediate hits, and consume five cells; a blocked ray rejects
+  atomically. Direct core and `BrowserSession` expose identical events,
   observations, render effects, and scenes.
-- **Gameplay/replay impact:** Gameplay semantics advance from `63` to `64` for
-  the newly accepted Anti-Freak Jackal ground-item destruction interpretation;
-  replay
-  wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.253` to `0.2.254`.
+- **Gameplay/replay impact:** Gameplay semantics advance from `64` to `65` for
+  the newly accepted Railgun ray/piercing interpretation; replay wire/schema,
+  RNG sampling, generator, and ruleset identities remain unchanged. Project
+  version advances from `0.2.254` to `0.2.255`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary,
   typed projectile-count/cost policy and generic execution; `drl-protocol` owns
   the semantic `AttackRanged`/`AttackRangedAimed` commands and typed event
   projection, while replay/MCP and browser boundaries
   serialize and route it without duplicating gameplay rules.
-- **Evidence boundary:** Pinned Anti-Freak Jackal item, schedule, `ShotContact`,
-  default-knockback, explosion-order, and ground-item-destruction evidence in
-  `docs/legacy-behavior/anti-freak-jackal-profile.md`, the explicit Rust
-  radius-1 geometry and integer knockback decisions, and the direct-core,
-  generic MCP JSON serializer, and BrowserSession boundary tests are
-  authoritative. Controlled
+- **Evidence boundary:** Pinned Railgun item, one-roll, ray traversal, and
+  piercing evidence in `docs/legacy-behavior/railgun-profile.md`, the explicit
+  Rust clear-ray and shared-damage decisions, and the direct-core, generic MCP
+  JSON serializer, and BrowserSession boundary tests are authoritative.
+  Controlled
   legacy runtime, browser capture, and audiovisual comparisons remain
   `NOT_RUN`.
-- **Non-goals:** Terrain/cell destruction, spread/falloff,
-  callback state-machine parity, exact legacy callback timing, audiovisual
-  presentation comparison, new callback registries, unrelated gameplay
-  balance, replay-file migrations, runtime Lua, and browser/audio/WebGPU
-  capture parity.
+- **Non-goals:** Knockback, wall/cell destruction, spread/falloff, stray-shot
+  behavior, callback state-machine parity, exact legacy callback timing,
+  audiovisual presentation comparison, new callback registries, unrelated
+  gameplay balance, replay-file migrations, runtime Lua, and browser/audio/
+  WebGPU capture parity.
 
 ### 2.2 Why this slice is bounded
 
 The existing ranged command path already performs complete preflight,
 transactional clip validation and typed clip consumption. This slice adds a
-small typed blast resolver after the existing successful-hit schedule, using
-stable center-plus-eight-neighbor geometry, integer `damage / knockback`
-strength, radial displacement, strict `damage > 10` loose-ammo destruction, and
-the existing line-of-sight and damage projections. It exercises the result
-through ScenarioRunner, replay, the generic MCP JSON serializer, and the
-BrowserSession effect/observation boundary without adding a generic
-callback dispatcher, inventing a delayed command queue, or changing RNG
-sampling. Terrain/cell destruction, callback state, and presentation parity
-remain outside this verification contract.
+small typed Railgun resolver after the successful target preflight, using
+deterministic `line_points` traversal, one shared `8d8` roll for multi-actor
+shots, per-actor hit checks, and the existing damage/death projections. It
+exercises the result through ScenarioRunner, replay, the generic MCP JSON
+serializer, and the BrowserSession effect/observation boundary without adding
+a generic callback dispatcher, changing ordinary weapon routing, or claiming
+exact legacy ray geometry. Knockback, wall/cell destruction, callback state,
+and presentation parity remain outside this verification contract.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -3151,7 +3144,7 @@ radius-1 splash with typed radial knockback. Its contract must:
   semantics from `62` to `63` while preserving replay schema, RNG, generator,
   and ruleset identities.
 
-### 2.7dx Current Anti-Freak Jackal ground-item destruction target
+### 2.7dx Historical Anti-Freak Jackal ground-item destruction target
 
 The bounded implementation target for this revision extends the delivered
 radius-1 splash and knockback with typed destruction of representable ground
@@ -3172,6 +3165,30 @@ items. Its contract must:
   `NOT_RUN` where evidence is unavailable;
 - [x] advance project version from `0.2.253` to `0.2.254` and gameplay
   semantics from `63` to `64` while preserving replay schema, RNG, generator,
+  and ruleset identities.
+
+### 2.7dy Current Railgun ray/piercing traversal target
+
+The bounded implementation target for this revision extends the delivered
+Railgun ordinary-fire cost with clear-ray traversal and typed piercing. Its
+contract must:
+
+- [x] traverse `line_points` from the player through the requested target,
+  retaining every living non-player actor in source-to-target order while
+  rejecting blocked rays atomically;
+- [x] perform one ordered hit check per encountered actor and share one
+  deterministic `8d8` damage roll across all successful impacts in a
+  multi-actor shot;
+- [x] continue traversal after lethal intermediate hits, preserving existing
+  damage/death/drop event ordering and five-cell clip consumption;
+- [x] preserve direct-core, replay, generic MCP JSON, and `BrowserSession`
+  event, observation, effect, scene, and final-state parity, while retaining
+  the existing single-target RNG order when no intermediate actor exists;
+- [x] keep knockback, wall/cell destruction, spread/falloff, stray-shot,
+  callback state, exact legacy timing, controlled runtime, browser capture, and
+  audiovisual parity `NOT_RUN` where evidence is unavailable;
+- [x] advance project version from `0.2.254` to `0.2.255` and gameplay
+  semantics from `64` to `65` while preserving replay schema, RNG, generator,
   and ruleset identities.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
@@ -3646,6 +3663,13 @@ destruction. Each blast cell rolls deterministic `5d3` damage; when the roll is
 strictly greater than `10`, the lowest-ID ordinary loose-ammo stack at that cell
 is removed after actor damage and emits `GroundItemDestroyed`. Terrain/cell
 destruction, callback state, controlled runtime, browser capture, and
+audiovisual parity remain open.
+
+The `0.2.255` successor extends the Railgun ordinary-fire contract with bounded
+clear-ray piercing. A multi-actor shot performs ordered hit checks while
+sharing one deterministic `8d8` damage roll across successful impacts and
+continues after lethal intermediate hits. Knockback, wall/cell destruction,
+spread/falloff, callback state, controlled runtime, browser capture, and
 audiovisual parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy

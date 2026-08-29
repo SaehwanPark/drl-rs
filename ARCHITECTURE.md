@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.254`
+Current project version: `0.2.255`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -228,7 +228,8 @@ Presentation Boundary
     delay-40/radius-1/default-knockback-8 schedule fragments, while the
     dedicated `anti_freak` module owns deterministic center-plus-eight-neighbor
     radius-1 geometry, 5d3 splash rolls, radial knockback policy, and bounded
-    ground-ammo destruction;
+    ground-ammo destruction; Railgun's dedicated resolver owns clear-ray
+    traversal and shared-damage piercing;
     Nuclear Plasma's profile records its
     six-projectile ordinary-fire and six-cell cost fragments alongside overload
     and recharge without claiming chainfire.
