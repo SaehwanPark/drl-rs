@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.243`
+Current project version: `0.2.244`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,15 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Blaster Browser Boundary
+## 2. Active Implementation Slice: M9 — Pistol Aimed Fire
 
 ### 2.1 Objective
 
-Verify the delivered Blaster ordinary-fire policy at the direct-core and
-BrowserSession boundary. A deterministic one-projectile command must produce
-identical events, fair player observations, render effects, and scene state in
-both paths while retaining generic command execution ownership.
+Verify the delivered Pistol aimed-fire policy at the typed direct-core,
+replay/MCP JSON, and `BrowserSession` boundaries. A deterministic aimed
+one-projectile command must produce identical events, fair player observations,
+render effects, scene state, and replay outcomes in both execution paths while
+retaining generic ranged command execution ownership.
 
 ### 2.1a Scope and steering gate
 
@@ -40,38 +41,41 @@ both paths while retaining generic command execution ownership.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, Gate C catalog ownership, and Gate D callback behavior
   evidence remain closed for this contract-only slice.
-- **Observable outcome:** A fixed Blaster replay setup and one ranged
-  command produce identical direct-core and `BrowserSession` events,
-  observations, render effects, and scenes; the direct result consumes one
-  cell from the 10-cell clip and emits one ordered ranged-hit event.
-- **Gameplay/replay impact:** Gameplay semantics remain at `53`; replay
-  wire/schema, RNG sampling, generator, and ruleset identities remain unchanged.
-  Project version advances from `0.2.242` to `0.2.243` for the browser-boundary
-  verification slice.
-- **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary
-  and profiles; `drl-protocol`, MCP, render, audio, and browser boundaries remain
-  unchanged. No new command, event, or runtime dispatch surface is introduced;
-  no gameplay-policy or protocol changes are introduced by this verification
-  slice.
-- **Evidence boundary:** Pinned Blaster source evidence in
-  `docs/legacy-behavior/blaster-profile.md`, the delivered direct-target
-  ranged contract, and the BrowserSession boundary test are authoritative.
+- **Observable outcome:** A fixed Pistol replay setup and one aimed command
+  produce identical direct-core and `BrowserSession` events, observations,
+  render effects, and scenes; the direct result adds three accuracy points,
+  consumes one 9mm round from the clip, pays `ActionCost(2_000)`, and emits
+  one ordered ranged-hit event.
+- **Gameplay/replay impact:** Gameplay semantics advance from `53` to `54` for
+  the new accepted command interpretation; replay wire/schema, RNG sampling,
+  generator, and ruleset identities remain unchanged. Project version advances
+  from `0.2.243` to `0.2.244`.
+- **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary,
+  aimed accuracy/cost policy, and generic execution; `drl-protocol` owns the
+  semantic `AttackRangedAimed` command, while replay/MCP and browser boundaries
+  serialize and route it without duplicating gameplay rules.
+- **Evidence boundary:** Pinned Pistol source evidence in
+  `docs/legacy-behavior/pistol-profile.md`, the delivered direct-target
+  ranged contract, and the direct-core/BrowserSession boundary tests are
+  authoritative.
   Controlled legacy runtime, browser capture, and audiovisual comparisons
   remain `NOT_RUN`.
-- **Non-goals:** Alternate chainfire, spread/falloff, exact legacy
-  timing/accuracy, audiovisual presentation comparison, new command or callback
-  registries, unrelated gameplay balance or protocol changes, replay-file
-  IO/migrations, runtime Lua, and browser/audio/WebGPU parity.
+- **Non-goals:** Legacy aimed callback state-machine parity, alternate
+  chainfire, spread/falloff, exact legacy callback timing, audiovisual
+  presentation comparison, new callback registries, unrelated gameplay
+  balance, replay-file migrations, runtime Lua, and browser/audio/WebGPU
+  capture parity.
 
 ### 2.2 Why this slice is bounded
 
 The existing ranged command path already performs complete preflight,
 transactional clip validation and typed clip consumption for ordered
-projectiles. This slice exercises that delivered policy through the
-BrowserSession effect/observation boundary without adding a generic dispatcher,
-changing RNG sampling, or altering gameplay semantics. Pistol alternate
-chainfire and presentation capture parity remain outside this verification
-contract.
+projectiles. This slice adds one explicit typed aimed command that applies a
+Pistol-only accuracy bonus and action-cost multiplier before entering that
+path, then exercises it through replay/MCP and the BrowserSession
+effect/observation boundary without adding a generic callback dispatcher or
+changing RNG sampling. Legacy callback-state and presentation parity remain
+outside this verification contract.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -2843,7 +2847,7 @@ contract. Its contract must:
   gameplay semantics `53`, replay schema, RNG, generator, and ruleset
   identities.
 
-### 2.7dm Current Blaster browser-boundary verification target
+### 2.7dm Historical Blaster browser-boundary verification target
 
 The bounded implementation target for this revision is a direct-core and
 `BrowserSession` parity test for the delivered Blaster ordinary-fire contract.
@@ -2866,6 +2870,32 @@ Its contract must:
 - [x] advance project version from `0.2.242` to `0.2.243` while preserving
   gameplay semantics `53`, replay schema, RNG, generator, and ruleset
   identities.
+
+### 2.7dn Current Pistol aimed-fire vertical fidelity target
+
+The bounded implementation target for this revision is a typed Pistol-only
+aimed-fire command exercised through direct core, replay/MCP JSON, and
+`BrowserSession`. Its contract must:
+
+- [x] construct the same fixed replay setup in direct core and `BrowserSession`
+  with a Pistol's ten-round clip, six reserve 9mm rounds, and a high-HP target;
+- [x] submit `Command::AttackRangedAimed` through both paths and preserve
+  identical `GameEvent` sequences, fair player observations, render effects,
+  and scene projections;
+- [x] apply the typed +3 accuracy bonus and doubled fire cost, paying
+  `ActionCost(2_000)`, while emitting one ordered ranged-hit event and
+  consuming exactly one 9mm round;
+- [x] preserve deterministic replay verification, advertise/execute the aimed
+  command through the fair MCP action catalog, and encode/decode it at the
+  replay and MCP JSON boundaries without duplicating gameplay policy;
+- [x] reject aimed fire atomically for non-Pistol weapons and empty Pistol
+  clips, preserving the complete pre-command game state;
+- [x] keep exact legacy callback state/timing, controlled runtime, browser
+  capture, audiovisual parity, and presentation comparison `NOT_RUN` where
+  evidence is unavailable;
+- [x] advance project version from `0.2.243` to `0.2.244` and gameplay
+  semantics from `53` to `54` while preserving replay schema, RNG, generator,
+  and ruleset identities.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
@@ -3259,6 +3289,13 @@ command now reproduces events, fair observations, render effects, scene state,
 one-cell clip consumption, and replay determinism across both paths; controlled
 legacy runtime, browser capture, aimed callback, exact timing/accuracy, and
 audiovisual parity remain open.
+
+The `0.2.244` successor verifies the delivered Pistol aimed-fire contract
+through typed direct-core, replay/MCP JSON, and `BrowserSession` boundaries. A
+fixed aimed command now applies +3 accuracy, pays doubled action cost, consumes
+one 9mm round, reproduces events/observations/effects/scene state, and remains
+replay-deterministic across both paths; exact legacy callback state/timing,
+controlled runtime, browser capture, and audiovisual parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity

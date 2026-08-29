@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.243`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.244`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -106,7 +106,8 @@ replays, and regression testing.
     typed pump-only chamber cycle costs 200 action units; Assault Shotgun
     ordinary single-shell reload plus full-deficit reload capped at 2,500
     score-count units; Pistol's typed ordinary fire resolves one projectile and
-    consumes one 9mm round; Rocket Launcher's typed ordinary fire resolves one
+    consumes one 9mm round, while its typed aimed fire adds +3 accuracy and
+    doubles action cost; Rocket Launcher's typed ordinary fire resolves one
     projectile and consumes one rocket; Standard Shotgun's typed one-cell knockback hit
     consumes one shell; Revenant's Launcher
     exact-hit policy; Blaster

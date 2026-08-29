@@ -4583,6 +4583,123 @@ fn jackhammer_partial_burst_rejection_preserves_game_and_rng() {
 }
 
 #[test]
+fn pistol_aimed_fire_doubles_time_and_replays_deterministically() {
+  let target_position = Position::new(4, 2);
+  let mut replay =
+    ReplayLog::new(2_260, 12, 8, Position::new(2, 2)).with_player_config(PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: vec![ItemSpawnKind::Ammo9mm(6)],
+      equipped_weapon: Some(ItemSpawnKind::Pistol),
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    });
+  replay.record_monster(MonsterSpawnSpec::new(
+    target_position,
+    "Static Target",
+    500,
+    100,
+    (1, 7),
+  ));
+  replay.record_command(Command::AttackRangedAimed(target_position));
+
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+  let (game, events) = ReplayEngine::run(&replay).unwrap();
+  let player = game.world().player().unwrap();
+  assert_eq!(
+    player
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .current_clip,
+    9
+  );
+  assert!(events.iter().any(|event| {
+    matches!(
+      event,
+      GameEvent::ActionCostPaid {
+        cost: ActionCost(2_000),
+        ..
+      }
+    )
+  }));
+  assert_eq!(
+    events
+      .iter()
+      .filter(|event| matches!(
+        event,
+        GameEvent::AttackResolved {
+          is_ranged: true,
+          ..
+        }
+      ))
+      .count(),
+    1
+  );
+}
+
+#[test]
+fn aimed_fire_rejection_is_atomic_for_non_pistol_and_empty_clip() {
+  let target_position = Position::new(4, 2);
+  let mut unsupported = Game::new(2_261, 12, 8, Position::new(2, 2)).unwrap();
+  let player_id = unsupported.world().player_id().unwrap();
+  unsupported
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, Item::shotgun(ItemId::new(4)))
+    .unwrap();
+  unsupported
+    .world_mut()
+    .spawn_monster(target_position, "Target", 500, 100, (1, 7))
+    .unwrap();
+  let before_unsupported = unsupported.clone();
+  assert_eq!(
+    unsupported
+      .step(Command::AttackRangedAimed(target_position))
+      .unwrap_err(),
+    CommandError::InvalidCommand("aimed fire is only available for the Pistol".to_string())
+  );
+  assert_eq!(unsupported, before_unsupported);
+
+  let mut empty_clip = Game::new(2_262, 12, 8, Position::new(2, 2)).unwrap();
+  let player_id = empty_clip.world().player_id().unwrap();
+  empty_clip
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, Item::pistol(ItemId::new(4)))
+    .unwrap();
+  empty_clip
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 0;
+  empty_clip
+    .world_mut()
+    .spawn_monster(target_position, "Target", 500, 100, (1, 7))
+    .unwrap();
+  let before_empty = empty_clip.clone();
+  assert_eq!(
+    empty_clip
+      .step(Command::AttackRangedAimed(target_position))
+      .unwrap_err(),
+    CommandError::NoAmmoInClip
+  );
+  assert_eq!(empty_clip, before_empty);
+}
+
+#[test]
 fn jackhammer_mode_replay_is_deterministic() {
   let mut replay =
     ReplayLog::new(800, 20, 20, Position::new(10, 10)).with_player_config(PlayerSpawnConfig {

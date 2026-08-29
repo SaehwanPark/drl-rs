@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.243`
+Current project version: `0.2.244`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.243)
+## 3. Current Progress Summary (`VERSION` 0.2.244)
 
 ### Delivered Foundations
 
@@ -846,6 +846,15 @@ verification item uses explicit status semantics:
   state; recharge and no-manual-reload policies remain explicit while
   controlled legacy runtime, browser capture, aimed behavior, and audiovisual
   parity remain open.
+- **M9 Pistol aimed-fire vertical fidelity (`0.2.244`):** The typed Pistol
+  profile and `Command::AttackRangedAimed` now apply the pinned +3 accuracy
+  bonus, doubled action cost, one-projectile policy, and one-round 9mm cost.
+  Direct-core, advertised MCP actions/replay JSON, and `BrowserSession` paths
+  reproduce the same events, fair observations, render effects, scene state,
+  clip consumption, and replay determinism; non-Pistol/empty-clip rejection is
+  atomic. Exact
+  legacy callback state/timing, controlled runtime, browser capture, and
+  audiovisual parity remain open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1472,6 +1481,11 @@ scripting.
   consumption, and replay determinism; recharge and no-manual-reload policies
   remain explicit while controlled legacy runtime, browser capture, aimed
   behavior, and audiovisual parity remain open.
+- [x] Pistol's delivered aimed-fire contract has a typed Pistol-only command
+  with +3 accuracy, doubled action cost, one projectile, and one 9mm round;
+  direct-core, replay/MCP JSON, and BrowserSession parity plus atomic
+  non-Pistol/empty-clip rejection are verified while exact legacy callback
+  state/timing, runtime, capture, and audiovisual parity remain open.
 - [x] Missile Launcher has an immutable behavior profile for ordinary
   single-rocket reload and capped full-deficit reload (`2,500` score-count
   units); dedicated reload/planner paths remain authoritative and rocket-jump,

@@ -12,7 +12,8 @@ use crate::behavior::{
   BFG10K_EXPLOSION_DELAY, BFG10K_EXPLOSION_KNOCKBACK, BFG10K_EXPLOSION_RADIUS,
   BFG9000_EXPLOSION_DELAY, BFG9000_EXPLOSION_KNOCKBACK, BFG9000_EXPLOSION_RADIUS,
   LavaRechargeOutcome, MedicalRepairOutcome, NUCLEAR_BFG9000_EXPLOSION_DELAY,
-  NUCLEAR_BFG9000_EXPLOSION_KNOCKBACK, NUCLEAR_BFG9000_EXPLOSION_RADIUS, WeaponRechargeOutcome,
+  NUCLEAR_BFG9000_EXPLOSION_KNOCKBACK, NUCLEAR_BFG9000_EXPLOSION_RADIUS,
+  PISTOL_AIMED_ACCURACY_BONUS, PISTOL_AIMED_FIRE_COST_MULTIPLIER, WeaponRechargeOutcome,
 };
 use crate::combat::CombatResolver;
 use crate::combat_shotgun::{CombatShotgunReloadPlan, CombatShotgunTransition};
@@ -276,7 +277,12 @@ impl Game {
         }
       }
       Command::AttackRanged(target_pos) => {
-        action_cost = self.execute_player_ranged_attack(player_id, target_pos, &mut events)?;
+        action_cost =
+          self.execute_player_ranged_attack(player_id, target_pos, false, &mut events)?;
+      }
+      Command::AttackRangedAimed(target_pos) => {
+        action_cost =
+          self.execute_player_ranged_attack(player_id, target_pos, true, &mut events)?;
       }
       Command::Wait => {
         self.execute_player_wait(player_id, &mut events)?;
@@ -1652,6 +1658,7 @@ impl Game {
     &mut self,
     player_id: drl_protocol::EntityId,
     target_pos: Position,
+    aimed: bool,
     events: &mut Vec<GameEvent>,
   ) -> Result<ActionCost, CommandError> {
     if !self.state.world.map().is_in_bounds(target_pos) {
@@ -1704,6 +1711,11 @@ impl Game {
 
       if !props.is_ranged {
         return Err(CommandError::NoEquippedWeapon);
+      }
+      if aimed && weapon.archetype() != drl_protocol::ItemArchetype::Pistol {
+        return Err(CommandError::InvalidCommand(
+          "aimed fire is only available for the Pistol".to_string(),
+        ));
       }
       if weapon.pump_action_blocks_fire() {
         return Err(CommandError::ChamberEmpty);
@@ -1780,10 +1792,15 @@ impl Game {
           .get_actor(target_monster_id)
           .ok_or(CommandError::EntityNotFound(target_monster_id))?;
 
-        let outcome = CombatResolver::resolve_ranged_attack(
+        let outcome = CombatResolver::resolve_ranged_attack_with_accuracy(
           player,
           target_monster,
           distance,
+          if aimed {
+            PISTOL_AIMED_ACCURACY_BONUS
+          } else {
+            0
+          },
           &mut self.state.rng,
         );
         let damage = match outcome {
@@ -1895,7 +1912,15 @@ impl Game {
       weapon.mark_pump_action_after_fire();
     }
 
-    Ok(fire_cost)
+    Ok(if aimed {
+      ActionCost::new(
+        fire_cost
+          .as_u32()
+          .saturating_mul(PISTOL_AIMED_FIRE_COST_MULTIPLIER),
+      )
+    } else {
+      fire_cost
+    })
   }
 
   /// Applies Null Pointer's typed target branch and records its deferred blast.

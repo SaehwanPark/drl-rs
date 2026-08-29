@@ -245,6 +245,11 @@ fn command_to_json(command: &Command) -> JsonValue {
       ("target_x", JsonValue::from(position.x)),
       ("target_y", JsonValue::from(position.y)),
     ]),
+    Command::AttackRangedAimed(position) => object([
+      ("action", JsonValue::from("aimed_fire")),
+      ("target_x", JsonValue::from(position.x)),
+      ("target_y", JsonValue::from(position.y)),
+    ]),
     Command::Wait => action("wait"),
     Command::Pickup => action("pickup"),
     Command::Drop(item_id) => item_action("drop", item_id.as_u64()),
@@ -348,6 +353,7 @@ mod tests {
       Command::Move(Direction::North),
       Command::AttackMelee(Direction::SouthWest),
       Command::AttackRanged(Position::new(i32::MIN, i32::MAX)),
+      Command::AttackRangedAimed(Position::new(-7, 11)),
       Command::Wait,
       Command::Pickup,
       Command::Drop(ItemId::new(9_007_199_254_740_992)),
@@ -372,19 +378,23 @@ mod tests {
       Some(i64::from(i32::MIN))
     );
     assert_eq!(
-      values[5].get("item_id").and_then(JsonValue::as_u64),
+      values[3].get("action").and_then(JsonValue::as_str),
+      Some("aimed_fire")
+    );
+    assert_eq!(
+      values[6].get("item_id").and_then(JsonValue::as_u64),
       Some(9_007_199_254_740_992)
     );
     assert_eq!(
-      values[7].get("slot").and_then(JsonValue::as_str),
+      values[8].get("slot").and_then(JsonValue::as_str),
       Some("Armor")
     );
     assert_eq!(
-      values[10].get("confirmed").and_then(JsonValue::as_bool),
+      values[11].get("confirmed").and_then(JsonValue::as_bool),
       Some(true)
     );
     assert_eq!(
-      values[12].get("action").and_then(JsonValue::as_str),
+      values[13].get("action").and_then(JsonValue::as_str),
       Some("descend")
     );
   }
