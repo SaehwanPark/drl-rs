@@ -130,6 +130,7 @@ impl EpisodeMetrics {
       | GameEvent::EntityWaited { .. }
       | GameEvent::ActionCostPaid { .. }
       | GameEvent::ItemDropped { .. }
+      | GameEvent::GroundItemDestroyed { .. }
       | GameEvent::ItemEquipped { .. }
       | GameEvent::ItemUnequipped { .. }
       | GameEvent::WeaponReloaded { .. }

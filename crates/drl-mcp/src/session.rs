@@ -916,6 +916,11 @@ pub fn game_event_to_json(event: &GameEvent) -> JsonValue {
       map.insert("entity_id".to_string(), JsonValue::from(entity_id.as_u64()));
       map.insert("item_name".to_string(), JsonValue::from(item_name.as_str()));
     }
+    GameEvent::GroundItemDestroyed { item_id, position } => {
+      map.insert("type".to_string(), JsonValue::from("GroundItemDestroyed"));
+      map.insert("item_id".to_string(), JsonValue::from(item_id.as_u64()));
+      map.insert("position".to_string(), position_to_json(*position));
+    }
     GameEvent::WeaponReloaded {
       entity_id,
       ammo_loaded,
@@ -2130,6 +2135,26 @@ mod tests {
     );
     assert_eq!(
       map.get("to"),
+      Some(&position_to_json(drl_protocol::Position::new(4, 2)))
+    );
+  }
+
+  #[test]
+  fn ground_item_destroyed_event_projects_to_mcp_json() {
+    let value = game_event_to_json(&GameEvent::GroundItemDestroyed {
+      item_id: drl_protocol::ItemId::new(7),
+      position: drl_protocol::Position::new(4, 2),
+    });
+    let JsonValue::Object(map) = value else {
+      panic!("event projection must be an object");
+    };
+    assert_eq!(
+      map.get("type").and_then(JsonValue::as_str),
+      Some("GroundItemDestroyed")
+    );
+    assert_eq!(map.get("item_id").and_then(JsonValue::as_i64), Some(7));
+    assert_eq!(
+      map.get("position"),
       Some(&position_to_json(drl_protocol::Position::new(4, 2)))
     );
   }

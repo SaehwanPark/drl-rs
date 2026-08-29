@@ -5,11 +5,12 @@ use drl_protocol::{
   Direction, EquipmentSlot, GameEvent, LevelId, OmniscientObservation, PlayerObservation, Position,
   TileKind, Turn,
 };
+use std::collections::BTreeSet;
 
 use crate::acid_spitter::{ACID_SPITTER_RELOAD_AMOUNT, AcidSpitterReloadError};
 use crate::anti_freak::{
-  radius_one_blast_positions, roll_splash_damage, splash_knockback_direction,
-  splash_knockback_distance,
+  radius_one_blast_positions, roll_splash_damage, should_destroy_ground_item,
+  splash_knockback_direction, splash_knockback_distance,
 };
 use crate::assault_shotgun::{AssaultShotgunReloadPlan, AssaultShotgunTransition};
 use crate::behavior::{
@@ -1972,71 +1973,81 @@ impl Game {
     center: Position,
     events: &mut Vec<GameEvent>,
   ) -> Result<(), CommandError> {
-    let targets: Vec<_> = radius_one_blast_positions(self.state.world.map(), center)
-      .into_iter()
-      .filter_map(|position| {
-        self
-          .state
-          .world
-          .living_actor_at(position)
-          .map(|actor| actor.id())
-      })
-      .collect();
-
-    for target_id in targets {
+    let mut processed_actors = BTreeSet::new();
+    for blast_position in radius_one_blast_positions(self.state.world.map(), center) {
       let damage = roll_splash_damage(&mut self.state.rng);
-      let knockback_distance =
-        splash_knockback_distance(damage, ANTI_FREAK_JACKAL_EXPLOSION_KNOCKBACK);
-      if let Some(direction) = self
+      let target_id = self
         .state
         .world
-        .get_actor(target_id)
-        .and_then(|actor| splash_knockback_direction(center, actor.position()))
-      {
-        self.apply_anti_freak_knockback(target_id, direction, knockback_distance, events)?;
-      }
-      let (taken, lethal, death_cause) =
-        self
+        .living_actor_at(blast_position)
+        .map(|actor| actor.id());
+      let target_id = target_id.filter(|target_id| processed_actors.insert(*target_id));
+      let mut lethal_target = None;
+
+      if let Some(target_id) = target_id {
+        let knockback_distance =
+          splash_knockback_distance(damage, ANTI_FREAK_JACKAL_EXPLOSION_KNOCKBACK);
+        if let Some(direction) = self
           .state
           .world
-          .apply_damage(target_id, damage, DamageSource::Environment)?;
-      let remaining = self
-        .state
-        .world
-        .get_actor(target_id)
-        .map_or(0, |actor| actor.hp().current);
-      events.push(GameEvent::DamageApplied {
-        target_id,
-        amount: taken,
-        remaining_hp: remaining,
-        source: DamageSource::Environment,
-        damage_type: Some(DamageType::Fire),
-      });
-
-      if !lethal {
-        continue;
+          .get_actor(target_id)
+          .and_then(|actor| splash_knockback_direction(center, actor.position()))
+        {
+          self.apply_anti_freak_knockback(target_id, direction, knockback_distance, events)?;
+        }
+        let (taken, lethal, death_cause) =
+          self
+            .state
+            .world
+            .apply_damage(target_id, damage, DamageSource::Environment)?;
+        let remaining = self
+          .state
+          .world
+          .get_actor(target_id)
+          .map_or(0, |actor| actor.hp().current);
+        events.push(GameEvent::DamageApplied {
+          target_id,
+          amount: taken,
+          remaining_hp: remaining,
+          source: DamageSource::Environment,
+          damage_type: Some(DamageType::Fire),
+        });
+        if lethal {
+          lethal_target = Some((target_id, death_cause));
+        }
       }
 
-      let death_drop = self
-        .state
-        .world
-        .get_actor(target_id)
-        .and_then(|actor| actor.death_drop());
-      let death_position = self
-        .state
-        .world
-        .get_actor(target_id)
-        .map(|actor| actor.position())
-        .unwrap_or(center);
-      events.push(GameEvent::ActorDied {
-        entity_id: target_id,
-        cause: death_cause.unwrap_or(DeathCause::Environment),
-      });
-      if let Some(drop_kind) = death_drop {
-        self.spawn_death_drop(target_id, death_position, drop_kind, events)?;
+      if should_destroy_ground_item(damage)
+        && let Some(item_id) = self.state.world.destroy_ground_ammo_at(blast_position)
+      {
+        events.push(GameEvent::GroundItemDestroyed {
+          item_id,
+          position: blast_position,
+        });
       }
-      if self.state.world.player_id() == Some(target_id) {
-        self.state.is_game_over = true;
+
+      if let Some((target_id, death_cause)) = lethal_target {
+        let death_drop = self
+          .state
+          .world
+          .get_actor(target_id)
+          .and_then(|actor| actor.death_drop());
+        let death_position = self
+          .state
+          .world
+          .get_actor(target_id)
+          .map(|actor| actor.position())
+          .unwrap_or(center);
+        events.push(GameEvent::ActorDied {
+          entity_id: target_id,
+          cause: death_cause.unwrap_or(DeathCause::Environment),
+        });
+        if let Some(drop_kind) = death_drop {
+          self.spawn_death_drop(target_id, death_position, drop_kind, events)?;
+        }
+        if self.state.world.player_id() == Some(target_id) {
+          self.state.is_game_over = true;
+        }
       }
     }
 

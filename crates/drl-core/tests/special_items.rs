@@ -5056,8 +5056,10 @@ fn anti_freak_jackal_splash_fanout_hits_only_radius_one_actors() {
       1,
       (0, 0),
     ));
+    replay.record_item(ItemSpawnSpec::new(*position, ItemSpawnKind::Ammo9mm(20)));
   }
   replay.record_monster(MonsterSpawnSpec::new(far, "Far", 500, 1, (0, 0)));
+  replay.record_item(ItemSpawnSpec::new(far, ItemSpawnKind::Ammo9mm(20)));
   replay.record_command(Command::AttackRangedAimed(center));
 
   let (game, events) = ReplayEngine::run(&replay).unwrap();
@@ -5115,6 +5117,83 @@ fn anti_freak_jackal_splash_fanout_hits_only_radius_one_actors() {
     events
       .iter()
       .any(|event| matches!(event, GameEvent::ActorKnockedBack { .. }))
+  );
+  let destroyed_positions: Vec<_> = events
+    .iter()
+    .filter_map(|event| match event {
+      GameEvent::GroundItemDestroyed { position, .. } => Some(*position),
+      _ => None,
+    })
+    .collect();
+  let expected_destroyed = splash_damage
+    .iter()
+    .filter(|(_, amount)| *amount > 10)
+    .count();
+  assert_eq!(destroyed_positions.len(), expected_destroyed);
+  assert!(
+    destroyed_positions
+      .iter()
+      .all(|position| blast_positions.contains(position))
+  );
+  assert!(
+    game
+      .world()
+      .ground_items_at(far)
+      .iter()
+      .any(|item| item.is_ammo())
+  );
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}
+
+#[test]
+fn anti_freak_jackal_splash_can_destroy_ammo_on_empty_blast_cells() {
+  let center = Position::new(3, 2);
+  let blast_positions = [
+    center,
+    Position::new(3, 1),
+    Position::new(4, 1),
+    Position::new(4, 2),
+    Position::new(4, 3),
+    Position::new(3, 3),
+    Position::new(2, 3),
+    Position::new(2, 2),
+    Position::new(2, 1),
+  ];
+  let mut replay =
+    ReplayLog::new(0, 8, 8, Position::new(1, 2)).with_player_config(PlayerSpawnConfig {
+      hp: 500,
+      max_hp: 500,
+      speed: 100,
+      initial_items: vec![ItemSpawnKind::Ammo9mm(6)],
+      equipped_weapon: Some(ItemSpawnKind::AntiFreakJackal),
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    });
+  replay.record_monster(MonsterSpawnSpec::new(
+    center,
+    "Blast Center",
+    500,
+    0,
+    (0, 0),
+  ));
+  for position in blast_positions {
+    replay.record_item(ItemSpawnSpec::new(position, ItemSpawnKind::Ammo9mm(20)));
+  }
+  replay.record_command(Command::AttackRangedAimed(center));
+
+  let (_game, events) = ReplayEngine::run(&replay).unwrap();
+  let destroyed_positions: Vec<_> = events
+    .iter()
+    .filter_map(|event| match event {
+      GameEvent::GroundItemDestroyed { position, .. } => Some(*position),
+      _ => None,
+    })
+    .collect();
+  assert!(!destroyed_positions.is_empty());
+  assert!(
+    destroyed_positions
+      .iter()
+      .any(|position| *position != center)
   );
   assert!(ReplayEngine::verify_determinism(&replay).unwrap());
 }

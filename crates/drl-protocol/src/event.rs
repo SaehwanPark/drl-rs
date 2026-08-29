@@ -81,6 +81,8 @@ pub enum GameEvent {
     item_id: ItemId,
     item_name: String,
   },
+  /// A blast destroyed an ordinary loose ammunition stack on the ground.
+  GroundItemDestroyed { item_id: ItemId, position: Position },
   /// A weapon was reloaded with ammunition from inventory.
   WeaponReloaded {
     entity_id: EntityId,

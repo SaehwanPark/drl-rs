@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.253`
+Current project version: `0.2.254`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.253)
+## 3. Current Progress Summary (`VERSION` 0.2.254)
 
 ### Delivered Foundations
 
@@ -904,7 +904,7 @@ verification item uses explicit status semantics:
   Anti-Freak schedules now resolve a deterministic center-plus-eight-neighbor
   radius-1 fanout with one `5d3` fire-damage roll per eligible living actor.
   Direct-core, replay/MCP, and `BrowserSession` parity plus deterministic
-  geometry/event tests are verified; blast knockback, terrain/item
+  geometry/event tests are verified; blast knockback, terrain/cell
   destruction, callback state, controlled runtime, browser capture, and
   audiovisual parity remain open.
 - **M9 Anti-Freak Jackal splash knockback (`0.2.253`):** Eligible actors now
@@ -913,8 +913,15 @@ verification item uses explicit status semantics:
   destinations remain in place. Direct-core, replay, and `BrowserSession`
   parity plus deterministic event-order tests are verified, and the existing
   generic MCP JSON serializer covers the typed schedule, knockback, and damage
-  events; terrain/item destruction, callback state, controlled runtime,
+  events; terrain/cell destruction, callback state, controlled runtime,
   browser capture, and audiovisual parity remain open.
+- **M9 Anti-Freak Jackal ground-item destruction (`0.2.254`):** Each blast
+  cell now rolls deterministic `5d3` damage and removes the lowest-ID ordinary
+  loose-ammo stack only when the roll is greater than `10`, after actor damage
+  and before lethal death/drop follow-up. Direct-core, replay, generic MCP JSON,
+  and `BrowserSession` coverage is verified; terrain/cell destruction,
+  callback state, controlled runtime, browser capture, and audiovisual parity
+  remain open.
 - **M9 Trigun aimed-fire vertical fidelity (`0.2.248`):** The shared typed
   aimed-fire command now accepts Trigun, applies +3 accuracy and doubled action
   cost, and preserves one-projectile/one-round behavior. Direct-core,
@@ -1462,14 +1469,19 @@ scripting.
 - [x] Anti-Freak Jackal's delivered radius-1 splash fanout considers the
   impact center and eight neighboring cells clockwise from north in stable order, applies one
   deterministic `5d3` fire-damage roll per eligible living actor, and preserves
-  direct-core, replay/MCP, and BrowserSession parity; terrain/item destruction,
+  direct-core, replay/MCP, and BrowserSession parity; terrain/cell destruction,
   callback state/timing, runtime, and audiovisual parity remain open.
 - [x] Anti-Freak Jackal's delivered splash knockback derives integer `damage / 8`
   radial displacement, preserves center/blocked-cell behavior, emits
   `ActorKnockedBack` before environmental damage when movement succeeds, and
-  preserves direct-core, replay/MCP, and BrowserSession parity; terrain/item
+  preserves direct-core, replay/MCP, and BrowserSession parity; terrain/cell
   destruction, callback state/timing, runtime, and audiovisual parity remain
   open.
+- [x] Anti-Freak Jackal's delivered splash destroys the lowest-ID ordinary
+  loose-ammo stack on a blast cell only for rolled damage greater than `10`,
+  emits `GroundItemDestroyed` after damage, and preserves direct-core, replay,
+  generic MCP JSON, and BrowserSession parity; terrain/cell destruction,
+  callback state/timing, runtime, and audiovisual parity remain open.
 - [x] Malek's Armor has an immutable behavior profile for its
   delay-50/cadence-5/amount-1 durability-recharge fragment; the dedicated
   transition remains authoritative and armor resistance/degradation, runtime,

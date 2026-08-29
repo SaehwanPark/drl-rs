@@ -9,6 +9,15 @@ pub const ANTI_FREAK_JACKAL_SPLASH_DICE: u32 = 5;
 /// Sides on each Anti-Freak Jackal splash damage die.
 pub const ANTI_FREAK_JACKAL_SPLASH_DIE_SIDES: u32 = 3;
 
+/// Legacy blast threshold for destroying a representable ground item.
+pub const ANTI_FREAK_JACKAL_GROUND_ITEM_DESTRUCTION_THRESHOLD: u32 = 10;
+
+/// Returns whether a rolled splash damage result can destroy a ground item.
+#[must_use]
+pub const fn should_destroy_ground_item(damage: u32) -> bool {
+  damage > ANTI_FREAK_JACKAL_GROUND_ITEM_DESTRUCTION_THRESHOLD
+}
+
 /// Converts an impact-to-actor delta into the radial knockback direction.
 ///
 /// The impact center has no outward direction and therefore is not displaced
@@ -134,5 +143,11 @@ mod tests {
     assert_eq!(splash_knockback_distance(8, 8), 1);
     assert_eq!(splash_knockback_distance(15, 8), 1);
     assert_eq!(splash_knockback_distance(15, 0), 0);
+  }
+
+  #[test]
+  fn ground_item_destruction_uses_strict_legacy_threshold() {
+    assert!(!should_destroy_ground_item(10));
+    assert!(should_destroy_ground_item(11));
   }
 }
