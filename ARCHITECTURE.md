@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.229`
+Current project version: `0.2.230`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -52,7 +52,9 @@ reload, and capped full-deficit reload fragments; Double Shotgun records its
 typed two-projectile dual-shot and two-shell ammo-cost fragments; Super Shotgun
 records its typed two-projectile dual-shot and two-shell aggregate ammo-cost
 fragments; Minigun records its typed eight-projectile ordinary-fire and
-one-round-per-projectile ammo-cost fragments; Standard
+one-round-per-projectile ammo-cost fragments; Chaingun records its typed
+four-projectile ordinary-fire and one-round-per-projectile ammo-cost
+fragments; Standard
 Shotgun records its typed one-cell knockback hit and one-shell ammo-cost
 fragments; Plasma Shotgun records its typed one-projectile ordinary-fire and
 three-cell ammo-cost fragments; Frag Shotgun records its typed one-projectile
