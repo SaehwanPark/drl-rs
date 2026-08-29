@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.233]
+
+- Added a deterministic Minigun direct-core/BrowserSession vertical boundary
+  check covering eight ordered ranged-hit events, fair observations, render
+  effects, scene projection, clip consumption, and replay equality. Gameplay
+  semantics remain `53`; controlled legacy runtime, browser capture, alternate
+  chainfire, and audiovisual parity remain deferred.
+
 ## [0.2.232]
 
 - Added a deterministic Laser Rifle direct-core/BrowserSession vertical
