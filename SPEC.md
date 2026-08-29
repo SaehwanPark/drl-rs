@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.248`
+Current project version: `0.2.249`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,15 +25,15 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Trigun Aimed Fire
+## 2. Active Implementation Slice: M9 — Nuclear Plasma Rifle Ordinary Volley
 
 ### 2.1 Objective
 
-Verify the delivered Trigun aimed-fire policy at the typed direct-core,
-replay/MCP JSON, and `BrowserSession` boundaries. A deterministic aimed
-one-projectile command must produce identical events, fair player observations,
-render effects, scene state, and replay outcomes in both execution paths while
-retaining generic ranged command execution ownership.
+Verify the delivered Nuclear Plasma Rifle ordinary-fire volley policy at the
+typed direct-core, replay/MCP JSON, and `BrowserSession` boundaries. A
+deterministic six-projectile command must produce identical events, fair player
+observations, render effects, scene state, and replay outcomes in both execution
+paths while retaining generic ranged command execution ownership.
 
 ### 2.1a Scope and steering gate
 
@@ -41,40 +41,38 @@ retaining generic ranged command execution ownership.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, Gate C catalog ownership, and Gate D callback behavior
   evidence remain closed for this contract-only slice.
-- **Observable outcome:** A fixed Trigun replay setup and one aimed command
-  produce identical direct-core and `BrowserSession` events, observations,
-  render effects, and scenes; the direct result applies +3 accuracy, emits one
-  ordered ranged-hit event, consumes one 9mm round, and pays `ActionCost(2_000)`.
-- **Gameplay/replay impact:** Gameplay semantics advance from `57` to `58` for
-  the newly accepted Trigun aimed-fire interpretation; replay wire/schema, RNG sampling,
-  generator, and ruleset identities remain unchanged. Project version advances
-  from `0.2.247` to `0.2.248`.
+- **Observable outcome:** A fixed Nuclear Plasma Rifle replay setup and one
+  ordinary command produce identical direct-core and `BrowserSession` events,
+  observations, render effects, and scenes; the direct result emits six ordered
+  ranged-hit events, consumes six cells, and pays the ordinary ranged cost.
+- **Gameplay/replay impact:** Gameplay semantics advance from `58` to `59` for
+  the newly accepted Nuclear Plasma Rifle volley interpretation; replay
+  wire/schema, RNG sampling, generator, and ruleset identities remain
+  unchanged. Project version advances from `0.2.248` to `0.2.249`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary,
-  typed projectile-count/cost and aimed-fire policy and generic execution;
-  `drl-protocol` owns the semantic `AttackRangedAimed` command, while replay/MCP
-  and browser boundaries
+  typed projectile-count/cost policy and generic execution; `drl-protocol` owns
+  the semantic `AttackRanged` command, while replay/MCP and browser boundaries
   serialize and route it without duplicating gameplay rules.
-- **Evidence boundary:** Pinned Trigun source evidence in
-  `docs/legacy-behavior/trigun-profile.md`, the delivered direct-target
+- **Evidence boundary:** Pinned Nuclear Plasma Rifle source evidence in
+  `docs/legacy-behavior/nuclear-plasma-volley-profile.md`, the delivered direct-target
   ranged contract, and the direct-core/BrowserSession boundary tests are
   authoritative.
   Controlled legacy runtime, browser capture, and audiovisual comparisons
   remain `NOT_RUN`.
-- **Non-goals:** Legacy aimed callback state-machine parity, alternate
-  chainfire, spread/falloff, exact legacy callback timing, audiovisual
-  presentation comparison, new callback registries, unrelated gameplay
-  balance, replay-file migrations, runtime Lua, and browser/audio/WebGPU
-  capture parity.
+- **Non-goals:** Legacy chainfire callback state-machine parity, spread/falloff,
+  exact legacy callback timing, audiovisual presentation comparison, new
+  callback registries, unrelated gameplay balance, replay-file migrations,
+  runtime Lua, and browser/audio/WebGPU capture parity.
 
 ### 2.2 Why this slice is bounded
 
 The existing ranged command path already performs complete preflight,
 transactional clip validation and typed clip consumption for ordered
-projectiles. This slice adds the explicit Trigun aimed-fire policy before
-entering that path, then exercises it through replay/MCP and the BrowserSession
-effect/observation boundary without adding a generic callback dispatcher or
-changing RNG sampling. Legacy callback-state and presentation parity remain
-outside this verification contract.
+projectiles. This slice adds the explicit six-projectile Nuclear Plasma Rifle
+policy before entering that path, then exercises it through ScenarioRunner,
+replay/MCP, and the BrowserSession effect/observation boundary without adding a
+generic callback dispatcher or changing RNG sampling. Legacy chainfire callback
+state and presentation parity remain outside this verification contract.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -2975,7 +2973,7 @@ catalog, and `BrowserSession`. Its contract must:
   semantics from `56` to `57` while preserving replay schema, RNG, generator,
   and ruleset identities.
 
-### 2.7dr Current Trigun aimed-fire vertical fidelity target
+### 2.7dr Historical Trigun aimed-fire vertical fidelity target
 
 The bounded implementation target for this revision is the typed Trigun
 aimed-fire command exercised through direct core, replay/MCP JSON, MCP action
@@ -3000,6 +2998,35 @@ catalog, and `BrowserSession`. Its contract must:
   comparison `NOT_RUN` where evidence is unavailable;
 - [x] advance project version from `0.2.247` to `0.2.248` and gameplay
   semantics from `57` to `58` while preserving replay schema, RNG, generator,
+  and ruleset identities.
+
+### 2.7ds Current Nuclear Plasma Rifle ordinary-fire volley target
+
+The bounded implementation target for this revision is the typed Nuclear
+Plasma Rifle ordinary-fire volley exercised through direct core,
+ScenarioRunner/replay, MCP JSON and action catalog, and `BrowserSession`. Its
+contract must:
+
+- [x] construct the same fixed replay setup in direct core and `BrowserSession`
+  with a Nuclear Plasma Rifle's 24-cell clip, six reserve cells, and a high-HP
+  target;
+- [x] submit one ordinary `Command::AttackRanged` through both paths and
+  preserve identical `GameEvent` sequences, fair player observations, render
+  effects, and scene projections;
+- [x] emit six ordered ranged-hit events, consume one cell per projectile (six
+  cells total), and pay the ordinary ranged action cost while resetting the
+  typed recharge timer;
+- [x] advertise and execute the ordinary command through the fair MCP action
+  catalog, and encode/decode it at replay/MCP JSON boundaries without
+  duplicating gameplay policy;
+- [x] preserve deterministic ScenarioRunner/replay verification and reject
+  clips below six cells atomically, while leaving alternate overload and
+  periodic recharge transitions authoritative;
+- [x] keep chainfire callback state, spread/falloff, exact callback timing,
+  controlled runtime, browser capture, and audiovisual parity `NOT_RUN` where
+  evidence is unavailable;
+- [x] advance project version from `0.2.248` to `0.2.249` and gameplay
+  semantics from `58` to `59` while preserving replay schema, RNG, generator,
   and ruleset identities.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
@@ -3429,6 +3456,14 @@ direct-core, replay/MCP JSON/catalog, and `BrowserSession` boundaries. A fixed
 aimed command now applies +3 accuracy, pays doubled action cost, consumes one
 9mm round, reproduces events/observations/effects/scene state, and remains
 replay-deterministic; exact callback state/timing, alternate-target UI,
+controlled runtime, browser capture, and audiovisual parity remain open.
+
+The `0.2.249` successor extends the typed ordinary-fire volley contract to
+Nuclear Plasma Rifle through direct-core, ScenarioRunner/replay, replay/MCP
+JSON/catalog, and `BrowserSession` boundaries. A fixed ordinary command now
+resolves six ordered projectiles, consumes six cells as an aggregate cost,
+resets its typed recharge timer, rejects below-six clips atomically, and remains
+replay-deterministic; chainfire callback state, exact callback timing,
 controlled runtime, browser capture, and audiovisual parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy

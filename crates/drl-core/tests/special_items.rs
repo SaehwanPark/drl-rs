@@ -3154,9 +3154,22 @@ fn nuclear_plasma_recharge_timer_resets_on_fire() {
   }
   assert_eq!(game.world().player().unwrap().weapon_recharge_timer(), 10);
 
-  game
+  let events = game
     .step(Command::AttackRanged(target_position))
-    .expect("first Nuclear Plasma shot");
+    .expect("first Nuclear Plasma volley");
+  assert_eq!(
+    events
+      .iter()
+      .filter(|event| matches!(
+        event,
+        GameEvent::AttackResolved {
+          is_ranged: true,
+          ..
+        }
+      ))
+      .count(),
+    6
+  );
   let player = game.world().player().unwrap();
   assert_eq!(player.weapon_recharge_timer(), 1);
   assert_eq!(
@@ -3167,8 +3180,46 @@ fn nuclear_plasma_recharge_timer_resets_on_fire() {
       .weapon_properties()
       .unwrap()
       .current_clip,
-    22
+    17
   );
+}
+
+#[test]
+fn nuclear_plasma_below_six_cell_cost_rejection_is_atomic() {
+  let mut game = Game::new(2_271, 12, 8, Position::new(2, 2)).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let target = Position::new(5, 2);
+  game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 500, 100, (1, 7))
+    .unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .equip(
+      EquipmentSlot::Weapon,
+      Item::nuclear_plasma_rifle(ItemId::new(4)),
+    )
+    .unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 5;
+  let before = game.clone();
+
+  assert_eq!(
+    game.step(Command::AttackRanged(target)).unwrap_err(),
+    CommandError::NoAmmoInClip
+  );
+  assert_eq!(game, before);
 }
 
 #[test]

@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.248`
+Current project version: `0.2.249`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.248)
+## 3. Current Progress Summary (`VERSION` 0.2.249)
 
 ### Delivered Foundations
 
@@ -878,6 +878,14 @@ verification item uses explicit status semantics:
   events, observations, effects, scene state, and replay outcomes; chainfire,
   overcharge, exact callback timing, controlled runtime, browser capture, and
   audiovisual parity remain open.
+- **M9 Nuclear Plasma Rifle ordinary-fire volley (`0.2.249`):** The typed
+  Nuclear Plasma Rifle profile now resolves six ordered ordinary projectiles
+  and consumes six cells as one aggregate cost with atomic below-six rejection;
+  its recharge reset and overload transitions remain authoritative. Direct-core,
+  ScenarioRunner/replay, MCP JSON/catalog, and `BrowserSession` paths reproduce
+  deterministic events, observations, effects, scene state, and replay
+  outcomes; chainfire, exact callback timing, controlled runtime, browser
+  capture, and audiovisual parity remain open.
 - **M9 Trigun aimed-fire vertical fidelity (`0.2.248`):** The shared typed
   aimed-fire command now accepts Trigun, applies +3 accuracy and doubled action
   cost, and preserves one-projectile/one-round behavior. Direct-core,
@@ -1396,9 +1404,10 @@ scripting.
   damage, knockback application, routing, runtime, and audiovisual parity
   remain open.
 - [x] Nuclear Plasma Rifle has an immutable behavior profile for its ordered
-  alternate-overload and delay-40/cadence-2/amount-1 recharge fragments;
-  dedicated transitions remain authoritative and chainfire, runtime, and
-  audiovisual parity remain open.
+  six-projectile/one-cell ordinary-fire volley, alternate-overload, and
+  delay-40/cadence-2/amount-1 recharge fragments; generic ranged and dedicated
+  transitions remain authoritative while chainfire, runtime, and audiovisual
+  parity remain open.
 - [x] Blaster has an immutable behavior profile for its current one-projectile
   ordinary fire and one-cell cost followed by its delay-30/cadence-10/amount-1
   recharge fragment; generic ranged execution and the dedicated transition

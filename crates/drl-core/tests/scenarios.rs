@@ -2068,7 +2068,7 @@ fn nuclear_plasma_periodic_recharge_vertical_scenario_preserves_replay() {
     hp: 50,
     max_hp: 50,
     speed: 100,
-    initial_items: Vec::new(),
+    initial_items: vec![ItemSpawnKind::AmmoCells(6)],
     equipped_weapon: Some(ItemSpawnKind::NuclearPlasmaRifle),
     equipped_armor: None,
     equipped_armor_durability: None,
@@ -2113,7 +2113,7 @@ fn nuclear_plasma_periodic_recharge_vertical_scenario_preserves_replay() {
             entity_id,
             item_id,
             ammo_recharged: 1,
-            current_clip: 24,
+            current_clip: 19,
             max_clip: 24,
             timer: 40,
           } if *entity_id == player_id && *item_id == weapon_id
@@ -2131,11 +2131,26 @@ fn nuclear_plasma_periodic_recharge_vertical_scenario_preserves_replay() {
           .weapon_properties()
           .unwrap()
           .current_clip,
-        24
+        19
       );
     }
     expected_events.extend(step_events);
   }
+
+  assert_eq!(
+    expected_events
+      .iter()
+      .filter(|event| matches!(
+        event,
+        GameEvent::AttackResolved {
+          attacker_id,
+          is_ranged: true,
+          ..
+        } if *attacker_id == player_id
+      ))
+      .count(),
+    6
+  );
 
   let (game, events, _metrics, replay) =
     ScenarioRunner::run_commands(&scenario, &commands).unwrap();
