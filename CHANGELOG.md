@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.229]
+
+- Added the immutable `MINIGUN_BEHAVIOR` profile and enforced the pinned
+  eight-projectile ordinary-fire volley with one 9mm round consumed per
+  projectile, including atomic below-cost rejection and deterministic replay
+  coverage. Gameplay semantics advance to `51`; stale semantics-50 replays are
+  rejected before execution. Alternate chainfire, exact timing/accuracy, and
+  controlled runtime or audiovisual parity remain deferred.
+
 ## [0.2.228]
 
 - Added the immutable `SUPER_SHOTGUN_BEHAVIOR` profile and enforced the pinned

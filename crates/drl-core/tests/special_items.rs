@@ -93,6 +93,20 @@ fn equipped_super_shotgun(seed: u64) -> (Game, ItemId) {
   (game, weapon_id)
 }
 
+fn equipped_minigun(seed: u64) -> (Game, ItemId) {
+  let mut game = Game::new(seed, 10, 6, Position::new(2, 2)).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let weapon_id = game.world_mut().allocate_item_id();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, Item::minigun(weapon_id))
+    .unwrap();
+  (game, weapon_id)
+}
+
 fn equipped_frag_shotgun(seed: u64) -> (Game, ItemId) {
   let mut game = Game::new(seed, 10, 6, Position::new(2, 2)).unwrap();
   let player_id = game.world().player_id().unwrap();
@@ -721,6 +735,134 @@ fn super_shotgun_replay_preserves_two_projectile_volley_deterministically() {
       ))
       .count(),
     2
+  );
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}
+
+#[test]
+fn minigun_consumes_eight_9mm_rounds_for_eight_projectiles() {
+  let (mut game, _weapon_id) = equipped_minigun(2_233);
+  let target = Position::new(5, 2);
+  let target_id = game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 500, 100, (1, 6))
+    .unwrap();
+  let player_id = game.world().player_id().unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 8;
+  let events = game
+    .step(Command::AttackRanged(target))
+    .expect("eight rounds are sufficient for one Minigun volley");
+  assert_eq!(
+    game
+      .world()
+      .get_actor(player_id)
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .current_clip,
+    0
+  );
+  assert_eq!(
+    events
+      .iter()
+      .filter(|event| matches!(
+        event,
+        GameEvent::AttackResolved {
+          attacker_id,
+          target_id: event_target,
+          is_ranged: true,
+          ..
+        } if *attacker_id == player_id && *event_target == target_id
+      ))
+      .count(),
+    8,
+    "Minigun ordinary fire must resolve eight ordered projectiles"
+  );
+}
+
+#[test]
+fn minigun_below_eight_round_cost_rejection_is_atomic() {
+  let (mut game, _weapon_id) = equipped_minigun(2_234);
+  let target = Position::new(5, 2);
+  game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 500, 100, (1, 6))
+    .unwrap();
+  let player_id = game.world().player_id().unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 7;
+  let before = game.clone();
+
+  assert_eq!(
+    game.step(Command::AttackRanged(target)).unwrap_err(),
+    CommandError::NoAmmoInClip
+  );
+  assert_eq!(game, before);
+}
+
+#[test]
+fn minigun_replay_preserves_eight_projectile_volley_deterministically() {
+  let player_start = Position::new(5, 5);
+  let mut replay =
+    ReplayLog::new(2_235, 12, 12, player_start).with_player_config(PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: Vec::new(),
+      equipped_weapon: Some(ItemSpawnKind::Minigun),
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    });
+  let target = Position::new(6, 5);
+  replay.record_monster(MonsterSpawnSpec::new(target, "Target", 500, 100, (1, 6)));
+  replay.record_command(Command::AttackRanged(target));
+
+  let (game, events) = ReplayEngine::run(&replay).expect("Minigun replay should run");
+  assert_eq!(
+    game
+      .world()
+      .player()
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .current_clip,
+    192
+  );
+  assert_eq!(
+    events
+      .iter()
+      .filter(|event| matches!(
+        event,
+        GameEvent::AttackResolved {
+          is_ranged: true,
+          ..
+        }
+      ))
+      .count(),
+    8
   );
   assert!(ReplayEngine::verify_determinism(&replay).unwrap());
 }
