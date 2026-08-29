@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.254`
+Current project version: `0.2.255`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.254)
+## 3. Current Progress Summary (`VERSION` 0.2.255)
 
 ### Delivered Foundations
 
@@ -729,8 +729,9 @@ verification item uses explicit status semantics:
   `RAILGUN_BEHAVIOR` profile records one ordered projectile and a five-cell
   cost, and generic ranged execution now preflights that cost before mutation.
   Gameplay semantics advance to `45`, so stale semantics-44 replay metadata is
-  rejected before execution. Ray/piercing routing, spread/falloff semantics,
-  exact legacy timing/accuracy, runtime, and audiovisual parity remain open.
+  rejected before execution. Bounded ray/piercing routing is delivered in
+  `0.2.255`; spread/falloff semantics, exact legacy timing/accuracy, runtime,
+  and audiovisual parity remain open.
 - **M9 Null Pointer ordinary-fire cost (`0.2.224`):** The immutable
   `NULL_POINTER_BEHAVIOR` profile records one ordered projectile and a
   ten-cell cost, and generic ranged execution now preflights that cost before
@@ -817,7 +818,8 @@ verification item uses explicit status semantics:
   `BrowserSession` paths now reproduce a fixed one-projectile command's
   events, fair observations, render effects, scene state, and replay state;
   gameplay semantics remain `53` while controlled legacy runtime, browser
-  capture, piercing, spread/falloff, and audiovisual parity remain open.
+  capture, wall/cell behavior, spread/falloff, and audiovisual parity remain
+  open; bounded piercing is covered in `0.2.255`.
 - **M9 Frag Shotgun browser boundary (`0.2.239`):** The direct-core and
   `BrowserSession` paths now reproduce a fixed one-projectile command's
   events, fair observations, render effects, scene state, and replay state;
@@ -922,6 +924,13 @@ verification item uses explicit status semantics:
   and `BrowserSession` coverage is verified; terrain/cell destruction,
   callback state, controlled runtime, browser capture, and audiovisual parity
   remain open.
+- **M9 Railgun ray/piercing traversal (`0.2.255`):** Clear source-to-target
+  shots now perform ordered hit checks for every living actor on the ray while
+  sharing one deterministic `8d8` damage roll across successful multi-actor
+  impacts and continuing after lethal intermediate hits. Direct-core, replay,
+  generic MCP JSON, and `BrowserSession` coverage is verified; knockback,
+  wall/cell destruction, spread/falloff, callback state, controlled runtime,
+  browser capture, and audiovisual parity remain open.
 - **M9 Trigun aimed-fire vertical fidelity (`0.2.248`):** The shared typed
   aimed-fire command now accepts Trigun, applies +3 accuracy and doubled action
   cost, and preserves one-projectile/one-round behavior. Direct-core,
@@ -1563,7 +1572,13 @@ scripting.
   deterministic direct-core/BrowserSession boundary check covering identical
   events, fair observations, render effects, scene projections, five-cell clip
   consumption, and replay determinism; controlled legacy runtime, browser
-  capture, piercing, spread/falloff, and audiovisual parity remain open.
+  capture, spread/falloff, and audiovisual parity remain open.
+- [x] Railgun's delivered clear-ray piercing traverses ordered living actors,
+  shares one deterministic `8d8` damage roll across successful multi-actor
+  impacts, continues after lethal intermediate hits, and preserves atomic
+  five-cell cost rejection plus direct-core/replay/MCP/BrowserSession parity;
+  knockback, wall/cell destruction, spread/falloff, runtime, and audiovisual
+  parity remain open.
 - [x] Frag Shotgun's delivered one-projectile ordinary-fire contract has a
   deterministic direct-core/BrowserSession boundary check covering identical
   events, fair observations, render effects, scene projections, two-round clip
@@ -1648,9 +1663,10 @@ scripting.
   runtime, and audiovisual parity remain open.
 - [x] Railgun has an immutable behavior profile for its current one-projectile
   ordinary fire and five-cell cost; generic ranged execution preflights the
-  cost and preserves atomic below-cost rejection while ray/piercing routing,
-  spread/falloff semantics, exact legacy timing/accuracy, runtime, and
-  audiovisual parity remain open.
+  cost and preserves atomic below-cost rejection while bounded ray/piercing
+  routing is covered in `0.2.255`; wall/cell behavior, spread/falloff
+  semantics, exact legacy timing/accuracy, runtime, and audiovisual parity
+  remain open.
 - [x] Null Pointer has an immutable behavior profile for its current
   one-projectile ordinary fire and ten-cell cost; generic ranged execution
   preflights the cost and preserves atomic below-cost rejection while its

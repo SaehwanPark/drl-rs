@@ -159,6 +159,8 @@ pub enum AttackEffect {
 /// Effects that can be attached to a successful hit.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum HitEffect {
+  /// Continue a ray through subsequent living actors after a successful hit.
+  Pierce,
   /// Apply typed damage with an explicit armor policy.
   Damage {
     amount: u32,
@@ -610,13 +612,14 @@ pub const RAILGUN_SHOT_COST: u32 = 5;
 
 const RAILGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
   BehaviorSpec::Attack(AttackEffect::ProjectileCount(RAILGUN_PROJECTILE_COUNT)),
+  BehaviorSpec::Hit(HitEffect::Pierce),
   BehaviorSpec::Cost(ResourceCost::Ammo {
     ammo_type: AmmoType::Cell,
     amount: RAILGUN_SHOT_COST,
   }),
 ];
 
-/// Immutable typed profile for the current Railgun ordinary-fire cost.
+/// Immutable typed profile for the current Railgun ordinary-fire and piercing policy.
 pub const RAILGUN_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(RAILGUN_BEHAVIOR_SPECS);
 
 /// Pinned projectile count for an ordinary Tristar Blaster shot.
@@ -1668,6 +1671,7 @@ mod tests {
       RAILGUN_BEHAVIOR.specs(),
       &[
         BehaviorSpec::Attack(AttackEffect::ProjectileCount(1)),
+        BehaviorSpec::Hit(HitEffect::Pierce),
         BehaviorSpec::Cost(ResourceCost::Ammo {
           ammo_type: AmmoType::Cell,
           amount: 5,

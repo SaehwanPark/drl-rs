@@ -5,8 +5,9 @@ use drl_core::grid::Tile;
 use drl_core::item::Item;
 use drl_core::replay::ReplayEngine;
 use drl_protocol::{
-  ActionCost, Command, CommandError, Direction, EquipmentSlot, GameEvent, ItemId, ItemSpawnKind,
-  ItemSpawnSpec, MonsterSpawnSpec, PlayerSpawnConfig, Position, ReplayLog, TileKind,
+  ActionCost, AttackOutcome, Command, CommandError, DamageSource, Direction, EquipmentSlot,
+  GameEvent, ItemId, ItemSpawnKind, ItemSpawnSpec, MonsterSpawnSpec, PlayerSpawnConfig, Position,
+  ReplayLog, TileKind,
 };
 
 fn equipped_nuclear_bfg(seed: u64) -> (Game, ItemId) {
@@ -1279,6 +1280,147 @@ fn railgun_below_five_cell_cost_rejection_is_atomic() {
   assert_eq!(
     game.step(Command::AttackRanged(target)).unwrap_err(),
     CommandError::NoAmmoInClip
+  );
+  assert_eq!(game, before);
+}
+
+#[test]
+fn railgun_piercing_hits_ordered_targets_with_shared_damage() {
+  let target_positions = [Position::new(4, 2), Position::new(6, 2)];
+  let candidate = (0..256)
+    .find_map(|seed| {
+      let (mut game, _weapon_id) = equipped_railgun(seed);
+      for (index, position) in target_positions.into_iter().enumerate() {
+        game
+          .world_mut()
+          .spawn_monster(
+            position,
+            if index == 0 {
+              "Near Rail Target"
+            } else {
+              "Far Rail Target"
+            },
+            500,
+            0,
+            (2, 4),
+          )
+          .unwrap();
+      }
+      let player_id = game.world().player_id().unwrap();
+      let events = game.step(Command::AttackRanged(target_positions[1])).ok()?;
+      let hits: Vec<_> = events
+        .iter()
+        .filter_map(|event| match event {
+          GameEvent::AttackResolved {
+            attacker_id,
+            target_id,
+            outcome: AttackOutcome::Hit { damage, .. },
+            is_ranged: true,
+          } if *attacker_id == player_id => Some((*target_id, *damage)),
+          _ => None,
+        })
+        .collect();
+      (hits.len() == 2).then_some((game, events, hits))
+    })
+    .expect("a bounded seed search should produce two Railgun hits");
+  let (game, events, hits) = candidate;
+  assert!(
+    hits[0].0 < hits[1].0,
+    "ray targets must be source-to-target ordered"
+  );
+  assert_eq!(hits[0].1, hits[1].1, "piercing hits share one damage roll");
+  assert_eq!(
+    events
+      .iter()
+      .filter(|event| matches!(
+        event,
+        GameEvent::DamageApplied {
+          source: DamageSource::Actor(_),
+          ..
+        }
+      ))
+      .count(),
+    2
+  );
+  assert_eq!(
+    game
+      .world()
+      .player()
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .current_clip,
+    35
+  );
+}
+
+#[test]
+fn railgun_piercing_continues_after_lethal_intermediate_hit() {
+  let target_positions = [Position::new(4, 2), Position::new(6, 2)];
+  let seed = (0..256)
+    .find(|seed| {
+      let (mut game, _weapon_id) = equipped_railgun(*seed);
+      game
+        .world_mut()
+        .spawn_monster(target_positions[0], "Lethal Rail Target", 1, 0, (2, 4))
+        .unwrap();
+      game
+        .world_mut()
+        .spawn_monster(target_positions[1], "Far Rail Target", 500, 0, (2, 4))
+        .unwrap();
+      let player_id = game.world().player_id().unwrap();
+      game
+        .step(Command::AttackRanged(target_positions[1]))
+        .ok()
+        .is_some_and(|events| {
+          events.iter().filter(|event| matches!(event,
+            GameEvent::AttackResolved { attacker_id, outcome: AttackOutcome::Hit { .. }, is_ranged: true, .. }
+              if *attacker_id == player_id
+          )).count() == 2
+        })
+    })
+    .expect("a bounded seed search should produce two Railgun hits");
+  let (mut game, _weapon_id) = equipped_railgun(seed);
+  game
+    .world_mut()
+    .spawn_monster(target_positions[0], "Lethal Rail Target", 1, 0, (2, 4))
+    .unwrap();
+  let far_id = game
+    .world_mut()
+    .spawn_monster(target_positions[1], "Far Rail Target", 500, 0, (2, 4))
+    .unwrap();
+  let events = game
+    .step(Command::AttackRanged(target_positions[1]))
+    .expect("Railgun should continue through a lethal hit");
+  assert!(events.iter().any(|event| matches!(
+    event,
+    GameEvent::ActorDied { entity_id, .. } if *entity_id != far_id
+  )));
+  assert!(events.iter().any(|event| matches!(
+    event,
+    GameEvent::DamageApplied { target_id, source: DamageSource::Actor(_), .. } if *target_id == far_id
+  )));
+}
+
+#[test]
+fn railgun_piercing_blocked_ray_rejection_is_atomic() {
+  let (mut game, _weapon_id) = equipped_railgun(2_225);
+  let target = Position::new(6, 2);
+  game
+    .world_mut()
+    .spawn_monster(target, "Blocked Rail Target", 500, 0, (2, 4))
+    .unwrap();
+  game
+    .world_mut()
+    .map_mut()
+    .set_tile(Position::new(4, 2), drl_core::Tile::Wall);
+  let before = game.clone();
+  assert_eq!(
+    game.step(Command::AttackRanged(target)).unwrap_err(),
+    CommandError::LineOfSightBlocked(target)
   );
   assert_eq!(game, before);
 }

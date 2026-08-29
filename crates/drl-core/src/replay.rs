@@ -409,14 +409,14 @@ mod tests {
   #[test]
   fn test_replay_validation_rejects_incompatible_semantics() {
     let mut replay = ReplayLog::new(1234, 10, 10, Position::new(1, 1));
-    // Version 63 predates Anti-Freak Jackal ground-item destruction and must
-    // not be interpreted by the version-64 engine without migration.
-    assert_eq!(drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION, 64);
+    // Version 64 predates Railgun ray/piercing traversal and must not be
+    // interpreted by the version-65 engine without migration.
+    assert_eq!(drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION, 65);
     assert_eq!(
       drl_protocol::CURRENT_RNG_SAMPLING_SEMANTICS_VERSION,
       crate::rng::RNG_SAMPLING_SEMANTICS_VERSION
     );
-    replay.metadata.gameplay_semantics_version = 63;
+    replay.metadata.gameplay_semantics_version = 64;
     let error = ReplayEngine::validate(&replay).unwrap_err();
     assert!(error.contains("unsupported gameplay semantics version"));
 

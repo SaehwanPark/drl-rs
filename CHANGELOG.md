@@ -3,6 +3,17 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.255]
+
+- Added bounded Railgun clear-ray piercing. A shot performs ordered hit checks
+  for every living actor on the source-to-target ray, shares one deterministic
+  `8d8` damage roll across successful multi-actor impacts, and continues after
+  lethal intermediate hits while retaining the five-cell cost and atomic
+  blocked-ray rejection. The immutable behavior profile now records
+  `HitEffect::Pierce`; exact legacy ray geometry, wall/cell destruction,
+  spread/falloff, runtime, and audiovisual parity remain deferred; gameplay
+  semantics advance from `64` to `65`.
+
 ## [0.2.254]
 
 - Added bounded Anti-Freak Jackal ground-item destruction. Each blast cell now
