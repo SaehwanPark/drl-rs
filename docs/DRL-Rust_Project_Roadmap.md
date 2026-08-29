@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.232`
+Current project version: `0.2.233`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.232)
+## 3. Current Progress Summary (`VERSION` 0.2.233)
 
 ### Delivered Foundations
 
@@ -788,6 +788,11 @@ verification item uses explicit status semantics:
   events, fair observations, render effects, scene state, and replay state;
   gameplay semantics remain `53` while controlled legacy runtime, browser
   capture, alternate chainfire, and audiovisual parity remain open.
+- **M9 Minigun browser boundary (`0.2.233`):** The direct-core and
+  `BrowserSession` paths now reproduce a fixed eight-projectile command's
+  events, fair observations, render effects, scene state, and replay state;
+  gameplay semantics remain `53` while controlled legacy runtime, browser
+  capture, alternate chainfire, and audiovisual parity remain open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1355,6 +1360,11 @@ scripting.
   deterministic direct-core/BrowserSession boundary check covering identical
   events, fair observations, render effects, scene projections, five-cell clip
   consumption, and replay determinism; controlled legacy runtime, browser
+  capture, alternate chainfire, and audiovisual parity remain open.
+- [x] Minigun's delivered eight-projectile ordinary-fire contract has a
+  deterministic direct-core/BrowserSession boundary check covering identical
+  events, fair observations, render effects, scene projections, eight-round
+  clip consumption, and replay determinism; controlled legacy runtime, browser
   capture, alternate chainfire, and audiovisual parity remain open.
 - [x] Missile Launcher has an immutable behavior profile for ordinary
   single-rocket reload and capped full-deficit reload (`2,500` score-count
