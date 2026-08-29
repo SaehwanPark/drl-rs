@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.234`
+Current project version: `0.2.235`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,12 +25,12 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Chaingun Browser Boundary
+## 2. Active Implementation Slice: M9 — Mega Buster Browser Boundary
 
 ### 2.1 Objective
 
-Verify the delivered Chaingun ordinary-fire policy at the direct-core and
-BrowserSession boundary. A deterministic four-projectile command must produce
+Verify the delivered Mega Buster ordinary-fire policy at the direct-core and
+BrowserSession boundary. A deterministic three-projectile command must produce
 identical events, fair player observations, render effects, and scene state in
 both paths while retaining generic command execution ownership.
 
@@ -40,21 +40,21 @@ both paths while retaining generic command execution ownership.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, Gate C catalog ownership, and Gate D callback behavior
   evidence remain closed for this contract-only slice.
-- **Observable outcome:** A fixed Chaingun replay setup and one ranged
+- **Observable outcome:** A fixed Mega Buster replay setup and one ranged
   command produce identical direct-core and `BrowserSession` events,
-  observations, render effects, and scenes; the direct result consumes four
-  rounds from the 40-round clip and emits four ordered ranged-hit events.
+  observations, render effects, and scenes; the direct result consumes nine
+  rounds from the 60-round clip and emits three ordered ranged-hit events.
 - **Gameplay/replay impact:** Gameplay semantics remain at `53`; replay
   wire/schema, RNG sampling, generator, and ruleset identities remain unchanged.
-  Project version advances from `0.2.233` to `0.2.234` for the browser-boundary
+  Project version advances from `0.2.234` to `0.2.235` for the browser-boundary
   verification slice.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary
   and profiles; `drl-protocol`, MCP, render, audio, and browser boundaries remain
   unchanged. No new command, event, or runtime dispatch surface is introduced;
   no gameplay-policy or protocol changes are introduced by this verification
   slice.
-- **Evidence boundary:** Pinned Chaingun source evidence in
-  `docs/legacy-behavior/chaingun-profile.md`, the delivered direct-target
+- **Evidence boundary:** Pinned Mega Buster source evidence in
+  `docs/legacy-behavior/mega-buster-profile.md`, the delivered direct-target
   ranged contract, and the BrowserSession boundary test are authoritative.
   Controlled legacy runtime, browser capture, and audiovisual comparisons
   remain `NOT_RUN`.
@@ -69,7 +69,7 @@ The existing ranged command path already performs complete preflight,
 transactional clip validation and typed clip consumption for ordered
 projectiles. This slice exercises that delivered policy through the
 BrowserSession effect/observation boundary without adding a generic dispatcher,
-changing RNG sampling, or altering gameplay semantics. Chaingun alternate
+changing RNG sampling, or altering gameplay semantics. Mega Buster alternate
 chainfire and presentation capture parity remain outside this verification
 contract.
 
@@ -2639,7 +2639,7 @@ Its contract must:
   gameplay semantics `53`, replay schema, RNG, generator, and ruleset
   identities.
 
-### 2.7dd Current Chaingun browser-boundary verification target
+### 2.7dd Historical Chaingun browser-boundary verification target
 
 The bounded implementation target for this revision is a direct-core and
 `BrowserSession` parity test for the delivered Chaingun ordinary-fire contract.
@@ -2659,6 +2659,28 @@ Its contract must:
   alternate chainfire, and audiovisual parity `NOT_RUN` where evidence is
   unavailable;
 - [x] advance project version from `0.2.233` to `0.2.234` while preserving
+  gameplay semantics `53`, replay schema, RNG, generator, and ruleset
+  identities.
+
+### 2.7de Current Mega Buster browser-boundary verification target
+
+The bounded implementation target for this revision is a direct-core and
+`BrowserSession` parity test for the delivered Mega Buster ordinary-fire
+contract. Its contract must:
+
+- [x] construct the same fixed replay setup in direct core and `BrowserSession`
+  with a Mega Buster, 9mm reserve, and high-HP target;
+- [x] submit one ranged command through both paths and preserve identical
+  `GameEvent` sequences, fair player observations, render effects, and scene
+  projections;
+- [x] verify the accepted command emits three ordered ranged-hit events and
+  consumes nine rounds from the 60-round clip without changing gameplay policy;
+- [x] append the command to a replay, reproduce the direct events/state, and
+  pass deterministic replay verification without adding protocol or runtime
+  dispatch surfaces;
+- [x] keep controlled legacy runtime, browser capture, exact timing/accuracy,
+  kill callback, and audiovisual parity `NOT_RUN` where evidence is unavailable;
+- [x] advance project version from `0.2.234` to `0.2.235` while preserving
   gameplay semantics `53`, replay schema, RNG, generator, and ruleset
   identities.
 
@@ -2991,6 +3013,13 @@ command now reproduces events, fair observations, render effects, scene state,
 and replay determinism across both paths; controlled legacy runtime, browser
 capture, exact timing/accuracy, alternate chainfire, and audiovisual parity
 remain open.
+
+The `0.2.235` successor verifies the delivered Mega Buster ordinary-fire
+contract through the direct-core and `BrowserSession` boundaries. A fixed
+three-projectile command now reproduces events, fair observations, render
+effects, scene state, and replay determinism across both paths; controlled
+legacy runtime, browser capture, exact timing/accuracy, kill callback, and
+audiovisual parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity

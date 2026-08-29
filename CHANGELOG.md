@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.235]
+
+- Added a deterministic Mega Buster direct-core/BrowserSession vertical
+  boundary check covering three ordered ranged-hit events, fair observations,
+  render effects, scene projection, clip consumption, and replay equality.
+  Gameplay semantics remain `53`; controlled legacy runtime, browser capture,
+  kill callback, and audiovisual parity remain deferred.
+
 ## [0.2.234]
 
 - Added a deterministic Chaingun direct-core/BrowserSession vertical boundary
