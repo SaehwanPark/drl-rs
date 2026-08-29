@@ -2930,24 +2930,24 @@ The bounded implementation target for this revision is the shared typed
 aimed-fire command exercised with Blaster through direct core, replay/MCP JSON,
 MCP action catalog, and `BrowserSession`. Its contract must:
 
-- [ ] construct the same fixed replay setup in direct core and `BrowserSession`
+- [x] construct the same fixed replay setup in direct core and `BrowserSession`
   with a Blaster's ten-cell clip, six reserve cells, and a high-HP target;
-- [ ] submit `Command::AttackRangedAimed` through both paths and preserve
+- [x] submit `Command::AttackRangedAimed` through both paths and preserve
   identical `GameEvent` sequences, fair player observations, render effects,
   and scene projections;
-- [ ] apply the shared typed +3 accuracy bonus and doubled fire cost, paying
+- [x] apply the shared typed +3 accuracy bonus and doubled fire cost, paying
   `ActionCost(2_000)`, while emitting one ordered ranged-hit event and
   consuming exactly one cell;
-- [ ] advertise and execute the aimed command through the fair MCP action
+- [x] advertise and execute the aimed command through the fair MCP action
   catalog, and encode/decode it at replay/MCP JSON boundaries without
   duplicating gameplay policy;
-- [ ] preserve the Blaster's typed recharge reset and `IF_NORELOAD` behavior,
+- [x] preserve the Blaster's typed recharge reset and `IF_NORELOAD` behavior,
   deterministic replay verification, and exact rejection behavior for an
   empty clip;
-- [ ] keep exact legacy callback state/timing, controlled runtime, browser
+- [x] keep exact legacy callback state/timing, controlled runtime, browser
   capture, audiovisual parity, and presentation comparison `NOT_RUN` where
   evidence is unavailable;
-- [ ] advance project version from `0.2.245` to `0.2.246` and gameplay
+- [x] advance project version from `0.2.245` to `0.2.246` and gameplay
   semantics from `55` to `56` while preserving replay schema, RNG, generator,
   and ruleset identities.
 
