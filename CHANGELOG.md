@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.237]
+
+- Added a deterministic Tristar Blaster direct-core/BrowserSession vertical
+  boundary check covering three ordered ranged-hit events, fair observations,
+  render effects, scene projection, clip consumption, and replay equality.
+  Gameplay semantics remain `53`; controlled legacy runtime, browser capture,
+  spread/falloff, delayed effects, and audiovisual parity remain deferred.
+
 ## [0.2.236]
 
 - Added a deterministic Super Shotgun direct-core/BrowserSession vertical
