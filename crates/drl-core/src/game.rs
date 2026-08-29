@@ -1718,10 +1718,12 @@ impl Game {
           drl_protocol::ItemArchetype::Pistol
             | drl_protocol::ItemArchetype::CombatPistol
             | drl_protocol::ItemArchetype::Blaster
+            | drl_protocol::ItemArchetype::Trigun
         )
       {
         return Err(CommandError::InvalidCommand(
-          "aimed fire is only available for the Pistol, Combat Pistol, or Blaster".to_string(),
+          "aimed fire is only available for the Pistol, Combat Pistol, Blaster, or Trigun"
+            .to_string(),
         ));
       }
       if weapon.pump_action_blocks_fire() {

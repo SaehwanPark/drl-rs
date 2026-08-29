@@ -7,8 +7,8 @@ use drl_protocol::{
 
 use crate::behavior::{
   LavaRechargeOutcome, LavaRechargeState, MedicalRepairOutcome, MedicalRepairState,
-  PLASMA_RIFLE_PROJECTILE_COUNT, PLASMA_RIFLE_SHOT_COST, WeaponRechargeOutcome,
-  WeaponRechargePolicy, WeaponRechargeState,
+  PLASMA_RIFLE_PROJECTILE_COUNT, PLASMA_RIFLE_SHOT_COST, TRIGUN_PROJECTILE_COUNT, TRIGUN_SHOT_COST,
+  WeaponRechargeOutcome, WeaponRechargePolicy, WeaponRechargeState,
 };
 use crate::item_definition::{ItemDefinitionKind, definition_for_spawn_kind};
 use crate::malek_armor::{MalekRechargeOutcome, MalekRechargeState};
@@ -374,8 +374,8 @@ impl Item {
   /// Returns the typed per-projectile clip cost for ranged fire.
   ///
   /// The typed BFG families, Frag Shotgun, Plasma Shotgun, Railgun, Acid
-  /// Spitter, Mega Buster, Null Pointer, Tristar Blaster, and Plasma Rifle use
-  /// their pinned
+  /// Spitter, Mega Buster, Null Pointer, Tristar Blaster, Plasma Rifle, and
+  /// Trigun use their pinned
   /// per-projectile clip costs; all other weapons, including the Super
   /// Shotgun, Minigun, Chaingun, and other unlisted weapons consume one clip unit per
   /// emitted projectile.
@@ -394,6 +394,7 @@ impl Item {
       ItemArchetype::NullPointer => 10,
       ItemArchetype::TristarBlaster => 5,
       ItemArchetype::PlasmaRifle => PLASMA_RIFLE_SHOT_COST,
+      ItemArchetype::Trigun => TRIGUN_SHOT_COST,
       _ => 1,
     }
   }
@@ -412,6 +413,7 @@ impl Item {
       ItemArchetype::Chaingun => 4,
       ItemArchetype::LaserRifle => 5,
       ItemArchetype::PlasmaRifle => PLASMA_RIFLE_PROJECTILE_COUNT,
+      ItemArchetype::Trigun => TRIGUN_PROJECTILE_COUNT,
       ItemArchetype::AcidSpitter => 1,
       ItemArchetype::MegaBuster => 3,
       ItemArchetype::TristarBlaster => 3,
@@ -1085,6 +1087,7 @@ mod tests {
     assert_eq!(Item::chaingun(ItemId::new(17)).shot_cost(), 1);
     assert_eq!(Item::laser_rifle(ItemId::new(18)).shot_cost(), 1);
     assert_eq!(Item::plasma_rifle(ItemId::new(19)).shot_cost(), 1);
+    assert_eq!(Item::trigun(ItemId::new(20)).shot_cost(), 1);
   }
 
   #[test]
@@ -1096,6 +1099,7 @@ mod tests {
     assert_eq!(Item::chaingun(ItemId::new(17)).projectile_count(), 4);
     assert_eq!(Item::laser_rifle(ItemId::new(18)).projectile_count(), 5);
     assert_eq!(Item::plasma_rifle(ItemId::new(19)).projectile_count(), 6);
+    assert_eq!(Item::trigun(ItemId::new(20)).projectile_count(), 1);
     assert_eq!(Item::pistol(ItemId::new(9)).projectile_count(), 1);
     assert_eq!(Item::tristar_blaster(ItemId::new(12)).projectile_count(), 3);
     assert_eq!(Item::acid_spitter(ItemId::new(13)).projectile_count(), 1);

@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.247`
+Current project version: `0.2.248`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -222,8 +222,9 @@ Presentation Boundary
     Malek's Armor's profile records its durability-recharge fragment; Blaster's
     profile records its ordinary-fire and recharge fragments; Plasma Rifle's
     profile records its six-projectile ordinary-fire and six-cell cost
-    fragments, while Nuclear Plasma's profile records overload and recharge
-    without claiming chainfire.
+    fragments; Trigun's profile records its one-projectile/one-round ordinary
+    fire and shared aimed-fire fragments, while Nuclear Plasma's profile
+    records overload and recharge without claiming chainfire.
     Profiles describe
     behavior without string keys or runtime callbacks; dedicated transition
     modules remain the execution authority.
