@@ -491,6 +491,20 @@ const SUPER_SHOTGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
 pub const SUPER_SHOTGUN_BEHAVIOR: BehaviorProfile =
   BehaviorProfile::new(SUPER_SHOTGUN_BEHAVIOR_SPECS);
 
+/// Pinned projectile count for an ordinary Minigun shot.
+pub const MINIGUN_PROJECTILE_COUNT: u32 = 8;
+
+const MINIGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Attack(AttackEffect::ProjectileCount(MINIGUN_PROJECTILE_COUNT)),
+  BehaviorSpec::Cost(ResourceCost::Ammo {
+    ammo_type: AmmoType::Ammo9mm,
+    amount: 1,
+  }),
+];
+
+/// Immutable typed profile for the current Minigun eight-shot behavior.
+pub const MINIGUN_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(MINIGUN_BEHAVIOR_SPECS);
+
 /// Current Rust projectile count for an ordinary Frag Shotgun shot.
 pub const FRAG_SHOTGUN_PROJECTILE_COUNT: u32 = 1;
 /// Pinned per-projectile clip cost for an ordinary Frag Shotgun shot.
@@ -1421,6 +1435,16 @@ mod tests {
         )),
         BehaviorSpec::Cost(ResourceCost::Ammo {
           ammo_type: AmmoType::Shells,
+          amount: 1,
+        }),
+      ]
+    );
+    assert_eq!(
+      MINIGUN_BEHAVIOR.specs(),
+      &[
+        BehaviorSpec::Attack(AttackEffect::ProjectileCount(MINIGUN_PROJECTILE_COUNT)),
+        BehaviorSpec::Cost(ResourceCost::Ammo {
+          ammo_type: AmmoType::Ammo9mm,
           amount: 1,
         }),
       ]
