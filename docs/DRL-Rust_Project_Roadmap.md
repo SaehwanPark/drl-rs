@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.227`
+Current project version: `0.2.228`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.227)
+## 3. Current Progress Summary (`VERSION` 0.2.228)
 
 ### Delivered Foundations
 
@@ -759,6 +759,12 @@ verification item uses explicit status semantics:
   nine-round volley before mutation. Gameplay semantics advance to `49`, so
   stale semantics-48 replay metadata is rejected before execution. The kill
   morph callback, spread/falloff, runtime, and audiovisual parity remain open.
+- **M9 Super Shotgun ordinary-fire volley (`0.2.228`):** The immutable
+  `SUPER_SHOTGUN_BEHAVIOR` profile records two ordered projectiles and the
+  default one-shell-per-projectile cost. Generic ranged execution preflights
+  the two-shell volley before mutation; gameplay semantics advance to `50`, so
+  stale semantics-49 replay metadata is rejected before execution. Spread/
+  falloff, exact timing, runtime, and audiovisual parity remain open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1302,6 +1308,11 @@ scripting.
   resolves the ordered volley, preflights its nine-round total cost, and
   preserves atomic below-cost rejection while the kill morph callback,
   spread/falloff, runtime, and audiovisual parity remain open.
+- [x] Super Shotgun has an immutable behavior profile for its two-projectile
+  ordinary fire and one-shell per-projectile cost; generic ranged execution
+  resolves the ordered two-shell volley, preflights its aggregate cost, and
+  preserves atomic below-cost rejection while spread/falloff, exact timing,
+  runtime, and audiovisual parity remain open.
 - [x] Missile Launcher has an immutable behavior profile for ordinary
   single-rocket reload and capped full-deficit reload (`2,500` score-count
   units); dedicated reload/planner paths remain authoritative and rocket-jump,

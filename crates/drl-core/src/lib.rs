@@ -72,10 +72,10 @@ pub use behavior::{
   PassiveModifier, PassiveStat, PeriodicEffect, RAILGUN_BEHAVIOR, RAILGUN_PROJECTILE_COUNT,
   RAILGUN_SHOT_COST, REVENANTS_LAUNCHER_BEHAVIOR, ROCKET_LAUNCHER_BEHAVIOR,
   ROCKET_LAUNCHER_PROJECTILE_COUNT, ResourceCost, SHOTGUN_BEHAVIOR, SHOTGUN_KNOCKBACK_DISTANCE,
-  SUBTLE_KNIFE_BEHAVIOR, StatusCost, StatusEffect, TRIGUN_BEHAVIOR, TRISTAR_BLASTER_BEHAVIOR,
-  TRISTAR_BLASTER_PROJECTILE_COUNT, TRISTAR_BLASTER_SHOT_COST, TargetOrder, TargetProperty,
-  TargetSelectionPolicy, TargetSource, WeaponRechargeOutcome, WeaponRechargePolicy,
-  WeaponRechargeState,
+  SUBTLE_KNIFE_BEHAVIOR, SUPER_SHOTGUN_BEHAVIOR, SUPER_SHOTGUN_PROJECTILE_COUNT, StatusCost,
+  StatusEffect, TRIGUN_BEHAVIOR, TRISTAR_BLASTER_BEHAVIOR, TRISTAR_BLASTER_PROJECTILE_COUNT,
+  TRISTAR_BLASTER_SHOT_COST, TargetOrder, TargetProperty, TargetSelectionPolicy, TargetSource,
+  WeaponRechargeOutcome, WeaponRechargePolicy, WeaponRechargeState,
 };
 pub use combat::CombatResolver;
 pub use combat_shotgun::COMBAT_SHOTGUN_ALT_RELOAD_CAP;

@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.227`
+Current project version: `0.2.228`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Mega Buster Ordinary-Fire Volley
+## 2. Active Implementation Slice: M9 — Super Shotgun Ordinary-Fire Volley
 
 ### 2.1 Objective
 
-Carry the pinned Mega Buster ordinary-fire policy into an immutable typed
-behavior profile. The profile describes three ordered projectiles and a
-three-round per-projectile cost while retaining generic command execution
-ownership.
+Carry the pinned Super Shotgun ordinary-fire policy into an immutable typed
+behavior profile. The profile describes two ordered projectiles and the
+default one-shell-per-projectile cost while retaining generic command
+execution ownership.
 
 ### 2.1a Scope and steering gate
 
@@ -40,28 +40,28 @@ ownership.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, Gate C catalog ownership, and Gate D callback behavior
   evidence remain closed for this contract-only slice.
-- **Observable outcome:** `MEGA_BUSTER_BEHAVIOR` exposes ordered typed
-  `AttackEffect::ProjectileCount(3)` and
-  `ResourceCost::Ammo { ammo_type: Ammo9mm, amount: 3 }` fragments; the exact
+- **Observable outcome:** `SUPER_SHOTGUN_BEHAVIOR` exposes ordered typed
+  `AttackEffect::ProjectileCount(2)` and
+  `ResourceCost::Ammo { ammo_type: Shells, amount: 1 }` fragments; the exact
   profile order is asserted by the behavior contract test and generic ranged
-  execution consumes nine rounds per accepted volley.
-- **Gameplay/replay impact:** Gameplay semantics advance from `48` to `49` so
-  replays recorded before the three-projectile Mega Buster volley cannot be
+  execution consumes two shells per accepted volley.
+- **Gameplay/replay impact:** Gameplay semantics advance from `49` to `50` so
+  replays recorded before the two-projectile Super Shotgun volley cannot be
   reinterpreted under the new deterministic clip policy. Replay wire/schema,
   RNG sampling, generator, and ruleset identities remain unchanged. Project
-  version advances from `0.2.226` to `0.2.227`.
+  version advances from `0.2.227` to `0.2.228`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary
   and profiles; `drl-protocol`, MCP, render, audio, and browser boundaries remain
   unchanged. No new command, event, or runtime dispatch surface is introduced;
-  the pinned three-projectile/three-round cost is this slice's only gameplay-policy
+  the pinned two-projectile/two-shell cost is this slice's only gameplay-policy
   change.
-- **Evidence boundary:** Pinned Mega Buster source evidence in
-  `docs/legacy-behavior/mega-buster-profile.md` plus the delivered direct-target
-  ranged contract is authoritative. The legacy `shots = 3`, `shotcost = 3`,
+- **Evidence boundary:** Pinned Super Shotgun source evidence in
+  `docs/legacy-behavior/super-shotgun-profile.md` plus the delivered direct-target
+  ranged contract is authoritative. The legacy `shots = 2`, absent `shotcost`,
   default cost calculation, and one command's resolved shot count support the
-  nine-round preflight. The kill callback remains deferred; controlled legacy
-  runtime, browser capture, and audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** Kill callback behavior, spread/falloff, exact legacy
+  two-shell preflight. Controlled legacy runtime, browser capture, and
+  audiovisual comparisons remain `NOT_RUN`.
+- **Non-goals:** Spread/falloff, exact legacy
   timing/accuracy, audiovisual presentation comparison, new command or callback
   registries, unrelated gameplay balance or protocol changes, replay-file
   IO/migrations, runtime Lua, and browser/audio/WebGPU parity.
@@ -70,10 +70,10 @@ ownership.
 
 The existing ranged command path already performs complete preflight,
 transactional clip validation and typed clip consumption for ordered
-projectiles. This slice records the pinned three-projectile/three-round cost in
-an immutable profile and the existing cost helper; it does not add a generic
+projectiles. This slice records the pinned two-projectile/default one-shell cost
+in an immutable profile and the existing cost helper; it does not add a generic
 dispatcher or alter RNG sampling, so replay behavior stays deterministic and
-reviewable. The existing Mega Buster kill callback remains outside this
+reviewable. Super Shotgun spread and presentation behavior remain outside this
 ordinary-fire contract.
 
 Additional broad scalar-only family additions remain gated by the open behavior
@@ -2488,7 +2488,7 @@ must:
   semantics from `47` to `48`, preserving replay schema, RNG, generator, and
   ruleset identities.
 
-### 2.7cw Current Mega Buster ordinary-fire volley delivery target
+### 2.7cw Historical Mega Buster ordinary-fire volley delivery target
 
 The bounded implementation target for this revision is an immutable profile
 for the pinned Mega Buster ordinary ranged action. Its contract must:
@@ -2507,6 +2507,26 @@ for the pinned Mega Buster ordinary ranged action. Its contract must:
   comparison evidence is unavailable;
 - [x] advance project version from `0.2.226` to `0.2.227` and gameplay
   semantics from `48` to `49`, preserving replay schema, RNG, generator, and
+  ruleset identities.
+
+### 2.7cx Current Super Shotgun ordinary-fire volley delivery target
+
+The bounded implementation target for this revision is an immutable profile
+for the pinned Super Shotgun ordinary ranged action. Its contract must:
+
+- [x] expose ordered typed `AttackEffect::ProjectileCount(2)` and
+  `ResourceCost::Ammo { ammo_type: Shells, amount: 1 }` fragments;
+- [x] retain generic ranged execution ownership for target/LOS/range
+  validation, damage RNG, event ordering, and transactional clip consumption;
+- [x] enforce the two-shell aggregate cost before mutation, reject clips below
+  the cost atomically, and preserve the existing two-projectile event contract;
+- [x] assert exact profile declaration order without adding an alternate-fire
+  command, callback registry, or replay-wire field; stale gameplay semantics
+  `49` replays are rejected before execution;
+- [x] keep spread/falloff, exact legacy timing/accuracy, controlled runtime,
+  and audiovisual parity `NOT_RUN` where comparison evidence is unavailable;
+- [x] advance project version from `0.2.227` to `0.2.228` and gameplay
+  semantics from `49` to `50`, preserving replay schema, RNG, generator, and
   ruleset identities.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
@@ -2793,6 +2813,12 @@ for the delivered three-projectile ordinary fire and three-round
 per-projectile cost. Generic ranged execution now resolves the ordered volley
 and enforces its nine-round total cost before mutation; the kill callback,
 spread/falloff, controlled runtime, and audiovisual parity remain open.
+
+The `0.2.228` successor records the immutable `SUPER_SHOTGUN_BEHAVIOR` profile
+for the delivered two-projectile ordinary fire and one-shell per-projectile
+cost. Generic ranged execution now resolves the ordered volley and enforces
+its two-shell aggregate cost before mutation; spread/falloff, exact timing,
+controlled runtime, and audiovisual parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity
