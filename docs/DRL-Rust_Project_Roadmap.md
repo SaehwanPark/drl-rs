@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-29
-Current project version: `0.2.257`
+Current project version: `0.2.258`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.257)
+## 3. Current Progress Summary (`VERSION` 0.2.258)
 
 ### Delivered Foundations
 
@@ -941,13 +941,14 @@ verification item uses explicit status semantics:
   `BrowserSession` coverage is verified; terrain/item destruction, splash
   immunity, knockback, exact delayed timing, callback state, controlled
   runtime, browser capture, and audiovisual parity remain open.
-- **M9 Chaingun first-level chainfire (`0.2.257`):** A typed alternate
+- **M9 Chaingun first-level chainfire (`0.2.258`):** A typed alternate
   command now preflights three loaded 9mm rounds, emits three ordered
-  projectiles, advances observable warm-up state only after acceptance, and
-  resets it on ordinary fire. Direct-core, replay/MCP JSON/catalog, browser
-  snapshot, and `BrowserSession` parity plus atomic under-supply rejection are
-  verified; higher chainfire levels, target rotation/spread, exact timing/
-  accuracy, runtime, browser capture, and audiovisual parity remain open.
+  projectiles (with deterministic no-op misses after a lethal target), advances
+  observable warm-up state only after acceptance, and resets it on ordinary fire.
+  Direct-core, replay/MCP JSON/catalog, browser snapshot, and `BrowserSession`
+  parity plus atomic under-supply rejection are verified; higher chainfire
+  levels, target rotation/spread, exact timing/accuracy, runtime, browser
+  capture, and audiovisual parity remain open.
 - **M9 Trigun aimed-fire vertical fidelity (`0.2.248`):** The shared typed
   aimed-fire command now accepts Trigun, applies +3 accuracy and doubled action
   cost, and preserves one-projectile/one-round behavior. Direct-core,
@@ -1734,6 +1735,12 @@ scripting.
   atomic under-supply rejection are verified; higher chainfire levels,
   target rotation/spread, exact timing/accuracy, runtime, browser capture,
   and audiovisual parity remain open.
+- **M9 Chaingun chainfire lethal-target completion (`0.2.258`):** Accepted
+  first-level bursts now always emit three ordered outcomes, using deterministic
+  no-op misses after a lethal target without additional damage or RNG sampling;
+  the browser physical `C` key is wired to the semantic command. Gameplay
+  semantics advance to `68`; higher levels, target rotation/spread, exact
+  timing/accuracy, runtime, browser capture, and audiovisual parity remain open.
 - [x] Typed `umega`, `uberetta`, and `ufshotgun` preserve pinned unique-firearm
   descriptions, 9mm relations, clips/damage/range scalars, replay kinds, and
   measured plasma/pistol/combat-shotgun atlas slots; mode switching, kill

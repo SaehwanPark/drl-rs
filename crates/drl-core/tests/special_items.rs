@@ -1034,6 +1034,60 @@ fn chaingun_first_chainfire_emits_three_projectiles_and_advances_state() {
 }
 
 #[test]
+fn chaingun_chainfire_keeps_three_outcomes_after_lethal_target() {
+  let mut lethal_case = None;
+
+  // Search a fixed, deterministic seed window for a first-projectile lethal
+  // hit so this regression exercises the dead-target continuation path.
+  for seed in 2_245..2_300 {
+    let (mut game, _weapon_id) = equipped_chaingun(seed);
+    let target = Position::new(5, 2);
+    let target_id = game
+      .world_mut()
+      .spawn_monster(target, "Fragile Target", 1, 100, (1, 6))
+      .unwrap();
+    let player_id = game.world().player_id().unwrap();
+    let events = game
+      .step(Command::AttackRangedChainfire(target))
+      .expect("chainfire against a visible target should be accepted");
+    let resolved = events
+      .iter()
+      .filter(|event| {
+        matches!(
+          event,
+          GameEvent::AttackResolved {
+            attacker_id,
+            target_id: event_target,
+            is_ranged: true,
+            ..
+          } if *attacker_id == player_id && *event_target == target_id
+        )
+      })
+      .count();
+
+    if events.iter().any(
+      |event| matches!(event, GameEvent::ActorDied { entity_id, .. } if *entity_id == target_id),
+    ) {
+      assert_eq!(resolved, 3);
+      let death_index = events
+        .iter()
+        .position(|event| matches!(event, GameEvent::ActorDied { entity_id, .. } if *entity_id == target_id))
+        .unwrap();
+      assert!(!events[death_index + 1..].iter().any(|event| {
+        matches!(event, GameEvent::DamageApplied { target_id: event_target, .. } if *event_target == target_id)
+      }));
+      lethal_case = Some(seed);
+      break;
+    }
+  }
+
+  assert!(
+    lethal_case.is_some(),
+    "fixed seed window should include a lethal first-projectile chainfire"
+  );
+}
+
+#[test]
 fn chaingun_chainfire_below_three_round_cost_rejection_is_atomic() {
   let (mut game, _weapon_id) = equipped_chaingun(2_241);
   let target = Position::new(5, 2);

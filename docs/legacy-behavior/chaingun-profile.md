@@ -1,7 +1,7 @@
 # Chaingun typed behavior-profile evidence
 
 Status: delivered typed ordinary-fire four-shot profile and bounded first-level
-chainfire for `0.2.257`; higher chainfire levels, spread/routing, controlled
+chainfire for `0.2.258`; higher chainfire levels, spread/routing, controlled
 legacy runtime comparison, and audiovisual parity remain `NOT_RUN`.
 
 ## Pinned source
@@ -26,7 +26,7 @@ Evidence is pinned to revision
   before emitting the ordered projectile loop at `:498-510`.
 - `src/dfbeing.pas:900-950` resets chain state for each fire attempt and clears
   continuation after ordinary fire; the typed Rust state follows this reset
-  boundary without claiming legacy callback timing.
+  boundary for accepted commands without claiming legacy callback timing.
 
 ## DRL-Rust boundary
 
@@ -36,9 +36,10 @@ The immutable `drl_core::behavior::CHAINGUN_BEHAVIOR` profile records ordered
 ranged command path remains execution authority for target/LOS/range and
 death-drop preflight, damage RNG, event ordering, and transactional clip
 consumption. The typed `AttackRangedChainfire` command accepts only the first
-level, preflights three rounds atomically, emits three ordered attack events,
-and advances observable chain state only after acceptance; ordinary fire resets
-that state. Direct integration, replay, MCP catalog/JSON, snapshot, and
+level, preflights three rounds atomically, emits three ordered attack events
+(remaining slots become deterministic no-op misses if an earlier projectile
+lethally ends the target), and advances observable chain state only after
+acceptance; ordinary fire resets that state. Direct integration, replay, MCP catalog/JSON, snapshot, and
 BrowserSession tests verify these boundaries.
 
 Higher chainfire levels, legacy target rotation/spread, exact timing/accuracy,

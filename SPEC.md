@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-29
-Current project version: `0.2.257`
+Current project version: `0.2.258`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -29,7 +29,7 @@ contracts, acceptance criteria, and verification boundaries.
 
 ### 2.1 Objective
 
-Verify the delivered first-level Chaingun alternate chainfire at the typed
+Verify and harden the delivered first-level Chaingun alternate chainfire at the typed
 direct-core, replay, MCP JSON/catalog, browser snapshot, and `BrowserSession`
 boundaries. A deterministic accepted command must preflight three loaded 9mm
 rounds, emit three ordered ranged outcomes against one target, advance typed
@@ -43,13 +43,14 @@ warm-up state only after acceptance, and let ordinary fire reset that state.
   evidence remain closed for this contract-only slice.
 - **Observable outcome:** A fixed Chaingun replay setup accepts the typed
   `AttackRangedChainfire` command with at least three loaded rounds, emits
-  exactly three ordered ranged outcomes, consumes three clip rounds, and
+  exactly three ordered ranged outcomes (deterministic no-op misses fill any
+  remaining slots after a lethal target), consumes three clip rounds, and
   exposes warm-up level `1`; a rejected below-three clip leaves the complete
   game state unchanged, while accepted ordinary fire resets the level to `0`.
-- **Gameplay/replay impact:** Gameplay semantics advance from `66` to `67` for
-  the newly accepted first-level chainfire interpretation; replay
+- **Gameplay/replay impact:** Gameplay semantics advance from `67` to `68` for
+  deterministic completion after lethal chainfire targets; replay
   wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.256` to `0.2.257`.
+  unchanged. Project version advances from `0.2.257` to `0.2.258`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary,
   typed projectile-count/cost policy and generic execution; `drl-protocol` owns
   the semantic `AttackRanged`/`AttackRangedAimed` commands and typed event
@@ -73,6 +74,7 @@ The existing ranged command path already performs complete preflight,
 transactional clip validation, typed clip consumption, and ordered projectile
 resolution. This slice adds one explicit Chaingun command mode that reuses
 those boundaries with a fixed three-projectile/three-round first-level burst,
+including deterministic no-op outcomes after a lethal target,
 stores a typed warm-up level in the weapon and observation view, and rejects
 deferred higher levels before mutation. It exercises ScenarioRunner/replay,
 MCP JSON/catalog, browser snapshot, and BrowserSession boundaries without a
@@ -3221,15 +3223,16 @@ contract must:
   three loaded 9mm rounds before clip/RNG mutation, and reject under-supplied
   clips atomically;
 - [x] emit exactly three ordered ranged outcomes against the requested target,
-  consume three clip rounds, and advance observable chainfire state only after
-  acceptance; ordinary fire resets that state to `0`;
+  fill post-lethal slots with deterministic no-op misses without extra damage
+  or RNG, consume three clip rounds, and advance observable chainfire state only
+  after acceptance; ordinary fire resets that state to `0`;
 - [x] preserve direct-core, replay, MCP JSON/catalog, browser snapshot, and
   `BrowserSession` event, observation, effect, scene, and final-state parity;
 - [x] keep higher chainfire levels, legacy target rotation/spread, exact
   callback timing/accuracy, controlled runtime, browser capture, and
   audiovisual parity `NOT_RUN` where evidence is unavailable;
-- [x] advance project version from `0.2.256` to `0.2.257` and gameplay
-  semantics from `66` to `67` while preserving replay schema, RNG, generator,
+- [x] advance project version from `0.2.257` to `0.2.258` and gameplay
+  semantics from `67` to `68` while preserving replay schema, RNG, generator,
   and ruleset identities.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
@@ -3729,6 +3732,14 @@ Replay/MCP JSON/catalog, browser snapshot, and `BrowserSession` parity are
 verified; higher chainfire levels, target rotation/spread, exact callback
 timing/accuracy, controlled runtime, browser capture, and audiovisual parity
 remain open.
+
+The `0.2.258` successor completes the bounded Chaingun first-level chainfire
+contract for lethal targets. Accepted bursts always emit three ordered ranged
+outcomes; slots after a lethal target are deterministic no-op misses without
+additional damage or RNG sampling. The browser maps the physical `C` key to
+the semantic chainfire command, and gameplay semantics advance to `68`.
+Higher chainfire levels, target rotation/spread, exact callback timing/accuracy,
+controlled runtime, browser capture, and audiovisual parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity

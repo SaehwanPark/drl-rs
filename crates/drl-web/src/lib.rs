@@ -1326,6 +1326,7 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
       KeyCode::KeyA => "a",
       KeyCode::KeyS => "s",
       KeyCode::KeyD => "d",
+      KeyCode::KeyC => "c",
       KeyCode::Numpad8 => "8",
       KeyCode::Numpad6 => "6",
       KeyCode::Numpad2 => "2",

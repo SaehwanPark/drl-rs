@@ -1871,6 +1871,27 @@ impl Game {
       self.execute_railgun_piercing(player_id, p_pos, &railgun_targets, events)?;
     } else {
       for _ in 0..shot_count {
+        // A chainfire burst reserves and reports every projectile even when an
+        // earlier projectile kills the target.  Dead-target continuations are
+        // deterministic no-op misses: they consume no additional RNG or
+        // damage and keep the fixed three-outcome event contract. Ordinary
+        // fire retains its historical early-stop behavior below.
+        if chainfire
+          && !self
+            .state
+            .world
+            .get_actor(target_monster_id)
+            .is_some_and(|actor| actor.is_alive())
+        {
+          events.push(GameEvent::AttackResolved {
+            attacker_id: player_id,
+            target_id: target_monster_id,
+            outcome: AttackOutcome::Miss,
+            is_ranged: true,
+          });
+          continue;
+        }
+
         let (outcome, damage) = {
           let player = self
             .state
@@ -1993,7 +2014,10 @@ impl Game {
           if let Some(drop_kind) = death_drop {
             self.spawn_death_drop(target_monster_id, death_position, drop_kind, events)?;
           }
-          break;
+          if !chainfire {
+            break;
+          }
+          continue;
         }
 
         let player_kb = self
