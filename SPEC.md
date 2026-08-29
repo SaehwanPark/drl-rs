@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.250`
+Current project version: `0.2.251`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,15 +25,15 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Anti-Freak Jackal Aimed Fire
+## 2. Active Implementation Slice: M9 — Anti-Freak Jackal Explosion Schedule
 
 ### 2.1 Objective
 
-Verify the delivered Anti-Freak Jackal aimed-fire policy at the typed
+Verify the delivered Anti-Freak Jackal delayed-explosion schedule at the typed
 direct-core, replay/MCP JSON, and `BrowserSession` boundaries. A deterministic
-aimed command must produce identical events, fair player observations, render
-effects, scene state, and replay outcomes in both execution paths while
-retaining generic ranged command execution ownership.
+successful hit must produce identical schedule events, fair player
+observations, render effects, scene state, and replay outcomes in both
+execution paths while retaining generic ranged command execution ownership.
 
 ### 2.1a Scope and steering gate
 
@@ -41,24 +41,25 @@ retaining generic ranged command execution ownership.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, Gate C catalog ownership, and Gate D callback behavior
   evidence remain closed for this contract-only slice.
-- **Observable outcome:** A fixed Anti-Freak Jackal replay setup and one aimed
-  command produce identical direct-core and `BrowserSession` events,
-  observations, render effects, and scenes; the direct result emits one ordered
-  ranged-hit event, consumes one 9mm round, and pays `ActionCost(2_000)`.
-- **Gameplay/replay impact:** Gameplay semantics advance from `59` to `60` for
-  the newly accepted Anti-Freak Jackal aimed-fire interpretation; replay
+- **Observable outcome:** A fixed Anti-Freak Jackal replay setup and six aimed
+  commands produce identical direct-core and `BrowserSession` events,
+  observations, render effects, and scenes; successful hits emit the typed
+  schedule with delay `40`, radius `1`, and default knockback `8`.
+- **Gameplay/replay impact:** Gameplay semantics advance from `60` to `61` for
+  the newly accepted Anti-Freak Jackal schedule interpretation; replay
   wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.249` to `0.2.250`.
+  unchanged. Project version advances from `0.2.250` to `0.2.251`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary,
   typed projectile-count/cost policy and generic execution; `drl-protocol` owns
-  the semantic `AttackRanged`/`AttackRangedAimed` commands, while replay/MCP and browser boundaries
+  the semantic `AttackRanged`/`AttackRangedAimed` commands and typed event
+  projection, while replay/MCP and browser boundaries
   serialize and route it without duplicating gameplay rules.
 - **Evidence boundary:** Pinned Anti-Freak Jackal source evidence in
   `docs/legacy-behavior/anti-freak-jackal-profile.md`, the delivered aimed-fire
   contract, and the direct-core/BrowserSession boundary tests are authoritative.
   Controlled legacy runtime, browser capture, and audiovisual comparisons
   remain `NOT_RUN`.
-- **Non-goals:** Legacy delayed-explosion callback state-machine parity,
+- **Non-goals:** Legacy splash geometry and callback state-machine parity,
   spread/falloff, exact legacy callback timing, audiovisual presentation comparison, new
   callback registries, unrelated gameplay balance, replay-file migrations,
   runtime Lua, and browser/audio/WebGPU capture parity.
@@ -67,10 +68,10 @@ retaining generic ranged command execution ownership.
 
 The existing ranged command path already performs complete preflight,
 transactional clip validation and typed clip consumption. This slice adds the
-Anti-Freak Jackal declaration and shared aimed-fire allowlist before entering
-that path, then exercises it through ScenarioRunner, replay/MCP, and the
+Anti-Freak Jackal schedule declaration and typed event projection after a
+successful hit, then exercises it through ScenarioRunner, replay/MCP, and the
 BrowserSession effect/observation boundary without adding a generic callback
-dispatcher or changing RNG sampling. Legacy delayed-explosion callback state
+dispatcher or changing RNG sampling. Legacy splash geometry, callback state,
 and presentation parity remain outside this verification contract.
 
 Additional broad scalar-only family additions remain gated by the open behavior
@@ -3028,7 +3029,7 @@ contract must:
   semantics from `58` to `59` while preserving replay schema, RNG, generator,
   and ruleset identities.
 
-### 2.7dt Current Anti-Freak Jackal aimed-fire vertical fidelity target
+### 2.7dt Historical Anti-Freak Jackal aimed-fire vertical fidelity target
 
 The bounded implementation target for this revision is the typed Anti-Freak
 Jackal aimed-fire command exercised through direct core, replay/MCP JSON,
@@ -3054,6 +3055,31 @@ MCP action catalog, and `BrowserSession`. Its contract must:
   evidence is unavailable;
 - [x] advance project version from `0.2.249` to `0.2.250` and gameplay
   semantics from `59` to `60` while preserving replay schema, RNG, generator,
+  and ruleset identities.
+
+### 2.7du Current Anti-Freak Jackal delayed-explosion schedule target
+
+The bounded implementation target for this revision is the typed Anti-Freak
+Jackal on-hit explosion schedule exercised through direct core, replay/MCP JSON,
+MCP event projection, and `BrowserSession`. Its contract must:
+
+- [x] preserve the existing aimed-fire setup and replay identity while
+  resolving a deterministic six-command sequence with at least one hit;
+- [x] emit a typed `AntiFreakJackalExplosionScheduled` event after each
+  successful damage application, carrying delay `40`, radius `1`, and default
+  knockback `8`;
+- [x] preserve identical event ordering and player-visible observations,
+  render effects, scene projections, and final state between direct core and
+  `BrowserSession`;
+- [x] project the schedule event through MCP JSON with stable type and numeric
+  fields without adding a second gameplay implementation;
+- [x] preserve deterministic replay verification and transactional command
+  behavior while leaving splash geometry, damage fanout, and callback state
+  outside this contract;
+- [x] keep controlled runtime, browser capture, and audiovisual parity
+  `NOT_RUN` where evidence is unavailable;
+- [x] advance project version from `0.2.250` to `0.2.251` and gameplay
+  semantics from `60` to `61` while preserving replay schema, RNG, generator,
   and ruleset identities.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
@@ -3500,6 +3526,12 @@ pays doubled action cost, consumes one 9mm round, reproduces
 events/observations/effects/scene state, and remains replay-deterministic;
 legacy delayed-explosion callback state/timing, controlled runtime, browser
 capture, and audiovisual parity remain open.
+
+The `0.2.251` successor extends the Anti-Freak Jackal contract with a typed
+delayed-explosion schedule event. Successful hits now project delay `40`,
+radius `1`, and default knockback `8` through direct core, MCP JSON, and
+`BrowserSession` parity tests; splash geometry, damage fanout, callback state,
+controlled runtime, browser capture, and audiovisual parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity

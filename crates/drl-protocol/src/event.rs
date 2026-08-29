@@ -152,6 +152,14 @@ pub enum GameEvent {
     radius: u32,
     damage: u32,
   },
+  /// Anti-Freak Jackal recorded its evidence-backed delayed explosion payload.
+  AntiFreakJackalExplosionScheduled {
+    entity_id: EntityId,
+    target_id: EntityId,
+    delay: u32,
+    radius: u32,
+    knockback: u32,
+  },
   /// BFG 10K recorded its evidence-backed delayed explosion payload.
   Bfg10kExplosionScheduled {
     entity_id: EntityId,

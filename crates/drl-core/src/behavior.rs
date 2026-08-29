@@ -407,6 +407,12 @@ pub const TRIGUN_SHOT_COST: u32 = 1;
 pub const ANTI_FREAK_JACKAL_PROJECTILE_COUNT: u32 = 1;
 /// Current Rust per-projectile clip cost for an ordinary Anti-Freak Jackal shot.
 pub const ANTI_FREAK_JACKAL_SHOT_COST: u32 = 1;
+/// Pinned Anti-Freak Jackal delayed explosion interval.
+pub const ANTI_FREAK_JACKAL_EXPLOSION_DELAY: u32 = 40;
+/// Pinned Anti-Freak Jackal delayed explosion radius.
+pub const ANTI_FREAK_JACKAL_EXPLOSION_RADIUS: u32 = 1;
+/// Pinned default legacy explosion knockback for Anti-Freak Jackal.
+pub const ANTI_FREAK_JACKAL_EXPLOSION_KNOCKBACK: u32 = 8;
 
 const ANTI_FREAK_JACKAL_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
   BehaviorSpec::Attack(AttackEffect::ProjectileCount(
@@ -419,6 +425,11 @@ const ANTI_FREAK_JACKAL_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
   BehaviorSpec::Alternate(AlternateAction::AimedFire {
     accuracy_bonus: PISTOL_AIMED_ACCURACY_BONUS,
     fire_cost_multiplier: PISTOL_AIMED_FIRE_COST_MULTIPLIER,
+  }),
+  BehaviorSpec::Hit(HitEffect::ScheduleExplosion {
+    delay: ANTI_FREAK_JACKAL_EXPLOSION_DELAY,
+    radius: ANTI_FREAK_JACKAL_EXPLOSION_RADIUS,
+    knockback: Some(ANTI_FREAK_JACKAL_EXPLOSION_KNOCKBACK),
   }),
 ];
 
@@ -1378,6 +1389,11 @@ mod tests {
         BehaviorSpec::Alternate(AlternateAction::AimedFire {
           accuracy_bonus: PISTOL_AIMED_ACCURACY_BONUS,
           fire_cost_multiplier: PISTOL_AIMED_FIRE_COST_MULTIPLIER,
+        }),
+        BehaviorSpec::Hit(HitEffect::ScheduleExplosion {
+          delay: ANTI_FREAK_JACKAL_EXPLOSION_DELAY,
+          radius: ANTI_FREAK_JACKAL_EXPLOSION_RADIUS,
+          knockback: Some(ANTI_FREAK_JACKAL_EXPLOSION_KNOCKBACK),
         }),
       ]
     );

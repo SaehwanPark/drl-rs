@@ -4971,6 +4971,58 @@ fn anti_freak_jackal_aimed_fire_doubles_time_and_replays_deterministically() {
 }
 
 #[test]
+fn anti_freak_jackal_hit_records_delayed_explosion_schedule() {
+  let target_position = Position::new(3, 2);
+  let mut replay =
+    ReplayLog::new(0, 10, 6, Position::new(2, 2)).with_player_config(PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: vec![ItemSpawnKind::Ammo9mm(6)],
+      equipped_weapon: Some(ItemSpawnKind::AntiFreakJackal),
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    });
+  replay.record_monster(MonsterSpawnSpec::new(
+    target_position,
+    "Static Target",
+    500,
+    100,
+    (0, 0),
+  ));
+  for _ in 0..6 {
+    replay.record_command(Command::AttackRangedAimed(target_position));
+  }
+
+  let (game, events) = ReplayEngine::run(&replay).unwrap();
+  assert_eq!(
+    game
+      .world()
+      .player()
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .current_clip,
+    0
+  );
+  assert!(events.iter().any(|event| {
+    matches!(
+      event,
+      GameEvent::AntiFreakJackalExplosionScheduled {
+        delay: 40,
+        radius: 1,
+        knockback: 8,
+        ..
+      }
+    )
+  }));
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}
+
+#[test]
 fn aimed_fire_rejection_is_atomic_for_non_pistol_and_empty_clip() {
   let target_position = Position::new(4, 2);
   let mut unsupported = Game::new(2_261, 12, 8, Position::new(2, 2)).unwrap();
