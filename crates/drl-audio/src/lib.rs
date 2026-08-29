@@ -53,6 +53,7 @@ pub fn cues_for_events(events: &[GameEvent]) -> Vec<AudioCue> {
         cues.push(AudioCue::Equip)
       }
       GameEvent::ItemUsed { .. } => cues.push(AudioCue::Use),
+      GameEvent::GroundItemDestroyed { .. } => {}
       GameEvent::WeaponReloaded { .. } | GameEvent::AcidSpitterReloaded { .. } => {
         cues.push(AudioCue::Reload)
       }

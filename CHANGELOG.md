@@ -3,6 +3,17 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.254]
+
+- Added bounded Anti-Freak Jackal ground-item destruction. Each blast cell now
+  rolls deterministic `5d3` damage and removes the lowest-ID ordinary loose
+  ammo stack only when the roll exceeds `10`, after actor damage and before
+  lethal death/drop follow-up. The typed `GroundItemDestroyed` event is covered
+  by replay, generic MCP JSON, and BrowserSession tests; terrain/cell
+  destruction, callback state, controlled runtime, browser capture, and
+  audiovisual parity remain deferred; gameplay semantics advance from `63` to
+  `64`.
+
 ## [0.2.253]
 
 - Added bounded radial knockback to the Anti-Freak Jackal splash. Each eligible

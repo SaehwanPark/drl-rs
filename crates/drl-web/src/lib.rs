@@ -3073,6 +3073,19 @@ mod tests {
       1,
       (0, 0),
     ));
+    for position in [
+      Position::new(3, 2),
+      Position::new(3, 1),
+      Position::new(4, 1),
+      Position::new(4, 2),
+      Position::new(4, 3),
+      Position::new(3, 3),
+      Position::new(2, 3),
+      Position::new(2, 2),
+      Position::new(2, 1),
+    ] {
+      setup_replay.record_item(ItemSpawnSpec::new(position, ItemSpawnKind::Ammo9mm(20)));
+    }
     let (initial, setup_events) =
       drl_core::ReplayEngine::run(&setup_replay).expect("Anti-Freak schedule setup");
     assert!(setup_events.is_empty());
@@ -3106,6 +3119,11 @@ mod tests {
       all_events
         .iter()
         .any(|event| matches!(event, drl_protocol::GameEvent::ActorKnockedBack { .. }))
+    );
+    assert!(
+      all_events
+        .iter()
+        .any(|event| matches!(event, drl_protocol::GameEvent::GroundItemDestroyed { .. }))
     );
     assert!(all_events.iter().any(|event| {
       matches!(

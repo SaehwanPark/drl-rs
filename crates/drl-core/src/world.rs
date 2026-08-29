@@ -359,6 +359,22 @@ impl World {
       .collect()
   }
 
+  /// Removes the lowest-ID loose ammunition stack at a position.
+  ///
+  /// The current item model does not represent legacy unique or
+  /// non-destroyable flags, so blast destruction is intentionally limited to
+  /// ordinary loose ammunition. BTreeMap ordering makes multiple stacks
+  /// deterministic without introducing a new gameplay policy.
+  pub fn destroy_ground_ammo_at(&mut self, pos: Position) -> Option<ItemId> {
+    let item_id = self
+      .ground_items
+      .iter()
+      .find(|(_, (item_pos, item))| *item_pos == pos && item.is_ammo())
+      .map(|(item_id, _)| *item_id)?;
+    self.ground_items.remove(&item_id);
+    Some(item_id)
+  }
+
   /// Returns the player entity ID if spawned.
   #[must_use]
   pub const fn player_id(&self) -> Option<EntityId> {
@@ -630,6 +646,26 @@ mod tests {
     let picked = world.pickup_ground_item(Position::new(2, 2)).unwrap();
     assert_eq!(picked.name(), "Shotgun");
     assert!(world.ground_items_at(Position::new(2, 2)).is_empty());
+  }
+
+  #[test]
+  fn test_world_destroy_ground_ammo_is_deterministic_and_preserves_other_items() {
+    let map = Map::simple_arena(10, 10);
+    let mut world = World::new(LevelId::new(1), map);
+    let position = Position::new(2, 2);
+    let ammo_id = world.allocate_item_id();
+    let shotgun_id = world.allocate_item_id();
+    world
+      .spawn_ground_item(position, Item::ammo_9mm(ammo_id, 11))
+      .unwrap();
+    world
+      .spawn_ground_item(position, Item::shotgun(shotgun_id))
+      .unwrap();
+
+    assert_eq!(world.destroy_ground_ammo_at(position), Some(ammo_id));
+    assert!(world.ground_items().get(&ammo_id).is_none());
+    assert!(world.ground_items().contains_key(&shotgun_id));
+    assert_eq!(world.destroy_ground_ammo_at(position), None);
   }
 
   #[test]

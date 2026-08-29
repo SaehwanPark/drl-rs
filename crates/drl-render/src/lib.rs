@@ -1361,6 +1361,7 @@ pub fn effects_for_events(events: &[GameEvent]) -> Vec<PresentationEffect> {
         Some(PresentationEffect::Equip)
       }
       GameEvent::ItemUsed { .. } => Some(PresentationEffect::Use),
+      GameEvent::GroundItemDestroyed { .. } => None,
       GameEvent::WeaponReloaded { .. } | GameEvent::AcidSpitterReloaded { .. } => {
         Some(PresentationEffect::Reload)
       }
@@ -1498,6 +1499,7 @@ fn event_entity_ids(event: &GameEvent) -> [Option<EntityId>; 2] {
     | GameEvent::LevelNuked { .. }
     | GameEvent::LevelTransitioned { .. }
     | GameEvent::PlayerTeleported { .. }
+    | GameEvent::GroundItemDestroyed { .. }
     | GameEvent::TurnEnded { .. } => [None, None],
   }
 }
