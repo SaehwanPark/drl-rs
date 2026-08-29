@@ -3095,6 +3095,17 @@ mod tests {
         }
       )
     }));
+    assert!(all_events.iter().any(|event| {
+      matches!(
+        event,
+        drl_protocol::GameEvent::DamageApplied {
+          source: drl_protocol::DamageSource::Environment,
+          damage_type: Some(drl_protocol::DamageType::Fire),
+          amount,
+          ..
+        } if (5..=15).contains(amount)
+      )
+    }));
     assert_eq!(browser.observation(), direct.observe_player());
     assert_eq!(browser.replay_log().commands.len(), 6);
     let mut command_replay = setup_replay;

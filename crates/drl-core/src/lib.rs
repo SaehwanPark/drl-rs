@@ -9,6 +9,7 @@ pub mod acid_spitter;
 pub mod actor;
 pub mod agent;
 pub mod ai;
+pub mod anti_freak;
 pub mod assault_shotgun;
 pub mod batch;
 pub mod behavior;
@@ -47,6 +48,10 @@ pub mod world;
 pub use actor::Actor;
 pub use agent::{AgentPolicy, ExplorerBot, GreedyCombatBot, RandomBot};
 pub use ai::{MonsterAction, MonsterAi};
+pub use anti_freak::{
+  ANTI_FREAK_JACKAL_SPLASH_DICE, ANTI_FREAK_JACKAL_SPLASH_DIE_SIDES, radius_one_blast_positions,
+  roll_splash_damage,
+};
 pub use assault_shotgun::ASSAULT_SHOTGUN_ALT_RELOAD_CAP;
 pub use batch::{
   BatchRunner, CohortComparison, CohortConfig, CohortDepthBucket, CohortDepthDistribution,

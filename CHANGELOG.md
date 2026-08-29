@@ -3,6 +3,16 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.252]
+
+- Added the bounded Anti-Freak Jackal radius-1 splash fanout after a successful
+  scheduled hit. The deterministic resolver considers the impact center and
+  eight neighboring cells clockwise from north in stable order, applies one `5d3` fire-damage roll
+  per eligible living actor, and preserves direct-core, replay/MCP, and
+  `BrowserSession` parity. Blast knockback, terrain/item destruction,
+  callback state, controlled runtime, browser capture, and audiovisual parity
+  remain deferred; gameplay semantics advance from `61` to `62`.
+
 ## [0.2.251]
 
 - Added the typed Anti-Freak Jackal delayed-explosion schedule event:

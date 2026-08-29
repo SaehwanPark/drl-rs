@@ -1,12 +1,13 @@
 //! High-level game execution kernel and turn progression.
 
 use drl_protocol::{
-  ActionCost, AttackOutcome, Command, CommandError, DamageSource, DeathCause, Direction,
-  EquipmentSlot, GameEvent, LevelId, OmniscientObservation, PlayerObservation, Position, TileKind,
-  Turn,
+  ActionCost, AttackOutcome, Command, CommandError, DamageSource, DamageType, DeathCause,
+  Direction, EquipmentSlot, GameEvent, LevelId, OmniscientObservation, PlayerObservation, Position,
+  TileKind, Turn,
 };
 
 use crate::acid_spitter::{ACID_SPITTER_RELOAD_AMOUNT, AcidSpitterReloadError};
+use crate::anti_freak::{radius_one_blast_positions, roll_splash_damage};
 use crate::assault_shotgun::{AssaultShotgunReloadPlan, AssaultShotgunTransition};
 use crate::behavior::{
   ANTI_FREAK_JACKAL_EXPLOSION_DELAY, ANTI_FREAK_JACKAL_EXPLOSION_KNOCKBACK,
@@ -1777,6 +1778,18 @@ impl Game {
     {
       self.validate_death_drop_position(target_pos)?;
     }
+    if weapon_is_anti_freak_jackal {
+      for splash_position in radius_one_blast_positions(self.state.world.map(), target_pos) {
+        if self
+          .state
+          .world
+          .living_actor_at(splash_position)
+          .is_some_and(|actor| actor.death_drop().is_some())
+        {
+          self.validate_death_drop_position(splash_position)?;
+        }
+      }
+    }
 
     // Commit the prepared shot only after every fallible validation succeeds.
     {
@@ -1893,6 +1906,7 @@ impl Game {
           radius: ANTI_FREAK_JACKAL_EXPLOSION_RADIUS,
           knockback: ANTI_FREAK_JACKAL_EXPLOSION_KNOCKBACK,
         });
+        self.execute_anti_freak_splash(target_pos, events)?;
       }
 
       if actual_lethal {
@@ -1945,6 +1959,75 @@ impl Game {
     } else {
       fire_cost
     })
+  }
+
+  /// Resolves the typed Anti-Freak Jackal radius-1 splash immediately after
+  /// its schedule event. The delay remains presentation metadata; no pending
+  /// command queue is introduced into the deterministic core.
+  fn execute_anti_freak_splash(
+    &mut self,
+    center: Position,
+    events: &mut Vec<GameEvent>,
+  ) -> Result<(), CommandError> {
+    let targets: Vec<_> = radius_one_blast_positions(self.state.world.map(), center)
+      .into_iter()
+      .filter_map(|position| {
+        self
+          .state
+          .world
+          .living_actor_at(position)
+          .map(|actor| actor.id())
+      })
+      .collect();
+
+    for target_id in targets {
+      let damage = roll_splash_damage(&mut self.state.rng);
+      let (taken, lethal, death_cause) =
+        self
+          .state
+          .world
+          .apply_damage(target_id, damage, DamageSource::Environment)?;
+      let remaining = self
+        .state
+        .world
+        .get_actor(target_id)
+        .map_or(0, |actor| actor.hp().current);
+      events.push(GameEvent::DamageApplied {
+        target_id,
+        amount: taken,
+        remaining_hp: remaining,
+        source: DamageSource::Environment,
+        damage_type: Some(DamageType::Fire),
+      });
+
+      if !lethal {
+        continue;
+      }
+
+      let death_drop = self
+        .state
+        .world
+        .get_actor(target_id)
+        .and_then(|actor| actor.death_drop());
+      let death_position = self
+        .state
+        .world
+        .get_actor(target_id)
+        .map(|actor| actor.position())
+        .unwrap_or(center);
+      events.push(GameEvent::ActorDied {
+        entity_id: target_id,
+        cause: death_cause.unwrap_or(DeathCause::Environment),
+      });
+      if let Some(drop_kind) = death_drop {
+        self.spawn_death_drop(target_id, death_position, drop_kind, events)?;
+      }
+      if self.state.world.player_id() == Some(target_id) {
+        self.state.is_game_over = true;
+      }
+    }
+
+    Ok(())
   }
 
   /// Applies Null Pointer's typed target branch and records its deferred blast.
