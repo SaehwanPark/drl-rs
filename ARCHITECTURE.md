@@ -45,7 +45,8 @@ Grammaton records its typed Single/Burst/Auto mode and score-cost fragments; Jac
 records its typed Burst/Single mode and score-cost fragments; Lava Armor records
 its typed terrain-gated durability-recharge fragment; Malek's Armor records its
 typed durability-recharge fragment; Blaster records its
-typed periodic-recharge fragment; Missile Launcher records its typed ordinary
+typed one-projectile ordinary-fire, one-cell cost, and periodic-recharge
+fragments; Missile Launcher records its typed ordinary
 single-rocket reload and capped full-deficit reload fragments; Combat Shotgun
 records its typed pump-only chamber action (200 units), ordinary single-shell
 reload, and capped full-deficit reload fragments; Double Shotgun records its
@@ -219,8 +220,9 @@ Presentation Boundary
     records its mode and score-cost fragments; Lava Armor's
     immutable profile records its terrain-gated durability-recharge fragment;
     Malek's Armor's profile records its durability-recharge fragment; Blaster's
-    profile records its recharge fragment, while Nuclear Plasma's profile
-    records overload and recharge without claiming chainfire. Profiles describe
+    profile records its ordinary-fire and recharge fragments, while Nuclear
+    Plasma's profile records overload and recharge without claiming chainfire.
+    Profiles describe
     behavior without string keys or runtime callbacks; dedicated transition
     modules remain the execution authority.
     Missile Launcher's immutable profile records ordinary `Reload` and
