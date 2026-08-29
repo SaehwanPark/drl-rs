@@ -3861,7 +3861,7 @@ mod tests {
       hp: 50,
       max_hp: 50,
       speed: 100,
-      initial_items: Vec::new(),
+      initial_items: vec![ItemSpawnKind::AmmoCells(6)],
       equipped_weapon: Some(ItemSpawnKind::NuclearPlasmaRifle),
       equipped_armor: None,
       equipped_armor_durability: None,
@@ -3898,7 +3898,7 @@ mod tests {
             event,
             drl_protocol::GameEvent::WeaponRecharged {
               ammo_recharged: 1,
-              current_clip: 24,
+              current_clip: 19,
               max_clip: 24,
               timer: 40,
               ..
@@ -3908,6 +3908,20 @@ mod tests {
       }
       expected_events.extend(direct_events);
     }
+
+    assert_eq!(
+      expected_events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          drl_protocol::GameEvent::AttackResolved {
+            is_ranged: true,
+            ..
+          }
+        ))
+        .count(),
+      6
+    );
 
     assert_eq!(browser.observation(), direct.observe_player());
     assert_eq!(browser.replay_log().commands, commands);

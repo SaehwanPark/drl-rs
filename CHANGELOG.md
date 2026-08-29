@@ -3,6 +3,17 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.249]
+
+- Extended the typed ordinary-fire volley contract to Nuclear Plasma Rifle:
+  one accepted command now resolves six ordered projectiles and consumes six
+  cells as an aggregate cost, with atomic below-six rejection. The existing
+  recharge reset and overload transitions remain authoritative. Direct-core,
+  ScenarioRunner/replay, MCP JSON/catalog, and `BrowserSession` parity are
+  verified; gameplay semantics advance from `58` to `59`, while chainfire,
+  exact callback timing, controlled runtime, browser capture, and audiovisual
+  parity remain deferred.
+
 ## [0.2.248]
 
 - Extended the shared typed aimed-fire command to Trigun, preserving the

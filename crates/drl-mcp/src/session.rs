@@ -3500,6 +3500,97 @@ mod tests {
   }
 
   #[test]
+  fn nuclear_plasma_volley_mcp_boundary_matches_direct_core() {
+    let player_position = Position::new(1, 1);
+    let target_position = Position::new(3, 1);
+    let player_config = drl_protocol::PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: vec![drl_protocol::ItemSpawnKind::AmmoCells(6)],
+      equipped_weapon: Some(drl_protocol::ItemSpawnKind::NuclearPlasmaRifle),
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    };
+    let mut setup_replay =
+      ReplayLog::new(2_272, 8, 4, player_position).with_player_config(player_config);
+    setup_replay.record_monster(drl_protocol::MonsterSpawnSpec::new(
+      target_position,
+      "Static Target",
+      1_000,
+      100,
+      (1, 7),
+    ));
+
+    let mut session = McpSession::new();
+    session
+      .load_replay(setup_replay)
+      .expect("load Nuclear Plasma volley replay setup");
+    let initial = session.game.as_ref().unwrap().clone();
+    let player_id = initial.world().player_id().expect("player identity");
+    let target_id = initial
+      .world()
+      .actors()
+      .values()
+      .find(|actor| !actor.is_player())
+      .expect("Nuclear Plasma target")
+      .id();
+    let command = Command::AttackRanged(target_position);
+    assert!(
+      session
+        .legal_actions()
+        .unwrap()
+        .iter()
+        .any(|action| action.action == "Fire" && action.command == command)
+    );
+    let mut direct = initial.clone();
+    let expected_events = direct
+      .step(command)
+      .expect("direct Nuclear Plasma volley command");
+    let (events, observation, outcome) = session.step(command).expect("MCP Nuclear Plasma volley");
+
+    assert_eq!(events, expected_events);
+    assert_eq!(session.game.as_ref().unwrap(), &direct);
+    assert_eq!(observation, direct.observe_player());
+    assert_eq!(outcome, None);
+    assert_eq!(
+      events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          GameEvent::AttackResolved {
+            attacker_id,
+            target_id: event_target,
+            is_ranged: true,
+            ..
+          } if *attacker_id == player_id && *event_target == target_id
+        ))
+        .count(),
+      6
+    );
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .current_clip,
+      18
+    );
+
+    let replay = session.export_replay().expect("MCP replay export");
+    let (replayed, replay_events) =
+      ReplayEngine::run(replay).expect("MCP Nuclear Plasma volley replay");
+    assert_eq!(replayed, direct);
+    assert_eq!(replay_events, expected_events);
+    assert!(ReplayEngine::verify_determinism(replay).expect("replay determinism"));
+  }
+
+  #[test]
   fn double_shotgun_dual_shot_mcp_boundary_matches_direct_core() {
     let player_position = Position::new(1, 1);
     let target_position = Position::new(7, 1);

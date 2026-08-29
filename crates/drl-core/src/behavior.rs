@@ -773,7 +773,19 @@ const NUCLEAR_BFG9000_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
 pub const NUCLEAR_BFG9000_BEHAVIOR: BehaviorProfile =
   BehaviorProfile::new(NUCLEAR_BFG9000_BEHAVIOR_SPECS);
 
+/// Pinned projectile count for an ordinary Nuclear Plasma Rifle shot.
+pub const NUCLEAR_PLASMA_PROJECTILE_COUNT: u32 = 6;
+/// Pinned per-projectile clip cost for an ordinary Nuclear Plasma Rifle shot.
+pub const NUCLEAR_PLASMA_SHOT_COST: u32 = 1;
+
 const NUCLEAR_PLASMA_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Attack(AttackEffect::ProjectileCount(
+    NUCLEAR_PLASMA_PROJECTILE_COUNT,
+  )),
+  BehaviorSpec::Cost(ResourceCost::Ammo {
+    ammo_type: AmmoType::Cell,
+    amount: NUCLEAR_PLASMA_SHOT_COST,
+  }),
   BehaviorSpec::Alternate(AlternateAction::Overload),
   BehaviorSpec::Periodic(PeriodicEffect::Recharge {
     delay: NUCLEAR_PLASMA_RECHARGE_DELAY,
@@ -1412,6 +1424,13 @@ mod tests {
     assert_eq!(
       NUCLEAR_PLASMA_BEHAVIOR.specs(),
       &[
+        BehaviorSpec::Attack(AttackEffect::ProjectileCount(
+          NUCLEAR_PLASMA_PROJECTILE_COUNT,
+        )),
+        BehaviorSpec::Cost(ResourceCost::Ammo {
+          ammo_type: AmmoType::Cell,
+          amount: NUCLEAR_PLASMA_SHOT_COST,
+        }),
         BehaviorSpec::Alternate(AlternateAction::Overload),
         BehaviorSpec::Periodic(PeriodicEffect::Recharge {
           delay: NUCLEAR_PLASMA_RECHARGE_DELAY,

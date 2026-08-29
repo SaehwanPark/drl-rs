@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.248`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.249`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -103,7 +103,8 @@ replays, and regression testing.
     eight-projectile ordinary fire consumes eight 9mm rounds; Chaingun's typed
     four-projectile ordinary fire consumes four 9mm rounds; Laser Rifle's typed
     five-projectile ordinary fire consumes five cells; Plasma Rifle's typed
-    six-projectile ordinary fire consumes six cells; Combat Shotgun's
+    six-projectile ordinary fire consumes six cells; Nuclear Plasma Rifle's
+    typed six-projectile ordinary fire consumes six cells; Combat Shotgun's
     typed pump-only chamber cycle costs 200 action units; Assault Shotgun
     ordinary single-shell reload plus full-deficit reload capped at 2,500
     score-count units; Pistol's typed ordinary fire resolves one projectile and
