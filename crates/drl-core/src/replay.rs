@@ -409,14 +409,14 @@ mod tests {
   #[test]
   fn test_replay_validation_rejects_incompatible_semantics() {
     let mut replay = ReplayLog::new(1234, 10, 10, Position::new(1, 1));
-    // Version 64 predates Railgun ray/piercing traversal and must not be
-    // interpreted by the version-65 engine without migration.
-    assert_eq!(drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION, 65);
+    // Version 65 predates Null Pointer actor-only splash and must not be
+    // interpreted by the version-66 engine without migration.
+    assert_eq!(drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION, 66);
     assert_eq!(
       drl_protocol::CURRENT_RNG_SAMPLING_SEMANTICS_VERSION,
       crate::rng::RNG_SAMPLING_SEMANTICS_VERSION
     );
-    replay.metadata.gameplay_semantics_version = 64;
+    replay.metadata.gameplay_semantics_version = 65;
     let error = ReplayEngine::validate(&replay).unwrap_err();
     assert!(error.contains("unsupported gameplay semantics version"));
 

@@ -10,7 +10,7 @@ pub const NULL_POINTER_MIN_SCORE_COUNT: i32 = 1000;
 pub const NULL_POINTER_EXPLOSION_DELAY: u32 = 50;
 /// Evidence-backed delayed explosion radius.
 pub const NULL_POINTER_EXPLOSION_RADIUS: u32 = 1;
-/// Evidence-backed fixed damage die count for the deferred explosion.
+/// Evidence-backed fixed `10d1` damage result for the deferred explosion.
 pub const NULL_POINTER_EXPLOSION_DAMAGE: u32 = 10;
 
 /// Pure score-count transition selected by the target's explicit boss property.

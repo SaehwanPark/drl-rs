@@ -1785,7 +1785,7 @@ impl Game {
     {
       self.validate_death_drop_position(target_pos)?;
     }
-    if weapon_is_anti_freak_jackal {
+    if weapon_is_anti_freak_jackal || null_pointer_item_id.is_some() {
       for splash_position in radius_one_blast_positions(self.state.world.map(), target_pos) {
         if self
           .state
@@ -1888,6 +1888,7 @@ impl Game {
           && let Some(item_id) = null_pointer_item_id
         {
           self.execute_null_pointer_hit(player_id, item_id, target_monster_id, events)?;
+          self.execute_null_pointer_splash(target_pos, events)?;
         }
 
         if damage == 0 {
@@ -2303,6 +2304,74 @@ impl Game {
       radius: NULL_POINTER_EXPLOSION_RADIUS,
       damage: NULL_POINTER_EXPLOSION_DAMAGE,
     });
+    Ok(())
+  }
+
+  /// Applies Null Pointer's bounded actor-only radius-1 splash immediately
+  /// after its schedule event. The delay remains presentation metadata; no
+  /// pending command queue is introduced into the deterministic core.
+  fn execute_null_pointer_splash(
+    &mut self,
+    center: Position,
+    events: &mut Vec<GameEvent>,
+  ) -> Result<(), CommandError> {
+    let mut processed_actors = BTreeSet::new();
+    for blast_position in radius_one_blast_positions(self.state.world.map(), center) {
+      let target_id = self
+        .state
+        .world
+        .living_actor_at(blast_position)
+        .map(|actor| actor.id());
+      let target_id = target_id.filter(|target_id| processed_actors.insert(*target_id));
+
+      let Some(target_id) = target_id else {
+        continue;
+      };
+
+      let (taken, lethal, death_cause) = self.state.world.apply_damage(
+        target_id,
+        NULL_POINTER_EXPLOSION_DAMAGE,
+        DamageSource::Environment,
+      )?;
+      let remaining = self
+        .state
+        .world
+        .get_actor(target_id)
+        .map_or(0, |actor| actor.hp().current);
+      events.push(GameEvent::DamageApplied {
+        target_id,
+        amount: taken,
+        remaining_hp: remaining,
+        source: DamageSource::Environment,
+        damage_type: Some(DamageType::Plasma),
+      });
+
+      if !lethal {
+        continue;
+      }
+
+      let death_drop = self
+        .state
+        .world
+        .get_actor(target_id)
+        .and_then(|actor| actor.death_drop());
+      let death_position = self
+        .state
+        .world
+        .get_actor(target_id)
+        .map_or(blast_position, |actor| actor.position());
+      events.push(GameEvent::ActorDied {
+        entity_id: target_id,
+        cause: death_cause.unwrap_or(DeathCause::Environment),
+      });
+      if let Some(drop_kind) = death_drop {
+        self.spawn_death_drop(target_id, death_position, drop_kind, events)?;
+      }
+      if self.state.world.player_id() == Some(target_id) {
+        self.state.is_game_over = true;
+      }
+    }
+
     Ok(())
   }
 

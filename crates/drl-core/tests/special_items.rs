@@ -2629,6 +2629,164 @@ fn null_pointer_hit_applies_boss_score_branch_and_preserves_event_order() {
 }
 
 #[test]
+fn null_pointer_splash_hits_each_actor_once_and_continues_after_lethal() {
+  let mut game = Game::new_arena(901, 12, 12).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let player_position = game.world().player().unwrap().position();
+  let target_position = player_position + Direction::East;
+  let north_position = target_position + Direction::North;
+  let east_position = target_position + Direction::East;
+  let target_id = game
+    .world_mut()
+    .spawn_monster(target_position, "Target", 100, 0, (0, 0))
+    .unwrap();
+  let lethal_id = game
+    .world_mut()
+    .spawn_monster(north_position, "Lethal", 10, 0, (0, 0))
+    .unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(lethal_id)
+    .unwrap()
+    .set_death_drop(Some(ItemSpawnKind::Ammo9mm(5)));
+  let survivor_id = game
+    .world_mut()
+    .spawn_monster(east_position, "Survivor", 100, 0, (0, 0))
+    .unwrap();
+
+  let weapon_id = game.world_mut().allocate_item_id();
+  let mut weapon = Item::null_pointer(weapon_id);
+  weapon.weapon_properties_mut().unwrap().accuracy = 100;
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, weapon)
+    .unwrap();
+
+  let events = game.step(Command::AttackRanged(target_position)).unwrap();
+  let schedule_index = events
+    .iter()
+    .position(|event| matches!(event, GameEvent::NullPointerExplosionScheduled { .. }))
+    .expect("Null Pointer splash must follow its schedule event");
+  let damage_events: Vec<_> = events
+    .iter()
+    .enumerate()
+    .filter_map(|(index, event)| match event {
+      GameEvent::DamageApplied {
+        target_id,
+        amount,
+        source: DamageSource::Environment,
+        damage_type: Some(drl_protocol::DamageType::Plasma),
+        ..
+      } => Some((index, *target_id, *amount)),
+      _ => None,
+    })
+    .collect();
+  let monster_damage: Vec<_> = damage_events
+    .iter()
+    .copied()
+    .filter(|(_, id, _)| *id != player_id)
+    .collect();
+
+  assert_eq!(monster_damage.len(), 3);
+  assert_eq!(
+    monster_damage
+      .iter()
+      .map(|(_, id, amount)| (*id, *amount))
+      .collect::<Vec<_>>(),
+    vec![(target_id, 10), (lethal_id, 10), (survivor_id, 10)]
+  );
+  assert!(
+    damage_events
+      .iter()
+      .all(|(index, _, _)| *index > schedule_index)
+  );
+  let lethal_damage_index = damage_events
+    .iter()
+    .find(|(_, id, _)| *id == lethal_id)
+    .map(|(index, _, _)| *index)
+    .unwrap();
+  let death_index = events
+    .iter()
+    .position(
+      |event| matches!(event, GameEvent::ActorDied { entity_id, .. } if *entity_id == lethal_id),
+    )
+    .expect("lethal splash target must die");
+  let drop_index = events
+    .iter()
+    .position(|event| matches!(event, GameEvent::ItemDropped { entity_id, position, .. } if *entity_id == lethal_id && *position == north_position))
+    .expect("lethal splash target must drop its configured item");
+  assert!(lethal_damage_index < death_index);
+  assert!(death_index < drop_index);
+  assert_eq!(game.world().get_actor(target_id).unwrap().hp().current, 90);
+  assert!(!game.world().get_actor(lethal_id).unwrap().is_alive());
+  assert_eq!(
+    game.world().get_actor(survivor_id).unwrap().hp().current,
+    90
+  );
+  assert_eq!(game.world().player().unwrap().hp().current, 40);
+  assert_eq!(
+    game
+      .world()
+      .player()
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .current_clip,
+    50
+  );
+}
+
+#[test]
+fn null_pointer_splash_death_drop_preflight_is_atomic() {
+  let mut game = Game::new_arena(902, 12, 12).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let player_position = game.world().player().unwrap().position();
+  let target_position = player_position + Direction::East;
+  let blocked_drop_position = target_position + Direction::North;
+  game
+    .world_mut()
+    .spawn_monster(target_position, "Target", 100, 0, (0, 0))
+    .unwrap();
+  let splash_id = game
+    .world_mut()
+    .spawn_monster(blocked_drop_position, "Splash Target", 100, 0, (0, 0))
+    .unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(splash_id)
+    .unwrap()
+    .set_death_drop(Some(ItemSpawnKind::Ammo9mm(5)));
+  game
+    .world_mut()
+    .map_mut()
+    .set_tile(blocked_drop_position, Tile::Wall);
+
+  let weapon_id = game.world_mut().allocate_item_id();
+  let mut weapon = Item::null_pointer(weapon_id);
+  weapon.weapon_properties_mut().unwrap().accuracy = 100;
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, weapon)
+    .unwrap();
+
+  let before = game.clone();
+  let error = game
+    .step(Command::AttackRanged(target_position))
+    .unwrap_err();
+  assert_eq!(error, CommandError::BlockedByTerrain(blocked_drop_position));
+  assert_eq!(game, before);
+}
+
+#[test]
 fn null_pointer_replay_is_deterministic() {
   let mut replay =
     ReplayLog::new(902, 12, 12, Position::new(5, 5)).with_player_config(PlayerSpawnConfig {

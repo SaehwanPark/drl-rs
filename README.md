@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.255`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.256`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -109,7 +109,9 @@ replays, and regression testing.
     delay-40/radius-1/default-knockback-8 explosion event, resolves a
     deterministic center-plus-eight-neighbor radius-1 5d3 fire splash, applies
     bounded radial knockback, destroys eligible loose-ammo stacks, and
-    pierces clear rays through ordered living actors; Combat
+    pierces clear rays through ordered living actors; Null Pointer's typed
+    hit applies fixed `10d1` Plasma splash damage once per living actor on
+    clear radius-1 blast cells; Combat
     Shotgun's
     typed pump-only chamber cycle costs 200 action units; Assault Shotgun
     ordinary single-shell reload plus full-deficit reload capped at 2,500
@@ -208,7 +210,8 @@ replays, and regression testing.
     Jackhammer's typed burst/single fire-mode toggle and immutable mode profile,
     Lava Armor's five-tick Lava recharge and immutable
     terrain-gated behavior profile, Null Pointer's target-dependent on-hit
-    score branch and ten-cell ordinary-fire cost, Tristar Blaster's
+    score branch, actor-only radius-1 splash, and ten-cell ordinary-fire cost,
+    Tristar Blaster's
     three-projectile/five-cell volley, plus baseline Acid/Lava entered-cell
     contact damage, Acid/Lava/Water's typed 1250-unit movement policy, Mud's
     typed 1650-unit movement policy, and optional Acid/Fire damage-type
@@ -294,8 +297,9 @@ replays, and regression testing.
     boundary parity check;
     the Acid Spitter terrain-fed reload has the same vertical scenario/replay/
     browser-boundary coverage, including Acid-to-Water projection;
-    Null Pointer's target-dependent boss hit and deferred explosion scheduling
-    have the same vertical scenario/replay/browser-boundary coverage;
+    Null Pointer's target-dependent boss hit, deferred explosion scheduling,
+    and actor-only radius-1 splash have the same vertical
+    scenario/replay/browser-boundary coverage;
     Grammaton's Burst mode cycle and three-shot ranged encounter have the same
     vertical scenario/replay/browser-boundary coverage;
     Jackhammer's Single mode toggle, one-shell shot, and knockback encounter
