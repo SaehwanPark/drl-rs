@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-29
-Current project version: `0.2.252`
+Current project version: `0.2.253`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,17 +25,18 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Anti-Freak Jackal Splash Fanout
+## 2. Active Implementation Slice: M9 — Anti-Freak Jackal Splash Knockback
 
 ### 2.1 Objective
 
-Verify the delivered Anti-Freak Jackal radius-1 splash fanout at the typed
-direct-core, replay, and `BrowserSession` boundaries, while confirming its
-schedule and generic damage-event projection through MCP JSON. A deterministic
-successful hit must preserve the existing schedule event and apply the bounded
-center-plus-eight-neighbor blast to eligible actors with identical events, fair
-player observations, render effects, scene state, and replay outcomes in both
-execution paths while retaining generic ranged command execution ownership.
+Verify the delivered Anti-Freak Jackal radius-1 splash knockback at the typed
+direct-core, replay, generic MCP JSON event-serializer, and `BrowserSession`
+boundaries. A deterministic
+successful hit must preserve the existing schedule and eight-neighbor fanout,
+derive bounded radial displacement from each rolled `5d3` result and typed
+knockback strength, and expose identical events, fair player observations,
+render effects, scene state, and replay outcomes in both execution paths while
+retaining generic ranged command execution ownership.
 
 ### 2.1a Scope and steering gate
 
@@ -45,25 +46,29 @@ execution paths while retaining generic ranged command execution ownership.
   evidence remain closed for this contract-only slice.
 - **Observable outcome:** A fixed Anti-Freak Jackal replay setup produces a
   typed delay-40/radius-1 schedule and a deterministic splash whose center and
-  eight neighboring cells are considered clockwise in stable order; direct core and
-  `BrowserSession` expose identical events, observations, render effects, and
-  scenes.
-- **Gameplay/replay impact:** Gameplay semantics advance from `61` to `62` for
-  the newly accepted Anti-Freak Jackal splash interpretation; replay
+  eight neighboring cells are considered clockwise in stable order; eligible
+  actors with `damage / 8 >= 1` move one clear radial tile before their damage
+  event, while center actors and blocked destinations remain in place. Direct
+  core and `BrowserSession` expose identical events, observations, render
+  effects, and scenes.
+- **Gameplay/replay impact:** Gameplay semantics advance from `62` to `63` for
+  the newly accepted Anti-Freak Jackal splash-knockback interpretation; replay
   wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.251` to `0.2.252`.
+  unchanged. Project version advances from `0.2.252` to `0.2.253`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary,
   typed projectile-count/cost policy and generic execution; `drl-protocol` owns
   the semantic `AttackRanged`/`AttackRangedAimed` commands and typed event
   projection, while replay/MCP and browser boundaries
   serialize and route it without duplicating gameplay rules.
-- **Evidence boundary:** Pinned Anti-Freak Jackal item, schedule, and
-  `ShotContact` evidence in `docs/legacy-behavior/anti-freak-jackal-profile.md`,
-  the explicit Rust radius-1 geometry decision, and the direct-core,
-  MCP/JSON, and BrowserSession boundary tests are authoritative. Controlled
+- **Evidence boundary:** Pinned Anti-Freak Jackal item, schedule, `ShotContact`,
+  default-knockback, and explosion-order evidence in
+  `docs/legacy-behavior/anti-freak-jackal-profile.md`, the explicit Rust
+  radius-1 geometry and integer knockback decisions, and the direct-core,
+  generic MCP JSON serializer, and BrowserSession boundary tests are
+  authoritative. Controlled
   legacy runtime, browser capture, and audiovisual comparisons remain
   `NOT_RUN`.
-- **Non-goals:** Blast knockback, terrain/item destruction, spread/falloff,
+- **Non-goals:** Terrain/item destruction, spread/falloff,
   callback state-machine parity, exact legacy callback timing, audiovisual
   presentation comparison, new callback registries, unrelated gameplay
   balance, replay-file migrations, runtime Lua, and browser/audio/WebGPU
@@ -74,12 +79,14 @@ execution paths while retaining generic ranged command execution ownership.
 The existing ranged command path already performs complete preflight,
 transactional clip validation and typed clip consumption. This slice adds a
 small typed blast resolver after the existing successful-hit schedule, using
-stable center-plus-eight-neighbor geometry and the existing line-of-sight and
-damage projections. It exercises the result through ScenarioRunner, replay/MCP,
-and the BrowserSession effect/observation boundary without adding a generic
+stable center-plus-eight-neighbor geometry, integer `damage / knockback`
+strength, radial displacement, and the existing line-of-sight and damage
+projections. It exercises the result through ScenarioRunner, replay, the
+generic MCP JSON serializer, and the BrowserSession effect/observation boundary
+without adding a generic
 callback dispatcher, inventing a delayed command queue, or changing RNG
-sampling. Blast knockback, terrain/item destruction, callback state, and
-presentation parity remain outside this verification contract.
+sampling. Terrain/item destruction, callback state, and presentation parity
+remain outside this verification contract.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -3089,7 +3096,7 @@ MCP event projection, and `BrowserSession`. Its contract must:
   semantics from `60` to `61` while preserving replay schema, RNG, generator,
   and ruleset identities.
 
-### 2.7dv Current Anti-Freak Jackal radius-1 splash fanout target
+### 2.7dv Historical Anti-Freak Jackal radius-1 splash fanout target
 
 The bounded implementation target for this revision is the typed Anti-Freak
 Jackal splash fanout after its existing successful-hit schedule. Its contract
@@ -3115,6 +3122,30 @@ must:
   `NOT_RUN` where evidence is unavailable;
 - [x] advance project version from `0.2.251` to `0.2.252` and gameplay
   semantics from `61` to `62` while preserving replay schema, RNG, generator,
+  and ruleset identities.
+
+### 2.7dw Current Anti-Freak Jackal splash knockback target
+
+The bounded implementation target for this revision extends the delivered
+radius-1 splash with typed radial knockback. Its contract must:
+
+- [x] preserve the delay-40/radius-1 schedule, center-plus-eight-neighbor
+  order, and one deterministic `5d3` roll per eligible living actor;
+- [x] derive integer displacement as `damage / 8`, omit center-actor movement,
+  and push each non-center actor away from the impact center along its radial
+  direction;
+- [x] stop at map edges, terrain, or living-actor occupancy, emit one
+  `ActorKnockedBack` event only when a position changes, and order it before the
+  corresponding environmental `DamageApplied` event;
+- [x] preserve direct-core, replay, and `BrowserSession` event, observation,
+  effect, scene, and final-state parity with deterministic replay, while the
+  existing generic MCP JSON serializer covers the typed schedule, knockback,
+  and damage events;
+- [x] keep terrain/item destruction, spread/falloff, callback state, exact
+  legacy timing, controlled runtime, browser capture, and audiovisual parity
+  `NOT_RUN` where evidence is unavailable;
+- [x] advance project version from `0.2.252` to `0.2.253` and gameplay
+  semantics from `62` to `63` while preserving replay schema, RNG, generator,
   and ruleset identities.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
@@ -3575,6 +3606,14 @@ eligible actor, and reproduces direct-core, replay/MCP, and `BrowserSession`
 events, observations, effects, and scene state. Blast knockback,
 terrain/item destruction, callback state, controlled runtime, browser capture,
 and audiovisual parity remain open.
+
+The `0.2.253` successor extends that fanout with bounded radial knockback.
+Each eligible actor uses the explicit integer `damage / 8` displacement ratio;
+non-center actors move along the radial direction until the map, terrain, or a
+living actor blocks them, and a successful move is emitted before its damage
+event. The existing generic MCP JSON serializer covers the typed schedule,
+knockback, and damage events. Terrain/item destruction, callback state,
+controlled runtime, browser capture, and audiovisual parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity
