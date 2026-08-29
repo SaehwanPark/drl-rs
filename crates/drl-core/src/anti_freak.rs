@@ -1,6 +1,6 @@
-//! Typed Anti-Freak Jackal splash geometry and damage rolls.
+//! Typed Anti-Freak Jackal splash geometry, damage rolls, and knockback policy.
 
-use drl_protocol::Position;
+use drl_protocol::{Direction, Position};
 
 use crate::{fov, grid::Map, rng::GameRng};
 
@@ -8,6 +8,27 @@ use crate::{fov, grid::Map, rng::GameRng};
 pub const ANTI_FREAK_JACKAL_SPLASH_DICE: u32 = 5;
 /// Sides on each Anti-Freak Jackal splash damage die.
 pub const ANTI_FREAK_JACKAL_SPLASH_DIE_SIDES: u32 = 3;
+
+/// Converts an impact-to-actor delta into the radial knockback direction.
+///
+/// The impact center has no outward direction and therefore is not displaced
+/// by this bounded resolver.
+#[must_use]
+pub fn splash_knockback_direction(center: Position, target: Position) -> Option<Direction> {
+  match Direction::from_delta(target.x - center.x, target.y - center.y) {
+    Some(Direction::None) | None => None,
+    direction => direction,
+  }
+}
+
+/// Converts rolled splash damage and the typed knockback strength into tiles.
+///
+/// This preserves the legacy integer strength boundary (`damage / knockback`)
+/// while keeping the displacement policy explicit and deterministic.
+#[must_use]
+pub fn splash_knockback_distance(damage: u32, knockback: u32) -> u32 {
+  damage.checked_div(knockback).unwrap_or(0)
+}
 
 /// Returns the bounded radius-1 blast cells in deterministic order.
 ///
@@ -91,5 +112,27 @@ mod tests {
     let second_roll = roll_splash_damage(&mut second);
     assert_eq!(first_roll, second_roll);
     assert!((5..=15).contains(&first_roll));
+  }
+
+  #[test]
+  fn splash_knockback_direction_is_radial_and_center_safe() {
+    let center = Position::new(2, 2);
+    assert_eq!(splash_knockback_direction(center, center), None);
+    assert_eq!(
+      splash_knockback_direction(center, Position::new(3, 1)),
+      Some(Direction::NorthEast)
+    );
+    assert_eq!(
+      splash_knockback_direction(center, Position::new(1, 3)),
+      Some(Direction::SouthWest)
+    );
+  }
+
+  #[test]
+  fn splash_knockback_distance_uses_integer_damage_ratio() {
+    assert_eq!(splash_knockback_distance(7, 8), 0);
+    assert_eq!(splash_knockback_distance(8, 8), 1);
+    assert_eq!(splash_knockback_distance(15, 8), 1);
+    assert_eq!(splash_knockback_distance(15, 0), 0);
   }
 }

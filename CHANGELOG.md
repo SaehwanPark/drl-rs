@@ -3,6 +3,17 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.253]
+
+- Added bounded radial knockback to the Anti-Freak Jackal splash. Each eligible
+  non-center actor uses the explicit integer `damage / 8` ratio, moves along
+  the radial direction until blocked by terrain, map edges, or a living actor,
+  and emits `ActorKnockedBack` before its environmental fire damage. Existing
+  schedule, fanout, replay, MCP, and BrowserSession boundaries remain stable;
+  terrain/item destruction, callback state, controlled runtime, browser capture,
+  and audiovisual parity remain deferred; gameplay semantics advance from `62`
+  to `63`.
+
 ## [0.2.252]
 
 - Added the bounded Anti-Freak Jackal radius-1 splash fanout after a successful

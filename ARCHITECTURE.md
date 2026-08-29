@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.252`
+Current project version: `0.2.253`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -227,7 +227,7 @@ Presentation Boundary
     its one-projectile/one-round ordinary fire, shared aimed-fire, and
     delay-40/radius-1/default-knockback-8 schedule fragments, while the
     dedicated `anti_freak` module owns deterministic center-plus-eight-neighbor
-    radius-1 geometry and 5d3 splash rolls;
+    radius-1 geometry, 5d3 splash rolls, and radial knockback policy;
     Nuclear Plasma's profile records its
     six-projectile ordinary-fire and six-cell cost fragments alongside overload
     and recharge without claiming chainfire.

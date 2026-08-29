@@ -3066,6 +3066,13 @@ mod tests {
       1,
       (0, 0),
     ));
+    setup_replay.record_monster(MonsterSpawnSpec::new(
+      Position::new(4, 2),
+      "Collateral Target",
+      500,
+      1,
+      (0, 0),
+    ));
     let (initial, setup_events) =
       drl_core::ReplayEngine::run(&setup_replay).expect("Anti-Freak schedule setup");
     assert!(setup_events.is_empty());
@@ -3095,6 +3102,11 @@ mod tests {
         }
       )
     }));
+    assert!(
+      all_events
+        .iter()
+        .any(|event| matches!(event, drl_protocol::GameEvent::ActorKnockedBack { .. }))
+    );
     assert!(all_events.iter().any(|event| {
       matches!(
         event,

@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.252`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.253`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -106,8 +106,9 @@ replays, and regression testing.
     six-projectile ordinary fire consumes six cells; Nuclear Plasma Rifle's
     typed six-projectile ordinary fire consumes six cells; Anti-Freak Jackal's
     typed aimed fire consumes one 9mm round, schedules its typed
-    delay-40/radius-1/default-knockback-8 explosion event, and resolves a
-    deterministic center-plus-eight-neighbor radius-1 5d3 fire splash; Combat
+    delay-40/radius-1/default-knockback-8 explosion event, resolves a
+    deterministic center-plus-eight-neighbor radius-1 5d3 fire splash, and
+    applies bounded radial knockback; Combat
     Shotgun's
     typed pump-only chamber cycle costs 200 action units; Assault Shotgun
     ordinary single-shell reload plus full-deficit reload capped at 2,500

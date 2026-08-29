@@ -6,7 +6,7 @@ use drl_core::item::Item;
 use drl_core::replay::ReplayEngine;
 use drl_protocol::{
   ActionCost, Command, CommandError, Direction, EquipmentSlot, GameEvent, ItemId, ItemSpawnKind,
-  ItemSpawnSpec, MonsterSpawnSpec, PlayerSpawnConfig, Position, ReplayLog,
+  ItemSpawnSpec, MonsterSpawnSpec, PlayerSpawnConfig, Position, ReplayLog, TileKind,
 };
 
 fn equipped_nuclear_bfg(seed: u64) -> (Game, ItemId) {
@@ -4987,9 +4987,10 @@ fn anti_freak_jackal_hit_records_delayed_explosion_schedule() {
     target_position,
     "Static Target",
     500,
-    100,
+    0,
     (0, 0),
   ));
+  replay.record_tile(Position::new(4, 2), TileKind::Wall);
   for _ in 0..6 {
     replay.record_command(Command::AttackRangedAimed(target_position));
   }
@@ -5073,17 +5074,12 @@ fn anti_freak_jackal_splash_fanout_hits_only_radius_one_actors() {
       _ => None,
     })
     .collect();
-  let expected_ids: Vec<_> = blast_positions
-    .iter()
-    .map(|position| {
-      game
-        .world()
-        .actors()
-        .values()
-        .find(|actor| actor.position() == *position)
-        .unwrap()
-        .id()
-    })
+  let expected_ids: Vec<_> = game
+    .world()
+    .actors()
+    .values()
+    .filter(|actor| actor.name().starts_with("Blast "))
+    .map(|actor| actor.id())
     .collect();
   assert_eq!(splash_damage.len(), expected_ids.len());
   assert_eq!(
@@ -5094,6 +5090,31 @@ fn anti_freak_jackal_splash_fanout_hits_only_radius_one_actors() {
     splash_damage
       .iter()
       .all(|(_, amount)| (5..=15).contains(amount))
+  );
+  let center_id = expected_ids[0];
+  for (index, event) in events.iter().enumerate() {
+    let GameEvent::DamageApplied {
+      target_id,
+      amount,
+      source: drl_protocol::DamageSource::Environment,
+      damage_type: Some(drl_protocol::DamageType::Fire),
+      ..
+    } = event
+    else {
+      continue;
+    };
+    let actual_knockback = events
+      .get(index.saturating_sub(1))
+      .is_some_and(|event| matches!(event, GameEvent::ActorKnockedBack { entity_id, .. } if entity_id == target_id));
+    if actual_knockback {
+      assert_ne!(*target_id, center_id);
+      assert!(*amount >= 8);
+    }
+  }
+  assert!(
+    events
+      .iter()
+      .any(|event| matches!(event, GameEvent::ActorKnockedBack { .. }))
   );
   assert!(ReplayEngine::verify_determinism(&replay).unwrap());
 }

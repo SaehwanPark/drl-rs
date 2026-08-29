@@ -7,7 +7,10 @@ use drl_protocol::{
 };
 
 use crate::acid_spitter::{ACID_SPITTER_RELOAD_AMOUNT, AcidSpitterReloadError};
-use crate::anti_freak::{radius_one_blast_positions, roll_splash_damage};
+use crate::anti_freak::{
+  radius_one_blast_positions, roll_splash_damage, splash_knockback_direction,
+  splash_knockback_distance,
+};
 use crate::assault_shotgun::{AssaultShotgunReloadPlan, AssaultShotgunTransition};
 use crate::behavior::{
   ANTI_FREAK_JACKAL_EXPLOSION_DELAY, ANTI_FREAK_JACKAL_EXPLOSION_KNOCKBACK,
@@ -1982,6 +1985,16 @@ impl Game {
 
     for target_id in targets {
       let damage = roll_splash_damage(&mut self.state.rng);
+      let knockback_distance =
+        splash_knockback_distance(damage, ANTI_FREAK_JACKAL_EXPLOSION_KNOCKBACK);
+      if let Some(direction) = self
+        .state
+        .world
+        .get_actor(target_id)
+        .and_then(|actor| splash_knockback_direction(center, actor.position()))
+      {
+        self.apply_anti_freak_knockback(target_id, direction, knockback_distance, events)?;
+      }
       let (taken, lethal, death_cause) =
         self
           .state
@@ -2027,6 +2040,59 @@ impl Game {
       }
     }
 
+    Ok(())
+  }
+
+  /// Applies the bounded radial displacement derived from an Anti-Freak splash
+  /// roll. The impact center has no direction; blocked cells stop movement.
+  fn apply_anti_freak_knockback(
+    &mut self,
+    defender_id: drl_protocol::EntityId,
+    direction: Direction,
+    power: u32,
+    events: &mut Vec<GameEvent>,
+  ) -> Result<(), CommandError> {
+    if power == 0 {
+      return Ok(());
+    }
+
+    let defender_pos = self
+      .state
+      .world
+      .get_actor(defender_id)
+      .ok_or(CommandError::EntityNotFound(defender_id))?
+      .position();
+    let mut current_pos = defender_pos;
+    for _ in 0..power {
+      let next_pos = current_pos.apply_direction(direction);
+      if self.state.world.map().is_in_bounds(next_pos)
+        && self.state.world.map().is_walkable(next_pos)
+        && self.state.world.living_actor_at(next_pos).is_none()
+      {
+        current_pos = next_pos;
+      } else {
+        break;
+      }
+    }
+
+    if current_pos == defender_pos {
+      return Ok(());
+    }
+
+    let defender = self
+      .state
+      .world
+      .get_actor_mut(defender_id)
+      .ok_or(CommandError::EntityNotFound(defender_id))?;
+    defender.set_position(current_pos);
+    if defender.is_player() {
+      self.state.world.update_visibility();
+    }
+    events.push(GameEvent::ActorKnockedBack {
+      entity_id: defender_id,
+      from: defender_pos,
+      to: current_pos,
+    });
     Ok(())
   }
 

@@ -2110,6 +2110,31 @@ mod tests {
   }
 
   #[test]
+  fn actor_knockback_event_projects_to_mcp_json() {
+    let value = game_event_to_json(&GameEvent::ActorKnockedBack {
+      entity_id: drl_protocol::EntityId::new(2),
+      from: drl_protocol::Position::new(3, 3),
+      to: drl_protocol::Position::new(4, 2),
+    });
+    let JsonValue::Object(map) = value else {
+      panic!("event projection must be an object");
+    };
+    assert_eq!(
+      map.get("type").and_then(JsonValue::as_str),
+      Some("ActorKnockedBack")
+    );
+    assert_eq!(map.get("entity_id").and_then(JsonValue::as_i64), Some(2));
+    assert_eq!(
+      map.get("from"),
+      Some(&position_to_json(drl_protocol::Position::new(3, 3)))
+    );
+    assert_eq!(
+      map.get("to"),
+      Some(&position_to_json(drl_protocol::Position::new(4, 2)))
+    );
+  }
+
+  #[test]
   fn bfg9000_explosion_schedule_event_projects_to_mcp_json() {
     let value = game_event_to_json(&GameEvent::Bfg9000ExplosionScheduled {
       entity_id: drl_protocol::EntityId::new(1),

@@ -50,7 +50,7 @@ pub use agent::{AgentPolicy, ExplorerBot, GreedyCombatBot, RandomBot};
 pub use ai::{MonsterAction, MonsterAi};
 pub use anti_freak::{
   ANTI_FREAK_JACKAL_SPLASH_DICE, ANTI_FREAK_JACKAL_SPLASH_DIE_SIDES, radius_one_blast_positions,
-  roll_splash_damage,
+  roll_splash_damage, splash_knockback_direction, splash_knockback_distance,
 };
 pub use assault_shotgun::ASSAULT_SHOTGUN_ALT_RELOAD_CAP;
 pub use batch::{

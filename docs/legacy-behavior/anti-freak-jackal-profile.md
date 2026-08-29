@@ -1,8 +1,8 @@
 # Anti-Freak Jackal typed aimed-fire evidence
 
 Status: delivered typed Anti-Freak Jackal aimed-fire, delayed-explosion
-schedule, and bounded radius-1 splash fanout support in `0.2.252`; blast
-knockback, terrain/item destruction, and the legacy callback remain `NOT_RUN`.
+schedule, bounded radius-1 splash fanout, and radial knockback support in
+`0.2.253`; terrain/item destruction and the legacy callback remain `NOT_RUN`.
 Generic ranged execution and the shared aimed policy remain the Rust
 authorities.
 
@@ -31,6 +31,11 @@ at revision `17d9be1204751899b2d69d8d3a2dde247bd0cc5c`.
   damage type. The exact distance-helper source is not present in the pinned
   checkout, so this slice records the eight-neighbor radius-1 shape as an
   explicit Rust boundary decision rather than claiming runtime parity.
+- The same pinned explosion loop computes knockback before `ApplyDamage`: its
+  strength is the integer damage ratio against the payload knockback value,
+  and a center actor receives the caller-supplied direction rather than an
+  inferred radial direction. DRL-Rust makes the radial direction and center
+  no-movement rule explicit for this bounded typed slice.
 - `bin/data/drl/perks.lua:128-169` supplies the aimed +3 accuracy and doubled fire-cost
   policy. The callback's delayed explosion state is outside this slice.
 
@@ -44,7 +49,9 @@ range, direct-hit damage RNG, event ordering, and transactional clip
 consumption. An accepted aimed command consumes one round and pays
 `ActionCost(2_000)`; a successful hit projects the typed schedule event and
 then resolves a deterministic `5d3` fire-damage fanout across the bounded
-center-plus-eight-neighbor cells.
+center-plus-eight-neighbor cells. The resolver derives an integer `damage / 8`
+radial displacement for non-center actors before applying each damage result;
+blocked destinations stop the movement.
 
 Direct-core, ScenarioRunner/replay, MCP schedule/action-catalog/JSON, and
 `BrowserSession` tests verify deterministic events, observations, effects,
@@ -53,6 +60,6 @@ scene state, schedule projection, and replay parity. The generic MCP
 an Anti-Freak-specific splash JSON fixture remains outside this slice. Empty-
 clip rejection is state-identical.
 
-Blast knockback, terrain/item destruction, red presentation, callback state and
-timing, controlled runtime, browser capture, and audiovisual parity remain
-deferred; source similarity alone is not parity proof.
+Terrain/item destruction, red presentation, callback state and timing,
+controlled runtime, browser capture, and audiovisual parity remain deferred;
+source similarity alone is not parity proof.
