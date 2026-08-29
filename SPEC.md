@@ -25,15 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Chaingun First-Level Chainfire
+## 2. Active Implementation Slice: M9 — Minigun First-Level Chainfire Profile
 
 ### 2.1 Objective
 
-Verify and harden the delivered first-level Chaingun alternate chainfire at the typed
-direct-core, replay, MCP JSON/catalog, browser snapshot, and `BrowserSession`
-boundaries. A deterministic accepted command must preflight three loaded 9mm
-rounds, emit three ordered ranged outcomes against one target, advance typed
-warm-up state only after acceptance, and let ordinary fire reset that state.
+Record the pinned first-level Minigun alternate chainfire as an immutable typed
+behavior profile. The declaration must preserve the eight-projectile ordinary
+profile, add a six-projectile/six-round first-level alternate fragment, and keep
+runtime execution, command routing, and callback behavior explicitly deferred.
 
 ### 2.1a Scope and steering gate
 
@@ -41,45 +40,37 @@ warm-up state only after acceptance, and let ordinary fire reset that state.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, Gate C catalog ownership, and Gate D callback behavior
   evidence remain closed for this contract-only slice.
-- **Observable outcome:** A fixed Chaingun replay setup accepts the typed
-  `AttackRangedChainfire` command with at least three loaded rounds, emits
-  exactly three ordered ranged outcomes (deterministic no-op misses fill any
-  remaining slots after a lethal target), consumes three clip rounds, and
-  exposes warm-up level `1`; a rejected below-three clip leaves the complete
-  game state unchanged, while accepted ordinary fire resets the level to `0`.
-- **Gameplay/replay impact:** Gameplay semantics advance from `66` to `68` for
-  the typed chainfire burst and deterministic completion after lethal targets;
-  replay
-  wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.256` to `0.2.257`.
+- **Observable outcome:** `MINIGUN_BEHAVIOR.specs()` contains ordered ordinary
+  projectile/cost fragments followed by
+  `AlternateAction::Chainfire { shot_count: 6, ammo_cost: 6 }`; no command,
+  replay field, or gameplay state changes.
+- **Gameplay/replay impact:** Gameplay semantics remain `68`; replay wire/schema,
+  RNG sampling, generator, and ruleset identities remain unchanged. Project
+  version advances from `0.2.257` to `0.2.258`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary,
   typed projectile-count/cost policy and generic execution; `drl-protocol` owns
   the semantic `AttackRanged`/`AttackRangedAimed` commands and typed event
   projection, while replay/MCP and browser boundaries
   serialize and route it without duplicating gameplay rules.
-- **Evidence boundary:** Pinned Chaingun item and alternate-fire evidence in
-  `docs/legacy-behavior/chaingun-profile.md`, the explicit typed warm-up and
-  first-level three-shot decisions, and the direct-core, replay/MCP, browser
-  snapshot, and BrowserSession boundary tests are authoritative. Controlled
+- **Evidence boundary:** Pinned Minigun item and alternate-fire evidence in
+  `docs/legacy-behavior/minigun-profile.md`, the immutable profile declaration,
+  and its exact-order unit test are authoritative. Controlled
   legacy runtime, browser capture, and audiovisual comparisons remain
   `NOT_RUN`.
-- **Non-goals:** Higher chainfire levels, legacy target rotation/spread,
-  exact callback timing/accuracy, callback state-machine parity, audiovisual
-  presentation comparison, new callback registries, unrelated gameplay
-  balance, replay-file migrations, runtime Lua, and browser/audio/WebGPU
-  capture parity.
+- **Non-goals:** Chainfire command routing or execution, higher levels, legacy
+  target rotation/spread, exact callback timing/accuracy, callback state-machine
+  parity, audiovisual presentation comparison, new callback registries,
+  unrelated gameplay balance, replay-file migrations, runtime Lua, and
+  browser/audio/WebGPU capture parity.
 
 ### 2.2 Why this slice is bounded
 
-The existing ranged command path already performs complete preflight,
-transactional clip validation, typed clip consumption, and ordered projectile
-resolution. This slice adds one explicit Chaingun command mode that reuses
-those boundaries with a fixed three-projectile/three-round first-level burst,
-including deterministic no-op outcomes after a lethal target,
-stores a typed warm-up level in the weapon and observation view, and rejects
-deferred higher levels before mutation. It exercises ScenarioRunner/replay,
-MCP JSON/catalog, browser snapshot, and BrowserSession boundaries without a
-generic callback dispatcher, target-rotation migration, or audiovisual claim.
+The existing typed behavior model already records immutable ordinary-fire
+fragments. This slice adds only Minigun's first-level alternate declaration in
+that model, preserving declaration order and avoiding a new command, dispatcher,
+mutable warm-up state, replay field, or execution path. It therefore exercises
+the content-model gate without broadening runtime behavior or making an
+audiovisual claim.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -3212,7 +3203,7 @@ radius-1 splash damage. Its contract must:
   semantics from `65` to `66` while preserving replay schema, RNG, generator,
   and ruleset identities.
 
-### 2.7ea Current Chaingun first-level chainfire target
+### 2.7ea Historical Chaingun first-level chainfire delivery target
 
 The bounded implementation target for this revision extends the delivered
 Chaingun ordinary-fire profile with its first alternate chainfire level. Its
@@ -3235,6 +3226,24 @@ contract must:
 - [x] advance project version from `0.2.256` to `0.2.257` and gameplay
   semantics from `66` to `68` while preserving replay schema, RNG, generator,
   and ruleset identities.
+
+### 2.7eb Current Minigun first-level chainfire profile target
+
+The bounded implementation target for this revision is an immutable profile
+for the pinned Minigun first-level alternate chainfire. Its contract must:
+
+- [x] preserve the ordered ordinary `ProjectileCount(8)` and one-round 9mm
+  cost fragments;
+- [x] add ordered `AlternateAction::Chainfire { shot_count: 6, ammo_cost: 6 }`
+  fragments derived from the pinned first-level `Shots div 3` adjustment;
+- [x] assert exact profile declaration order without adding a command,
+  dispatcher, callback registry, replay-wire field, or gameplay-state mutation;
+- [x] keep chainfire execution, higher levels, target rotation/spread, exact
+  legacy timing/accuracy, controlled runtime, browser capture, and audiovisual
+  parity `NOT_RUN` where comparison evidence is unavailable;
+- [x] advance project version from `0.2.257` to `0.2.258` while preserving
+  gameplay semantics `68`, replay schema, RNG, generator, and ruleset
+  identities.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
@@ -3735,6 +3744,13 @@ Replay/MCP JSON/catalog, browser snapshot, physical `C` key routing, and
 `BrowserSession` parity are verified; higher chainfire levels, target
 rotation/spread, exact callback timing/accuracy, controlled runtime, browser
 capture, and audiovisual parity remain open.
+
+The `0.2.258` successor adds Minigun's immutable first-level chainfire profile.
+Pinned legacy `Shots div 3` adjustment yields six projectiles and six 9mm
+rounds after the eight-projectile ordinary profile. This declaration does not
+add a command, dispatcher, replay field, or gameplay-state mutation; chainfire
+execution, routing, exact timing/accuracy, controlled runtime, browser capture,
+and audiovisual parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity

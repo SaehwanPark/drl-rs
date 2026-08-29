@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-29
-Current project version: `0.2.257`
+Current project version: `0.2.258`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.257)
+## 3. Current Progress Summary (`VERSION` 0.2.258)
 
 ### Delivered Foundations
 
@@ -949,6 +949,11 @@ verification item uses explicit status semantics:
   parity plus atomic under-supply rejection are verified; higher chainfire
   levels, target rotation/spread, exact timing/accuracy, runtime, browser
   capture, and audiovisual parity remain open.
+- **M9 Minigun first-level chainfire profile (`0.2.258`):** The immutable
+  Minigun behavior profile now records the pinned six-projectile/six-round
+  first alternate level after its eight-projectile ordinary fragments. This is
+  declaration-only; chainfire execution, routing, timing, runtime, browser
+  capture, and audiovisual parity remain open.
 - **M9 Trigun aimed-fire vertical fidelity (`0.2.248`):** The shared typed
   aimed-fire command now accepts Trigun, applies +3 accuracy and doubled action
   cost, and preserves one-projectile/one-round behavior. Direct-core,
@@ -1542,10 +1547,10 @@ scripting.
   preserves atomic below-cost rejection while spread/falloff, exact timing,
   runtime, and audiovisual parity remain open.
 - [x] Minigun has an immutable behavior profile for its eight-projectile
-  ordinary fire and one-round per-projectile cost; generic ranged execution
-  resolves the ordered eight-round volley, preflights its aggregate cost, and
-  preserves atomic below-cost rejection while alternate chainfire, exact
-  timing/accuracy, runtime, and audiovisual parity remain open.
+  ordinary fire and one-round per-projectile cost plus a declarative
+  six-projectile/six-round first-level chainfire fragment; generic ranged
+  execution remains authoritative for ordinary fire while chainfire execution,
+  exact timing/accuracy, runtime, and audiovisual parity remain open.
 - [x] Chaingun has an immutable behavior profile for its four-projectile
   ordinary fire and one-round per-projectile cost; generic ranged execution
   resolves the ordered four-round volley, preflights its aggregate cost, and
@@ -1736,6 +1741,11 @@ scripting.
   atomic under-supply rejection are verified; higher chainfire levels, target
   rotation/spread, exact timing/accuracy, runtime, browser capture, and
   audiovisual parity remain open. Gameplay semantics advance to `68`.
+- **M9 Minigun first-level chainfire profile (`0.2.258`):** The immutable
+  Minigun behavior profile now records the pinned six-projectile/six-round
+  first alternate level after its eight-projectile ordinary fragments. This is
+  declaration-only; chainfire execution, routing, timing, runtime, browser
+  capture, and audiovisual parity remain open.
 - [x] Typed `umega`, `uberetta`, and `ufshotgun` preserve pinned unique-firearm
   descriptions, 9mm relations, clips/damage/range scalars, replay kinds, and
   measured plasma/pistol/combat-shotgun atlas slots; mode switching, kill
