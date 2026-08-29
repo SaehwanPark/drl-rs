@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.244`
+Current project version: `0.2.245`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.244)
+## 3. Current Progress Summary (`VERSION` 0.2.245)
 
 ### Delivered Foundations
 
@@ -855,6 +855,14 @@ verification item uses explicit status semantics:
   atomic. Exact
   legacy callback state/timing, controlled runtime, browser capture, and
   audiovisual parity remain open.
+- **M9 Combat Pistol aimed-fire vertical fidelity (`0.2.245`):** The shared
+  typed aimed-fire command now accepts Combat Pistol, applies +3 accuracy and
+  doubled action cost, and preserves one-projectile/one-round behavior.
+  Direct-core, replay/MCP JSON/catalog, and `BrowserSession` paths reproduce
+  deterministic events, observations, effects, scene state, and replay
+  outcomes; unsupported-weapon and empty-clip rejection remain atomic. Exact
+  legacy callback state/timing, controlled runtime, browser capture, and
+  audiovisual parity remain open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1486,6 +1494,12 @@ scripting.
   direct-core, replay/MCP JSON, and BrowserSession parity plus atomic
   non-Pistol/empty-clip rejection are verified while exact legacy callback
   state/timing, runtime, capture, and audiovisual parity remain open.
+- [x] Combat Pistol's delivered aimed-fire contract reuses the typed
+  Pistol-family command with +3 accuracy, doubled action cost, one projectile,
+  and one 9mm round; direct-core, replay/MCP JSON/catalog, and BrowserSession
+  parity plus atomic unsupported-weapon/empty-clip rejection are verified
+  while exact legacy callback state/timing, runtime, capture, and audiovisual
+  parity remain open.
 - [x] Missile Launcher has an immutable behavior profile for ordinary
   single-rocket reload and capped full-deficit reload (`2,500` score-count
   units); dedicated reload/planner paths remain authoritative and rocket-jump,

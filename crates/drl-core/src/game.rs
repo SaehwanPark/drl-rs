@@ -1712,9 +1712,14 @@ impl Game {
       if !props.is_ranged {
         return Err(CommandError::NoEquippedWeapon);
       }
-      if aimed && weapon.archetype() != drl_protocol::ItemArchetype::Pistol {
+      if aimed
+        && !matches!(
+          weapon.archetype(),
+          drl_protocol::ItemArchetype::Pistol | drl_protocol::ItemArchetype::CombatPistol
+        )
+      {
         return Err(CommandError::InvalidCommand(
-          "aimed fire is only available for the Pistol".to_string(),
+          "aimed fire is only available for the Pistol or Combat Pistol".to_string(),
         ));
       }
       if weapon.pump_action_blocks_fire() {
