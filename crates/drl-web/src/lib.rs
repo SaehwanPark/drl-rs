@@ -2957,6 +2957,95 @@ mod tests {
   }
 
   #[test]
+  fn anti_freak_jackal_aimed_fire_vertical_browser_boundary_matches_direct_core() {
+    let player_position = Position::new(1, 1);
+    let target_position = Position::new(3, 1);
+    let mut setup_replay =
+      ReplayLog::new(2_269, 8, 4, player_position).with_player_config(PlayerSpawnConfig {
+        hp: 50,
+        max_hp: 50,
+        speed: 100,
+        initial_items: vec![ItemSpawnKind::Ammo9mm(6)],
+        equipped_weapon: Some(ItemSpawnKind::AntiFreakJackal),
+        equipped_armor: None,
+        equipped_armor_durability: None,
+      });
+    setup_replay.record_monster(MonsterSpawnSpec::new(
+      target_position,
+      "Static Target",
+      500,
+      100,
+      (1, 7),
+    ));
+
+    let (initial, setup_events) =
+      drl_core::ReplayEngine::run(&setup_replay).expect("Anti-Freak aimed replay setup");
+    assert!(setup_events.is_empty());
+    let mut direct = initial.clone();
+    let mut browser = BrowserSession::from_game(initial);
+    let command = Command::AttackRangedAimed(target_position);
+
+    let expected_events = direct
+      .step(command)
+      .expect("direct Anti-Freak aimed command");
+    let step = browser
+      .submit(command)
+      .expect("browser Anti-Freak aimed command");
+    assert_eq!(step.events, expected_events);
+    assert_eq!(step.after, direct.observe_player());
+    assert_eq!(
+      step.effects,
+      drl_render::effect_timeline_for_observations(&step.before, &step.after, &expected_events,)
+    );
+    assert_eq!(browser.scene(), RenderScene::from_observation(&step.after));
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .current_clip,
+      5
+    );
+    assert!(expected_events.iter().any(|event| {
+      matches!(
+        event,
+        drl_protocol::GameEvent::ActionCostPaid {
+          cost: drl_protocol::ActionCost(2_000),
+          ..
+        }
+      )
+    }));
+    assert_eq!(
+      expected_events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          drl_protocol::GameEvent::AttackResolved {
+            is_ranged: true,
+            ..
+          }
+        ))
+        .count(),
+      1
+    );
+
+    let mut command_replay = setup_replay;
+    command_replay.record_command(command);
+    let (replayed, replay_events) =
+      drl_core::ReplayEngine::run(&command_replay).expect("Anti-Freak aimed replay");
+    assert_eq!(replay_events, expected_events);
+    assert_eq!(replayed, direct);
+    assert!(
+      drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism")
+    );
+  }
+
+  #[test]
   fn nuclear_plasma_overload_browser_boundary_matches_direct_core() {
     let player_position = Position::new(1, 1);
     let mut setup_replay =

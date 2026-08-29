@@ -403,6 +403,29 @@ pub const TRIGUN_PROJECTILE_COUNT: u32 = 1;
 /// Current Rust per-projectile clip cost for an ordinary Trigun shot.
 pub const TRIGUN_SHOT_COST: u32 = 1;
 
+/// Current Rust projectile count for an ordinary Anti-Freak Jackal shot.
+pub const ANTI_FREAK_JACKAL_PROJECTILE_COUNT: u32 = 1;
+/// Current Rust per-projectile clip cost for an ordinary Anti-Freak Jackal shot.
+pub const ANTI_FREAK_JACKAL_SHOT_COST: u32 = 1;
+
+const ANTI_FREAK_JACKAL_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Attack(AttackEffect::ProjectileCount(
+    ANTI_FREAK_JACKAL_PROJECTILE_COUNT,
+  )),
+  BehaviorSpec::Cost(ResourceCost::Ammo {
+    ammo_type: AmmoType::Ammo9mm,
+    amount: ANTI_FREAK_JACKAL_SHOT_COST,
+  }),
+  BehaviorSpec::Alternate(AlternateAction::AimedFire {
+    accuracy_bonus: PISTOL_AIMED_ACCURACY_BONUS,
+    fire_cost_multiplier: PISTOL_AIMED_FIRE_COST_MULTIPLIER,
+  }),
+];
+
+/// Immutable typed profile for the current Anti-Freak Jackal policy.
+pub const ANTI_FREAK_JACKAL_BEHAVIOR: BehaviorProfile =
+  BehaviorProfile::new(ANTI_FREAK_JACKAL_BEHAVIOR_SPECS);
+
 /// Current Rust projectile count for an ordinary Null Pointer shot.
 pub const NULL_POINTER_PROJECTILE_COUNT: u32 = 1;
 /// Pinned per-projectile clip cost for an ordinary Null Pointer shot.
@@ -1339,6 +1362,22 @@ mod tests {
         }),
         BehaviorSpec::Cost(ResourceCost::Score {
           amount: TRIGUN_SCORE_COST,
+        }),
+      ]
+    );
+    assert_eq!(
+      ANTI_FREAK_JACKAL_BEHAVIOR.specs(),
+      &[
+        BehaviorSpec::Attack(AttackEffect::ProjectileCount(
+          ANTI_FREAK_JACKAL_PROJECTILE_COUNT,
+        )),
+        BehaviorSpec::Cost(ResourceCost::Ammo {
+          ammo_type: AmmoType::Ammo9mm,
+          amount: ANTI_FREAK_JACKAL_SHOT_COST,
+        }),
+        BehaviorSpec::Alternate(AlternateAction::AimedFire {
+          accuracy_bonus: PISTOL_AIMED_ACCURACY_BONUS,
+          fire_cost_multiplier: PISTOL_AIMED_FIRE_COST_MULTIPLIER,
         }),
       ]
     );

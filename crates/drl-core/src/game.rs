@@ -1719,10 +1719,11 @@ impl Game {
             | drl_protocol::ItemArchetype::CombatPistol
             | drl_protocol::ItemArchetype::Blaster
             | drl_protocol::ItemArchetype::Trigun
+            | drl_protocol::ItemArchetype::AntiFreakJackal
         )
       {
         return Err(CommandError::InvalidCommand(
-          "aimed fire is only available for the Pistol, Combat Pistol, Blaster, or Trigun"
+          "aimed fire is only available for the Pistol, Combat Pistol, Blaster, Trigun, or Anti-Freak Jackal"
             .to_string(),
         ));
       }

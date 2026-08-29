@@ -6,10 +6,11 @@ use drl_protocol::{
 };
 
 use crate::behavior::{
-  LavaRechargeOutcome, LavaRechargeState, MedicalRepairOutcome, MedicalRepairState,
-  NUCLEAR_PLASMA_PROJECTILE_COUNT, NUCLEAR_PLASMA_SHOT_COST, PLASMA_RIFLE_PROJECTILE_COUNT,
-  PLASMA_RIFLE_SHOT_COST, TRIGUN_PROJECTILE_COUNT, TRIGUN_SHOT_COST, WeaponRechargeOutcome,
-  WeaponRechargePolicy, WeaponRechargeState,
+  ANTI_FREAK_JACKAL_PROJECTILE_COUNT, ANTI_FREAK_JACKAL_SHOT_COST, LavaRechargeOutcome,
+  LavaRechargeState, MedicalRepairOutcome, MedicalRepairState, NUCLEAR_PLASMA_PROJECTILE_COUNT,
+  NUCLEAR_PLASMA_SHOT_COST, PLASMA_RIFLE_PROJECTILE_COUNT, PLASMA_RIFLE_SHOT_COST,
+  TRIGUN_PROJECTILE_COUNT, TRIGUN_SHOT_COST, WeaponRechargeOutcome, WeaponRechargePolicy,
+  WeaponRechargeState,
 };
 use crate::item_definition::{ItemDefinitionKind, definition_for_spawn_kind};
 use crate::malek_armor::{MalekRechargeOutcome, MalekRechargeState};
@@ -376,7 +377,7 @@ impl Item {
   ///
   /// The typed BFG families, Frag Shotgun, Plasma Shotgun, Railgun, Acid
   /// Spitter, Mega Buster, Null Pointer, Tristar Blaster, Plasma Rifle,
-  /// Nuclear Plasma Rifle, and Trigun use their pinned
+  /// Nuclear Plasma Rifle, Trigun, and Anti-Freak Jackal use their pinned
   /// per-projectile clip costs; all other weapons, including the Super
   /// Shotgun, Minigun, Chaingun, and other unlisted weapons consume one clip unit per
   /// emitted projectile.
@@ -397,6 +398,7 @@ impl Item {
       ItemArchetype::PlasmaRifle => PLASMA_RIFLE_SHOT_COST,
       ItemArchetype::NuclearPlasmaRifle => NUCLEAR_PLASMA_SHOT_COST,
       ItemArchetype::Trigun => TRIGUN_SHOT_COST,
+      ItemArchetype::AntiFreakJackal => ANTI_FREAK_JACKAL_SHOT_COST,
       _ => 1,
     }
   }
@@ -417,6 +419,7 @@ impl Item {
       ItemArchetype::PlasmaRifle => PLASMA_RIFLE_PROJECTILE_COUNT,
       ItemArchetype::NuclearPlasmaRifle => NUCLEAR_PLASMA_PROJECTILE_COUNT,
       ItemArchetype::Trigun => TRIGUN_PROJECTILE_COUNT,
+      ItemArchetype::AntiFreakJackal => ANTI_FREAK_JACKAL_PROJECTILE_COUNT,
       ItemArchetype::AcidSpitter => 1,
       ItemArchetype::MegaBuster => 3,
       ItemArchetype::TristarBlaster => 3,
@@ -1092,6 +1095,7 @@ mod tests {
     assert_eq!(Item::plasma_rifle(ItemId::new(19)).shot_cost(), 1);
     assert_eq!(Item::nuclear_plasma_rifle(ItemId::new(21)).shot_cost(), 1);
     assert_eq!(Item::trigun(ItemId::new(20)).shot_cost(), 1);
+    assert_eq!(Item::anti_freak_jackal(ItemId::new(22)).shot_cost(), 1);
   }
 
   #[test]
@@ -1108,6 +1112,10 @@ mod tests {
       6
     );
     assert_eq!(Item::trigun(ItemId::new(20)).projectile_count(), 1);
+    assert_eq!(
+      Item::anti_freak_jackal(ItemId::new(22)).projectile_count(),
+      1
+    );
     assert_eq!(Item::pistol(ItemId::new(9)).projectile_count(), 1);
     assert_eq!(Item::tristar_blaster(ItemId::new(12)).projectile_count(), 3);
     assert_eq!(Item::acid_spitter(ItemId::new(13)).projectile_count(), 1);

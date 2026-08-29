@@ -4910,6 +4910,67 @@ fn trigun_aimed_fire_doubles_time_and_replays_deterministically() {
 }
 
 #[test]
+fn anti_freak_jackal_aimed_fire_doubles_time_and_replays_deterministically() {
+  let target_position = Position::new(4, 2);
+  let mut replay =
+    ReplayLog::new(2_269, 12, 8, Position::new(2, 2)).with_player_config(PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: vec![ItemSpawnKind::Ammo9mm(6)],
+      equipped_weapon: Some(ItemSpawnKind::AntiFreakJackal),
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    });
+  replay.record_monster(MonsterSpawnSpec::new(
+    target_position,
+    "Static Target",
+    500,
+    100,
+    (1, 7),
+  ));
+  replay.record_command(Command::AttackRangedAimed(target_position));
+
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+  let (game, events) = ReplayEngine::run(&replay).unwrap();
+  assert_eq!(
+    game
+      .world()
+      .player()
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .current_clip,
+    5
+  );
+  assert!(events.iter().any(|event| {
+    matches!(
+      event,
+      GameEvent::ActionCostPaid {
+        cost: ActionCost(2_000),
+        ..
+      }
+    )
+  }));
+  assert_eq!(
+    events
+      .iter()
+      .filter(|event| matches!(
+        event,
+        GameEvent::AttackResolved {
+          is_ranged: true,
+          ..
+        }
+      ))
+      .count(),
+    1
+  );
+}
+
+#[test]
 fn aimed_fire_rejection_is_atomic_for_non_pistol_and_empty_clip() {
   let target_position = Position::new(4, 2);
   let mut unsupported = Game::new(2_261, 12, 8, Position::new(2, 2)).unwrap();
@@ -4931,7 +4992,7 @@ fn aimed_fire_rejection_is_atomic_for_non_pistol_and_empty_clip() {
       .step(Command::AttackRangedAimed(target_position))
       .unwrap_err(),
     CommandError::InvalidCommand(
-      "aimed fire is only available for the Pistol, Combat Pistol, Blaster, or Trigun".to_string(),
+      "aimed fire is only available for the Pistol, Combat Pistol, Blaster, Trigun, or Anti-Freak Jackal".to_string(),
     )
   );
   assert_eq!(unsupported, before_unsupported);
@@ -4999,6 +5060,41 @@ fn aimed_fire_rejection_is_atomic_for_non_pistol_and_empty_clip() {
     CommandError::NoAmmoInClip
   );
   assert_eq!(empty_trigun, before_empty_trigun);
+
+  let mut empty_jackal = Game::new(2_264, 12, 8, Position::new(2, 2)).unwrap();
+  let player_id = empty_jackal.world().player_id().unwrap();
+  empty_jackal
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .equip(
+      EquipmentSlot::Weapon,
+      Item::anti_freak_jackal(ItemId::new(5)),
+    )
+    .unwrap();
+  empty_jackal
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 0;
+  empty_jackal
+    .world_mut()
+    .spawn_monster(target_position, "Target", 500, 100, (1, 7))
+    .unwrap();
+  let before_empty_jackal = empty_jackal.clone();
+  assert_eq!(
+    empty_jackal
+      .step(Command::AttackRangedAimed(target_position))
+      .unwrap_err(),
+    CommandError::NoAmmoInClip
+  );
+  assert_eq!(empty_jackal, before_empty_jackal);
 }
 
 #[test]
