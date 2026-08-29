@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.237`
+Current project version: `0.2.238`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.237)
+## 3. Current Progress Summary (`VERSION` 0.2.238)
 
 ### Delivered Foundations
 
@@ -813,6 +813,11 @@ verification item uses explicit status semantics:
   events, fair observations, render effects, scene state, and replay state;
   gameplay semantics remain `53` while controlled legacy runtime, browser
   capture, spread/falloff, delayed effects, and audiovisual parity remain open.
+- **M9 Railgun browser boundary (`0.2.238`):** The direct-core and
+  `BrowserSession` paths now reproduce a fixed one-projectile command's
+  events, fair observations, render effects, scene state, and replay state;
+  gameplay semantics remain `53` while controlled legacy runtime, browser
+  capture, piercing, spread/falloff, and audiovisual parity remain open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1406,6 +1411,11 @@ scripting.
   events, fair observations, render effects, scene projections, fifteen-cell
   clip consumption, and replay determinism; controlled legacy runtime, browser
   capture, spread/falloff, delayed effects, and audiovisual parity remain open.
+- [x] Railgun's delivered one-projectile ordinary-fire contract has a
+  deterministic direct-core/BrowserSession boundary check covering identical
+  events, fair observations, render effects, scene projections, five-cell clip
+  consumption, and replay determinism; controlled legacy runtime, browser
+  capture, piercing, spread/falloff, and audiovisual parity remain open.
 - [x] Missile Launcher has an immutable behavior profile for ordinary
   single-rocket reload and capped full-deficit reload (`2,500` score-count
   units); dedicated reload/planner paths remain authoritative and rocket-jump,

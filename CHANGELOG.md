@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.238]
+
+- Added a deterministic Railgun direct-core/BrowserSession vertical boundary
+  check covering the ordered ranged-hit event, fair observations, render
+  effects, scene projection, clip consumption, and replay equality. Gameplay
+  semantics remain `53`; controlled legacy runtime, browser capture, piercing,
+  spread/falloff, and audiovisual parity remain deferred.
+
 ## [0.2.237]
 
 - Added a deterministic Tristar Blaster direct-core/BrowserSession vertical
