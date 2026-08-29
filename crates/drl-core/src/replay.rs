@@ -409,14 +409,14 @@ mod tests {
   #[test]
   fn test_replay_validation_rejects_incompatible_semantics() {
     let mut replay = ReplayLog::new(1234, 10, 10, Position::new(1, 1));
-    // Version 51 predates the Chaingun's four-projectile volley and must not
-    // be interpreted by the version-52 engine without migration.
-    assert_eq!(drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION, 52);
+    // Version 52 predates the Laser Rifle's five-projectile volley and must
+    // not be interpreted by the version-53 engine without migration.
+    assert_eq!(drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION, 53);
     assert_eq!(
       drl_protocol::CURRENT_RNG_SAMPLING_SEMANTICS_VERSION,
       crate::rng::RNG_SAMPLING_SEMANTICS_VERSION
     );
-    replay.metadata.gameplay_semantics_version = 51;
+    replay.metadata.gameplay_semantics_version = 52;
     let error = ReplayEngine::validate(&replay).unwrap_err();
     assert!(error.contains("unsupported gameplay semantics version"));
 

@@ -407,6 +407,7 @@ impl Item {
       ItemArchetype::SuperShotgun => 2,
       ItemArchetype::Minigun => 8,
       ItemArchetype::Chaingun => 4,
+      ItemArchetype::LaserRifle => 5,
       ItemArchetype::AcidSpitter => 1,
       ItemArchetype::MegaBuster => 3,
       ItemArchetype::TristarBlaster => 3,
@@ -1078,6 +1079,7 @@ mod tests {
     assert_eq!(Item::super_shotgun(ItemId::new(15)).shot_cost(), 1);
     assert_eq!(Item::minigun(ItemId::new(16)).shot_cost(), 1);
     assert_eq!(Item::chaingun(ItemId::new(17)).shot_cost(), 1);
+    assert_eq!(Item::laser_rifle(ItemId::new(18)).shot_cost(), 1);
   }
 
   #[test]
@@ -1087,6 +1089,7 @@ mod tests {
     assert_eq!(Item::super_shotgun(ItemId::new(15)).projectile_count(), 2);
     assert_eq!(Item::minigun(ItemId::new(16)).projectile_count(), 8);
     assert_eq!(Item::chaingun(ItemId::new(17)).projectile_count(), 4);
+    assert_eq!(Item::laser_rifle(ItemId::new(18)).projectile_count(), 5);
     assert_eq!(Item::pistol(ItemId::new(9)).projectile_count(), 1);
     assert_eq!(Item::tristar_blaster(ItemId::new(12)).projectile_count(), 3);
     assert_eq!(Item::acid_spitter(ItemId::new(13)).projectile_count(), 1);
