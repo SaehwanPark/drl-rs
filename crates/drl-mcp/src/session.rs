@@ -139,7 +139,10 @@ pub fn compute_legal_actions(obs: &PlayerObservation) -> Vec<LegalAction> {
 
           if matches!(
             weapon.archetype,
-            ItemArchetype::Pistol | ItemArchetype::CombatPistol | ItemArchetype::Blaster
+            ItemArchetype::Pistol
+              | ItemArchetype::CombatPistol
+              | ItemArchetype::Blaster
+              | ItemArchetype::Trigun
           ) {
             let mut aimed_params = BTreeMap::new();
             aimed_params.insert("action".to_string(), JsonValue::from("aimed_fire"));
@@ -2467,6 +2470,71 @@ mod tests {
         .unwrap()
         .weapon_recharge_timer(),
       1
+    );
+  }
+
+  #[test]
+  fn trigun_aimed_fire_is_advertised_and_executed_through_mcp() {
+    let mut session = McpSession::new();
+    session
+      .load_scenario("\n########\n#@..h..#\n########\n", None)
+      .unwrap();
+    let player_id = session.game.as_ref().unwrap().world().player_id().unwrap();
+    let weapon_id = session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .allocate_item_id();
+    session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .get_actor_mut(player_id)
+      .unwrap()
+      .equipment_mut()
+      .equip(
+        EquipmentSlot::Weapon,
+        drl_core::item::Item::trigun(weapon_id),
+      )
+      .unwrap();
+
+    let target = Position::new(4, 1);
+    let command = Command::AttackRangedAimed(target);
+    assert!(
+      session
+        .legal_actions()
+        .unwrap()
+        .iter()
+        .any(|action| { action.action == "AimedFire" && action.command == command })
+    );
+    let (events, _, _) = session.step(command).unwrap();
+    assert!(events.iter().any(|event| {
+      matches!(
+        event,
+        GameEvent::ActionCostPaid {
+          cost: drl_protocol::ActionCost(2_000),
+          ..
+        }
+      )
+    }));
+    assert_eq!(session.export_replay().unwrap().commands, vec![command]);
+    assert_eq!(
+      session
+        .game
+        .as_ref()
+        .unwrap()
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .current_clip,
+      5
     );
   }
 

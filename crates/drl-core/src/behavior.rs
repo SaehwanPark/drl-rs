@@ -368,6 +368,15 @@ pub const SUBTLE_KNIFE_BEHAVIOR: BehaviorProfile =
   BehaviorProfile::new(SUBTLE_KNIFE_BEHAVIOR_SPECS);
 
 const TRIGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Attack(AttackEffect::ProjectileCount(TRIGUN_PROJECTILE_COUNT)),
+  BehaviorSpec::Cost(ResourceCost::Ammo {
+    ammo_type: AmmoType::Ammo9mm,
+    amount: TRIGUN_SHOT_COST,
+  }),
+  BehaviorSpec::Alternate(AlternateAction::AimedFire {
+    accuracy_bonus: PISTOL_AIMED_ACCURACY_BONUS,
+    fire_cost_multiplier: PISTOL_AIMED_FIRE_COST_MULTIPLIER,
+  }),
   BehaviorSpec::Equip(EquipEffect::SetMembership(ItemSetId::TRIGUN)),
   BehaviorSpec::Equip(EquipEffect::Slot(EquipmentSlot::Weapon)),
   BehaviorSpec::Alternate(AlternateAction::ReloadAndTriggerNuke {
@@ -388,6 +397,11 @@ const TRIGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
 
 /// Declarative profile for the existing Trigun transition.
 pub const TRIGUN_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(TRIGUN_BEHAVIOR_SPECS);
+
+/// Current Rust projectile count for an ordinary Trigun shot.
+pub const TRIGUN_PROJECTILE_COUNT: u32 = 1;
+/// Current Rust per-projectile clip cost for an ordinary Trigun shot.
+pub const TRIGUN_SHOT_COST: u32 = 1;
 
 /// Current Rust projectile count for an ordinary Null Pointer shot.
 pub const NULL_POINTER_PROJECTILE_COUNT: u32 = 1;
@@ -1289,6 +1303,15 @@ mod tests {
     assert_eq!(
       TRIGUN_BEHAVIOR.specs(),
       &[
+        BehaviorSpec::Attack(AttackEffect::ProjectileCount(TRIGUN_PROJECTILE_COUNT)),
+        BehaviorSpec::Cost(ResourceCost::Ammo {
+          ammo_type: AmmoType::Ammo9mm,
+          amount: TRIGUN_SHOT_COST,
+        }),
+        BehaviorSpec::Alternate(AlternateAction::AimedFire {
+          accuracy_bonus: PISTOL_AIMED_ACCURACY_BONUS,
+          fire_cost_multiplier: PISTOL_AIMED_FIRE_COST_MULTIPLIER,
+        }),
         BehaviorSpec::Equip(EquipEffect::SetMembership(ItemSetId::TRIGUN)),
         BehaviorSpec::Equip(EquipEffect::Slot(EquipmentSlot::Weapon)),
         BehaviorSpec::Alternate(AlternateAction::ReloadAndTriggerNuke {

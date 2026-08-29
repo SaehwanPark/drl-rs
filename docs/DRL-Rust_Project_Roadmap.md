@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.247`
+Current project version: `0.2.248`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.247)
+## 3. Current Progress Summary (`VERSION` 0.2.248)
 
 ### Delivered Foundations
 
@@ -878,6 +878,14 @@ verification item uses explicit status semantics:
   events, observations, effects, scene state, and replay outcomes; chainfire,
   overcharge, exact callback timing, controlled runtime, browser capture, and
   audiovisual parity remain open.
+- **M9 Trigun aimed-fire vertical fidelity (`0.2.248`):** The shared typed
+  aimed-fire command now accepts Trigun, applies +3 accuracy and doubled action
+  cost, and preserves one-projectile/one-round behavior. Direct-core,
+  replay/MCP JSON/catalog, and `BrowserSession` paths reproduce deterministic
+  events, observations, effects, scene state, and replay outcomes; empty-clip
+  rejection remains atomic while the existing alternate reload/nuke path is
+  unchanged. Exact callback state/timing, alternate-target UI semantics,
+  controlled runtime, browser capture, and audiovisual parity remain open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1400,6 +1408,10 @@ scripting.
   ordinary fire and one-cell-per-projectile cost; generic ranged execution
   resolves the ordered volley and atomically rejects clips below six cells,
   while chainfire, overcharge, runtime, and audiovisual parity remain open.
+- [x] Trigun has an immutable behavior profile for its one-projectile,
+  one-round ordinary fire and shared +3/doubled-cost aimed-fire policy; generic
+  ranged execution remains authoritative while alternate reload/nuke behavior,
+  exact callback state/timing, runtime, and audiovisual parity remain open.
 - [x] Malek's Armor has an immutable behavior profile for its
   delay-50/cadence-5/amount-1 durability-recharge fragment; the dedicated
   transition remains authoritative and armor resistance/degradation, runtime,
