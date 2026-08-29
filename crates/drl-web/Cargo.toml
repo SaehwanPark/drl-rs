@@ -1,6 +1,6 @@
 [package]
 name = "drl-web"
-description = "Browser-first WASM session and WebGPU shell for DRL-Rust"
+description = "Browser-first WASM session and WebGPU shell for drl-rs"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

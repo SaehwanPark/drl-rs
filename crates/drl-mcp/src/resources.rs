@@ -1,4 +1,4 @@
-//! MCP Resource definitions and read handlers for DRL-Rust.
+//! MCP Resource definitions and read handlers for drl-rs.
 
 use crate::json::JsonValue;
 use crate::protocol::{JsonRpcError, ResourceDefinition, error_codes};
@@ -11,7 +11,7 @@ pub fn get_all_resource_definitions() -> Vec<ResourceDefinition> {
   vec![
     ResourceDefinition {
       uri: "drl://rules/game".to_string(),
-      name: "DRL-Rust Game Rules and Domain Guide".to_string(),
+      name: "drl-rs Game Rules and Domain Guide".to_string(),
       description:
         "Overview of simulation mechanics, energy scheduler, combat, items, and monsters."
           .to_string(),
@@ -19,7 +19,7 @@ pub fn get_all_resource_definitions() -> Vec<ResourceDefinition> {
     },
     ResourceDefinition {
       uri: "drl://rules/actions".to_string(),
-      name: "DRL-Rust Semantic Action Catalog".to_string(),
+      name: "drl-rs Semantic Action Catalog".to_string(),
       description: "Catalog of valid player actions, required parameters, and outcome rules."
         .to_string(),
       mime_type: "text/markdown".to_string(),
@@ -44,10 +44,10 @@ pub fn get_all_resource_definitions() -> Vec<ResourceDefinition> {
 pub fn read_resource(session: &McpSession, uri: &str) -> Result<JsonValue, JsonRpcError> {
   match uri {
     "drl://rules/game" => {
-      let text = r#"# DRL-Rust Game Rules
+      let text = r#"# drl-rs Game Rules
 
 ## Overview
-DRL-Rust is a deterministic, headless, turn-based roguelike simulation of Doom the Roguelike.
+drl-rs is a deterministic, headless, turn-based roguelike simulation of Doom the Roguelike.
 
 ## Core Rules:
 1. Turn Economy: Energy-based scheduler where standard actions cost 100 energy. Faster actors act more frequently.
@@ -59,7 +59,7 @@ DRL-Rust is a deterministic, headless, turn-based roguelike simulation of Doom t
     }
 
     "drl://rules/actions" => {
-      let text = r#"# DRL-Rust Semantic Action Catalog
+      let text = r#"# drl-rs Semantic Action Catalog
 
 1. `move` (`direction`: North, South, East, West, NorthEast, NorthWest, SouthEast, SouthWest)
    - Step into an adjacent walkable tile or bump-attack an adjacent enemy.

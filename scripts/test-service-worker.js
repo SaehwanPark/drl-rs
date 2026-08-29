@@ -134,7 +134,7 @@ async function dispatch(type, event) {
 
 async function main() {
   await dispatch("install", {});
-  const currentName = `drl-rust-m10-${cacheVersion}`;
+  const currentName = `drl-rs-m10-${cacheVersion}`;
   const current = cachesByName.get(currentName);
   assert.ok(current, "install opens the current cache");
   assert.equal(
@@ -142,10 +142,10 @@ async function main() {
     "precache:./index.html",
   );
 
-  cachesByName.set("drl-rust-m10-old", new MockCache("drl-rust-m10-old"));
+  cachesByName.set("drl-rs-m10-old", new MockCache("drl-rs-m10-old"));
   cachesByName.set("unrelated-cache", new MockCache("unrelated-cache"));
   await dispatch("activate", {});
-  assert.equal(cachesByName.has("drl-rust-m10-old"), false);
+  assert.equal(cachesByName.has("drl-rs-m10-old"), false);
   assert.equal(cachesByName.has("unrelated-cache"), true);
   assert.equal(cachesByName.has(currentName), true);
 

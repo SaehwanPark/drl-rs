@@ -1,6 +1,6 @@
 [package]
 name = "drl-core"
-description = "Deterministic headless simulation core for DRL-Rust"
+description = "Deterministic headless simulation core for drl-rs"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

@@ -808,7 +808,7 @@ fn test_jsonrpc_supplied_replay_rejects_malformed_input_without_mutation() {
     "null",
     "[]",
     "{\"format\":\"wrong\"}",
-    "{\"format\":\"drl-rust-replay-v2\",\"schema_version\":2,\"version\":2,\"metadata\":{},\"player_config\":null,\"procedural_config\":null,\"seed\":1,\"width\":1,\"height\":1,\"player_start\":{\"x\":0,\"y\":0},\"initial_stairs\":null,\"initial_monsters\":[],\"initial_items\":[],\"custom_tiles\":[],\"commands\":[{\"action\":\"unknown\"}]}",
+    "{\"format\":\"drl-rs-replay-v2\",\"schema_version\":2,\"version\":2,\"metadata\":{},\"player_config\":null,\"procedural_config\":null,\"seed\":1,\"width\":1,\"height\":1,\"player_start\":{\"x\":0,\"y\":0},\"initial_stairs\":null,\"initial_monsters\":[],\"initial_items\":[],\"custom_tiles\":[],\"commands\":[{\"action\":\"unknown\"}]}",
   ] {
     let request = format!(
       r#"{{"jsonrpc":"2.0","id":52,"method":"tools/call","params":{{"name":"game_verify_replay","arguments":{{"replay":{replay}}}}}}}"#

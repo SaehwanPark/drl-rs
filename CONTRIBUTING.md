@@ -1,6 +1,6 @@
-# Contributing to DRL-Rust
+# Contributing to drl-rs
 
-Thank you for your interest in DRL-Rust. This document covers everything you
+Thank you for your interest in drl-rs. This document covers everything you
 need to start contributing: workspace layout, code style, branch and PR
 conventions, and the architectural rules that keep the project healthy.
 
@@ -22,7 +22,7 @@ conventions, and the architectural rules that keep the project healthy.
 
 ## Workspace layout
 
-DRL-Rust is a Cargo workspace. All crates live under `crates/`.
+drl-rs is a Cargo workspace. All crates live under `crates/`.
 
 | Crate | Role |
 |---|---|
@@ -40,7 +40,7 @@ Key documents:
 
 | File | Purpose |
 |---|---|
-| `docs/DRL-Rust_Project_Roadmap.md` | Canonical milestone plan and progress tracker |
+| `docs/DRL-RS_Project_Roadmap.md` | Canonical milestone plan and progress tracker |
 | `docs/steering/README.md` | Steering document hierarchy and current steering set |
 | `docs/steering/current-priorities.md` | Near-term priority/stop gates constraining slice selection |
 | `SPEC.md` | Active implementation slice: outcomes, verification, and non-goals |

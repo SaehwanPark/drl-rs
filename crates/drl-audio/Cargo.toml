@@ -1,6 +1,6 @@
 [package]
 name = "drl-audio"
-description = "Audio playback and cue mapping layer for DRL-Rust"
+description = "Audio playback and cue mapping layer for drl-rs"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

@@ -1,6 +1,6 @@
 [package]
 name = "drl-protocol"
-description = "Shared semantic command, observation, and event protocol for DRL-Rust"
+description = "Shared semantic command, observation, and event protocol for drl-rs"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

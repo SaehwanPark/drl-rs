@@ -186,14 +186,14 @@ pub fn game_load_replay_schema() -> JsonValue {
   schema.insert(
     "description".to_string(),
     JsonValue::from(
-      "Replace the session transactionally with a canonical drl-rust-replay-v2 envelope",
+      "Replace the session transactionally with a canonical drl-rs-replay-v2 envelope",
     ),
   );
   let mut replay = BTreeMap::new();
   replay.insert("type".to_string(), JsonValue::from("object"));
   replay.insert(
     "description".to_string(),
-    JsonValue::from("Canonical drl-rust-replay-v2 schema_version 2 envelope"),
+    JsonValue::from("Canonical drl-rs-replay-v2 schema_version 2 envelope"),
   );
   schema.insert(
     "properties".to_string(),
@@ -219,7 +219,7 @@ pub fn game_verify_replay_schema() -> JsonValue {
   replay.insert("type".to_string(), JsonValue::from("object"));
   replay.insert(
     "description".to_string(),
-    JsonValue::from("Canonical drl-rust-replay-v2 schema_version 2 envelope to verify read-only"),
+    JsonValue::from("Canonical drl-rs-replay-v2 schema_version 2 envelope to verify read-only"),
   );
   schema.insert(
     "properties".to_string(),

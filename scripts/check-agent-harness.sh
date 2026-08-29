@@ -136,7 +136,7 @@ for path in \
   ARCHITECTURE.md \
   CHANGELOG.md \
   docs/VERSIONING.md \
-  docs/DRL-Rust_Project_Roadmap.md \
+  docs/DRL-RS_Project_Roadmap.md \
   docs/steering/README.md \
   docs/steering/current-priorities.md \
   docs/steering/decisions/atomic-command-transactions.md \

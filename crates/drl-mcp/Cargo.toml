@@ -1,6 +1,6 @@
 [package]
 name = "drl-mcp"
-description = "Model Context Protocol interface and tools for DRL-Rust"
+description = "Model Context Protocol interface and tools for drl-rs"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

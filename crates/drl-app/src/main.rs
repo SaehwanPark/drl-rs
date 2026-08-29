@@ -1,4 +1,4 @@
-//! Application executable entry point, headless demo runner, and MCP server for DRL-Rust.
+//! Application executable entry point, headless demo runner, and MCP server for drl-rs.
 
 use drl_core::agent::GreedyCombatBot;
 use drl_core::batch::BatchRunner;
@@ -45,7 +45,7 @@ fn main() {
   }
 
   println!(
-    "DRL-Rust ({}, protocol {}, mcp {}) initialized.",
+    "drl-rs ({}, protocol {}, mcp {}) initialized.",
     drl_core::engine_name(),
     drl_protocol::protocol_version(),
     drl_mcp::mcp_name()

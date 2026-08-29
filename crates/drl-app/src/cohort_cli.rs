@@ -2,7 +2,7 @@ use drl_core::LevelGeneratorConfig;
 use drl_core::agent::{ExplorerBot, GreedyCombatBot, RandomBot};
 use drl_core::batch::{BatchRunner, CohortConfig, CohortReport};
 
-const COHORT_USAGE: &str = "usage: drl-rust cohort [--seed N] [--episodes N] [--max-turns N] [--bot greedy|random|explorer|all]";
+const COHORT_USAGE: &str = "usage: drl-rs cohort [--seed N] [--episodes N] [--max-turns N] [--bot greedy|random|explorer|all]";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum CohortBot {

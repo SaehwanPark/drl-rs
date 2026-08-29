@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-29
-Current project version: `0.2.258`
+Current project version: `0.2.259`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -16,7 +16,7 @@ verified implementation claim.
 
 ## 1. Core Architectural Principles
 
-DRL-Rust reimplements *Doom the Roguelike* with modern software engineering
+drl-rs reimplements *Doom the Roguelike* with modern software engineering
 invariants:
 
 - **Functional Core, Imperative Shell**: Pure, deterministic game logic in
@@ -450,7 +450,7 @@ Presentation Boundary
     logs; filesystem or network replay IO and migrations remain outside this
     boundary.
   - `game_save_replay` projects every V2 `ReplayLog` field through the
-    deterministic `replay_json` envelope (`drl-rust-replay-v2`) with structured
+    deterministic `replay_json` envelope (`drl-rs-replay-v2`) with structured
     semantic command objects, complete initial-state containers, and explicit
     nulls for absent optional values. `replay_json` also decodes this exact V2
     envelope for read-only verification; it does not activate sessions, migrate

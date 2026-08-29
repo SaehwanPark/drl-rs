@@ -1,13 +1,13 @@
 [package]
 name = "drl-app"
-description = "Application executable runner for DRL-Rust"
+description = "Application executable runner for drl-rs"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 authors.workspace = true
 
 [[bin]]
-name = "drl-rust"
+name = "drl-rs"
 path = "src/main.rs"
 
 [dependencies]

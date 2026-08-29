@@ -1,6 +1,6 @@
 [package]
 name = "drl-assets"
-description = "Platform-neutral semantic atlas and legacy asset descriptors for DRL-Rust"
+description = "Platform-neutral semantic atlas and legacy asset descriptors for drl-rs"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

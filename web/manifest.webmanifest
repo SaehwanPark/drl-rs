@@ -1,7 +1,7 @@
 {
-  "name": "DRL-Rust browser slice",
-  "short_name": "DRL-Rust",
-  "description": "A deterministic Doom the Roguelike browser slice.",
+  "name": "drl-rs browser slice",
+  "short_name": "drl-rs",
+  "description": "A deterministic Doom the Roguelike browser slice in Rust.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

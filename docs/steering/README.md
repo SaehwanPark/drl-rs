@@ -6,7 +6,7 @@ Project version at review: `0.2.88`
 
 ## Purpose
 
-`docs/steering/` contains the current steering layer for DRL-Rust: temporary
+`docs/steering/` contains the current steering layer for drl-rs: temporary
 priority constraints, architecture decisions that need to guide near-term work,
 and audit evidence that explains why those constraints exist.
 
@@ -20,7 +20,7 @@ Use the repository documents in this order:
 
 1. **Accepted ADRs and verified `ARCHITECTURE.md`** define enduring architecture
    and implemented invariants.
-2. **`docs/DRL-Rust_Project_Roadmap.md`** owns milestone scope, ordering, exit
+2. **`docs/DRL-RS_Project_Roadmap.md`** owns milestone scope, ordering, exit
    criteria, and progress tracking.
 3. **`docs/steering/current-priorities.md`** constrains which candidate work
    should become active while the listed stop gates remain open.
