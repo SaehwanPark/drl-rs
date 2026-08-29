@@ -198,6 +198,11 @@ pub enum KillEffect {
 /// Explicit alternate action families; behavior remains in dedicated handlers.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AlternateAction {
+  /// Fire one aimed projectile with a typed accuracy bonus and time multiplier.
+  AimedFire {
+    accuracy_bonus: i32,
+    fire_cost_multiplier: u32,
+  },
   /// Select a typed alternate fire mode.
   Fire(WeaponFireMode),
   /// Select an alternate reload transition.
@@ -639,12 +644,20 @@ pub const PLASMA_SHOTGUN_BEHAVIOR: BehaviorProfile =
 
 /// Current Rust projectile count for an ordinary Pistol shot.
 pub const PISTOL_PROJECTILE_COUNT: u32 = 1;
+/// Pinned aimed-fire accuracy bonus for the base Pistol.
+pub const PISTOL_AIMED_ACCURACY_BONUS: i32 = 3;
+/// Pinned aimed-fire action-cost multiplier for the base Pistol.
+pub const PISTOL_AIMED_FIRE_COST_MULTIPLIER: u32 = 2;
 
 const PISTOL_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
   BehaviorSpec::Attack(AttackEffect::ProjectileCount(PISTOL_PROJECTILE_COUNT)),
   BehaviorSpec::Cost(ResourceCost::Ammo {
     ammo_type: AmmoType::Ammo9mm,
     amount: 1,
+  }),
+  BehaviorSpec::Alternate(AlternateAction::AimedFire {
+    accuracy_bonus: PISTOL_AIMED_ACCURACY_BONUS,
+    fire_cost_multiplier: PISTOL_AIMED_FIRE_COST_MULTIPLIER,
   }),
 ];
 
@@ -1584,6 +1597,10 @@ mod tests {
         BehaviorSpec::Cost(ResourceCost::Ammo {
           ammo_type: AmmoType::Ammo9mm,
           amount: 1,
+        }),
+        BehaviorSpec::Alternate(AlternateAction::AimedFire {
+          accuracy_bonus: PISTOL_AIMED_ACCURACY_BONUS,
+          fire_cost_multiplier: PISTOL_AIMED_FIRE_COST_MULTIPLIER,
         }),
       ]
     );

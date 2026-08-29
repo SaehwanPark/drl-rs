@@ -136,6 +136,22 @@ pub fn compute_legal_actions(obs: &PlayerObservation) -> Vec<LegalAction> {
             command: Command::AttackRanged(actor.position),
             params: JsonValue::Object(p),
           });
+
+          if weapon.archetype == ItemArchetype::Pistol {
+            let mut aimed_params = BTreeMap::new();
+            aimed_params.insert("action".to_string(), JsonValue::from("aimed_fire"));
+            aimed_params.insert("target_x".to_string(), JsonValue::from(actor.position.x));
+            aimed_params.insert("target_y".to_string(), JsonValue::from(actor.position.y));
+            actions.push(LegalAction {
+              action: "AimedFire".to_string(),
+              description: format!(
+                "Aim and fire {} at {} at ({}, {}) (+3 accuracy, 2x time)",
+                weapon.name, actor.name, actor.position.x, actor.position.y
+              ),
+              command: Command::AttackRangedAimed(actor.position),
+              params: JsonValue::Object(aimed_params),
+            });
+          }
         }
       }
     }
@@ -504,6 +520,13 @@ pub fn json_to_command(val: &JsonValue) -> Result<Command, String> {
       let target_x = required_exact_i32(obj, &["target_x", "x"], "target_x / x")?;
       let target_y = required_exact_i32(obj, &["target_y", "y"], "target_y / y")?;
       Ok(Command::AttackRanged(Position::new(target_x, target_y)))
+    }
+    "aimed_fire" | "attack_ranged_aimed" | "aim" => {
+      let target_x = required_exact_i32(obj, &["target_x", "x"], "target_x / x")?;
+      let target_y = required_exact_i32(obj, &["target_y", "y"], "target_y / y")?;
+      Ok(Command::AttackRangedAimed(Position::new(
+        target_x, target_y,
+      )))
     }
     "wait" => Ok(Command::Wait),
     "pickup" => Ok(Command::Pickup),
@@ -2287,6 +2310,55 @@ mod tests {
   }
 
   #[test]
+  fn pistol_aimed_fire_is_advertised_and_executed_through_mcp() {
+    let mut session = McpSession::new();
+    session
+      .load_scenario("\n########\n#@..h..#\n########\n", None)
+      .unwrap();
+    let player_id = session.game.as_ref().unwrap().world().player_id().unwrap();
+    let weapon_id = session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .allocate_item_id();
+    session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .get_actor_mut(player_id)
+      .unwrap()
+      .equipment_mut()
+      .equip(
+        EquipmentSlot::Weapon,
+        drl_core::item::Item::pistol(weapon_id),
+      )
+      .unwrap();
+
+    let target = Position::new(4, 1);
+    let command = Command::AttackRangedAimed(target);
+    let actions = session.legal_actions().unwrap();
+    assert!(
+      actions
+        .iter()
+        .any(|action| { action.action == "AimedFire" && action.command == command })
+    );
+
+    let (events, _, _) = session.step(command).unwrap();
+    assert!(events.iter().any(|event| {
+      matches!(
+        event,
+        GameEvent::ActionCostPaid {
+          cost: drl_protocol::ActionCost(2_000),
+          ..
+        }
+      )
+    }));
+    assert_eq!(session.export_replay().unwrap().commands, vec![command]);
+  }
+
+  #[test]
   fn test_legal_action_catalog_includes_explicit_melee_and_unequip() {
     let mut session = McpSession::new();
     let obs = session
@@ -3744,6 +3816,13 @@ mod tests {
     assert_eq!(
       json_to_command(&alias_fire).unwrap(),
       Command::AttackRanged(Position::new(-3, 4))
+    );
+
+    let aimed_fire =
+      JsonValue::parse(r#"{"action":"aimed_fire","target_x":7,"target_y":11}"#).unwrap();
+    assert_eq!(
+      json_to_command(&aimed_fire).unwrap(),
+      Command::AttackRangedAimed(Position::new(7, 11))
     );
 
     let command_alias = JsonValue::parse(r#"{"command":"wait"}"#).unwrap();

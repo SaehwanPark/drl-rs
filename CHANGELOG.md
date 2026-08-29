@@ -3,6 +3,17 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.244]
+
+- Added a typed Pistol-only aimed-fire command with the pinned +3 accuracy
+  bonus, doubled action cost, one projectile, and one 9mm round consumed
+  transactionally. Direct-core, replay/MCP JSON, advertised MCP actions, and
+  `BrowserSession` paths now share deterministic parity and aimed-fire
+  rejection remains atomic for non-Pistols and empty clips. Gameplay semantics
+  advance from `53` to `54`;
+  exact legacy callback timing, controlled runtime, browser capture, and
+  audiovisual parity remain deferred.
+
 ## [0.2.243]
 
 - Extended the typed Blaster profile with its current one-projectile,

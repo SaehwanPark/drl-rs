@@ -263,6 +263,16 @@ fn parse_command(value: &JsonValue, index: usize) -> Result<Command, String> {
         &format!("{context}.target_y"),
       )?,
     ))),
+    "aimed_fire" => Ok(Command::AttackRangedAimed(Position::new(
+      i32_value(
+        required(object, "target_x")?,
+        &format!("{context}.target_x"),
+      )?,
+      i32_value(
+        required(object, "target_y")?,
+        &format!("{context}.target_y"),
+      )?,
+    ))),
     "wait" => Ok(Command::Wait),
     "pickup" => Ok(Command::Pickup),
     "drop" => Ok(Command::Drop(drl_protocol::ItemId::new(u64_value(

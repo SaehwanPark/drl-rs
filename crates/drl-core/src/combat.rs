@@ -47,6 +47,17 @@ impl CombatResolver {
     distance: u32,
     rng: &mut GameRng,
   ) -> AttackOutcome {
+    Self::resolve_ranged_attack_with_accuracy(attacker, defender, distance, 0, rng)
+  }
+
+  /// Resolves a ranged attack with an explicit typed accuracy adjustment.
+  pub fn resolve_ranged_attack_with_accuracy(
+    attacker: &Actor,
+    defender: &Actor,
+    distance: u32,
+    accuracy_bonus: i32,
+    rng: &mut GameRng,
+  ) -> AttackOutcome {
     let Some((min_dam, max_dam)) = attacker.ranged_damage() else {
       return AttackOutcome::Miss;
     };
@@ -57,9 +68,8 @@ impl CombatResolver {
 
     // Distance penalty: 2% per tile beyond adjacent
     let penalty = distance.saturating_sub(1) * 2;
-    let effective_accuracy = (attacker.accuracy() as u32)
-      .saturating_sub(penalty)
-      .clamp(5, 95);
+    let effective_accuracy =
+      (attacker.accuracy() + accuracy_bonus - penalty as i32).clamp(5, 95) as u32;
 
     let hits = attacker.ranged_exact_hit() || rng.gen_range(0..100) < effective_accuracy;
     if hits {
@@ -162,6 +172,43 @@ mod tests {
     let mut rng = GameRng::from_seed(1);
     let outcome = CombatResolver::resolve_ranged_attack(&attacker, &defender, 10, &mut rng);
     assert_eq!(outcome, AttackOutcome::Miss);
+  }
+
+  #[test]
+  fn aimed_accuracy_bonus_changes_only_hit_threshold() {
+    let attacker = Actor::new(EntityId::new(1), Position::new(0, 0), "Marine", true).with_stats(
+      HitPoints::full(50),
+      Speed::NORMAL,
+      (2, 4),
+      Some((5, 10)),
+      8,
+      70,
+    );
+    let defender = Actor::new(EntityId::new(2), Position::new(2, 0), "Imp", false);
+
+    let mut found_boundary = false;
+    for seed in 0..10_000 {
+      let mut ordinary_rng = GameRng::from_seed(seed);
+      let ordinary =
+        CombatResolver::resolve_ranged_attack(&attacker, &defender, 2, &mut ordinary_rng);
+      let mut aimed_rng = GameRng::from_seed(seed);
+      let aimed = CombatResolver::resolve_ranged_attack_with_accuracy(
+        &attacker,
+        &defender,
+        2,
+        3,
+        &mut aimed_rng,
+      );
+      if ordinary == AttackOutcome::Miss && matches!(aimed, AttackOutcome::Hit { .. }) {
+        found_boundary = true;
+        break;
+      }
+    }
+
+    assert!(
+      found_boundary,
+      "a +3 aimed bonus must widen the hit threshold"
+    );
   }
 
   #[test]

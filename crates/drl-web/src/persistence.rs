@@ -124,6 +124,7 @@ fn encode_command(command: Command) -> Result<String, SnapshotError> {
       direction_code(direction).ok_or(SnapshotError::Malformed)?
     ),
     Command::AttackRanged(position) => format!("r{},{}", position.x, position.y),
+    Command::AttackRangedAimed(position) => format!("t{},{}", position.x, position.y),
     Command::Wait => "w".to_string(),
     Command::Pickup => "p".to_string(),
     Command::Drop(id) => format!("d{}", id.as_u64()),
@@ -155,6 +156,7 @@ fn decode_command(token: &str) -> Result<Command, SnapshotError> {
     "m" => Ok(Command::Move(parse_direction(rest)?)),
     "a" => Ok(Command::AttackMelee(parse_direction(rest)?)),
     "r" => Ok(Command::AttackRanged(parse_position(rest)?)),
+    "t" => Ok(Command::AttackRangedAimed(parse_position(rest)?)),
     "w" if rest.is_empty() => Ok(Command::Wait),
     "p" if rest.is_empty() => Ok(Command::Pickup),
     "d" => Ok(Command::Drop(parse_item_id(rest)?)),

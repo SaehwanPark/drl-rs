@@ -13,6 +13,8 @@ pub enum Command {
   AttackMelee(Direction),
   /// Direct ranged attack targeting a grid position.
   AttackRanged(Position),
+  /// Direct aimed ranged attack targeting a grid position.
+  AttackRangedAimed(Position),
   /// Wait in place for one turn.
   Wait,
   /// Pick up an item lying on the current ground tile into inventory.
