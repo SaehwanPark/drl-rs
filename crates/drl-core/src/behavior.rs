@@ -200,6 +200,8 @@ pub enum KillEffect {
 /// Explicit alternate action families; behavior remains in dedicated handlers.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AlternateAction {
+  /// Fire the first three-projectile Chaingun chainfire burst.
+  Chainfire { shot_count: u32, ammo_cost: u32 },
   /// Fire one aimed projectile with a typed accuracy bonus and time multiplier.
   AimedFire {
     accuracy_bonus: i32,
@@ -568,6 +570,10 @@ const CHAINGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
   BehaviorSpec::Cost(ResourceCost::Ammo {
     ammo_type: AmmoType::Ammo9mm,
     amount: 1,
+  }),
+  BehaviorSpec::Alternate(AlternateAction::Chainfire {
+    shot_count: crate::chaingun::CHAINGUN_CHAINFIRE_PROJECTILE_COUNT,
+    ammo_cost: crate::chaingun::CHAINGUN_CHAINFIRE_SHOT_COST,
   }),
 ];
 
@@ -1644,6 +1650,10 @@ mod tests {
         BehaviorSpec::Cost(ResourceCost::Ammo {
           ammo_type: AmmoType::Ammo9mm,
           amount: 1,
+        }),
+        BehaviorSpec::Alternate(AlternateAction::Chainfire {
+          shot_count: crate::chaingun::CHAINGUN_CHAINFIRE_PROJECTILE_COUNT,
+          ammo_cost: crate::chaingun::CHAINGUN_CHAINFIRE_SHOT_COST,
         }),
       ]
     );

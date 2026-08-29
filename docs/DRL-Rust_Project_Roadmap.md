@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-29
-Current project version: `0.2.256`
+Current project version: `0.2.257`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.256)
+## 3. Current Progress Summary (`VERSION` 0.2.257)
 
 ### Delivered Foundations
 
@@ -941,6 +941,14 @@ verification item uses explicit status semantics:
   `BrowserSession` coverage is verified; terrain/item destruction, splash
   immunity, knockback, exact delayed timing, callback state, controlled
   runtime, browser capture, and audiovisual parity remain open.
+- **M9 Chaingun first-level chainfire (`0.2.257`):** A typed alternate
+  command now preflights three loaded 9mm rounds, emits three ordered
+  projectiles (with deterministic no-op misses after a lethal target), advances
+  observable warm-up state only after acceptance, and resets it on ordinary fire.
+  Direct-core, replay/MCP JSON/catalog, browser snapshot, and `BrowserSession`
+  parity plus atomic under-supply rejection are verified; higher chainfire
+  levels, target rotation/spread, exact timing/accuracy, runtime, browser
+  capture, and audiovisual parity remain open.
 - **M9 Trigun aimed-fire vertical fidelity (`0.2.248`):** The shared typed
   aimed-fire command now accepts Trigun, applies +3 accuracy and doubled action
   cost, and preserves one-projectile/one-round behavior. Direct-core,
@@ -1541,8 +1549,10 @@ scripting.
 - [x] Chaingun has an immutable behavior profile for its four-projectile
   ordinary fire and one-round per-projectile cost; generic ranged execution
   resolves the ordered four-round volley, preflights its aggregate cost, and
-  preserves atomic below-cost rejection while alternate chainfire, exact
-  timing/accuracy, runtime, and audiovisual parity remain open.
+  preserves atomic below-cost rejection; its first-level chainfire profile and
+  typed three-projectile/three-round alternate command are delivered in
+  `0.2.257`, while higher levels, exact timing/accuracy, runtime, and
+  audiovisual parity remain open.
 - [x] Laser Rifle has an immutable behavior profile for its five-projectile
   ordinary fire and one-cell per-projectile cost; generic ranged execution
   resolves the ordered five-cell volley, preflights its aggregate cost, and
@@ -1563,6 +1573,13 @@ scripting.
   events, fair observations, render effects, scene projections, four-round clip
   consumption, and replay determinism; controlled legacy runtime, browser
   capture, alternate chainfire, and audiovisual parity remain open.
+- [x] Chaingun's delivered first-level chainfire contract has a deterministic
+  direct-core/BrowserSession boundary check covering identical events, fair
+  observations, render effects, scene projections, three-round clip
+  consumption, observable warm-up advancement/reset, and replay determinism;
+  higher chainfire levels, target rotation/spread, exact timing/accuracy,
+  controlled legacy runtime, browser capture, and audiovisual parity remain
+  open.
 - [x] Mega Buster's delivered three-projectile ordinary-fire contract has a
   deterministic direct-core/BrowserSession boundary check covering identical
   events, fair observations, render effects, scene projections, nine-round clip
@@ -1710,6 +1727,15 @@ scripting.
   forty-cell one-shot policy through deterministic scenario/replay, MCP, and
   BrowserSession/direct-core parity; projectile/explosion routing, runtime,
   browser capture, and audiovisual parity remain open.
+- **M9 Chaingun first-level chainfire (`0.2.257`):** Chaingun now exposes a
+  typed first-level alternate command that preflights three 9mm rounds,
+  emits three ordered projectiles (with deterministic no-op misses after a
+  lethal target), advances observable warm-up state only after acceptance, and
+  resets that state on ordinary fire. Direct-core, replay/MCP JSON/catalog,
+  browser snapshot, physical `C` key routing, and `BrowserSession` parity plus
+  atomic under-supply rejection are verified; higher chainfire levels, target
+  rotation/spread, exact timing/accuracy, runtime, browser capture, and
+  audiovisual parity remain open. Gameplay semantics advance to `68`.
 - [x] Typed `umega`, `uberetta`, and `ufshotgun` preserve pinned unique-firearm
   descriptions, 9mm relations, clips/damage/range scalars, replay kinds, and
   measured plasma/pistol/combat-shotgun atlas slots; mode switching, kill

@@ -8,7 +8,7 @@ use drl_assets::{AtlasId, AtlasTextureSource, SpriteUv};
 use drl_core::item::Item;
 use drl_core::{Game, Tile};
 use drl_protocol::{
-  Command, Direction, ItemId, ItemSpawnKind, ItemSpawnSpec, ItemView, MonsterKind,
+  Command, Direction, ItemArchetype, ItemId, ItemSpawnKind, ItemSpawnSpec, ItemView, MonsterKind,
   MonsterSpawnSpec, PlayerObservation, Position, ReplayLog,
 };
 use drl_render::{
@@ -581,6 +581,21 @@ impl BrowserSession {
         .iter()
         .find(|actor| !actor.is_player)
         .map(|actor| Command::AttackRanged(actor.position)),
+      "c" | "C" => observation
+        .equipped_weapon
+        .as_ref()
+        .filter(|weapon| {
+          weapon.archetype == ItemArchetype::Chaingun
+            && weapon.chainfire_level == 0
+            && weapon.clip.is_some_and(|(loaded, _)| loaded >= 3)
+        })
+        .and_then(|_| {
+          observation
+            .visible_actors
+            .iter()
+            .find(|actor| !actor.is_player)
+            .map(|actor| Command::AttackRangedChainfire(actor.position))
+        }),
       _ => None,
     }
   }
@@ -1311,6 +1326,7 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
       KeyCode::KeyA => "a",
       KeyCode::KeyS => "s",
       KeyCode::KeyD => "d",
+      KeyCode::KeyC => "c",
       KeyCode::Numpad8 => "8",
       KeyCode::Numpad6 => "6",
       KeyCode::Numpad2 => "2",
@@ -1746,7 +1762,10 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
         };
         command
       };
-      if matches!(command, Command::AttackRanged(_)) {
+      if matches!(
+        command,
+        Command::AttackRanged(_) | Command::AttackRangedChainfire(_)
+      ) {
         TARGET.with(|target_slot| *target_slot.borrow_mut() = None);
       }
       match session.submit(command) {
@@ -2249,6 +2268,7 @@ mod tests {
       armor_value: None,
       heal_amount: None,
       knockback: None,
+      chainfire_level: 0,
     }
   }
 
@@ -2599,6 +2619,7 @@ mod tests {
       Command::AttackMelee(Direction::SouthEast),
       Command::AttackRanged(Position::new(-3, 8)),
       Command::AttackRangedAimed(Position::new(-7, 11)),
+      Command::AttackRangedChainfire(Position::new(3, 4)),
       Command::Wait,
       Command::Pickup,
       Command::Drop(ItemId::new(4)),
@@ -5875,6 +5896,71 @@ mod tests {
     assert_eq!(replayed, direct);
     assert!(
       drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism")
+    );
+  }
+
+  #[test]
+  fn chaingun_chainfire_vertical_browser_boundary_matches_direct_core() {
+    let player_position = Position::new(1, 1);
+    let player_config = PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: vec![ItemSpawnKind::Ammo9mm(10)],
+      equipped_weapon: Some(ItemSpawnKind::Chaingun),
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    };
+    let mut setup_replay =
+      ReplayLog::new(2_245, 8, 4, player_position).with_player_config(player_config);
+    let target_position = Position::new(3, 1);
+    setup_replay.record_monster(MonsterSpawnSpec::new(
+      target_position,
+      "Static Target",
+      500,
+      0,
+      (1, 7),
+    ));
+
+    let (initial, setup_events) =
+      drl_core::ReplayEngine::run(&setup_replay).expect("vertical replay setup");
+    assert!(setup_events.is_empty());
+    let mut direct = initial.clone();
+    let mut browser = BrowserSession::from_game(initial);
+    let command = Command::AttackRangedChainfire(target_position);
+    let expected_events = direct
+      .step(command)
+      .expect("direct Chaingun chainfire command");
+    let step = browser
+      .submit(command)
+      .expect("browser Chaingun chainfire command");
+    assert_eq!(step.events, expected_events);
+    assert_eq!(step.after, direct.observe_player());
+    assert_eq!(
+      step.effects,
+      effect_timeline_for_observations(&step.before, &step.after, &expected_events,)
+    );
+    assert_eq!(browser.scene(), RenderScene::from_observation(&step.after));
+    assert_eq!(
+      expected_events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          drl_protocol::GameEvent::AttackResolved {
+            is_ranged: true,
+            ..
+          }
+        ))
+        .count(),
+      3
+    );
+    assert_eq!(
+      step
+        .after
+        .equipped_weapon
+        .expect("Chaingun")
+        .chainfire_level,
+      1
     );
   }
 

@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-29
-Current project version: `0.2.256`
+Current project version: `0.2.257`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,17 +25,15 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Null Pointer Actor Splash
+## 2. Active Implementation Slice: M9 — Chaingun First-Level Chainfire
 
 ### 2.1 Objective
 
-Verify the delivered Null Pointer actor-only radius-1 splash at the typed
-direct-core, replay, generic MCP JSON event-serializer, and `BrowserSession`
-boundaries. A deterministic successful hit must preserve the existing score
-branch and schedule event, then damage each living actor on the bounded blast
-cells once in stable order, including lethal intermediate actors, while
-preserving identical events, fair player observations, render effects, scene
-state, and replay outcomes in both execution paths.
+Verify and harden the delivered first-level Chaingun alternate chainfire at the typed
+direct-core, replay, MCP JSON/catalog, browser snapshot, and `BrowserSession`
+boundaries. A deterministic accepted command must preflight three loaded 9mm
+rounds, emit three ordered ranged outcomes against one target, advance typed
+warm-up state only after acceptance, and let ordinary fire reset that state.
 
 ### 2.1a Scope and steering gate
 
@@ -43,46 +41,45 @@ state, and replay outcomes in both execution paths.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, Gate C catalog ownership, and Gate D callback behavior
   evidence remain closed for this contract-only slice.
-- **Observable outcome:** A fixed Null Pointer replay setup preserves the
-  `AttackResolved → NullPointerHit → NullPointerExplosionScheduled` prefix,
-  then applies fixed `10d1` Plasma environment damage once per living actor on
-  clear radius-1 cells, emits ordered death/drop follow-up, and consumes ten
-  cells. Direct core and `BrowserSession` expose identical events,
-  observations, render effects, and scenes.
-- **Gameplay/replay impact:** Gameplay semantics advance from `65` to `66` for
-  the newly accepted Null Pointer actor-splash interpretation; replay
+- **Observable outcome:** A fixed Chaingun replay setup accepts the typed
+  `AttackRangedChainfire` command with at least three loaded rounds, emits
+  exactly three ordered ranged outcomes (deterministic no-op misses fill any
+  remaining slots after a lethal target), consumes three clip rounds, and
+  exposes warm-up level `1`; a rejected below-three clip leaves the complete
+  game state unchanged, while accepted ordinary fire resets the level to `0`.
+- **Gameplay/replay impact:** Gameplay semantics advance from `66` to `68` for
+  the typed chainfire burst and deterministic completion after lethal targets;
+  replay
   wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.255` to `0.2.256`.
+  unchanged. Project version advances from `0.2.256` to `0.2.257`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary,
   typed projectile-count/cost policy and generic execution; `drl-protocol` owns
   the semantic `AttackRanged`/`AttackRangedAimed` commands and typed event
   projection, while replay/MCP and browser boundaries
   serialize and route it without duplicating gameplay rules.
-- **Evidence boundary:** Pinned Null Pointer callback and radius-1 explosion
-  loop evidence in `docs/legacy-behavior/null-pointer.md`, the explicit Rust
-  actor-only and fixed-damage decisions, and the direct-core, generic MCP JSON
-  serializer, and BrowserSession boundary tests are authoritative. Controlled
+- **Evidence boundary:** Pinned Chaingun item and alternate-fire evidence in
+  `docs/legacy-behavior/chaingun-profile.md`, the explicit typed warm-up and
+  first-level three-shot decisions, and the direct-core, replay/MCP, browser
+  snapshot, and BrowserSession boundary tests are authoritative. Controlled
   legacy runtime, browser capture, and audiovisual comparisons remain
   `NOT_RUN`.
-- **Non-goals:** Terrain/cell destruction, ground-item destruction, splash
-  immunity, knockback, exact delayed timing, callback state-machine parity,
-  audiovisual presentation comparison, new callback registries, unrelated
-  gameplay balance, replay-file migrations, runtime Lua, and browser/audio/
-  WebGPU capture parity.
+- **Non-goals:** Higher chainfire levels, legacy target rotation/spread,
+  exact callback timing/accuracy, callback state-machine parity, audiovisual
+  presentation comparison, new callback registries, unrelated gameplay
+  balance, replay-file migrations, runtime Lua, and browser/audio/WebGPU
+  capture parity.
 
 ### 2.2 Why this slice is bounded
 
 The existing ranged command path already performs complete preflight,
-transactional clip validation and typed clip consumption. This slice adds a
-small typed Null Pointer actor-splash resolver after the successful target
-preflight, using deterministic radius-1 traversal, fixed `10d1` Plasma
-damage, actor deduplication, and the existing damage/death projections. It
-exercises the result through ScenarioRunner, replay, the generic MCP JSON
-serializer, and the BrowserSession effect/observation boundary without adding
-a generic callback dispatcher, changing ordinary weapon routing, or claiming
-exact delayed runtime timing. Terrain/item destruction, splash immunity,
-callback state, and presentation parity remain outside this verification
-contract.
+transactional clip validation, typed clip consumption, and ordered projectile
+resolution. This slice adds one explicit Chaingun command mode that reuses
+those boundaries with a fixed three-projectile/three-round first-level burst,
+including deterministic no-op outcomes after a lethal target,
+stores a typed warm-up level in the weapon and observation view, and rejects
+deferred higher levels before mutation. It exercises ScenarioRunner/replay,
+MCP JSON/catalog, browser snapshot, and BrowserSession boundaries without a
+generic callback dispatcher, target-rotation migration, or audiovisual claim.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -2574,9 +2571,10 @@ for the pinned Chaingun ordinary ranged action. Its contract must:
 - [x] assert exact profile declaration order without adding an alternate-fire
   command, callback registry, or replay-wire field; stale gameplay semantics
   `51` replays are rejected before execution;
-- [x] keep alternate chainfire, spread/falloff, exact legacy timing/accuracy,
-  controlled runtime, and audiovisual parity `NOT_RUN` where comparison
-  evidence is unavailable;
+- [x] keep higher chainfire levels, spread/falloff, exact legacy
+  timing/accuracy, controlled runtime, and audiovisual parity `NOT_RUN` where
+  comparison evidence is unavailable; first-level chainfire is covered by the
+  successor `2.7ea` target;
 - [x] advance project version from `0.2.229` to `0.2.230` and gameplay
   semantics from `51` to `52`, preserving replay schema, RNG, generator, and
   ruleset identities.
@@ -3214,6 +3212,30 @@ radius-1 splash damage. Its contract must:
   semantics from `65` to `66` while preserving replay schema, RNG, generator,
   and ruleset identities.
 
+### 2.7ea Current Chaingun first-level chainfire target
+
+The bounded implementation target for this revision extends the delivered
+Chaingun ordinary-fire profile with its first alternate chainfire level. Its
+contract must:
+
+- [x] expose a typed `AttackRangedChainfire(Position)` command and ordered
+  `AlternateAction::Chainfire { shot_count: 3, ammo_cost: 3 }` profile fragment;
+- [x] accept the command only for a Chaingun at warm-up level `0`, preflight
+  three loaded 9mm rounds before clip/RNG mutation, and reject under-supplied
+  clips atomically;
+- [x] emit exactly three ordered ranged outcomes against the requested target,
+  fill post-lethal slots with deterministic no-op misses without extra damage
+  or RNG, consume three clip rounds, and advance observable chainfire state only
+  after acceptance; ordinary fire resets that state to `0`;
+- [x] preserve direct-core, replay, MCP JSON/catalog, browser snapshot, and
+  `BrowserSession` event, observation, effect, scene, and final-state parity;
+- [x] keep higher chainfire levels, legacy target rotation/spread, exact
+  callback timing/accuracy, controlled runtime, browser capture, and
+  audiovisual parity `NOT_RUN` where evidence is unavailable;
+- [x] advance project version from `0.2.256` to `0.2.257` and gameplay
+  semantics from `66` to `68` while preserving replay schema, RNG, generator,
+  and ruleset identities.
+
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
 All of the following are required:
@@ -3702,6 +3724,17 @@ blast-cell order and continues after lethal actors, preserving death/drop
 follow-up. Terrain/item destruction, splash immunity, knockback, exact delayed
 timing, callback state, controlled runtime, browser capture, and audiovisual
 parity remain open.
+
+The `0.2.257` successor extends the Chaingun ordinary-fire profile with a typed
+first-level chainfire command. A Chaingun at warm-up level `0` now accepts a
+three-projectile burst after atomic three-round preflight, always emits three
+ordered ranged outcomes (deterministic no-op misses fill slots after a lethal
+target without additional damage or RNG sampling), advances observable
+warm-up state only after acceptance, and lets ordinary fire reset that state.
+Replay/MCP JSON/catalog, browser snapshot, physical `C` key routing, and
+`BrowserSession` parity are verified; higher chainfire levels, target
+rotation/spread, exact callback timing/accuracy, controlled runtime, browser
+capture, and audiovisual parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity

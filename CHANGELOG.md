@@ -3,6 +3,20 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.257]
+
+- Added the bounded first-level Chaingun chainfire command. A Chaingun with
+  at least three loaded 9mm rounds now advertises and accepts one typed
+  three-projectile burst, preflights and consumes three rounds atomically,
+  advances observable warm-up state only after acceptance, and resets that
+  state on ordinary fire. Replay JSON, MCP legal actions, browser snapshots,
+  and direct-core/BrowserSession parity are covered; higher chainfire levels,
+  legacy target rotation, exact callback timing, runtime, and audiovisual
+  parity remain deferred. Accepted bursts always retain three ordered
+  outcomes after a lethal target without extra damage/RNG work, and the browser
+  maps physical `C` to the semantic chainfire command. Gameplay semantics
+  advance from `66` to `68`.
+
 ## [0.2.256]
 
 - Added bounded Null Pointer actor-only radius-1 splash damage. Successful hits

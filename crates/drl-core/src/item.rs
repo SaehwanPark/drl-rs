@@ -33,6 +33,8 @@ pub struct WeaponProperties {
   pub exact_hit: bool,
   /// Typed alternate-fire mode; ordinary weapons remain `Single`.
   pub fire_mode: WeaponFireMode,
+  /// Typed Chaingun alternate-fire warm-up state; zero means first burst.
+  pub chainfire_level: u8,
 }
 
 impl WeaponProperties {
@@ -592,6 +594,10 @@ impl Item {
       armor_value: armor_val,
       heal_amount: heal_val,
       knockback,
+      chainfire_level: match &self.kind {
+        ItemKind::Weapon(props) => props.chainfire_level,
+        _ => 0,
+      },
     }
   }
 
@@ -1001,6 +1007,7 @@ impl Item {
           ItemArchetype::Jackhammer => WeaponFireMode::Burst,
           _ => WeaponFireMode::Single,
         },
+        chainfire_level: 0,
       }),
       ItemDefinitionKind::Ammo {
         ammo_type,

@@ -59,6 +59,7 @@ mod tests {
       reload_cost: ActionCost::STANDARD,
       exact_hit: false,
       fire_mode: WeaponFireMode::Single,
+      chainfire_level: 0,
     }
   }
 

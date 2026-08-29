@@ -13,6 +13,7 @@ pub mod anti_freak;
 pub mod assault_shotgun;
 pub mod batch;
 pub mod behavior;
+pub mod chaingun;
 pub mod combat;
 pub mod combat_shotgun;
 pub mod content_validation;
@@ -91,6 +92,9 @@ pub use behavior::{
   TRISTAR_BLASTER_PROJECTILE_COUNT, TRISTAR_BLASTER_SHOT_COST, TargetOrder, TargetProperty,
   TargetSelectionPolicy, TargetSource, WeaponRechargeOutcome, WeaponRechargePolicy,
   WeaponRechargeState,
+};
+pub use chaingun::{
+  CHAINGUN_CHAINFIRE_PROJECTILE_COUNT, CHAINGUN_CHAINFIRE_SHOT_COST, ChaingunTransition,
 };
 pub use combat::CombatResolver;
 pub use combat_shotgun::COMBAT_SHOTGUN_ALT_RELOAD_CAP;
