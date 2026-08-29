@@ -519,6 +519,20 @@ const CHAINGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
 /// Immutable typed profile for the current Chaingun four-shot behavior.
 pub const CHAINGUN_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(CHAINGUN_BEHAVIOR_SPECS);
 
+/// Pinned projectile count for an ordinary Laser Rifle shot.
+pub const LASER_RIFLE_PROJECTILE_COUNT: u32 = 5;
+
+const LASER_RIFLE_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Attack(AttackEffect::ProjectileCount(LASER_RIFLE_PROJECTILE_COUNT)),
+  BehaviorSpec::Cost(ResourceCost::Ammo {
+    ammo_type: AmmoType::Cell,
+    amount: 1,
+  }),
+];
+
+/// Immutable typed profile for the current Laser Rifle five-shot behavior.
+pub const LASER_RIFLE_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(LASER_RIFLE_BEHAVIOR_SPECS);
+
 /// Current Rust projectile count for an ordinary Frag Shotgun shot.
 pub const FRAG_SHOTGUN_PROJECTILE_COUNT: u32 = 1;
 /// Pinned per-projectile clip cost for an ordinary Frag Shotgun shot.
@@ -1469,6 +1483,16 @@ mod tests {
         BehaviorSpec::Attack(AttackEffect::ProjectileCount(CHAINGUN_PROJECTILE_COUNT)),
         BehaviorSpec::Cost(ResourceCost::Ammo {
           ammo_type: AmmoType::Ammo9mm,
+          amount: 1,
+        }),
+      ]
+    );
+    assert_eq!(
+      LASER_RIFLE_BEHAVIOR.specs(),
+      &[
+        BehaviorSpec::Attack(AttackEffect::ProjectileCount(LASER_RIFLE_PROJECTILE_COUNT)),
+        BehaviorSpec::Cost(ResourceCost::Ammo {
+          ammo_type: AmmoType::Cell,
           amount: 1,
         }),
       ]

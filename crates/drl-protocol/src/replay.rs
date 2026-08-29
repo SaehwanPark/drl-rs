@@ -33,8 +33,8 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// recharge/overload, Revenant's Launcher exact-hit resolution, Nuclear Plasma
 /// alternate overload/recharge, the `IF_NORELOAD` policy, Blaster recharge,
 /// the prior Malek's Armor, Missile Launcher, and Combat Shotgun policies, and
-/// the typed ordinary-fire cost policies through Chaingun.
-pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 52;
+/// the typed ordinary-fire cost policies through Laser Rifle.
+pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 53;
 
 /// Procedural-generation semantics identifier expected for replays that carry
 /// a procedural generation configuration. Version 2 includes the exact
@@ -54,7 +54,8 @@ pub struct ReplayMetadata {
   /// Engine crate version string.
   pub engine_version: String,
   /// Gameplay semantics version required to interpret the command history.
-  /// Version 52 includes the Chaingun's four-projectile/four-round
+  /// Version 53 includes the Laser Rifle's five-projectile/five-cell
+  /// ordinary-fire volley, version 52's Chaingun four-projectile/four-round
   /// ordinary-fire volley, version 51's Minigun eight-projectile/eight-round
   /// ordinary-fire volley, version 50's Super Shotgun two-projectile/
   /// two-shell ordinary-fire volley, version 49's Mega Buster three-projectile/
