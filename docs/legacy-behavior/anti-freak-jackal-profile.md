@@ -46,10 +46,12 @@ consumption. An accepted aimed command consumes one round and pays
 then resolves a deterministic `5d3` fire-damage fanout across the bounded
 center-plus-eight-neighbor cells.
 
-Direct-core, ScenarioRunner/replay, MCP action-catalog/JSON, and
+Direct-core, ScenarioRunner/replay, MCP schedule/action-catalog/JSON, and
 `BrowserSession` tests verify deterministic events, observations, effects,
-scene state, schedule projection, and replay parity. Empty-clip rejection is
-state-identical.
+scene state, schedule projection, and replay parity. The generic MCP
+`DamageApplied` JSON serializer is covered by the environment-damage contract;
+an Anti-Freak-specific splash JSON fixture remains outside this slice. Empty-
+clip rejection is state-identical.
 
 Blast knockback, terrain/item destruction, red presentation, callback state and
 timing, controlled runtime, browser capture, and audiovisual parity remain

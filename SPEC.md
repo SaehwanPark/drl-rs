@@ -30,7 +30,8 @@ contracts, acceptance criteria, and verification boundaries.
 ### 2.1 Objective
 
 Verify the delivered Anti-Freak Jackal radius-1 splash fanout at the typed
-direct-core, replay/MCP JSON, and `BrowserSession` boundaries. A deterministic
+direct-core, replay, and `BrowserSession` boundaries, while confirming its
+schedule and generic damage-event projection through MCP JSON. A deterministic
 successful hit must preserve the existing schedule event and apply the bounded
 center-plus-eight-neighbor blast to eligible actors with identical events, fair
 player observations, render effects, scene state, and replay outcomes in both
@@ -56,11 +57,12 @@ execution paths while retaining generic ranged command execution ownership.
   the semantic `AttackRanged`/`AttackRangedAimed` commands and typed event
   projection, while replay/MCP and browser boundaries
   serialize and route it without duplicating gameplay rules.
-- **Evidence boundary:** Pinned Anti-Freak Jackal and radius-1 geometry source
-  evidence in `docs/legacy-behavior/anti-freak-jackal-profile.md`, the
-  delivered schedule contract, and the direct-core/BrowserSession boundary
-  tests are authoritative. Controlled legacy runtime, browser capture, and
-  audiovisual comparisons remain `NOT_RUN`.
+- **Evidence boundary:** Pinned Anti-Freak Jackal item, schedule, and
+  `ShotContact` evidence in `docs/legacy-behavior/anti-freak-jackal-profile.md`,
+  the explicit Rust radius-1 geometry decision, and the direct-core,
+  MCP/JSON, and BrowserSession boundary tests are authoritative. Controlled
+  legacy runtime, browser capture, and audiovisual comparisons remain
+  `NOT_RUN`.
 - **Non-goals:** Blast knockback, terrain/item destruction, spread/falloff,
   callback state-machine parity, exact legacy callback timing, audiovisual
   presentation comparison, new callback registries, unrelated gameplay
@@ -3104,9 +3106,10 @@ must:
 - [x] preserve identical event ordering, fair player observations, render
   effects, scene projections, and final state between direct core and
   `BrowserSession`;
-- [x] project the resulting damage through the existing MCP JSON boundary and
-  preserve deterministic replay verification without adding a generic
-  explosion registry or delayed command queue;
+- [x] project the resulting damage through the existing generic MCP JSON
+  `DamageApplied` boundary (covered by the environment-damage serializer
+  contract) and preserve deterministic replay verification without adding a
+  generic explosion registry or delayed command queue;
 - [x] keep blast knockback, terrain/item destruction, callback state, exact
   legacy timing, controlled runtime, browser capture, and audiovisual parity
   `NOT_RUN` where evidence is unavailable;
