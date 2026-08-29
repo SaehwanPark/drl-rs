@@ -5023,6 +5023,82 @@ fn anti_freak_jackal_hit_records_delayed_explosion_schedule() {
 }
 
 #[test]
+fn anti_freak_jackal_splash_fanout_hits_only_radius_one_actors() {
+  let center = Position::new(3, 2);
+  let blast_positions = [
+    Position::new(3, 2),
+    Position::new(3, 1),
+    Position::new(4, 1),
+    Position::new(4, 2),
+    Position::new(4, 3),
+    Position::new(3, 3),
+    Position::new(2, 3),
+    Position::new(2, 2),
+    Position::new(2, 1),
+  ];
+  let far = Position::new(5, 2);
+  let mut replay =
+    ReplayLog::new(0, 8, 8, Position::new(1, 2)).with_player_config(PlayerSpawnConfig {
+      hp: 500,
+      max_hp: 500,
+      speed: 100,
+      initial_items: vec![ItemSpawnKind::Ammo9mm(6)],
+      equipped_weapon: Some(ItemSpawnKind::AntiFreakJackal),
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    });
+  for (index, position) in blast_positions.iter().enumerate() {
+    replay.record_monster(MonsterSpawnSpec::new(
+      *position,
+      format!("Blast {index}"),
+      500,
+      1,
+      (0, 0),
+    ));
+  }
+  replay.record_monster(MonsterSpawnSpec::new(far, "Far", 500, 1, (0, 0)));
+  replay.record_command(Command::AttackRangedAimed(center));
+
+  let (game, events) = ReplayEngine::run(&replay).unwrap();
+  let splash_damage: Vec<_> = events
+    .iter()
+    .filter_map(|event| match event {
+      GameEvent::DamageApplied {
+        target_id,
+        amount,
+        source: drl_protocol::DamageSource::Environment,
+        damage_type: Some(drl_protocol::DamageType::Fire),
+        ..
+      } => Some((*target_id, *amount)),
+      _ => None,
+    })
+    .collect();
+  let expected_ids: Vec<_> = blast_positions
+    .iter()
+    .map(|position| {
+      game
+        .world()
+        .actors()
+        .values()
+        .find(|actor| actor.position() == *position)
+        .unwrap()
+        .id()
+    })
+    .collect();
+  assert_eq!(splash_damage.len(), expected_ids.len());
+  assert_eq!(
+    splash_damage.iter().map(|(id, _)| *id).collect::<Vec<_>>(),
+    expected_ids
+  );
+  assert!(
+    splash_damage
+      .iter()
+      .all(|(_, amount)| (5..=15).contains(amount))
+  );
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}
+
+#[test]
 fn aimed_fire_rejection_is_atomic_for_non_pistol_and_empty_clip() {
   let target_position = Position::new(4, 2);
   let mut unsupported = Game::new(2_261, 12, 8, Position::new(2, 2)).unwrap();

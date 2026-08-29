@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.251`
+Current project version: `0.2.252`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.251)
+## 3. Current Progress Summary (`VERSION` 0.2.252)
 
 ### Delivered Foundations
 
@@ -900,6 +900,13 @@ verification item uses explicit status semantics:
   deterministic replay are verified; splash geometry, damage fanout, callback
   state, controlled runtime, browser capture, and audiovisual parity remain
   open.
+- **M9 Anti-Freak Jackal radius-1 splash fanout (`0.2.252`):** Successful
+  Anti-Freak schedules now resolve a deterministic center-plus-eight-neighbor
+  radius-1 fanout with one `5d3` fire-damage roll per eligible living actor.
+  Direct-core, replay/MCP, and `BrowserSession` parity plus deterministic
+  geometry/event tests are verified; blast knockback, terrain/item
+  destruction, callback state, controlled runtime, browser capture, and
+  audiovisual parity remain open.
 - **M9 Trigun aimed-fire vertical fidelity (`0.2.248`):** The shared typed
   aimed-fire command now accepts Trigun, applies +3 accuracy and doubled action
   cost, and preserves one-projectile/one-round behavior. Direct-core,
@@ -1443,6 +1450,12 @@ scripting.
   explosion schedule (delay 40, radius 1, default knockback 8); direct core,
   MCP JSON, and BrowserSession preserve the typed event boundary while splash
   geometry, damage fanout, callback state/timing, runtime, and audiovisual
+  parity remain open.
+- [x] Anti-Freak Jackal's delivered radius-1 splash fanout considers the
+  impact center and eight neighboring cells clockwise from north in stable order, applies one
+  deterministic `5d3` fire-damage roll per eligible living actor, and preserves
+  direct-core, replay/MCP, and BrowserSession parity; blast knockback,
+  terrain/item destruction, callback state/timing, runtime, and audiovisual
   parity remain open.
 - [x] Malek's Armor has an immutable behavior profile for its
   delay-50/cadence-5/amount-1 durability-recharge fragment; the dedicated

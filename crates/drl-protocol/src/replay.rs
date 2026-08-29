@@ -21,8 +21,9 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// Gameplay semantics identifier expected by the current replay engine.
 ///
 /// This advances independently from the wire/schema and RNG-sampling versions
-/// when other deterministic simulation rules change. Version `61` includes
-/// Anti-Freak Jackal's typed delayed-explosion schedule, version `60`'s typed
+/// when other deterministic simulation rules change. Version `62` includes
+/// Anti-Freak Jackal's typed radius-1 splash fanout, version `61`'s typed
+/// delayed-explosion schedule, version `60`'s typed
 /// aimed-fire command (+3 accuracy, doubled action cost), version `59`'s
 /// Nuclear Plasma Rifle typed six-projectile ordinary-fire volley and
 /// six-cell aggregate cost, version `58`'s Trigun typed aimed-fire command
@@ -43,7 +44,7 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// alternate overload/recharge, the `IF_NORELOAD` policy, Blaster recharge,
 /// the prior Malek's Armor, Missile Launcher, and Combat Shotgun policies, and
 /// the typed ordinary-fire cost policies through Laser Rifle.
-pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 61;
+pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 62;
 
 /// Procedural-generation semantics identifier expected for replays that carry
 /// a procedural generation configuration. Version 2 includes the exact
@@ -63,8 +64,9 @@ pub struct ReplayMetadata {
   /// Engine crate version string.
   pub engine_version: String,
   /// Gameplay semantics version required to interpret the command history.
-  /// Version 61 includes Anti-Freak Jackal's typed delayed-explosion schedule,
-  /// version 60 includes its typed aimed-fire command (+3 accuracy, doubled
+  /// Version 62 includes Anti-Freak Jackal's typed radius-1 splash fanout,
+  /// version 61 includes its typed delayed-explosion schedule, version 60
+  /// includes its typed aimed-fire command (+3 accuracy, doubled
   /// action cost), version 59 includes Nuclear Plasma Rifle's typed
   /// six-projectile ordinary-fire volley and six-cell aggregate cost, version
   /// 58 includes
