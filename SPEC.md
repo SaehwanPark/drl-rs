@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.239`
+Current project version: `0.2.240`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,11 +25,11 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Frag Shotgun Browser Boundary
+## 2. Active Implementation Slice: M9 — Combat Pistol Browser Boundary
 
 ### 2.1 Objective
 
-Verify the delivered Frag Shotgun ordinary-fire policy at the direct-core and
+Verify the delivered Combat Pistol ordinary-fire policy at the direct-core and
 BrowserSession boundary. A deterministic one-projectile command must produce
 identical events, fair player observations, render effects, and scene state in
 both paths while retaining generic command execution ownership.
@@ -40,21 +40,21 @@ both paths while retaining generic command execution ownership.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, Gate C catalog ownership, and Gate D callback behavior
   evidence remain closed for this contract-only slice.
-- **Observable outcome:** A fixed Frag Shotgun replay setup and one ranged
+- **Observable outcome:** A fixed Combat Pistol replay setup and one ranged
   command produce identical direct-core and `BrowserSession` events,
-  observations, render effects, and scenes; the direct result consumes two
-  rounds from the 16-round clip and emits one ordered ranged-hit event.
+  observations, render effects, and scenes; the direct result consumes one
+  round from the 15-round clip and emits one ordered ranged-hit event.
 - **Gameplay/replay impact:** Gameplay semantics remain at `53`; replay
   wire/schema, RNG sampling, generator, and ruleset identities remain unchanged.
-  Project version advances from `0.2.238` to `0.2.239` for the browser-boundary
+  Project version advances from `0.2.239` to `0.2.240` for the browser-boundary
   verification slice.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary
   and profiles; `drl-protocol`, MCP, render, audio, and browser boundaries remain
   unchanged. No new command, event, or runtime dispatch surface is introduced;
   no gameplay-policy or protocol changes are introduced by this verification
   slice.
-- **Evidence boundary:** Pinned Frag Shotgun source evidence in
-  `docs/legacy-behavior/frag-shotgun-profile.md`, the delivered direct-target
+- **Evidence boundary:** Pinned Combat Pistol source evidence in
+  `docs/legacy-behavior/combat-pistol-profile.md`, the delivered direct-target
   ranged contract, and the BrowserSession boundary test are authoritative.
   Controlled legacy runtime, browser capture, and audiovisual comparisons
   remain `NOT_RUN`.
@@ -69,7 +69,7 @@ The existing ranged command path already performs complete preflight,
 transactional clip validation and typed clip consumption for ordered
 projectiles. This slice exercises that delivered policy through the
 BrowserSession effect/observation boundary without adding a generic dispatcher,
-changing RNG sampling, or altering gameplay semantics. Frag Shotgun alternate
+changing RNG sampling, or altering gameplay semantics. Combat Pistol alternate
 chainfire and presentation capture parity remain outside this verification
 contract.
 
@@ -2752,7 +2752,7 @@ Its contract must:
   gameplay semantics `53`, replay schema, RNG, generator, and ruleset
   identities.
 
-### 2.7di Current Frag Shotgun browser-boundary verification target
+### 2.7di Historical Frag Shotgun browser-boundary verification target
 
 The bounded implementation target for this revision is a direct-core and
 `BrowserSession` parity test for the delivered Frag Shotgun ordinary-fire
@@ -2772,6 +2772,29 @@ contract. Its contract must:
   spread/falloff, knockback, and audiovisual parity `NOT_RUN` where evidence is
   unavailable;
 - [x] advance project version from `0.2.238` to `0.2.239` while preserving
+  gameplay semantics `53`, replay schema, RNG, generator, and ruleset
+  identities.
+
+### 2.7dj Current Combat Pistol browser-boundary verification target
+
+The bounded implementation target for this revision is a direct-core and
+`BrowserSession` parity test for the delivered Combat Pistol ordinary-fire
+contract. Its contract must:
+
+- [x] construct the same fixed replay setup in direct core and `BrowserSession`
+  with a Combat Pistol, 9mm reserve, and high-HP target;
+- [x] submit one ranged command through both paths and preserve identical
+  `GameEvent` sequences, fair player observations, render effects, and scene
+  projections;
+- [x] verify the accepted command emits one ordered ranged-hit event and
+  consumes one round from the 15-round clip without changing gameplay policy;
+- [x] append the command to a replay, reproduce the direct events/state, and
+  pass deterministic replay verification without adding protocol or runtime
+  dispatch surfaces;
+- [x] keep controlled legacy runtime, browser capture, aimed callback,
+  exact timing/accuracy, and audiovisual parity `NOT_RUN` where evidence is
+  unavailable;
+- [x] advance project version from `0.2.239` to `0.2.240` while preserving
   gameplay semantics `53`, replay schema, RNG, generator, and ruleset
   identities.
 
@@ -3139,6 +3162,13 @@ one-projectile command now reproduces events, fair observations, render effects,
 scene state, and replay determinism across both paths; controlled legacy
 runtime, browser capture, exact timing/accuracy, spread/falloff, knockback, and
 audiovisual parity remain open.
+
+The `0.2.240` successor verifies the delivered Combat Pistol ordinary-fire
+contract through the direct-core and `BrowserSession` boundaries. A fixed
+one-projectile command now reproduces events, fair observations, render effects,
+scene state, and replay determinism across both paths; controlled legacy
+runtime, browser capture, aimed callback, exact timing/accuracy, and audiovisual
+parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity
