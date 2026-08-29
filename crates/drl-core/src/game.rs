@@ -9,11 +9,13 @@ use drl_protocol::{
 use crate::acid_spitter::{ACID_SPITTER_RELOAD_AMOUNT, AcidSpitterReloadError};
 use crate::assault_shotgun::{AssaultShotgunReloadPlan, AssaultShotgunTransition};
 use crate::behavior::{
-  BFG10K_EXPLOSION_DELAY, BFG10K_EXPLOSION_KNOCKBACK, BFG10K_EXPLOSION_RADIUS,
-  BFG9000_EXPLOSION_DELAY, BFG9000_EXPLOSION_KNOCKBACK, BFG9000_EXPLOSION_RADIUS,
-  LavaRechargeOutcome, MedicalRepairOutcome, NUCLEAR_BFG9000_EXPLOSION_DELAY,
-  NUCLEAR_BFG9000_EXPLOSION_KNOCKBACK, NUCLEAR_BFG9000_EXPLOSION_RADIUS,
-  PISTOL_AIMED_ACCURACY_BONUS, PISTOL_AIMED_FIRE_COST_MULTIPLIER, WeaponRechargeOutcome,
+  ANTI_FREAK_JACKAL_EXPLOSION_DELAY, ANTI_FREAK_JACKAL_EXPLOSION_KNOCKBACK,
+  ANTI_FREAK_JACKAL_EXPLOSION_RADIUS, BFG10K_EXPLOSION_DELAY, BFG10K_EXPLOSION_KNOCKBACK,
+  BFG10K_EXPLOSION_RADIUS, BFG9000_EXPLOSION_DELAY, BFG9000_EXPLOSION_KNOCKBACK,
+  BFG9000_EXPLOSION_RADIUS, LavaRechargeOutcome, MedicalRepairOutcome,
+  NUCLEAR_BFG9000_EXPLOSION_DELAY, NUCLEAR_BFG9000_EXPLOSION_KNOCKBACK,
+  NUCLEAR_BFG9000_EXPLOSION_RADIUS, PISTOL_AIMED_ACCURACY_BONUS, PISTOL_AIMED_FIRE_COST_MULTIPLIER,
+  WeaponRechargeOutcome,
 };
 use crate::combat::CombatResolver;
 use crate::combat_shotgun::{CombatShotgunReloadPlan, CombatShotgunTransition};
@@ -1695,6 +1697,7 @@ impl Game {
       weapon_is_bfg10k,
       weapon_is_bfg9000,
       weapon_is_nuclear_bfg9000,
+      weapon_is_anti_freak_jackal,
     ) = {
       let player = self
         .state
@@ -1750,6 +1753,8 @@ impl Game {
       let weapon_is_bfg9000 = weapon.archetype() == drl_protocol::ItemArchetype::Bfg9000;
       let weapon_is_nuclear_bfg9000 =
         weapon.archetype() == drl_protocol::ItemArchetype::NuclearBfg9000;
+      let weapon_is_anti_freak_jackal =
+        weapon.archetype() == drl_protocol::ItemArchetype::AntiFreakJackal;
       (
         props.fire_cost,
         shot_count,
@@ -1758,6 +1763,7 @@ impl Game {
         weapon_is_bfg10k,
         weapon_is_bfg9000,
         weapon_is_nuclear_bfg9000,
+        weapon_is_anti_freak_jackal,
       )
     };
 
@@ -1878,6 +1884,14 @@ impl Game {
           delay: NUCLEAR_BFG9000_EXPLOSION_DELAY,
           radius: NUCLEAR_BFG9000_EXPLOSION_RADIUS,
           knockback: NUCLEAR_BFG9000_EXPLOSION_KNOCKBACK,
+        });
+      } else if weapon_is_anti_freak_jackal {
+        events.push(GameEvent::AntiFreakJackalExplosionScheduled {
+          entity_id: player_id,
+          target_id: target_monster_id,
+          delay: ANTI_FREAK_JACKAL_EXPLOSION_DELAY,
+          radius: ANTI_FREAK_JACKAL_EXPLOSION_RADIUS,
+          knockback: ANTI_FREAK_JACKAL_EXPLOSION_KNOCKBACK,
         });
       }
 

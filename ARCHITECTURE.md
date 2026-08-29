@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.250`
+Current project version: `0.2.251`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -224,7 +224,8 @@ Presentation Boundary
     profile records its six-projectile ordinary-fire and six-cell cost
     fragments; Trigun's profile records its one-projectile/one-round ordinary
     fire and shared aimed-fire fragments; Anti-Freak Jackal's profile records
-    its one-projectile/one-round ordinary fire and shared aimed-fire fragments;
+    its one-projectile/one-round ordinary fire, shared aimed-fire, and
+    delay-40/radius-1/default-knockback-8 schedule fragments;
     Nuclear Plasma's profile records its
     six-projectile ordinary-fire and six-cell cost fragments alongside overload
     and recharge without claiming chainfire.

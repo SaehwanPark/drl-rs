@@ -3046,6 +3046,69 @@ mod tests {
   }
 
   #[test]
+  fn anti_freak_jackal_browser_boundary_preserves_explosion_schedule() {
+    let player_position = Position::new(2, 2);
+    let target_position = Position::new(3, 2);
+    let mut setup_replay =
+      ReplayLog::new(0, 10, 6, player_position).with_player_config(PlayerSpawnConfig {
+        hp: 50,
+        max_hp: 50,
+        speed: 100,
+        initial_items: vec![ItemSpawnKind::Ammo9mm(6)],
+        equipped_weapon: Some(ItemSpawnKind::AntiFreakJackal),
+        equipped_armor: None,
+        equipped_armor_durability: None,
+      });
+    setup_replay.record_monster(MonsterSpawnSpec::new(
+      target_position,
+      "Static Target",
+      500,
+      1,
+      (0, 0),
+    ));
+    let (initial, setup_events) =
+      drl_core::ReplayEngine::run(&setup_replay).expect("Anti-Freak schedule setup");
+    assert!(setup_events.is_empty());
+    let mut direct = initial.clone();
+    let mut browser = BrowserSession::from_game(initial);
+    let mut all_events = Vec::new();
+    for _ in 0..6 {
+      let command = Command::AttackRangedAimed(target_position);
+      let expected_events = direct
+        .step(command)
+        .expect("direct Anti-Freak schedule command");
+      let step = browser
+        .submit(command)
+        .expect("browser Anti-Freak schedule command");
+      assert_eq!(step.events, expected_events);
+      assert_eq!(step.after, direct.observe_player());
+      all_events.extend(expected_events);
+    }
+    assert!(all_events.iter().any(|event| {
+      matches!(
+        event,
+        drl_protocol::GameEvent::AntiFreakJackalExplosionScheduled {
+          delay: 40,
+          radius: 1,
+          knockback: 8,
+          ..
+        }
+      )
+    }));
+    assert_eq!(browser.observation(), direct.observe_player());
+    assert_eq!(browser.replay_log().commands.len(), 6);
+    let mut command_replay = setup_replay;
+    for _ in 0..6 {
+      command_replay.record_command(Command::AttackRangedAimed(target_position));
+    }
+    let (replayed, replay_events) =
+      drl_core::ReplayEngine::run(&command_replay).expect("Anti-Freak schedule replay");
+    assert_eq!(replayed, direct);
+    assert_eq!(replay_events, all_events);
+    assert!(drl_core::ReplayEngine::verify_determinism(&command_replay).unwrap());
+  }
+
+  #[test]
   fn nuclear_plasma_overload_browser_boundary_matches_direct_core() {
     let player_position = Position::new(1, 1);
     let mut setup_replay =

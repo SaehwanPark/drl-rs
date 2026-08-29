@@ -1174,6 +1174,23 @@ pub fn game_event_to_json(event: &GameEvent) -> JsonValue {
       map.insert("radius".to_string(), JsonValue::from(*radius));
       map.insert("damage".to_string(), JsonValue::from(*damage));
     }
+    GameEvent::AntiFreakJackalExplosionScheduled {
+      entity_id,
+      target_id,
+      delay,
+      radius,
+      knockback,
+    } => {
+      map.insert(
+        "type".to_string(),
+        JsonValue::from("AntiFreakJackalExplosionScheduled"),
+      );
+      map.insert("entity_id".to_string(), JsonValue::from(entity_id.as_u64()));
+      map.insert("target_id".to_string(), JsonValue::from(target_id.as_u64()));
+      map.insert("delay".to_string(), JsonValue::from(*delay));
+      map.insert("radius".to_string(), JsonValue::from(*radius));
+      map.insert("knockback".to_string(), JsonValue::from(*knockback));
+    }
     GameEvent::Bfg10kExplosionScheduled {
       entity_id,
       target_id,
@@ -2067,6 +2084,29 @@ mod tests {
     assert_eq!(map.get("delay").and_then(JsonValue::as_i64), Some(25));
     assert_eq!(map.get("radius").and_then(JsonValue::as_i64), Some(2));
     assert_eq!(map.get("knockback").and_then(JsonValue::as_i64), Some(16));
+  }
+
+  #[test]
+  fn anti_freak_jackal_explosion_schedule_event_projects_to_mcp_json() {
+    let value = game_event_to_json(&GameEvent::AntiFreakJackalExplosionScheduled {
+      entity_id: drl_protocol::EntityId::new(1),
+      target_id: drl_protocol::EntityId::new(2),
+      delay: 40,
+      radius: 1,
+      knockback: 8,
+    });
+    let JsonValue::Object(map) = value else {
+      panic!("event projection must be an object");
+    };
+    assert_eq!(
+      map.get("type").and_then(JsonValue::as_str),
+      Some("AntiFreakJackalExplosionScheduled")
+    );
+    assert_eq!(map.get("entity_id").and_then(JsonValue::as_i64), Some(1));
+    assert_eq!(map.get("target_id").and_then(JsonValue::as_i64), Some(2));
+    assert_eq!(map.get("delay").and_then(JsonValue::as_i64), Some(40));
+    assert_eq!(map.get("radius").and_then(JsonValue::as_i64), Some(1));
+    assert_eq!(map.get("knockback").and_then(JsonValue::as_i64), Some(8));
   }
 
   #[test]

@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.251]
+
+- Added the typed Anti-Freak Jackal delayed-explosion schedule event:
+  successful hits now project delay `40`, radius `1`, and default knockback
+  `8` through direct-core, MCP JSON, and `BrowserSession` parity tests.
+  Splash geometry, damage fanout, callback state, controlled runtime, browser
+  capture, and audiovisual parity remain deferred; gameplay semantics advance
+  from `60` to `61`.
+
 ## [0.2.250]
 
 - Extended the shared typed aimed-fire contract to Anti-Freak Jackal,
