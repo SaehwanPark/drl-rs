@@ -474,6 +474,23 @@ const DOUBLE_SHOTGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
 pub const DOUBLE_SHOTGUN_BEHAVIOR: BehaviorProfile =
   BehaviorProfile::new(DOUBLE_SHOTGUN_BEHAVIOR_SPECS);
 
+/// Pinned projectile count for an ordinary Super Shotgun shot.
+pub const SUPER_SHOTGUN_PROJECTILE_COUNT: u32 = 2;
+
+const SUPER_SHOTGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Attack(AttackEffect::ProjectileCount(
+    SUPER_SHOTGUN_PROJECTILE_COUNT,
+  )),
+  BehaviorSpec::Cost(ResourceCost::Ammo {
+    ammo_type: AmmoType::Shells,
+    amount: 1,
+  }),
+];
+
+/// Immutable typed profile for the current Super Shotgun dual-shot behavior.
+pub const SUPER_SHOTGUN_BEHAVIOR: BehaviorProfile =
+  BehaviorProfile::new(SUPER_SHOTGUN_BEHAVIOR_SPECS);
+
 /// Current Rust projectile count for an ordinary Frag Shotgun shot.
 pub const FRAG_SHOTGUN_PROJECTILE_COUNT: u32 = 1;
 /// Pinned per-projectile clip cost for an ordinary Frag Shotgun shot.
@@ -1393,6 +1410,18 @@ mod tests {
         BehaviorSpec::Cost(ResourceCost::Ammo {
           ammo_type: AmmoType::Shells,
           amount: 2,
+        }),
+      ]
+    );
+    assert_eq!(
+      SUPER_SHOTGUN_BEHAVIOR.specs(),
+      &[
+        BehaviorSpec::Attack(AttackEffect::ProjectileCount(
+          SUPER_SHOTGUN_PROJECTILE_COUNT,
+        )),
+        BehaviorSpec::Cost(ResourceCost::Ammo {
+          ammo_type: AmmoType::Shells,
+          amount: 1,
         }),
       ]
     );

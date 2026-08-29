@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.227`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.228`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -84,7 +84,8 @@ replays, and regression testing.
     count-sensitive reconstruction, and presentation policy remain explicit.
   - The typed behavior vocabulary includes immutable Acid Spitter, Grammaton,
     Jackhammer, Lava Armor, Malek's Armor, Blaster, Nuclear Plasma Rifle,
-    Missile Launcher, Pistol, Rocket Launcher, Shotgun, Combat Shotgun, Double Shotgun, Assault Shotgun,
+    Missile Launcher, Pistol, Rocket Launcher, Shotgun, Combat Shotgun, Double Shotgun,
+    Super Shotgun, Assault Shotgun,
     Revenant's Launcher,
     standard BFG 9000, Nuclear BFG 9000, and BFG 10K profiles for typed
     ordinary-action, periodic/alternate, exact-hit, projectile-count,
@@ -97,7 +98,8 @@ replays, and regression testing.
     Launcher ordinary single-rocket reload plus full-deficit reload capped at
     2,500 score-count units; Combat Shotgun ordinary single-shell reload plus
     full-deficit reload capped at 2,500 score-count units; Double Shotgun's
-    typed two-projectile dual-shot consumes two shells; Combat Shotgun's
+    typed two-projectile dual-shot consumes two shells; Super Shotgun's typed
+    two-projectile ordinary fire also consumes two shells; Combat Shotgun's
     typed pump-only chamber cycle costs 200 action units; Assault Shotgun
     ordinary single-shell reload plus full-deficit reload capped at 2,500
     score-count units; Pistol's typed ordinary fire resolves one projectile and

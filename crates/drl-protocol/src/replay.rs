@@ -33,8 +33,8 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// recharge/overload, Revenant's Launcher exact-hit resolution, Nuclear Plasma
 /// alternate overload/recharge, the `IF_NORELOAD` policy, Blaster recharge,
 /// the prior Malek's Armor, Missile Launcher, and Combat Shotgun policies, and
-/// the typed ordinary-fire cost policies through Mega Buster.
-pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 49;
+/// the typed ordinary-fire cost policies through Super Shotgun.
+pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 50;
 
 /// Procedural-generation semantics identifier expected for replays that carry
 /// a procedural generation configuration. Version 2 includes the exact
@@ -54,13 +54,14 @@ pub struct ReplayMetadata {
   /// Engine crate version string.
   pub engine_version: String,
   /// Gameplay semantics version required to interpret the command history.
-  /// Version 49 includes the Mega Buster's three-projectile/three-round
-  /// ordinary-fire volley, version 48's Acid Spitter ten-rocket ordinary-fire
-  /// cost, version 47's Tristar Blaster three-projectile/five-cell ordinary-fire
-  /// volley, version 46's Null Pointer ten-cell ordinary-fire cost, version 45's
-  /// Railgun five-cell ordinary-fire cost, the version 44 Frag Shotgun's
-  /// two-round ordinary-fire cost, the version 43 Plasma Shotgun's three-cell
-  /// ordinary-fire cost, the version 42 Double
+  /// Version 50 includes the Super Shotgun's two-projectile/two-shell
+  /// ordinary-fire volley, version 49's Mega Buster three-projectile/
+  /// three-round ordinary-fire volley, version 48's Acid Spitter ten-rocket
+  /// ordinary-fire cost, version 47's Tristar Blaster three-projectile/five-cell
+  /// ordinary-fire volley, version 46's Null Pointer ten-cell ordinary-fire
+  /// cost, version 45's Railgun five-cell ordinary-fire cost, the version 44
+  /// Frag Shotgun's two-round ordinary-fire cost, the version 43 Plasma
+  /// Shotgun's three-cell ordinary-fire cost, the version 42 Double
   /// Shotgun's two-projectile dual-shot policy, plus typed exact-hit policies,
   /// BFG 10K's five-projectile volley and delayed explosion schedules,
   /// standard and Nuclear BFG 9000's forty-cell shot costs and delayed

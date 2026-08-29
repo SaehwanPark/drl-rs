@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.227`
+Current project version: `0.2.228`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -49,7 +49,9 @@ typed periodic-recharge fragment; Missile Launcher records its typed ordinary
 single-rocket reload and capped full-deficit reload fragments; Combat Shotgun
 records its typed pump-only chamber action (200 units), ordinary single-shell
 reload, and capped full-deficit reload fragments; Double Shotgun records its
-typed two-projectile dual-shot and two-shell ammo-cost fragments; Standard
+typed two-projectile dual-shot and two-shell ammo-cost fragments; Super Shotgun
+records its typed two-projectile dual-shot and two-shell aggregate ammo-cost
+fragments; Standard
 Shotgun records its typed one-cell knockback hit and one-shell ammo-cost
 fragments; Plasma Shotgun records its typed one-projectile ordinary-fire and
 three-cell ammo-cost fragments; Frag Shotgun records its typed one-projectile

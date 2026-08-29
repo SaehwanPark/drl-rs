@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.228]
+
+- Added the immutable `SUPER_SHOTGUN_BEHAVIOR` profile and enforced the pinned
+  two-projectile ordinary-fire volley with one shell consumed per projectile,
+  including atomic below-cost rejection and deterministic replay coverage.
+  Gameplay semantics advance to `50`; stale semantics-49 replays are rejected
+  before execution. Spread/falloff and controlled runtime or audiovisual parity
+  remain deferred.
+
 ## [0.2.227]
 
 - Added the immutable `MEGA_BUSTER_BEHAVIOR` profile and enforced the pinned
