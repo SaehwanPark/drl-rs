@@ -3,6 +3,16 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.243]
+
+- Extended the typed Blaster profile with its current one-projectile,
+  one-cell ordinary-fire contract and added a deterministic direct-core/
+  BrowserSession boundary check covering the ranged-hit event, fair
+  observations, render effects, scene projection, clip consumption, and replay
+  equality. Recharge and no-manual-reload policies remain explicit; controlled
+  legacy runtime, browser capture, aimed behavior, and audiovisual parity stay
+  deferred.
+
 ## [0.2.242]
 
 - Added a deterministic Plasma Shotgun direct-core/BrowserSession vertical
