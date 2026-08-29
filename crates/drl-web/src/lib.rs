@@ -6423,6 +6423,130 @@ mod tests {
   }
 
   #[test]
+  fn plasma_shotgun_vertical_browser_boundary_matches_direct_core() {
+    let player_position = Position::new(1, 1);
+    let player_config = PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: vec![ItemSpawnKind::AmmoCells(10)],
+      equipped_weapon: Some(ItemSpawnKind::PlasmaShotgun),
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    };
+    let target_position = Position::new(3, 1);
+    let mut setup_replay =
+      ReplayLog::new(2_252, 8, 4, player_position).with_player_config(player_config);
+    setup_replay.record_monster(MonsterSpawnSpec::new(
+      target_position,
+      "Static Target",
+      500,
+      100,
+      (1, 7),
+    ));
+
+    let (initial, setup_events) =
+      drl_core::ReplayEngine::run(&setup_replay).expect("vertical replay setup");
+    assert!(setup_events.is_empty());
+    let player_id = initial.world().player_id().expect("player identity");
+    let target_id = initial
+      .world()
+      .actors()
+      .values()
+      .find(|actor| !actor.is_player())
+      .expect("static target")
+      .id();
+    let ammo_id = ItemId::new(4);
+    let plasma_shotgun_id = ItemId::new(5);
+    assert_eq!(
+      initial
+        .world()
+        .player()
+        .expect("player")
+        .inventory()
+        .get_item(ammo_id)
+        .expect("cell reserve")
+        .count(),
+      10
+    );
+    assert_eq!(
+      initial
+        .world()
+        .player()
+        .expect("player")
+        .equipment()
+        .weapon()
+        .expect("Plasma Shotgun")
+        .id(),
+      plasma_shotgun_id
+    );
+
+    let command = Command::AttackRanged(target_position);
+    let mut direct = initial.clone();
+    let mut browser = BrowserSession::from_game(initial);
+    let expected_events = direct.step(command).expect("direct Plasma Shotgun command");
+    let step = browser
+      .submit(command)
+      .expect("browser Plasma Shotgun command");
+    assert_eq!(step.events, expected_events);
+    assert_eq!(step.after, direct.observe_player());
+    assert_eq!(
+      step.effects,
+      effect_timeline_for_observations(&step.before, &step.after, &expected_events,)
+    );
+    assert_eq!(browser.scene(), RenderScene::from_observation(&step.after));
+    assert_eq!(
+      expected_events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          drl_protocol::GameEvent::AttackResolved {
+            attacker_id,
+            target_id: event_target,
+            is_ranged: true,
+            ..
+          } if *attacker_id == player_id && *event_target == target_id
+        ))
+        .count(),
+      1
+    );
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .expect("player")
+        .equipment()
+        .weapon()
+        .expect("Plasma Shotgun")
+        .weapon_properties()
+        .expect("Plasma Shotgun properties")
+        .current_clip,
+      27
+    );
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .expect("player")
+        .inventory()
+        .get_item(ammo_id)
+        .expect("cell reserve")
+        .count(),
+      10
+    );
+
+    let mut command_replay = setup_replay;
+    command_replay.record_command(command);
+    let (replayed, replay_events) =
+      drl_core::ReplayEngine::run(&command_replay).expect("vertical command replay");
+    assert_eq!(replay_events, expected_events);
+    assert_eq!(replayed, direct);
+    assert!(
+      drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism")
+    );
+  }
+
+  #[test]
   fn plasma_rifle_vertical_browser_boundary_matches_direct_core_presentation() {
     let player_position = Position::new(1, 1);
     let player_config = PlayerSpawnConfig {

@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.242]
+
+- Added a deterministic Plasma Shotgun direct-core/BrowserSession vertical
+  boundary check covering the ordered ranged-hit event, fair observations,
+  render effects, scene projection, three-cell clip consumption, and replay
+  equality. Gameplay semantics remain `53`; controlled legacy runtime, browser
+  capture, spread/falloff, knockback, and audiovisual parity remain deferred.
+
 ## [0.2.241]
 
 - Added a deterministic Pistol direct-core/BrowserSession vertical boundary
