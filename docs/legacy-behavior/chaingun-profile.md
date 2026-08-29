@@ -1,7 +1,7 @@
 # Chaingun typed behavior-profile evidence
 
 Status: delivered typed ordinary-fire four-shot profile and bounded first-level
-chainfire for `0.2.258`; higher chainfire levels, spread/routing, controlled
+chainfire for `0.2.257`; higher chainfire levels, spread/routing, controlled
 legacy runtime comparison, and audiovisual parity remain `NOT_RUN`.
 
 ## Pinned source

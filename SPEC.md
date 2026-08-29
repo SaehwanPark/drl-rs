@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-29
-Current project version: `0.2.258`
+Current project version: `0.2.257`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -47,10 +47,11 @@ warm-up state only after acceptance, and let ordinary fire reset that state.
   remaining slots after a lethal target), consumes three clip rounds, and
   exposes warm-up level `1`; a rejected below-three clip leaves the complete
   game state unchanged, while accepted ordinary fire resets the level to `0`.
-- **Gameplay/replay impact:** Gameplay semantics advance from `67` to `68` for
-  deterministic completion after lethal chainfire targets; replay
+- **Gameplay/replay impact:** Gameplay semantics advance from `66` to `68` for
+  the typed chainfire burst and deterministic completion after lethal targets;
+  replay
   wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.257` to `0.2.258`.
+  unchanged. Project version advances from `0.2.256` to `0.2.257`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary,
   typed projectile-count/cost policy and generic execution; `drl-protocol` owns
   the semantic `AttackRanged`/`AttackRangedAimed` commands and typed event
@@ -3231,8 +3232,8 @@ contract must:
 - [x] keep higher chainfire levels, legacy target rotation/spread, exact
   callback timing/accuracy, controlled runtime, browser capture, and
   audiovisual parity `NOT_RUN` where evidence is unavailable;
-- [x] advance project version from `0.2.257` to `0.2.258` and gameplay
-  semantics from `67` to `68` while preserving replay schema, RNG, generator,
+- [x] advance project version from `0.2.256` to `0.2.257` and gameplay
+  semantics from `66` to `68` while preserving replay schema, RNG, generator,
   and ruleset identities.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
@@ -3726,20 +3727,14 @@ parity remain open.
 
 The `0.2.257` successor extends the Chaingun ordinary-fire profile with a typed
 first-level chainfire command. A Chaingun at warm-up level `0` now accepts a
-three-projectile burst after atomic three-round preflight, advances observable
+three-projectile burst after atomic three-round preflight, always emits three
+ordered ranged outcomes (deterministic no-op misses fill slots after a lethal
+target without additional damage or RNG sampling), advances observable
 warm-up state only after acceptance, and lets ordinary fire reset that state.
-Replay/MCP JSON/catalog, browser snapshot, and `BrowserSession` parity are
-verified; higher chainfire levels, target rotation/spread, exact callback
-timing/accuracy, controlled runtime, browser capture, and audiovisual parity
-remain open.
-
-The `0.2.258` successor completes the bounded Chaingun first-level chainfire
-contract for lethal targets. Accepted bursts always emit three ordered ranged
-outcomes; slots after a lethal target are deterministic no-op misses without
-additional damage or RNG sampling. The browser maps the physical `C` key to
-the semantic chainfire command, and gameplay semantics advance to `68`.
-Higher chainfire levels, target rotation/spread, exact callback timing/accuracy,
-controlled runtime, browser capture, and audiovisual parity remain open.
+Replay/MCP JSON/catalog, browser snapshot, physical `C` key routing, and
+`BrowserSession` parity are verified; higher chainfire levels, target
+rotation/spread, exact callback timing/accuracy, controlled runtime, browser
+capture, and audiovisual parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity
