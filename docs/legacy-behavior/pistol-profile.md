@@ -17,7 +17,8 @@ at revision `17d9be1204751899b2d69d8d3a2dde247bd0cc5c`.
   it does not claim callback-state parity.
 - `src/dfbeing.pas:892-960` invokes the alternate-fire callback before
   `FireRanged`, while `src/dfbeing.pas:1493-1515` validates cost/ammunition
-  before mutation and `src/dfbeing.pas:1544-1545` clears aimed state after fire.
+  before mutation. The fired hook dispatches at `src/dfbeing.pas:1544-1545`,
+  and the aimed perk clears `pp_aimed` in `bin/data/drl/perks.lua:151-154`.
 - `src/dfitem.pas:247-252` defaults an absent `shots` field to zero, and
   `src/dfbeing.pas:1477-1480` resolves ordinary ranged fire with
   `iShots := Max(aGun.Shots, 1)`, so this path emits one projectile.
