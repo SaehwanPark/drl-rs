@@ -70,7 +70,7 @@ DRL-Rust is a deterministic, headless, turn-based roguelike simulation of Doom t
 4. `fire` (`target_x`: int, `target_y`: int)
    - Fire equipped ranged weapon at target grid coordinates.
 5. `aimed_fire` (`target_x`: int, `target_y`: int)
-   - Fire an equipped Pistol or Combat Pistol with +3 accuracy at double time cost.
+   - Fire an equipped Pistol, Combat Pistol, or Blaster with +3 accuracy at double time cost.
 6. `reload`
    - Reload equipped ranged weapon from inventory ammunition.
 7. `invoke` (`item_id`: int)

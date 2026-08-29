@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.245`
+Current project version: `0.2.246`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -45,8 +45,8 @@ Grammaton records its typed Single/Burst/Auto mode and score-cost fragments; Jac
 records its typed Burst/Single mode and score-cost fragments; Lava Armor records
 its typed terrain-gated durability-recharge fragment; Malek's Armor records its
 typed durability-recharge fragment; Blaster records its
-typed one-projectile ordinary-fire, one-cell cost, and periodic-recharge
-fragments; Missile Launcher records its typed ordinary
+typed one-projectile ordinary-fire, one-cell cost, shared aimed-fire (+3
+accuracy, 2× action-cost), and periodic-recharge fragments; Missile Launcher records its typed ordinary
 single-rocket reload and capped full-deficit reload fragments; Combat Shotgun
 records its typed pump-only chamber action (200 units), ordinary single-shell
 reload, and capped full-deficit reload fragments; Double Shotgun records its

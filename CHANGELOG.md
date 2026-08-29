@@ -3,6 +3,16 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.246]
+
+- Extended the shared typed aimed-fire command to the Blaster, preserving the
+  pinned +3 accuracy bonus, doubled action cost, one projectile, and one cell
+  consumed transactionally. The accepted shot resets the typed recharge timer
+  while `IF_NORELOAD` remains explicit; direct-core, replay/MCP JSON and
+  catalog, and `BrowserSession` parity are verified, gameplay semantics advance
+  from `55` to `56`, and exact legacy callback state/timing, controlled runtime,
+  browser capture, and audiovisual parity remain deferred.
+
 ## [0.2.245]
 
 - Extended the typed aimed-fire command to the Combat Pistol, sharing the
