@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.258]
+
+- Added the immutable Minigun first-level chainfire behavior profile. Pinned
+  legacy evidence records six projectiles and six 9mm rounds for the first
+  alternate level; no new command or execution dispatcher is introduced, so
+  runtime chainfire remains explicitly deferred.
+
 ## [0.2.257]
 
 - Added the bounded first-level Chaingun chainfire command. A Chaingun with

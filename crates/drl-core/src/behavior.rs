@@ -200,7 +200,7 @@ pub enum KillEffect {
 /// Explicit alternate action families; behavior remains in dedicated handlers.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AlternateAction {
-  /// Fire the first three-projectile Chaingun chainfire burst.
+  /// Fire a weapon's first-level chainfire burst.
   Chainfire { shot_count: u32, ammo_cost: u32 },
   /// Fire one aimed projectile with a typed accuracy bonus and time multiplier.
   AimedFire {
@@ -550,12 +550,20 @@ pub const SUPER_SHOTGUN_BEHAVIOR: BehaviorProfile =
 
 /// Pinned projectile count for an ordinary Minigun shot.
 pub const MINIGUN_PROJECTILE_COUNT: u32 = 8;
+/// Pinned projectile count for the first Minigun chainfire level.
+pub const MINIGUN_CHAINFIRE_PROJECTILE_COUNT: u32 = 6;
+/// Pinned 9mm cost for the first Minigun chainfire level.
+pub const MINIGUN_CHAINFIRE_SHOT_COST: u32 = 6;
 
 const MINIGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
   BehaviorSpec::Attack(AttackEffect::ProjectileCount(MINIGUN_PROJECTILE_COUNT)),
   BehaviorSpec::Cost(ResourceCost::Ammo {
     ammo_type: AmmoType::Ammo9mm,
     amount: 1,
+  }),
+  BehaviorSpec::Alternate(AlternateAction::Chainfire {
+    shot_count: MINIGUN_CHAINFIRE_PROJECTILE_COUNT,
+    ammo_cost: MINIGUN_CHAINFIRE_SHOT_COST,
   }),
 ];
 
@@ -1640,6 +1648,10 @@ mod tests {
         BehaviorSpec::Cost(ResourceCost::Ammo {
           ammo_type: AmmoType::Ammo9mm,
           amount: 1,
+        }),
+        BehaviorSpec::Alternate(AlternateAction::Chainfire {
+          shot_count: 6,
+          ammo_cost: 6,
         }),
       ]
     );

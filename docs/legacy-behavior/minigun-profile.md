@@ -1,8 +1,9 @@
 # Minigun typed behavior-profile evidence
 
-Status: delivered typed ordinary-fire eight-shot profile for `0.2.229`;
-alternate chainfire, spread/routing, controlled legacy runtime comparison, and
-audiovisual parity remain `NOT_RUN`.
+Status: delivered typed ordinary-fire eight-shot profile and declarative
+first-level chainfire profile for `0.2.258`; chainfire execution,
+spread/routing, controlled legacy runtime comparison, and audiovisual parity
+remain `NOT_RUN`.
 
 ## Pinned source
 
@@ -20,19 +21,22 @@ Evidence is pinned to revision
   least one and multiplies it by the resolved shot count before firing.
 - `src/dfbeing.pas:1477-1481` resolves ordinary fire to eight projectiles;
   chainfire adjustments require alternate fire.
+- `src/dfbeing.pas:1484-1488` reduces a first-level alternate burst by
+  `Shots div 3`, yielding six projectiles for the eight-shot Minigun; later
+  chainfire levels remain outside this bounded profile slice.
 - `src/dfbeing.pas:1496-1514` checks and debits the aggregate ammunition cost
   before emitting the ordered projectile loop at `:498-510`.
 
 ## DRL-Rust boundary
 
 The immutable `drl_core::behavior::MINIGUN_BEHAVIOR` profile records ordered
-`AttackEffect::ProjectileCount(8)` and
-`ResourceCost::Ammo { ammo_type: Ammo9mm, amount: 1 }` fragments. The existing
-ranged command path remains execution authority for target/LOS/range and
-death-drop preflight, damage RNG, event ordering, and transactional clip
-consumption. Direct integration tests verify eight attack events, eight-round
+`AttackEffect::ProjectileCount(8)`,
+`ResourceCost::Ammo { ammo_type: Ammo9mm, amount: 1 }`, and
+`AlternateAction::Chainfire { shot_count: 6, ammo_cost: 6 }` fragments. This
+slice is declaration-only: the existing ranged command path remains execution
+authority, and no generic chainfire dispatcher or alternate command is added.
+Direct integration tests continue to verify eight attack events, eight-round
 consumption, atomic below-cost rejection, and deterministic replay.
 
-The legacy alternate chainfire perk, spread/routing, exact timing/accuracy,
-controlled runtime comparison, and audiovisual parity remain deferred; source
-similarity alone is not parity proof.
+Chainfire execution and the legacy alternate perk's exact routing, timing, and
+accuracy remain deferred; source similarity alone is not parity proof.
