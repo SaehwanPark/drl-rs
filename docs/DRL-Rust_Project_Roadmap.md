@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.246`
+Current project version: `0.2.247`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.246)
+## 3. Current Progress Summary (`VERSION` 0.2.247)
 
 ### Delivered Foundations
 
@@ -871,6 +871,13 @@ verification item uses explicit status semantics:
   scene state, and replay outcomes; empty-clip rejection remains atomic and
   `IF_NORELOAD` remains explicit. Exact legacy callback state/timing, controlled
   runtime, browser capture, and audiovisual parity remain open.
+- **M9 Plasma Rifle ordinary-fire volley (`0.2.247`):** The typed Plasma Rifle
+  profile now resolves six ordered ordinary projectiles and consumes six cells
+  as one aggregate cost with atomic below-six rejection. Direct-core,
+  replay/MCP JSON/catalog, and `BrowserSession` paths reproduce deterministic
+  events, observations, effects, scene state, and replay outcomes; chainfire,
+  overcharge, exact callback timing, controlled runtime, browser capture, and
+  audiovisual parity remain open.
 - **M9 vertical Combat Shotgun pump action (`0.2.170`):** The deterministic
   `CombatPumpVertical` encounter now carries typed chamber state: successful
   fire empties it, empty-chamber fire rejects atomically, accepted movement and
@@ -1389,6 +1396,10 @@ scripting.
   recharge fragment; generic ranged execution and the dedicated transition
   remain authoritative while aimed fire, runtime, and audiovisual parity
   remain open.
+- [x] Plasma Rifle has an immutable behavior profile for its six-projectile
+  ordinary fire and one-cell-per-projectile cost; generic ranged execution
+  resolves the ordered volley and atomically rejects clips below six cells,
+  while chainfire, overcharge, runtime, and audiovisual parity remain open.
 - [x] Malek's Armor has an immutable behavior profile for its
   delay-50/cadence-5/amount-1 durability-recharge fragment; the dedicated
   transition remains authoritative and armor resistance/degradation, runtime,

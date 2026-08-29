@@ -6968,8 +6968,7 @@ mod tests {
       .expect("static target")
       .id();
     let target = Position::new(3, 1);
-    let mut commands = vec![Command::AttackRanged(target); 6];
-    commands.push(Command::Reload);
+    let commands = vec![Command::AttackRanged(target), Command::Reload];
     let ranged_attack = drl_render::EffectSpan {
       effect: drl_render::PresentationEffect::RangedAttack,
       start_tick: 0,
@@ -6986,12 +6985,55 @@ mod tests {
       duration_ticks: 3,
     };
     let expected_effects = [
-      vec![ranged_attack, hit],
-      vec![ranged_attack, hit],
-      vec![ranged_attack, hit],
-      vec![ranged_attack, hit],
-      vec![ranged_attack, hit],
-      vec![ranged_attack],
+      vec![
+        ranged_attack,
+        hit,
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::RangedAttack,
+          start_tick: 3,
+          duration_ticks: 2,
+        },
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::Hit,
+          start_tick: 5,
+          duration_ticks: 1,
+        },
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::RangedAttack,
+          start_tick: 6,
+          duration_ticks: 2,
+        },
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::Hit,
+          start_tick: 8,
+          duration_ticks: 1,
+        },
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::RangedAttack,
+          start_tick: 9,
+          duration_ticks: 2,
+        },
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::Hit,
+          start_tick: 11,
+          duration_ticks: 1,
+        },
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::RangedAttack,
+          start_tick: 12,
+          duration_ticks: 2,
+        },
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::Hit,
+          start_tick: 14,
+          duration_ticks: 1,
+        },
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::RangedAttack,
+          start_tick: 15,
+          duration_ticks: 2,
+        },
+      ],
       vec![reload],
     ];
     let mut direct = initial.clone();

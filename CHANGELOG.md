@@ -3,6 +3,16 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.247]
+
+- Added the typed Plasma Rifle ordinary-fire volley: one accepted command
+  resolves six ordered projectiles and consumes six cells as an aggregate,
+  with atomic rejection when the clip is below six. Direct-core, replay/MCP
+  JSON and catalog, and `BrowserSession` parity are verified; gameplay
+  semantics advance from `56` to `57`, while chainfire, overcharge, exact
+  callback timing, controlled runtime, browser capture, and audiovisual parity
+  remain deferred.
+
 ## [0.2.246]
 
 - Extended the shared typed aimed-fire command to the Blaster, preserving the

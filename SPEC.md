@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.246`
+Current project version: `0.2.247`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,13 +25,13 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Blaster Aimed Fire
+## 2. Active Implementation Slice: M9 — Plasma Rifle Ordinary Volley
 
 ### 2.1 Objective
 
-Verify the delivered Blaster aimed-fire policy at the typed direct-core,
-replay/MCP JSON, and `BrowserSession` boundaries. A deterministic aimed
-one-projectile command must produce identical events, fair player observations,
+Verify the delivered Plasma Rifle ordinary-fire volley policy at the typed direct-core,
+replay/MCP JSON, and `BrowserSession` boundaries. A deterministic ordinary
+six-projectile command must produce identical events, fair player observations,
 render effects, scene state, and replay outcomes in both execution paths while
 retaining generic ranged command execution ownership.
 
@@ -41,21 +41,20 @@ retaining generic ranged command execution ownership.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, Gate C catalog ownership, and Gate D callback behavior
   evidence remain closed for this contract-only slice.
-- **Observable outcome:** A fixed Blaster replay setup and one aimed command
+- **Observable outcome:** A fixed Plasma Rifle replay setup and one ordinary command
   produce identical direct-core and `BrowserSession` events, observations,
-  render effects, and scenes; the direct result adds three accuracy points,
-  consumes one cell from the clip, pays `ActionCost(2_000)`, and emits
-  one ordered ranged-hit event.
-- **Gameplay/replay impact:** Gameplay semantics advance from `55` to `56` for
-  the newly accepted Blaster interpretation; replay wire/schema, RNG sampling,
+  render effects, and scenes; the direct result emits six ordered ranged-hit
+  events, consumes six cells from the clip, and pays the ordinary ranged cost.
+- **Gameplay/replay impact:** Gameplay semantics advance from `56` to `57` for
+  the newly accepted Plasma Rifle volley interpretation; replay wire/schema, RNG sampling,
   generator, and ruleset identities remain unchanged. Project version advances
-  from `0.2.245` to `0.2.246`.
+  from `0.2.246` to `0.2.247`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary,
-  shared aimed accuracy/cost policy, and generic execution; `drl-protocol` owns the
-  semantic `AttackRangedAimed` command, while replay/MCP and browser boundaries
+  typed projectile-count/cost policy and generic execution; `drl-protocol` owns the
+  semantic `AttackRanged` command, while replay/MCP and browser boundaries
   serialize and route it without duplicating gameplay rules.
-- **Evidence boundary:** Pinned Blaster source evidence in
-  `docs/legacy-behavior/blaster-profile.md`, the delivered direct-target
+- **Evidence boundary:** Pinned Plasma Rifle source evidence in
+  `docs/legacy-behavior/plasma-rifle-profile.md`, the delivered direct-target
   ranged contract, and the direct-core/BrowserSession boundary tests are
   authoritative.
   Controlled legacy runtime, browser capture, and audiovisual comparisons
@@ -70,9 +69,8 @@ retaining generic ranged command execution ownership.
 
 The existing ranged command path already performs complete preflight,
 transactional clip validation and typed clip consumption for ordered
-projectiles. This slice adds one explicit typed aimed command that applies the
-shared accuracy bonus and action-cost multiplier before entering that
-path, then exercises it through replay/MCP and the BrowserSession
+projectiles. This slice adds the explicit six-projectile Plasma Rifle policy
+before entering that path, then exercises it through replay/MCP and the BrowserSession
 effect/observation boundary without adding a generic callback dispatcher or
 changing RNG sampling. Legacy callback-state and presentation parity remain
 outside this verification contract.
@@ -2924,7 +2922,7 @@ replay/MCP JSON, MCP action catalog, and `BrowserSession`. Its contract must:
   semantics from `54` to `55` while preserving replay schema, RNG, generator,
   and ruleset identities.
 
-### 2.7dp Current Blaster aimed-fire vertical fidelity target
+### 2.7dp Historical Blaster aimed-fire vertical fidelity target
 
 The bounded implementation target for this revision is the shared typed
 aimed-fire command exercised with Blaster through direct core, replay/MCP JSON,
@@ -2949,6 +2947,31 @@ MCP action catalog, and `BrowserSession`. Its contract must:
   evidence is unavailable;
 - [x] advance project version from `0.2.245` to `0.2.246` and gameplay
   semantics from `55` to `56` while preserving replay schema, RNG, generator,
+  and ruleset identities.
+
+### 2.7dq Current Plasma Rifle ordinary-fire volley target
+
+The bounded implementation target for this revision is the typed Plasma Rifle
+ordinary-fire volley exercised through direct core, replay/MCP JSON, MCP action
+catalog, and `BrowserSession`. Its contract must:
+
+- [x] construct the same fixed replay setup in direct core and `BrowserSession`
+  with a Plasma Rifle's six-cell clip, six reserve cells, and a high-HP target;
+- [x] submit one ordinary `Command::AttackRanged` through both paths and
+  preserve identical `GameEvent` sequences, fair player observations, render
+  effects, and scene projections;
+- [x] emit six ordered ranged-hit events, consume one cell per projectile (six
+  cells total), and pay the ordinary ranged action cost;
+- [x] advertise and execute the ordinary command through the fair MCP action
+  catalog, and encode/decode it at replay/MCP JSON boundaries without
+  duplicating gameplay policy;
+- [x] preserve deterministic replay verification and reject clips below six
+  cells atomically, while leaving the existing reload path authoritative;
+- [x] keep chainfire, overcharge, spread/falloff, projectile routing, exact
+  callback timing, controlled runtime, browser capture, and audiovisual parity
+  `NOT_RUN` where evidence is unavailable;
+- [x] advance project version from `0.2.246` to `0.2.247` and gameplay
+  semantics from `56` to `57` while preserving replay schema, RNG, generator,
   and ruleset identities.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
@@ -3365,6 +3388,13 @@ consumes one cell, resets the typed recharge timer, reproduces
 events/observations/effects/scene state, and remains replay-deterministic;
 exact legacy callback state/timing, controlled runtime, browser capture, and
 audiovisual parity remain open.
+
+The `0.2.247` successor extends the typed ordinary-fire contract to the Plasma
+Rifle through direct-core, replay/MCP JSON/catalog, and `BrowserSession`
+boundaries. A fixed ordinary command now resolves six ordered projectiles,
+consumes six cells as an aggregate cost, rejects below-six clips atomically,
+and remains replay-deterministic; chainfire, overcharge, exact callback timing,
+controlled runtime, browser capture, and audiovisual parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity
