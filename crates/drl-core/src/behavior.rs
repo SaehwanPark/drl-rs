@@ -648,9 +648,9 @@ pub const PLASMA_SHOTGUN_BEHAVIOR: BehaviorProfile =
 
 /// Current Rust projectile count for an ordinary Pistol shot.
 pub const PISTOL_PROJECTILE_COUNT: u32 = 1;
-/// Pinned aimed-fire accuracy bonus for the base Pistol.
+/// Pinned aimed-fire accuracy bonus shared by the supported weapon families.
 pub const PISTOL_AIMED_ACCURACY_BONUS: i32 = 3;
-/// Pinned aimed-fire action-cost multiplier for the base Pistol.
+/// Pinned aimed-fire action-cost multiplier shared by the supported families.
 pub const PISTOL_AIMED_FIRE_COST_MULTIPLIER: u32 = 2;
 
 const PISTOL_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
@@ -765,6 +765,10 @@ const BLASTER_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
   BehaviorSpec::Cost(ResourceCost::Ammo {
     ammo_type: AmmoType::Cell,
     amount: BLASTER_SHOT_COST,
+  }),
+  BehaviorSpec::Alternate(AlternateAction::AimedFire {
+    accuracy_bonus: PISTOL_AIMED_ACCURACY_BONUS,
+    fire_cost_multiplier: PISTOL_AIMED_FIRE_COST_MULTIPLIER,
   }),
   BehaviorSpec::Periodic(PeriodicEffect::Recharge {
     delay: BLASTER_RECHARGE_DELAY,
@@ -1383,6 +1387,10 @@ mod tests {
         BehaviorSpec::Cost(ResourceCost::Ammo {
           ammo_type: AmmoType::Cell,
           amount: BLASTER_SHOT_COST,
+        }),
+        BehaviorSpec::Alternate(AlternateAction::AimedFire {
+          accuracy_bonus: PISTOL_AIMED_ACCURACY_BONUS,
+          fire_cost_multiplier: PISTOL_AIMED_FIRE_COST_MULTIPLIER,
         }),
         BehaviorSpec::Periodic(PeriodicEffect::Recharge {
           delay: BLASTER_RECHARGE_DELAY,

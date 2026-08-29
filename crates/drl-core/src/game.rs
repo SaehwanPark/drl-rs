@@ -1715,11 +1715,13 @@ impl Game {
       if aimed
         && !matches!(
           weapon.archetype(),
-          drl_protocol::ItemArchetype::Pistol | drl_protocol::ItemArchetype::CombatPistol
+          drl_protocol::ItemArchetype::Pistol
+            | drl_protocol::ItemArchetype::CombatPistol
+            | drl_protocol::ItemArchetype::Blaster
         )
       {
         return Err(CommandError::InvalidCommand(
-          "aimed fire is only available for the Pistol or Combat Pistol".to_string(),
+          "aimed fire is only available for the Pistol, Combat Pistol, or Blaster".to_string(),
         ));
       }
       if weapon.pump_action_blocks_fire() {

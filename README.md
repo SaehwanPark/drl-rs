@@ -60,7 +60,7 @@ replays, and regression testing.
   - Cohort depth projections group validated deepest-level metrics into sorted
     sample buckets and rates without asserting a canonical difficulty curve.
 - Versioned delivery:
-  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.245`),
+  - `VERSION` is the canonical `x.y.z` project value (currently `0.2.246`),
     projected into Cargo, MCP, and release manifests; the agent harness rejects
     invalid code-change transitions and ignores document/setting-only diffs.
   - `GameRng::gen_range` uses unbiased rejection sampling over the full `u32`
@@ -106,12 +106,12 @@ replays, and regression testing.
     typed pump-only chamber cycle costs 200 action units; Assault Shotgun
     ordinary single-shell reload plus full-deficit reload capped at 2,500
     score-count units; Pistol's typed ordinary fire resolves one projectile and
-    consumes one 9mm round, while its typed Pistol-family aimed fire adds +3
-    accuracy and doubles action cost; Rocket Launcher's typed ordinary fire
+    consumes one 9mm round, while Pistol-family and Blaster aimed fire add +3
+    accuracy and double action cost; Rocket Launcher's typed ordinary fire
     resolves one projectile and consumes one rocket; Standard Shotgun's typed one-cell knockback hit
     consumes one shell; Revenant's Launcher
-    exact-hit policy; Blaster
-    recharge delay 30/cadence 10/amount 1; Nuclear Plasma recharge delay
+    exact-hit policy; Blaster's one-projectile/one-cell ordinary fire, shared
+    aimed fire, and recharge delay 30/cadence 10/amount 1; Nuclear Plasma recharge delay
     40/cadence 2/amount 1; standard and Nuclear BFG 9000 delay 33/radius
     8/knockback 16; BFG 10K delay 25/radius 2/knockback 16);
     Nuclear BFG recharge/overload is explicit, while scatter and
