@@ -21,10 +21,11 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// Gameplay semantics identifier expected by the current replay engine.
 ///
 /// This advances independently from the wire/schema and RNG-sampling versions
-/// when other deterministic simulation rules change. Version `59` includes
-/// Nuclear Plasma Rifle's typed six-projectile ordinary-fire volley and
-/// six-cell aggregate cost, version `58`'s Trigun typed aimed-fire command
-/// (+3 accuracy, doubled action cost), version `57`'s Plasma Rifle
+/// when other deterministic simulation rules change. Version `60` includes
+/// Anti-Freak Jackal's typed aimed-fire command (+3 accuracy, doubled action
+/// cost), version `59`'s Nuclear Plasma Rifle typed six-projectile
+/// ordinary-fire volley and six-cell aggregate cost, version `58`'s Trigun
+/// typed aimed-fire command (+3 accuracy, doubled action cost), version `57`'s Plasma Rifle
 /// six-projectile ordinary-fire volley and six-cell aggregate cost, and
 /// version `56`'s Pistol, Combat Pistol, and
 /// Blaster typed aimed-fire command (+3 accuracy, doubled action cost),
@@ -41,7 +42,7 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// alternate overload/recharge, the `IF_NORELOAD` policy, Blaster recharge,
 /// the prior Malek's Armor, Missile Launcher, and Combat Shotgun policies, and
 /// the typed ordinary-fire cost policies through Laser Rifle.
-pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 59;
+pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 60;
 
 /// Procedural-generation semantics identifier expected for replays that carry
 /// a procedural generation configuration. Version 2 includes the exact
@@ -61,8 +62,10 @@ pub struct ReplayMetadata {
   /// Engine crate version string.
   pub engine_version: String,
   /// Gameplay semantics version required to interpret the command history.
-  /// Version 59 includes Nuclear Plasma Rifle's typed six-projectile
-  /// ordinary-fire volley and six-cell aggregate cost, version 58 includes
+  /// Version 60 includes Anti-Freak Jackal's typed aimed-fire command (+3
+  /// accuracy, doubled action cost), version 59 includes Nuclear Plasma
+  /// Rifle's typed six-projectile ordinary-fire volley and six-cell aggregate
+  /// cost, version 58 includes
   /// Trigun's typed aimed-fire command (+3 accuracy, doubled action cost),
   /// version 57's Plasma Rifle six-projectile ordinary-fire volley and
   /// six-cell aggregate cost, and version 56 includes the Pistol, Combat Pistol,

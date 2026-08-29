@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.249`
+Current project version: `0.2.250`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.249)
+## 3. Current Progress Summary (`VERSION` 0.2.250)
 
 ### Delivered Foundations
 
@@ -886,6 +886,14 @@ verification item uses explicit status semantics:
   deterministic events, observations, effects, scene state, and replay
   outcomes; chainfire, exact callback timing, controlled runtime, browser
   capture, and audiovisual parity remain open.
+- **M9 Anti-Freak Jackal aimed-fire vertical fidelity (`0.2.250`):** The
+  shared typed aimed-fire command now accepts Anti-Freak Jackal, applies +3
+  accuracy and doubled action cost, and preserves one-projectile/one-round
+  behavior. Direct-core, replay/MCP JSON/catalog, and `BrowserSession` paths
+  reproduce deterministic events, observations, effects, scene state, and
+  replay outcomes; empty-clip rejection remains atomic while the delayed
+  explosion callback, controlled runtime, browser capture, and audiovisual
+  parity remain open.
 - **M9 Trigun aimed-fire vertical fidelity (`0.2.248`):** The shared typed
   aimed-fire command now accepts Trigun, applies +3 accuracy and doubled action
   cost, and preserves one-projectile/one-round behavior. Direct-core,
@@ -1421,6 +1429,10 @@ scripting.
   one-round ordinary fire and shared +3/doubled-cost aimed-fire policy; generic
   ranged execution remains authoritative while alternate reload/nuke behavior,
   exact callback state/timing, runtime, and audiovisual parity remain open.
+- [x] Anti-Freak Jackal has an immutable behavior profile for its
+  one-projectile/one-round ordinary fire and shared +3/doubled-cost aimed-fire
+  policy; generic ranged execution remains authoritative while delayed
+  explosion callback state/timing, runtime, and audiovisual parity remain open.
 - [x] Malek's Armor has an immutable behavior profile for its
   delay-50/cadence-5/amount-1 durability-recharge fragment; the dedicated
   transition remains authoritative and armor resistance/degradation, runtime,
