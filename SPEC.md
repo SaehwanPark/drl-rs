@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.231`
+Current project version: `0.2.232`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Laser Rifle Ordinary-Fire Volley
+## 2. Active Implementation Slice: M9 — Laser Rifle Browser Boundary
 
 ### 2.1 Objective
 
-Carry the pinned Laser Rifle ordinary-fire policy into an immutable typed behavior
-profile. The profile describes five ordered projectiles and the default
-one-round-per-projectile cost while retaining generic command execution
-ownership.
+Verify the delivered Laser Rifle ordinary-fire policy at the direct-core and
+BrowserSession boundary. A deterministic five-projectile command must produce
+identical events, fair player observations, render effects, and scene state in
+both paths while retaining generic command execution ownership.
 
 ### 2.1a Scope and steering gate
 
@@ -40,27 +40,24 @@ ownership.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, Gate C catalog ownership, and Gate D callback behavior
   evidence remain closed for this contract-only slice.
-- **Observable outcome:** `LASER_RIFLE_BEHAVIOR` exposes ordered typed
-  `AttackEffect::ProjectileCount(5)` and
-  `ResourceCost::Ammo { ammo_type: Cell, amount: 1 }` fragments; the exact
-  profile order is asserted by the behavior contract test and generic ranged
-  execution consumes five cells per accepted volley.
-- **Gameplay/replay impact:** Gameplay semantics advance from `52` to `53` so
-  replays recorded before the five-projectile Laser Rifle volley cannot be
-  reinterpreted under the new deterministic clip policy. Replay wire/schema,
-  RNG sampling, generator, and ruleset identities remain unchanged. Project
-  version advances from `0.2.230` to `0.2.231`.
+- **Observable outcome:** A fixed Laser Rifle replay setup and one ranged
+  command produce identical direct-core and `BrowserSession` events,
+  observations, render effects, and scenes; the direct result consumes five
+  cells from the 40-cell clip and emits five ordered ranged-hit events.
+- **Gameplay/replay impact:** Gameplay semantics remain at `53`; replay
+  wire/schema, RNG sampling, generator, and ruleset identities remain unchanged.
+  Project version advances from `0.2.231` to `0.2.232` for the browser-boundary
+  verification slice.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary
   and profiles; `drl-protocol`, MCP, render, audio, and browser boundaries remain
   unchanged. No new command, event, or runtime dispatch surface is introduced;
-  the pinned five-projectile/five-cell cost is this slice's only gameplay-policy
-  change.
+  no gameplay-policy or protocol changes are introduced by this verification
+  slice.
 - **Evidence boundary:** Pinned Laser Rifle source evidence in
-  `docs/legacy-behavior/laser-rifle-profile.md` plus the delivered direct-target
-  ranged contract is authoritative. The legacy `shots = 5`, absent `shotcost`,
-  default cost calculation, and one command's resolved shot count support the
-  five-cell preflight. Alternate chainfire, controlled legacy runtime,
-  browser capture, and audiovisual comparisons remain `NOT_RUN`.
+  `docs/legacy-behavior/laser-rifle-profile.md`, the delivered direct-target
+  ranged contract, and the BrowserSession boundary test are authoritative.
+  Controlled legacy runtime, browser capture, and audiovisual comparisons
+  remain `NOT_RUN`.
 - **Non-goals:** Alternate chainfire, spread/falloff, exact legacy
   timing/accuracy, audiovisual presentation comparison, new command or callback
   registries, unrelated gameplay balance or protocol changes, replay-file
@@ -70,11 +67,11 @@ ownership.
 
 The existing ranged command path already performs complete preflight,
 transactional clip validation and typed clip consumption for ordered
-projectiles. This slice records the pinned five-projectile/default one-round
-cost in an immutable profile and the existing cost helper; it does not add a
-generic dispatcher or alter RNG sampling, so replay behavior stays deterministic
-and reviewable. Laser Rifle alternate chainfire and presentation behavior remain
-outside this ordinary-fire contract.
+projectiles. This slice exercises that delivered policy through the
+BrowserSession effect/observation boundary without adding a generic dispatcher,
+changing RNG sampling, or altering gameplay semantics. Laser Rifle alternate
+chainfire and presentation capture parity remain outside this verification
+contract.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -2573,7 +2570,7 @@ for the pinned Chaingun ordinary ranged action. Its contract must:
   semantics from `51` to `52`, preserving replay schema, RNG, generator, and
   ruleset identities.
 
-### 2.7da Current Laser Rifle ordinary-fire volley delivery target
+### 2.7da Historical Laser Rifle ordinary-fire volley delivery target
 
 The bounded implementation target for this revision is an immutable profile
 for the pinned Laser Rifle ordinary ranged action. Its contract must:
@@ -2594,6 +2591,29 @@ for the pinned Laser Rifle ordinary ranged action. Its contract must:
 - [x] advance project version from `0.2.230` to `0.2.231` and gameplay
   semantics from `52` to `53`, preserving replay schema, RNG, generator, and
   ruleset identities.
+
+### 2.7db Current Laser Rifle browser-boundary verification target
+
+The bounded implementation target for this revision is a direct-core and
+`BrowserSession` parity test for the delivered Laser Rifle ordinary-fire
+contract. Its contract must:
+
+- [x] construct the same fixed replay setup in direct core and `BrowserSession`
+  with a Laser Rifle, cell reserve, and high-HP target;
+- [x] submit one ranged command through both paths and preserve identical
+  `GameEvent` sequences, fair player observations, render effects, and scene
+  projections;
+- [x] verify the accepted command emits five ordered ranged-hit events and
+  consumes five cells from the 40-cell clip without changing gameplay policy;
+- [x] append the command to a replay, reproduce the direct events/state, and
+  pass deterministic replay verification without adding protocol or runtime
+  dispatch surfaces;
+- [x] keep controlled legacy runtime, browser capture, exact timing/accuracy,
+  alternate chainfire, and audiovisual parity `NOT_RUN` where evidence is
+  unavailable;
+- [x] advance project version from `0.2.231` to `0.2.232` while preserving
+  gameplay semantics `53`, replay schema, RNG, generator, and ruleset
+  identities.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
@@ -2903,6 +2923,13 @@ for the delivered five-projectile ordinary fire and one-cell per-projectile
 cost. Generic ranged execution now resolves the ordered volley and enforces its
 five-cell aggregate cost before mutation; alternate chainfire, spread/falloff,
 exact timing, controlled runtime, and audiovisual parity remain open.
+
+The `0.2.232` successor verifies the delivered Laser Rifle ordinary-fire
+contract through the direct-core and `BrowserSession` boundaries. A fixed
+five-projectile command now reproduces events, fair observations, render
+effects, scene state, and replay determinism across both paths; controlled
+legacy runtime, browser capture, exact timing/accuracy, alternate chainfire,
+and audiovisual parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity
