@@ -1,7 +1,7 @@
 # Architecture
 
-Last reviewed: 2026-08-28
-Current project version: `0.2.255`
+Last reviewed: 2026-08-29
+Current project version: `0.2.256`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -64,8 +64,8 @@ ordinary-fire and two-round 9mm ammo-cost fragments; Combat Pistol records its t
 one-projectile ordinary-fire and one-round 9mm ammo-cost fragments; Railgun
 records its typed one-projectile ordinary-fire and five-cell ammo-cost
 fragments; Null Pointer records its typed one-projectile ordinary-fire and
-ten-cell ammo-cost fragments alongside its target-score and deferred explosion
-fragments; Tristar Blaster records its typed three-projectile ordinary-fire and
+ten-cell ammo-cost fragments alongside its target-score, deferred explosion,
+and actor-only radius-1 splash fragments; Tristar Blaster records its typed three-projectile ordinary-fire and
 five-cell per-projectile ammo-cost fragments; Pistol
 records its typed one-projectile ordinary-fire, one-round 9mm ammo-cost, and
 Pistol/Combat Pistol aimed-fire (+3 accuracy, 2× action-cost) fragments; Rocket Launcher records
@@ -316,7 +316,10 @@ Presentation Boundary
     one-shell/pump-only policy. Legacy
     Null Pointer target score branching uses the dedicated `null_pointer`
     transition and emits a typed hit plus deferred-explosion schedule event;
-    exact area damage remains an explicit gap. Legacy
+    its dedicated resolver applies fixed actor-only radius-1 Plasma splash
+    damage with stable deduplication and death/drop follow-up. Terrain/item
+    destruction, immunity, and exact delayed timing remain explicit gaps.
+    Legacy
     Acid/Lava entered-cell contact uses the dedicated `environment` classifier
     and applies the bounded raw baseline through environment damage/death
     events; Acid/Lava/Water movement uses the typed 1250-unit terrain cost,

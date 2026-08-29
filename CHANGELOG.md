@@ -3,6 +3,17 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.256]
+
+- Added bounded Null Pointer actor-only radius-1 splash damage. Successful hits
+  preserve the target score branch and schedule event, then apply fixed `10d1`
+  Plasma environment damage once per living actor in stable blast-cell order,
+  continuing after lethal actors and preserving death/drop follow-up. Direct
+  core, replay, generic MCP JSON, and BrowserSession parity is covered;
+  terrain/item destruction, splash immunity, exact delayed timing, callback
+  state, runtime, and audiovisual parity remain deferred; gameplay semantics
+  advance from `65` to `66`.
+
 ## [0.2.255]
 
 - Added bounded Railgun clear-ray piercing. A shot performs ordered hit checks

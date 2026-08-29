@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-29
-Current project version: `0.2.255`
+Current project version: `0.2.256`
 
 The [Roadmap](docs/DRL-Rust_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,17 +25,17 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Railgun Ray/Piercing Traversal
+## 2. Active Implementation Slice: M9 — Null Pointer Actor Splash
 
 ### 2.1 Objective
 
-Verify the delivered Railgun ray/piercing traversal at the typed direct-core,
-replay, generic MCP JSON event-serializer, and `BrowserSession` boundaries. A
-deterministic successful shot must traverse a clear source-to-target ray,
-perform ordered hit checks for every living actor encountered, share one damage
-roll across successful impacts, and preserve identical events, fair player
-observations, render effects, scene state, and replay outcomes in both
-execution paths while retaining generic ranged command execution ownership.
+Verify the delivered Null Pointer actor-only radius-1 splash at the typed
+direct-core, replay, generic MCP JSON event-serializer, and `BrowserSession`
+boundaries. A deterministic successful hit must preserve the existing score
+branch and schedule event, then damage each living actor on the bounded blast
+cells once in stable order, including lethal intermediate actors, while
+preserving identical events, fair player observations, render effects, scene
+state, and replay outcomes in both execution paths.
 
 ### 2.1a Scope and steering gate
 
@@ -43,30 +43,29 @@ execution paths while retaining generic ranged command execution ownership.
 - **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
   compatibility, Gate C catalog ownership, and Gate D callback behavior
   evidence remain closed for this contract-only slice.
-- **Observable outcome:** A fixed Railgun replay setup produces one ordered
-  `AttackResolved` event per living actor on the clear source-to-target ray.
-  Successful impacts share one deterministic `8d8` damage result, continue
-  after lethal intermediate hits, and consume five cells; a blocked ray rejects
-  atomically. Direct core and `BrowserSession` expose identical events,
+- **Observable outcome:** A fixed Null Pointer replay setup preserves the
+  `AttackResolved → NullPointerHit → NullPointerExplosionScheduled` prefix,
+  then applies fixed `10d1` Plasma environment damage once per living actor on
+  clear radius-1 cells, emits ordered death/drop follow-up, and consumes ten
+  cells. Direct core and `BrowserSession` expose identical events,
   observations, render effects, and scenes.
-- **Gameplay/replay impact:** Gameplay semantics advance from `64` to `65` for
-  the newly accepted Railgun ray/piercing interpretation; replay wire/schema,
-  RNG sampling, generator, and ruleset identities remain unchanged. Project
-  version advances from `0.2.254` to `0.2.255`.
+- **Gameplay/replay impact:** Gameplay semantics advance from `65` to `66` for
+  the newly accepted Null Pointer actor-splash interpretation; replay
+  wire/schema, RNG sampling, generator, and ruleset identities remain
+  unchanged. Project version advances from `0.2.255` to `0.2.256`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary,
   typed projectile-count/cost policy and generic execution; `drl-protocol` owns
   the semantic `AttackRanged`/`AttackRangedAimed` commands and typed event
   projection, while replay/MCP and browser boundaries
   serialize and route it without duplicating gameplay rules.
-- **Evidence boundary:** Pinned Railgun item, one-roll, ray traversal, and
-  piercing evidence in `docs/legacy-behavior/railgun-profile.md`, the explicit
-  Rust clear-ray and shared-damage decisions, and the direct-core, generic MCP
-  JSON serializer, and BrowserSession boundary tests are authoritative.
-  Controlled
+- **Evidence boundary:** Pinned Null Pointer callback and radius-1 explosion
+  loop evidence in `docs/legacy-behavior/null-pointer.md`, the explicit Rust
+  actor-only and fixed-damage decisions, and the direct-core, generic MCP JSON
+  serializer, and BrowserSession boundary tests are authoritative. Controlled
   legacy runtime, browser capture, and audiovisual comparisons remain
   `NOT_RUN`.
-- **Non-goals:** Knockback, wall/cell destruction, spread/falloff, stray-shot
-  behavior, callback state-machine parity, exact legacy callback timing,
+- **Non-goals:** Terrain/cell destruction, ground-item destruction, splash
+  immunity, knockback, exact delayed timing, callback state-machine parity,
   audiovisual presentation comparison, new callback registries, unrelated
   gameplay balance, replay-file migrations, runtime Lua, and browser/audio/
   WebGPU capture parity.
@@ -75,14 +74,15 @@ execution paths while retaining generic ranged command execution ownership.
 
 The existing ranged command path already performs complete preflight,
 transactional clip validation and typed clip consumption. This slice adds a
-small typed Railgun resolver after the successful target preflight, using
-deterministic `line_points` traversal, one shared `8d8` roll for multi-actor
-shots, per-actor hit checks, and the existing damage/death projections. It
+small typed Null Pointer actor-splash resolver after the successful target
+preflight, using deterministic radius-1 traversal, fixed `10d1` Plasma
+damage, actor deduplication, and the existing damage/death projections. It
 exercises the result through ScenarioRunner, replay, the generic MCP JSON
 serializer, and the BrowserSession effect/observation boundary without adding
 a generic callback dispatcher, changing ordinary weapon routing, or claiming
-exact legacy ray geometry. Knockback, wall/cell destruction, callback state,
-and presentation parity remain outside this verification contract.
+exact delayed runtime timing. Terrain/item destruction, splash immunity,
+callback state, and presentation parity remain outside this verification
+contract.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -3167,7 +3167,7 @@ items. Its contract must:
   semantics from `63` to `64` while preserving replay schema, RNG, generator,
   and ruleset identities.
 
-### 2.7dy Current Railgun ray/piercing traversal target
+### 2.7dy Historical Railgun ray/piercing traversal target
 
 The bounded implementation target for this revision extends the delivered
 Railgun ordinary-fire cost with clear-ray traversal and typed piercing. Its
@@ -3189,6 +3189,29 @@ contract must:
   audiovisual parity `NOT_RUN` where evidence is unavailable;
 - [x] advance project version from `0.2.254` to `0.2.255` and gameplay
   semantics from `64` to `65` while preserving replay schema, RNG, generator,
+  and ruleset identities.
+
+### 2.7dz Current Null Pointer actor-splash target
+
+The bounded implementation target for this revision extends the delivered
+Null Pointer score branch and delayed-explosion schedule with actor-only
+radius-1 splash damage. Its contract must:
+
+- [x] preserve the `AttackResolved → NullPointerHit →
+  NullPointerExplosionScheduled` ordering, score branch, zero direct-hit
+  damage, and ten-cell clip cost;
+- [x] traverse the center plus clear radius-1 blast cells in stable order,
+  apply fixed `10d1` Plasma environment damage once per living actor with
+  actor deduplication, and continue after lethal intermediate actors;
+- [x] emit ordinary `DamageApplied` events followed by `ActorDied` and
+  configured death-drop events while preserving atomic death-drop preflight;
+- [x] preserve direct-core, ScenarioRunner/replay, generic MCP JSON, and
+  `BrowserSession` event, observation, effect, scene, and final-state parity;
+- [x] keep terrain/cell destruction, ground-item destruction, splash immunity,
+  knockback, exact delayed timing, callback state, controlled runtime, browser
+  capture, and audiovisual parity `NOT_RUN` where evidence is unavailable;
+- [x] advance project version from `0.2.255` to `0.2.256` and gameplay
+  semantics from `65` to `66` while preserving replay schema, RNG, generator,
   and ruleset identities.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
@@ -3671,6 +3694,14 @@ sharing one deterministic `8d8` damage roll across successful impacts and
 continues after lethal intermediate hits. Knockback, wall/cell destruction,
 spread/falloff, callback state, controlled runtime, browser capture, and
 audiovisual parity remain open.
+
+The `0.2.256` successor extends the Null Pointer target-score and delayed
+explosion contract with bounded actor-only radius-1 splash. A successful hit
+applies fixed `10d1` Plasma environment damage once per living actor in stable
+blast-cell order and continues after lethal actors, preserving death/drop
+follow-up. Terrain/item destruction, splash immunity, knockback, exact delayed
+timing, callback state, controlled runtime, browser capture, and audiovisual
+parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity

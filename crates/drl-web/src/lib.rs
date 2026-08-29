@@ -3471,6 +3471,23 @@ mod tests {
     assert_eq!(step.events, expected_events);
     assert_eq!(step.after, direct.observe_player());
     assert_eq!(
+      expected_events
+        .iter()
+        .filter(|event| {
+          matches!(
+            event,
+            drl_protocol::GameEvent::DamageApplied {
+              source: drl_protocol::DamageSource::Environment,
+              damage_type: Some(drl_protocol::DamageType::Plasma),
+              amount: 10,
+              ..
+            }
+          )
+        })
+        .count(),
+      2
+    );
+    assert_eq!(
       step.effects,
       drl_render::effect_timeline_for_observations(&step.before, &step.after, &expected_events,)
     );
@@ -3483,13 +3500,23 @@ mod tests {
           duration_ticks: 2,
         },
         drl_render::EffectSpan {
-          effect: drl_render::PresentationEffect::MeleeAttack,
+          effect: drl_render::PresentationEffect::Hit,
           start_tick: 2,
+          duration_ticks: 1,
+        },
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::Hit,
+          start_tick: 3,
+          duration_ticks: 1,
+        },
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::MeleeAttack,
+          start_tick: 4,
           duration_ticks: 2,
         },
         drl_render::EffectSpan {
           effect: drl_render::PresentationEffect::Hit,
-          start_tick: 4,
+          start_tick: 6,
           duration_ticks: 1,
         },
       ]

@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
-Last reviewed: 2026-08-28
-Current project version: `0.2.255`
+Last reviewed: 2026-08-29
+Current project version: `0.2.256`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.255)
+## 3. Current Progress Summary (`VERSION` 0.2.256)
 
 ### Delivered Foundations
 
@@ -736,9 +736,11 @@ verification item uses explicit status semantics:
   `NULL_POINTER_BEHAVIOR` profile records one ordered projectile and a
   ten-cell cost, and generic ranged execution now preflights that cost before
   mutation. Gameplay semantics advance to `46`, so stale semantics-45 replay
-  metadata is rejected before execution. The existing target-score branch and
-  deferred explosion schedule remain authoritative; delayed explosion geometry,
-  full callback parity, runtime, and audiovisual parity remain open.
+  metadata is rejected before execution. The target-score branch and delayed
+  explosion schedule remain authoritative; actor-only radius-1 splash damage is
+  delivered in `0.2.256`, while terrain/item destruction, splash immunity,
+  exact delayed timing, full callback parity, runtime, and audiovisual parity
+  remain open.
 - **M9 Tristar Blaster ordinary-fire volley (`0.2.225`):** The immutable
   `TRISTAR_BLASTER_BEHAVIOR` profile records three ordered projectiles and a
   five-cell per-projectile cost, and generic ranged execution now preflights
@@ -931,6 +933,14 @@ verification item uses explicit status semantics:
   generic MCP JSON, and `BrowserSession` coverage is verified; knockback,
   wall/cell destruction, spread/falloff, callback state, controlled runtime,
   browser capture, and audiovisual parity remain open.
+- **M9 Null Pointer actor splash (`0.2.256`):** Successful Null Pointer hits
+  now preserve the target score branch and schedule event, then apply fixed
+  `10d1` Plasma environment damage once per living actor on clear radius-1
+  blast cells in stable order, continuing after lethal actors and preserving
+  death/drop follow-up. Direct-core, replay, generic MCP JSON, and
+  `BrowserSession` coverage is verified; terrain/item destruction, splash
+  immunity, knockback, exact delayed timing, callback state, controlled
+  runtime, browser capture, and audiovisual parity remain open.
 - **M9 Trigun aimed-fire vertical fidelity (`0.2.248`):** The shared typed
   aimed-fire command now accepts Trigun, applies +3 accuracy and doubled action
   cost, and preserves one-projectile/one-round behavior. Direct-core,
@@ -1670,8 +1680,9 @@ scripting.
 - [x] Null Pointer has an immutable behavior profile for its current
   one-projectile ordinary fire and ten-cell cost; generic ranged execution
   preflights the cost and preserves atomic below-cost rejection while its
-  target-score branch, deferred explosion geometry, full callback parity,
-  exact legacy timing/accuracy, runtime, and audiovisual parity remain open.
+  target-score branch and actor-only radius-1 splash are covered in `0.2.256`;
+  terrain/item destruction, splash immunity, exact legacy timing/accuracy,
+  full callback parity, runtime, and audiovisual parity remain open.
 - [x] Tristar Blaster has an immutable behavior profile for its current
   three-projectile ordinary fire and five-cell per-projectile cost; generic
   ranged execution resolves the ordered volley, preflights its fifteen-cell
