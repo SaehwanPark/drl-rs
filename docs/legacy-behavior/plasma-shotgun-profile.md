@@ -1,8 +1,9 @@
 # Plasma Shotgun typed behavior-profile evidence
 
-Status: active ordinary-fire cost profile target for `0.2.221`; full
-spread/falloff/knockback semantics, exact legacy timing/accuracy, controlled
-runtime comparison, and audiovisual parity remain `NOT_RUN`.
+Status: delivered ordinary-fire profile and `0.2.242` direct-core/
+`BrowserSession` boundary target; full spread/falloff/knockback semantics,
+exact legacy timing/accuracy, controlled runtime comparison, and audiovisual
+parity remain `NOT_RUN`.
 
 ## Pinned source
 
