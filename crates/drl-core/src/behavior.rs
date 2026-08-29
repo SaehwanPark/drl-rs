@@ -646,6 +646,23 @@ const PLASMA_SHOTGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
 pub const PLASMA_SHOTGUN_BEHAVIOR: BehaviorProfile =
   BehaviorProfile::new(PLASMA_SHOTGUN_BEHAVIOR_SPECS);
 
+/// Pinned projectile count for an ordinary Plasma Rifle shot.
+pub const PLASMA_RIFLE_PROJECTILE_COUNT: u32 = 6;
+/// Pinned per-projectile clip cost for an ordinary Plasma Rifle shot.
+pub const PLASMA_RIFLE_SHOT_COST: u32 = 1;
+
+const PLASMA_RIFLE_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Attack(AttackEffect::ProjectileCount(PLASMA_RIFLE_PROJECTILE_COUNT)),
+  BehaviorSpec::Cost(ResourceCost::Ammo {
+    ammo_type: AmmoType::Cell,
+    amount: PLASMA_RIFLE_SHOT_COST,
+  }),
+];
+
+/// Immutable typed profile for the current Plasma Rifle ordinary-fire volley.
+pub const PLASMA_RIFLE_BEHAVIOR: BehaviorProfile =
+  BehaviorProfile::new(PLASMA_RIFLE_BEHAVIOR_SPECS);
+
 /// Current Rust projectile count for an ordinary Pistol shot.
 pub const PISTOL_PROJECTILE_COUNT: u32 = 1;
 /// Pinned aimed-fire accuracy bonus shared by the supported weapon families.
@@ -1603,6 +1620,16 @@ mod tests {
         BehaviorSpec::Cost(ResourceCost::Ammo {
           ammo_type: AmmoType::Cell,
           amount: 3,
+        }),
+      ]
+    );
+    assert_eq!(
+      PLASMA_RIFLE_BEHAVIOR.specs(),
+      &[
+        BehaviorSpec::Attack(AttackEffect::ProjectileCount(PLASMA_RIFLE_PROJECTILE_COUNT)),
+        BehaviorSpec::Cost(ResourceCost::Ammo {
+          ammo_type: AmmoType::Cell,
+          amount: PLASMA_RIFLE_SHOT_COST,
         }),
       ]
     );

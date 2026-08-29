@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-28
-Current project version: `0.2.246`
+Current project version: `0.2.247`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -220,8 +220,10 @@ Presentation Boundary
     records its mode and score-cost fragments; Lava Armor's
     immutable profile records its terrain-gated durability-recharge fragment;
     Malek's Armor's profile records its durability-recharge fragment; Blaster's
-    profile records its ordinary-fire and recharge fragments, while Nuclear
-    Plasma's profile records overload and recharge without claiming chainfire.
+    profile records its ordinary-fire and recharge fragments; Plasma Rifle's
+    profile records its six-projectile ordinary-fire and six-cell cost
+    fragments, while Nuclear Plasma's profile records overload and recharge
+    without claiming chainfire.
     Profiles describe
     behavior without string keys or runtime callbacks; dedicated transition
     modules remain the execution authority.

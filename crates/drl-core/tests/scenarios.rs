@@ -3277,11 +3277,10 @@ fn plasma_rifle_vertical_scenario_preserves_cell_reload_and_replay() {
   );
 
   let target = Position::new(3, 1);
-  let mut commands = vec![Command::AttackRanged(target); 6];
-  commands.push(Command::Reload);
+  let commands = vec![Command::AttackRanged(target), Command::Reload];
   let (game, events, metrics, replay) = ScenarioRunner::run_commands(&scenario, &commands).unwrap();
   assert_eq!(metrics.outcome, RunOutcome::InProgress);
-  assert_eq!(metrics.turns_survived, 6);
+  assert_eq!(metrics.turns_survived, 1);
   assert_eq!(metrics.shots_fired, 6);
   assert_eq!(metrics.shots_hit, 5);
   assert_eq!(metrics.damage_dealt, 20);

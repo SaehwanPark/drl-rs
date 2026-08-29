@@ -1718,6 +1718,41 @@ fn plasma_shotgun_below_three_cell_cost_rejection_is_atomic() {
 }
 
 #[test]
+fn plasma_rifle_below_six_cell_cost_rejection_is_atomic() {
+  let mut game = Game::new(2_270, 12, 8, Position::new(2, 2)).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let target = Position::new(5, 2);
+  game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 500, 100, (1, 7))
+    .unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .equip(EquipmentSlot::Weapon, Item::plasma_rifle(ItemId::new(4)))
+    .unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 5;
+  let before = game.clone();
+
+  assert_eq!(
+    game.step(Command::AttackRanged(target)).unwrap_err(),
+    CommandError::NoAmmoInClip
+  );
+  assert_eq!(game, before);
+}
+
+#[test]
 fn revenants_launcher_exact_hit_resolves_even_at_zero_accuracy() {
   let (mut game, _weapon_id) = equipped_revenants_launcher(6);
   let target = Position::new(5, 2);
