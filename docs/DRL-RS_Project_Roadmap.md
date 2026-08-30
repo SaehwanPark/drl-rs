@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.293`
+Current project version: `0.2.294`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.293)
+## 3. Current Progress Summary (`VERSION` 0.2.294)
 
 ### Delivered Foundations
 
@@ -1627,7 +1627,8 @@ scripting.
   fourth-level chainfire in `0.2.283`; BFG 10K's bounded first- through
   sixth-level chainfire is delivered in `0.2.290`, with seventh-level
   chainfire delivered in `0.2.291`, eighth-level chainfire delivered in
-  `0.2.292`, and ninth-level chainfire delivered in `0.2.293`; Nuclear Plasma's
+  `0.2.292`, ninth-level chainfire delivered in `0.2.293`, and tenth-level
+  chainfire delivered in `0.2.294`; Nuclear Plasma's
   bounded first- through sixth-level chainfire is delivered in `0.2.289`; the
   Laser Rifle's bounded first- through sixth-level chainfire is delivered in
   `0.2.288`,
@@ -1709,6 +1710,14 @@ scripting.
   reload-backed ScenarioRunner/replay, MCP legal-action/JSON, physical `C`
   routing, BrowserSession parity, and atomic tenth-level/under-supply
   rejection are covered; tenth-and-later levels, target rotation,
+  scatter/routing, delayed timing, runtime, and audiovisual parity remain open.
+- [x] BFG 10K tenth-level chainfire accepts warm-up level nine after a reload,
+  applies the pinned seven-projectile/five-cell-per-projectile profile,
+  consumes thirty-five cells, preserves per-hit delayed-explosion and
+  immediate splash behavior, and advances warm-up to level ten. Direct-core,
+  reload-backed ScenarioRunner/replay, MCP legal-action/JSON, physical `C`
+  routing, BrowserSession parity, and atomic eleventh-level/under-supply
+  rejection are covered; eleventh-and-later levels, target rotation,
   scatter/routing, delayed timing, runtime, and audiovisual parity remain open.
 - [x] Standard BFG 9000 direct-target fire emits one ordered delayed-explosion
   schedule event carrying delay `33`, radius `8`, and knockback `16`, then
@@ -2062,6 +2071,14 @@ scripting.
   physical `C`, and BrowserSession parity with seven ordered exact-hit events,
   thirty-five-cell clip consumption, warm-up advancement to level nine, and
   atomic tenth-level/under-supply rejection; target rotation/spread, delayed
+  timing, terrain/content effects, splash-immunity traits, exact timing/
+  accuracy, controlled legacy runtime, browser capture, and audiovisual parity
+  remain open.
+- [x] BFG 10K's delivered tenth-level chainfire contract extends the same
+  boundary through reload-backed ScenarioRunner/replay, MCP legal-action/JSON,
+  physical `C`, and BrowserSession parity with seven ordered exact-hit events,
+  thirty-five-cell clip consumption, warm-up advancement to level ten, and
+  atomic eleventh-level/under-supply rejection; target rotation/spread, delayed
   timing, terrain/content effects, splash-immunity traits, exact timing/
   accuracy, controlled legacy runtime, browser capture, and audiovisual parity
   remain open.
@@ -2459,6 +2476,15 @@ scripting.
   verified; tenth-and-later levels, target rotation/scatter routing, exact
   timing/accuracy, controlled runtime, browser capture, and audiovisual parity
   remain open. Gameplay semantics advance to `102`.
+- **M9 BFG 10K tenth-level chainfire (`0.2.294`):** BFG 10K now accepts its
+  pinned warm-up level-nine continuation: seven ordered exact-hit projectiles,
+  thirty-five loaded cells, the existing delay-25/radius-2/knockback-16 splash
+  boundary, and warm-up advancement to level ten. Reload-backed
+  ScenarioRunner/replay, direct-core, MCP legal-action/JSON, physical `C`, and
+  BrowserSession parity plus atomic eleventh-level/under-supply rejection are
+  verified; eleventh-and-later levels, target rotation/scatter routing, exact
+  timing/accuracy, controlled runtime, browser capture, and audiovisual parity
+  remain open. Gameplay semantics advance to `103`.
 - **M9 BFG 10K radius-2 explosion fanout (`0.2.265`):** Successful BFG 10K
   hits now preserve their schedule metadata and immediately resolve the
   bounded actor-only radius-2 fanout in stable center/ring order, consuming one
