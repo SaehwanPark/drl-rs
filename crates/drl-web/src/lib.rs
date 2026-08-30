@@ -10533,6 +10533,14 @@ mod tests {
       1,
       (2, 4),
     ));
+    let splash_target_position = Position::new(6, 1);
+    setup_replay.record_monster(MonsterSpawnSpec::new(
+      splash_target_position,
+      "Splash Target",
+      500,
+      1,
+      (2, 4),
+    ));
     let (initial, setup_events) =
       drl_core::ReplayEngine::run(&setup_replay).expect("Nuclear BFG vertical replay setup");
     assert!(setup_events.is_empty());
@@ -10574,7 +10582,32 @@ mod tests {
       .find(|actor| !actor.is_player())
       .unwrap()
       .id();
+    let splash_target_id = direct
+      .world()
+      .actors()
+      .values()
+      .find(|actor| actor.name() == "Splash Target")
+      .unwrap()
+      .id();
     assert_nuclear_bfg_schedule_event(&expected_events, player_id, target_id);
+    assert_eq!(
+      expected_events
+        .iter()
+        .filter(|event| {
+          matches!(
+            event,
+            drl_protocol::GameEvent::DamageApplied {
+              target_id: event_target,
+              source: drl_protocol::DamageSource::Environment,
+              damage_type: Some(drl_protocol::DamageType::Plasma),
+              ..
+            } if *event_target == splash_target_id
+          )
+        })
+        .count(),
+      1,
+      "browser Nuclear BFG splash must damage the second actor exactly once"
+    );
     assert_eq!(
       direct
         .world()

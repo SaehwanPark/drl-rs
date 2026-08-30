@@ -3,6 +3,19 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.268]
+
+- Extended the Nuclear BFG 9000's delayed-explosion schedule with a bounded
+  immediate radius-8 actor-only fanout. Each clear blast cell consumes one
+  deterministic `8d6` Plasma roll without distance falloff; the firing actor
+  is splash-safe, other actors receive radial integer `damage / 16` knockback
+  before environmental damage, and lethal victims preserve normal death/drop/
+  game-over ordering. Direct-core, replay, MCP, and BrowserSession parity plus
+  RNG and atomic preflight coverage are verified. EFCHAIN secondary explosions,
+  terrain/content and ground-item effects, delayed timing, routing, controlled
+  runtime, browser capture, and audiovisual parity remain deferred. Gameplay
+  semantics advance from `76` to `77`.
+
 ## [0.2.267]
 
 - Extended the Standard BFG 9000's delayed-explosion schedule with a bounded

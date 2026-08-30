@@ -4648,6 +4648,14 @@ mod tests {
       1,
       (2, 4),
     ));
+    let splash_target_position = Position::new(6, 1);
+    setup_replay.record_monster(drl_protocol::MonsterSpawnSpec::new(
+      splash_target_position,
+      "Splash Target",
+      500,
+      1,
+      (2, 4),
+    ));
 
     let mut session = McpSession::new();
     session
@@ -4669,7 +4677,32 @@ mod tests {
       .find(|actor| !actor.is_player())
       .unwrap()
       .id();
+    let splash_target_id = direct
+      .world()
+      .actors()
+      .values()
+      .find(|actor| actor.name() == "Splash Target")
+      .unwrap()
+      .id();
     assert_nuclear_bfg_schedule_event(&events, player_id, target_id);
+    assert_eq!(
+      events
+        .iter()
+        .filter(|event| {
+          matches!(
+            event,
+            GameEvent::DamageApplied {
+              target_id: event_target,
+              source: drl_protocol::DamageSource::Environment,
+              damage_type: Some(drl_protocol::DamageType::Plasma),
+              ..
+            } if *event_target == splash_target_id
+          )
+        })
+        .count(),
+      1,
+      "MCP Nuclear BFG splash must damage the second actor exactly once"
+    );
 
     assert_eq!(events, expected_events);
     assert_eq!(session.game.as_ref().unwrap(), &direct);

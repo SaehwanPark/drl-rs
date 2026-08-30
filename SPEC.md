@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-29
-Current project version: `0.2.267`
+Current project version: `0.2.268`
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,13 +25,13 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Standard BFG 9000 Radius-8 Actor Fanout
+## 2. Active Implementation Slice: M9 — Nuclear BFG 9000 Radius-8 Actor Fanout
 
 ### 2.1 Objective
 
-Extend the delivered typed Standard BFG 9000 schedule boundary with its
+Extend the delivered typed Nuclear BFG 9000 schedule boundary with its
 legacy-pinned actor-only radius-8 fanout. A successful direct-target hit must
-preserve the existing schedule event, roll one `10d6` Plasma result per clear
+preserve the existing schedule event, roll one `8d6` Plasma result per clear
 blast cell without distance falloff, skip the firing actor, and apply the
 bounded radial knockback and deterministic death/drop follow-up without
 changing the direct-hit or replay contract.
@@ -42,31 +42,32 @@ changing the direct-hit or replay contract.
 - **Steering gates:** Gate A rejected-input safety and Gate B explicit replay
   compatibility remain active acceptance constraints; Gate C catalog ownership
   and Gate D typed behavior evidence remain closed for this bounded extension.
-- **Observable outcome:** Each successful Standard BFG 9000 direct-target hit
+- **Observable outcome:** Each successful Nuclear BFG 9000 direct-target hit
   emits the existing delay-33/radius-8/knockback-16 schedule metadata and
   immediately resolves a bounded actor-only radius-8 fanout in deterministic
-  center-then-ring order. Every clear blast cell rolls one `10d6` Plasma
+  center-then-ring order. Every clear blast cell rolls one `8d6` Plasma
   result with no distance falloff; the firing actor is splash-safe, while
   other actors move by `damage / 16` tiles along the radial direction when
   possible and then receive the rolled environmental damage. Living actors are
   processed once; lethal victims emit normal death/drop follow-up and a player
   death marks game over. Ground items, terrain, secondary chain explosions, and
   delayed timing remain unchanged.
-- **Gameplay/replay impact:** Gameplay semantics advance from `75` to `76`;
+- **Gameplay/replay impact:** Gameplay semantics advance from `76` to `77`;
   replay wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.266` to `0.2.267`.
+  unchanged. Project version advances from `0.2.267` to `0.2.268`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary,
   typed projectile-count/cost policy and generic execution; `drl-protocol` owns
   the semantic `AttackRanged`/`AttackRangedAimed` commands and typed event
   projection, while replay/MCP and browser boundaries
   serialize and route it without duplicating gameplay rules.
-- **Evidence boundary:** Pinned Standard BFG 9000 item, exact-hit, shot-cost,
-  and delayed-explosion evidence in `docs/legacy-behavior/bfg9000-explosion.md`,
-  together with the existing typed schedule contract and focused
+- **Evidence boundary:** Pinned Nuclear BFG 9000 item, exact-hit, shot-cost,
+  and delayed-explosion evidence in
+  `docs/legacy-behavior/nuclear-bfg9000-explosion.md`, together with the
+  existing typed schedule contract and focused
   direct-core/replay/MCP/browser tests, are authoritative. Controlled legacy
   runtime, browser capture, and audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** Nuclear BFG 9000 fanout, EFCHAIN secondary explosions, higher
-  chainfire levels, scatter/target rotation or spread, projectile routing,
+- **Non-goals:** EFCHAIN secondary explosions, higher chainfire levels,
+  scatter/target rotation or spread, projectile routing,
   delayed timing/state-machine parity, terrain/content mutation, ground-item
   destruction, splash-immunity traits, exact callback timing/accuracy, new
   command variants or callback registries, unrelated gameplay balance, replay
@@ -75,7 +76,7 @@ changing the direct-hit or replay contract.
 ### 2.2 Why this slice is bounded
 
 The immutable profile, semantic command, and schedule event already exist for
-the Standard BFG 9000. This extension adds only radius-8 geometry, `10d6`
+the Nuclear BFG 9000. This extension adds only radius-8 geometry, `8d6`
 damage, source self-safety, actor de-duplication, and deterministic
 knockback/death ordering while reusing the existing replay, MCP, browser, and
 transactional boundaries without adding a pending queue, new dispatcher, or
@@ -3432,7 +3433,7 @@ rule. Its contract must:
   controlled runtime, browser capture, and audiovisual parity `NOT_RUN` where
   comparison evidence is unavailable.
 
-### 2.7ej Current Standard BFG 9000 radius-8 actor-fanout target
+### 2.7ej Historical Standard BFG 9000 radius-8 actor-fanout target
 
 The bounded implementation target for this revision extends the delivered
 Standard BFG 9000 schedule boundary with immediate deterministic actor-only
@@ -3457,6 +3458,33 @@ radius-8 fanout. Its contract must:
   terrain/content and ground-item effects, splash-immunity traits, exact
   callback timing/accuracy, controlled runtime, browser capture, and
   audiovisual parity `NOT_RUN` where comparison evidence is unavailable.
+
+### 2.7ek Current Nuclear BFG 9000 radius-8 actor-fanout target
+
+The bounded implementation target for this revision extends the delivered
+Nuclear BFG 9000 schedule boundary with immediate deterministic actor-only
+radius-8 fanout. Its contract must:
+
+- [x] preserve the existing direct-hit, delay-33/radius-8/knockback-16
+  schedule event and one accepted shot's clip/action-cost behavior;
+- [x] resolve the in-bounds, line-of-sight-cleared radius-8 blast cells in a
+  documented stable center-then-ring order, consuming one `8d6` Plasma roll
+  per clear cell without distance falloff;
+- [x] skip the firing actor as required by the legacy `EFSELFSAFE` flag,
+  process each other living actor once, apply radial integer `damage / 16`
+  knockback before environmental damage, and preserve lethal death/drop/
+  game-over order;
+- [x] preserve atomic death-drop preflight and rejected-command state identity,
+  one-roll-per-cell RNG determinism, replay determinism, and direct-core/MCP/
+  BrowserSession event/state parity;
+- [x] advance project version from `0.2.267` to `0.2.268` and gameplay
+  semantics from `76` to `77` while preserving replay schema, RNG, generator,
+  and ruleset identities;
+- [x] keep EFCHAIN secondary explosions, higher chainfire levels,
+  scatter/target routing, delayed timing/state-machine parity, terrain/content
+  and ground-item effects, splash-immunity traits, exact callback timing/
+  accuracy, controlled runtime, browser capture, and audiovisual parity
+  `NOT_RUN` where comparison evidence is unavailable.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 

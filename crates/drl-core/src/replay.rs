@@ -411,9 +411,9 @@ mod tests {
   #[test]
   fn test_replay_validation_rejects_incompatible_semantics() {
     let mut replay = ReplayLog::new(1234, 10, 10, Position::new(1, 1));
-    // Version 75 predates Standard BFG 9000's radius-8 actor-only splash and
-    // must not be interpreted by the version-76 engine.
-    assert_eq!(drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION, 76);
+    // Version 76 predates Nuclear BFG 9000's radius-8 actor-only splash and
+    // must not be interpreted by the version-77 engine.
+    assert_eq!(drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION, 77);
     assert_eq!(
       drl_protocol::CURRENT_RNG_SAMPLING_SEMANTICS_VERSION,
       crate::rng::RNG_SAMPLING_SEMANTICS_VERSION

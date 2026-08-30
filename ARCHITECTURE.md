@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-29
-Current project version: `0.2.267`
+Current project version: `0.2.268`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -73,6 +73,11 @@ forty-cell-per-shot, and delayed-explosion fragments plus its bounded radius-8
 actor-only fanout (one `10d6` Plasma roll per clear cell, source self-safety,
 radial integer `damage / 16` knockback, and normal death/drop/game-over
 follow-up);
+Nuclear BFG 9000 records its typed exact-hit, one-projectile,
+forty-cell-per-shot, recharge, overload, and delayed-explosion fragments plus
+its bounded radius-8 actor-only fanout (one `8d6` Plasma roll per clear cell,
+source self-safety, radial integer `damage / 16` knockback, and normal
+death/drop/game-over follow-up);
 Standard
 Shotgun records its typed one-cell knockback hit and one-shell ammo-cost
 fragments; Plasma Shotgun records its typed one-projectile ordinary-fire and

@@ -18,6 +18,20 @@ truth.
 - **Prevention:** Keep source provenance for each payload field in the slice
   evidence and test the complete event tuple at every boundary.
 
+## Keep direct and splash damage sampling distinct
+
+- **Context:** Typed weapon definitions expose compact minimum/maximum damage
+  ranges, while legacy explosion payloads roll their dice independently for
+  every clear blast cell.
+- **Symptom:** Reusing a per-die splash helper for the direct hit consumes the
+  wrong RNG sequence even when both paths have the same numeric bounds.
+- **Resolution:** Preserve the direct combat resolver's one bounded range
+  sample, and use an explicit dice helper only for the per-cell splash policy;
+  lock both sequences with a replay/RNG regression test.
+- **Prevention:** Trace the legacy call site that creates each `TDiceRoll` and
+  document whether the Rust boundary models it as one range sample or multiple
+  die samples before writing expected-state assertions.
+
 ## Keep behavior profiles descriptive and execution-owned
 
 - **Context:** A typed profile can describe a callback-derived transition while
