@@ -19,6 +19,6 @@ policy to BFG 10K's five-projectile direct-target volley. Valid visible,
 in-range shots bypass only the to-hit RNG for each projectile while retaining
 clip, action cost, damage RNG, and existing attack/damage events; invalid
 commands remain atomic. The `0.2.264` first-level chainfire slice reuses that
-exact-hit policy for four ordered projectiles. Scatter, higher chainfire levels,
+exact-hit policy for four ordered projectiles. Scatter, fifth-and-later chainfire levels,
 projectile routing, explosions, mods, controlled legacy runtime, and
 audiovisual comparison remain separate slices or `NOT_RUN`.
