@@ -21,10 +21,11 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// Gameplay semantics identifier expected by the current replay engine.
 ///
 /// This advances independently from the wire/schema and RNG-sampling versions
-/// when other deterministic simulation rules change. Version `116` includes
-/// Laser Rifle's typed seventh-level seven-projectile chainfire burst; version
-/// `115` includes Nuclear Plasma Rifle's typed seventh-level nine-projectile
-/// chainfire burst; version `114` includes BFG 10K's typed twenty-first-level
+/// when other deterministic simulation rules change. Version `117` includes
+/// Chaingun's typed fourth-level six-projectile chainfire burst; version `116`
+/// includes Laser Rifle's typed seventh-level seven-projectile chainfire burst;
+/// version `115` includes Nuclear Plasma Rifle's typed seventh-level
+/// nine-projectile chainfire burst; version `114` includes BFG 10K's typed twenty-first-level
 /// seven-projectile chainfire burst; version `113`
 /// includes BFG 10K's typed twentieth-level seven-projectile chainfire burst; version `112`
 /// includes BFG 10K's typed nineteenth-level seven-projectile chainfire burst; version `111`
@@ -108,7 +109,7 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// seventh-level chainfire, the prior Malek's Armor, Missile Launcher, and
 /// Combat Shotgun policies, and the typed ordinary-fire cost policies through
 /// Laser Rifle.
-pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 116;
+pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 117;
 
 /// Procedural-generation semantics identifier expected for replays that carry
 /// a procedural generation configuration. Version 2 includes the exact
@@ -128,9 +129,10 @@ pub struct ReplayMetadata {
   /// Engine crate version string.
   pub engine_version: String,
   /// Gameplay semantics version required to interpret the command history.
-  /// Version 116 includes Laser Rifle's typed seventh-level seven-projectile
-  /// chainfire burst; version 115 includes Nuclear Plasma Rifle's typed
-  /// seventh-level nine-projectile chainfire burst; version 97 includes Laser
+  /// Version 117 includes Chaingun's typed fourth-level six-projectile
+  /// chainfire burst; version 116 includes Laser Rifle's typed seventh-level
+  /// seven-projectile chainfire burst; version 115 includes Nuclear Plasma
+  /// Rifle's typed seventh-level nine-projectile chainfire burst; version 97 includes Laser
   /// Rifle's typed sixth-level seven-projectile chainfire burst; version 96
   /// includes Laser Rifle's typed fifth-level seven-projectile chainfire burst;
   /// version 95 includes BFG 10K's typed
