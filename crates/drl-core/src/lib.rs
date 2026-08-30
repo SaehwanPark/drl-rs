@@ -35,6 +35,7 @@ pub mod loot_definition;
 pub mod malek_armor;
 pub mod missile_launcher;
 pub mod monster_roll_definition;
+pub mod nuclear_bfg9000;
 pub mod nuclear_overload;
 pub mod nuke;
 pub mod null_pointer;
@@ -133,6 +134,11 @@ pub use malek_armor::{
   MALEK_ARMOR_RECHARGE_AMOUNT, MALEK_ARMOR_RECHARGE_DELAY, MALEK_ARMOR_RECHARGE_TICK,
 };
 pub use missile_launcher::MISSILE_LAUNCHER_ALT_RELOAD_CAP;
+pub use nuclear_bfg9000::{
+  NUCLEAR_BFG9000_EXPLOSION_DAMAGE_DICE, NUCLEAR_BFG9000_EXPLOSION_DAMAGE_DIE_SIDES,
+  radius_eight_blast_positions as nuclear_bfg9000_radius_eight_blast_positions,
+  roll_explosion_damage as roll_nuclear_bfg9000_explosion_damage,
+};
 pub use nuclear_overload::{
   NUCLEAR_OVERLOAD_FLOOR_COUNTDOWN, NUCLEAR_OVERLOAD_HAZARD_COUNTDOWN, NUCLEAR_OVERLOAD_SCORE_COST,
 };

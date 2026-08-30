@@ -1266,6 +1266,13 @@ fn nuclear_bfg_shot_cost_vertical_scenario_preserves_clip_and_replay() {
   scenario.monsters[0].name = "Static Target".to_string();
   scenario.monsters[0].hp = 500;
   scenario.monsters[0].speed = 1;
+  scenario.monsters.push(drl_protocol::MonsterSpawnSpec::new(
+    Position::new(6, 1),
+    "Splash Target",
+    500,
+    1,
+    (2, 4),
+  ));
   scenario.player_config = Some(PlayerSpawnConfig {
     hp: 50,
     max_hp: 50,
@@ -1285,7 +1292,14 @@ fn nuclear_bfg_shot_cost_vertical_scenario_preserves_clip_and_replay() {
     .world()
     .actors()
     .values()
-    .find(|actor| !actor.is_player())
+    .find(|actor| actor.name() == "Static Target")
+    .unwrap()
+    .id();
+  let splash_target_id = game
+    .world()
+    .actors()
+    .values()
+    .find(|actor| actor.name() == "Splash Target")
     .unwrap()
     .id();
   assert!(events.iter().any(|event| {
@@ -1300,6 +1314,24 @@ fn nuclear_bfg_shot_cost_vertical_scenario_preserves_clip_and_replay() {
     )
   }));
   assert_nuclear_bfg_schedule_event(&events, player_id, target_id);
+  assert_eq!(
+    events
+      .iter()
+      .filter(|event| {
+        matches!(
+          event,
+          GameEvent::DamageApplied {
+            target_id: event_target,
+            source: DamageSource::Environment,
+            damage_type: Some(drl_protocol::DamageType::Plasma),
+            ..
+          } if *event_target == splash_target_id
+        )
+      })
+      .count(),
+    1,
+    "Nuclear BFG splash must damage the second actor exactly once"
+  );
   let attack_index = events
     .iter()
     .position(|event| matches!(event, GameEvent::AttackResolved { .. }))

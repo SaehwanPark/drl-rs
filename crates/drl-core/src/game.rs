@@ -44,6 +44,10 @@ use crate::jackhammer::{JACKHAMMER_MODE_SCORE_COST, JackhammerTransition};
 use crate::level_definition::standard_procedural;
 use crate::malek_armor::MalekRechargeOutcome;
 use crate::missile_launcher::{MissileLauncherReloadPlan, MissileLauncherTransition};
+use crate::nuclear_bfg9000::{
+  radius_eight_blast_positions as nuclear_bfg9000_radius_eight_blast_positions,
+  roll_explosion_damage as roll_nuclear_bfg9000_explosion_damage,
+};
 use crate::nuclear_overload::{NUCLEAR_OVERLOAD_SCORE_COST, NuclearOverloadError};
 use crate::nuke::NukeState;
 use crate::null_pointer::{
@@ -1872,11 +1876,14 @@ impl Game {
       || null_pointer_item_id.is_some()
       || weapon_is_bfg10k
       || weapon_is_bfg9000
+      || weapon_is_nuclear_bfg9000
     {
       let splash_positions = if weapon_is_bfg10k {
         radius_two_blast_positions(self.state.world.map(), target_pos)
       } else if weapon_is_bfg9000 {
         radius_eight_blast_positions(self.state.world.map(), target_pos)
+      } else if weapon_is_nuclear_bfg9000 {
+        nuclear_bfg9000_radius_eight_blast_positions(self.state.world.map(), target_pos)
       } else {
         radius_one_blast_positions(self.state.world.map(), target_pos)
       };
@@ -2054,6 +2061,7 @@ impl Game {
             radius: NUCLEAR_BFG9000_EXPLOSION_RADIUS,
             knockback: NUCLEAR_BFG9000_EXPLOSION_KNOCKBACK,
           });
+          self.execute_nuclear_bfg9000_splash(player_id, target_pos, events)?;
         } else if weapon_is_anti_freak_jackal {
           events.push(GameEvent::AntiFreakJackalExplosionScheduled {
             entity_id: player_id,
@@ -2391,6 +2399,26 @@ impl Game {
       radius_eight_blast_positions(self.state.world.map(), center),
       ActorSplashPolicy {
         roll_damage: roll_bfg9000_explosion_damage,
+        source_self_safe: true,
+        ground_item_threshold: None,
+      },
+      events,
+    )
+  }
+
+  /// Resolves the bounded Nuclear BFG 9000 radius-8 actor splash.
+  fn execute_nuclear_bfg9000_splash(
+    &mut self,
+    source_id: drl_protocol::EntityId,
+    center: Position,
+    events: &mut Vec<GameEvent>,
+  ) -> Result<(), CommandError> {
+    self.execute_actor_splash(
+      source_id,
+      center,
+      nuclear_bfg9000_radius_eight_blast_positions(self.state.world.map(), center),
+      ActorSplashPolicy {
+        roll_damage: roll_nuclear_bfg9000_explosion_damage,
         source_self_safe: true,
         ground_item_threshold: None,
       },
