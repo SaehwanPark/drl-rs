@@ -7311,6 +7311,89 @@ mod tests {
     );
     expected_events.extend(fourth_expected_events);
 
+    for _ in 0..57 {
+      let wait_expected_events = direct
+        .step(Command::Wait)
+        .expect("direct Nuclear Plasma fifth-level recharge wait");
+      let wait_step = browser
+        .submit(Command::Wait)
+        .expect("browser Nuclear Plasma fifth-level recharge wait");
+      assert_eq!(wait_step.events, wait_expected_events);
+      assert_eq!(wait_step.after, direct.observe_player());
+      assert_eq!(
+        wait_step.effects,
+        effect_timeline_for_observations(
+          &wait_step.before,
+          &wait_step.after,
+          &wait_expected_events,
+        )
+      );
+      assert_eq!(
+        browser.scene(),
+        RenderScene::from_observation(&wait_step.after)
+      );
+      expected_events.extend(wait_expected_events);
+    }
+    let recharged_observation = direct.observe_player();
+    let recharged = recharged_observation
+      .equipped_weapon
+      .as_ref()
+      .expect("Nuclear Plasma Rifle after fifth-level recharge");
+    assert_eq!(recharged.clip, Some((9, 24)));
+
+    let fifth_command = Command::AttackRangedChainfire(target_position);
+    assert_eq!(
+      BrowserSession::command_for_key("C", &direct.observe_player()),
+      Some(fifth_command)
+    );
+    let fifth_expected_events = direct
+      .step(fifth_command)
+      .expect("direct fifth Nuclear Plasma chainfire command");
+    let fifth_step = browser
+      .submit(fifth_command)
+      .expect("browser fifth Nuclear Plasma chainfire command");
+    assert_eq!(fifth_step.events, fifth_expected_events);
+    assert_eq!(fifth_step.after, direct.observe_player());
+    assert_eq!(
+      fifth_step.effects,
+      effect_timeline_for_observations(
+        &fifth_step.before,
+        &fifth_step.after,
+        &fifth_expected_events,
+      )
+    );
+    assert_eq!(
+      browser.scene(),
+      RenderScene::from_observation(&fifth_step.after)
+    );
+    assert_eq!(
+      fifth_expected_events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          drl_protocol::GameEvent::AttackResolved {
+            attacker_id,
+            target_id: event_target,
+            is_ranged: true,
+            ..
+          } if *attacker_id == direct.world().player_id().unwrap() && *event_target == target_id
+        ))
+        .count(),
+      9
+    );
+    let nuclear_plasma = fifth_step
+      .after
+      .equipped_weapon
+      .as_ref()
+      .expect("Nuclear Plasma Rifle");
+    assert_eq!(nuclear_plasma.chainfire_level, 5);
+    assert_eq!(nuclear_plasma.clip, Some((0, 24)));
+    assert_eq!(
+      BrowserSession::command_for_key("C", &fifth_step.after),
+      None
+    );
+    expected_events.extend(fifth_expected_events);
+
     let mut command_replay = setup_replay;
     command_replay.record_command(command);
     command_replay.record_command(second_command);
@@ -7319,6 +7402,10 @@ mod tests {
       command_replay.record_command(Command::Wait);
     }
     command_replay.record_command(fourth_command);
+    for _ in 0..57 {
+      command_replay.record_command(Command::Wait);
+    }
+    command_replay.record_command(fifth_command);
     let (replayed, replay_events) =
       drl_core::ReplayEngine::run(&command_replay).expect("vertical command replay");
     assert_eq!(replay_events, expected_events);

@@ -1,7 +1,8 @@
 # Nuclear Plasma Rifle typed ordinary-volley evidence
 
 Status: delivered typed Nuclear Plasma Rifle ordinary-fire and first-, second-,
-third-, plus fourth-level chainfire support in `0.2.284`; fifth-and-later chainfire levels,
+third-, fourth-, plus fifth-level chainfire support in `0.2.285`;
+sixth-and-later chainfire levels,
 controlled legacy runtime comparison, and audiovisual parity remain `NOT_RUN`.
 Existing overload and periodic recharge evidence is retained in
 `nuclear-plasma-profile.md` and `nuclear-plasma.md`.
@@ -22,29 +23,32 @@ evidence.
 - `src/dfbeing.pas:1477-1515` resolves the six-shot count and deducts the
   aggregate cost before the ordered fire loop. Its chainfire adjustment uses
   `shots - (shots div 3)` at level zero, the unchanged six-shot count at level
-  one, and `shots + (shots div 2)` at level two and later; the first three
-  bounded levels therefore emit four, six, and nine projectiles. The legacy
-  path may partially reduce a clip when ammunition is insufficient, which is
-  intentionally outside the Rust atomic below-volley contract.
+  one, and `shots + (shots div 2)` at level two and later; the first five
+  bounded levels therefore emit four, six, nine, nine, and nine projectiles.
+  The legacy path may partially reduce a clip when ammunition is insufficient,
+  which is intentionally outside the Rust atomic below-volley contract.
 
 ## DRL-Rust boundary
 
 `NUCLEAR_PLASMA_BEHAVIOR` now records six ordered projectiles and one Cell per
 projectile alongside its four-projectile/four-cell first-level,
-six-projectile/six-cell second-level, and nine-projectile/nine-cell third- and
-fourth-level chainfire, existing typed overload, and delay-40/cadence-2/amount-1
+six-projectile/six-cell second-level, and nine-projectile/nine-cell third-,
+fourth-, and fifth-level chainfire, existing typed overload, and
+delay-40/cadence-2/amount-1
 recharge fragments. Generic ranged execution remains authoritative for target,
 line-of-sight, range, damage RNG, event ordering, and transactional clip
 consumption; one accepted ordinary command consumes six cells, while first-,
-second-, and third-level chainfire consume four, six, and nine cells
+second-, third-, fourth-, and fifth-level chainfire consume four, six, nine,
+nine, and nine cells
 respectively and emit matching ordered ranged events.
 
 ScenarioRunner/replay, MCP JSON/catalog, and `BrowserSession` tests verify
 deterministic parity for both ordinary and chainfire commands. Clips below six
-ordinary/second-level or four first-level chainfire cells are rejected before
+ordinary/second-level or four first-level or nine third-/fourth-/fifth-level
+chainfire cells are rejected before
 mutation, and the existing overload and periodic-recharge ownership are
 unchanged.
 
-Fifth-and-later chainfire callback state, alternate target routing, exact
+Sixth-and-later chainfire callback state, alternate target routing, exact
 timing, controlled runtime, browser capture, and audiovisual parity remain
 deferred; source similarity alone is not parity proof.
