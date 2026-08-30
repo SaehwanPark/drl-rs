@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.281`
+Current project version: `0.2.282`
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,16 +25,16 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Laser Rifle Third-Level Chainfire
+## 2. Active Implementation Slice: M9 — Laser Rifle Fourth-Level Chainfire
 
 ### 2.1 Objective
 
-Extend the delivered typed Laser Rifle first- and second-level chainfire
-commands with the legacy-pinned third warm-up level. After accepted four- and
-five-projectile bursts leave the weapon at warm-up level two, a valid
-third-level command must emit seven projectiles, charge seven cells, preserve
-the existing ordered ranged attack behavior, and advance the warm-up state to
-level three.
+Extend the delivered typed Laser Rifle first-, second-, and third-level
+chainfire commands with the legacy-pinned fourth warm-up level. After accepted
+four-, five-, and seven-projectile bursts leave the weapon at warm-up level
+three, a valid fourth-level command must emit seven projectiles, charge seven
+cells, preserve the existing ordered ranged attack behavior, and advance the
+warm-up state to level four.
 
 ### 2.1a Scope and steering gate
 
@@ -42,16 +42,16 @@ level three.
 - **Steering gates:** Gate A rejected-input safety and Gate B explicit replay
   compatibility remain active acceptance constraints; Gate C catalog ownership
   and Gate D typed behavior evidence remain closed for this bounded extension.
-- **Observable outcome:** A third-level Laser Rifle chainfire command is
+- **Observable outcome:** A fourth-level Laser Rifle chainfire command is
   admitted only for a living visible target, a loaded clip of at least seven
-  cells, and a weapon warm-up level of two. It consumes seven cells, emits
+  cells, and a weapon warm-up level of three. It consumes seven cells, emits
   seven ordered ranged attack outcomes, preserves deterministic post-lethal
-  no-op continuation slots, and advances warm-up to level three. Ordinary fire
-  still resets the warm-up state, and the fourth level remains rejected
+  no-op continuation slots, and advances warm-up to level four. Ordinary fire
+  still resets the warm-up state, and the fifth level remains rejected
   atomically.
-- **Gameplay/replay impact:** Gameplay semantics advance from `89` to `90`;
+- **Gameplay/replay impact:** Gameplay semantics advance from `90` to `91`;
   replay wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.280` to `0.2.281`.
+  unchanged. Project version advances from `0.2.281` to `0.2.282`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary,
   typed projectile-count/cost policy and generic execution; `drl-protocol` owns
   the semantic `AttackRanged`/`AttackRangedAimed` commands and typed event
@@ -62,7 +62,7 @@ level three.
   existing typed ranged contract and focused direct-core/replay/MCP/browser
   tests, are authoritative. Controlled legacy runtime, browser capture, and
   audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** Fourth and later chainfire levels, legacy target rotation or
+- **Non-goals:** Fifth and later chainfire levels, legacy target rotation or
   scatter/spread routing, exact callback timing/accuracy, overload/recharge
   changes, new command variants or callback registries, unrelated gameplay
   balance, replay migrations, runtime Lua, and browser/audio/WebGPU capture
@@ -70,9 +70,9 @@ level three.
 
 ### 2.2 Why this slice is bounded
 
-The immutable Laser Rifle profile, semantic command, and first- and second-level
-transitions already exist. This extension adds only one typed warm-up profile
-and its deterministic count/cost selection while reusing the
+The immutable Laser Rifle profile, semantic command, and first-, second-, and
+third-level transitions already exist. This extension adds only one typed
+warm-up profile and its deterministic count/cost selection while reusing the
 existing generic ranged, replay, MCP, browser, and transactional boundaries
 without adding a pending queue, new dispatcher, or callback system.
 
@@ -3805,30 +3805,57 @@ command with the pinned second warm-up level. Its contract was:
   browser capture, and audiovisual parity `NOT_RUN` where comparison evidence
   is unavailable.
 
-### 2.7ex Current Laser Rifle third-level chainfire target
+### 2.7ex Historical Laser Rifle third-level chainfire target
 
-The bounded implementation target for this revision extends the delivered
-Laser Rifle first- and second-level chainfire commands with the pinned third
-warm-up level. Its contract must:
+The delivered `0.2.281` target extended the Laser Rifle first- and second-level
+chainfire commands with the pinned third warm-up level. Its contract was:
 
-- [ ] preserve the first-level four-projectile/four-cell and second-level
+- [x] preserve the first-level four-projectile/four-cell and second-level
   five-projectile/five-cell contracts and admit a third command only while the
   weapon warm-up level is two and the target is still a valid visible living
   actor;
+- [x] resolve the legacy level-two-and-later formula `shots = 5 + (5 div 2) =
+  7`, consuming exactly seven loaded cells for the seven-projectile ranged
+  volley;
+- [x] preserve ordered event output and deterministic post-lethal no-op
+  continuation slots without changing the existing ordinary-fire behavior;
+- [x] advance warm-up state to level three only after acceptance, keep ordinary
+  fire's reset behavior, and reject the fourth level without changing game,
+  clip, turn, or RNG state;
+- [x] preserve direct-core, replay, MCP legal-action/JSON, physical `C` key,
+  and BrowserSession event/state parity;
+- [x] advance project version from `0.2.280` to `0.2.281` and gameplay
+  semantics from `89` to `90` while preserving replay schema, RNG, generator,
+  and ruleset identities;
+- [x] keep fourth-and-later chainfire levels, legacy target rotation,
+  scatter/spread routing, exact timing/accuracy, controlled legacy runtime,
+  browser capture, and audiovisual parity `NOT_RUN` where comparison evidence
+  is unavailable.
+
+### 2.7ey Current Laser Rifle fourth-level chainfire target
+
+The bounded implementation target for this revision extends the delivered
+Laser Rifle first-, second-, and third-level chainfire commands with the pinned
+fourth warm-up level. Its contract must:
+
+- [ ] preserve the first-, second-, and third-level four-, five-, and
+  seven-projectile/four-, five-, and seven-cell contracts and admit a fourth
+  command only while the weapon warm-up level is three and the target is still
+  a valid visible living actor;
 - [ ] resolve the legacy level-two-and-later formula `shots = 5 + (5 div 2) =
   7`, consuming exactly seven loaded cells for the seven-projectile ranged
   volley;
 - [ ] preserve ordered event output and deterministic post-lethal no-op
   continuation slots without changing the existing ordinary-fire behavior;
-- [ ] advance warm-up state to level three only after acceptance, keep ordinary
-  fire's reset behavior, and reject the fourth level without changing game,
+- [ ] advance warm-up state to level four only after acceptance, keep ordinary
+  fire's reset behavior, and reject the fifth level without changing game,
   clip, turn, or RNG state;
 - [ ] preserve direct-core, replay, MCP legal-action/JSON, physical `C` key,
   and BrowserSession event/state parity;
-- [ ] advance project version from `0.2.280` to `0.2.281` and gameplay
-  semantics from `89` to `90` while preserving replay schema, RNG, generator,
+- [ ] advance project version from `0.2.281` to `0.2.282` and gameplay
+  semantics from `90` to `91` while preserving replay schema, RNG, generator,
   and ruleset identities;
-- [ ] keep fourth-and-later chainfire levels, legacy target rotation,
+- [ ] keep fifth-and-later chainfire levels, legacy target rotation,
   scatter/spread routing, exact timing/accuracy, controlled legacy runtime,
   browser capture, and audiovisual parity `NOT_RUN` where comparison evidence
   is unavailable.

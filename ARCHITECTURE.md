@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.281`
+Current project version: `0.2.282`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -63,8 +63,9 @@ Rifle records its typed six-projectile ordinary-fire and one-cell-per-projectile
 ammo-cost fragments plus bounded first-level four-projectile/four-cell and
 second-level six-projectile/six-cell chainfire transitions; Laser Rifle records
 its typed five-projectile ordinary-fire and
-one-cell-per-projectile ammo-cost fragments plus bounded first-, second-, and
-third-level four-, five-, and seven-projectile chainfire transitions; Nuclear
+one-cell-per-projectile ammo-cost fragments plus bounded first-, second-,
+third-, and fourth-level four-, five-, seven-, and seven-projectile chainfire
+transitions; Nuclear
 Plasma Rifle records its typed
 six-projectile ordinary-fire, one-cell-per-projectile, overload, and recharge
 fragments plus bounded first-, second-, and third-level four-, six-, and

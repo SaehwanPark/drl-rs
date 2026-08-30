@@ -35,7 +35,7 @@ description: "Comprehensive armory encyclopedia: ballistic firearms, energy weap
 ## ⚡ Energy & Plasma Weaponry
 
 - **Blaster**: Self-charging micro-cell energy pistol. Holds 10 energy charges; automatically regenerates charges over time. Supports Aimed Fire.
-- **Laser Rifle**: Long-range beam projector firing a 5-cell precision coherent light volley with first-level 4-projectile, second-level 5-projectile, and third-level 7-projectile chainfire bursts.
+- **Laser Rifle**: Long-range beam projector firing a 5-cell precision coherent light volley with first-level 4-projectile, second-level 5-projectile, and third- and fourth-level 7-projectile chainfire bursts.
 - **Plasma Rifle**: Rapid-fire energy rifle discharging 6-cell plasma bolts with thermal splash damage and first-level 4-projectile plus second-level 6-projectile chainfire bursts.
 - **Nuclear Plasma Rifle**: Experimental nuclear core plasma rifle. High-yield discharge, first-level 4-projectile chainfire, and continuous internal power recharge.
 - **BFG 9000**: The ultimate bio-force weapon. Fires a massive 40-cell plasma ball (radius 8 splash, massive 16-tile kinetic knockback).
