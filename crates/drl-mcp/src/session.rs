@@ -3354,6 +3354,32 @@ mod tests {
     session
       .step(fourteenth.command)
       .expect("fourteenth chainfire action");
+    let player_id = session.game.as_ref().unwrap().world().player_id().unwrap();
+    session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .get_actor_mut(player_id)
+      .unwrap()
+      .equipment_mut()
+      .weapon_mut()
+      .unwrap()
+      .weapon_properties_mut()
+      .unwrap()
+      .current_clip = 50;
+    let fifteenth = compute_legal_actions(&session.get_observation().unwrap())
+      .into_iter()
+      .find(|action| action.action == "Chainfire")
+      .expect("fifteenth BFG 10K chainfire should be advertised");
+    assert!(matches!(
+      fifteenth.command,
+      Command::AttackRangedChainfire(_)
+    ));
+    assert!(fifteenth.description.contains("7 projectiles, 35 rounds"));
+    session
+      .step(fifteenth.command)
+      .expect("fifteenth chainfire action");
     assert!(
       !compute_legal_actions(&session.get_observation().unwrap())
         .iter()
@@ -5340,7 +5366,7 @@ mod tests {
       hp: 50,
       max_hp: 50,
       speed: 100,
-      initial_items: vec![drl_protocol::ItemSpawnKind::AmmoCells(465)],
+      initial_items: vec![drl_protocol::ItemSpawnKind::AmmoCells(500)],
       equipped_weapon: Some(drl_protocol::ItemSpawnKind::Bfg10k),
       equipped_armor: None,
       equipped_armor_durability: None,
@@ -6773,6 +6799,116 @@ mod tests {
         .unwrap()
         .chainfire_level,
       14
+    );
+    assert!(
+      !compute_legal_actions(&direct.observe_player())
+        .iter()
+        .any(|action| action.action == "Chainfire")
+    );
+
+    let fifteenth_reload_expected_events = direct
+      .step(Command::Reload)
+      .expect("direct fifteenth BFG 10K chainfire reload");
+    let (fifteenth_reload_events, fifteenth_reload_observation, fifteenth_reload_outcome) = session
+      .step(Command::Reload)
+      .expect("MCP fifteenth BFG 10K chainfire reload");
+    assert_eq!(fifteenth_reload_events, fifteenth_reload_expected_events);
+    assert_eq!(session.game.as_ref().unwrap(), &direct);
+    assert_eq!(fifteenth_reload_observation, direct.observe_player());
+    assert_eq!(fifteenth_reload_outcome, None);
+    expected_events.extend(fifteenth_reload_events);
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .current_clip,
+      50
+    );
+
+    let fifteenth_target = direct
+      .world()
+      .get_actor(target_id)
+      .expect("BFG 10K chainfire target should survive fourteenth reload")
+      .position();
+    let fifteenth_command = Command::AttackRangedChainfire(fifteenth_target);
+    assert!(
+      compute_legal_actions(&direct.observe_player())
+        .iter()
+        .any(|action| action.command == fifteenth_command)
+    );
+    let fifteenth_expected_events = direct
+      .step(fifteenth_command)
+      .expect("direct fifteenth BFG 10K chainfire command");
+    let (fifteenth_events, fifteenth_observation, fifteenth_outcome) = session
+      .step(fifteenth_command)
+      .expect("MCP fifteenth BFG 10K chainfire command");
+    assert_eq!(fifteenth_events, fifteenth_expected_events);
+    assert_eq!(session.game.as_ref().unwrap(), &direct);
+    assert_eq!(fifteenth_observation, direct.observe_player());
+    assert_eq!(fifteenth_outcome, None);
+    assert_eq!(
+      fifteenth_events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          GameEvent::AttackResolved {
+            attacker_id,
+            target_id: event_target,
+            outcome: drl_protocol::AttackOutcome::Hit { .. },
+            is_ranged: true,
+          } if *attacker_id == player_id && *event_target == target_id
+        ))
+        .count(),
+      7
+    );
+    assert_eq!(
+      fifteenth_events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          GameEvent::Bfg10kExplosionScheduled {
+            entity_id,
+            target_id: event_target,
+            delay: 25,
+            radius: 2,
+            knockback: 16,
+          } if *entity_id == player_id && *event_target == target_id
+        ))
+        .count(),
+      7
+    );
+    expected_events.extend(fifteenth_events);
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .current_clip,
+      15
+    );
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .chainfire_level,
+      15
     );
     assert!(
       !compute_legal_actions(&direct.observe_player())
