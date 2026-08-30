@@ -1499,7 +1499,7 @@ fn chaingun_ordinary_fire_resets_chainfire_warmup() {
 }
 
 #[test]
-fn chaingun_tenth_chainfire_level_is_rejected_without_mutation() {
+fn chaingun_eleventh_chainfire_level_is_rejected_without_mutation() {
   let (mut game, _weapon_id) = equipped_chaingun(2_244);
   let target = Position::new(5, 2);
   game
@@ -1545,6 +1545,9 @@ fn chaingun_tenth_chainfire_level_is_rejected_without_mutation() {
   game
     .step(Command::AttackRangedChainfire(target))
     .expect("ninth chainfire burst");
+  game
+    .step(Command::AttackRangedChainfire(target))
+    .expect("tenth chainfire burst");
   let before = game.clone();
 
   assert_eq!(
@@ -1745,6 +1748,121 @@ fn chaingun_ninth_chainfire_below_six_round_cost_rejection_is_atomic() {
   game
     .step(Command::AttackRangedChainfire(target))
     .expect("eighth chainfire burst");
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 5;
+  let before = game.clone();
+
+  assert_eq!(
+    game
+      .step(Command::AttackRangedChainfire(target))
+      .unwrap_err(),
+    CommandError::NoAmmoInClip
+  );
+  assert_eq!(game, before);
+}
+
+#[test]
+fn chaingun_tenth_chainfire_after_ninth_emits_six_projectiles_and_advances_state() {
+  let (mut game, _weapon_id) = equipped_chaingun(2_266);
+  let target = Position::new(5, 2);
+  let target_id = game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 10_000, 0, (1, 6))
+    .unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let ammo_id = game.world_mut().allocate_item_id();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .inventory_mut()
+    .add_item(Item::ammo_9mm(ammo_id, 40))
+    .unwrap();
+  for _ in 0..7 {
+    game
+      .step(Command::AttackRangedChainfire(target))
+      .expect("preceding chainfire burst");
+  }
+  game
+    .step(Command::Reload)
+    .expect("reload before eighth burst");
+  game
+    .step(Command::AttackRangedChainfire(target))
+    .expect("eighth chainfire burst");
+  game
+    .step(Command::AttackRangedChainfire(target))
+    .expect("ninth chainfire burst");
+
+  let events = game
+    .step(Command::AttackRangedChainfire(target))
+    .expect("tenth chainfire burst");
+  assert_eq!(
+    events
+      .iter()
+      .filter(|event| matches!(
+        event,
+        GameEvent::AttackResolved {
+          attacker_id,
+          target_id: event_target,
+          is_ranged: true,
+          ..
+        } if *event_target == target_id && *attacker_id == player_id
+      ))
+      .count(),
+    6
+  );
+  let properties = game
+    .world()
+    .player()
+    .unwrap()
+    .equipment()
+    .weapon()
+    .unwrap()
+    .weapon_properties()
+    .unwrap();
+  assert_eq!(properties.current_clip, 22);
+  assert_eq!(properties.chainfire_level, 10);
+}
+
+#[test]
+fn chaingun_tenth_chainfire_below_six_round_cost_rejection_is_atomic() {
+  let (mut game, _weapon_id) = equipped_chaingun(2_268);
+  let target = Position::new(5, 2);
+  game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 10_000, 0, (1, 6))
+    .unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let ammo_id = game.world_mut().allocate_item_id();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .inventory_mut()
+    .add_item(Item::ammo_9mm(ammo_id, 40))
+    .unwrap();
+  for _ in 0..7 {
+    game
+      .step(Command::AttackRangedChainfire(target))
+      .expect("preceding chainfire burst");
+  }
+  game
+    .step(Command::Reload)
+    .expect("reload before eighth burst");
+  game
+    .step(Command::AttackRangedChainfire(target))
+    .expect("eighth chainfire burst");
+  game
+    .step(Command::AttackRangedChainfire(target))
+    .expect("ninth chainfire burst");
   game
     .world_mut()
     .get_actor_mut(player_id)
@@ -2445,6 +2563,58 @@ fn chaingun_chainfire_replay_preserves_ninth_level_after_eighth_deterministicall
       ))
       .count(),
     49
+  );
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}
+
+#[test]
+fn chaingun_chainfire_replay_preserves_tenth_level_after_ninth_deterministically() {
+  let player_start = Position::new(5, 5);
+  let mut replay =
+    ReplayLog::new(2_266, 12, 12, player_start).with_player_config(PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: vec![ItemSpawnKind::Ammo9mm(40)],
+      equipped_weapon: Some(ItemSpawnKind::Chaingun),
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    });
+  let target = Position::new(6, 5);
+  replay.record_monster(MonsterSpawnSpec::new(target, "Target", 10_000, 0, (1, 6)));
+  for _ in 0..7 {
+    replay.record_command(Command::AttackRangedChainfire(target));
+  }
+  replay.record_command(Command::Reload);
+  for _ in 0..3 {
+    replay.record_command(Command::AttackRangedChainfire(target));
+  }
+
+  let (game, events) =
+    ReplayEngine::run(&replay).expect("Chaingun tenth chainfire replay should run");
+  let weapon_properties = game
+    .world()
+    .player()
+    .unwrap()
+    .equipment()
+    .weapon()
+    .unwrap()
+    .weapon_properties()
+    .unwrap();
+  assert_eq!(weapon_properties.current_clip, 22);
+  assert_eq!(weapon_properties.chainfire_level, 10);
+  assert_eq!(
+    events
+      .iter()
+      .filter(|event| matches!(
+        event,
+        GameEvent::AttackResolved {
+          is_ranged: true,
+          ..
+        }
+      ))
+      .count(),
+    55
   );
   assert!(ReplayEngine::verify_determinism(&replay).unwrap());
 }

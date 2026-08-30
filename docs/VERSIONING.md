@@ -1,6 +1,6 @@
 # Project versioning
 
-drl-rs currently reports version `0.2.313` and uses the three non-negative
+drl-rs currently reports version `0.2.314` and uses the three non-negative
 integer components in `VERSION` as its
 canonical project version. The workspace package metadata, MCP server metadata,
 and generated release manifest must agree with that value.
