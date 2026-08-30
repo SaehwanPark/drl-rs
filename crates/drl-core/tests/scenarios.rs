@@ -2031,10 +2031,10 @@ fn bfg10k_fourteenth_chainfire_vertical_scenario_preserves_replay() {
 }
 
 #[test]
-fn bfg10k_sixteenth_chainfire_vertical_scenario_preserves_replay() {
+fn bfg10k_seventeenth_chainfire_vertical_scenario_preserves_replay() {
   let mut scenario = Scenario::from_ascii(
-    "Bfg10kSixteenthChainfireVertical",
-    "BFG 10K carries its sixteenth-stage chainfire encounter across reloads",
+    "Bfg10kSeventeenthChainfireVertical",
+    "BFG 10K carries its seventeenth-stage chainfire encounter across reloads",
     "########\n#@....h#\n#......#\n########\n",
   )
   .unwrap();
@@ -2046,7 +2046,7 @@ fn bfg10k_sixteenth_chainfire_vertical_scenario_preserves_replay() {
     hp: 50,
     max_hp: 50,
     speed: 100,
-    initial_items: vec![ItemSpawnKind::AmmoCells(535)],
+    initial_items: vec![ItemSpawnKind::AmmoCells(570)],
     equipped_weapon: Some(ItemSpawnKind::Bfg10k),
     equipped_armor: None,
     equipped_armor_durability: None,
@@ -2057,7 +2057,7 @@ fn bfg10k_sixteenth_chainfire_vertical_scenario_preserves_replay() {
     Command::AttackRangedChainfire(target),
     Command::AttackRangedChainfire(target),
   ];
-  for _ in 0..14 {
+  for _ in 0..15 {
     commands.push(Command::Reload);
     commands.push(Command::AttackRangedChainfire(target));
   }
@@ -2084,7 +2084,7 @@ fn bfg10k_sixteenth_chainfire_vertical_scenario_preserves_replay() {
         } if *attacker_id == player_id && *event_target == target_id
       ))
       .count(),
-    107
+    114
   );
   assert_eq!(
     events
@@ -2100,12 +2100,12 @@ fn bfg10k_sixteenth_chainfire_vertical_scenario_preserves_replay() {
         } if *entity_id == player_id && *event_target == target_id
       ))
       .count(),
-    107
+    114
   );
   let weapon = game.world().player().unwrap().equipment().weapon().unwrap();
   let properties = weapon.weapon_properties().unwrap();
   assert_eq!(properties.current_clip, 15);
-  assert_eq!(properties.chainfire_level, 16);
+  assert_eq!(properties.chainfire_level, 17);
   assert_eq!(replay.commands, commands);
 
   let (replayed_game, replay_events) = ReplayEngine::run(&replay).unwrap();
