@@ -1,9 +1,9 @@
 # Chaingun typed behavior-profile evidence
 
 Status: delivered typed ordinary-fire four-shot profile and bounded first-,
-second-, third-, fourth-, fifth-, sixth-, seventh-, eighth-, ninth-, and
-tenth-level chainfire for `0.2.314`;
-eleventh-and-later chainfire levels,
+second-, third-, fourth-, fifth-, sixth-, seventh-, eighth-, ninth-, tenth-, and
+eleventh-level chainfire for `0.2.315`;
+twelfth-and-later chainfire levels,
 spread/routing, controlled legacy runtime comparison, and audiovisual parity
 remain `NOT_RUN`.
 
@@ -25,7 +25,7 @@ Evidence is pinned to revision
 - `src/dfbeing.pas:1477-1491` resolves ordinary fire to four projectiles,
   first-level alternate chainfire to three (`4 - (4 div 3)`), the second-level
   continuation to four, and the third-level and later continuations to six
-  (`4 + (4 div 2)`); this slice bounds the tenth level while leaving later
+  (`4 + (4 div 2)`); this slice bounds the eleventh level while leaving later
   levels outside execution.
 - `src/dfbeing.pas:1496-1514` checks and debits the aggregate ammunition cost
   before emitting the ordered projectile loop at `:498-510`.
@@ -38,19 +38,19 @@ Evidence is pinned to revision
 The immutable `drl_core::behavior::CHAINGUN_BEHAVIOR` profile records ordered
 `AttackEffect::ProjectileCount(4)`,
 `ResourceCost::Ammo { ammo_type: Ammo9mm, amount: 1 }`, and typed first-,
-second-, third-, fourth-, fifth-, sixth-, seventh-, eighth-, ninth-, and
-tenth-level chainfire fragments. The existing
+second-, third-, fourth-, fifth-, sixth-, seventh-, eighth-, ninth-, tenth-,
+and eleventh-level chainfire fragments. The existing
 ranged command path remains
 execution authority for target/LOS/range and death-drop preflight, damage RNG,
 event ordering, and transactional clip consumption. The typed
 `AttackRangedChainfire` command preflights three rounds at level zero, four
-rounds at level one, and six rounds at levels two through nine atomically, emits
+rounds at level one, and six rounds at levels two through ten atomically, emits
 the corresponding ordered attack events (remaining slots become deterministic
 no-op misses if an earlier projectile lethally ends the target), and advances
 observable chain state only after acceptance; ordinary fire resets that state.
 Direct integration, replay, MCP catalog/JSON, snapshot, and BrowserSession
 tests verify these boundaries.
 
-Eleventh-and-later chainfire levels, legacy target rotation/spread, exact
+Twelfth-and-later chainfire levels, legacy target rotation/spread, exact
 timing/accuracy, controlled runtime comparison, and audiovisual parity remain
 deferred; source similarity alone is not parity proof.
