@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.306`
+Current project version: `0.2.307`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.306)
+## 3. Current Progress Summary (`VERSION` 0.2.307)
 
 ### Delivered Foundations
 
@@ -1639,8 +1639,8 @@ scripting.
   delivered in `0.2.305`; Nuclear
   Plasma's
   bounded first- through seventh-level chainfire is delivered in `0.2.306`; the
-  Laser Rifle's bounded first- through sixth-level chainfire is delivered in
-  `0.2.288`,
+  Laser Rifle's bounded first- through seventh-level chainfire is delivered in
+  `0.2.307`,
   while exact-hit, explosion, and mod callbacks remain open.
 - [x] Vertical BFG 10K shot-cost encounter preserves the typed five-cell
   one-shot policy through deterministic scenario/replay, MCP, and
@@ -1874,11 +1874,11 @@ scripting.
   open.
 - [x] Laser Rifle has an immutable behavior profile for its five-projectile
   ordinary fire and one-cell-per-projectile cost plus bounded first-, second-,
-  third-, fourth-, fifth-, and sixth-level four-, five-, seven-, seven-,
-  seven-, and seven-projectile chainfire transitions; generic ranged execution
-  resolves the ordered ordinary and chainfire volleys and atomically rejects
-  clips below their aggregate costs, while seventh-and-later levels, runtime,
-  and audiovisual parity remain open.
+  third-, fourth-, fifth-, sixth-, and seventh-level four-, five-, seven-,
+  seven-, seven-, seven-, and seven-projectile chainfire transitions; generic
+  ranged execution resolves the ordered ordinary and chainfire volleys and
+  atomically rejects clips below their aggregate costs, while eighth-and-later
+  levels, runtime, and audiovisual parity remain open.
 - [x] Trigun has an immutable behavior profile for its one-projectile,
   one-round ordinary fire and shared +3/doubled-cost aimed-fire policy; generic
   ranged execution remains authoritative while alternate reload/nuke behavior,
@@ -2072,6 +2072,13 @@ scripting.
   atomic seventh-level/under-supply rejection; seventh-and-later levels,
   target rotation/spread, exact timing/accuracy, controlled legacy runtime,
   browser capture, and audiovisual parity remain open.
+- [x] Laser Rifle's delivered seventh-level chainfire contract extends the same
+  boundary with the pinned seven-projectile/seven-cell continuation formula
+  through warm-up level seven, including deterministic ScenarioRunner/replay,
+  MCP legal-action/JSON, physical `C` routing, BrowserSession parity, and
+  atomic eighth-level/under-supply rejection; eighth-and-later levels, target
+  rotation/spread, exact timing/accuracy, controlled legacy runtime, browser
+  capture, and audiovisual parity remain open.
 - [x] Nuclear Plasma Rifle's delivered first-level chainfire contract has a
   deterministic direct-core/replay/MCP/BrowserSession boundary check covering
   four ordered events, fair observations, render effects, scene projections,
@@ -2558,6 +2565,14 @@ scripting.
   are verified. Seventh-and-later levels, target rotation/scatter routing,
   overload changes, exact timing/accuracy, controlled runtime, browser capture,
   and audiovisual parity remain open. Gameplay semantics advance to `98`.
+- **M9 Laser Rifle seventh-level chainfire (`0.2.307`):** Laser Rifle now
+  accepts its pinned warm-up level-six continuation: seven ordered ranged
+  projectiles, seven loaded cells, and warm-up advancement to level seven.
+  ScenarioRunner/replay, direct-core, MCP legal-action/JSON, physical `C`, and
+  BrowserSession parity plus atomic eighth-level and under-supply rejection
+  are verified. Eighth-and-later levels, target rotation/scatter routing,
+  exact timing/accuracy, controlled runtime, browser capture, and audiovisual
+  parity remain open. Gameplay semantics advance to `116`.
 - **M9 Nuclear Plasma seventh-level chainfire (`0.2.306`):** Nuclear Plasma now
   accepts its pinned warm-up level-six continuation: nine ordered ranged
   projectiles, nine loaded cells after the existing delay-40/cadence-2 recharge

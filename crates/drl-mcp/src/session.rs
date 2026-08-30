@@ -3015,6 +3015,31 @@ mod tests {
     session
       .step(sixth.command)
       .expect("sixth Laser Rifle chainfire action");
+    session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .get_actor_mut(player_id)
+      .unwrap()
+      .equipment_mut()
+      .weapon_mut()
+      .unwrap()
+      .weapon_properties_mut()
+      .unwrap()
+      .current_clip = 7;
+    let seventh = compute_legal_actions(&session.get_observation().unwrap())
+      .into_iter()
+      .find(|action| action.action == "Chainfire")
+      .expect("seventh Laser Rifle chainfire should be advertised");
+    assert_eq!(
+      seventh.command,
+      Command::AttackRangedChainfire(Position::new(3, 1))
+    );
+    assert!(seventh.description.contains("7 projectiles, 7 rounds"));
+    session
+      .step(seventh.command)
+      .expect("seventh Laser Rifle chainfire action");
     assert!(
       !compute_legal_actions(&session.get_observation().unwrap())
         .iter()
@@ -5147,7 +5172,7 @@ mod tests {
       hp: 50,
       max_hp: 50,
       speed: 100,
-      initial_items: vec![drl_protocol::ItemSpawnKind::AmmoCells(10)],
+      initial_items: vec![drl_protocol::ItemSpawnKind::AmmoCells(7)],
       equipped_weapon: Some(drl_protocol::ItemSpawnKind::LaserRifle),
       equipped_armor: None,
       equipped_armor_durability: None,
@@ -5515,7 +5540,89 @@ mod tests {
         .chainfire_level,
       6
     );
+    let reload_expected_events = direct
+      .step(Command::Reload)
+      .expect("direct Laser Rifle reload");
+    let (reload_events, reload_observation, reload_outcome) = session
+      .step(Command::Reload)
+      .expect("MCP Laser Rifle reload");
+    assert_eq!(reload_events, reload_expected_events);
+    assert_eq!(session.game.as_ref().unwrap(), &direct);
+    assert_eq!(reload_observation, direct.observe_player());
+    assert_eq!(reload_outcome, None);
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .current_clip,
+      10
+    );
     expected_events.extend(sixth_events);
+    expected_events.extend(reload_events);
+    let seventh_command = Command::AttackRangedChainfire(target_position);
+    assert!(
+      compute_legal_actions(&direct.observe_player())
+        .iter()
+        .any(|action| action.command == seventh_command)
+    );
+    let seventh_expected_events = direct
+      .step(seventh_command)
+      .expect("direct seventh Laser Rifle chainfire command");
+    let (seventh_events, seventh_observation, seventh_outcome) = session
+      .step(seventh_command)
+      .expect("MCP seventh Laser Rifle chainfire command");
+    assert_eq!(seventh_events, seventh_expected_events);
+    assert_eq!(session.game.as_ref().unwrap(), &direct);
+    assert_eq!(seventh_observation, direct.observe_player());
+    assert_eq!(seventh_outcome, None);
+    assert_eq!(
+      seventh_events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          GameEvent::AttackResolved {
+            attacker_id,
+            target_id: event_target,
+            is_ranged: true,
+            ..
+          } if *attacker_id == player_id && *event_target == target_id
+        ))
+        .count(),
+      7
+    );
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .current_clip,
+      3
+    );
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .chainfire_level,
+      7
+    );
+    expected_events.extend(seventh_events);
     assert!(
       !compute_legal_actions(&direct.observe_player())
         .iter()

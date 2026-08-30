@@ -21,10 +21,11 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// Gameplay semantics identifier expected by the current replay engine.
 ///
 /// This advances independently from the wire/schema and RNG-sampling versions
-/// when other deterministic simulation rules change. Version `115` includes
-/// Nuclear Plasma Rifle's typed seventh-level nine-projectile chainfire burst;
-/// version `114` includes BFG 10K's typed twenty-first-level seven-projectile
-/// chainfire burst; version `113`
+/// when other deterministic simulation rules change. Version `116` includes
+/// Laser Rifle's typed seventh-level seven-projectile chainfire burst; version
+/// `115` includes Nuclear Plasma Rifle's typed seventh-level nine-projectile
+/// chainfire burst; version `114` includes BFG 10K's typed twenty-first-level
+/// seven-projectile chainfire burst; version `113`
 /// includes BFG 10K's typed twentieth-level seven-projectile chainfire burst; version `112`
 /// includes BFG 10K's typed nineteenth-level seven-projectile chainfire burst; version `111`
 /// includes BFG 10K's typed eighteenth-level seven-projectile chainfire burst; version `110`
@@ -103,10 +104,11 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// forty-cell shot costs and delayed explosion schedules, Nuclear BFG 9000's
 /// recharge/overload, Revenant's Launcher exact-hit resolution, Nuclear Plasma
 /// first- through seventh-level chainfire plus alternate overload/recharge, the
-/// `IF_NORELOAD` policy, Blaster recharge,
-/// the prior Malek's Armor, Missile Launcher, and Combat Shotgun policies, and
-/// the typed ordinary-fire cost policies through Laser Rifle.
-pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 115;
+/// `IF_NORELOAD` policy, Blaster recharge, Laser Rifle's first- through
+/// seventh-level chainfire, the prior Malek's Armor, Missile Launcher, and
+/// Combat Shotgun policies, and the typed ordinary-fire cost policies through
+/// Laser Rifle.
+pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 116;
 
 /// Procedural-generation semantics identifier expected for replays that carry
 /// a procedural generation configuration. Version 2 includes the exact
@@ -126,9 +128,12 @@ pub struct ReplayMetadata {
   /// Engine crate version string.
   pub engine_version: String,
   /// Gameplay semantics version required to interpret the command history.
-  /// Version 97 includes Laser Rifle's typed sixth-level seven-projectile
-  /// chainfire burst; version 96 includes Laser Rifle's typed fifth-level
-  /// seven-projectile chainfire burst; version 95 includes BFG 10K's typed
+  /// Version 116 includes Laser Rifle's typed seventh-level seven-projectile
+  /// chainfire burst; version 115 includes Nuclear Plasma Rifle's typed
+  /// seventh-level nine-projectile chainfire burst; version 97 includes Laser
+  /// Rifle's typed sixth-level seven-projectile chainfire burst; version 96
+  /// includes Laser Rifle's typed fifth-level seven-projectile chainfire burst;
+  /// version 95 includes BFG 10K's typed
   /// fifth-level seven-projectile chainfire burst; version 94 includes Nuclear
   /// Plasma Rifle's typed fifth-level nine-projectile chainfire burst; version 93
   /// includes Nuclear Plasma Rifle's typed fourth-level nine-projectile
