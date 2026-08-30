@@ -3259,6 +3259,30 @@ mod tests {
     );
     assert!(fifth.description.contains("9 projectiles, 9 rounds"));
     session.step(fifth.command).expect("fifth chainfire action");
+    let player_id = session.game.as_ref().unwrap().world().player_id().unwrap();
+    session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .get_actor_mut(player_id)
+      .unwrap()
+      .equipment_mut()
+      .weapon_mut()
+      .unwrap()
+      .weapon_properties_mut()
+      .unwrap()
+      .current_clip = 24;
+    let sixth = compute_legal_actions(&session.get_observation().unwrap())
+      .into_iter()
+      .find(|action| action.action == "Chainfire")
+      .expect("sixth Nuclear Plasma chainfire should be advertised");
+    assert_eq!(
+      sixth.command,
+      Command::AttackRangedChainfire(Position::new(3, 1))
+    );
+    assert!(sixth.description.contains("9 projectiles, 9 rounds"));
+    session.step(sixth.command).expect("sixth chainfire action");
     assert!(
       !compute_legal_actions(&session.get_observation().unwrap())
         .iter()
@@ -5968,6 +5992,92 @@ mod tests {
       5
     );
     expected_events.extend(fifth_events);
+
+    for _ in 0..57 {
+      let wait_expected_events = direct
+        .step(Command::Wait)
+        .expect("direct Nuclear Plasma sixth-level recharge wait");
+      let (wait_events, wait_observation, wait_outcome) = session
+        .step(Command::Wait)
+        .expect("MCP Nuclear Plasma sixth-level recharge wait");
+      assert_eq!(wait_events, wait_expected_events);
+      assert_eq!(session.game.as_ref().unwrap(), &direct);
+      assert_eq!(wait_observation, direct.observe_player());
+      assert_eq!(wait_outcome, None);
+      expected_events.extend(wait_events);
+    }
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .current_clip,
+      9
+    );
+
+    let sixth_command = Command::AttackRangedChainfire(target_position);
+    assert!(
+      compute_legal_actions(&direct.observe_player())
+        .iter()
+        .any(|action| action.command == sixth_command)
+    );
+    let sixth_expected_events = direct
+      .step(sixth_command)
+      .expect("direct sixth Nuclear Plasma chainfire command");
+    let (sixth_events, sixth_observation, sixth_outcome) = session
+      .step(sixth_command)
+      .expect("MCP sixth Nuclear Plasma chainfire command");
+    assert_eq!(sixth_events, sixth_expected_events);
+    assert_eq!(session.game.as_ref().unwrap(), &direct);
+    assert_eq!(sixth_observation, direct.observe_player());
+    assert_eq!(sixth_outcome, None);
+    assert_eq!(
+      sixth_events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          GameEvent::AttackResolved {
+            attacker_id,
+            target_id: event_target,
+            is_ranged: true,
+            ..
+          } if *attacker_id == player_id && *event_target == target_id
+        ))
+        .count(),
+      9
+    );
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .current_clip,
+      0
+    );
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .chainfire_level,
+      6
+    );
+    expected_events.extend(sixth_events);
 
     let replay = session.export_replay().expect("MCP replay export");
     let (replayed, replay_events) =

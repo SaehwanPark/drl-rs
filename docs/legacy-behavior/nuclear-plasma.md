@@ -37,10 +37,10 @@ new command or replay-wire field is required.
 
 ## Boundaries and open questions
 
-The first-, second-, third-, fourth-, and fifth-level chainfire transitions are now
-covered by the bounded four-projectile/four-cell, six-projectile/six-cell, and
-nine-projectile/nine-cell contracts in `0.2.285`; alternate nuke map effects,
-sixth-and-later chainfire levels, other
+The first- through sixth-level chainfire transitions are now covered by the
+bounded four-projectile/four-cell, six-projectile/six-cell, and
+nine-projectile/nine-cell contracts in `0.2.289`; alternate nuke map effects,
+seventh-and-later chainfire levels, other
 rechargeable families, partial-reserve policy, controlled legacy runtime
 comparison, and audiovisual parity remain open. The accepted-command tick is
 the bounded deterministic abstraction and is not a claim of exact legacy
