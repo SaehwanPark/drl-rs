@@ -101,8 +101,9 @@ pub use behavior::{
   WeaponRechargeState,
 };
 pub use bfg10k::{
-  BFG10K_EXPLOSION_DAMAGE_DICE, BFG10K_EXPLOSION_DAMAGE_DIE_SIDES, knockback_distance,
-  radius_two_blast_positions, roll_explosion_damage,
+  BFG10K_EXPLOSION_DAMAGE_DICE, BFG10K_EXPLOSION_DAMAGE_DIE_SIDES,
+  BFG10K_GROUND_ITEM_DESTRUCTION_THRESHOLD, knockback_distance, radius_two_blast_positions,
+  roll_explosion_damage, should_destroy_bfg10k_ground_item,
 };
 pub use chaingun::{
   CHAINGUN_CHAINFIRE_PROJECTILE_COUNT, CHAINGUN_CHAINFIRE_SHOT_COST, ChainfireTransition,

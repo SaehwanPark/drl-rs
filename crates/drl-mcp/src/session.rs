@@ -3800,6 +3800,10 @@ mod tests {
       1,
       (2, 4),
     ));
+    setup_replay.record_item(drl_protocol::ItemSpawnSpec::new(
+      target_position,
+      drl_protocol::ItemSpawnKind::AmmoCells(2),
+    ));
 
     let mut session = McpSession::new();
     session
@@ -3839,6 +3843,12 @@ mod tests {
       5
     );
     assert_bfg10k_volley_events(&events, player_id, target_id);
+    assert!(events.iter().any(|event| {
+      matches!(
+        event,
+        GameEvent::GroundItemDestroyed { position, .. } if *position == target_position
+      )
+    }));
     assert_eq!(
       direct
         .world()

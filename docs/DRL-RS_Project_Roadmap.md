@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-29
-Current project version: `0.2.265`
+Current project version: `0.2.266`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.265)
+## 3. Current Progress Summary (`VERSION` 0.2.266)
 
 ### Delivered Foundations
 
@@ -1005,6 +1005,16 @@ verification item uses explicit status semantics:
   timing/state-machine parity, terrain/content and ground-item effects,
   splash-immunity traits, scatter/routing, controlled runtime, browser capture,
   and audiovisual parity remain open. Gameplay semantics advance to `74`.
+- **M9 BFG 10K ground-item destruction (`0.2.266`):** The delivered radius-2
+  actor fanout now removes the lowest-ID ordinary loose-ammo stack on each
+  clear blast cell when its `6d4` Plasma roll exceeds `10`, emitting
+  `GroundItemDestroyed` after that cell's actor processing and before lethal
+  death/drop follow-up; cells without actors still apply the ground-item rule.
+  Ammo packs, non-ammunition items, terrain, and delayed timing
+  remain unchanged. Direct-core, replay, MCP, and BrowserSession parity plus
+  strict-threshold and RNG tests are covered; splash immunity, routing,
+  controlled runtime, browser capture, and audiovisual parity remain open.
+  Gameplay semantics advance to `75`.
 - **M9 Trigun aimed-fire vertical fidelity (`0.2.248`):** The shared typed
   aimed-fire command now accepts Trigun, applies +3 accuracy and doubled action
   cost, and preserves one-projectile/one-round behavior. Direct-core,
@@ -1567,6 +1577,16 @@ scripting.
   timing/state-machine parity, terrain/content and ground-item effects,
   splash-immunity traits, scatter/routing, controlled runtime, browser capture,
   and audiovisual parity remain open. Gameplay semantics advance to `74`.
+- [x] BFG 10K ground-item destruction (`0.2.266`) extends each delivered
+  radius-2 fanout with one lowest-ID ordinary loose-ammo destruction when the
+  cell's `6d4` Plasma roll exceeds `10`, emitting `GroundItemDestroyed` after
+  that cell's actor processing and before lethal death/drop follow-up; cells
+  without actors still apply the ground-item rule. Ammo packs and non-ammunition
+  items remain; direct-core, replay, MCP, and BrowserSession
+  parity plus strict-threshold and RNG tests are covered. Delayed timing,
+  terrain/content mutation, splash immunity, scatter/routing, controlled
+  runtime, browser capture, and audiovisual parity remain open. Gameplay
+  semantics advance to `75`.
 - [x] Anti-Freak Jackal's delivered radius-1 splash fanout considers the
   impact center and eight neighboring cells clockwise from north in stable order, applies one
   deterministic `5d3` fire-damage roll per eligible living actor, and preserves
@@ -1901,6 +1921,15 @@ scripting.
   terrain/content and ground-item effects, splash immunity, scatter/routing,
   controlled runtime, browser capture, and audiovisual parity remain open.
   Gameplay semantics advance to `74`.
+- **M9 BFG 10K ground-item destruction (`0.2.266`):** Each successful BFG 10K
+  hit now removes at most one lowest-ID ordinary loose-ammo stack on a clear
+  radius-2 blast cell when its `6d4` Plasma roll exceeds `10`, emitting
+  `GroundItemDestroyed` after that cell's actor processing and before lethal
+  follow-up; cells without actors still apply the ground-item rule. Direct-core,
+  replay, MCP, and BrowserSession parity are verified; delayed timing,
+  terrain/content effects, non-ammunition item destruction, splash immunity,
+  scatter/routing, controlled runtime, browser capture, and audiovisual parity
+  remain open. Gameplay semantics advance to `75`.
 - [x] Typed `umega`, `uberetta`, and `ufshotgun` preserve pinned unique-firearm
   descriptions, 9mm relations, clips/damage/range scalars, replay kinds, and
   measured plasma/pistol/combat-shotgun atlas slots; mode switching, kill
