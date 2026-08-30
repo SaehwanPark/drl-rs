@@ -124,6 +124,55 @@ fn bfg10k_second_chainfire_emits_five_exact_hits_and_advances_state() {
 }
 
 #[test]
+fn bfg10k_third_chainfire_emits_seven_exact_hits_and_advances_state() {
+  let mut game = equipped_bfg10k(2_709);
+  let target = Position::new(5, 2);
+  let target_id = game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 10_000, 0, (1, 7))
+    .unwrap();
+
+  game
+    .step(Command::AttackRangedChainfire(target))
+    .expect("first BFG 10K chainfire burst should be accepted");
+  let second_target = game
+    .world()
+    .get_actor(target_id)
+    .expect("target should survive the first burst")
+    .position();
+  game
+    .step(Command::AttackRangedChainfire(second_target))
+    .expect("second BFG 10K chainfire burst should be accepted");
+  let third_target = game
+    .world()
+    .get_actor(target_id)
+    .expect("target should survive the second burst")
+    .position();
+  let player_id = game.world().player_id().unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 35;
+
+  let events = game
+    .step(Command::AttackRangedChainfire(third_target))
+    .expect("third BFG 10K chainfire burst should be accepted");
+
+  assert_eq!(ranged_events(&events, player_id), 7);
+  assert_eq!(bfg10k_schedules(&events, target_id), 7);
+  let weapon = game.world().player().unwrap().equipment().weapon().unwrap();
+  let props = weapon.weapon_properties().unwrap();
+  assert_eq!(props.current_clip, 0);
+  assert_eq!(props.chainfire_level, 3);
+}
+
+#[test]
 fn bfg10k_chainfire_keeps_four_outcomes_after_lethal_target() {
   let mut game = equipped_bfg10k(2_701);
   let target = Position::new(5, 2);
@@ -248,6 +297,25 @@ fn bfg10k_third_chainfire_level_is_rejected_without_mutation() {
   game
     .step(Command::AttackRangedChainfire(second_target))
     .expect("second BFG 10K chainfire burst");
+  let third_target = game
+    .world()
+    .get_actor(target_id)
+    .expect("target should survive the second burst")
+    .position();
+  let player_id = game.world().player_id().unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 35;
+  game
+    .step(Command::AttackRangedChainfire(third_target))
+    .expect("third BFG 10K chainfire burst");
   let before = game.clone();
 
   assert_eq!(
@@ -262,6 +330,52 @@ fn bfg10k_third_chainfire_level_is_rejected_without_mutation() {
 }
 
 #[test]
+fn bfg10k_third_chainfire_below_thirty_five_cell_cost_rejection_is_atomic() {
+  let mut game = equipped_bfg10k(2_710);
+  let target = Position::new(5, 2);
+  let target_id = game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 10_000, 0, (1, 7))
+    .unwrap();
+  game
+    .step(Command::AttackRangedChainfire(target))
+    .expect("first BFG 10K chainfire burst");
+  let second_target = game
+    .world()
+    .get_actor(target_id)
+    .expect("target should survive the first burst")
+    .position();
+  game
+    .step(Command::AttackRangedChainfire(second_target))
+    .expect("second BFG 10K chainfire burst");
+  let third_target = game
+    .world()
+    .get_actor(target_id)
+    .expect("target should survive the second burst")
+    .position();
+  let player_id = game.world().player_id().unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 34;
+  let before = game.clone();
+
+  assert_eq!(
+    game
+      .step(Command::AttackRangedChainfire(third_target))
+      .unwrap_err(),
+    CommandError::NoAmmoInClip
+  );
+  assert_eq!(game, before);
+}
+
+#[test]
 fn bfg10k_chainfire_replay_is_deterministic() {
   let player_start = Position::new(5, 5);
   let mut replay =
@@ -269,19 +383,22 @@ fn bfg10k_chainfire_replay_is_deterministic() {
       hp: 50,
       max_hp: 50,
       speed: 100,
-      initial_items: Vec::new(),
+      initial_items: vec![ItemSpawnKind::AmmoCells(45)],
       equipped_weapon: Some(ItemSpawnKind::Bfg10k),
       equipped_armor: None,
       equipped_armor_durability: None,
     });
-  let target = Position::new(6, 5);
-  replay.record_monster(MonsterSpawnSpec::new(target, "Target", 500, 100, (1, 7)));
+  let target = Position::new(11, 5);
+  replay.record_monster(MonsterSpawnSpec::new(target, "Target", 10_000, 0, (1, 7)));
+  replay.record_command(Command::AttackRangedChainfire(target));
+  replay.record_command(Command::AttackRangedChainfire(target));
+  replay.record_command(Command::Reload);
   replay.record_command(Command::AttackRangedChainfire(target));
 
   let (game, events) = ReplayEngine::run(&replay).expect("BFG 10K chainfire replay should run");
   let weapon = game.world().player().unwrap().equipment().weapon().unwrap();
-  assert_eq!(weapon.weapon_properties().unwrap().current_clip, 30);
-  assert_eq!(weapon.weapon_properties().unwrap().chainfire_level, 1);
+  assert_eq!(weapon.weapon_properties().unwrap().current_clip, 15);
+  assert_eq!(weapon.weapon_properties().unwrap().chainfire_level, 3);
   assert_eq!(
     events
       .iter()
@@ -293,14 +410,14 @@ fn bfg10k_chainfire_replay_is_deterministic() {
         }
       ))
       .count(),
-    4
+    16
   );
   assert_eq!(
     events
       .iter()
       .filter(|event| matches!(event, GameEvent::Bfg10kExplosionScheduled { .. }))
       .count(),
-    4
+    16
   );
   assert!(ReplayEngine::verify_determinism(&replay).unwrap());
 }

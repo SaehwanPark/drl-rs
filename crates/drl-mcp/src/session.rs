@@ -2686,6 +2686,26 @@ mod tests {
     session
       .step(second.command)
       .expect("second chainfire action");
+    let player_id = session.game.as_ref().unwrap().world().player_id().unwrap();
+    session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .get_actor_mut(player_id)
+      .unwrap()
+      .equipment_mut()
+      .weapon_mut()
+      .unwrap()
+      .weapon_properties_mut()
+      .unwrap()
+      .current_clip = 35;
+    let third = compute_legal_actions(&session.get_observation().unwrap())
+      .into_iter()
+      .find(|action| action.action == "Chainfire")
+      .expect("third BFG 10K chainfire should be advertised");
+    assert!(third.description.contains("7 projectiles, 35 rounds"));
+    session.step(third.command).expect("third chainfire action");
     assert!(
       !compute_legal_actions(&session.get_observation().unwrap())
         .iter()
@@ -4176,12 +4196,12 @@ mod tests {
   #[test]
   fn bfg10k_chainfire_mcp_boundary_matches_direct_core() {
     let player_position = Position::new(1, 1);
-    let target_position = Position::new(4, 1);
+    let target_position = Position::new(7, 1);
     let player_config = drl_protocol::PlayerSpawnConfig {
       hp: 50,
       max_hp: 50,
       speed: 100,
-      initial_items: Vec::new(),
+      initial_items: vec![drl_protocol::ItemSpawnKind::AmmoCells(45)],
       equipped_weapon: Some(drl_protocol::ItemSpawnKind::Bfg10k),
       equipped_armor: None,
       equipped_armor_durability: None,
@@ -4191,8 +4211,8 @@ mod tests {
     setup_replay.record_monster(drl_protocol::MonsterSpawnSpec::new(
       target_position,
       "Static Target",
-      500,
-      100,
+      10_000,
+      0,
       (1, 7),
     ));
 
@@ -4337,6 +4357,112 @@ mod tests {
         .unwrap()
         .current_clip,
       5
+    );
+
+    let reload_command = Command::Reload;
+    let reload_expected_events = direct
+      .step(reload_command)
+      .expect("direct BFG 10K chainfire reload");
+    let (reload_events, reload_observation, reload_outcome) = session
+      .step(reload_command)
+      .expect("MCP BFG 10K chainfire reload");
+    assert_eq!(reload_events, reload_expected_events);
+    assert_eq!(session.game.as_ref().unwrap(), &direct);
+    assert_eq!(reload_observation, direct.observe_player());
+    assert_eq!(reload_outcome, None);
+    expected_events.extend(reload_events);
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .current_clip,
+      50
+    );
+
+    let third_target = direct
+      .world()
+      .get_actor(target_id)
+      .expect("BFG 10K chainfire target should survive reload")
+      .position();
+    let third_command = Command::AttackRangedChainfire(third_target);
+    assert!(
+      compute_legal_actions(&direct.observe_player())
+        .iter()
+        .any(|action| action.command == third_command)
+    );
+    let third_expected_events = direct
+      .step(third_command)
+      .expect("direct third BFG 10K chainfire command");
+    let (third_events, third_observation, third_outcome) = session
+      .step(third_command)
+      .expect("MCP third BFG 10K chainfire command");
+    assert_eq!(third_events, third_expected_events);
+    assert_eq!(session.game.as_ref().unwrap(), &direct);
+    assert_eq!(third_observation, direct.observe_player());
+    assert_eq!(third_outcome, None);
+    assert_eq!(
+      third_events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          GameEvent::AttackResolved {
+            attacker_id,
+            target_id: event_target,
+            outcome: drl_protocol::AttackOutcome::Hit { .. },
+            is_ranged: true,
+          } if *attacker_id == player_id && *event_target == target_id
+        ))
+        .count(),
+      7
+    );
+    assert_eq!(
+      third_events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          GameEvent::Bfg10kExplosionScheduled {
+            entity_id,
+            target_id: event_target,
+            delay: 25,
+            radius: 2,
+            knockback: 16,
+          } if *entity_id == player_id && *event_target == target_id
+        ))
+        .count(),
+      7
+    );
+    expected_events.extend(third_events);
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .current_clip,
+      15
+    );
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .chainfire_level,
+      3
     );
 
     let replay = session.export_replay().expect("MCP replay export");
