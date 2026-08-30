@@ -1,8 +1,7 @@
 # Minigun typed behavior-profile evidence
 
-Status: delivered typed ordinary-fire eight-shot profile plus first- and
-second-level chainfire execution for `0.2.277`; third-level chainfire is the
-active `0.2.278` slice; fourth-and-later chainfire,
+Status: delivered typed ordinary-fire eight-shot profile plus first-, second-,
+and third-level chainfire execution for `0.2.278`; fourth-and-later chainfire,
 spread/routing, controlled legacy runtime comparison, and audiovisual parity
 remain `NOT_RUN`.
 

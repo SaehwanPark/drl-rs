@@ -7,9 +7,9 @@
 use drl_assets::{AtlasId, AtlasTextureSource, SpriteUv};
 use drl_core::item::Item;
 use drl_core::{
-  Game, LASER_RIFLE_CHAINFIRE_SHOT_COST, PLASMA_RIFLE_CHAINFIRE_SHOT_COST, Tile,
-  bfg10k_chainfire_profile, chaingun_chainfire_profile, minigun_chainfire_profile,
-  nuclear_plasma_chainfire_profile,
+  Game, LASER_RIFLE_CHAINFIRE_SHOT_COST, Tile, bfg10k_chainfire_profile,
+  chaingun_chainfire_profile, minigun_chainfire_profile, nuclear_plasma_chainfire_profile,
+  plasma_rifle_chainfire_profile,
 };
 use drl_protocol::{
   Command, Direction, ItemArchetype, ItemId, ItemSpawnKind, ItemSpawnSpec, ItemView, MonsterKind,
@@ -65,7 +65,7 @@ fn chainfire_ammo_cost(archetype: ItemArchetype, level: u8) -> Option<u32> {
     ItemArchetype::Bfg10k => bfg10k_chainfire_profile(level).map(|(_, cost)| cost),
     ItemArchetype::Chaingun => chaingun_chainfire_profile(level).map(|(_, cost)| cost),
     ItemArchetype::Minigun => minigun_chainfire_profile(level).map(|(_, cost)| cost),
-    ItemArchetype::PlasmaRifle if level == 0 => Some(PLASMA_RIFLE_CHAINFIRE_SHOT_COST),
+    ItemArchetype::PlasmaRifle => plasma_rifle_chainfire_profile(level).map(|(_, cost)| cost),
     ItemArchetype::LaserRifle if level == 0 => Some(LASER_RIFLE_CHAINFIRE_SHOT_COST),
     ItemArchetype::NuclearPlasmaRifle => {
       nuclear_plasma_chainfire_profile(level).map(|(_, cost)| cost)
@@ -6277,7 +6277,7 @@ mod tests {
       hp: 50,
       max_hp: 50,
       speed: 100,
-      initial_items: vec![ItemSpawnKind::AmmoCells(6)],
+      initial_items: vec![ItemSpawnKind::AmmoCells(4)],
       equipped_weapon: Some(ItemSpawnKind::PlasmaRifle),
       equipped_armor: None,
       equipped_armor_durability: None,
@@ -6311,7 +6311,7 @@ mod tests {
 
     let mut direct = initial.clone();
     let mut browser = BrowserSession::from_game(initial);
-    let expected_events = direct
+    let mut expected_events = direct
       .step(command)
       .expect("direct Plasma Rifle chainfire command");
     let step = browser
@@ -6347,8 +6347,94 @@ mod tests {
         .chainfire_level,
       1
     );
+
+    let reload_command = Command::Reload;
+    let reload_expected_events = direct
+      .step(reload_command)
+      .expect("direct Plasma Rifle chainfire reload");
+    let reload_step = browser
+      .submit(reload_command)
+      .expect("browser Plasma Rifle chainfire reload");
+    assert_eq!(reload_step.events, reload_expected_events);
+    assert_eq!(reload_step.after, direct.observe_player());
+    assert_eq!(
+      reload_step.effects,
+      effect_timeline_for_observations(
+        &reload_step.before,
+        &reload_step.after,
+        &reload_expected_events,
+      )
+    );
+    assert_eq!(
+      browser.scene(),
+      RenderScene::from_observation(&reload_step.after)
+    );
+    let reloaded = reload_step
+      .after
+      .equipped_weapon
+      .as_ref()
+      .expect("Plasma Rifle");
+    assert_eq!(reloaded.chainfire_level, 1);
+    assert_eq!(reloaded.clip, Some((6, 6)));
+    expected_events.extend(reload_expected_events);
+
+    let second_command = Command::AttackRangedChainfire(target_position);
+    assert_eq!(
+      BrowserSession::command_for_key("C", &reload_step.after),
+      Some(second_command)
+    );
+    let second_expected_events = direct
+      .step(second_command)
+      .expect("direct second Plasma Rifle chainfire command");
+    let second_step = browser
+      .submit(second_command)
+      .expect("browser second Plasma Rifle chainfire command");
+    assert_eq!(second_step.events, second_expected_events);
+    assert_eq!(second_step.after, direct.observe_player());
+    assert_eq!(
+      second_step.effects,
+      effect_timeline_for_observations(
+        &second_step.before,
+        &second_step.after,
+        &second_expected_events,
+      )
+    );
+    assert_eq!(
+      browser.scene(),
+      RenderScene::from_observation(&second_step.after)
+    );
+    assert_eq!(
+      second_expected_events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          drl_protocol::GameEvent::AttackResolved {
+            attacker_id,
+            target_id: event_target,
+            is_ranged: true,
+            ..
+          } if *attacker_id == direct.world().player_id().unwrap() && *event_target == target_id
+        ))
+        .count(),
+      6
+    );
+    let second_plasma = second_step
+      .after
+      .equipped_weapon
+      .as_ref()
+      .expect("Plasma Rifle");
+    assert_eq!(second_plasma.chainfire_level, 2);
+    assert_eq!(second_plasma.clip, Some((0, 6)));
+    assert_eq!(
+      BrowserSession::command_for_key("C", &second_step.after),
+      None
+    );
+    expected_events.extend(second_expected_events);
+
     let mut command_replay = setup_replay;
     command_replay.record_command(command);
+    command_replay.record_command(reload_command);
+    command_replay.record_command(second_command);
     let (replayed, replay_events) =
       drl_core::ReplayEngine::run(&command_replay).expect("vertical command replay");
     assert_eq!(replay_events, expected_events);

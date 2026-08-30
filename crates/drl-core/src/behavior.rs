@@ -873,10 +873,34 @@ pub const PLASMA_SHOTGUN_BEHAVIOR: BehaviorProfile =
 pub const PLASMA_RIFLE_PROJECTILE_COUNT: u32 = 6;
 /// Pinned projectile count for the first Plasma Rifle chainfire level.
 pub const PLASMA_RIFLE_CHAINFIRE_PROJECTILE_COUNT: u32 = 4;
+/// Pinned projectile count for the second Plasma Rifle chainfire level.
+pub const PLASMA_RIFLE_SECOND_CHAINFIRE_PROJECTILE_COUNT: u32 = PLASMA_RIFLE_PROJECTILE_COUNT;
 /// Pinned per-projectile clip cost for an ordinary Plasma Rifle shot.
 pub const PLASMA_RIFLE_SHOT_COST: u32 = 1;
 /// Pinned Cell cost for the first Plasma Rifle chainfire level.
 pub const PLASMA_RIFLE_CHAINFIRE_SHOT_COST: u32 = 4;
+/// Pinned Cell cost for the second Plasma Rifle chainfire level.
+pub const PLASMA_RIFLE_SECOND_CHAINFIRE_SHOT_COST: u32 =
+  PLASMA_RIFLE_SECOND_CHAINFIRE_PROJECTILE_COUNT * PLASMA_RIFLE_SHOT_COST;
+
+/// Returns the bounded Plasma Rifle chainfire profile for a warm-up level.
+///
+/// The legacy six-shot weapon emits four projectiles at level zero and its
+/// full six-projectile volley at level one; higher levels remain deferred.
+#[must_use]
+pub const fn plasma_rifle_chainfire_profile(level: u8) -> Option<(u32, u32)> {
+  match level {
+    0 => Some((
+      PLASMA_RIFLE_CHAINFIRE_PROJECTILE_COUNT,
+      PLASMA_RIFLE_CHAINFIRE_SHOT_COST,
+    )),
+    1 => Some((
+      PLASMA_RIFLE_SECOND_CHAINFIRE_PROJECTILE_COUNT,
+      PLASMA_RIFLE_SECOND_CHAINFIRE_SHOT_COST,
+    )),
+    _ => None,
+  }
+}
 
 const PLASMA_RIFLE_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
   BehaviorSpec::Attack(AttackEffect::ProjectileCount(PLASMA_RIFLE_PROJECTILE_COUNT)),
@@ -887,6 +911,11 @@ const PLASMA_RIFLE_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
   BehaviorSpec::Alternate(AlternateAction::Chainfire {
     shot_count: PLASMA_RIFLE_CHAINFIRE_PROJECTILE_COUNT,
     ammo_cost: PLASMA_RIFLE_CHAINFIRE_SHOT_COST,
+  }),
+  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
+    level: 1,
+    shot_count: PLASMA_RIFLE_SECOND_CHAINFIRE_PROJECTILE_COUNT,
+    ammo_cost: PLASMA_RIFLE_SECOND_CHAINFIRE_SHOT_COST,
   }),
 ];
 
@@ -1596,6 +1625,25 @@ mod tests {
   }
 
   #[test]
+  fn plasma_rifle_chainfire_profile_matches_pinned_warmup_levels() {
+    assert_eq!(
+      plasma_rifle_chainfire_profile(0),
+      Some((
+        PLASMA_RIFLE_CHAINFIRE_PROJECTILE_COUNT,
+        PLASMA_RIFLE_CHAINFIRE_SHOT_COST,
+      ))
+    );
+    assert_eq!(
+      plasma_rifle_chainfire_profile(1),
+      Some((
+        PLASMA_RIFLE_SECOND_CHAINFIRE_PROJECTILE_COUNT,
+        PLASMA_RIFLE_SECOND_CHAINFIRE_SHOT_COST,
+      ))
+    );
+    assert_eq!(plasma_rifle_chainfire_profile(2), None);
+  }
+
+  #[test]
   fn behavior_vocabulary_covers_explicit_trigger_categories() {
     const SPECS: &[BehaviorSpec] = &[
       BehaviorSpec::Passive(PassiveModifier {
@@ -2132,6 +2180,11 @@ mod tests {
         BehaviorSpec::Alternate(AlternateAction::Chainfire {
           shot_count: PLASMA_RIFLE_CHAINFIRE_PROJECTILE_COUNT,
           ammo_cost: PLASMA_RIFLE_CHAINFIRE_SHOT_COST,
+        }),
+        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
+          level: 1,
+          shot_count: PLASMA_RIFLE_SECOND_CHAINFIRE_PROJECTILE_COUNT,
+          ammo_cost: PLASMA_RIFLE_SECOND_CHAINFIRE_SHOT_COST,
         }),
       ]
     );
