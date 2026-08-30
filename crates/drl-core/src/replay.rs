@@ -411,9 +411,9 @@ mod tests {
   #[test]
   fn test_replay_validation_rejects_incompatible_semantics() {
     let mut replay = ReplayLog::new(1234, 10, 10, Position::new(1, 1));
-    // Version 103 predates BFG 10K's eleventh-level chainfire effect and must
-    // be interpreted by the version-104 engine.
-    assert_eq!(drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION, 104);
+    // Version 104 predates BFG 10K's twelfth-level chainfire effect and must
+    // be interpreted by the version-105 engine.
+    assert_eq!(drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION, 105);
     assert_eq!(
       drl_protocol::CURRENT_RNG_SAMPLING_SEMANTICS_VERSION,
       crate::rng::RNG_SAMPLING_SEMANTICS_VERSION
