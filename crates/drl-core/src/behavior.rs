@@ -486,6 +486,14 @@ pub const BFG10K_EXPLOSION_DELAY: u32 = 25;
 pub const BFG10K_EXPLOSION_RADIUS: u32 = 2;
 /// Pinned BFG 10K delayed explosion knockback payload.
 pub const BFG10K_EXPLOSION_KNOCKBACK: u32 = 16;
+/// Pinned projectile count for an ordinary BFG 10K volley.
+pub const BFG10K_PROJECTILE_COUNT: u32 = 5;
+/// Pinned projectile count for the first BFG 10K chainfire level.
+pub const BFG10K_CHAINFIRE_PROJECTILE_COUNT: u32 = 4;
+/// Pinned per-projectile clip cost for BFG 10K fire.
+pub const BFG10K_SHOT_COST: u32 = 5;
+/// Pinned total cell cost for the first BFG 10K chainfire level.
+pub const BFG10K_CHAINFIRE_SHOT_COST: u32 = BFG10K_CHAINFIRE_PROJECTILE_COUNT * BFG10K_SHOT_COST;
 
 /// Pinned standard BFG 9000 delayed explosion interval.
 pub const BFG9000_EXPLOSION_DELAY: u32 = 33;
@@ -504,7 +512,7 @@ pub const NUCLEAR_BFG9000_EXPLOSION_KNOCKBACK: u32 = 16;
 const BFG10K_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
   BehaviorSpec::Attack(AttackEffect::ExactHit),
   // Scatter and projectile routing remain separate from the typed count.
-  BehaviorSpec::Attack(AttackEffect::ProjectileCount(5)),
+  BehaviorSpec::Attack(AttackEffect::ProjectileCount(BFG10K_PROJECTILE_COUNT)),
   BehaviorSpec::Hit(HitEffect::ScheduleExplosion {
     delay: BFG10K_EXPLOSION_DELAY,
     radius: BFG10K_EXPLOSION_RADIUS,
@@ -512,11 +520,16 @@ const BFG10K_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
   }),
   BehaviorSpec::Cost(ResourceCost::Ammo {
     ammo_type: AmmoType::Cell,
-    amount: 5,
+    amount: BFG10K_SHOT_COST,
+  }),
+  BehaviorSpec::Alternate(AlternateAction::Chainfire {
+    shot_count: BFG10K_CHAINFIRE_PROJECTILE_COUNT,
+    ammo_cost: BFG10K_CHAINFIRE_SHOT_COST,
   }),
 ];
 
-/// Immutable typed profile for the current BFG 10K five-projectile behavior.
+/// Immutable typed profile for the current BFG 10K volley, chainfire, and
+/// delayed-explosion behavior.
 pub const BFG10K_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(BFG10K_BEHAVIOR_SPECS);
 
 const DOUBLE_SHOTGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
@@ -1468,7 +1481,7 @@ mod tests {
       BFG10K_BEHAVIOR.specs(),
       &[
         BehaviorSpec::Attack(AttackEffect::ExactHit),
-        BehaviorSpec::Attack(AttackEffect::ProjectileCount(5)),
+        BehaviorSpec::Attack(AttackEffect::ProjectileCount(BFG10K_PROJECTILE_COUNT)),
         BehaviorSpec::Hit(HitEffect::ScheduleExplosion {
           delay: BFG10K_EXPLOSION_DELAY,
           radius: BFG10K_EXPLOSION_RADIUS,
@@ -1476,7 +1489,11 @@ mod tests {
         }),
         BehaviorSpec::Cost(ResourceCost::Ammo {
           ammo_type: AmmoType::Cell,
-          amount: 5,
+          amount: BFG10K_SHOT_COST,
+        }),
+        BehaviorSpec::Alternate(AlternateAction::Chainfire {
+          shot_count: BFG10K_CHAINFIRE_PROJECTILE_COUNT,
+          ammo_cost: BFG10K_CHAINFIRE_SHOT_COST,
         }),
       ]
     );

@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-29
-Current project version: `0.2.263`
+Current project version: `0.2.264`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.263)
+## 3. Current Progress Summary (`VERSION` 0.2.264)
 
 ### Delivered Foundations
 
@@ -985,6 +985,16 @@ verification item uses explicit status semantics:
   parity plus atomic rejection are verified; higher levels, target
   rotation/spread, exact timing/accuracy, runtime, browser capture, and
   audiovisual parity remain open.
+- **M9 BFG 10K first-level chainfire execution (`0.2.264`):** The existing
+  typed chainfire command now accepts the BFG 10K at warm-up level zero,
+  applying the pinned `5 - (5 div 3) = 4` projectile adjustment, preflighting
+  and consuming twenty cells, emitting four ordered exact-hit outcomes with
+  deterministic no-op continuations after a lethal target, and preserving
+  each successful hit's delayed-explosion schedule metadata. Direct-core,
+  replay, MCP, physical `C` routing, and BrowserSession parity plus atomic
+  rejection are verified; higher levels, scatter/routing, delayed explosion
+  geometry/damage/knockback, exact timing/accuracy, runtime, browser capture,
+  and audiovisual parity remain open.
 - **M9 Trigun aimed-fire vertical fidelity (`0.2.248`):** The shared typed
   aimed-fire command now accepts Trigun, applies +3 accuracy and doubled action
   cost, and preserves one-projectile/one-round behavior. Direct-core,
@@ -1653,6 +1663,14 @@ scripting.
   advancement/reset, and atomic under-supply rejection; higher levels, overload
   map effects, target rotation/spread, exact timing/accuracy, controlled legacy
   runtime, browser capture, and audiovisual parity remain open.
+- [x] BFG 10K's delivered first-level chainfire contract has a deterministic
+  direct-core/replay/MCP/BrowserSession boundary check covering four ordered
+  exact-hit events, fair observations, render effects, scene projections,
+  twenty-cell clip consumption, physical `C` routing, observable warm-up
+  advancement/reset, per-hit delayed-explosion schedule metadata, and atomic
+  under-supply rejection; higher levels, scatter/routing, delayed explosion
+  geometry/damage/knockback, exact timing/accuracy, controlled legacy runtime,
+  browser capture, and audiovisual parity remain open.
 - [x] Mega Buster's delivered three-projectile ordinary-fire contract has a
   deterministic direct-core/BrowserSession boundary check covering identical
   events, fair observations, render effects, scene projections, nine-round clip
@@ -1842,6 +1860,15 @@ scripting.
   parity plus atomic rejection are verified; higher levels, target
   rotation/spread, exact timing/accuracy, runtime, browser capture, and
   audiovisual parity remain open. Gameplay semantics advance to `72`.
+- **M9 BFG 10K first-level chainfire execution (`0.2.264`):** BFG 10K now
+  shares the typed first-level chainfire command, applying the pinned
+  `5 - (5 div 3) = 4` adjustment, consuming twenty cells, emitting four
+  ordered exact-hit outcomes with deterministic no-op post-lethal slots, and
+  preserving per-hit delayed-explosion schedule metadata. Direct-core, replay,
+  MCP, physical `C` routing, and BrowserSession parity plus atomic rejection
+  are verified; higher levels, scatter/routing, delayed explosion geometry,
+  exact timing/accuracy, controlled runtime, browser capture, and audiovisual
+  parity remain open. Gameplay semantics advance to `73`.
 - [x] Typed `umega`, `uberetta`, and `ufshotgun` preserve pinned unique-firearm
   descriptions, 9mm relations, clips/damage/range scalars, replay kinds, and
   measured plasma/pistol/combat-shotgun atlas slots; mode switching, kill

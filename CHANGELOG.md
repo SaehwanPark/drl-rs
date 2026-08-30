@@ -3,6 +3,19 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.264]
+
+- Extended the typed first-level chainfire command to the BFG 10K. A warm-up
+  level-zero weapon now preflights and consumes twenty cells, emits four
+  ordered exact-hit outcomes with deterministic no-op continuations after a
+  lethal target, preserves the existing per-hit delayed-explosion schedules,
+  and advances/reset warm-up state transactionally. Direct-core, replay, MCP
+  JSON/catalog, physical browser-key, and `BrowserSession` parity plus atomic
+  rejection are covered; higher levels, scatter/routing, delayed explosion
+  geometry/damage/knockback, exact callback timing, controlled runtime,
+  browser capture, and audiovisual parity remain deferred. Gameplay semantics
+  advance from `72` to `73`.
+
 ## [0.2.263]
 
 - Extended the existing typed first-level chainfire command to the Nuclear

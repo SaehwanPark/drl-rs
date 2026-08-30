@@ -15,14 +15,14 @@ use crate::anti_freak::{
 use crate::assault_shotgun::{AssaultShotgunReloadPlan, AssaultShotgunTransition};
 use crate::behavior::{
   ANTI_FREAK_JACKAL_EXPLOSION_DELAY, ANTI_FREAK_JACKAL_EXPLOSION_KNOCKBACK,
-  ANTI_FREAK_JACKAL_EXPLOSION_RADIUS, BFG10K_EXPLOSION_DELAY, BFG10K_EXPLOSION_KNOCKBACK,
-  BFG10K_EXPLOSION_RADIUS, BFG9000_EXPLOSION_DELAY, BFG9000_EXPLOSION_KNOCKBACK,
-  BFG9000_EXPLOSION_RADIUS, LASER_RIFLE_CHAINFIRE_PROJECTILE_COUNT, LavaRechargeOutcome,
-  MINIGUN_CHAINFIRE_PROJECTILE_COUNT, MedicalRepairOutcome, NUCLEAR_BFG9000_EXPLOSION_DELAY,
-  NUCLEAR_BFG9000_EXPLOSION_KNOCKBACK, NUCLEAR_BFG9000_EXPLOSION_RADIUS,
-  NUCLEAR_PLASMA_CHAINFIRE_PROJECTILE_COUNT, PISTOL_AIMED_ACCURACY_BONUS,
-  PISTOL_AIMED_FIRE_COST_MULTIPLIER, PLASMA_RIFLE_CHAINFIRE_PROJECTILE_COUNT,
-  WeaponRechargeOutcome,
+  ANTI_FREAK_JACKAL_EXPLOSION_RADIUS, BFG10K_CHAINFIRE_PROJECTILE_COUNT, BFG10K_EXPLOSION_DELAY,
+  BFG10K_EXPLOSION_KNOCKBACK, BFG10K_EXPLOSION_RADIUS, BFG9000_EXPLOSION_DELAY,
+  BFG9000_EXPLOSION_KNOCKBACK, BFG9000_EXPLOSION_RADIUS, LASER_RIFLE_CHAINFIRE_PROJECTILE_COUNT,
+  LavaRechargeOutcome, MINIGUN_CHAINFIRE_PROJECTILE_COUNT, MedicalRepairOutcome,
+  NUCLEAR_BFG9000_EXPLOSION_DELAY, NUCLEAR_BFG9000_EXPLOSION_KNOCKBACK,
+  NUCLEAR_BFG9000_EXPLOSION_RADIUS, NUCLEAR_PLASMA_CHAINFIRE_PROJECTILE_COUNT,
+  PISTOL_AIMED_ACCURACY_BONUS, PISTOL_AIMED_FIRE_COST_MULTIPLIER,
+  PLASMA_RIFLE_CHAINFIRE_PROJECTILE_COUNT, WeaponRechargeOutcome,
 };
 use crate::chaingun::{CHAINGUN_CHAINFIRE_PROJECTILE_COUNT, ChainfireTransition};
 use crate::combat::CombatResolver;
@@ -1738,21 +1738,25 @@ impl Game {
       let weapon_is_minigun = weapon.archetype() == drl_protocol::ItemArchetype::Minigun;
       let weapon_is_plasma_rifle = weapon.archetype() == drl_protocol::ItemArchetype::PlasmaRifle;
       let weapon_is_laser_rifle = weapon.archetype() == drl_protocol::ItemArchetype::LaserRifle;
+      let weapon_is_bfg10k = weapon.archetype() == drl_protocol::ItemArchetype::Bfg10k;
       let weapon_is_nuclear_plasma_rifle =
         weapon.archetype() == drl_protocol::ItemArchetype::NuclearPlasmaRifle;
       if chainfire {
-        if !weapon_is_chaingun
+        if !weapon_is_bfg10k
+          && !weapon_is_chaingun
           && !weapon_is_minigun
           && !weapon_is_plasma_rifle
           && !weapon_is_laser_rifle
           && !weapon_is_nuclear_plasma_rifle
         {
           return Err(CommandError::InvalidCommand(
-            "chainfire is only available for the Chaingun, Minigun, Plasma Rifle, Laser Rifle, or Nuclear Plasma Rifle".to_string(),
+            "chainfire is only available for the BFG 10K, Chaingun, Minigun, Plasma Rifle, Laser Rifle, or Nuclear Plasma Rifle".to_string(),
           ));
         }
         if !ChainfireTransition::can_chainfire(props) {
-          return Err(CommandError::InvalidCommand(if weapon_is_minigun {
+          return Err(CommandError::InvalidCommand(if weapon_is_bfg10k {
+            "higher BFG 10K chainfire levels are deferred".to_string()
+          } else if weapon_is_minigun {
             "higher Minigun chainfire levels are deferred".to_string()
           } else if weapon_is_plasma_rifle {
             "higher Plasma Rifle chainfire levels are deferred".to_string()
@@ -1790,7 +1794,9 @@ impl Game {
         return Err(CommandError::TargetOutOfRange(target_pos));
       }
       let shot_count = if chainfire {
-        if weapon_is_minigun {
+        if weapon_is_bfg10k {
+          BFG10K_CHAINFIRE_PROJECTILE_COUNT
+        } else if weapon_is_minigun {
           MINIGUN_CHAINFIRE_PROJECTILE_COUNT
         } else if weapon_is_plasma_rifle {
           PLASMA_RIFLE_CHAINFIRE_PROJECTILE_COUNT
@@ -1814,7 +1820,6 @@ impl Game {
       let null_pointer_item_id =
         (weapon.archetype() == drl_protocol::ItemArchetype::NullPointer).then_some(weapon.id());
       let weapon_is_railgun = weapon.archetype() == drl_protocol::ItemArchetype::Railgun;
-      let weapon_is_bfg10k = weapon.archetype() == drl_protocol::ItemArchetype::Bfg10k;
       let weapon_is_bfg9000 = weapon.archetype() == drl_protocol::ItemArchetype::Bfg9000;
       let weapon_is_nuclear_bfg9000 =
         weapon.archetype() == drl_protocol::ItemArchetype::NuclearBfg9000;
@@ -2076,7 +2081,8 @@ impl Game {
       weapon.reset_weapon_recharge_timer();
       weapon.mark_pump_action_after_fire();
       if chainfire
-        && (weapon_is_chaingun
+        && (weapon_is_bfg10k
+          || weapon_is_chaingun
           || weapon_is_minigun
           || weapon_is_plasma_rifle
           || weapon_is_laser_rifle
