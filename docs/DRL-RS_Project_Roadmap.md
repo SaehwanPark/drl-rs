@@ -1806,15 +1806,18 @@ scripting.
   `0.2.257`, while higher levels, exact timing/accuracy, runtime, and
   audiovisual parity remain open.
 - [x] Laser Rifle has an immutable behavior profile for its five-projectile
-  ordinary fire and one-cell per-projectile cost; generic ranged execution
-  resolves the ordered five-cell volley, preflights its aggregate cost, and
-  preserves atomic below-cost rejection while alternate chainfire, exact
-  timing/accuracy, runtime, and audiovisual parity remain open.
+  ordinary fire and one-cell per-projectile cost plus bounded first-, second-,
+  third-, and fourth-level four-, five-, seven-, and seven-projectile
+  chainfire transitions; generic ranged execution resolves the ordered
+  five-cell volley and chainfire bursts, preflights aggregate costs, and
+  preserves atomic below-cost rejection while exact timing/accuracy, runtime,
+  and audiovisual parity remain open.
 - [x] Laser Rifle's delivered five-projectile ordinary-fire contract has a
   deterministic direct-core/BrowserSession boundary check covering identical
   events, fair observations, render effects, scene projections, five-cell clip
-  consumption, and replay determinism; controlled legacy runtime, browser
-  capture, alternate chainfire, and audiovisual parity remain open.
+  consumption, and replay determinism; its first-, second-, third-, and
+  fourth-level chainfire boundaries are covered separately; controlled legacy
+  runtime, browser capture, and audiovisual parity remain open.
 - [x] Minigun's delivered eight-projectile ordinary-fire contract has a
   deterministic direct-core/BrowserSession boundary check covering identical
   events, fair observations, render effects, scene projections, eight-round
