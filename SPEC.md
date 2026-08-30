@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.270`
+Current project version: `0.2.271`
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,16 +25,16 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Nuclear BFG 9000 Ground-Item Destruction
+## 2. Active Implementation Slice: M9 — BFG 10K Second-Level Chainfire
 
 ### 2.1 Objective
 
-Extend the delivered typed Nuclear BFG 9000 radius-8 actor fanout with its
-legacy-pinned ground-item effect. A successful direct-target hit must preserve
-the existing schedule and actor-splash events, roll one `8d6` Plasma result
-per clear blast cell without distance falloff, and remove at most the
-lowest-ID ordinary ground item on a clear cell when that result is greater
-than 10, after actor processing and before lethal follow-up.
+Extend the delivered typed BFG 10K first-level chainfire command with the
+legacy-pinned second warm-up level. After an accepted first-level burst leaves
+the weapon at warm-up level one, a valid second-level command must emit the
+full five-projectile exact-hit volley, charge twenty-five cells, preserve each
+successful hit's existing delayed-explosion and splash behavior, and advance
+the warm-up state to level two.
 
 ### 2.1a Scope and steering gate
 
@@ -42,46 +42,41 @@ than 10, after actor processing and before lethal follow-up.
 - **Steering gates:** Gate A rejected-input safety and Gate B explicit replay
   compatibility remain active acceptance constraints; Gate C catalog ownership
   and Gate D typed behavior evidence remain closed for this bounded extension.
-- **Observable outcome:** Each successful Nuclear BFG 9000 direct-target hit
-  emits the existing delay-33/radius-8/knockback-16 schedule metadata and
-  immediately resolves a bounded radius-8 fanout in deterministic
-  center-then-ring order. Every clear blast cell rolls one `8d6` Plasma
-  result with no distance falloff; the firing actor is splash-safe, while
-  other actors move by `damage / 16` tiles along the radial direction when
-  possible and then receive the rolled environmental damage. When the roll is
-  greater than 10, the lowest-ID ordinary ground item on that cell is removed
-  at most once after actor processing. Living actors are processed once;
-  lethal victims emit normal death/drop follow-up and a player death marks
-  game over. Terrain, secondary chain explosions, and delayed timing remain
-  unchanged.
-- **Gameplay/replay impact:** Gameplay semantics advance from `78` to `79`;
+- **Observable outcome:** A second-level BFG 10K chainfire command is admitted
+  only for a living visible target, a loaded clip of at least twenty-five
+  cells, and a weapon warm-up level of one. It consumes twenty-five cells,
+  emits five ordered exact-hit attack outcomes, preserves the existing
+  per-hit delay-25/radius-2/knockback-16 schedule and immediate splash
+  resolution, and advances warm-up to level two. Post-lethal continuation
+  slots remain deterministic no-op misses. Ordinary fire still resets the
+  warm-up state, and the third level remains rejected atomically.
+- **Gameplay/replay impact:** Gameplay semantics advance from `79` to `80`;
   replay wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.269` to `0.2.270`.
+  unchanged. Project version advances from `0.2.270` to `0.2.271`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary,
   typed projectile-count/cost policy and generic execution; `drl-protocol` owns
   the semantic `AttackRanged`/`AttackRangedAimed` commands and typed event
   projection, while replay/MCP and browser boundaries
   serialize and route it without duplicating gameplay rules.
-- **Evidence boundary:** Pinned Nuclear BFG 9000 item, exact-hit, shot-cost,
-  and delayed-explosion evidence in
-  `docs/legacy-behavior/nuclear-bfg9000-explosion.md`, together with the
-  existing typed schedule contract and focused
-  direct-core/replay/MCP/browser tests, are authoritative. Controlled legacy
-  runtime, browser capture, and audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** EFCHAIN secondary explosions, higher chainfire levels,
-  scatter/target rotation or spread, projectile routing,
-  delayed timing/state-machine parity, terrain/content mutation,
-  splash-immunity traits, exact callback timing/accuracy, new
-  command variants or callback registries, unrelated gameplay balance, replay
-  migrations, runtime Lua, and browser/audio/WebGPU capture parity.
+- **Evidence boundary:** Pinned BFG 10K item and chainfire evidence in
+  `docs/legacy-behavior/bfg10k-chainfire.md`, together with the existing typed
+  schedule/splash contract and focused direct-core/replay/MCP/browser tests,
+  are authoritative. Controlled legacy runtime, browser capture, and
+  audiovisual comparisons remain `NOT_RUN`.
+- **Non-goals:** Third and later chainfire levels, legacy target rotation or
+  scatter/spread routing, projectile routing, delayed timing/state-machine
+  parity, EFCHAIN secondary visual explosions, terrain/content mutation,
+  splash-immunity traits, exact callback timing/accuracy, new command variants
+  or callback registries, unrelated gameplay balance, replay migrations,
+  runtime Lua, and browser/audio/WebGPU capture parity.
 
 ### 2.2 Why this slice is bounded
 
-The immutable profile, semantic command, schedule event, and actor fanout
-already exist for the Nuclear BFG 9000. This extension adds only a typed
-thresholded lowest-ID ground-item policy while reusing the existing radius-8
-geometry, actor processing, replay, MCP, browser, and transactional boundaries
-without adding a pending queue, new dispatcher, or callback system.
+The immutable profile, semantic command, schedule event, and immediate splash
+already exist for the BFG 10K. This extension adds only one typed warm-up
+profile and its deterministic count/cost selection while reusing the existing
+direct-hit, replay, MCP, browser, and transactional boundaries without adding a
+pending queue, new dispatcher, or callback system.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -3516,7 +3511,7 @@ ground-item destruction rule. Its contract must:
   timing/accuracy, controlled runtime, browser capture, and audiovisual parity
   `NOT_RUN` where comparison evidence is unavailable.
 
-### 2.7em Current Nuclear BFG 9000 ground-item destruction target
+### 2.7em Historical Nuclear BFG 9000 ground-item destruction target
 
 The bounded implementation target for this revision extends the delivered
 Nuclear BFG 9000 radius-8 actor fanout with its legacy-pinned ordinary
@@ -3544,6 +3539,35 @@ ground-item destruction rule. Its contract must:
   terrain/content mutation, splash-immunity traits, exact callback
   timing/accuracy, controlled runtime, browser capture, and audiovisual parity
   `NOT_RUN` where comparison evidence is unavailable.
+
+### 2.7en Current BFG 10K second-level chainfire target
+
+The bounded implementation target for this revision extends the delivered
+BFG 10K first-level chainfire command with the pinned second warm-up level. Its
+contract must:
+
+- [x] preserve the first-level four-projectile/four-cell contract and admit a
+  second command only while the weapon warm-up level is one and the target is
+  still a valid visible living actor;
+- [x] resolve the legacy level-one formula `shots = 5`, consuming exactly
+  twenty-five loaded cells for the five-projectile exact-hit volley;
+- [x] preserve each successful hit's delay-25/radius-2/knockback-16 schedule,
+  immediate splash resolution, ordered event stream, and deterministic
+  post-lethal no-op continuation slots;
+- [x] advance warm-up state to level two only after acceptance, keep ordinary
+  fire's reset behavior, and reject the third level without changing game,
+  clip, turn, or RNG state;
+- [x] preserve direct-core, replay, MCP legal-action/JSON, physical `C` key,
+  and BrowserSession event/state parity;
+- [x] advance project version from `0.2.270` to `0.2.271` and gameplay
+  semantics from `79` to `80` while preserving replay schema, RNG, generator,
+  and ruleset identities;
+- [x] keep third-and-later chainfire levels, legacy target rotation,
+  scatter/spread routing, projectile routing, delayed timing/state-machine
+  parity, EFCHAIN secondary visual explosions, terrain/content mutation,
+  splash-immunity traits, exact callback timing/accuracy, controlled runtime,
+  browser capture, and audiovisual parity `NOT_RUN` where comparison evidence
+  is unavailable.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 

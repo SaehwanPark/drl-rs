@@ -94,6 +94,36 @@ fn bfg10k_first_chainfire_emits_four_exact_hits_and_schedules_explosions() {
 }
 
 #[test]
+fn bfg10k_second_chainfire_emits_five_exact_hits_and_advances_state() {
+  let mut game = equipped_bfg10k(2_708);
+  let initial_target = Position::new(5, 2);
+  let target_id = game
+    .world_mut()
+    .spawn_monster(initial_target, "Static Target", 10_000, 100, (1, 7))
+    .unwrap();
+
+  game
+    .step(Command::AttackRangedChainfire(initial_target))
+    .expect("first BFG 10K chainfire burst should be accepted");
+  let second_target = game
+    .world()
+    .get_actor(target_id)
+    .expect("target should survive the first burst")
+    .position();
+  let player_id = game.world().player_id().unwrap();
+  let events = game
+    .step(Command::AttackRangedChainfire(second_target))
+    .expect("second BFG 10K chainfire burst should be accepted");
+
+  assert_eq!(ranged_events(&events, player_id), 5);
+  assert_eq!(bfg10k_schedules(&events, target_id), 5);
+  let weapon = game.world().player().unwrap().equipment().weapon().unwrap();
+  let props = weapon.weapon_properties().unwrap();
+  assert_eq!(props.current_clip, 5);
+  assert_eq!(props.chainfire_level, 2);
+}
+
+#[test]
 fn bfg10k_chainfire_keeps_four_outcomes_after_lethal_target() {
   let mut game = equipped_bfg10k(2_701);
   let target = Position::new(5, 2);
@@ -200,7 +230,7 @@ fn bfg10k_ordinary_fire_resets_chainfire_warmup() {
 }
 
 #[test]
-fn bfg10k_higher_chainfire_level_is_rejected_without_mutation() {
+fn bfg10k_third_chainfire_level_is_rejected_without_mutation() {
   let mut game = equipped_bfg10k(2_704);
   let target = Position::new(5, 2);
   let target_id = game
@@ -210,6 +240,14 @@ fn bfg10k_higher_chainfire_level_is_rejected_without_mutation() {
   game
     .step(Command::AttackRangedChainfire(target))
     .expect("first BFG 10K chainfire burst");
+  let second_target = game
+    .world()
+    .get_actor(target_id)
+    .expect("target should survive the first burst")
+    .position();
+  game
+    .step(Command::AttackRangedChainfire(second_target))
+    .expect("second BFG 10K chainfire burst");
   let before = game.clone();
 
   assert_eq!(
