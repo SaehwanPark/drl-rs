@@ -15,14 +15,14 @@ use crate::anti_freak::{
 use crate::assault_shotgun::{AssaultShotgunReloadPlan, AssaultShotgunTransition};
 use crate::behavior::{
   ANTI_FREAK_JACKAL_EXPLOSION_DELAY, ANTI_FREAK_JACKAL_EXPLOSION_KNOCKBACK,
-  ANTI_FREAK_JACKAL_EXPLOSION_RADIUS, BFG10K_CHAINFIRE_PROJECTILE_COUNT, BFG10K_EXPLOSION_DELAY,
-  BFG10K_EXPLOSION_KNOCKBACK, BFG10K_EXPLOSION_RADIUS, BFG9000_EXPLOSION_DELAY,
-  BFG9000_EXPLOSION_KNOCKBACK, BFG9000_EXPLOSION_RADIUS, LASER_RIFLE_CHAINFIRE_PROJECTILE_COUNT,
-  LavaRechargeOutcome, MINIGUN_CHAINFIRE_PROJECTILE_COUNT, MedicalRepairOutcome,
-  NUCLEAR_BFG9000_EXPLOSION_DELAY, NUCLEAR_BFG9000_EXPLOSION_KNOCKBACK,
-  NUCLEAR_BFG9000_EXPLOSION_RADIUS, NUCLEAR_PLASMA_CHAINFIRE_PROJECTILE_COUNT,
-  PISTOL_AIMED_ACCURACY_BONUS, PISTOL_AIMED_FIRE_COST_MULTIPLIER,
-  PLASMA_RIFLE_CHAINFIRE_PROJECTILE_COUNT, WeaponRechargeOutcome,
+  ANTI_FREAK_JACKAL_EXPLOSION_RADIUS, BFG10K_EXPLOSION_DELAY, BFG10K_EXPLOSION_KNOCKBACK,
+  BFG10K_EXPLOSION_RADIUS, BFG9000_EXPLOSION_DELAY, BFG9000_EXPLOSION_KNOCKBACK,
+  BFG9000_EXPLOSION_RADIUS, LASER_RIFLE_CHAINFIRE_PROJECTILE_COUNT, LavaRechargeOutcome,
+  MINIGUN_CHAINFIRE_PROJECTILE_COUNT, MedicalRepairOutcome, NUCLEAR_BFG9000_EXPLOSION_DELAY,
+  NUCLEAR_BFG9000_EXPLOSION_KNOCKBACK, NUCLEAR_BFG9000_EXPLOSION_RADIUS,
+  NUCLEAR_PLASMA_CHAINFIRE_PROJECTILE_COUNT, PISTOL_AIMED_ACCURACY_BONUS,
+  PISTOL_AIMED_FIRE_COST_MULTIPLIER, PLASMA_RIFLE_CHAINFIRE_PROJECTILE_COUNT,
+  WeaponRechargeOutcome, bfg10k_chainfire_profile,
 };
 use crate::bfg10k::{
   BFG10K_GROUND_ITEM_DESTRUCTION_THRESHOLD, knockback_distance as bfg10k_knockback_distance,
@@ -1769,6 +1769,7 @@ impl Game {
       let weapon_is_bfg10k = weapon.archetype() == drl_protocol::ItemArchetype::Bfg10k;
       let weapon_is_nuclear_plasma_rifle =
         weapon.archetype() == drl_protocol::ItemArchetype::NuclearPlasmaRifle;
+      let bfg10k_chainfire = bfg10k_chainfire_profile(props.chainfire_level);
       if chainfire {
         if !weapon_is_bfg10k
           && !weapon_is_chaingun
@@ -1781,7 +1782,12 @@ impl Game {
             "chainfire is only available for the BFG 10K, Chaingun, Minigun, Plasma Rifle, Laser Rifle, or Nuclear Plasma Rifle".to_string(),
           ));
         }
-        if !ChainfireTransition::can_chainfire(props) {
+        let chainfire_available = if weapon_is_bfg10k {
+          bfg10k_chainfire.is_some()
+        } else {
+          ChainfireTransition::can_chainfire(props)
+        };
+        if !chainfire_available {
           return Err(CommandError::InvalidCommand(if weapon_is_bfg10k {
             "higher BFG 10K chainfire levels are deferred".to_string()
           } else if weapon_is_minigun {
@@ -1821,26 +1827,30 @@ impl Game {
       if distance > props.range {
         return Err(CommandError::TargetOutOfRange(target_pos));
       }
-      let shot_count = if chainfire {
-        if weapon_is_bfg10k {
-          BFG10K_CHAINFIRE_PROJECTILE_COUNT
-        } else if weapon_is_minigun {
-          MINIGUN_CHAINFIRE_PROJECTILE_COUNT
-        } else if weapon_is_plasma_rifle {
-          PLASMA_RIFLE_CHAINFIRE_PROJECTILE_COUNT
-        } else if weapon_is_laser_rifle {
-          LASER_RIFLE_CHAINFIRE_PROJECTILE_COUNT
-        } else if weapon_is_nuclear_plasma_rifle {
-          NUCLEAR_PLASMA_CHAINFIRE_PROJECTILE_COUNT
-        } else {
-          CHAINGUN_CHAINFIRE_PROJECTILE_COUNT
-        }
+      let (shot_count, ammo_cost) = if chainfire && weapon_is_bfg10k {
+        bfg10k_chainfire.ok_or_else(|| {
+          CommandError::InvalidCommand("higher BFG 10K chainfire levels are deferred".to_string())
+        })?
       } else {
-        weapon.projectile_count()
+        let shot_count = if chainfire {
+          if weapon_is_minigun {
+            MINIGUN_CHAINFIRE_PROJECTILE_COUNT
+          } else if weapon_is_plasma_rifle {
+            PLASMA_RIFLE_CHAINFIRE_PROJECTILE_COUNT
+          } else if weapon_is_laser_rifle {
+            LASER_RIFLE_CHAINFIRE_PROJECTILE_COUNT
+          } else if weapon_is_nuclear_plasma_rifle {
+            NUCLEAR_PLASMA_CHAINFIRE_PROJECTILE_COUNT
+          } else {
+            CHAINGUN_CHAINFIRE_PROJECTILE_COUNT
+          }
+        } else {
+          weapon.projectile_count()
+        };
+        // Keep emitted projectile count separate from typed clip cost (BFG
+        // families charge their evidence-backed per-projectile amounts).
+        (shot_count, shot_count.saturating_mul(weapon.shot_cost()))
       };
-      // Keep emitted projectile count separate from typed clip cost (BFG
-      // families charge their evidence-backed per-projectile amounts).
-      let ammo_cost = shot_count.saturating_mul(weapon.shot_cost());
       if props.current_clip < ammo_cost {
         return Err(CommandError::NoAmmoInClip);
       }

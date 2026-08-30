@@ -202,6 +202,12 @@ pub enum KillEffect {
 pub enum AlternateAction {
   /// Fire a weapon's first-level chainfire burst.
   Chainfire { shot_count: u32, ammo_cost: u32 },
+  /// Fire a specific subsequent chainfire warm-up level.
+  ChainfireLevel {
+    level: u8,
+    shot_count: u32,
+    ammo_cost: u32,
+  },
   /// Fire one aimed projectile with a typed accuracy bonus and time multiplier.
   AimedFire {
     accuracy_bonus: i32,
@@ -494,6 +500,30 @@ pub const BFG10K_CHAINFIRE_PROJECTILE_COUNT: u32 = 4;
 pub const BFG10K_SHOT_COST: u32 = 5;
 /// Pinned total cell cost for the first BFG 10K chainfire level.
 pub const BFG10K_CHAINFIRE_SHOT_COST: u32 = BFG10K_CHAINFIRE_PROJECTILE_COUNT * BFG10K_SHOT_COST;
+/// Pinned projectile count for the second BFG 10K chainfire level.
+pub const BFG10K_SECOND_CHAINFIRE_PROJECTILE_COUNT: u32 = BFG10K_PROJECTILE_COUNT;
+/// Pinned total cell cost for the second BFG 10K chainfire level.
+pub const BFG10K_SECOND_CHAINFIRE_SHOT_COST: u32 =
+  BFG10K_SECOND_CHAINFIRE_PROJECTILE_COUNT * BFG10K_SHOT_COST;
+
+/// Returns the bounded BFG 10K chainfire profile for a warm-up level.
+///
+/// The legacy level zero burst is four projectiles, level one is the full
+/// five-projectile volley, and higher levels remain outside this slice.
+#[must_use]
+pub const fn bfg10k_chainfire_profile(level: u8) -> Option<(u32, u32)> {
+  match level {
+    0 => Some((
+      BFG10K_CHAINFIRE_PROJECTILE_COUNT,
+      BFG10K_CHAINFIRE_SHOT_COST,
+    )),
+    1 => Some((
+      BFG10K_SECOND_CHAINFIRE_PROJECTILE_COUNT,
+      BFG10K_SECOND_CHAINFIRE_SHOT_COST,
+    )),
+    _ => None,
+  }
+}
 
 /// Pinned standard BFG 9000 delayed explosion interval.
 pub const BFG9000_EXPLOSION_DELAY: u32 = 33;
@@ -525,6 +555,11 @@ const BFG10K_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
   BehaviorSpec::Alternate(AlternateAction::Chainfire {
     shot_count: BFG10K_CHAINFIRE_PROJECTILE_COUNT,
     ammo_cost: BFG10K_CHAINFIRE_SHOT_COST,
+  }),
+  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
+    level: 1,
+    shot_count: BFG10K_SECOND_CHAINFIRE_PROJECTILE_COUNT,
+    ammo_cost: BFG10K_SECOND_CHAINFIRE_SHOT_COST,
   }),
 ];
 
@@ -1311,6 +1346,25 @@ mod tests {
   use super::*;
 
   #[test]
+  fn bfg10k_chainfire_profile_matches_pinned_warmup_levels() {
+    assert_eq!(
+      bfg10k_chainfire_profile(0),
+      Some((
+        BFG10K_CHAINFIRE_PROJECTILE_COUNT,
+        BFG10K_CHAINFIRE_SHOT_COST
+      ))
+    );
+    assert_eq!(
+      bfg10k_chainfire_profile(1),
+      Some((
+        BFG10K_SECOND_CHAINFIRE_PROJECTILE_COUNT,
+        BFG10K_SECOND_CHAINFIRE_SHOT_COST,
+      ))
+    );
+    assert_eq!(bfg10k_chainfire_profile(2), None);
+  }
+
+  #[test]
   fn behavior_vocabulary_covers_explicit_trigger_categories() {
     const SPECS: &[BehaviorSpec] = &[
       BehaviorSpec::Passive(PassiveModifier {
@@ -1494,6 +1548,11 @@ mod tests {
         BehaviorSpec::Alternate(AlternateAction::Chainfire {
           shot_count: BFG10K_CHAINFIRE_PROJECTILE_COUNT,
           ammo_cost: BFG10K_CHAINFIRE_SHOT_COST,
+        }),
+        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
+          level: 1,
+          shot_count: BFG10K_SECOND_CHAINFIRE_PROJECTILE_COUNT,
+          ammo_cost: BFG10K_SECOND_CHAINFIRE_SHOT_COST,
         }),
       ]
     );
