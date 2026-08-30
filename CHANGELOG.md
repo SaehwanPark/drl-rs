@@ -3,6 +3,19 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.265]
+
+- Extended BFG 10K explosion schedules with a bounded actor-only radius-2
+  fanout. Each successful direct-target hit now consumes one deterministic
+  `6d4` Plasma roll per clear blast cell without distance falloff, applies
+  integer `damage / 16` radial knockback before environmental damage, and
+  preserves actor de-duplication plus normal death/drop/game-over follow-up.
+  Ordinary and first-level chainfire direct-core, replay, MCP, and
+  `BrowserSession` parity are covered; delayed timing/state-machine parity,
+  terrain/content and ground-item effects, splash immunity, scatter/routing,
+  controlled runtime, browser capture, and audiovisual parity remain deferred.
+  Gameplay semantics advance from `73` to `74`.
+
 ## [0.2.264]
 
 - Extended the typed first-level chainfire command to the BFG 10K. A warm-up

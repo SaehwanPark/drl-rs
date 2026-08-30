@@ -1879,6 +1879,8 @@ mod tests {
         GameEvent::DamageApplied {
           target_id: event_target,
           amount,
+          source: drl_protocol::DamageSource::Actor(_),
+          damage_type: None,
           ..
         } if *event_target == target_id => damages.push((index, *amount)),
         GameEvent::Bfg10kExplosionScheduled {
@@ -4141,7 +4143,7 @@ mod tests {
   #[test]
   fn bfg10k_chainfire_mcp_boundary_matches_direct_core() {
     let player_position = Position::new(1, 1);
-    let target_position = Position::new(3, 1);
+    let target_position = Position::new(4, 1);
     let player_config = drl_protocol::PlayerSpawnConfig {
       hp: 50,
       max_hp: 50,

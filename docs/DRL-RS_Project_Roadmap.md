@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-29
-Current project version: `0.2.264`
+Current project version: `0.2.265`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.264)
+## 3. Current Progress Summary (`VERSION` 0.2.265)
 
 ### Delivered Foundations
 
@@ -995,6 +995,16 @@ verification item uses explicit status semantics:
   rejection are verified; higher levels, scatter/routing, delayed explosion
   geometry/damage/knockback, exact timing/accuracy, runtime, browser capture,
   and audiovisual parity remain open.
+- **M9 BFG 10K radius-2 explosion fanout (`0.2.265`):** Each successful BFG
+  10K direct-target hit now preserves its schedule event and immediately
+  resolves a deterministic actor-only radius-2 fanout: one `6d4` Plasma roll
+  per clear blast cell without distance
+  falloff, bounded radial `damage / 16` knockback before environmental damage,
+  actor de-duplication, and normal death/drop/game-over follow-up. Direct-core,
+  replay, MCP, and BrowserSession parity are covered; delayed
+  timing/state-machine parity, terrain/content and ground-item effects,
+  splash-immunity traits, scatter/routing, controlled runtime, browser capture,
+  and audiovisual parity remain open. Gameplay semantics advance to `74`.
 - **M9 Trigun aimed-fire vertical fidelity (`0.2.248`):** The shared typed
   aimed-fire command now accepts Trigun, applies +3 accuracy and doubled action
   cost, and preserves one-projectile/one-round behavior. Direct-core,
@@ -1548,6 +1558,15 @@ scripting.
   MCP JSON, and BrowserSession preserve the typed event boundary while splash
   geometry, damage fanout, callback state/timing, runtime, and audiovisual
   parity remain open.
+- [x] BFG 10K radius-2 explosion fanout (`0.2.265`) preserves each successful
+  hit's schedule event and immediately resolves a deterministic actor-only
+  radius-2 fanout: one `6d4` Plasma roll per clear blast cell without distance
+  falloff, bounded radial `damage / 16` knockback before environmental damage,
+  actor de-duplication, and normal death/drop/game-over follow-up. Direct-core,
+  replay, MCP, and BrowserSession parity are covered; delayed
+  timing/state-machine parity, terrain/content and ground-item effects,
+  splash-immunity traits, scatter/routing, controlled runtime, browser capture,
+  and audiovisual parity remain open. Gameplay semantics advance to `74`.
 - [x] Anti-Freak Jackal's delivered radius-1 splash fanout considers the
   impact center and eight neighboring cells clockwise from north in stable order, applies one
   deterministic `5d3` fire-damage roll per eligible living actor, and preserves
@@ -1668,9 +1687,12 @@ scripting.
   exact-hit events, fair observations, render effects, scene projections,
   twenty-cell clip consumption, physical `C` routing, observable warm-up
   advancement/reset, per-hit delayed-explosion schedule metadata, and atomic
-  under-supply rejection; higher levels, scatter/routing, delayed explosion
-  geometry/damage/knockback, exact timing/accuracy, controlled legacy runtime,
-  browser capture, and audiovisual parity remain open.
+  under-supply rejection; its bounded radius-2 actor fanout now covers `6d4`
+  Plasma damage, no distance falloff, radial `damage / 16` knockback, and
+  death/drop follow-up. Higher levels, scatter/routing, delayed timing,
+  terrain/content effects, ground-item destruction, splash-immunity traits,
+  exact timing/accuracy, controlled legacy runtime, browser capture, and
+  audiovisual parity remain open.
 - [x] Mega Buster's delivered three-projectile ordinary-fire contract has a
   deterministic direct-core/BrowserSession boundary check covering identical
   events, fair observations, render effects, scene projections, nine-round clip
@@ -1869,6 +1891,16 @@ scripting.
   are verified; higher levels, scatter/routing, delayed explosion geometry,
   exact timing/accuracy, controlled runtime, browser capture, and audiovisual
   parity remain open. Gameplay semantics advance to `73`.
+- **M9 BFG 10K radius-2 explosion fanout (`0.2.265`):** Successful BFG 10K
+  hits now preserve their schedule metadata and immediately resolve the
+  bounded actor-only radius-2 fanout in stable center/ring order, consuming one
+  `6d4` Plasma roll per clear cell without distance falloff. Radial knockback
+  uses integer `damage / 16` before environmental damage, with actor
+  de-duplication and normal death/drop/game-over follow-up. Direct-core, replay,
+  MCP, and BrowserSession parity are verified; delayed timing/state-machine,
+  terrain/content and ground-item effects, splash immunity, scatter/routing,
+  controlled runtime, browser capture, and audiovisual parity remain open.
+  Gameplay semantics advance to `74`.
 - [x] Typed `umega`, `uberetta`, and `ufshotgun` preserve pinned unique-firearm
   descriptions, 9mm relations, clips/damage/range scalars, replay kinds, and
   measured plasma/pistol/combat-shotgun atlas slots; mode switching, kill

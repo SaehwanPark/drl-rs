@@ -2089,6 +2089,8 @@ mod tests {
         drl_protocol::GameEvent::DamageApplied {
           target_id: event_target,
           amount,
+          source: drl_protocol::DamageSource::Actor(_),
+          damage_type: None,
           ..
         } if *event_target == target_id => damages.push((index, *amount)),
         drl_protocol::GameEvent::Bfg10kExplosionScheduled {
@@ -6253,7 +6255,7 @@ mod tests {
       equipped_armor: None,
       equipped_armor_durability: None,
     };
-    let target_position = Position::new(3, 1);
+    let target_position = Position::new(4, 1);
     let mut setup_replay =
       ReplayLog::new(2_707, 8, 4, player_position).with_player_config(player_config);
     setup_replay.record_monster(MonsterSpawnSpec::new(

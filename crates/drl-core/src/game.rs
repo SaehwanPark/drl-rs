@@ -24,6 +24,10 @@ use crate::behavior::{
   PISTOL_AIMED_ACCURACY_BONUS, PISTOL_AIMED_FIRE_COST_MULTIPLIER,
   PLASMA_RIFLE_CHAINFIRE_PROJECTILE_COUNT, WeaponRechargeOutcome,
 };
+use crate::bfg10k::{
+  knockback_distance as bfg10k_knockback_distance, radius_two_blast_positions,
+  roll_explosion_damage,
+};
 use crate::chaingun::{CHAINGUN_CHAINFIRE_PROJECTILE_COUNT, ChainfireTransition};
 use crate::combat::CombatResolver;
 use crate::combat_shotgun::{CombatShotgunReloadPlan, CombatShotgunTransition};
@@ -1853,8 +1857,13 @@ impl Game {
     {
       self.validate_death_drop_position(target_pos)?;
     }
-    if weapon_is_anti_freak_jackal || null_pointer_item_id.is_some() {
-      for splash_position in radius_one_blast_positions(self.state.world.map(), target_pos) {
+    if weapon_is_anti_freak_jackal || null_pointer_item_id.is_some() || weapon_is_bfg10k {
+      let splash_positions = if weapon_is_bfg10k {
+        radius_two_blast_positions(self.state.world.map(), target_pos)
+      } else {
+        radius_one_blast_positions(self.state.world.map(), target_pos)
+      };
+      for splash_position in splash_positions {
         if self
           .state
           .world
@@ -2010,6 +2019,7 @@ impl Game {
             radius: BFG10K_EXPLOSION_RADIUS,
             knockback: BFG10K_EXPLOSION_KNOCKBACK,
           });
+          self.execute_bfg10k_splash(player_id, target_pos, events)?;
         } else if weapon_is_bfg9000 {
           events.push(GameEvent::Bfg9000ExplosionScheduled {
             entity_id: player_id,
@@ -2322,6 +2332,89 @@ impl Game {
         if self.state.world.player_id() == Some(target_id) {
           self.state.is_game_over = true;
         }
+      }
+    }
+
+    Ok(())
+  }
+
+  /// Resolves the bounded BFG 10K radius-2 actor splash immediately after its
+  /// schedule event. The legacy delay remains presentation metadata here;
+  /// terrain/content mutation and pending explosion state are separate work.
+  fn execute_bfg10k_splash(
+    &mut self,
+    source_id: drl_protocol::EntityId,
+    center: Position,
+    events: &mut Vec<GameEvent>,
+  ) -> Result<(), CommandError> {
+    let mut processed_actors = BTreeSet::new();
+    for blast_position in radius_two_blast_positions(self.state.world.map(), center) {
+      let damage = roll_explosion_damage(&mut self.state.rng);
+      let target_id = self
+        .state
+        .world
+        .living_actor_at(blast_position)
+        .map(|actor| actor.id());
+      let target_id = target_id.filter(|target_id| processed_actors.insert(*target_id));
+
+      let Some(target_id) = target_id else {
+        continue;
+      };
+
+      let target_position = self
+        .state
+        .world
+        .get_actor(target_id)
+        .ok_or(CommandError::EntityNotFound(target_id))?
+        .position();
+      let knockback = bfg10k_knockback_distance(damage, BFG10K_EXPLOSION_KNOCKBACK);
+      if target_position == center {
+        self.apply_knockback(source_id, target_id, knockback, events)?;
+      } else if let Some(direction) = splash_knockback_direction(center, target_position) {
+        self.apply_anti_freak_knockback(target_id, direction, knockback, events)?;
+      }
+
+      let (taken, lethal, death_cause) =
+        self
+          .state
+          .world
+          .apply_damage(target_id, damage, DamageSource::Environment)?;
+      let remaining = self
+        .state
+        .world
+        .get_actor(target_id)
+        .map_or(0, |actor| actor.hp().current);
+      events.push(GameEvent::DamageApplied {
+        target_id,
+        amount: taken,
+        remaining_hp: remaining,
+        source: DamageSource::Environment,
+        damage_type: Some(DamageType::Plasma),
+      });
+
+      if !lethal {
+        continue;
+      }
+
+      let death_drop = self
+        .state
+        .world
+        .get_actor(target_id)
+        .and_then(|actor| actor.death_drop());
+      let death_position = self
+        .state
+        .world
+        .get_actor(target_id)
+        .map_or(blast_position, |actor| actor.position());
+      events.push(GameEvent::ActorDied {
+        entity_id: target_id,
+        cause: death_cause.unwrap_or(DeathCause::Environment),
+      });
+      if let Some(drop_kind) = death_drop {
+        self.spawn_death_drop(target_id, death_position, drop_kind, events)?;
+      }
+      if self.state.world.player_id() == Some(target_id) {
+        self.state.is_game_over = true;
       }
     }
 

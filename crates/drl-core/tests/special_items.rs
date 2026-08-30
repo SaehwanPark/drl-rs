@@ -4,6 +4,7 @@ use drl_core::game::Game;
 use drl_core::grid::Tile;
 use drl_core::item::Item;
 use drl_core::replay::ReplayEngine;
+use drl_core::{radius_two_blast_positions, roll_explosion_damage};
 use drl_protocol::{
   ActionCost, AttackOutcome, Command, CommandError, DamageSource, Direction, EquipmentSlot,
   GameEvent, ItemId, ItemSpawnKind, ItemSpawnSpec, MonsterSpawnSpec, PlayerSpawnConfig, Position,
@@ -255,6 +256,8 @@ fn assert_bfg10k_volley_events(
       GameEvent::DamageApplied {
         target_id: event_target,
         amount,
+        source: DamageSource::Actor(_),
+        damage_type: None,
         ..
       } if *event_target == target_id => damages.push((index, *amount)),
       GameEvent::Bfg10kExplosionScheduled {
@@ -2393,6 +2396,9 @@ fn bfg10k_volley_consumes_twenty_five_cells_and_resolves_five_hits() {
   let mut expected_rng = rng_before;
   for _ in 0..5 {
     expected_rng.gen_range(6..25);
+    for _ in radius_two_blast_positions(game.world().map(), target) {
+      roll_explosion_damage(&mut expected_rng);
+    }
   }
   assert_eq!(
     game.rng(),
