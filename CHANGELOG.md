@@ -3,6 +3,18 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.263]
+
+- Extended the existing typed first-level chainfire command to the Nuclear
+  Plasma Rifle. A warm-up level-zero rifle now preflights and consumes four
+  cells, emits four ordered ranged outcomes (with deterministic no-op
+  continuations after a lethal target), and advances/reset warm-up state
+  transactionally while preserving the existing overload and recharge
+  transitions. Direct-core, replay, MCP JSON/catalog, physical browser-key,
+  and `BrowserSession` parity plus atomic rejection are covered; higher levels,
+  exact timing/accuracy, controlled runtime, browser capture, and audiovisual
+  parity remain deferred. Gameplay semantics advance from `71` to `72`.
+
 ## [0.2.262]
 
 - Extended the existing typed first-level chainfire command to the Laser Rifle.

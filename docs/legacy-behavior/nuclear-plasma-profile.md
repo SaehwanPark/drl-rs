@@ -1,7 +1,8 @@
 # Nuclear Plasma Rifle typed behavior-profile evidence
 
-Status: delivered typed behavior profile for `0.2.204`; alternate chainfire,
-controlled legacy runtime comparison, and audiovisual parity remain `NOT_RUN`.
+Status: delivered typed behavior profile and first-level chainfire execution in
+`0.2.263`; higher chainfire levels, controlled legacy runtime comparison, and
+audiovisual parity remain `NOT_RUN`.
 
 ## Pinned source
 
@@ -11,8 +12,8 @@ audio metadata changes and untracked `fpcvalkyrie/` directory are outside this
 evidence.
 
 - `bin/data/drl/items/eitems.lua:436-472` defines `unplasma`, attaches the
-  `perk_altreload_nuke` and `perk_weapon_recharge` perks, and sets the recharge
-  delay `40` and cadence `2`.
+  `perk_altfire_chainfire`, `perk_altreload_nuke`, and `perk_weapon_recharge`
+  perks, and sets the recharge delay `40` and cadence `2`.
 - `bin/data/drl/perks.lua:223-249` defines the confirmed full-clip nuclear
   overload transition; `bin/data/drl/perks.lua:350-386` defines the periodic
   recharge callback.
@@ -22,12 +23,15 @@ evidence.
 
 ## DRL-Rust boundary
 
-The immutable `NUCLEAR_PLASMA_BEHAVIOR` profile records the already-delivered
-typed `AlternateAction::Overload` and `PeriodicEffect::Recharge` fragments
-(delay `40`, cadence `2`, amount `1`). Dedicated `nuclear_overload` and
-`WeaponRechargeState` transitions remain the execution authorities; no new
-command, callback registry, replay-wire field, or gameplay timing is added.
+The immutable `NUCLEAR_PLASMA_BEHAVIOR` profile records the six-projectile
+ordinary volley, one-cell cost, first-level
+`AlternateAction::Chainfire { shot_count: 4, ammo_cost: 4 }`, typed
+`AlternateAction::Overload`, and `PeriodicEffect::Recharge` fragments (delay
+`40`, cadence `2`, amount `1`). Generic ranged execution owns the bounded
+chainfire command while dedicated `nuclear_overload` and `WeaponRechargeState`
+transitions remain the execution authorities for their existing actions; no new
+command, callback registry, replay-wire field, or recharge timing is added.
 
-The profile intentionally does not claim the legacy `perk_altfire_chainfire`
-callback, dynamic target rotation, or other deferred weapon behavior. Those
-remain separate evidence-backed slices.
+The profile intentionally does not claim higher chainfire levels, dynamic
+target rotation, or other deferred weapon behavior. Those remain separate
+evidence-backed slices.

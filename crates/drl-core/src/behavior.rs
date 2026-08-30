@@ -842,8 +842,12 @@ pub const NUCLEAR_BFG9000_BEHAVIOR: BehaviorProfile =
 
 /// Pinned projectile count for an ordinary Nuclear Plasma Rifle shot.
 pub const NUCLEAR_PLASMA_PROJECTILE_COUNT: u32 = 6;
+/// Pinned projectile count for the first Nuclear Plasma chainfire level.
+pub const NUCLEAR_PLASMA_CHAINFIRE_PROJECTILE_COUNT: u32 = 4;
 /// Pinned per-projectile clip cost for an ordinary Nuclear Plasma Rifle shot.
 pub const NUCLEAR_PLASMA_SHOT_COST: u32 = 1;
+/// Pinned Cell cost for the first Nuclear Plasma chainfire level.
+pub const NUCLEAR_PLASMA_CHAINFIRE_SHOT_COST: u32 = 4;
 
 const NUCLEAR_PLASMA_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
   BehaviorSpec::Attack(AttackEffect::ProjectileCount(
@@ -853,6 +857,10 @@ const NUCLEAR_PLASMA_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
     ammo_type: AmmoType::Cell,
     amount: NUCLEAR_PLASMA_SHOT_COST,
   }),
+  BehaviorSpec::Alternate(AlternateAction::Chainfire {
+    shot_count: NUCLEAR_PLASMA_CHAINFIRE_PROJECTILE_COUNT,
+    ammo_cost: NUCLEAR_PLASMA_CHAINFIRE_SHOT_COST,
+  }),
   BehaviorSpec::Alternate(AlternateAction::Overload),
   BehaviorSpec::Periodic(PeriodicEffect::Recharge {
     delay: NUCLEAR_PLASMA_RECHARGE_DELAY,
@@ -861,7 +869,8 @@ const NUCLEAR_PLASMA_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
   }),
 ];
 
-/// Immutable typed profile for the current Nuclear Plasma Rifle behavior.
+/// Immutable typed profile for the current Nuclear Plasma Rifle volley,
+/// chainfire, overload, and recharge behavior.
 pub const NUCLEAR_PLASMA_BEHAVIOR: BehaviorProfile =
   BehaviorProfile::new(NUCLEAR_PLASMA_BEHAVIOR_SPECS);
 
@@ -1518,6 +1527,10 @@ mod tests {
         BehaviorSpec::Cost(ResourceCost::Ammo {
           ammo_type: AmmoType::Cell,
           amount: NUCLEAR_PLASMA_SHOT_COST,
+        }),
+        BehaviorSpec::Alternate(AlternateAction::Chainfire {
+          shot_count: NUCLEAR_PLASMA_CHAINFIRE_PROJECTILE_COUNT,
+          ammo_cost: NUCLEAR_PLASMA_CHAINFIRE_SHOT_COST,
         }),
         BehaviorSpec::Alternate(AlternateAction::Overload),
         BehaviorSpec::Periodic(PeriodicEffect::Recharge {
