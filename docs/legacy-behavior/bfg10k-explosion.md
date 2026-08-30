@@ -39,5 +39,5 @@ that cell's actor processing and before lethal follow-up; cells without actors
 still apply the ground-item rule. The delay remains presentation metadata
 rather than a pending queue. Terrain/content mutation, non-ammunition
 ground-item destruction, splash immunity, scatter/projectile routing,
-fifth-and-later chainfire levels, mods, controlled legacy runtime, and
+sixth-and-later chainfire levels, mods, controlled legacy runtime, and
 audiovisual comparison remain separate slices or `NOT_RUN`.

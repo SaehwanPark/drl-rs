@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.285`
+Current project version: `0.2.286`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -73,7 +73,8 @@ six-, nine-, nine-, and nine-projectile chainfire transitions;
 BFG 10K records its typed exact-hit, five-projectile ordinary-fire,
 five-cell-per-projectile, delayed-explosion, and bounded first-level
 four-projectile/twenty-cell, second-level five-projectile/twenty-five-cell, and
-third- and fourth-level seven-projectile/thirty-five-cell chainfire fragments
+third-, fourth-, and fifth-level seven-projectile/thirty-five-cell chainfire
+fragments
 plus its bounded radius-2 actor-only explosion fanout and thresholded
 ordinary-ammo destruction;
 Standard BFG 9000 records its typed exact-hit, one-projectile,
@@ -342,8 +343,8 @@ Presentation Boundary
     five-cell-per-projectile shot-cost, delayed explosion schedule metadata
     (delay 25, radius 2, knockback 16), the bounded first-level
     four-projectile/twenty-cell, second-level five-projectile/twenty-five-cell,
-    and third- and fourth-level seven-projectile/thirty-five-cell chainfire
-    transitions, and the immediate
+    and third-, fourth-, and fifth-level seven-projectile/thirty-five-cell
+    chainfire transitions, and the immediate
     actor-only radius-2 fanout (6d4 Plasma per clear cell, no distance falloff,
     integer damage/16 knockback) and destroys one lowest-ID ordinary loose-ammo
     stack per clear cell when damage exceeds 10. Delayed timing, terrain/content
