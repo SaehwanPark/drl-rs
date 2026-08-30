@@ -39,7 +39,7 @@ description: "Comprehensive armory encyclopedia: ballistic firearms, energy weap
 - **Plasma Rifle**: Rapid-fire energy rifle discharging 6-cell plasma bolts with thermal splash damage and first-level 4-projectile plus second-level 6-projectile chainfire bursts.
 - **Nuclear Plasma Rifle**: Experimental nuclear core plasma rifle. High-yield discharge, first-level 4-projectile chainfire, and continuous internal power recharge.
 - **BFG 9000**: The ultimate bio-force weapon. Fires a massive 40-cell plasma ball (radius 8 splash, massive 16-tile kinetic knockback).
-- **BFG 10K**: Rapid-cycling experimental variant firing five 5-cell plasma charges with delayed schedule explosions; its first-level chainfire emits four exact-hit charges for 20 cells.
+- **BFG 10K**: Rapid-cycling experimental variant firing five 5-cell plasma charges with delayed schedule explosions; its first-, second-, third-, and fourth-level chainfire emits four, five, seven, and seven exact-hit charges for 20, 25, 35, and 35 cells.
 
 ---
 
