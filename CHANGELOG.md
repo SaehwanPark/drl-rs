@@ -3,6 +3,19 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.293]
+
+- Extended BFG 10K chainfire with the pinned ninth warm-up level: after
+  four-, five-, and seven-projectile bursts, the ninth command consumes
+  thirty-five cells and emits seven ordered exact-hit outcomes with the
+  existing delay-25/radius-2/knockback-16 explosion boundary, advancing
+  warm-up to level nine. Reload-backed ScenarioRunner/replay, direct-core,
+  MCP legal-action/JSON, physical `C`, and BrowserSession parity plus atomic
+  tenth-level and under-supply rejection are covered. Later levels, target
+  routing, exact timing, terrain/content effects, controlled runtime, browser
+  capture, and audiovisual parity remain deferred. Gameplay semantics advance
+  from `101` to `102`.
+
 ## [0.2.292]
 
 - Extended BFG 10K chainfire with the pinned eighth warm-up level: after

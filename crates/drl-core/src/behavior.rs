@@ -536,12 +536,17 @@ pub const BFG10K_EIGHTH_CHAINFIRE_PROJECTILE_COUNT: u32 = BFG10K_SEVENTH_CHAINFI
 /// Pinned total cell cost for the eighth BFG 10K chainfire level.
 pub const BFG10K_EIGHTH_CHAINFIRE_SHOT_COST: u32 =
   BFG10K_EIGHTH_CHAINFIRE_PROJECTILE_COUNT * BFG10K_SHOT_COST;
+/// Pinned projectile count for the ninth BFG 10K chainfire level.
+pub const BFG10K_NINTH_CHAINFIRE_PROJECTILE_COUNT: u32 = BFG10K_EIGHTH_CHAINFIRE_PROJECTILE_COUNT;
+/// Pinned total cell cost for the ninth BFG 10K chainfire level.
+pub const BFG10K_NINTH_CHAINFIRE_SHOT_COST: u32 =
+  BFG10K_NINTH_CHAINFIRE_PROJECTILE_COUNT * BFG10K_SHOT_COST;
 
 /// Returns the bounded BFG 10K chainfire profile for a warm-up level.
 ///
 /// The legacy level zero burst is four projectiles, level one is the full
 /// five-projectile volley, and levels two through seven add half the configured
-/// shot count for seven projectiles. Ninth and later levels remain outside this
+/// shot count for seven projectiles. Tenth and later levels remain outside this
 /// slice.
 #[must_use]
 pub const fn bfg10k_chainfire_profile(level: u8) -> Option<(u32, u32)> {
@@ -577,6 +582,10 @@ pub const fn bfg10k_chainfire_profile(level: u8) -> Option<(u32, u32)> {
     7 => Some((
       BFG10K_EIGHTH_CHAINFIRE_PROJECTILE_COUNT,
       BFG10K_EIGHTH_CHAINFIRE_SHOT_COST,
+    )),
+    8 => Some((
+      BFG10K_NINTH_CHAINFIRE_PROJECTILE_COUNT,
+      BFG10K_NINTH_CHAINFIRE_SHOT_COST,
     )),
     _ => None,
   }
@@ -647,6 +656,11 @@ const BFG10K_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
     level: 7,
     shot_count: BFG10K_EIGHTH_CHAINFIRE_PROJECTILE_COUNT,
     ammo_cost: BFG10K_EIGHTH_CHAINFIRE_SHOT_COST,
+  }),
+  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
+    level: 8,
+    shot_count: BFG10K_NINTH_CHAINFIRE_PROJECTILE_COUNT,
+    ammo_cost: BFG10K_NINTH_CHAINFIRE_SHOT_COST,
   }),
 ];
 
@@ -1781,7 +1795,14 @@ mod tests {
         BFG10K_EIGHTH_CHAINFIRE_SHOT_COST,
       ))
     );
-    assert_eq!(bfg10k_chainfire_profile(8), None);
+    assert_eq!(
+      bfg10k_chainfire_profile(8),
+      Some((
+        BFG10K_NINTH_CHAINFIRE_PROJECTILE_COUNT,
+        BFG10K_NINTH_CHAINFIRE_SHOT_COST,
+      ))
+    );
+    assert_eq!(bfg10k_chainfire_profile(9), None);
   }
 
   #[test]
@@ -2168,6 +2189,11 @@ mod tests {
           level: 7,
           shot_count: BFG10K_EIGHTH_CHAINFIRE_PROJECTILE_COUNT,
           ammo_cost: BFG10K_EIGHTH_CHAINFIRE_SHOT_COST,
+        }),
+        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
+          level: 8,
+          shot_count: BFG10K_NINTH_CHAINFIRE_PROJECTILE_COUNT,
+          ammo_cost: BFG10K_NINTH_CHAINFIRE_SHOT_COST,
         }),
       ]
     );
