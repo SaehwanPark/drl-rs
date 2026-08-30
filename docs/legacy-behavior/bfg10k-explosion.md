@@ -20,6 +20,8 @@ at revision `17d9be1204751899b2d69d8d3a2dde247bd0cc5c`.
 Gameplay semantics `39` (project version `0.2.201`) records one typed
 `Bfg10kExplosionScheduled` event after each direct-target volley hit, carrying
 the pinned delay, radius, and knockback metadata. The event is deterministic
-and replay-visible; explosion geometry, splash damage, knockback application,
-projectile routing, chainfire, mods, controlled legacy runtime, and
-audiovisual comparison remain separate slices or `NOT_RUN`.
+and replay-visible; the `0.2.264` first-level chainfire slice preserves the same
+schedule for each successful chainfire hit. Explosion geometry, splash damage,
+knockback application, projectile routing, higher chainfire levels, mods,
+controlled legacy runtime, and audiovisual comparison remain separate slices
+or `NOT_RUN`.

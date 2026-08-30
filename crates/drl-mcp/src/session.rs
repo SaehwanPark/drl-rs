@@ -6,6 +6,7 @@ use drl_core::generator::LevelGeneratorConfig;
 use drl_core::grid::Tile;
 use drl_core::scenario::Scenario;
 use drl_core::{
+  BFG10K_CHAINFIRE_PROJECTILE_COUNT, BFG10K_CHAINFIRE_SHOT_COST,
   CHAINGUN_CHAINFIRE_PROJECTILE_COUNT, CHAINGUN_CHAINFIRE_SHOT_COST, Game,
   LASER_RIFLE_CHAINFIRE_PROJECTILE_COUNT, LASER_RIFLE_CHAINFIRE_SHOT_COST,
   MINIGUN_CHAINFIRE_PROJECTILE_COUNT, MINIGUN_CHAINFIRE_SHOT_COST,
@@ -34,6 +35,10 @@ pub struct LegalAction {
 
 fn first_level_chainfire_profile(archetype: ItemArchetype) -> Option<(u32, u32)> {
   match archetype {
+    ItemArchetype::Bfg10k => Some((
+      BFG10K_CHAINFIRE_PROJECTILE_COUNT,
+      BFG10K_CHAINFIRE_SHOT_COST,
+    )),
     ItemArchetype::Chaingun => Some((
       CHAINGUN_CHAINFIRE_PROJECTILE_COUNT,
       CHAINGUN_CHAINFIRE_SHOT_COST,
@@ -2625,6 +2630,45 @@ mod tests {
   }
 
   #[test]
+  fn test_legal_action_catalog_advertises_first_bfg10k_chainfire_only_once() {
+    let mut session = McpSession::new();
+    session
+      .load_scenario("\n#######\n#@.h..#\n#######\n", None)
+      .unwrap();
+    let player_id = session.game.as_ref().unwrap().world().player_id().unwrap();
+    session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .get_actor_mut(player_id)
+      .unwrap()
+      .equipment_mut()
+      .equip(
+        EquipmentSlot::Weapon,
+        drl_core::item::Item::bfg10k(ItemId::new(100)),
+      )
+      .unwrap();
+
+    let observation = session.get_observation().unwrap();
+    let chainfire = compute_legal_actions(&observation)
+      .into_iter()
+      .find(|action| action.action == "Chainfire")
+      .expect("first BFG 10K chainfire should be advertised");
+    assert_eq!(
+      chainfire.command,
+      Command::AttackRangedChainfire(Position::new(3, 1))
+    );
+    assert!(chainfire.description.contains("4 projectiles, 20 rounds"));
+    session.step(chainfire.command).expect("chainfire action");
+    assert!(
+      !compute_legal_actions(&session.get_observation().unwrap())
+        .iter()
+        .any(|action| action.action == "Chainfire")
+    );
+  }
+
+  #[test]
   fn test_legal_action_catalog_advertises_first_nuclear_plasma_chainfire_only_once() {
     let mut session = McpSession::new();
     session
@@ -4089,6 +4133,113 @@ mod tests {
     let replay = session.export_replay().expect("MCP replay export");
     let (replayed, replay_events) =
       ReplayEngine::run(replay).expect("MCP Laser Rifle chainfire replay");
+    assert_eq!(replayed, direct);
+    assert_eq!(replay_events, expected_events);
+    assert!(ReplayEngine::verify_determinism(replay).expect("replay determinism"));
+  }
+
+  #[test]
+  fn bfg10k_chainfire_mcp_boundary_matches_direct_core() {
+    let player_position = Position::new(1, 1);
+    let target_position = Position::new(3, 1);
+    let player_config = drl_protocol::PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: Vec::new(),
+      equipped_weapon: Some(drl_protocol::ItemSpawnKind::Bfg10k),
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    };
+    let mut setup_replay =
+      ReplayLog::new(2_706, 8, 4, player_position).with_player_config(player_config);
+    setup_replay.record_monster(drl_protocol::MonsterSpawnSpec::new(
+      target_position,
+      "Static Target",
+      500,
+      100,
+      (1, 7),
+    ));
+
+    let mut session = McpSession::new();
+    session
+      .load_replay(setup_replay)
+      .expect("load BFG 10K chainfire replay setup");
+    let initial = session.game.as_ref().unwrap().clone();
+    let player_id = initial.world().player_id().expect("player identity");
+    let target_id = initial
+      .world()
+      .actors()
+      .values()
+      .find(|actor| !actor.is_player())
+      .expect("BFG 10K chainfire target")
+      .id();
+    let command = Command::AttackRangedChainfire(target_position);
+    assert!(
+      compute_legal_actions(&initial.observe_player())
+        .iter()
+        .any(|action| action.command == command)
+    );
+    let mut direct = initial.clone();
+    let expected_events = direct
+      .step(command)
+      .expect("direct BFG 10K chainfire command");
+    let (events, observation, outcome) = session
+      .step(command)
+      .expect("MCP BFG 10K chainfire command");
+
+    assert_eq!(events, expected_events);
+    assert_eq!(session.game.as_ref().unwrap(), &direct);
+    assert_eq!(observation, direct.observe_player());
+    assert_eq!(outcome, None);
+    assert_eq!(
+      events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          GameEvent::AttackResolved {
+            attacker_id,
+            target_id: event_target,
+            outcome: drl_protocol::AttackOutcome::Hit { .. },
+            is_ranged: true,
+          } if *attacker_id == player_id && *event_target == target_id
+        ))
+        .count(),
+      4
+    );
+    assert_eq!(
+      events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          GameEvent::Bfg10kExplosionScheduled {
+            entity_id,
+            target_id: event_target,
+            delay: 25,
+            radius: 2,
+            knockback: 16,
+          } if *entity_id == player_id && *event_target == target_id
+        ))
+        .count(),
+      4
+    );
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .current_clip,
+      30
+    );
+
+    let replay = session.export_replay().expect("MCP replay export");
+    let (replayed, replay_events) =
+      ReplayEngine::run(replay).expect("MCP BFG 10K chainfire replay");
     assert_eq!(replayed, direct);
     assert_eq!(replay_events, expected_events);
     assert!(ReplayEngine::verify_determinism(replay).expect("replay determinism"));

@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-29
-Current project version: `0.2.263`
+Current project version: `0.2.264`
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,13 +25,13 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Nuclear Plasma First-Level Chainfire Execution
+## 2. Active Implementation Slice: M9 — BFG 10K First-Level Chainfire Execution
 
 ### 2.1 Objective
 
-Extend the existing typed first-level chainfire command to the Nuclear Plasma
-Rifle. The accepted command must preserve the pinned six-projectile ordinary
-profile, consume four cells for four ordered first-level alternate outcomes,
+Extend the existing typed first-level chainfire command to the BFG 10K. The
+accepted command must preserve the pinned five-projectile exact-hit ordinary
+profile, consume twenty cells for four ordered first-level alternate outcomes,
 and advance the existing observable warm-up state transactionally.
 
 ### 2.1a Scope and steering gate
@@ -41,38 +41,42 @@ and advance the existing observable warm-up state transactionally.
   compatibility remain active acceptance constraints; Gate C catalog ownership
   and Gate D typed behavior evidence remain closed for this bounded extension.
 - **Observable outcome:** The existing `AttackRangedChainfire(Position)` command
-  is accepted for the Nuclear Plasma Rifle only at warm-up level `0` with at
-  least four loaded cells. It emits exactly four ordered ranged outcomes, fills
-  post-lethal slots with deterministic no-op misses, consumes four cells, and
-  advances the warm-up level to `1`; ordinary fire resets that level to `0`.
-- **Gameplay/replay impact:** Gameplay semantics advance from `71` to `72`;
+  is accepted for the BFG 10K only at warm-up level `0` with at least twenty
+  loaded cells. The pinned `shots - (shots div 3)` rule yields four ordered
+  ranged outcomes; post-lethal slots are deterministic no-op misses. The
+  command consumes twenty cells, preserves the existing exact-hit policy and
+  per-hit delayed-explosion schedule, and advances warm-up to `1`; ordinary
+  fire resets that level to `0`.
+- **Gameplay/replay impact:** Gameplay semantics advance from `72` to `73`;
   replay wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.262` to `0.2.263`.
+  unchanged. Project version advances from `0.2.263` to `0.2.264`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary,
   typed projectile-count/cost policy and generic execution; `drl-protocol` owns
   the semantic `AttackRanged`/`AttackRangedAimed` commands and typed event
   projection, while replay/MCP and browser boundaries
   serialize and route it without duplicating gameplay rules.
-- **Evidence boundary:** Pinned Nuclear Plasma item and alternate-fire evidence
-  in `docs/legacy-behavior/nuclear-plasma-profile.md` and
-  `docs/legacy-behavior/nuclear-plasma-volley-profile.md`, the existing typed
-  chainfire execution contracts, and focused direct-core/replay/MCP/browser
-  tests are authoritative. Controlled legacy runtime, browser capture, and
+- **Evidence boundary:** Pinned BFG 10K item, exact-hit, shot-cost, and delayed
+  explosion evidence in `docs/legacy-behavior/bfg10k-exact-hit.md`,
+  `docs/legacy-behavior/bfg10k-shot-cost.md`, and
+  `docs/legacy-behavior/bfg10k-explosion.md`, together with the existing typed
+  chainfire execution contracts and focused direct-core/replay/MCP/browser
+  tests, are authoritative. Controlled legacy runtime, browser capture, and
   audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** Higher chainfire levels, overload/NukeRun map effects,
-  recharge cadence changes, target rotation/spread, exact callback timing/
-  accuracy, callback state-machine parity, new command variants or callback
-  registries, unrelated gameplay balance, replay migrations, runtime Lua, and
-  browser/audio/WebGPU capture parity.
+- **Non-goals:** Higher chainfire levels, scatter/target rotation or spread,
+  projectile routing, delayed explosion geometry/damage/knockback, exact
+  callback timing/accuracy, callback state-machine parity, new command variants
+  or callback registries, unrelated gameplay balance, replay migrations,
+  runtime Lua, and browser/audio/WebGPU capture parity.
 
 ### 2.2 Why this slice is bounded
 
 The immutable profile and semantic command already exist from the preceding
-declaration and Chaingun/Minigun/Plasma Rifle/Laser Rifle slices. This extension
-adds only Nuclear Plasma Rifle eligibility, the four-projectile/four-cell
-execution path, and its existing MCP/browser projections. It reuses the
-prepare/commit boundary, warm-up state, replay envelope, and deterministic event
-contract without adding a new dispatcher or callback system.
+declaration and Chaingun/Minigun/Plasma Rifle/Laser Rifle/Nuclear Plasma slices.
+This extension adds only BFG 10K eligibility, the four-projectile/twenty-cell
+execution path, and its existing exact-hit/explosion, MCP, and browser
+projections. It reuses the prepare/commit boundary, warm-up state, replay
+envelope, and deterministic event contract without adding a new dispatcher or
+callback system.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -3317,7 +3321,7 @@ chainfire command to the Laser Rifle. Its contract must:
   timing/accuracy, controlled runtime, browser capture, and audiovisual parity
   `NOT_RUN` where comparison evidence is unavailable.
 
-### 2.7ef Current Nuclear Plasma first-level chainfire execution target
+### 2.7ef Historical Nuclear Plasma first-level chainfire execution target
 
 The bounded implementation target for this revision extends the existing typed
 chainfire command to the Nuclear Plasma Rifle. Its contract must:
@@ -3340,6 +3344,32 @@ chainfire command to the Nuclear Plasma Rifle. Its contract must:
   cadence changes, target rotation/spread, exact legacy timing/accuracy,
   controlled runtime, browser capture, and audiovisual parity `NOT_RUN` where
   comparison evidence is unavailable.
+
+### 2.7eg Current BFG 10K first-level chainfire execution target
+
+The bounded implementation target for this revision extends the existing typed
+chainfire command to the BFG 10K. Its contract must:
+
+- [x] accept `AttackRangedChainfire` only for the BFG 10K at warm-up level `0`
+  with at least twenty loaded cells, after validating target, LOS, range, and
+  death-drop destinations;
+- [x] emit exactly four ordered exact-hit outcomes against the requested
+  target, fill post-lethal slots with deterministic no-op misses without extra
+  damage or RNG, consume twenty clip cells, preserve each successful hit's
+  delayed-explosion schedule metadata, and advance warm-up only after
+  acceptance;
+- [x] reset shared warm-up state on ordinary fire and reject higher levels,
+  wrong weapons, and under-supplied clips atomically;
+- [x] advertise and execute the same semantic action through replay/MCP JSON,
+  fair legal-action probing, physical browser `C` routing, and `BrowserSession`
+  parity tests;
+- [x] advance project version from `0.2.263` to `0.2.264` and gameplay
+  semantics from `72` to `73` while preserving replay schema, RNG, generator,
+  and ruleset identities;
+- [x] keep higher chainfire levels, scatter/target rotation or spread,
+  projectile routing, delayed explosion geometry/damage/knockback, exact legacy
+  timing/accuracy, controlled runtime, browser capture, and audiovisual parity
+  `NOT_RUN` where comparison evidence is unavailable.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
@@ -3868,6 +3898,14 @@ projectiles and four cells after the six-projectile ordinary profile. Direct
 core, replay, MCP, physical `C` routing, and BrowserSession parity are verified;
 higher levels, overload map effects, exact timing/accuracy, controlled runtime,
 browser capture, and audiovisual parity remain open.
+
+The `0.2.264` successor extends the same typed first-level chainfire command to
+the BFG 10K. Pinned legacy `Shots div 3` adjustment yields four projectiles and
+twenty cells after the five-projectile ordinary profile. Direct core, replay,
+MCP, physical `C` routing, and BrowserSession parity are verified; higher
+levels, scatter/routing, delayed explosion geometry/damage/knockback, exact
+timing/accuracy, controlled runtime, browser capture, and audiovisual parity
+remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity

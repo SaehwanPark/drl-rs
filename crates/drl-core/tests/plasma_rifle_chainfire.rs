@@ -258,7 +258,7 @@ fn chainfire_rejects_pistol_without_mutation() {
       .step(Command::AttackRangedChainfire(target))
       .unwrap_err(),
     CommandError::InvalidCommand(
-      "chainfire is only available for the Chaingun, Minigun, Plasma Rifle, Laser Rifle, or Nuclear Plasma Rifle".to_string()
+      "chainfire is only available for the BFG 10K, Chaingun, Minigun, Plasma Rifle, Laser Rifle, or Nuclear Plasma Rifle".to_string()
     )
   );
   assert_eq!(game, before);

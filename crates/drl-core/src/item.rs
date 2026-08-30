@@ -6,11 +6,11 @@ use drl_protocol::{
 };
 
 use crate::behavior::{
-  ANTI_FREAK_JACKAL_PROJECTILE_COUNT, ANTI_FREAK_JACKAL_SHOT_COST, LavaRechargeOutcome,
-  LavaRechargeState, MedicalRepairOutcome, MedicalRepairState, NUCLEAR_PLASMA_PROJECTILE_COUNT,
-  NUCLEAR_PLASMA_SHOT_COST, PLASMA_RIFLE_PROJECTILE_COUNT, PLASMA_RIFLE_SHOT_COST,
-  TRIGUN_PROJECTILE_COUNT, TRIGUN_SHOT_COST, WeaponRechargeOutcome, WeaponRechargePolicy,
-  WeaponRechargeState,
+  ANTI_FREAK_JACKAL_PROJECTILE_COUNT, ANTI_FREAK_JACKAL_SHOT_COST, BFG10K_PROJECTILE_COUNT,
+  BFG10K_SHOT_COST, LavaRechargeOutcome, LavaRechargeState, MedicalRepairOutcome,
+  MedicalRepairState, NUCLEAR_PLASMA_PROJECTILE_COUNT, NUCLEAR_PLASMA_SHOT_COST,
+  PLASMA_RIFLE_PROJECTILE_COUNT, PLASMA_RIFLE_SHOT_COST, TRIGUN_PROJECTILE_COUNT, TRIGUN_SHOT_COST,
+  WeaponRechargeOutcome, WeaponRechargePolicy, WeaponRechargeState,
 };
 use crate::item_definition::{ItemDefinitionKind, definition_for_spawn_kind};
 use crate::malek_armor::{MalekRechargeOutcome, MalekRechargeState};
@@ -389,7 +389,7 @@ impl Item {
   pub(crate) const fn shot_cost(&self) -> u32 {
     match self.archetype {
       ItemArchetype::Bfg9000 | ItemArchetype::NuclearBfg9000 => 40,
-      ItemArchetype::Bfg10k => 5,
+      ItemArchetype::Bfg10k => BFG10K_SHOT_COST,
       ItemArchetype::FragShotgun => 2,
       ItemArchetype::PlasmaShotgun => 3,
       ItemArchetype::Railgun => 5,
@@ -412,7 +412,7 @@ impl Item {
   /// projectile routing remain outside this direct-target contract.
   pub(crate) const fn projectile_count(&self) -> u32 {
     match self.archetype {
-      ItemArchetype::Bfg10k => 5,
+      ItemArchetype::Bfg10k => BFG10K_PROJECTILE_COUNT,
       ItemArchetype::DoubleShotgun => 2,
       ItemArchetype::SuperShotgun => 2,
       ItemArchetype::Minigun => 8,
