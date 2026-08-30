@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.306`
+Current project version: `0.2.307`
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,16 +25,16 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Nuclear Plasma Rifle Seventh-Level Chainfire
+## 2. Active Implementation Slice: M9 — Laser Rifle Seventh-Level Chainfire
 
 ### 2.1 Objective
 
-Extend the delivered typed Nuclear Plasma Rifle first-, second-, third-,
-fourth-, fifth-, and sixth-level chainfire commands with one legacy-pinned
-seventh-level continuation. After accepted four-, six-, and nine-projectile
-bursts leave the weapon at warm-up level six, a valid seventh-level command must
-emit nine ordered ranged projectiles, consume nine cells, preserve the existing
-damage and event ordering, and advance the warm-up state to level seven.
+Extend the delivered typed Laser Rifle first-, second-, third-, fourth-,
+fifth-, and sixth-level chainfire commands with one legacy-pinned seventh-level
+continuation. After accepted four-, five-, and seven-projectile bursts leave the
+weapon at warm-up level six, a valid seventh-level command must emit seven
+ordered ranged projectiles, consume seven cells, preserve the existing damage
+and event ordering, and advance the warm-up state to level seven.
 
 ### 2.1a Scope and steering gate
 
@@ -42,40 +42,38 @@ damage and event ordering, and advance the warm-up state to level seven.
 - **Steering gates:** Gate A rejected-input safety and Gate B explicit replay
   compatibility remain active acceptance constraints; Gate C catalog ownership
   and Gate D typed behavior evidence remain closed for this bounded extension.
-- **Observable outcome:** A seventh-level Nuclear Plasma Rifle chainfire command
-  is admitted only for a living visible target, a loaded clip of at least nine
-  cells, and a weapon warm-up level of six. It consumes nine cells, emits nine
+- **Observable outcome:** A seventh-level Laser Rifle chainfire command is
+  admitted only for a living visible target, a loaded clip of at least seven
+  cells, and a weapon warm-up level of six. It consumes seven cells, emits seven
   ordered ranged outcomes, preserves deterministic post-lethal no-op continuation
   slots, and advances warm-up to level seven. Ordinary fire still resets the
   warm-up state, and the eighth level remains rejected atomically.
-- **Gameplay/replay impact:** Gameplay semantics advance from `114` to `115`;
+- **Gameplay/replay impact:** Gameplay semantics advance from `115` to `116`;
   replay wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.305` to `0.2.306`.
+  unchanged. Project version advances from `0.2.306` to `0.2.307`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary,
   typed projectile-count/cost policy and generic execution; `drl-protocol` owns
   the semantic `AttackRanged`/`AttackRangedAimed` commands and typed event
   projection, while replay/MCP and browser boundaries
   serialize and route it without duplicating gameplay rules.
-- **Evidence boundary:** Pinned Nuclear Plasma Rifle volley/profile evidence in
-  `docs/legacy-behavior/nuclear-plasma-volley-profile.md` and
-  `docs/legacy-behavior/nuclear-plasma-profile.md`, together with the existing
+- **Evidence boundary:** Pinned Laser Rifle profile evidence in
+  `docs/legacy-behavior/laser-rifle-profile.md`, together with the existing
   typed ranged, replay, MCP, and browser tests, is authoritative.
   Controlled legacy runtime, browser capture, and audiovisual comparisons
   remain `NOT_RUN`.
 - **Non-goals:** Eighth and later chainfire levels, alternate target routing,
-  overload/NukeRun map effects, recharge-timing changes, exact callback
-  timing/accuracy, new command variants or callback registries, unrelated
-  gameplay balance, replay migrations, runtime Lua, and browser/audio/WebGPU
-  capture parity.
+  target rotation/spread, recharge changes, exact callback timing/accuracy, new
+  command variants or callback registries, unrelated gameplay balance, replay
+  migrations, runtime Lua, and browser/audio/WebGPU capture parity.
 
 ### 2.2 Why this slice is bounded
 
-The immutable Nuclear Plasma Rifle profile, semantic command, and first-,
-second-, third-, fourth-, fifth-, and sixth-level transitions already exist.
-This extension adds only one typed warm-up profile and its deterministic
-count/cost selection while reusing the existing generic ranged, reload-backed
-replay, MCP, browser, and transactional boundaries without adding a pending
-queue, new dispatcher, or callback system.
+The immutable Laser Rifle profile, semantic command, and first-, second-,
+third-, fourth-, fifth-, and sixth-level transitions already exist. This
+extension adds only one typed warm-up profile and its deterministic count/cost
+selection while reusing the existing generic ranged, replay, MCP, browser, and
+transactional boundaries without adding a pending queue, new dispatcher, or
+callback system.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -4542,7 +4540,7 @@ Its contract was:
   legacy runtime, browser capture, and audiovisual parity `NOT_RUN` where
   comparison evidence is unavailable.
 
-### 2.7f22 Current Nuclear Plasma Rifle seventh-level chainfire target
+### 2.7f22 Historical Nuclear Plasma Rifle seventh-level chainfire target
 
 The bounded implementation target for this revision extends the Nuclear Plasma
 Rifle first- through sixth-level chainfire commands with the pinned seventh
@@ -4569,6 +4567,33 @@ warm-up level. Its contract is:
   overload/NukeRun map effects, recharge-timing changes, exact callback
   timing/accuracy, controlled legacy runtime, browser capture, and audiovisual
   parity `NOT_RUN` where comparison evidence is unavailable.
+
+### 2.7f23 Current Laser Rifle seventh-level chainfire target
+
+The bounded implementation target for this revision extends the Laser Rifle
+first- through sixth-level chainfire commands with the pinned seventh warm-up
+level. Its contract is:
+
+- [x] preserve the first- through sixth-level four-, five-, and
+  seven-projectile/four-, five-, and seven-cell contracts and admit a seventh
+  command only while the weapon warm-up level is six and the target is still a
+  valid visible living actor;
+- [x] resolve the legacy level-two-and-later formula `shots = 5 + (5 div 2) =
+  7`, consuming exactly seven loaded cells for the ordered ranged volley;
+- [x] preserve target, line-of-sight, damage RNG, event ordering, and
+  deterministic post-lethal no-op continuation slots through the existing
+  generic ranged path;
+- [x] advance warm-up state to level seven only after acceptance, keep ordinary
+  fire's reset behavior, and reject the eighth level or an under-supplied clip
+  without changing game, clip, turn, or RNG state;
+- [x] preserve direct-core, ScenarioRunner/replay, MCP legal-action/JSON,
+  physical `C` key, and BrowserSession event/state parity;
+- [x] advance project version from `0.2.306` to `0.2.307` and gameplay
+  semantics from `115` to `116` while preserving replay schema, RNG, generator,
+  and ruleset identities;
+- [x] keep eighth-and-later chainfire levels, target rotation/spread, exact
+  callback timing/accuracy, controlled legacy runtime, browser capture, and
+  audiovisual parity `NOT_RUN` where comparison evidence is unavailable.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
