@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.273`
+Current project version: `0.2.274`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.273)
+## 3. Current Progress Summary (`VERSION` 0.2.274)
 
 ### Delivered Foundations
 
@@ -1021,10 +1021,20 @@ verification item uses explicit status semantics:
   ordered ranged outcomes with deterministic post-lethal no-op continuation
   slots, and advancing warm-up to level two. Direct-core, replay, MCP
   legal-action/JSON, physical `C` routing, and BrowserSession parity plus
-  atomic third-level rejection are verified; third-and-later levels, target
+  atomic third-level rejection are verified; later levels, target
   rotation/scatter routing, exact timing/accuracy, overload/recharge changes,
   controlled runtime, browser capture, and audiovisual parity remain open.
-  Gameplay semantics advance to `82`.
+  Gameplay semantics advanced to `82`.
+- **M9 Nuclear Plasma third-level chainfire (`0.2.274`):** The typed
+  chainfire command now accepts warm-up level two, applying the pinned
+  `6 + (6 div 2) = 9` projectile formula, preflighting and consuming nine
+  cells, emitting nine ordered ranged outcomes with deterministic post-lethal
+  no-op continuation slots, and advancing warm-up to level three. Direct-core,
+  replay, MCP legal-action/JSON, physical `C` routing, and BrowserSession
+  parity plus atomic fourth-level rejection are verified; fourth-and-later
+  levels, target rotation/scatter routing, exact timing/accuracy,
+  overload/recharge changes, controlled runtime, browser capture, and
+  audiovisual parity remain open. Gameplay semantics advance to `83`.
 - **M9 BFG 10K radius-2 explosion fanout (`0.2.265`):** Each successful BFG
   10K direct-target hit now preserves its schedule event and immediately
   resolves a deterministic actor-only radius-2 fanout: one `6d4` Plasma roll
@@ -1814,10 +1824,18 @@ scripting.
   deterministic direct-core/replay/MCP/BrowserSession boundary check covering
   six ordered events, fair observations, render effects, scene projections,
   six-cell clip consumption, physical `C` routing, observable warm-up
-  advancement/reset, and atomic under-supply rejection; third-and-later levels,
+  advancement/reset, and atomic under-supply rejection; later levels,
   overload/recharge changes, target rotation/spread, exact timing/accuracy,
   controlled legacy runtime, browser capture, and audiovisual parity remain
   open.
+- [x] Nuclear Plasma Rifle's delivered third-level chainfire contract has a
+  deterministic direct-core/replay/MCP/BrowserSession boundary check covering
+  nine ordered events, fair observations, render effects, scene projections,
+  nine-cell clip consumption, physical `C` routing, observable warm-up
+  advancement/reset, and atomic under-supply rejection; fourth-and-later
+  levels, overload/recharge changes, target rotation/spread, exact timing/
+  accuracy, controlled legacy runtime, browser capture, and audiovisual parity
+  remain open.
 - [x] BFG 10K's delivered first-level chainfire contract has a deterministic
   direct-core/replay/MCP/BrowserSession boundary check covering four ordered
   exact-hit events, fair observations, render effects, scene projections,
@@ -2055,6 +2073,15 @@ scripting.
   rotation/scatter routing, exact timing/accuracy, overload/recharge changes,
   controlled runtime, browser capture, and audiovisual parity remain open.
   Gameplay semantics advance to `82`.
+- **M9 Nuclear Plasma third-level chainfire (`0.2.274`):** Nuclear Plasma
+  Rifle now accepts its pinned warm-up level-two continuation: nine ordered
+  ranged projectiles, nine loaded cells, deterministic post-lethal no-op
+  continuation slots, and warm-up advancement to level three. Direct-core,
+  replay, MCP legal-action/JSON, physical `C` routing, and BrowserSession
+  parity plus atomic fourth-level rejection are verified; fourth-and-later
+  levels, target rotation/scatter routing, exact timing/accuracy,
+  overload/recharge changes, controlled runtime, browser capture, and
+  audiovisual parity remain open. Gameplay semantics advance to `83`.
 - **M9 BFG 10K radius-2 explosion fanout (`0.2.265`):** Successful BFG 10K
   hits now preserve their schedule metadata and immediately resolve the
   bounded actor-only radius-2 fanout in stable center/ring order, consuming one

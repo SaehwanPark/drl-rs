@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.273`
+Current project version: `0.2.274`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -63,8 +63,8 @@ transition; Laser Rifle records its typed five-projectile ordinary-fire and
 one-cell-per-projectile ammo-cost fragments plus a bounded first-level
 four-projectile chainfire transition; Nuclear Plasma Rifle records its typed
 six-projectile ordinary-fire, one-cell-per-projectile, overload, and recharge
-fragments plus bounded first- and second-level four- and six-projectile
-chainfire transitions;
+fragments plus bounded first-, second-, and third-level four-, six-, and
+nine-projectile chainfire transitions;
 BFG 10K records its typed exact-hit, five-projectile ordinary-fire,
 five-cell-per-projectile, delayed-explosion, and bounded first-level
 four-projectile/twenty-cell, second-level five-projectile/twenty-five-cell, and
