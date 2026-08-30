@@ -6,9 +6,9 @@ use drl_core::generator::LevelGeneratorConfig;
 use drl_core::grid::Tile;
 use drl_core::scenario::Scenario;
 use drl_core::{
-  Game, LASER_RIFLE_CHAINFIRE_PROJECTILE_COUNT, LASER_RIFLE_CHAINFIRE_SHOT_COST, ReplayEngine,
-  bfg10k_chainfire_profile, chaingun_chainfire_profile, minigun_chainfire_profile,
-  nuclear_plasma_chainfire_profile, plasma_rifle_chainfire_profile,
+  Game, ReplayEngine, bfg10k_chainfire_profile, chaingun_chainfire_profile,
+  laser_rifle_chainfire_profile, minigun_chainfire_profile, nuclear_plasma_chainfire_profile,
+  plasma_rifle_chainfire_profile,
 };
 use drl_protocol::{
   Command, Direction, EpisodeMetrics, EquipmentSlot, GameEvent, ItemArchetype, ItemCategory,
@@ -36,10 +36,7 @@ fn chainfire_profile(archetype: ItemArchetype, level: u8) -> Option<(u32, u32)> 
     ItemArchetype::Chaingun => chaingun_chainfire_profile(level),
     ItemArchetype::Minigun => minigun_chainfire_profile(level),
     ItemArchetype::PlasmaRifle => plasma_rifle_chainfire_profile(level),
-    ItemArchetype::LaserRifle if level == 0 => Some((
-      LASER_RIFLE_CHAINFIRE_PROJECTILE_COUNT,
-      LASER_RIFLE_CHAINFIRE_SHOT_COST,
-    )),
+    ItemArchetype::LaserRifle => laser_rifle_chainfire_profile(level),
     ItemArchetype::NuclearPlasmaRifle => nuclear_plasma_chainfire_profile(level),
     _ => None,
   }
@@ -2907,7 +2904,7 @@ mod tests {
   }
 
   #[test]
-  fn test_legal_action_catalog_advertises_first_laser_rifle_chainfire_only_once() {
+  fn test_legal_action_catalog_advertises_laser_rifle_chainfire_levels() {
     let mut session = McpSession::new();
     session
       .load_scenario("\n#######\n#@.h..#\n#######\n", None)
@@ -2927,6 +2924,26 @@ mod tests {
       )
       .unwrap();
 
+    let target_id = session
+      .game
+      .as_ref()
+      .unwrap()
+      .world()
+      .actors()
+      .values()
+      .find(|actor| !actor.is_player())
+      .expect("Laser Rifle chainfire target")
+      .id();
+    let target = session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .get_actor_mut(target_id)
+      .expect("Laser Rifle chainfire target");
+    target.hp_mut().max = 10_000;
+    target.hp_mut().current = 10_000;
+
     let observation = session.get_observation().unwrap();
     let chainfire = compute_legal_actions(&observation)
       .into_iter()
@@ -2938,6 +2955,18 @@ mod tests {
     );
     assert!(chainfire.description.contains("4 projectiles, 4 rounds"));
     session.step(chainfire.command).expect("chainfire action");
+    let second = compute_legal_actions(&session.get_observation().unwrap())
+      .into_iter()
+      .find(|action| action.action == "Chainfire")
+      .expect("second Laser Rifle chainfire should be advertised");
+    assert_eq!(
+      second.command,
+      Command::AttackRangedChainfire(Position::new(3, 1))
+    );
+    assert!(second.description.contains("5 projectiles, 5 rounds"));
+    session
+      .step(second.command)
+      .expect("second Laser Rifle chainfire action");
     assert!(
       !compute_legal_actions(&session.get_observation().unwrap())
         .iter()
@@ -4594,7 +4623,7 @@ mod tests {
         .any(|action| action.command == command)
     );
     let mut direct = initial.clone();
-    let expected_events = direct
+    let mut expected_events = direct
       .step(command)
       .expect("direct Laser Rifle chainfire command");
     let (events, observation, outcome) = session
@@ -4633,6 +4662,70 @@ mod tests {
         .current_clip,
       36
     );
+
+    let second_command = Command::AttackRangedChainfire(target_position);
+    assert!(
+      compute_legal_actions(&direct.observe_player())
+        .iter()
+        .any(|action| action.command == second_command)
+    );
+    let second_expected_events = direct
+      .step(second_command)
+      .expect("direct second Laser Rifle chainfire command");
+    let (second_events, second_observation, second_outcome) = session
+      .step(second_command)
+      .expect("MCP second Laser Rifle chainfire command");
+    assert_eq!(second_events, second_expected_events);
+    assert_eq!(session.game.as_ref().unwrap(), &direct);
+    assert_eq!(second_observation, direct.observe_player());
+    assert_eq!(second_outcome, None);
+    assert_eq!(
+      second_events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          GameEvent::AttackResolved {
+            attacker_id,
+            target_id: event_target,
+            is_ranged: true,
+            ..
+          } if *attacker_id == player_id && *event_target == target_id
+        ))
+        .count(),
+      5
+    );
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .current_clip,
+      31
+    );
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .chainfire_level,
+      2
+    );
+    assert!(
+      !compute_legal_actions(&direct.observe_player())
+        .iter()
+        .any(|action| action.action == "Chainfire")
+    );
+    expected_events.extend(second_events);
 
     let replay = session.export_replay().expect("MCP replay export");
     let (replayed, replay_events) =

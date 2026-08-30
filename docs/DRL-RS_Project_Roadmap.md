@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.279`
+Current project version: `0.2.280`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.279)
+## 3. Current Progress Summary (`VERSION` 0.2.280)
 
 ### Delivered Foundations
 
@@ -1857,10 +1857,10 @@ scripting.
   atomic under-supply rejection; higher levels, Nuclear Plasma behavior, target
   rotation/spread, exact timing/accuracy, controlled legacy runtime, browser
   capture, and audiovisual parity remain open.
-- [ ] Plasma Rifle's second-level chainfire contract extends the same boundary
-  with the pinned six-projectile/six-cell formula, reload-backed clip evidence,
-  physical `C` routing, observable warm-up advancement/reset, and atomic
-  third-level rejection; target rotation/spread, exact timing/accuracy,
+- [x] Plasma Rifle's delivered second-level chainfire contract extends the same
+  boundary with the pinned six-projectile/six-cell formula, reload-backed clip
+  evidence, physical `C` routing, observable warm-up advancement/reset, and
+  atomic third-level rejection; target rotation/spread, exact timing/accuracy,
   controlled legacy runtime, browser capture, and audiovisual parity remain
   open.
 - [x] Laser Rifle's delivered first-level chainfire contract has a deterministic
@@ -1870,6 +1870,10 @@ scripting.
   atomic under-supply rejection; higher levels, target rotation/spread, exact
   timing/accuracy, controlled legacy runtime, browser capture, and audiovisual
   parity remain open.
+- [ ] Laser Rifle's second-level chainfire contract extends the same boundary
+  with the pinned five-projectile/five-cell formula and atomic third-level
+  rejection; target rotation/spread, exact timing/accuracy, controlled legacy
+  runtime, browser capture, and audiovisual parity remain open.
 - [x] Nuclear Plasma Rifle's delivered first-level chainfire contract has a
   deterministic direct-core/replay/MCP/BrowserSession boundary check covering
   four ordered events, fair observations, render effects, scene projections,
@@ -2166,15 +2170,22 @@ scripting.
   rotation/scatter routing, exact timing/accuracy, controlled runtime, browser
   capture, and audiovisual parity remain open. Gameplay semantics advance to
   `86`.
-- **M9 Plasma Rifle second-level chainfire (`0.2.279`):** The current bounded
-  slice extends the delivered four-projectile/four-cell chainfire with its
-  pinned warm-up level-one continuation: six ordered ranged projectiles,
-  six loaded cells, deterministic post-lethal no-op continuation slots, and
-  warm-up advancement to level two. Direct-core, reload-backed replay, MCP
-  legal-action/JSON, physical `C` routing, and BrowserSession parity plus
-  atomic third-level rejection are being verified; higher levels, target
+- **M9 Plasma Rifle second-level chainfire (`0.2.279`):** Plasma Rifle now
+  accepts its pinned warm-up level-one continuation: six ordered ranged
+  projectiles, six loaded cells, deterministic post-lethal no-op continuation
+  slots, and warm-up advancement to level two. Direct-core, reload-backed
+  replay, MCP legal-action/JSON, physical `C` routing, and BrowserSession
+  parity plus atomic third-level rejection are verified; higher levels, target
   rotation/scatter routing, exact timing/accuracy, controlled runtime, browser
-  capture, and audiovisual parity remain open. Gameplay semantics target `88`.
+  capture, and audiovisual parity remain open. Gameplay semantics advance to
+  `88`.
+- **M9 Laser Rifle second-level chainfire (active target `0.2.280`):** Extend
+  the typed Laser Rifle warm-up sequence with the pinned level-one formula
+  `shots = 5`, consuming five loaded cells and emitting five ordered ranged
+  outcomes while preserving atomic rejection, replay, MCP, physical `C`, and
+  BrowserSession boundaries. Third-and-later levels, target rotation/scatter
+  routing, exact timing/accuracy, controlled runtime, browser capture, and
+  audiovisual parity remain open; gameplay semantics target `89`.
 - **M9 BFG 10K radius-2 explosion fanout (`0.2.265`):** Successful BFG 10K
   hits now preserve their schedule metadata and immediately resolve the
   bounded actor-only radius-2 fanout in stable center/ring order, consuming one

@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.279`
+Current project version: `0.2.280`
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Plasma Rifle Second-Level Chainfire
+## 2. Active Implementation Slice: M9 — Laser Rifle Second-Level Chainfire
 
 ### 2.1 Objective
 
-Extend the delivered typed Plasma Rifle first-level chainfire command with the
+Extend the delivered typed Laser Rifle first-level chainfire command with the
 legacy-pinned second warm-up level. After an accepted four-projectile burst
 leaves the weapon at warm-up level one, a valid second-level command must emit
-six projectiles, charge six cells, preserve the existing ordered ranged attack
+five projectiles, charge five cells, preserve the existing ordered ranged attack
 behavior, and advance the warm-up state to level two.
 
 ### 2.1a Scope and steering gate
@@ -41,22 +41,22 @@ behavior, and advance the warm-up state to level two.
 - **Steering gates:** Gate A rejected-input safety and Gate B explicit replay
   compatibility remain active acceptance constraints; Gate C catalog ownership
   and Gate D typed behavior evidence remain closed for this bounded extension.
-- **Observable outcome:** A second-level Plasma Rifle chainfire command is
-  admitted only for a living visible target, a loaded clip of at least six
-  cells, and a weapon warm-up level of one. It consumes six cells, emits six
+- **Observable outcome:** A second-level Laser Rifle chainfire command is
+  admitted only for a living visible target, a loaded clip of at least five
+  cells, and a weapon warm-up level of one. It consumes five cells, emits five
   ordered ranged attack outcomes, preserves deterministic post-lethal no-op
   continuation slots, and advances warm-up to level two. Ordinary fire still
   resets the warm-up state, and the third level remains rejected atomically.
-- **Gameplay/replay impact:** Gameplay semantics advance from `87` to `88`;
+- **Gameplay/replay impact:** Gameplay semantics advance from `88` to `89`;
   replay wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.278` to `0.2.279`.
+  unchanged. Project version advances from `0.2.279` to `0.2.280`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary,
   typed projectile-count/cost policy and generic execution; `drl-protocol` owns
   the semantic `AttackRanged`/`AttackRangedAimed` commands and typed event
   projection, while replay/MCP and browser boundaries
   serialize and route it without duplicating gameplay rules.
-- **Evidence boundary:** Pinned Plasma Rifle item and chainfire evidence in
-  `docs/legacy-behavior/plasma-rifle-profile.md`, together with the
+- **Evidence boundary:** Pinned Laser Rifle item and chainfire evidence in
+  `docs/legacy-behavior/laser-rifle-profile.md`, together with the
   existing typed ranged contract and focused direct-core/replay/MCP/browser
   tests, are authoritative. Controlled legacy runtime, browser capture, and
   audiovisual comparisons remain `NOT_RUN`.
@@ -68,9 +68,9 @@ behavior, and advance the warm-up state to level two.
 
 ### 2.2 Why this slice is bounded
 
-The immutable Plasma Rifle profile, semantic command, and first-level
-transition already exist. This extension adds only one typed warm-up profile
-and its deterministic count/cost selection while reusing the
+The immutable Laser Rifle profile, semantic command, and first-level transition
+already exist. This extension adds only one typed warm-up profile and its
+deterministic count/cost selection while reusing the
 existing generic ranged, replay, MCP, browser, and transactional boundaries
 without adding a pending queue, new dispatcher, or callback system.
 
@@ -3753,17 +3753,42 @@ command with the pinned third warm-up level. Its contract was:
   browser capture, and audiovisual parity `NOT_RUN` where comparison evidence
   is unavailable.
 
-### 2.7ev Current Plasma Rifle second-level chainfire target
+### 2.7ev Historical Plasma Rifle second-level chainfire target
+
+The delivered `0.2.279` target extended the Plasma Rifle first-level chainfire
+command with the pinned second warm-up level. Its contract was:
+
+- [x] preserve the first-level four-projectile/four-cell contract and admit a
+  second command only while the weapon warm-up level is one and the target is
+  still a valid visible living actor;
+- [x] resolve the legacy level-one formula `shots = 6`, consuming exactly six
+  loaded cells for the six-projectile ranged volley;
+- [x] preserve ordered event output and deterministic post-lethal no-op
+  continuation slots without changing the existing ordinary-fire behavior;
+- [x] advance warm-up state to level two only after acceptance, keep ordinary
+  fire's reset behavior, and reject the third level without changing game,
+  clip, turn, or RNG state;
+- [x] preserve direct-core, replay, MCP legal-action/JSON, physical `C` key,
+  and BrowserSession event/state parity;
+- [x] advance project version from `0.2.278` to `0.2.279` and gameplay
+  semantics from `87` to `88` while preserving replay schema, RNG, generator,
+  and ruleset identities;
+- [x] keep third-and-later chainfire levels, legacy target rotation,
+  scatter/spread routing, exact timing/accuracy, controlled legacy runtime,
+  browser capture, and audiovisual parity `NOT_RUN` where comparison evidence
+  is unavailable.
+
+### 2.7ew Current Laser Rifle second-level chainfire target
 
 The bounded implementation target for this revision extends the delivered
-Plasma Rifle first-level chainfire command with the pinned second warm-up
-level. Its contract must:
+Laser Rifle first-level chainfire command with the pinned second warm-up level.
+Its contract must:
 
 - [ ] preserve the first-level four-projectile/four-cell contract and admit a
   second command only while the weapon warm-up level is one and the target is
   still a valid visible living actor;
-- [ ] resolve the legacy level-one formula `shots = 6`, consuming exactly six
-  loaded cells for the six-projectile ranged volley;
+- [ ] resolve the legacy level-one formula `shots = 5`, consuming exactly five
+  loaded cells for the five-projectile ranged volley;
 - [ ] preserve ordered event output and deterministic post-lethal no-op
   continuation slots without changing the existing ordinary-fire behavior;
 - [ ] advance warm-up state to level two only after acceptance, keep ordinary
@@ -3771,8 +3796,8 @@ level. Its contract must:
   clip, turn, or RNG state;
 - [ ] preserve direct-core, replay, MCP legal-action/JSON, physical `C` key,
   and BrowserSession event/state parity;
-- [ ] advance project version from `0.2.278` to `0.2.279` and gameplay
-  semantics from `87` to `88` while preserving replay schema, RNG, generator,
+- [ ] advance project version from `0.2.279` to `0.2.280` and gameplay
+  semantics from `88` to `89` while preserving replay schema, RNG, generator,
   and ruleset identities;
 - [ ] keep third-and-later chainfire levels, legacy target rotation,
   scatter/spread routing, exact timing/accuracy, controlled legacy runtime,
