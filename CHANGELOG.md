@@ -3,6 +3,17 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.275]
+
+- Extended Chaingun chainfire with the pinned second warm-up level: after the
+  first three-projectile burst, a second accepted command can consume four
+  rounds and emit four ordered ranged outcomes, advancing warm-up to level
+  two. Direct-core, replay, MCP legal-action/JSON, physical `C` routing, and
+  BrowserSession parity plus atomic third-level rejection are covered; later
+  levels, target routing, exact timing/accuracy, controlled runtime, browser
+  capture, and audiovisual parity remain deferred. Gameplay semantics advance
+  from `83` to `84`.
+
 ## [0.2.274]
 
 - Extended Nuclear Plasma Rifle chainfire with the pinned third warm-up level:

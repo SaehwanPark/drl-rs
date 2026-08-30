@@ -1,4 +1,4 @@
-//! Typed first-level chainfire state shared by rotary weapons.
+//! Typed chainfire state shared by rotary weapons.
 
 use crate::item::WeaponProperties;
 

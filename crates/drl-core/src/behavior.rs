@@ -636,6 +636,29 @@ pub const MINIGUN_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(MINIGUN_BEHAV
 
 /// Pinned projectile count for an ordinary Chaingun shot.
 pub const CHAINGUN_PROJECTILE_COUNT: u32 = 4;
+/// Pinned projectile count for the second Chaingun chainfire level.
+pub const CHAINGUN_SECOND_CHAINFIRE_PROJECTILE_COUNT: u32 = CHAINGUN_PROJECTILE_COUNT;
+/// Pinned 9mm cost for the second Chaingun chainfire level.
+pub const CHAINGUN_SECOND_CHAINFIRE_SHOT_COST: u32 = CHAINGUN_SECOND_CHAINFIRE_PROJECTILE_COUNT;
+
+/// Returns the bounded Chaingun chainfire profile for a warm-up level.
+///
+/// The legacy four-shot weapon emits three projectiles at level zero and its
+/// full four-projectile volley at level one; higher levels remain deferred.
+#[must_use]
+pub const fn chaingun_chainfire_profile(level: u8) -> Option<(u32, u32)> {
+  match level {
+    0 => Some((
+      crate::chaingun::CHAINGUN_CHAINFIRE_PROJECTILE_COUNT,
+      crate::chaingun::CHAINGUN_CHAINFIRE_SHOT_COST,
+    )),
+    1 => Some((
+      CHAINGUN_SECOND_CHAINFIRE_PROJECTILE_COUNT,
+      CHAINGUN_SECOND_CHAINFIRE_SHOT_COST,
+    )),
+    _ => None,
+  }
+}
 
 const CHAINGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
   BehaviorSpec::Attack(AttackEffect::ProjectileCount(CHAINGUN_PROJECTILE_COUNT)),
@@ -647,9 +670,14 @@ const CHAINGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
     shot_count: crate::chaingun::CHAINGUN_CHAINFIRE_PROJECTILE_COUNT,
     ammo_cost: crate::chaingun::CHAINGUN_CHAINFIRE_SHOT_COST,
   }),
+  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
+    level: 1,
+    shot_count: CHAINGUN_SECOND_CHAINFIRE_PROJECTILE_COUNT,
+    ammo_cost: CHAINGUN_SECOND_CHAINFIRE_SHOT_COST,
+  }),
 ];
 
-/// Immutable typed profile for the current Chaingun four-shot behavior.
+/// Immutable typed profile for the current Chaingun volley and chainfire behavior.
 pub const CHAINGUN_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(CHAINGUN_BEHAVIOR_SPECS);
 
 /// Pinned projectile count for an ordinary Laser Rifle shot.
@@ -1458,6 +1486,25 @@ mod tests {
   }
 
   #[test]
+  fn chaingun_chainfire_profile_matches_pinned_warmup_levels() {
+    assert_eq!(
+      chaingun_chainfire_profile(0),
+      Some((
+        crate::chaingun::CHAINGUN_CHAINFIRE_PROJECTILE_COUNT,
+        crate::chaingun::CHAINGUN_CHAINFIRE_SHOT_COST,
+      ))
+    );
+    assert_eq!(
+      chaingun_chainfire_profile(1),
+      Some((
+        CHAINGUN_SECOND_CHAINFIRE_PROJECTILE_COUNT,
+        CHAINGUN_SECOND_CHAINFIRE_SHOT_COST,
+      ))
+    );
+    assert_eq!(chaingun_chainfire_profile(2), None);
+  }
+
+  #[test]
   fn behavior_vocabulary_covers_explicit_trigger_categories() {
     const SPECS: &[BehaviorSpec] = &[
       BehaviorSpec::Passive(PassiveModifier {
@@ -1879,6 +1926,11 @@ mod tests {
         BehaviorSpec::Alternate(AlternateAction::Chainfire {
           shot_count: crate::chaingun::CHAINGUN_CHAINFIRE_PROJECTILE_COUNT,
           ammo_cost: crate::chaingun::CHAINGUN_CHAINFIRE_SHOT_COST,
+        }),
+        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
+          level: 1,
+          shot_count: CHAINGUN_SECOND_CHAINFIRE_PROJECTILE_COUNT,
+          ammo_cost: CHAINGUN_SECOND_CHAINFIRE_SHOT_COST,
         }),
       ]
     );
