@@ -3,6 +3,17 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.278]
+
+- Extended Minigun chainfire with the pinned third warm-up level: after the
+  first six- and second eight-projectile bursts, a third accepted command can
+  consume twelve 9mm rounds and emit twelve ordered ranged outcomes, advancing
+  warm-up to level three. Direct-core, replay, MCP legal-action/JSON, physical
+  `C` routing, and BrowserSession parity plus atomic fourth-level rejection are
+  covered; later levels, target routing, exact timing/accuracy, controlled
+  runtime, browser capture, and audiovisual parity remain deferred. Gameplay
+  semantics advance from `86` to `87`.
+
 ## [0.2.277]
 
 - Extended Minigun chainfire with the pinned second warm-up level: after the
