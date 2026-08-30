@@ -3,6 +3,18 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.306]
+
+- Extended Nuclear Plasma Rifle chainfire with the pinned seventh warm-up
+  level: after the four-, six-, and prior nine-projectile bursts, the seventh
+  command consumes nine cells and emits nine ordered ranged outcomes, advancing
+  warm-up to level seven. Recharge-backed ScenarioRunner/replay, direct-core,
+  MCP legal-action/JSON, physical `C`, and BrowserSession parity plus atomic
+  eighth-level and under-supply rejection are covered. Higher levels, overload
+  map effects, alternate routing, exact timing, controlled runtime, browser
+  capture, and audiovisual parity remain deferred. Gameplay semantics advance
+  from `114` to `115`.
+
 ## [0.2.305]
 
 - Extended BFG 10K chainfire with the pinned twenty-first warm-up level: after
