@@ -1210,6 +1210,60 @@ fn chaingun_fourth_chainfire_emits_six_projectiles_and_advances_state() {
 }
 
 #[test]
+fn chaingun_fifth_chainfire_emits_six_projectiles_and_advances_state() {
+  let (mut game, _weapon_id) = equipped_chaingun(2_249);
+  let target = Position::new(5, 2);
+  let target_id = game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 10_000, 0, (1, 6))
+    .unwrap();
+  let player_id = game.world().player_id().unwrap();
+  game
+    .step(Command::AttackRangedChainfire(target))
+    .expect("first chainfire burst should be accepted");
+  game
+    .step(Command::AttackRangedChainfire(target))
+    .expect("second chainfire burst should be accepted");
+  game
+    .step(Command::AttackRangedChainfire(target))
+    .expect("third chainfire burst should be accepted");
+  game
+    .step(Command::AttackRangedChainfire(target))
+    .expect("fourth chainfire burst should be accepted");
+
+  let fifth_events = game
+    .step(Command::AttackRangedChainfire(target))
+    .expect("fifth chainfire burst should be accepted");
+  let weapon_properties = game
+    .world()
+    .player()
+    .unwrap()
+    .equipment()
+    .weapon()
+    .unwrap()
+    .weapon_properties()
+    .unwrap();
+  assert_eq!(weapon_properties.current_clip, 15);
+  assert_eq!(weapon_properties.chainfire_level, 5);
+  assert_eq!(
+    fifth_events
+      .iter()
+      .filter(|event| matches!(
+        event,
+        GameEvent::AttackResolved {
+          attacker_id,
+          target_id: event_target,
+          is_ranged: true,
+          ..
+        } if *attacker_id == player_id && *event_target == target_id
+      ))
+      .count(),
+    6,
+    "Chaingun fifth chainfire must resolve six ordered projectiles"
+  );
+}
+
+#[test]
 fn chaingun_chainfire_keeps_three_outcomes_after_lethal_target() {
   let mut lethal_case = None;
 
@@ -1398,7 +1452,7 @@ fn chaingun_ordinary_fire_resets_chainfire_warmup() {
 }
 
 #[test]
-fn chaingun_fifth_chainfire_level_is_rejected_without_mutation() {
+fn chaingun_sixth_chainfire_level_is_rejected_without_mutation() {
   let (mut game, _weapon_id) = equipped_chaingun(2_244);
   let target = Position::new(5, 2);
   game
@@ -1417,6 +1471,9 @@ fn chaingun_fifth_chainfire_level_is_rejected_without_mutation() {
   game
     .step(Command::AttackRangedChainfire(target))
     .expect("fourth chainfire burst");
+  game
+    .step(Command::AttackRangedChainfire(target))
+    .expect("fifth chainfire burst");
   let before = game.clone();
 
   assert_eq!(
@@ -1445,6 +1502,41 @@ fn chaingun_fourth_chainfire_below_six_round_cost_rejection_is_atomic() {
   game
     .step(Command::AttackRangedChainfire(target))
     .expect("third chainfire burst");
+  let player_id = game.world().player_id().unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 5;
+  let before = game.clone();
+
+  assert_eq!(
+    game
+      .step(Command::AttackRangedChainfire(target))
+      .unwrap_err(),
+    CommandError::NoAmmoInClip
+  );
+  assert_eq!(game, before);
+}
+
+#[test]
+fn chaingun_fifth_chainfire_below_six_round_cost_rejection_is_atomic() {
+  let (mut game, _weapon_id) = equipped_chaingun(2_250);
+  let target = Position::new(5, 2);
+  game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 10_000, 0, (1, 6))
+    .unwrap();
+  for _ in 0..4 {
+    game
+      .step(Command::AttackRangedChainfire(target))
+      .expect("preceding chainfire burst");
+  }
   let player_id = game.world().player_id().unwrap();
   game
     .world_mut()
@@ -1712,6 +1804,54 @@ fn chaingun_chainfire_replay_preserves_fourth_level_deterministically() {
       ))
       .count(),
     19
+  );
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}
+
+#[test]
+fn chaingun_chainfire_replay_preserves_fifth_level_deterministically() {
+  let player_start = Position::new(5, 5);
+  let mut replay =
+    ReplayLog::new(2_250, 12, 12, player_start).with_player_config(PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: Vec::new(),
+      equipped_weapon: Some(ItemSpawnKind::Chaingun),
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    });
+  let target = Position::new(6, 5);
+  replay.record_monster(MonsterSpawnSpec::new(target, "Target", 10_000, 0, (1, 6)));
+  for _ in 0..5 {
+    replay.record_command(Command::AttackRangedChainfire(target));
+  }
+
+  let (game, events) =
+    ReplayEngine::run(&replay).expect("Chaingun fifth chainfire replay should run");
+  let weapon_properties = game
+    .world()
+    .player()
+    .unwrap()
+    .equipment()
+    .weapon()
+    .unwrap()
+    .weapon_properties()
+    .unwrap();
+  assert_eq!(weapon_properties.current_clip, 15);
+  assert_eq!(weapon_properties.chainfire_level, 5);
+  assert_eq!(
+    events
+      .iter()
+      .filter(|event| matches!(
+        event,
+        GameEvent::AttackResolved {
+          is_ranged: true,
+          ..
+        }
+      ))
+      .count(),
+    25
   );
   assert!(ReplayEngine::verify_determinism(&replay).unwrap());
 }
