@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.278`
+Current project version: `0.2.279`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.278)
+## 3. Current Progress Summary (`VERSION` 0.2.279)
 
 ### Delivered Foundations
 
@@ -1065,13 +1065,14 @@ verification item uses explicit status semantics:
   rotation/scatter routing, exact timing/accuracy, controlled runtime, browser
   capture, and audiovisual parity remain open. Gameplay semantics advance to
   `86`.
-- **M9 Minigun third-level chainfire (active target `0.2.278`):** Extend the
-  typed Minigun warm-up sequence with the pinned level-two formula
-  `8 + (8 div 2) = 12`, consuming twelve loaded 9mm rounds and emitting twelve
-  ordered outcomes while preserving atomic rejection, replay, MCP, physical
-  `C`, and BrowserSession boundaries. Fourth-and-later levels, target
+- **M9 Minigun third-level chainfire (`0.2.278`):** The typed Minigun warm-up
+  sequence now accepts the pinned level-two formula `8 + (8 div 2) = 12`,
+  consuming twelve loaded 9mm rounds and emitting twelve ordered outcomes
+  while preserving atomic rejection, replay, MCP, physical `C`, and
+  BrowserSession boundaries. Fourth-and-later levels, target
   rotation/scatter routing, exact timing/accuracy, controlled runtime, browser
-  capture, and audiovisual parity remain open; gameplay semantics target `87`.
+  capture, and audiovisual parity remain open; gameplay semantics advance to
+  `87`.
 - **M9 BFG 10K radius-2 explosion fanout (`0.2.265`):** Each successful BFG
   10K direct-target hit now preserves its schedule event and immediately
   resolves a deterministic actor-only radius-2 fanout: one `6d4` Plasma roll
@@ -1699,11 +1700,12 @@ scripting.
   remain authoritative while aimed fire, runtime, and audiovisual parity
   remain open.
 - [x] Plasma Rifle has an immutable behavior profile for its six-projectile
-  ordinary fire and one-cell-per-projectile cost plus a bounded first-level
-  four-projectile/four-cell chainfire transition; generic ranged execution
-  resolves the ordered ordinary and chainfire volleys and atomically rejects
-  clips below their aggregate costs, while higher levels, overcharge, runtime,
-  and audiovisual parity remain open.
+  ordinary fire and one-cell-per-projectile cost plus bounded first-level
+  four-projectile/four-cell and second-level six-projectile/six-cell chainfire
+  transitions; generic ranged execution resolves the ordered ordinary and
+  chainfire volleys and atomically rejects clips below their aggregate costs,
+  while higher levels, overcharge, runtime, and audiovisual parity remain
+  open.
 - [x] Laser Rifle has an immutable behavior profile for its five-projectile
   ordinary fire and one-cell-per-projectile cost plus a bounded first-level
   four-projectile/four-cell chainfire transition; generic ranged execution
@@ -1844,7 +1846,7 @@ scripting.
   and atomic under-supply rejection; third-and-later levels, target
   rotation/spread, exact timing/accuracy, controlled legacy runtime, browser
   capture, and audiovisual parity remain open.
-- [ ] Minigun's third-level chainfire contract extends the same boundary with
+- [x] Minigun's third-level chainfire contract extends the same boundary with
   the pinned twelve-projectile/twelve-round formula and atomic fourth-level
   rejection; target rotation/spread, exact timing/accuracy, controlled legacy
   runtime, browser capture, and audiovisual parity remain open.
@@ -1855,6 +1857,12 @@ scripting.
   atomic under-supply rejection; higher levels, Nuclear Plasma behavior, target
   rotation/spread, exact timing/accuracy, controlled legacy runtime, browser
   capture, and audiovisual parity remain open.
+- [ ] Plasma Rifle's second-level chainfire contract extends the same boundary
+  with the pinned six-projectile/six-cell formula, reload-backed clip evidence,
+  physical `C` routing, observable warm-up advancement/reset, and atomic
+  third-level rejection; target rotation/spread, exact timing/accuracy,
+  controlled legacy runtime, browser capture, and audiovisual parity remain
+  open.
 - [x] Laser Rifle's delivered first-level chainfire contract has a deterministic
   direct-core/replay/MCP/BrowserSession boundary check covering four ordered
   events, fair observations, render effects, scene projections, four-cell clip
@@ -2158,6 +2166,15 @@ scripting.
   rotation/scatter routing, exact timing/accuracy, controlled runtime, browser
   capture, and audiovisual parity remain open. Gameplay semantics advance to
   `86`.
+- **M9 Plasma Rifle second-level chainfire (`0.2.279`):** The current bounded
+  slice extends the delivered four-projectile/four-cell chainfire with its
+  pinned warm-up level-one continuation: six ordered ranged projectiles,
+  six loaded cells, deterministic post-lethal no-op continuation slots, and
+  warm-up advancement to level two. Direct-core, reload-backed replay, MCP
+  legal-action/JSON, physical `C` routing, and BrowserSession parity plus
+  atomic third-level rejection are being verified; higher levels, target
+  rotation/scatter routing, exact timing/accuracy, controlled runtime, browser
+  capture, and audiovisual parity remain open. Gameplay semantics target `88`.
 - **M9 BFG 10K radius-2 explosion fanout (`0.2.265`):** Successful BFG 10K
   hits now preserve their schedule metadata and immediately resolve the
   bounded actor-only radius-2 fanout in stable center/ring order, consuming one
