@@ -2967,6 +2967,18 @@ mod tests {
     session
       .step(second.command)
       .expect("second Laser Rifle chainfire action");
+    let third = compute_legal_actions(&session.get_observation().unwrap())
+      .into_iter()
+      .find(|action| action.action == "Chainfire")
+      .expect("third Laser Rifle chainfire should be advertised");
+    assert_eq!(
+      third.command,
+      Command::AttackRangedChainfire(Position::new(3, 1))
+    );
+    assert!(third.description.contains("7 projectiles, 7 rounds"));
+    session
+      .step(third.command)
+      .expect("third Laser Rifle chainfire action");
     assert!(
       !compute_legal_actions(&session.get_observation().unwrap())
         .iter()
@@ -4720,12 +4732,71 @@ mod tests {
         .chainfire_level,
       2
     );
+    expected_events.extend(second_events);
+
+    let third_command = Command::AttackRangedChainfire(target_position);
+    assert!(
+      compute_legal_actions(&direct.observe_player())
+        .iter()
+        .any(|action| action.command == third_command)
+    );
+    let third_expected_events = direct
+      .step(third_command)
+      .expect("direct third Laser Rifle chainfire command");
+    let (third_events, third_observation, third_outcome) = session
+      .step(third_command)
+      .expect("MCP third Laser Rifle chainfire command");
+    assert_eq!(third_events, third_expected_events);
+    assert_eq!(session.game.as_ref().unwrap(), &direct);
+    assert_eq!(third_observation, direct.observe_player());
+    assert_eq!(third_outcome, None);
+    assert_eq!(
+      third_events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          GameEvent::AttackResolved {
+            attacker_id,
+            target_id: event_target,
+            is_ranged: true,
+            ..
+          } if *attacker_id == player_id && *event_target == target_id
+        ))
+        .count(),
+      7
+    );
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .current_clip,
+      24
+    );
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .chainfire_level,
+      3
+    );
     assert!(
       !compute_legal_actions(&direct.observe_player())
         .iter()
         .any(|action| action.action == "Chainfire")
     );
-    expected_events.extend(second_events);
+    expected_events.extend(third_events);
 
     let replay = session.export_replay().expect("MCP replay export");
     let (replayed, replay_events) =

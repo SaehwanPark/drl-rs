@@ -1,7 +1,7 @@
 # Laser Rifle typed behavior-profile evidence
 
-Status: delivered typed ordinary-fire five-shot profile and first- and
-second-level chainfire execution in `0.2.280`; higher chainfire levels,
+Status: delivered typed ordinary-fire five-shot profile and first-, second-,
+and third-level chainfire execution in `0.2.281`; higher chainfire levels,
 spread/routing, controlled legacy runtime comparison, and audiovisual parity
 remain `NOT_RUN`.
 
@@ -21,8 +21,8 @@ Evidence is pinned to revision
   least one and multiplies it by the resolved shot count before firing.
 - `src/dfbeing.pas:1477-1491` resolves ordinary fire to five projectiles and
   the chainfire warm-up formula: level zero uses `5 - (5 div 3) = 4`, level
-  one keeps `5`, and level two and later add `5 div 2`; chainfire adjustments
-  require alternate fire.
+  one keeps `5`, and level two and later add `5 div 2 = 2` to produce seven;
+  chainfire adjustments require alternate fire.
 - `src/dfbeing.pas:1496-1514` checks and debits the aggregate ammunition cost
   before emitting the ordered projectile loop at `:498-510`.
 
@@ -30,13 +30,14 @@ Evidence is pinned to revision
 
 The immutable `drl_core::behavior::LASER_RIFLE_BEHAVIOR` profile records
 ordered `AttackEffect::ProjectileCount(5)`, one-cell ordinary cost, and
-`AlternateAction::Chainfire` fragments for four/four and five/five projectile/
-cell levels. The existing ranged command path remains execution authority for
+`AlternateAction::Chainfire` fragments for four/four, five/five, and seven/seven
+projectile/cell levels. The existing ranged command path remains execution
+authority for
 target/LOS/range and death-drop preflight, damage RNG, event ordering, and
 transactional clip consumption. Direct integration tests verify five ordered
-ordinary events, four- and five-ordered chainfire events, four- and five-cell
-chainfire consumption, atomic below-cost rejection, warm-up reset/advancement,
-and deterministic replay.
+ordinary events, four-, five-, and seven-ordered chainfire events, four-, five-,
+and seven-cell chainfire consumption, atomic below-cost rejection, warm-up
+reset/advancement, and deterministic replay.
 
 Higher chainfire levels, the legacy alternate perk's exact routing, timing,
 and accuracy, controlled runtime comparison, and audiovisual parity remain
