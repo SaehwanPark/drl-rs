@@ -5924,7 +5924,7 @@ mod tests {
       hp: 50,
       max_hp: 50,
       speed: 100,
-      initial_items: vec![ItemSpawnKind::Ammo9mm(10)],
+      initial_items: vec![ItemSpawnKind::Ammo9mm(40)],
       equipped_weapon: Some(ItemSpawnKind::Chaingun),
       equipped_armor: None,
       equipped_armor_durability: None,
@@ -6240,8 +6240,87 @@ mod tests {
       .expect("Chaingun");
     assert_eq!(chaingun.chainfire_level, 7);
     assert_eq!(chaingun.clip, Some((3, 40)));
+    let reload_command = Command::Reload;
     assert_eq!(
-      BrowserSession::command_for_key("C", &seventh_step.after),
+      BrowserSession::command_for_key("r", &seventh_step.after),
+      Some(reload_command)
+    );
+    let reload_expected_events = direct
+      .step(reload_command)
+      .expect("direct Chaingun chainfire reload");
+    let reload_step = browser
+      .submit(reload_command)
+      .expect("browser Chaingun chainfire reload");
+    assert_eq!(reload_step.events, reload_expected_events);
+    assert_eq!(reload_step.after, direct.observe_player());
+    assert_eq!(
+      reload_step.effects,
+      effect_timeline_for_observations(
+        &reload_step.before,
+        &reload_step.after,
+        &reload_expected_events,
+      )
+    );
+    assert_eq!(
+      browser.scene(),
+      RenderScene::from_observation(&reload_step.after)
+    );
+    assert!(reload_expected_events.iter().any(|event| matches!(
+      event,
+      drl_protocol::GameEvent::WeaponReloaded {
+        ammo_loaded: 37,
+        current_clip: 40,
+        max_clip: 40,
+        ..
+      }
+    )));
+    let eighth_command = Command::AttackRangedChainfire(target_position);
+    assert_eq!(
+      BrowserSession::command_for_key("C", &reload_step.after),
+      Some(eighth_command)
+    );
+    let eighth_expected_events = direct
+      .step(eighth_command)
+      .expect("direct eighth Chaingun chainfire command");
+    let eighth_step = browser
+      .submit(eighth_command)
+      .expect("browser eighth Chaingun chainfire command");
+    assert_eq!(eighth_step.events, eighth_expected_events);
+    assert_eq!(eighth_step.after, direct.observe_player());
+    assert_eq!(
+      eighth_step.effects,
+      effect_timeline_for_observations(
+        &eighth_step.before,
+        &eighth_step.after,
+        &eighth_expected_events,
+      )
+    );
+    assert_eq!(
+      browser.scene(),
+      RenderScene::from_observation(&eighth_step.after)
+    );
+    assert_eq!(
+      eighth_expected_events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          drl_protocol::GameEvent::AttackResolved {
+            is_ranged: true,
+            ..
+          }
+        ))
+        .count(),
+      6
+    );
+    let chaingun = eighth_step
+      .after
+      .equipped_weapon
+      .as_ref()
+      .expect("Chaingun");
+    assert_eq!(chaingun.chainfire_level, 8);
+    assert_eq!(chaingun.clip, Some((34, 40)));
+    assert_eq!(
+      BrowserSession::command_for_key("C", &eighth_step.after),
       None
     );
     expected_events.extend(third_expected_events);
@@ -6249,6 +6328,8 @@ mod tests {
     expected_events.extend(fifth_expected_events);
     expected_events.extend(sixth_expected_events);
     expected_events.extend(seventh_expected_events);
+    expected_events.extend(reload_expected_events);
+    expected_events.extend(eighth_expected_events);
     let mut command_replay = setup_replay;
     command_replay.record_command(command);
     command_replay.record_command(second_command);
@@ -6257,6 +6338,8 @@ mod tests {
     command_replay.record_command(fifth_command);
     command_replay.record_command(sixth_command);
     command_replay.record_command(seventh_command);
+    command_replay.record_command(reload_command);
+    command_replay.record_command(eighth_command);
     let (replayed, replay_events) =
       drl_core::ReplayEngine::run(&command_replay).expect("vertical command replay");
     assert_eq!(replay_events, expected_events);
