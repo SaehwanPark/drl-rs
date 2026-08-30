@@ -1,4 +1,4 @@
-//! Typed first-level Chaingun alternate chainfire behavior.
+//! Typed first-level chainfire state shared by rotary weapons.
 
 use crate::item::WeaponProperties;
 
@@ -7,10 +7,10 @@ pub const CHAINGUN_CHAINFIRE_PROJECTILE_COUNT: u32 = 3;
 /// Number of 9mm rounds consumed by the first chainfire burst.
 pub const CHAINGUN_CHAINFIRE_SHOT_COST: u32 = 3;
 
-/// Pure state transition for the bounded Chaingun chainfire slice.
-pub struct ChaingunTransition;
+/// Pure state transition for bounded first-level chainfire slices.
+pub struct ChainfireTransition;
 
-impl ChaingunTransition {
+impl ChainfireTransition {
   /// Returns whether the first chainfire burst is currently available.
   #[must_use]
   pub const fn can_chainfire(properties: &WeaponProperties) -> bool {
@@ -27,6 +27,11 @@ impl ChaingunTransition {
     properties.chainfire_level = 0;
   }
 }
+
+/// Backwards-compatible name for callers that use the original Chaingun slice.
+pub type ChaingunTransition = ChainfireTransition;
+/// Explicit name for Minigun's shared first-level chainfire state transition.
+pub type MinigunTransition = ChainfireTransition;
 
 #[cfg(test)]
 mod tests {
@@ -54,11 +59,11 @@ mod tests {
   #[test]
   fn advances_only_after_an_accepted_burst_and_can_reset() {
     let mut properties = weapon();
-    assert!(ChaingunTransition::can_chainfire(&properties));
-    ChaingunTransition::advance(&mut properties);
+    assert!(ChainfireTransition::can_chainfire(&properties));
+    ChainfireTransition::advance(&mut properties);
     assert_eq!(properties.chainfire_level, 1);
-    assert!(!ChaingunTransition::can_chainfire(&properties));
-    ChaingunTransition::reset(&mut properties);
+    assert!(!ChainfireTransition::can_chainfire(&properties));
+    ChainfireTransition::reset(&mut properties);
     assert_eq!(properties.chainfire_level, 0);
     assert!(ChaingunTransition::can_chainfire(&properties));
   }

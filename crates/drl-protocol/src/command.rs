@@ -15,7 +15,7 @@ pub enum Command {
   AttackRanged(Position),
   /// Direct aimed ranged attack targeting a grid position.
   AttackRangedAimed(Position),
-  /// First-level Chaingun alternate chainfire targeting a grid position.
+  /// First-level rotary-weapon alternate chainfire targeting a grid position.
   AttackRangedChainfire(Position),
   /// Wait in place for one turn.
   Wait,

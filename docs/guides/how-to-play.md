@@ -20,10 +20,11 @@ description: "Comprehensive gameplay manual covering movement, targeting, combat
 | **Move Diagonal NW** | `Q` | `7` / `Y` | Step north-west |
 | **Move Diagonal NE** | `E` | `9` / `U` | Step north-east |
 | **Move Diagonal SW** | `Z` | `1` / `B` | Step south-west |
-| **Move Diagonal SE** | `C` | `3` / `N` | Step south-east |
+| **Move Diagonal SE** | — | `3` / `N` | Step south-east |
 | **Wait Turn** | `.` / `Space` | `5` | Pass one turn (100 energy units) |
 | **Target & Fire** | `F` -> `Enter` | `F` | Target nearest enemy and fire |
 | **Aimed Fire** | `Shift` + `F` | — | Precise aimed shot (+3 accuracy, 2× time) |
+| **First-Level Chainfire** | `C` | — | Fire the available Chaingun/Minigun burst (3 or 6 projectiles) |
 | **Reload Weapon** | `R` | `R` | Reload equipped ranged weapon |
 | **Pick Up Item** | `G` / `,` | `G` | Pick up weapon, ammo, or item on ground |
 | **Descend Stairs** | `>` / `.` | `>` | Take the exit stairs to next floor |

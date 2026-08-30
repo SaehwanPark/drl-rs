@@ -23,8 +23,8 @@ description: "Comprehensive armory encyclopedia: ballistic firearms, energy weap
 - **Assault Shotgun**: Full-auto drum-fed combat shotgun with rapid clearing capabilities.
 
 ### 3. Rapid-Fire Ballistic Weapons
-- **Chaingun**: 4-round burst 9mm rotary weapon. Excellent mid-range suppression against swarms. Supports first-level chainfire burst mode.
-- **Minigun**: Heavy 8-barrel rotary machine gun. Chews through ammo at 8 rounds per salvo, devastating open combat corridors.
+- **Chaingun**: 4-round burst 9mm rotary weapon. Excellent mid-range suppression against swarms. Supports a first-level 3-projectile chainfire burst.
+- **Minigun**: Heavy 8-barrel rotary machine gun. Chews through ammo at 8 rounds per salvo, with a first-level 6-projectile chainfire burst for open combat corridors.
 
 ### 4. Heavy Rocket & Explosive Launchers
 - **Rocket Launcher**: High-explosive ordnance firing single rockets with a radius-2 explosive splash.

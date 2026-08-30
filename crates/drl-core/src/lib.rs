@@ -95,7 +95,8 @@ pub use behavior::{
   WeaponRechargeState,
 };
 pub use chaingun::{
-  CHAINGUN_CHAINFIRE_PROJECTILE_COUNT, CHAINGUN_CHAINFIRE_SHOT_COST, ChaingunTransition,
+  CHAINGUN_CHAINFIRE_PROJECTILE_COUNT, CHAINGUN_CHAINFIRE_SHOT_COST, ChainfireTransition,
+  ChaingunTransition, MinigunTransition,
 };
 pub use combat::CombatResolver;
 pub use combat_shotgun::COMBAT_SHOTGUN_ALT_RELOAD_CAP;

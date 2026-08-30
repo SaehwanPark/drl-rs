@@ -257,7 +257,7 @@ pub struct ItemView {
   pub armor_value: Option<u32>,
   pub heal_amount: Option<u32>,
   pub knockback: Option<u32>,
-  /// Typed Chaingun chainfire warm-up level (zero when unavailable).
+  /// Typed rotary-weapon chainfire warm-up level (zero when unavailable).
   pub chainfire_level: u8,
 }
 

@@ -33,7 +33,7 @@ pub struct WeaponProperties {
   pub exact_hit: bool,
   /// Typed alternate-fire mode; ordinary weapons remain `Single`.
   pub fire_mode: WeaponFireMode,
-  /// Typed Chaingun alternate-fire warm-up state; zero means first burst.
+  /// Typed rotary-weapon alternate-fire warm-up state; zero means first burst.
   pub chainfire_level: u8,
 }
 

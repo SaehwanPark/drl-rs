@@ -5,7 +5,10 @@ use crate::replay_json::MAX_REPLAY_DIMENSION;
 use drl_core::generator::LevelGeneratorConfig;
 use drl_core::grid::Tile;
 use drl_core::scenario::Scenario;
-use drl_core::{Game, ReplayEngine};
+use drl_core::{
+  CHAINGUN_CHAINFIRE_PROJECTILE_COUNT, CHAINGUN_CHAINFIRE_SHOT_COST, Game,
+  MINIGUN_CHAINFIRE_PROJECTILE_COUNT, MINIGUN_CHAINFIRE_SHOT_COST, ReplayEngine,
+};
 use drl_protocol::{
   Command, Direction, EpisodeMetrics, EquipmentSlot, GameEvent, ItemArchetype, ItemCategory,
   ItemId, ItemView, OmniscientObservation, PlayerObservation, Position, ProceduralGenerationConfig,
@@ -24,6 +27,20 @@ pub struct LegalAction {
   pub command: Command,
   /// Structured parameters representation for MCP tool arguments.
   pub params: JsonValue,
+}
+
+fn first_level_chainfire_profile(archetype: ItemArchetype) -> Option<(u32, u32)> {
+  match archetype {
+    ItemArchetype::Chaingun => Some((
+      CHAINGUN_CHAINFIRE_PROJECTILE_COUNT,
+      CHAINGUN_CHAINFIRE_SHOT_COST,
+    )),
+    ItemArchetype::Minigun => Some((
+      MINIGUN_CHAINFIRE_PROJECTILE_COUNT,
+      MINIGUN_CHAINFIRE_SHOT_COST,
+    )),
+    _ => None,
+  }
 }
 
 impl LegalAction {
@@ -137,9 +154,10 @@ pub fn compute_legal_actions(obs: &PlayerObservation) -> Vec<LegalAction> {
             params: JsonValue::Object(p),
           });
 
-          if weapon.archetype == ItemArchetype::Chaingun
+          if let Some((projectile_count, ammo_cost)) =
+            first_level_chainfire_profile(weapon.archetype)
             && weapon.chainfire_level == 0
-            && weapon.clip.is_some_and(|(loaded, _)| loaded >= 3)
+            && weapon.clip.is_some_and(|(loaded, _)| loaded >= ammo_cost)
           {
             let mut chainfire_params = BTreeMap::new();
             chainfire_params.insert("action".to_string(), JsonValue::from("chainfire"));
@@ -148,7 +166,7 @@ pub fn compute_legal_actions(obs: &PlayerObservation) -> Vec<LegalAction> {
             actions.push(LegalAction {
               action: "Chainfire".to_string(),
               description: format!(
-                "Chainfire {} at {} at ({}, {}) (3 projectiles, 3 rounds)",
+                "Chainfire {} at {} at ({}, {}) ({projectile_count} projectiles, {ammo_cost} rounds)",
                 weapon.name, actor.name, actor.position.x, actor.position.y
               ),
               command: Command::AttackRangedChainfire(actor.position),
@@ -2466,6 +2484,45 @@ mod tests {
       chainfire.command,
       Command::AttackRangedChainfire(Position::new(3, 1))
     );
+    session.step(chainfire.command).expect("chainfire action");
+    assert!(
+      !compute_legal_actions(&session.get_observation().unwrap())
+        .iter()
+        .any(|action| action.action == "Chainfire")
+    );
+  }
+
+  #[test]
+  fn test_legal_action_catalog_advertises_first_minigun_chainfire_only_once() {
+    let mut session = McpSession::new();
+    session
+      .load_scenario("\n#######\n#@.h..#\n#######\n", None)
+      .unwrap();
+    let player_id = session.game.as_ref().unwrap().world().player_id().unwrap();
+    session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .get_actor_mut(player_id)
+      .unwrap()
+      .equipment_mut()
+      .equip(
+        EquipmentSlot::Weapon,
+        drl_core::item::Item::minigun(ItemId::new(100)),
+      )
+      .unwrap();
+
+    let observation = session.get_observation().unwrap();
+    let chainfire = compute_legal_actions(&observation)
+      .into_iter()
+      .find(|action| action.action == "Chainfire")
+      .expect("first Minigun chainfire should be advertised");
+    assert_eq!(
+      chainfire.command,
+      Command::AttackRangedChainfire(Position::new(3, 1))
+    );
+    assert!(chainfire.description.contains("6 projectiles, 6 rounds"));
     session.step(chainfire.command).expect("chainfire action");
     assert!(
       !compute_legal_actions(&session.get_observation().unwrap())
