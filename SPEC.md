@@ -32,8 +32,8 @@ contracts, acceptance criteria, and verification boundaries.
 Extend the delivered typed BFG 10K first-, second-, third-, fourth-, fifth-,
 sixth-, and seventh-level chainfire commands with the legacy-pinned eighth
 warm-up level. After accepted four-, five-, and seven-projectile bursts leave
-the weapon at warm-up level seven, a valid eighth-level command must emit seven ordered
-exact-hit ranged projectiles, consume thirty-five cells, preserve the existing
+the weapon at warm-up level seven, a valid eighth-level command must emit seven
+ordered exact-hit ranged projectiles, consume thirty-five cells, preserve the existing
 delayed-explosion metadata, and advance the warm-up state to level eight.
 
 ### 2.1a Scope and steering gate
@@ -73,8 +73,9 @@ delayed-explosion metadata, and advance the warm-up state to level eight.
 ### 2.2 Why this slice is bounded
 
 The immutable BFG 10K profile, semantic command, and first-, second-, third-,
-fourth-, fifth-, sixth-, and seventh-level transitions already exist. This extension adds
-only one typed warm-up profile and its deterministic count/cost selection while
+fourth-, fifth-, sixth-, and seventh-level transitions already exist. This
+extension adds only one typed warm-up profile and its deterministic count/cost
+selection while
 reusing the existing generic ranged, reload-backed replay, MCP, browser, and
 transactional boundaries without adding a pending queue, new dispatcher, or
 callback system.
