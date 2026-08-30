@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
-Last reviewed: 2026-08-29
-Current project version: `0.2.268`
+Last reviewed: 2026-08-30
+Current project version: `0.2.269`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.268)
+## 3. Current Progress Summary (`VERSION` 0.2.269)
 
 ### Delivered Foundations
 
@@ -1015,6 +1015,16 @@ verification item uses explicit status semantics:
   strict-threshold and RNG tests are covered; splash immunity, routing,
   controlled runtime, browser capture, and audiovisual parity remain open.
   Gameplay semantics advance to `75`.
+- **M9 Standard BFG 9000 ground-item destruction (`0.2.269`):** Successful
+  standard BFG hits now preserve their schedule and actor fanout while each
+  clear radius-8 blast cell consumes one `10d6` Plasma roll. When the roll is
+  greater than `10`, the lowest-ID ordinary ground item on that cell is
+  removed after actor processing and before lethal follow-up. Direct-core,
+  replay, MCP, and BrowserSession parity plus strict-threshold, lowest-ID,
+  RNG, and event-order coverage are verified; Nuclear BFG ground items,
+  secondary chains, terrain/content mutation, delayed timing, routing,
+  controlled runtime, browser capture, and audiovisual parity remain open.
+  Gameplay semantics advance to `78`.
 - **M9 Nuclear BFG 9000 radius-8 actor fanout (`0.2.268`):** Each successful
   direct-target hit now preserves its delay-33/radius-8/knockback-16 schedule
   event and immediately resolves a deterministic actor-only radius-8 fanout:
@@ -1034,7 +1044,7 @@ verification item uses explicit status semantics:
   damage, actor de-duplication, and normal death/drop/game-over follow-up.
   Direct-core, replay, MCP, and BrowserSession parity plus RNG and atomic
   preflight coverage are verified; Nuclear BFG fanout, secondary chains,
-  terrain/content and ground-item effects, delayed timing, routing, controlled
+  terrain/content effects, delayed timing, routing, controlled
   runtime, browser capture, and audiovisual parity remain open. Gameplay
   semantics advance to `76`.
 - **M9 Trigun aimed-fire vertical fidelity (`0.2.248`):** The shared typed
@@ -1549,9 +1559,16 @@ scripting.
   per clear cell, source self-safety, radial integer `damage / 16` knockback,
   actor de-duplication, and normal death/drop/game-over follow-up. Direct-core,
   ScenarioRunner/replay, MCP, BrowserSession, and deterministic parity
-  evidence are covered; Nuclear BFG secondary chains, terrain/content and
-  ground-item effects, delayed timing, routing, runtime, and audiovisual parity
-  remain open.
+  evidence are covered; Nuclear BFG secondary chains, terrain/content,
+  delayed timing, routing, runtime, and audiovisual parity remain open.
+- [x] Standard BFG 9000 ground-item destruction removes at most the lowest-ID
+  ordinary ground item on each clear radius-8 blast cell when its `10d6` Plasma
+  roll is strictly greater than `10`, after actor processing and before lethal
+  death/drop follow-up. Direct-core, ScenarioRunner/replay, MCP,
+  BrowserSession, strict-threshold, lowest-ID, RNG, and event-order evidence
+  are covered; Nuclear BFG ground items, secondary chains, terrain/content
+  mutation, delayed timing, routing, runtime, and audiovisual parity remain
+  open.
 - [x] Nuclear BFG 9000 direct-target fire emits one ordered delayed-explosion
   schedule event carrying delay `33`, radius `8`, and knockback `16`, then
   resolves the bounded actor-only radius-8 fanout with one `8d6` Plasma roll
@@ -1959,6 +1976,15 @@ scripting.
   terrain/content effects, non-ammunition item destruction, splash immunity,
   scatter/routing, controlled runtime, browser capture, and audiovisual parity
   remain open. Gameplay semantics advance to `75`.
+- **M9 Standard BFG 9000 ground-item destruction (`0.2.269`):** Each
+  successful standard BFG hit now removes at most one lowest-ID ordinary ground
+  item on a clear radius-8 blast cell when its `10d6` Plasma roll exceeds `10`,
+  emitting `GroundItemDestroyed` after actor processing and before lethal
+  follow-up. Direct-core, replay, MCP, and BrowserSession parity plus strict
+  threshold, lowest-ID, RNG, and event-order evidence are verified; Nuclear
+  BFG ground items, secondary chains, terrain/content mutation, delayed timing,
+  routing, controlled runtime, browser capture, and audiovisual parity remain
+  open. Gameplay semantics advance to `78`.
 - **M9 Nuclear BFG 9000 radius-8 actor fanout (`0.2.268`):** Successful
   Nuclear BFG hits now preserve schedule metadata and immediately resolve
   stable line-of-sight-cleared radius-8 actor cells with one `8d6` Plasma
@@ -1974,7 +2000,7 @@ scripting.
   roll per cell, skipping the firing actor and applying radial integer
   `damage / 16` knockback before environmental damage. Lethal follow-up,
   replay determinism, MCP, and BrowserSession parity are verified; Nuclear
-  BFG secondary chains, terrain/content and ground-item effects,
+  BFG secondary chains, terrain/content effects,
   delayed timing, routing, controlled runtime, browser capture, and
   audiovisual parity remain open. Gameplay semantics advance to `76`.
 - [x] Typed `umega`, `uberetta`, and `ufshotgun` preserve pinned unique-firearm

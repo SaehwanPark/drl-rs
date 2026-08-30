@@ -3,6 +3,18 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.269]
+
+- Extended the Standard BFG 9000's bounded radius-8 fanout with its
+  legacy-pinned ground-item effect. When a clear-cell `10d6` Plasma roll is
+  strictly greater than `10`, the lowest-ID ordinary ground item on that cell
+  is removed after actor processing and before lethal death/drop follow-up.
+  Direct-core, replay, MCP, and BrowserSession parity plus strict-threshold,
+  lowest-ID, RNG, and event-order coverage are verified. Nuclear BFG ground
+  items, secondary chains, terrain/content mutation, delayed timing, routing,
+  controlled runtime, browser capture, and audiovisual parity remain deferred.
+  Gameplay semantics advance from `77` to `78`.
+
 ## [0.2.268]
 
 - Extended the Nuclear BFG 9000's delayed-explosion schedule with a bounded

@@ -4538,6 +4538,10 @@ mod tests {
       1,
       (2, 4),
     ));
+    setup_replay.record_item(drl_protocol::ItemSpawnSpec::new(
+      target_position,
+      drl_protocol::ItemSpawnKind::SmallMedPack,
+    ));
 
     let mut session = McpSession::new();
     session
@@ -4585,6 +4589,30 @@ mod tests {
       1,
       "MCP standard BFG splash must damage the second actor exactly once"
     );
+    let splash_damage_index = events
+      .iter()
+      .position(|event| {
+        matches!(
+          event,
+          GameEvent::DamageApplied {
+            target_id: event_target,
+            source: drl_protocol::DamageSource::Environment,
+            damage_type: Some(drl_protocol::DamageType::Plasma),
+            ..
+          } if *event_target == target_id
+        )
+      })
+      .expect("MCP standard BFG center actor should receive splash damage");
+    let destroyed_index = events
+      .iter()
+      .position(|event| {
+        matches!(
+          event,
+          GameEvent::GroundItemDestroyed { position, .. } if *position == target_position
+        )
+      })
+      .expect("MCP standard BFG should destroy the center ground item");
+    assert!(splash_damage_index < destroyed_index);
 
     assert_eq!(events, expected_events);
     assert_eq!(session.game.as_ref().unwrap(), &direct);

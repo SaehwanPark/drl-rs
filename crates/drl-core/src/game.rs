@@ -29,7 +29,8 @@ use crate::bfg10k::{
   radius_two_blast_positions, roll_explosion_damage,
 };
 use crate::bfg9000::{
-  radius_eight_blast_positions, roll_explosion_damage as roll_bfg9000_explosion_damage,
+  BFG9000_GROUND_ITEM_DESTRUCTION_THRESHOLD, radius_eight_blast_positions,
+  roll_explosion_damage as roll_bfg9000_explosion_damage,
 };
 use crate::chaingun::{CHAINGUN_CHAINFIRE_PROJECTILE_COUNT, ChainfireTransition};
 use crate::combat::CombatResolver;
@@ -83,7 +84,15 @@ pub struct Game {
 struct ActorSplashPolicy {
   roll_damage: fn(&mut GameRng) -> u32,
   source_self_safe: bool,
-  ground_item_threshold: Option<u32>,
+  ground_item: GroundItemSplashPolicy,
+}
+
+/// Typed ground-item policy applied after each blast cell's actor processing.
+#[derive(Clone, Copy)]
+enum GroundItemSplashPolicy {
+  None,
+  LooseAmmo { threshold: u32 },
+  Any { threshold: u32 },
 }
 
 impl Game {
@@ -2380,7 +2389,9 @@ impl Game {
       ActorSplashPolicy {
         roll_damage: roll_explosion_damage,
         source_self_safe: false,
-        ground_item_threshold: Some(BFG10K_GROUND_ITEM_DESTRUCTION_THRESHOLD),
+        ground_item: GroundItemSplashPolicy::LooseAmmo {
+          threshold: BFG10K_GROUND_ITEM_DESTRUCTION_THRESHOLD,
+        },
       },
       events,
     )
@@ -2400,7 +2411,9 @@ impl Game {
       ActorSplashPolicy {
         roll_damage: roll_bfg9000_explosion_damage,
         source_self_safe: true,
-        ground_item_threshold: None,
+        ground_item: GroundItemSplashPolicy::Any {
+          threshold: BFG9000_GROUND_ITEM_DESTRUCTION_THRESHOLD,
+        },
       },
       events,
     )
@@ -2420,13 +2433,13 @@ impl Game {
       ActorSplashPolicy {
         roll_damage: roll_nuclear_bfg9000_explosion_damage,
         source_self_safe: true,
-        ground_item_threshold: None,
+        ground_item: GroundItemSplashPolicy::None,
       },
       events,
     )
   }
 
-  /// Resolves a deterministic actor-only blast with an optional ground-item rule.
+  /// Resolves a deterministic blast with an optional typed ground-item rule.
   fn execute_actor_splash(
     &mut self,
     source_id: drl_protocol::EntityId,
@@ -2483,11 +2496,17 @@ impl Game {
         lethal_target = lethal.then_some((target_id, death_cause));
       }
 
-      if policy
-        .ground_item_threshold
-        .is_some_and(|threshold| damage > threshold)
-        && let Some(item_id) = self.state.world.destroy_ground_ammo_at(blast_position)
-      {
+      let destroyed_item = match policy.ground_item {
+        GroundItemSplashPolicy::None => None,
+        GroundItemSplashPolicy::LooseAmmo { threshold } if damage > threshold => {
+          self.state.world.destroy_ground_ammo_at(blast_position)
+        }
+        GroundItemSplashPolicy::Any { threshold } if damage > threshold => {
+          self.state.world.destroy_ground_item_at(blast_position)
+        }
+        GroundItemSplashPolicy::LooseAmmo { .. } | GroundItemSplashPolicy::Any { .. } => None,
+      };
+      if let Some(item_id) = destroyed_item {
         events.push(GameEvent::GroundItemDestroyed {
           item_id,
           position: blast_position,

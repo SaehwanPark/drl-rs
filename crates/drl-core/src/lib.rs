@@ -109,7 +109,9 @@ pub use bfg10k::{
   roll_explosion_damage, should_destroy_bfg10k_ground_item,
 };
 pub use bfg9000::{
-  BFG9000_EXPLOSION_DAMAGE_DICE, BFG9000_EXPLOSION_DAMAGE_DIE_SIDES, radius_eight_blast_positions,
+  BFG9000_EXPLOSION_DAMAGE_DICE, BFG9000_EXPLOSION_DAMAGE_DIE_SIDES,
+  BFG9000_GROUND_ITEM_DESTRUCTION_THRESHOLD, radius_eight_blast_positions,
+  should_destroy_bfg9000_ground_item,
 };
 pub use chaingun::{
   CHAINGUN_CHAINFIRE_PROJECTILE_COUNT, CHAINGUN_CHAINFIRE_SHOT_COST, ChainfireTransition,

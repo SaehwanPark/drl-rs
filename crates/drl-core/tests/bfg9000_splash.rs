@@ -36,7 +36,7 @@ fn environment_damage_for(events: &[GameEvent], target_id: drl_protocol::EntityI
 }
 
 #[test]
-fn bfg9000_radius_eight_splash_is_actor_only_and_self_safe() {
+fn bfg9000_radius_eight_splash_is_self_safe_and_damages_each_actor_once() {
   let seed = 30_000;
   let center = Position::new(14, 12);
   let player_position = Position::new(12, 12);
@@ -49,11 +49,6 @@ fn bfg9000_radius_eight_splash_is_actor_only_and_self_safe() {
   let ring_id = game
     .world_mut()
     .spawn_monster(Position::new(16, 12), "Ring Target", 500, 0, (0, 0))
-    .unwrap();
-  let ground_item_id = game.world_mut().allocate_item_id();
-  game
-    .world_mut()
-    .spawn_ground_item(Position::new(17, 12), Item::ammo_cells(ground_item_id, 2))
     .unwrap();
   assert_eq!(game.world().player().unwrap().position(), player_position);
 
@@ -74,12 +69,6 @@ fn bfg9000_radius_eight_splash_is_actor_only_and_self_safe() {
   assert_eq!(environment_damage_for(&events, center_id).len(), 1);
   assert_eq!(environment_damage_for(&events, ring_id).len(), 1);
   assert_eq!(game.rng(), &expected_rng);
-  assert!(
-    events
-      .iter()
-      .all(|event| { !matches!(event, GameEvent::GroundItemDestroyed { .. }) })
-  );
-  assert!(game.world().ground_items().contains_key(&ground_item_id));
 }
 
 #[test]
@@ -152,5 +141,4 @@ fn bfg9000_splash_preserves_knockback_before_lethal_death_drop() {
   assert!(death_index < drop_index);
   assert_eq!(environment_damage_for(&events, center_id).len(), 1);
   assert!(!game.world().get_actor(victim_id).unwrap().is_alive());
-  assert_eq!(game.world().ground_items().len(), 1);
 }

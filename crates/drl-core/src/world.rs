@@ -375,6 +375,22 @@ impl World {
     Some(item_id)
   }
 
+  /// Removes the lowest-ID ordinary ground item at a position.
+  ///
+  /// The current item model has no legacy feature or indestructible marker,
+  /// so every represented ground item is an ordinary blast-destroyable item.
+  /// BTreeMap ordering makes the selection deterministic when several items
+  /// share a cell.
+  pub fn destroy_ground_item_at(&mut self, pos: Position) -> Option<ItemId> {
+    let item_id = self
+      .ground_items
+      .iter()
+      .find(|(_, (item_pos, _))| *item_pos == pos)
+      .map(|(item_id, _)| *item_id)?;
+    self.ground_items.remove(&item_id);
+    Some(item_id)
+  }
+
   /// Returns the player entity ID if spawned.
   #[must_use]
   pub const fn player_id(&self) -> Option<EntityId> {
@@ -666,6 +682,27 @@ mod tests {
     assert!(world.ground_items().get(&ammo_id).is_none());
     assert!(world.ground_items().contains_key(&shotgun_id));
     assert_eq!(world.destroy_ground_ammo_at(position), None);
+  }
+
+  #[test]
+  fn test_world_destroy_ground_item_selects_lowest_id_across_categories() {
+    let map = Map::simple_arena(10, 10);
+    let mut world = World::new(LevelId::new(1), map);
+    let position = Position::new(2, 2);
+    let low_id = ItemId::new(100);
+    let high_id = ItemId::new(101);
+    world
+      .spawn_ground_item(position, Item::shotgun(low_id))
+      .unwrap();
+    world
+      .spawn_ground_item(position, Item::small_medpack(high_id))
+      .unwrap();
+
+    assert_eq!(world.destroy_ground_item_at(position), Some(low_id));
+    assert!(!world.ground_items().contains_key(&low_id));
+    assert!(world.ground_items().contains_key(&high_id));
+    assert_eq!(world.destroy_ground_item_at(position), Some(high_id));
+    assert!(world.ground_items_at(position).is_empty());
   }
 
   #[test]
