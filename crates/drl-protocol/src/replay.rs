@@ -21,9 +21,10 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// Gameplay semantics identifier expected by the current replay engine.
 ///
 /// This advances independently from the wire/schema and RNG-sampling versions
-/// when other deterministic simulation rules change. Version `102` includes
-/// BFG 10K's typed ninth-level seven-projectile chainfire burst; version `101`
-/// includes BFG 10K's typed eighth-level seven-projectile chainfire burst;
+/// when other deterministic simulation rules change. Version `103` includes
+/// BFG 10K's typed tenth-level seven-projectile chainfire burst; version `102`
+/// includes BFG 10K's typed ninth-level seven-projectile chainfire burst;
+/// version `101` includes BFG 10K's typed eighth-level seven-projectile chainfire burst;
 /// version `100` includes BFG 10K's typed seventh-level seven-projectile chainfire burst;
 /// version `99` includes BFG 10K's typed sixth-level seven-projectile chainfire burst;
 /// version `98` includes Nuclear Plasma Rifle's typed sixth-level
@@ -91,7 +92,7 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// alternate overload/recharge, the `IF_NORELOAD` policy, Blaster recharge,
 /// the prior Malek's Armor, Missile Launcher, and Combat Shotgun policies, and
 /// the typed ordinary-fire cost policies through Laser Rifle.
-pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 102;
+pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 103;
 
 /// Procedural-generation semantics identifier expected for replays that carry
 /// a procedural generation configuration. Version 2 includes the exact
