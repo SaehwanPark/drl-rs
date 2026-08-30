@@ -13,6 +13,7 @@ pub mod anti_freak;
 pub mod assault_shotgun;
 pub mod batch;
 pub mod behavior;
+pub mod bfg10k;
 pub mod chaingun;
 pub mod combat;
 pub mod combat_shotgun;
@@ -98,6 +99,10 @@ pub use behavior::{
   TRISTAR_BLASTER_PROJECTILE_COUNT, TRISTAR_BLASTER_SHOT_COST, TargetOrder, TargetProperty,
   TargetSelectionPolicy, TargetSource, WeaponRechargeOutcome, WeaponRechargePolicy,
   WeaponRechargeState,
+};
+pub use bfg10k::{
+  BFG10K_EXPLOSION_DAMAGE_DICE, BFG10K_EXPLOSION_DAMAGE_DIE_SIDES, knockback_distance,
+  radius_two_blast_positions, roll_explosion_damage,
 };
 pub use chaingun::{
   CHAINGUN_CHAINFIRE_PROJECTILE_COUNT, CHAINGUN_CHAINFIRE_SHOT_COST, ChainfireTransition,

@@ -160,7 +160,7 @@ fn bfg10k_chainfire_below_twenty_cell_cost_rejection_is_atomic() {
 fn bfg10k_ordinary_fire_resets_chainfire_warmup() {
   let mut game = equipped_bfg10k(2_703);
   let target = Position::new(5, 2);
-  game
+  let target_id = game
     .world_mut()
     .spawn_monster(target, "Static Target", 500, 0, (1, 7))
     .unwrap();
@@ -179,7 +179,9 @@ fn bfg10k_ordinary_fire_resets_chainfire_warmup() {
     .unwrap()
     .current_clip = 50;
   game
-    .step(Command::AttackRanged(target))
+    .step(Command::AttackRanged(
+      game.world().get_actor(target_id).unwrap().position(),
+    ))
     .expect("ordinary fire after BFG 10K chainfire");
 
   assert_eq!(
@@ -201,7 +203,7 @@ fn bfg10k_ordinary_fire_resets_chainfire_warmup() {
 fn bfg10k_higher_chainfire_level_is_rejected_without_mutation() {
   let mut game = equipped_bfg10k(2_704);
   let target = Position::new(5, 2);
-  game
+  let target_id = game
     .world_mut()
     .spawn_monster(target, "Static Target", 500, 0, (1, 7))
     .unwrap();
@@ -212,7 +214,9 @@ fn bfg10k_higher_chainfire_level_is_rejected_without_mutation() {
 
   assert_eq!(
     game
-      .step(Command::AttackRangedChainfire(target))
+      .step(Command::AttackRangedChainfire(
+        game.world().get_actor(target_id).unwrap().position(),
+      ))
       .unwrap_err(),
     CommandError::InvalidCommand("higher BFG 10K chainfire levels are deferred".to_string())
   );

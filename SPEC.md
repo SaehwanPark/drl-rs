@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-29
-Current project version: `0.2.264`
+Current project version: `0.2.265`
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — BFG 10K First-Level Chainfire Execution
+## 2. Active Implementation Slice: M9 — BFG 10K Radius-2 Explosion Fanout
 
 ### 2.1 Objective
 
-Extend the existing typed first-level chainfire command to the BFG 10K. The
-accepted command must preserve the pinned five-projectile exact-hit ordinary
-profile, consume twenty cells for four ordered first-level alternate outcomes,
-and advance the existing observable warm-up state transactionally.
+Extend the existing typed BFG 10K schedule boundary with its actor-only
+radius-2 explosion fanout. A successful direct-target hit must preserve the
+pinned `6d4` plasma roll per clear blast cell, omit distance falloff, apply the
+evidence-backed knockback ratio, and resolve lethal follow-up deterministically.
 
 ### 2.1a Scope and steering gate
 
@@ -40,16 +40,18 @@ and advance the existing observable warm-up state transactionally.
 - **Steering gates:** Gate A rejected-input safety and Gate B explicit replay
   compatibility remain active acceptance constraints; Gate C catalog ownership
   and Gate D typed behavior evidence remain closed for this bounded extension.
-- **Observable outcome:** The existing `AttackRangedChainfire(Position)` command
-  is accepted for the BFG 10K only at warm-up level `0` with at least twenty
-  loaded cells. The pinned `shots - (shots div 3)` rule yields four ordered
-  ranged outcomes; post-lethal slots are deterministic no-op misses. The
-  command consumes twenty cells, preserves the existing exact-hit policy and
-  per-hit delayed-explosion schedule, and advances warm-up to `1`; ordinary
-  fire resets that level to `0`.
-- **Gameplay/replay impact:** Gameplay semantics advance from `72` to `73`;
+- **Observable outcome:** Each successful BFG 10K direct-target hit emits the
+  existing schedule metadata and immediately resolves a bounded actor-only
+  radius-2 fanout in deterministic center-then-ring order. Every clear blast
+  cell rolls one `6d4` Plasma result with no distance falloff; actors move by
+  `damage / 16` tiles along the radial direction when possible, then receive
+  the rolled environmental damage. Lethal victims emit normal death/drop
+  follow-up, while ground items and terrain remain unchanged. The first-level
+  chainfire command retains four ordered exact-hit outcomes and applies the
+  same fanout for each successful hit.
+- **Gameplay/replay impact:** Gameplay semantics advance from `73` to `74`;
   replay wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.263` to `0.2.264`.
+  unchanged. Project version advances from `0.2.264` to `0.2.265`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary,
   typed projectile-count/cost policy and generic execution; `drl-protocol` owns
   the semantic `AttackRanged`/`AttackRangedAimed` commands and typed event
@@ -63,20 +65,20 @@ and advance the existing observable warm-up state transactionally.
   tests, are authoritative. Controlled legacy runtime, browser capture, and
   audiovisual comparisons remain `NOT_RUN`.
 - **Non-goals:** Higher chainfire levels, scatter/target rotation or spread,
-  projectile routing, delayed explosion geometry/damage/knockback, exact
-  callback timing/accuracy, callback state-machine parity, new command variants
-  or callback registries, unrelated gameplay balance, replay migrations,
-  runtime Lua, and browser/audio/WebGPU capture parity.
+  projectile routing, delayed timing/state-machine parity, terrain/content
+  mutation, ground-item destruction, splash-immunity traits, exact callback
+  timing/accuracy, new command variants or callback registries, unrelated
+  gameplay balance, replay migrations, runtime Lua, and browser/audio/WebGPU
+  capture parity.
 
 ### 2.2 Why this slice is bounded
 
-The immutable profile and semantic command already exist from the preceding
-declaration and Chaingun/Minigun/Plasma Rifle/Laser Rifle/Nuclear Plasma slices.
-This extension adds only BFG 10K eligibility, the four-projectile/twenty-cell
-execution path, and its existing exact-hit/explosion, MCP, and browser
-projections. It reuses the prepare/commit boundary, warm-up state, replay
-envelope, and deterministic event contract without adding a new dispatcher or
-callback system.
+The immutable profile, semantic command, and schedule event already exist from
+the preceding BFG 10K chainfire slice. This extension adds only the bounded
+radius-2 actor fanout, its deterministic damage/knockback/death ordering, and
+the existing replay, MCP, and browser projections. It reuses the
+prepare/commit boundary and deterministic event contract without adding a
+pending queue, new dispatcher, or callback system.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -3345,7 +3347,7 @@ chainfire command to the Nuclear Plasma Rifle. Its contract must:
   controlled runtime, browser capture, and audiovisual parity `NOT_RUN` where
   comparison evidence is unavailable.
 
-### 2.7eg Current BFG 10K first-level chainfire execution target
+### 2.7eg Historical BFG 10K first-level chainfire execution target
 
 The bounded implementation target for this revision extends the existing typed
 chainfire command to the BFG 10K. Its contract must:
@@ -3370,6 +3372,35 @@ chainfire command to the BFG 10K. Its contract must:
   projectile routing, delayed explosion geometry/damage/knockback, exact legacy
   timing/accuracy, controlled runtime, browser capture, and audiovisual parity
   `NOT_RUN` where comparison evidence is unavailable.
+
+### 2.7eh Current BFG 10K radius-2 explosion fanout target
+
+The bounded implementation target for this revision extends the existing typed
+BFG 10K schedule boundary with immediate deterministic actor-only fanout. Its
+contract must:
+
+- [x] resolve each successful direct-target BFG 10K hit over the in-bounds,
+  line-of-sight-cleared radius-2 blast cells in a documented stable order;
+- [x] roll one `6d4` Plasma environment result per blast cell without distance
+  falloff, apply the damage once to each living actor per cell, and preserve
+  actor de-duplication when a later geometry extension revisits a cell;
+- [x] apply bounded radial knockback before environmental damage using the
+  pinned integer `damage / 16` ratio, with blocked and center destinations
+  remaining in place;
+- [x] emit existing `ActorKnockedBack`, `DamageApplied`, `ActorDied`, and
+  `ItemDropped` events in deterministic order, mark the game over when the
+  player is killed, and preserve the direct hit's existing schedule event;
+- [x] preserve atomic death-drop preflight, RNG determinism, replay
+  determinism, and direct-core/MCP/BrowserSession parity for ordinary and
+  first-level chainfire BFG 10K hits;
+- [x] advance project version from `0.2.264` to `0.2.265` and gameplay
+  semantics from `73` to `74` while preserving replay schema, RNG, generator,
+  and ruleset identities;
+- [x] keep delayed timing/state-machine parity, higher chainfire levels,
+  scatter/target routing, terrain/content mutation, ground-item destruction,
+  splash-immunity traits, exact callback timing/accuracy, controlled runtime,
+  browser capture, and audiovisual parity `NOT_RUN` where comparison evidence
+  is unavailable.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 

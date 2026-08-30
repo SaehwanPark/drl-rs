@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-29
-Current project version: `0.2.264`
+Current project version: `0.2.265`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -66,7 +66,8 @@ six-projectile ordinary-fire, one-cell-per-projectile, overload, and recharge
 fragments plus a bounded first-level four-projectile chainfire transition;
 BFG 10K records its typed exact-hit, five-projectile ordinary-fire,
 five-cell-per-projectile, delayed-explosion, and bounded first-level
-four-projectile/twenty-cell chainfire fragments;
+four-projectile/twenty-cell chainfire fragments plus its bounded radius-2
+actor-only explosion fanout;
 Standard
 Shotgun records its typed one-cell knockback hit and one-shell ammo-cost
 fragments; Plasma Shotgun records its typed one-projectile ordinary-fire and
@@ -307,10 +308,12 @@ Presentation Boundary
     projectile routing, explosions, and NukeRun remain separate policy work.
     BFG 10K opts into typed exact-hit, five-projectile direct-target volley,
     five-cell-per-projectile shot-cost, delayed explosion schedule metadata
-    (delay 25, radius 2, knockback 16), and the bounded first-level
-    four-projectile/twenty-cell chainfire transition; explosion geometry, splash
-    damage, knockback application, scatter, and projectile routing remain
-    separate policy work.
+    (delay 25, radius 2, knockback 16), the bounded first-level
+    four-projectile/twenty-cell chainfire transition, and the immediate
+    actor-only radius-2 fanout (6d4 Plasma per clear cell, no distance falloff,
+    integer damage/16 knockback). Delayed timing, terrain/content and
+    ground-item effects, splash immunity, scatter, and projectile routing
+    remain separate policy work.
     The pinned `IF_NORELOAD` families use an explicit item policy that rejects
     ordinary `Reload` before mutation; this remains separate from alternate
     reload and automatic recharge behavior.
