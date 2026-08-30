@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.290`
+Current project version: `0.2.291`
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,16 +25,16 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — BFG 10K Sixth-Level Chainfire
+## 2. Active Implementation Slice: M9 — BFG 10K Seventh-Level Chainfire
 
 ### 2.1 Objective
 
-Extend the delivered typed BFG 10K first-, second-, third-, fourth-, and
-fifth-level chainfire commands with the legacy-pinned sixth warm-up level. After
-accepted four-, five-, and seven-projectile bursts leave the weapon at warm-up
-level five, a valid sixth-level command must emit seven ordered exact-hit ranged
-projectiles, consume thirty-five cells, preserve the existing delayed-explosion
-metadata, and advance the warm-up state to level six.
+Extend the delivered typed BFG 10K first-, second-, third-, fourth-, fifth-, and
+sixth-level chainfire commands with the legacy-pinned seventh warm-up level.
+After accepted four-, five-, and seven-projectile bursts leave the weapon at
+warm-up level six, a valid seventh-level command must emit seven ordered
+exact-hit ranged projectiles, consume thirty-five cells, preserve the existing
+delayed-explosion metadata, and advance the warm-up state to level seven.
 
 ### 2.1a Scope and steering gate
 
@@ -42,16 +42,16 @@ metadata, and advance the warm-up state to level six.
 - **Steering gates:** Gate A rejected-input safety and Gate B explicit replay
   compatibility remain active acceptance constraints; Gate C catalog ownership
   and Gate D typed behavior evidence remain closed for this bounded extension.
-- **Observable outcome:** A sixth-level BFG 10K chainfire command is admitted
+- **Observable outcome:** A seventh-level BFG 10K chainfire command is admitted
   only for a living visible target, a loaded clip of at least thirty-five cells,
-  and a weapon warm-up level of five. It consumes thirty-five cells, emits
+  and a weapon warm-up level of six. It consumes thirty-five cells, emits
   seven ordered exact-hit ranged outcomes and seven existing delayed-explosion
   schedule events, preserves deterministic post-lethal no-op continuation
-  slots, and advances warm-up to level six. Ordinary fire still resets the
-  warm-up state, and the seventh level remains rejected atomically.
-- **Gameplay/replay impact:** Gameplay semantics advance from `98` to `99`;
+  slots, and advances warm-up to level seven. Ordinary fire still resets the
+  warm-up state, and the eighth level remains rejected atomically.
+- **Gameplay/replay impact:** Gameplay semantics advance from `99` to `100`;
   replay wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.289` to `0.2.290`.
+  unchanged. Project version advances from `0.2.290` to `0.2.291`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary,
   typed projectile-count/cost policy and generic execution; `drl-protocol` owns
   the semantic `AttackRanged`/`AttackRangedAimed` commands and typed event
@@ -64,7 +64,7 @@ metadata, and advance the warm-up state to level six.
   ranged, replay, MCP, and browser tests, is authoritative.
   Controlled legacy runtime, browser capture, and audiovisual comparisons
   remain `NOT_RUN`.
-- **Non-goals:** Seventh and later chainfire levels, legacy target rotation or
+- **Non-goals:** Eighth and later chainfire levels, legacy target rotation or
   scatter/spread routing, delayed explosion timing/damage/geometry changes,
   exact callback timing/accuracy, new command variants or callback registries,
   unrelated gameplay balance, replay migrations, runtime Lua, and
@@ -73,8 +73,8 @@ metadata, and advance the warm-up state to level six.
 ### 2.2 Why this slice is bounded
 
 The immutable BFG 10K profile, semantic command, and first-, second-, third-,
-fourth-, and fifth-level transitions already exist. This extension adds only
-one typed warm-up profile and its deterministic count/cost selection while
+fourth-, fifth-, and sixth-level transitions already exist. This extension adds
+only one typed warm-up profile and its deterministic count/cost selection while
 reusing the existing generic ranged, reload-backed replay, MCP, browser, and
 transactional boundaries without adding a pending queue, new dispatcher, or
 callback system.
@@ -4089,6 +4089,36 @@ Its contract was:
   semantics from `98` to `99` while preserving replay schema, RNG, generator,
   and ruleset identities;
 - [x] keep seventh-and-later chainfire levels, target rotation, scatter/routing,
+  delayed timing/state-machine changes, terrain/content effects, splash
+  immunity changes, exact callback timing/accuracy, controlled legacy runtime,
+  browser capture, and audiovisual parity `NOT_RUN` where comparison evidence
+  is unavailable.
+
+### 2.7f7 Historical BFG 10K seventh-level chainfire target
+
+The delivered `0.2.291` target extended the BFG 10K first-, second-, third-,
+fourth-, fifth-, and sixth-level chainfire commands with the pinned seventh
+warm-up level. Its contract was:
+
+- [x] preserve the first- through sixth-level four-, five-, and
+  seven-projectile/twenty-, twenty-five-, and thirty-five-cell contracts and
+  admit a seventh command only while the weapon warm-up level is six and the
+  target is still a valid visible living actor;
+- [x] resolve the legacy level-two-and-later formula `shots = 5 + (5 div 2) =
+  7`, consuming exactly thirty-five loaded cells for the seven-projectile
+  exact-hit volley;
+- [x] preserve the existing per-hit delayed-explosion schedule and bounded
+  radius-2 fanout while emitting seven ordered exact-hit events and
+  deterministic post-lethal no-op continuation slots;
+- [x] advance warm-up state to level seven only after acceptance, keep ordinary
+  fire's reset behavior, and reject the eighth level or an under-supplied clip
+  without changing game, clip, turn, or RNG state;
+- [x] preserve direct-core, reload-backed ScenarioRunner/replay, MCP
+  legal-action/JSON, physical `C` key, and BrowserSession event/state parity;
+- [x] advance project version from `0.2.290` to `0.2.291` and gameplay
+  semantics from `99` to `100` while preserving replay schema, RNG, generator,
+  and ruleset identities;
+- [x] keep eighth-and-later chainfire levels, target rotation, scatter/routing,
   delayed timing/state-machine changes, terrain/content effects, splash
   immunity changes, exact callback timing/accuracy, controlled legacy runtime,
   browser capture, and audiovisual parity `NOT_RUN` where comparison evidence
