@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.313`
+Current project version: `0.2.314`
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,16 +25,16 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Chaingun Ninth-Level Chainfire
+## 2. Active Implementation Slice: M9 — Chaingun Tenth-Level Chainfire
 
 ### 2.1 Objective
 
-Extend the delivered typed Chaingun first- through eighth-level chainfire
-commands with one legacy-pinned ninth-level continuation. After accepted
-three-, four-, and six-projectile bursts leave the weapon at warm-up level eight,
-a valid ninth-level command must emit six ordered ranged projectiles, consume
+Extend the delivered typed Chaingun first- through ninth-level chainfire
+commands with one legacy-pinned tenth-level continuation. After accepted
+three-, four-, and six-projectile bursts leave the weapon at warm-up level nine,
+a valid tenth-level command must emit six ordered ranged projectiles, consume
 six rounds, preserve the existing damage and event ordering, and advance the
-warm-up state to level nine.
+warm-up state to level ten.
 
 ### 2.1a Scope and steering gate
 
@@ -42,15 +42,15 @@ warm-up state to level nine.
 - **Steering gates:** Gate A rejected-input safety and Gate B explicit replay
   compatibility remain active acceptance constraints; Gate C catalog ownership
   and Gate D typed behavior evidence remain closed for this bounded extension.
-- **Observable outcome:** A ninth-level Chaingun chainfire command is admitted
+- **Observable outcome:** A tenth-level Chaingun chainfire command is admitted
   only for a living visible target, a loaded clip of at least six rounds, and a
-  weapon warm-up level of eight. It consumes six rounds, emits six ordered
+  weapon warm-up level of nine. It consumes six rounds, emits six ordered
   ranged outcomes, preserves deterministic post-lethal no-op continuation slots,
-  and advances warm-up to level nine. Ordinary fire still resets the warm-up
-  state, and the tenth level remains rejected atomically.
-- **Gameplay/replay impact:** Gameplay semantics advance from `121` to `122`;
+  and advances warm-up to level ten. Ordinary fire still resets the warm-up
+  state, and the eleventh level remains rejected atomically.
+- **Gameplay/replay impact:** Gameplay semantics advance from `122` to `123`;
   replay wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.312` to `0.2.313`.
+  unchanged. Project version advances from `0.2.313` to `0.2.314`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary,
   typed projectile-count/cost policy and generic execution; `drl-protocol` owns
   the semantic `AttackRanged`/`AttackRangedAimed` commands and typed event
@@ -61,7 +61,7 @@ warm-up state to level nine.
   typed ranged, replay, MCP, and browser tests, is authoritative.
   Controlled legacy runtime, browser capture, and audiovisual comparisons
   remain `NOT_RUN`.
-- **Non-goals:** Tenth and later chainfire levels, alternate target routing,
+- **Non-goals:** Eleventh and later chainfire levels, alternate target routing,
   target rotation/spread, recharge changes, exact callback timing/accuracy, new
   command variants or callback registries, unrelated gameplay balance, replay
   migrations, runtime Lua, and browser/audio/WebGPU capture parity.
@@ -69,7 +69,7 @@ warm-up state to level nine.
 ### 2.2 Why this slice is bounded
 
 The immutable Chaingun profile, semantic command, and first- through
-eighth-level transitions already exist. This extension adds only one typed
+ninth-level transitions already exist. This extension adds only one typed
 warm-up profile and its deterministic count/cost selection while reusing the
 existing generic ranged, replay, MCP, browser, and transactional boundaries
 without adding a pending queue, new dispatcher, or callback system.
@@ -4735,11 +4735,10 @@ Its contract is:
   callback timing/accuracy, controlled legacy runtime, browser capture, and
   audiovisual parity `NOT_RUN` where comparison evidence is unavailable.
 
-### 2.7f29 Current Chaingun ninth-level chainfire target
+### 2.7f29 Historical Chaingun ninth-level chainfire target
 
-The bounded implementation target for this revision extends the Chaingun
-first- through eighth-level chainfire commands with the pinned ninth warm-up
-level. Its contract is:
+The delivered `0.2.313` target extended the Chaingun first- through eighth-level
+chainfire commands with the pinned ninth warm-up level. Its contract was:
 
 - [x] preserve the first- through eighth-level three-, four-, and six-
   projectile/three-, four-, six-, six-, six-, six-, six-, and six-round
@@ -4759,7 +4758,35 @@ level. Its contract is:
 - [x] advance project version from `0.2.312` to `0.2.313` and gameplay
   semantics from `121` to `122` while preserving replay schema, RNG, generator,
   and ruleset identities;
-- [ ] keep tenth-and-later chainfire levels, target rotation/spread, exact
+- [x] keep tenth-and-later chainfire levels, target rotation/spread, exact
+  callback timing/accuracy, controlled legacy runtime, browser capture, and
+  audiovisual parity `NOT_RUN` where comparison evidence is unavailable.
+
+### 2.7f30 Current Chaingun tenth-level chainfire target
+
+The bounded implementation target for this revision extends the Chaingun
+first- through ninth-level chainfire commands with the pinned tenth warm-up
+level. Its contract is:
+
+- [x] preserve the first- through ninth-level three-, four-, and six-
+  projectile/three-, four-, six-, six-, six-, six-, six-, six-, and six-round
+  contracts and admit a tenth command only while the weapon warm-up level is
+  nine and the target is still a valid visible living actor;
+- [x] resolve the legacy level-two-and-later formula `shots = 4 + (4 div 2) =
+  6`, consuming exactly six loaded rounds for the ordered ranged volley after
+  the ninth-level continuation;
+- [x] preserve target, line-of-sight, damage RNG, event ordering, and
+  deterministic post-lethal no-op continuation slots through the existing
+  generic ranged path;
+- [x] advance warm-up state to level ten only after acceptance, keep ordinary
+  fire's reset behavior, and reject the eleventh level or an under-supplied
+  clip without changing game, clip, turn, and RNG state;
+- [x] preserve direct-core, ScenarioRunner/replay, MCP legal-action/JSON,
+  physical `C` key, and BrowserSession event/state parity;
+- [x] advance project version from `0.2.313` to `0.2.314` and gameplay
+  semantics from `122` to `123` while preserving replay schema, RNG, generator,
+  and ruleset identities;
+- [ ] keep eleventh-and-later chainfire levels, target rotation/spread, exact
   callback timing/accuracy, controlled legacy runtime, browser capture, and
   audiovisual parity `NOT_RUN` where comparison evidence is unavailable.
 
