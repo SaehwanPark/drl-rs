@@ -3510,6 +3510,36 @@ mod tests {
     session
       .step(twentieth.command)
       .expect("twentieth chainfire action");
+    let player_id = session.game.as_ref().unwrap().world().player_id().unwrap();
+    session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .get_actor_mut(player_id)
+      .unwrap()
+      .equipment_mut()
+      .weapon_mut()
+      .unwrap()
+      .weapon_properties_mut()
+      .unwrap()
+      .current_clip = 50;
+    let twenty_first = compute_legal_actions(&session.get_observation().unwrap())
+      .into_iter()
+      .find(|action| action.action == "Chainfire")
+      .expect("twenty-first BFG 10K chainfire should be advertised");
+    assert!(matches!(
+      twenty_first.command,
+      Command::AttackRangedChainfire(_)
+    ));
+    assert!(
+      twenty_first
+        .description
+        .contains("7 projectiles, 35 rounds")
+    );
+    session
+      .step(twenty_first.command)
+      .expect("twenty-first chainfire action");
     assert!(
       !compute_legal_actions(&session.get_observation().unwrap())
         .iter()
@@ -5496,7 +5526,7 @@ mod tests {
       hp: 50,
       max_hp: 50,
       speed: 100,
-      initial_items: vec![drl_protocol::ItemSpawnKind::AmmoCells(640)],
+      initial_items: vec![drl_protocol::ItemSpawnKind::AmmoCells(675)],
       equipped_weapon: Some(drl_protocol::ItemSpawnKind::Bfg10k),
       equipped_armor: None,
       equipped_armor_durability: None,
@@ -7595,6 +7625,120 @@ mod tests {
         .unwrap()
         .chainfire_level,
       20
+    );
+    assert!(
+      !compute_legal_actions(&direct.observe_player())
+        .iter()
+        .any(|action| action.action == "Chainfire")
+    );
+
+    let twenty_first_reload_expected_events = direct
+      .step(Command::Reload)
+      .expect("direct twenty-first BFG 10K chainfire reload");
+    let (twenty_first_reload_events, twenty_first_reload_observation, twenty_first_reload_outcome) =
+      session
+        .step(Command::Reload)
+        .expect("MCP twenty-first BFG 10K chainfire reload");
+    assert_eq!(
+      twenty_first_reload_events,
+      twenty_first_reload_expected_events
+    );
+    assert_eq!(session.game.as_ref().unwrap(), &direct);
+    assert_eq!(twenty_first_reload_observation, direct.observe_player());
+    assert_eq!(twenty_first_reload_outcome, None);
+    expected_events.extend(twenty_first_reload_events);
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .current_clip,
+      50
+    );
+
+    let twenty_first_target = direct
+      .world()
+      .get_actor(target_id)
+      .expect("BFG 10K chainfire target should survive twentieth reload")
+      .position();
+    let twenty_first_command = Command::AttackRangedChainfire(twenty_first_target);
+    assert!(
+      compute_legal_actions(&direct.observe_player())
+        .iter()
+        .any(|action| action.command == twenty_first_command)
+    );
+    let twenty_first_expected_events = direct
+      .step(twenty_first_command)
+      .expect("direct twenty-first BFG 10K chainfire command");
+    let (twenty_first_events, twenty_first_observation, twenty_first_outcome) = session
+      .step(twenty_first_command)
+      .expect("MCP twenty-first BFG 10K chainfire command");
+    assert_eq!(twenty_first_events, twenty_first_expected_events);
+    assert_eq!(session.game.as_ref().unwrap(), &direct);
+    assert_eq!(twenty_first_observation, direct.observe_player());
+    assert_eq!(twenty_first_outcome, None);
+    assert_eq!(
+      twenty_first_events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          GameEvent::AttackResolved {
+            attacker_id,
+            target_id: event_target,
+            outcome: drl_protocol::AttackOutcome::Hit { .. },
+            is_ranged: true,
+          } if *attacker_id == player_id && *event_target == target_id
+        ))
+        .count(),
+      7
+    );
+    assert_eq!(
+      twenty_first_events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          GameEvent::Bfg10kExplosionScheduled {
+            entity_id,
+            target_id: event_target,
+            delay: 25,
+            radius: 2,
+            knockback: 16,
+          } if *entity_id == player_id && *event_target == target_id
+        ))
+        .count(),
+      7
+    );
+    expected_events.extend(twenty_first_events);
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .current_clip,
+      15
+    );
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .chainfire_level,
+      21
     );
     assert!(
       !compute_legal_actions(&direct.observe_player())
