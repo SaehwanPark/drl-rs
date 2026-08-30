@@ -6638,12 +6638,61 @@ mod tests {
     assert_eq!(nuclear_plasma.clip, Some((14, 24)));
     assert_eq!(
       BrowserSession::command_for_key("C", &second_step.after),
+      Some(Command::AttackRangedChainfire(target_position))
+    );
+    let third_command = Command::AttackRangedChainfire(target_position);
+    let third_expected_events = direct
+      .step(third_command)
+      .expect("direct third Nuclear Plasma chainfire command");
+    let third_step = browser
+      .submit(third_command)
+      .expect("browser third Nuclear Plasma chainfire command");
+    assert_eq!(third_step.events, third_expected_events);
+    assert_eq!(third_step.after, direct.observe_player());
+    assert_eq!(
+      third_step.effects,
+      effect_timeline_for_observations(
+        &third_step.before,
+        &third_step.after,
+        &third_expected_events,
+      )
+    );
+    assert_eq!(
+      browser.scene(),
+      RenderScene::from_observation(&third_step.after)
+    );
+    assert_eq!(
+      third_expected_events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          drl_protocol::GameEvent::AttackResolved {
+            attacker_id,
+            target_id: event_target,
+            is_ranged: true,
+            ..
+          } if *attacker_id == direct.world().player_id().unwrap() && *event_target == target_id
+        ))
+        .count(),
+      9
+    );
+    let nuclear_plasma = third_step
+      .after
+      .equipped_weapon
+      .as_ref()
+      .expect("Nuclear Plasma Rifle");
+    assert_eq!(nuclear_plasma.chainfire_level, 3);
+    assert_eq!(nuclear_plasma.clip, Some((5, 24)));
+    assert_eq!(
+      BrowserSession::command_for_key("C", &third_step.after),
       None
     );
     expected_events.extend(second_expected_events);
+    expected_events.extend(third_expected_events);
     let mut command_replay = setup_replay;
     command_replay.record_command(command);
     command_replay.record_command(second_command);
+    command_replay.record_command(third_command);
     let (replayed, replay_events) =
       drl_core::ReplayEngine::run(&command_replay).expect("vertical command replay");
     assert_eq!(replay_events, expected_events);

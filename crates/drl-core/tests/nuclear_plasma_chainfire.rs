@@ -98,6 +98,41 @@ fn nuclear_plasma_second_chainfire_emits_six_projectiles_and_advances_state() {
 }
 
 #[test]
+fn nuclear_plasma_third_chainfire_emits_nine_projectiles_and_advances_state() {
+  let mut game = equipped_nuclear_plasma_rifle(2_646);
+  let target = Position::new(5, 2);
+  let target_id = game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 10_000, 0, (1, 7))
+    .unwrap();
+  let player_id = game.world().player_id().unwrap();
+
+  game
+    .step(Command::AttackRangedChainfire(target))
+    .expect("first Nuclear Plasma chainfire burst should be accepted");
+  game
+    .step(Command::AttackRangedChainfire(target))
+    .expect("second Nuclear Plasma chainfire burst should be accepted");
+  let events = game
+    .step(Command::AttackRangedChainfire(target))
+    .expect("third Nuclear Plasma chainfire burst should be accepted");
+
+  let weapon = game.world().player().unwrap().equipment().weapon().unwrap();
+  assert_eq!(weapon.weapon_properties().unwrap().current_clip, 5);
+  assert_eq!(weapon.weapon_properties().unwrap().chainfire_level, 3);
+  assert_eq!(ranged_events(&events, player_id), 9);
+  assert!(events.iter().any(|event| matches!(
+    event,
+    GameEvent::AttackResolved {
+      attacker_id,
+      target_id: event_target,
+      is_ranged: true,
+      ..
+    } if *attacker_id == player_id && *event_target == target_id
+  )));
+}
+
+#[test]
 fn nuclear_plasma_chainfire_keeps_four_outcomes_after_lethal_target() {
   let mut lethal_case = None;
 
@@ -179,6 +214,9 @@ fn nuclear_plasma_ordinary_fire_resets_chainfire_warmup() {
   game
     .step(Command::AttackRangedChainfire(target))
     .expect("second Nuclear Plasma chainfire burst");
+  game
+    .step(Command::AttackRangedChainfire(target))
+    .expect("third Nuclear Plasma chainfire burst");
   let player_id = game.world().player_id().unwrap();
   game
     .world_mut()
@@ -223,6 +261,9 @@ fn nuclear_plasma_higher_chainfire_level_is_rejected_without_mutation() {
   game
     .step(Command::AttackRangedChainfire(target))
     .expect("second Nuclear Plasma chainfire burst");
+  game
+    .step(Command::AttackRangedChainfire(target))
+    .expect("third Nuclear Plasma chainfire burst");
   let before = game.clone();
 
   assert_eq!(
@@ -268,6 +309,42 @@ fn nuclear_plasma_second_chainfire_below_six_cell_cost_rejection_is_atomic() {
 }
 
 #[test]
+fn nuclear_plasma_third_chainfire_below_nine_cell_cost_rejection_is_atomic() {
+  let mut game = equipped_nuclear_plasma_rifle(2_647);
+  let target = Position::new(5, 2);
+  game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 10_000, 0, (1, 7))
+    .unwrap();
+  let player_id = game.world().player_id().unwrap();
+  game
+    .step(Command::AttackRangedChainfire(target))
+    .expect("first Nuclear Plasma chainfire burst");
+  game
+    .step(Command::AttackRangedChainfire(target))
+    .expect("second Nuclear Plasma chainfire burst");
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 8;
+  let before = game.clone();
+
+  assert_eq!(
+    game
+      .step(Command::AttackRangedChainfire(target))
+      .unwrap_err(),
+    CommandError::NoAmmoInClip
+  );
+  assert_eq!(game, before);
+}
+
+#[test]
 fn nuclear_plasma_chainfire_replay_is_deterministic() {
   let player_start = Position::new(5, 5);
   let mut replay =
@@ -284,12 +361,13 @@ fn nuclear_plasma_chainfire_replay_is_deterministic() {
   replay.record_monster(MonsterSpawnSpec::new(target, "Target", 500, 100, (1, 7)));
   replay.record_command(Command::AttackRangedChainfire(target));
   replay.record_command(Command::AttackRangedChainfire(target));
+  replay.record_command(Command::AttackRangedChainfire(target));
 
   let (game, events) =
     ReplayEngine::run(&replay).expect("Nuclear Plasma chainfire replay should run");
   let weapon = game.world().player().unwrap().equipment().weapon().unwrap();
-  assert_eq!(weapon.weapon_properties().unwrap().current_clip, 14);
-  assert_eq!(weapon.weapon_properties().unwrap().chainfire_level, 2);
+  assert_eq!(weapon.weapon_properties().unwrap().current_clip, 5);
+  assert_eq!(weapon.weapon_properties().unwrap().chainfire_level, 3);
   assert_eq!(
     events
       .iter()
@@ -301,7 +379,7 @@ fn nuclear_plasma_chainfire_replay_is_deterministic() {
         }
       ))
       .count(),
-    10
+    19
   );
   assert!(ReplayEngine::verify_determinism(&replay).unwrap());
 }

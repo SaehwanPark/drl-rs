@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.273`
+Current project version: `0.2.274`
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,15 +25,15 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Nuclear Plasma Second-Level Chainfire
+## 2. Active Implementation Slice: M9 — Nuclear Plasma Third-Level Chainfire
 
 ### 2.1 Objective
 
-Extend the delivered typed Nuclear Plasma Rifle first-level chainfire command
-with the legacy-pinned second warm-up level. After an accepted four-projectile
-burst leaves the weapon at warm-up level one, a valid second-level command must
-emit six projectiles, charge six cells, preserve the existing ordered ranged
-attack behavior, and advance the warm-up state to level two.
+Extend the delivered typed Nuclear Plasma Rifle second-level chainfire command
+with the legacy-pinned third warm-up level. After accepted four- and
+six-projectile bursts leave the weapon at warm-up level two, a valid third-level
+command must emit nine projectiles, charge nine cells, preserve the existing
+ordered ranged attack behavior, and advance the warm-up state to level three.
 
 ### 2.1a Scope and steering gate
 
@@ -41,13 +41,13 @@ attack behavior, and advance the warm-up state to level two.
 - **Steering gates:** Gate A rejected-input safety and Gate B explicit replay
   compatibility remain active acceptance constraints; Gate C catalog ownership
   and Gate D typed behavior evidence remain closed for this bounded extension.
-- **Observable outcome:** A second-level Nuclear Plasma chainfire command is
-  admitted only for a living visible target, a loaded clip of at least six
-  cells, and a weapon warm-up level of one. It consumes six cells, emits six
+- **Observable outcome:** A third-level Nuclear Plasma chainfire command is
+  admitted only for a living visible target, a loaded clip of at least nine
+  cells, and a weapon warm-up level of two. It consumes nine cells, emits nine
   ordered ranged attack outcomes, preserves deterministic post-lethal no-op
-  continuation slots, and advances warm-up to level two. Ordinary fire still
-  resets the warm-up state, and the third level remains rejected atomically.
-- **Gameplay/replay impact:** Gameplay semantics advance from `81` to `82`;
+  continuation slots, and advances warm-up to level three. Ordinary fire still
+  resets the warm-up state, and the fourth level remains rejected atomically.
+- **Gameplay/replay impact:** Gameplay semantics advance from `82` to `83`;
   replay wire/schema, RNG sampling, generator, and ruleset identities remain
   unchanged. Project version advances from `0.2.272` to `0.2.273`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary,
@@ -60,7 +60,7 @@ attack behavior, and advance the warm-up state to level two.
   existing typed ranged contract and focused direct-core/replay/MCP/browser
   tests, are authoritative. Controlled legacy runtime, browser capture, and
   audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** Third and later chainfire levels, legacy target rotation or
+- **Non-goals:** Fourth and later chainfire levels, legacy target rotation or
   scatter/spread routing, exact callback timing/accuracy, overload/recharge
   changes, new command variants or callback registries, unrelated gameplay
   balance, replay migrations, runtime Lua, and browser/audio/WebGPU capture
@@ -68,11 +68,11 @@ attack behavior, and advance the warm-up state to level two.
 
 ### 2.2 Why this slice is bounded
 
-The immutable Nuclear Plasma profile, semantic command, and first-level
-transition already exist. This extension adds only one typed warm-up profile
-and its deterministic count/cost selection while reusing the existing generic
-ranged, replay, MCP, browser, and transactional boundaries without adding a
-pending queue, new dispatcher, or callback system.
+The immutable Nuclear Plasma profile, semantic command, and first- and
+second-level transitions already exist. This extension adds only one typed
+warm-up profile and its deterministic count/cost selection while reusing the
+existing generic ranged, replay, MCP, browser, and transactional boundaries
+without adding a pending queue, new dispatcher, or callback system.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -3593,11 +3593,10 @@ command with the pinned third warm-up level. Its contract was:
   browser capture, and audiovisual parity `NOT_RUN` where comparison evidence
   is unavailable.
 
-### 2.7ep Current Nuclear Plasma second-level chainfire target
+### 2.7ep Historical Nuclear Plasma second-level chainfire target
 
-The bounded implementation target for this revision extends the delivered
-Nuclear Plasma Rifle first-level chainfire command with the pinned second
-warm-up level. Its contract must:
+The delivered `0.2.273` target extended the Nuclear Plasma Rifle first-level
+chainfire command with the pinned second warm-up level. Its contract was:
 
 - [x] preserve the first-level four-projectile/four-cell contract and admit a
   second command only while the weapon warm-up level is one and the target is
@@ -3616,6 +3615,34 @@ warm-up level. Its contract must:
   semantics from `81` to `82` while preserving replay schema, RNG, generator,
   and ruleset identities;
 - [x] keep third-and-later chainfire levels, legacy target rotation,
+  scatter/spread routing, exact callback timing/accuracy, overload/recharge
+  policy changes, controlled runtime, browser capture, and audiovisual parity
+  `NOT_RUN` where comparison evidence is unavailable.
+
+### 2.7eq Current Nuclear Plasma third-level chainfire target
+
+The bounded implementation target for this revision extends the delivered
+Nuclear Plasma Rifle second-level chainfire command with the pinned third
+warm-up level. Its contract must:
+
+- [x] preserve the first-level four-projectile/four-cell and second-level
+  six-projectile/six-cell contracts and admit a third command only while the
+  weapon warm-up level is two and the target is still a valid visible living
+  actor;
+- [x] resolve the legacy level-two formula `shots = 6 + (6 div 2) = 9`,
+  consuming exactly nine loaded cells for the nine-projectile ranged volley;
+- [x] preserve ordered event output and deterministic post-lethal no-op
+  continuation slots without changing the existing overload or recharge
+  transitions;
+- [x] advance warm-up state to level three only after acceptance, keep ordinary
+  fire's reset behavior, and reject the fourth level without changing game,
+  clip, turn, or RNG state;
+- [x] preserve direct-core, replay, MCP legal-action/JSON, physical `C` key,
+  and BrowserSession event/state parity;
+- [x] advance project version from `0.2.273` to `0.2.274` and gameplay
+  semantics from `82` to `83` while preserving replay schema, RNG, generator,
+  and ruleset identities;
+- [x] keep fourth-and-later chainfire levels, legacy target rotation,
   scatter/spread routing, exact callback timing/accuracy, overload/recharge
   policy changes, controlled runtime, browser capture, and audiovisual parity
   `NOT_RUN` where comparison evidence is unavailable.
