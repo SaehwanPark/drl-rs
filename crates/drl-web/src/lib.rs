@@ -6401,8 +6401,53 @@ mod tests {
     let chaingun = tenth_step.after.equipped_weapon.as_ref().expect("Chaingun");
     assert_eq!(chaingun.chainfire_level, 10);
     assert_eq!(chaingun.clip, Some((22, 40)));
+    let eleventh_command = Command::AttackRangedChainfire(target_position);
     assert_eq!(
       BrowserSession::command_for_key("C", &tenth_step.after),
+      Some(eleventh_command)
+    );
+    let eleventh_expected_events = direct
+      .step(eleventh_command)
+      .expect("direct eleventh Chaingun chainfire command");
+    let eleventh_step = browser
+      .submit(eleventh_command)
+      .expect("browser eleventh Chaingun chainfire command");
+    assert_eq!(eleventh_step.events, eleventh_expected_events);
+    assert_eq!(eleventh_step.after, direct.observe_player());
+    assert_eq!(
+      eleventh_step.effects,
+      effect_timeline_for_observations(
+        &eleventh_step.before,
+        &eleventh_step.after,
+        &eleventh_expected_events,
+      )
+    );
+    assert_eq!(
+      browser.scene(),
+      RenderScene::from_observation(&eleventh_step.after)
+    );
+    assert_eq!(
+      eleventh_expected_events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          drl_protocol::GameEvent::AttackResolved {
+            is_ranged: true,
+            ..
+          }
+        ))
+        .count(),
+      6
+    );
+    let chaingun = eleventh_step
+      .after
+      .equipped_weapon
+      .as_ref()
+      .expect("Chaingun");
+    assert_eq!(chaingun.chainfire_level, 11);
+    assert_eq!(chaingun.clip, Some((16, 40)));
+    assert_eq!(
+      BrowserSession::command_for_key("C", &eleventh_step.after),
       None
     );
     expected_events.extend(third_expected_events);
@@ -6414,6 +6459,7 @@ mod tests {
     expected_events.extend(eighth_expected_events);
     expected_events.extend(ninth_expected_events);
     expected_events.extend(tenth_expected_events);
+    expected_events.extend(eleventh_expected_events);
     let mut command_replay = setup_replay;
     command_replay.record_command(command);
     command_replay.record_command(second_command);
@@ -6426,6 +6472,7 @@ mod tests {
     command_replay.record_command(eighth_command);
     command_replay.record_command(ninth_command);
     command_replay.record_command(tenth_command);
+    command_replay.record_command(eleventh_command);
     let (replayed, replay_events) =
       drl_core::ReplayEngine::run(&command_replay).expect("vertical command replay");
     assert_eq!(replay_events, expected_events);

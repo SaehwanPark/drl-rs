@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.314`
+Current project version: `0.2.315`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.314)
+## 3. Current Progress Summary (`VERSION` 0.2.315)
 
 ### Delivered Foundations
 
@@ -1639,8 +1639,8 @@ scripting.
   delivered in `0.2.305`; Nuclear
   Plasma's
   bounded first- through seventh-level chainfire is delivered in `0.2.306`; the
-  Chaingun's bounded first- through tenth-level chainfire is delivered in
-  `0.2.314`; the
+  Chaingun's bounded first- through eleventh-level chainfire is delivered in
+  `0.2.315`; the
   Laser Rifle's bounded first- through seventh-level chainfire is delivered in
   `0.2.307`,
   while exact-hit, explosion, and mod callbacks remain open.
@@ -1969,11 +1969,11 @@ scripting.
   runtime, and audiovisual parity remain open.
 - [x] Chaingun has an immutable behavior profile for its four-projectile
   ordinary fire and one-round per-projectile cost plus bounded first-, second-,
-  third-, fourth-, fifth-, sixth-, seventh-, eighth-, ninth-, and tenth-level three-,
-  four-, six-, six-, six-, six-, six-, six-, six-, and six-projectile chainfire
+  third-, fourth-, fifth-, sixth-, seventh-, eighth-, ninth-, tenth-, and eleventh-level three-,
+  four-, six-, six-, six-, six-, six-, six-, six-, six-, and six-projectile chainfire
   transitions; generic ranged execution resolves the ordered volleys,
   preflights aggregate costs, and preserves atomic below-cost rejection while
-  eleventh-and-later levels, exact timing/accuracy, runtime, and audiovisual
+  twelfth-and-later levels, exact timing/accuracy, runtime, and audiovisual
   parity remain open.
 - [x] Laser Rifle has an immutable behavior profile for its five-projectile
   ordinary fire and one-cell per-projectile cost plus bounded first-, second-,
@@ -2054,6 +2054,13 @@ scripting.
   warm-up level ten, including deterministic ScenarioRunner/replay, MCP
   legal-action/JSON, physical `C` routing, BrowserSession parity, and atomic
   eleventh-level/under-supply rejection; eleventh-and-later levels, target
+  rotation/spread, exact timing/accuracy, controlled legacy runtime, browser
+  capture, and audiovisual parity remain open.
+- [x] Chaingun's delivered eleventh-level chainfire contract extends the same
+  boundary with the pinned six-projectile/six-round continuation through
+  warm-up level eleven, including deterministic ScenarioRunner/replay, MCP
+  legal-action/JSON, physical `C` routing, BrowserSession parity, and atomic
+  twelfth-level/under-supply rejection; twelfth-and-later levels, target
   rotation/spread, exact timing/accuracy, controlled legacy runtime, browser
   capture, and audiovisual parity remain open.
 - [x] Minigun's delivered first-level chainfire contract has a deterministic
@@ -2548,6 +2555,15 @@ scripting.
   levels, target rotation/scatter routing, exact timing/accuracy, controlled
   runtime, browser capture, and audiovisual parity remain open. Gameplay
   semantics advance to `120`.
+- **M9 Chaingun eleventh-level chainfire (`0.2.315`):** Chaingun now accepts
+  its pinned warm-up level-ten continuation: six ordered ranged projectiles,
+  six loaded 9mm rounds, deterministic post-lethal no-op continuation slots,
+  and warm-up advancement to level eleven. Direct-core, ScenarioRunner/replay,
+  MCP legal-action/JSON, physical `C` routing, and BrowserSession parity plus
+  atomic twelfth-level and under-supply rejection are verified. Twelfth-and-
+  later levels, target rotation/scatter routing, exact timing/accuracy,
+  controlled legacy runtime, browser capture, and audiovisual parity remain
+  open. Gameplay semantics advance to `124`.
 - **M9 Chaingun tenth-level chainfire (`0.2.314`):** Chaingun now accepts
   its pinned warm-up level-nine continuation: six ordered ranged projectiles,
   six loaded 9mm rounds, deterministic post-lethal no-op continuation slots,
