@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.281`
+Current project version: `0.2.282`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.281)
+## 3. Current Progress Summary (`VERSION` 0.2.282)
 
 ### Delivered Foundations
 
@@ -1708,10 +1708,10 @@ scripting.
   open.
 - [x] Laser Rifle has an immutable behavior profile for its five-projectile
   ordinary fire and one-cell-per-projectile cost plus bounded first-, second-,
-  and third-level four-, five-, and seven-projectile chainfire transitions;
-  generic ranged execution resolves the ordered ordinary and chainfire volleys
-  and atomically rejects clips below their aggregate costs, while higher
-  levels, runtime, and audiovisual parity remain open.
+  third-, and fourth-level four-, five-, seven-, and seven-projectile
+  chainfire transitions; generic ranged execution resolves the ordered ordinary
+  and chainfire volleys and atomically rejects clips below their aggregate
+  costs, while higher levels, runtime, and audiovisual parity remain open.
 - [x] Trigun has an immutable behavior profile for its one-projectile,
   one-round ordinary fire and shared +3/doubled-cost aimed-fire policy; generic
   ranged execution remains authoritative while alternate reload/nuke behavior,
@@ -1875,10 +1875,16 @@ scripting.
   third-level rejection; target rotation/spread, exact timing/accuracy,
   controlled legacy runtime, browser capture, and audiovisual parity remain
   open.
-- [ ] Laser Rifle's third-level chainfire contract extends the same boundary
-  with the pinned seven-projectile/seven-cell formula and atomic fourth-level
-  rejection; target rotation/spread, exact timing/accuracy, controlled legacy
-  runtime, browser capture, and audiovisual parity remain open.
+- [x] Laser Rifle's delivered third-level chainfire contract extends the same
+  boundary with the pinned seven-projectile/seven-cell formula and atomic
+  fourth-level rejection; target rotation/spread, exact timing/accuracy,
+  controlled legacy runtime, browser capture, and audiovisual parity remain
+  open.
+- [ ] Laser Rifle's fourth-level chainfire contract extends the same boundary
+  with the pinned seven-projectile/seven-cell continuation formula and atomic
+  fifth-level rejection; target rotation/spread, exact timing/accuracy,
+  controlled legacy runtime, browser capture, and audiovisual parity remain
+  open.
 - [x] Nuclear Plasma Rifle's delivered first-level chainfire contract has a
   deterministic direct-core/replay/MCP/BrowserSession boundary check covering
   four ordered events, fair observations, render effects, scene projections,
@@ -2192,13 +2198,22 @@ scripting.
   third-level rejection are verified; higher levels, target rotation/scatter
   routing, exact timing/accuracy, controlled runtime, browser capture, and
   audiovisual parity remain open. Gameplay semantics advance to `89`.
-- **M9 Laser Rifle third-level chainfire (active target `0.2.281`):** Extend
-  the typed Laser Rifle warm-up sequence with the pinned level-two formula
-  `shots = 5 + (5 div 2) = 7`, consuming seven loaded cells and emitting seven
-  ordered ranged outcomes while preserving atomic rejection, replay, MCP,
-  physical `C`, and BrowserSession boundaries. Fourth-and-later levels, target
-  rotation/scatter routing, exact timing/accuracy, controlled runtime, browser
-  capture, and audiovisual parity remain open; gameplay semantics target `90`.
+- **M9 Laser Rifle third-level chainfire (`0.2.281`):** Laser Rifle now
+  accepts its pinned warm-up level-two continuation: seven ordered ranged
+  projectiles, seven loaded cells, deterministic post-lethal no-op continuation
+  slots, and warm-up advancement to level three. Direct-core, replay, MCP
+  legal-action/JSON, physical `C`, and BrowserSession parity plus atomic
+  fourth-level rejection are verified; higher levels, target rotation/scatter
+  routing, exact timing/accuracy, controlled runtime, browser capture, and
+  audiovisual parity remain open. Gameplay semantics advance to `90`.
+- **M9 Laser Rifle fourth-level chainfire (active target `0.2.282`):** Extend
+  the typed Laser Rifle warm-up sequence with the pinned level-two-and-later
+  formula `shots = 5 + (5 div 2) = 7`, consuming seven loaded cells and
+  emitting seven ordered ranged outcomes while preserving atomic rejection,
+  replay, MCP, physical `C`, and BrowserSession boundaries. Fifth-and-later
+  levels, target rotation/scatter routing, exact timing/accuracy, controlled
+  runtime, browser capture, and audiovisual parity remain open; gameplay
+  semantics target `91`.
 - **M9 BFG 10K radius-2 explosion fanout (`0.2.265`):** Successful BFG 10K
   hits now preserve their schedule metadata and immediately resolve the
   bounded actor-only radius-2 fanout in stable center/ring order, consuming one

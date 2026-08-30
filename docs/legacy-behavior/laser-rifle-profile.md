@@ -1,7 +1,8 @@
 # Laser Rifle typed behavior-profile evidence
 
 Status: delivered typed ordinary-fire five-shot profile and first-, second-,
-and third-level chainfire execution in `0.2.281`; higher chainfire levels,
+third-, and fourth-level chainfire execution in `0.2.282`; higher chainfire
+levels,
 spread/routing, controlled legacy runtime comparison, and audiovisual parity
 remain `NOT_RUN`.
 
@@ -31,13 +32,13 @@ Evidence is pinned to revision
 The immutable `drl_core::behavior::LASER_RIFLE_BEHAVIOR` profile records
 ordered `AttackEffect::ProjectileCount(5)`, one-cell ordinary cost, and
 `AlternateAction::Chainfire` fragments for four/four, five/five, and seven/seven
-projectile/cell levels. The existing ranged command path remains execution
-authority for
+projectile/cell levels (the seven/seven profile covers both later warm-up
+levels). The existing ranged command path remains execution authority for
 target/LOS/range and death-drop preflight, damage RNG, event ordering, and
 transactional clip consumption. Direct integration tests verify five ordered
 ordinary events, four-, five-, and seven-ordered chainfire events, four-, five-,
 and seven-cell chainfire consumption, atomic below-cost rejection, warm-up
-reset/advancement, and deterministic replay.
+reset/advancement through level four, and deterministic replay.
 
 Higher chainfire levels, the legacy alternate perk's exact routing, timing,
 and accuracy, controlled runtime comparison, and audiovisual parity remain
