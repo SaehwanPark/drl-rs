@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.305`
+Current project version: `0.2.306`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.305)
+## 3. Current Progress Summary (`VERSION` 0.2.306)
 
 ### Delivered Foundations
 
@@ -1638,7 +1638,7 @@ scripting.
   chainfire delivered in `0.2.304`, and twenty-first-level chainfire
   delivered in `0.2.305`; Nuclear
   Plasma's
-  bounded first- through sixth-level chainfire is delivered in `0.2.289`; the
+  bounded first- through seventh-level chainfire is delivered in `0.2.306`; the
   Laser Rifle's bounded first- through sixth-level chainfire is delivered in
   `0.2.288`,
   while exact-hit, explosion, and mod callbacks remain open.
@@ -2117,6 +2117,14 @@ scripting.
   overload/map effects, target rotation/spread, exact timing/accuracy,
   controlled legacy runtime, browser capture, and audiovisual parity remain
   open.
+- [x] Nuclear Plasma Rifle's delivered seventh-level chainfire contract extends
+  the same boundary with the pinned nine-projectile/nine-cell continuation
+  after recharge, including deterministic ScenarioRunner/replay, direct-core,
+  MCP legal-action/JSON, physical `C` routing, BrowserSession parity, and
+  atomic eighth-level/under-supply rejection; eighth-and-later levels,
+  overload/map effects, target rotation/spread, exact timing/accuracy,
+  controlled legacy runtime, browser capture, and audiovisual parity remain
+  open.
 - [x] BFG 10K's delivered first-level chainfire contract has a deterministic
   direct-core/replay/MCP/BrowserSession boundary check covering four ordered
   exact-hit events, fair observations, render effects, scene projections,
@@ -2550,6 +2558,16 @@ scripting.
   are verified. Seventh-and-later levels, target rotation/scatter routing,
   overload changes, exact timing/accuracy, controlled runtime, browser capture,
   and audiovisual parity remain open. Gameplay semantics advance to `98`.
+- **M9 Nuclear Plasma seventh-level chainfire (`0.2.306`):** Nuclear Plasma now
+  accepts its pinned warm-up level-six continuation: nine ordered ranged
+  projectiles, nine loaded cells after the existing delay-40/cadence-2 recharge
+  path restores the clip, and warm-up advancement to level seven. Direct-core,
+  recharge-backed ScenarioRunner/replay, MCP legal-action/JSON, physical `C`,
+  and BrowserSession parity plus atomic eighth-level/under-supply rejection
+  are verified. Eighth-and-later levels, target rotation/scatter routing,
+  overload/map effects, exact timing/accuracy, controlled runtime, browser
+  capture, and audiovisual parity remain open. Gameplay semantics advance to
+  `115`.
 - **M9 BFG 10K sixth-level chainfire (`0.2.290`):** BFG 10K now accepts its
   pinned warm-up level-five continuation: seven ordered exact-hit projectiles,
   thirty-five loaded cells, the existing delay-25/radius-2/knockback-16 splash
