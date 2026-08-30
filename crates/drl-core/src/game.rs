@@ -17,9 +17,10 @@ use crate::behavior::{
   ANTI_FREAK_JACKAL_EXPLOSION_DELAY, ANTI_FREAK_JACKAL_EXPLOSION_KNOCKBACK,
   ANTI_FREAK_JACKAL_EXPLOSION_RADIUS, BFG10K_EXPLOSION_DELAY, BFG10K_EXPLOSION_KNOCKBACK,
   BFG10K_EXPLOSION_RADIUS, BFG9000_EXPLOSION_DELAY, BFG9000_EXPLOSION_KNOCKBACK,
-  BFG9000_EXPLOSION_RADIUS, LavaRechargeOutcome, MINIGUN_CHAINFIRE_PROJECTILE_COUNT,
-  MedicalRepairOutcome, NUCLEAR_BFG9000_EXPLOSION_DELAY, NUCLEAR_BFG9000_EXPLOSION_KNOCKBACK,
-  NUCLEAR_BFG9000_EXPLOSION_RADIUS, PISTOL_AIMED_ACCURACY_BONUS, PISTOL_AIMED_FIRE_COST_MULTIPLIER,
+  BFG9000_EXPLOSION_RADIUS, LASER_RIFLE_CHAINFIRE_PROJECTILE_COUNT, LavaRechargeOutcome,
+  MINIGUN_CHAINFIRE_PROJECTILE_COUNT, MedicalRepairOutcome, NUCLEAR_BFG9000_EXPLOSION_DELAY,
+  NUCLEAR_BFG9000_EXPLOSION_KNOCKBACK, NUCLEAR_BFG9000_EXPLOSION_RADIUS,
+  PISTOL_AIMED_ACCURACY_BONUS, PISTOL_AIMED_FIRE_COST_MULTIPLIER,
   PLASMA_RIFLE_CHAINFIRE_PROJECTILE_COUNT, WeaponRechargeOutcome,
 };
 use crate::chaingun::{CHAINGUN_CHAINFIRE_PROJECTILE_COUNT, ChainfireTransition};
@@ -1713,6 +1714,7 @@ impl Game {
       weapon_is_chaingun,
       weapon_is_minigun,
       weapon_is_plasma_rifle,
+      weapon_is_laser_rifle,
     ) = {
       let player = self
         .state
@@ -1733,10 +1735,16 @@ impl Game {
       let weapon_is_chaingun = weapon.archetype() == drl_protocol::ItemArchetype::Chaingun;
       let weapon_is_minigun = weapon.archetype() == drl_protocol::ItemArchetype::Minigun;
       let weapon_is_plasma_rifle = weapon.archetype() == drl_protocol::ItemArchetype::PlasmaRifle;
+      let weapon_is_laser_rifle = weapon.archetype() == drl_protocol::ItemArchetype::LaserRifle;
       if chainfire {
-        if !weapon_is_chaingun && !weapon_is_minigun && !weapon_is_plasma_rifle {
+        if !weapon_is_chaingun
+          && !weapon_is_minigun
+          && !weapon_is_plasma_rifle
+          && !weapon_is_laser_rifle
+        {
           return Err(CommandError::InvalidCommand(
-            "chainfire is only available for the Chaingun, Minigun, or Plasma Rifle".to_string(),
+            "chainfire is only available for the Chaingun, Minigun, Plasma Rifle, or Laser Rifle"
+              .to_string(),
           ));
         }
         if !ChainfireTransition::can_chainfire(props) {
@@ -1744,6 +1752,8 @@ impl Game {
             "higher Minigun chainfire levels are deferred".to_string()
           } else if weapon_is_plasma_rifle {
             "higher Plasma Rifle chainfire levels are deferred".to_string()
+          } else if weapon_is_laser_rifle {
+            "higher Laser Rifle chainfire levels are deferred".to_string()
           } else {
             "higher Chaingun chainfire levels are deferred".to_string()
           }));
@@ -1778,6 +1788,8 @@ impl Game {
           MINIGUN_CHAINFIRE_PROJECTILE_COUNT
         } else if weapon_is_plasma_rifle {
           PLASMA_RIFLE_CHAINFIRE_PROJECTILE_COUNT
+        } else if weapon_is_laser_rifle {
+          LASER_RIFLE_CHAINFIRE_PROJECTILE_COUNT
         } else {
           CHAINGUN_CHAINFIRE_PROJECTILE_COUNT
         }
@@ -1813,6 +1825,7 @@ impl Game {
         weapon_is_chaingun,
         weapon_is_minigun,
         weapon_is_plasma_rifle,
+        weapon_is_laser_rifle,
       )
     };
 
@@ -2053,7 +2066,12 @@ impl Game {
     {
       weapon.reset_weapon_recharge_timer();
       weapon.mark_pump_action_after_fire();
-      if chainfire && (weapon_is_chaingun || weapon_is_minigun || weapon_is_plasma_rifle) {
+      if chainfire
+        && (weapon_is_chaingun
+          || weapon_is_minigun
+          || weapon_is_plasma_rifle
+          || weapon_is_laser_rifle)
+      {
         ChainfireTransition::advance(
           weapon
             .weapon_properties_mut()

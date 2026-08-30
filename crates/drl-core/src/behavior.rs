@@ -590,6 +590,10 @@ pub const CHAINGUN_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(CHAINGUN_BEH
 
 /// Pinned projectile count for an ordinary Laser Rifle shot.
 pub const LASER_RIFLE_PROJECTILE_COUNT: u32 = 5;
+/// Pinned projectile count for the first Laser Rifle chainfire level.
+pub const LASER_RIFLE_CHAINFIRE_PROJECTILE_COUNT: u32 = 4;
+/// Pinned Cell cost for the first Laser Rifle chainfire level.
+pub const LASER_RIFLE_CHAINFIRE_SHOT_COST: u32 = 4;
 
 const LASER_RIFLE_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
   BehaviorSpec::Attack(AttackEffect::ProjectileCount(LASER_RIFLE_PROJECTILE_COUNT)),
@@ -597,9 +601,13 @@ const LASER_RIFLE_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
     ammo_type: AmmoType::Cell,
     amount: 1,
   }),
+  BehaviorSpec::Alternate(AlternateAction::Chainfire {
+    shot_count: LASER_RIFLE_CHAINFIRE_PROJECTILE_COUNT,
+    ammo_cost: LASER_RIFLE_CHAINFIRE_SHOT_COST,
+  }),
 ];
 
-/// Immutable typed profile for the current Laser Rifle five-shot behavior.
+/// Immutable typed profile for the current Laser Rifle volley and chainfire.
 pub const LASER_RIFLE_BEHAVIOR: BehaviorProfile = BehaviorProfile::new(LASER_RIFLE_BEHAVIOR_SPECS);
 
 /// Current Rust projectile count for an ordinary Frag Shotgun shot.
@@ -1684,6 +1692,10 @@ mod tests {
         BehaviorSpec::Cost(ResourceCost::Ammo {
           ammo_type: AmmoType::Cell,
           amount: 1,
+        }),
+        BehaviorSpec::Alternate(AlternateAction::Chainfire {
+          shot_count: LASER_RIFLE_CHAINFIRE_PROJECTILE_COUNT,
+          ammo_cost: LASER_RIFLE_CHAINFIRE_SHOT_COST,
         }),
       ]
     );
