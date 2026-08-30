@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.297`
+Current project version: `0.2.298`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -73,7 +73,7 @@ six-, nine-, nine-, and nine-projectile chainfire transitions;
 BFG 10K records its typed exact-hit, five-projectile ordinary-fire,
 five-cell-per-projectile, delayed-explosion, and bounded first-level
 four-projectile/twenty-cell, second-level five-projectile/twenty-five-cell, and
-third-, fourth-, fifth-, sixth-, seventh-, eighth-, ninth-, tenth-, eleventh-, twelfth-, and thirteenth-level seven-projectile/thirty-five-cell
+third-, fourth-, fifth-, sixth-, seventh-, eighth-, ninth-, tenth-, eleventh-, twelfth-, thirteenth-, and fourteenth-level seven-projectile/thirty-five-cell
 chainfire fragments
 plus its bounded radius-2 actor-only explosion fanout and thresholded
 ordinary-ammo destruction;
@@ -343,7 +343,7 @@ Presentation Boundary
     five-cell-per-projectile shot-cost, delayed explosion schedule metadata
     (delay 25, radius 2, knockback 16), the bounded first-level
     four-projectile/twenty-cell, second-level five-projectile/twenty-five-cell,
-    and third-, fourth-, fifth-, sixth-, seventh-, eighth-, ninth-, tenth-, eleventh-, twelfth-, and thirteenth-level seven-projectile/thirty-five-cell
+    and third-, fourth-, fifth-, sixth-, seventh-, eighth-, ninth-, tenth-, eleventh-, twelfth-, thirteenth-, and fourteenth-level seven-projectile/thirty-five-cell
     chainfire transitions, and the immediate
     actor-only radius-2 fanout (6d4 Plasma per clear cell, no distance falloff,
     integer damage/16 knockback) and destroys one lowest-ID ordinary loose-ammo
