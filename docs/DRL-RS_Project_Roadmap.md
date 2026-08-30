@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-29
-Current project version: `0.2.260`
+Current project version: `0.2.261`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.260)
+## 3. Current Progress Summary (`VERSION` 0.2.261)
 
 ### Delivered Foundations
 
@@ -960,6 +960,14 @@ verification item uses explicit status semantics:
   parity plus atomic rejection are verified; higher levels, target
   rotation/spread, exact timing/accuracy, runtime, browser capture, and
   audiovisual parity remain open.
+- **M9 Plasma Rifle first-level chainfire execution (`0.2.261`):** The existing
+  typed chainfire command now accepts the standard Plasma Rifle at warm-up level
+  zero, preflights and consumes four cells, emits four ordered outcomes with
+  deterministic no-op continuations after a lethal target, and advances/reset
+  warm-up state transactionally. Direct-core, replay, MCP, and
+  BrowserSession/physical-key parity plus atomic rejection are verified; higher
+  levels, Nuclear Plasma behavior, target rotation/spread, exact timing/
+  accuracy, runtime, browser capture, and audiovisual parity remain open.
 - **M9 Trigun aimed-fire vertical fidelity (`0.2.248`):** The shared typed
   aimed-fire command now accepts Trigun, applies +3 accuracy and doubled action
   cost, and preserves one-projectile/one-round behavior. Direct-core,
@@ -1488,9 +1496,11 @@ scripting.
   remain authoritative while aimed fire, runtime, and audiovisual parity
   remain open.
 - [x] Plasma Rifle has an immutable behavior profile for its six-projectile
-  ordinary fire and one-cell-per-projectile cost; generic ranged execution
-  resolves the ordered volley and atomically rejects clips below six cells,
-  while chainfire, overcharge, runtime, and audiovisual parity remain open.
+  ordinary fire and one-cell-per-projectile cost plus a bounded first-level
+  four-projectile/four-cell chainfire transition; generic ranged execution
+  resolves the ordered ordinary and chainfire volleys and atomically rejects
+  clips below their aggregate costs, while higher levels, overcharge, runtime,
+  and audiovisual parity remain open.
 - [x] Trigun has an immutable behavior profile for its one-projectile,
   one-round ordinary fire and shared +3/doubled-cost aimed-fire policy; generic
   ranged execution remains authoritative while alternate reload/nuke behavior,
@@ -1596,6 +1606,13 @@ scripting.
   events, fair observations, render effects, scene projections, six-round clip
   consumption, physical `C` routing, observable warm-up advancement/reset, and
   atomic under-supply rejection; higher chainfire levels, target
+  rotation/spread, exact timing/accuracy, controlled legacy runtime, browser
+  capture, and audiovisual parity remain open.
+- [x] Plasma Rifle's delivered first-level chainfire contract has a deterministic
+  direct-core/replay/MCP/BrowserSession boundary check covering four ordered
+  events, fair observations, render effects, scene projections, four-cell clip
+  consumption, physical `C` routing, observable warm-up advancement/reset, and
+  atomic under-supply rejection; higher levels, Nuclear Plasma behavior, target
   rotation/spread, exact timing/accuracy, controlled legacy runtime, browser
   capture, and audiovisual parity remain open.
 - [x] Mega Buster's delivered three-projectile ordinary-fire contract has a
@@ -1764,6 +1781,14 @@ scripting.
   BrowserSession parity plus atomic rejection are verified; higher levels,
   target rotation/spread, exact timing/accuracy, runtime, browser capture, and
   audiovisual parity remain open. Gameplay semantics advance to `69`.
+- **M9 Plasma Rifle first-level chainfire execution (`0.2.261`):** The standard
+  Plasma Rifle now shares the typed first-level chainfire command with the
+  rotary weapons, consuming four loaded cells and emitting four ordered
+  outcomes with deterministic no-op post-lethal slots. Direct-core, replay/MCP,
+  physical `C` routing, and BrowserSession parity plus atomic rejection are
+  verified; higher levels, Nuclear Plasma behavior, target rotation/spread,
+  exact timing/accuracy, runtime, browser capture, and audiovisual parity
+  remain open. Gameplay semantics advance to `70`.
 - [x] Typed `umega`, `uberetta`, and `ufshotgun` preserve pinned unique-firearm
   descriptions, 9mm relations, clips/damage/range scalars, replay kinds, and
   measured plasma/pistol/combat-shotgun atlas slots; mode switching, kill

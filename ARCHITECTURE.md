@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-29
-Current project version: `0.2.260`
+Current project version: `0.2.261`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -56,8 +56,10 @@ fragments; Minigun records its typed eight-projectile ordinary-fire and
 one-round-per-projectile ammo-cost fragments plus a bounded first-level
 six-projectile chainfire transition; Chaingun records its typed
 four-projectile ordinary-fire and one-round-per-projectile ammo-cost fragments
-plus the same bounded first-level three-projectile chainfire transition; Laser Rifle
-records its typed five-projectile ordinary-fire and
+plus the same bounded first-level three-projectile chainfire transition; Plasma
+Rifle records its typed six-projectile ordinary-fire and one-cell-per-projectile
+ammo-cost fragments plus a bounded first-level four-projectile chainfire
+transition; Laser Rifle records its typed five-projectile ordinary-fire and
 one-cell-per-projectile ammo-cost fragments; Standard
 Shotgun records its typed one-cell knockback hit and one-shell ammo-cost
 fragments; Plasma Shotgun records its typed one-projectile ordinary-fire and

@@ -7,7 +7,8 @@ use drl_core::grid::Tile;
 use drl_core::scenario::Scenario;
 use drl_core::{
   CHAINGUN_CHAINFIRE_PROJECTILE_COUNT, CHAINGUN_CHAINFIRE_SHOT_COST, Game,
-  MINIGUN_CHAINFIRE_PROJECTILE_COUNT, MINIGUN_CHAINFIRE_SHOT_COST, ReplayEngine,
+  MINIGUN_CHAINFIRE_PROJECTILE_COUNT, MINIGUN_CHAINFIRE_SHOT_COST,
+  PLASMA_RIFLE_CHAINFIRE_PROJECTILE_COUNT, PLASMA_RIFLE_CHAINFIRE_SHOT_COST, ReplayEngine,
 };
 use drl_protocol::{
   Command, Direction, EpisodeMetrics, EquipmentSlot, GameEvent, ItemArchetype, ItemCategory,
@@ -38,6 +39,10 @@ fn first_level_chainfire_profile(archetype: ItemArchetype) -> Option<(u32, u32)>
     ItemArchetype::Minigun => Some((
       MINIGUN_CHAINFIRE_PROJECTILE_COUNT,
       MINIGUN_CHAINFIRE_SHOT_COST,
+    )),
+    ItemArchetype::PlasmaRifle => Some((
+      PLASMA_RIFLE_CHAINFIRE_PROJECTILE_COUNT,
+      PLASMA_RIFLE_CHAINFIRE_SHOT_COST,
     )),
     _ => None,
   }
@@ -2532,6 +2537,45 @@ mod tests {
   }
 
   #[test]
+  fn test_legal_action_catalog_advertises_first_plasma_rifle_chainfire_only_once() {
+    let mut session = McpSession::new();
+    session
+      .load_scenario("\n#######\n#@.h..#\n#######\n", None)
+      .unwrap();
+    let player_id = session.game.as_ref().unwrap().world().player_id().unwrap();
+    session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .get_actor_mut(player_id)
+      .unwrap()
+      .equipment_mut()
+      .equip(
+        EquipmentSlot::Weapon,
+        drl_core::item::Item::plasma_rifle(ItemId::new(100)),
+      )
+      .unwrap();
+
+    let observation = session.get_observation().unwrap();
+    let chainfire = compute_legal_actions(&observation)
+      .into_iter()
+      .find(|action| action.action == "Chainfire")
+      .expect("first Plasma Rifle chainfire should be advertised");
+    assert_eq!(
+      chainfire.command,
+      Command::AttackRangedChainfire(Position::new(3, 1))
+    );
+    assert!(chainfire.description.contains("4 projectiles, 4 rounds"));
+    session.step(chainfire.command).expect("chainfire action");
+    assert!(
+      !compute_legal_actions(&session.get_observation().unwrap())
+        .iter()
+        .any(|action| action.action == "Chainfire")
+    );
+  }
+
+  #[test]
   fn pistol_aimed_fire_is_advertised_and_executed_through_mcp() {
     let mut session = McpSession::new();
     session
@@ -3775,6 +3819,97 @@ mod tests {
     let replay = session.export_replay().expect("MCP replay export");
     let (replayed, replay_events) =
       ReplayEngine::run(replay).expect("MCP Plasma Rifle volley replay");
+    assert_eq!(replayed, direct);
+    assert_eq!(replay_events, expected_events);
+    assert!(ReplayEngine::verify_determinism(replay).expect("replay determinism"));
+  }
+
+  #[test]
+  fn plasma_rifle_chainfire_mcp_boundary_matches_direct_core() {
+    let player_position = Position::new(1, 1);
+    let target_position = Position::new(3, 1);
+    let player_config = drl_protocol::PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: vec![drl_protocol::ItemSpawnKind::AmmoCells(6)],
+      equipped_weapon: Some(drl_protocol::ItemSpawnKind::PlasmaRifle),
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    };
+    let mut setup_replay =
+      ReplayLog::new(2_448, 8, 4, player_position).with_player_config(player_config);
+    setup_replay.record_monster(drl_protocol::MonsterSpawnSpec::new(
+      target_position,
+      "Static Target",
+      500,
+      0,
+      (1, 7),
+    ));
+
+    let mut session = McpSession::new();
+    session
+      .load_replay(setup_replay)
+      .expect("load Plasma Rifle chainfire replay setup");
+    let initial = session.game.as_ref().unwrap().clone();
+    let player_id = initial.world().player_id().expect("player identity");
+    let target_id = initial
+      .world()
+      .actors()
+      .values()
+      .find(|actor| !actor.is_player())
+      .expect("Plasma Rifle chainfire target")
+      .id();
+    let command = Command::AttackRangedChainfire(target_position);
+    assert!(
+      compute_legal_actions(&initial.observe_player())
+        .iter()
+        .any(|action| action.command == command)
+    );
+    let mut direct = initial.clone();
+    let expected_events = direct
+      .step(command)
+      .expect("direct Plasma Rifle chainfire command");
+    let (events, observation, outcome) = session
+      .step(command)
+      .expect("MCP Plasma Rifle chainfire command");
+
+    assert_eq!(events, expected_events);
+    assert_eq!(session.game.as_ref().unwrap(), &direct);
+    assert_eq!(observation, direct.observe_player());
+    assert_eq!(outcome, None);
+    assert_eq!(
+      events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          GameEvent::AttackResolved {
+            attacker_id,
+            target_id: event_target,
+            is_ranged: true,
+            ..
+          } if *attacker_id == player_id && *event_target == target_id
+        ))
+        .count(),
+      4
+    );
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .current_clip,
+      2
+    );
+
+    let replay = session.export_replay().expect("MCP replay export");
+    let (replayed, replay_events) =
+      ReplayEngine::run(replay).expect("MCP Plasma Rifle chainfire replay");
     assert_eq!(replayed, direct);
     assert_eq!(replay_events, expected_events);
     assert!(ReplayEngine::verify_determinism(replay).expect("replay determinism"));
