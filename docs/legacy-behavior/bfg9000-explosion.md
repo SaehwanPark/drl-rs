@@ -1,8 +1,8 @@
 # Standard BFG 9000 delayed explosion evidence
 
-Status: delivered bounded typed schedule metadata for `0.2.202`; explosion
-damage/geometry, controlled runtime comparison, and audiovisual parity remain
-`NOT_RUN`.
+Status: delivered bounded typed schedule metadata and immediate actor-only
+radius-8 fanout in `0.2.267`; delayed timing/state-machine parity, controlled
+runtime comparison, browser capture, and audiovisual parity remain `NOT_RUN`.
 
 ## Pinned source
 
@@ -13,8 +13,11 @@ when inspected: unrelated modifications were present under
 and an untracked `fpcvalkyrie/` directory; none overlap the sources below.
 
 - `bin/data/drl/items/eitems.lua:84-120` defines the standard `bfg9000` with
-  item `radius = 8` and an explosion payload carrying `delay = 33` and
-  `knockback = 16`.
+  `damage = "10d6"`, `DAMAGE_SPLASMA`, item `radius = 8`, `shotcost = 40`,
+  and an explosion payload carrying `delay = 33` and `knockback = 16`.
+  The payload records `EFSELFSAFE`, `EFAFTERBLINK`, `EFCHAIN`, and
+  `EFNODISTANCEDROP`; this slice implements only the self-safe actor-fanout
+  portion, while the other flags remain explicit deferred work.
 - `src/dfbeing.pas:2636-2644` copies the item explosion payload, assigns the
   item radius to the explosion range, and schedules it after the ranged path.
 - `src/dfdata.pas:896-965` shows that an omitted explosion `range` defaults to
@@ -23,9 +26,15 @@ and an untracked `fpcvalkyrie/` directory; none overlap the sources below.
 
 ## DRL-Rust boundary
 
-Gameplay semantics `40` (project version `0.2.202`) records one typed
+Gameplay semantics `76` (project version `0.2.267`) records one typed
 `Bfg9000ExplosionScheduled` event after the standard BFG 9000 direct-target hit,
-carrying delay `33`, radius `8`, and knockback `16`. The event is deterministic
-and replay-visible; explosion geometry, splash damage, knockback application,
-projectile routing, alternate overload, controlled legacy runtime, and
-audiovisual comparison remain separate slices or `NOT_RUN`.
+then immediately resolves the in-bounds, line-of-sight-cleared radius-8 cells
+in stable center-then-ring order. Each clear cell consumes one `10d6` Plasma
+roll without distance falloff; `EFSELFSAFE` skips the firing actor, other living
+actors are processed once with radial integer `damage / 16` knockback before
+environmental damage, and lethal victims retain normal death/drop/game-over
+ordering. The delay remains presentation metadata rather than a pending core
+queue. Secondary `EFCHAIN` explosions, `EFAFTERBLINK` timing, terrain/content
+and ground-item effects, projectile routing, Nuclear BFG behavior, controlled
+legacy runtime, browser capture, and audiovisual comparison remain separate
+slices or `NOT_RUN`.

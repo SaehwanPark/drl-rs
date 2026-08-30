@@ -25,8 +25,11 @@ use crate::behavior::{
   PLASMA_RIFLE_CHAINFIRE_PROJECTILE_COUNT, WeaponRechargeOutcome,
 };
 use crate::bfg10k::{
-  knockback_distance as bfg10k_knockback_distance, radius_two_blast_positions,
-  roll_explosion_damage, should_destroy_bfg10k_ground_item,
+  BFG10K_GROUND_ITEM_DESTRUCTION_THRESHOLD, knockback_distance as bfg10k_knockback_distance,
+  radius_two_blast_positions, roll_explosion_damage,
+};
+use crate::bfg9000::{
+  radius_eight_blast_positions, roll_explosion_damage as roll_bfg9000_explosion_damage,
 };
 use crate::chaingun::{CHAINGUN_CHAINFIRE_PROJECTILE_COUNT, ChainfireTransition};
 use crate::combat::CombatResolver;
@@ -69,6 +72,14 @@ pub struct GameState {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Game {
   state: GameState,
+}
+
+/// Policy inputs shared by the bounded actor-only explosion resolvers.
+#[derive(Clone, Copy)]
+struct ActorSplashPolicy {
+  roll_damage: fn(&mut GameRng) -> u32,
+  source_self_safe: bool,
+  ground_item_threshold: Option<u32>,
 }
 
 impl Game {
@@ -1857,9 +1868,15 @@ impl Game {
     {
       self.validate_death_drop_position(target_pos)?;
     }
-    if weapon_is_anti_freak_jackal || null_pointer_item_id.is_some() || weapon_is_bfg10k {
+    if weapon_is_anti_freak_jackal
+      || null_pointer_item_id.is_some()
+      || weapon_is_bfg10k
+      || weapon_is_bfg9000
+    {
       let splash_positions = if weapon_is_bfg10k {
         radius_two_blast_positions(self.state.world.map(), target_pos)
+      } else if weapon_is_bfg9000 {
+        radius_eight_blast_positions(self.state.world.map(), target_pos)
       } else {
         radius_one_blast_positions(self.state.world.map(), target_pos)
       };
@@ -2028,6 +2045,7 @@ impl Game {
             radius: BFG9000_EXPLOSION_RADIUS,
             knockback: BFG9000_EXPLOSION_KNOCKBACK,
           });
+          self.execute_bfg9000_splash(player_id, target_pos, events)?;
         } else if weapon_is_nuclear_bfg9000 {
           events.push(GameEvent::NuclearBfg9000ExplosionScheduled {
             entity_id: player_id,
@@ -2347,9 +2365,51 @@ impl Game {
     center: Position,
     events: &mut Vec<GameEvent>,
   ) -> Result<(), CommandError> {
+    self.execute_actor_splash(
+      source_id,
+      center,
+      radius_two_blast_positions(self.state.world.map(), center),
+      ActorSplashPolicy {
+        roll_damage: roll_explosion_damage,
+        source_self_safe: false,
+        ground_item_threshold: Some(BFG10K_GROUND_ITEM_DESTRUCTION_THRESHOLD),
+      },
+      events,
+    )
+  }
+
+  /// Resolves the bounded Standard BFG 9000 radius-8 actor splash.
+  fn execute_bfg9000_splash(
+    &mut self,
+    source_id: drl_protocol::EntityId,
+    center: Position,
+    events: &mut Vec<GameEvent>,
+  ) -> Result<(), CommandError> {
+    self.execute_actor_splash(
+      source_id,
+      center,
+      radius_eight_blast_positions(self.state.world.map(), center),
+      ActorSplashPolicy {
+        roll_damage: roll_bfg9000_explosion_damage,
+        source_self_safe: true,
+        ground_item_threshold: None,
+      },
+      events,
+    )
+  }
+
+  /// Resolves a deterministic actor-only blast with an optional ground-item rule.
+  fn execute_actor_splash(
+    &mut self,
+    source_id: drl_protocol::EntityId,
+    center: Position,
+    blast_positions: Vec<Position>,
+    policy: ActorSplashPolicy,
+    events: &mut Vec<GameEvent>,
+  ) -> Result<(), CommandError> {
     let mut processed_actors = BTreeSet::new();
-    for blast_position in radius_two_blast_positions(self.state.world.map(), center) {
-      let damage = roll_explosion_damage(&mut self.state.rng);
+    for blast_position in blast_positions {
+      let damage = (policy.roll_damage)(&mut self.state.rng);
       let target_id = self
         .state
         .world
@@ -2357,7 +2417,10 @@ impl Game {
         .map(|actor| actor.id());
       let target_id = target_id.filter(|target_id| processed_actors.insert(*target_id));
       let mut lethal_target = None;
-      if let Some(target_id) = target_id {
+
+      if let Some(target_id) = target_id
+        && !(policy.source_self_safe && target_id == source_id)
+      {
         let target_position = self
           .state
           .world
@@ -2392,7 +2455,9 @@ impl Game {
         lethal_target = lethal.then_some((target_id, death_cause));
       }
 
-      if should_destroy_bfg10k_ground_item(damage)
+      if policy
+        .ground_item_threshold
+        .is_some_and(|threshold| damage > threshold)
         && let Some(item_id) = self.state.world.destroy_ground_ammo_at(blast_position)
       {
         events.push(GameEvent::GroundItemDestroyed {

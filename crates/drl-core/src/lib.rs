@@ -14,11 +14,13 @@ pub mod assault_shotgun;
 pub mod batch;
 pub mod behavior;
 pub mod bfg10k;
+pub mod bfg9000;
 pub mod chaingun;
 pub mod combat;
 pub mod combat_shotgun;
 pub mod content_validation;
 pub mod environment;
+pub mod explosion;
 pub mod fov;
 pub mod game;
 pub mod generator;
@@ -104,6 +106,9 @@ pub use bfg10k::{
   BFG10K_EXPLOSION_DAMAGE_DICE, BFG10K_EXPLOSION_DAMAGE_DIE_SIDES,
   BFG10K_GROUND_ITEM_DESTRUCTION_THRESHOLD, knockback_distance, radius_two_blast_positions,
   roll_explosion_damage, should_destroy_bfg10k_ground_item,
+};
+pub use bfg9000::{
+  BFG9000_EXPLOSION_DAMAGE_DICE, BFG9000_EXPLOSION_DAMAGE_DIE_SIDES, radius_eight_blast_positions,
 };
 pub use chaingun::{
   CHAINGUN_CHAINFIRE_PROJECTILE_COUNT, CHAINGUN_CHAINFIRE_SHOT_COST, ChainfireTransition,

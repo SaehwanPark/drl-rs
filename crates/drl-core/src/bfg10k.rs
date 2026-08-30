@@ -2,7 +2,7 @@
 
 use drl_protocol::Position;
 
-use crate::{fov, grid::Map, rng::GameRng};
+use crate::{explosion::radius_blast_positions, grid::Map, rng::GameRng};
 
 /// Number of damage dice rolled for each BFG 10K blast cell.
 pub const BFG10K_EXPLOSION_DAMAGE_DICE: u32 = 6;
@@ -18,40 +18,7 @@ pub const BFG10K_GROUND_ITEM_DESTRUCTION_THRESHOLD: u32 = 10;
 /// intermediate cells block a blast ray; the endpoint itself may be opaque.
 #[must_use]
 pub fn radius_two_blast_positions(map: &Map, center: Position) -> Vec<Position> {
-  if !map.is_in_bounds(center) {
-    return Vec::new();
-  }
-
-  let mut positions = vec![center];
-  for radius in 1_u32..=2 {
-    let radius = radius as i32;
-    let mut ring = Vec::with_capacity((radius * 8) as usize);
-    for x in 0..=radius {
-      ring.push(center.offset(x, -radius));
-    }
-    for y in (-radius + 1)..=radius {
-      ring.push(center.offset(radius, y));
-    }
-    for x in (-(radius)..=radius - 1).rev() {
-      ring.push(center.offset(x, radius));
-    }
-    for y in (-(radius)..=radius - 1).rev() {
-      ring.push(center.offset(-radius, y));
-    }
-    for x in (-radius + 1)..0 {
-      ring.push(center.offset(x, -radius));
-    }
-    for position in ring {
-      if position.distance_chebyshev(center) != radius as u32
-        || !map.is_in_bounds(position)
-        || !fov::has_line_of_sight(map, center, position)
-      {
-        continue;
-      }
-      positions.push(position);
-    }
-  }
-  positions
+  radius_blast_positions(map, center, 2)
 }
 
 /// Rolls one explicit `6d4` BFG 10K explosion result.

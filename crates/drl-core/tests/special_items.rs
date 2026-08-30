@@ -492,20 +492,34 @@ fn standard_bfg_exact_hit_resolves_even_at_zero_accuracy() {
       .current_clip,
     60
   );
+  let direct_damage = events
+    .iter()
+    .find_map(|event| match event {
+      GameEvent::DamageApplied {
+        target_id: event_target,
+        amount,
+        source: DamageSource::Actor(attacker_id),
+        damage_type: None,
+        ..
+      } if *event_target == target_id && *attacker_id == player_id => Some(*amount),
+      _ => None,
+    })
+    .expect("BFG hit should apply direct damage");
+  let total_damage: u32 = events
+    .iter()
+    .filter_map(|event| match event {
+      GameEvent::DamageApplied {
+        target_id: event_target,
+        amount,
+        ..
+      } if *event_target == target_id => Some(*amount),
+      _ => None,
+    })
+    .sum();
+  assert!(direct_damage > 0);
   assert_eq!(
     game.world().get_actor(target_id).unwrap().hp().current,
-    500
-      - events
-        .iter()
-        .find_map(|event| match event {
-          GameEvent::DamageApplied {
-            target_id: event_target,
-            amount,
-            ..
-          } if *event_target == target_id => Some(*amount),
-          _ => None,
-        })
-        .expect("BFG hit should apply damage")
+    500 - total_damage
   );
   assert_standard_bfg_schedule_event(&events, player_id, target_id);
 }
