@@ -3003,6 +3003,18 @@ mod tests {
     session
       .step(fifth.command)
       .expect("fifth Laser Rifle chainfire action");
+    let sixth = compute_legal_actions(&session.get_observation().unwrap())
+      .into_iter()
+      .find(|action| action.action == "Chainfire")
+      .expect("sixth Laser Rifle chainfire should be advertised");
+    assert_eq!(
+      sixth.command,
+      Command::AttackRangedChainfire(Position::new(3, 1))
+    );
+    assert!(sixth.description.contains("7 projectiles, 7 rounds"));
+    session
+      .step(sixth.command)
+      .expect("sixth Laser Rifle chainfire action");
     assert!(
       !compute_legal_actions(&session.get_observation().unwrap())
         .iter()
@@ -5012,6 +5024,65 @@ mod tests {
       5
     );
     expected_events.extend(fifth_events);
+
+    let sixth_command = Command::AttackRangedChainfire(target_position);
+    assert!(
+      compute_legal_actions(&direct.observe_player())
+        .iter()
+        .any(|action| action.command == sixth_command)
+    );
+    let sixth_expected_events = direct
+      .step(sixth_command)
+      .expect("direct sixth Laser Rifle chainfire command");
+    let (sixth_events, sixth_observation, sixth_outcome) = session
+      .step(sixth_command)
+      .expect("MCP sixth Laser Rifle chainfire command");
+    assert_eq!(sixth_events, sixth_expected_events);
+    assert_eq!(session.game.as_ref().unwrap(), &direct);
+    assert_eq!(sixth_observation, direct.observe_player());
+    assert_eq!(sixth_outcome, None);
+    assert_eq!(
+      sixth_events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          GameEvent::AttackResolved {
+            attacker_id,
+            target_id: event_target,
+            is_ranged: true,
+            ..
+          } if *attacker_id == player_id && *event_target == target_id
+        ))
+        .count(),
+      7
+    );
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .current_clip,
+      3
+    );
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .chainfire_level,
+      6
+    );
+    expected_events.extend(sixth_events);
     assert!(
       !compute_legal_actions(&direct.observe_player())
         .iter()
