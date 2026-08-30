@@ -22,7 +22,7 @@ use crate::behavior::{
   NUCLEAR_BFG9000_EXPLOSION_KNOCKBACK, NUCLEAR_BFG9000_EXPLOSION_RADIUS,
   NUCLEAR_PLASMA_CHAINFIRE_PROJECTILE_COUNT, PISTOL_AIMED_ACCURACY_BONUS,
   PISTOL_AIMED_FIRE_COST_MULTIPLIER, PLASMA_RIFLE_CHAINFIRE_PROJECTILE_COUNT,
-  WeaponRechargeOutcome, bfg10k_chainfire_profile,
+  WeaponRechargeOutcome, bfg10k_chainfire_profile, nuclear_plasma_chainfire_profile,
 };
 use crate::bfg10k::{
   BFG10K_GROUND_ITEM_DESTRUCTION_THRESHOLD, knockback_distance as bfg10k_knockback_distance,
@@ -1770,6 +1770,7 @@ impl Game {
       let weapon_is_nuclear_plasma_rifle =
         weapon.archetype() == drl_protocol::ItemArchetype::NuclearPlasmaRifle;
       let bfg10k_chainfire = bfg10k_chainfire_profile(props.chainfire_level);
+      let nuclear_plasma_chainfire = nuclear_plasma_chainfire_profile(props.chainfire_level);
       if chainfire {
         if !weapon_is_bfg10k
           && !weapon_is_chaingun
@@ -1784,6 +1785,8 @@ impl Game {
         }
         let chainfire_available = if weapon_is_bfg10k {
           bfg10k_chainfire.is_some()
+        } else if weapon_is_nuclear_plasma_rifle {
+          nuclear_plasma_chainfire.is_some()
         } else {
           ChainfireTransition::can_chainfire(props)
         };
@@ -1830,6 +1833,12 @@ impl Game {
       let (shot_count, ammo_cost) = if chainfire && weapon_is_bfg10k {
         bfg10k_chainfire.ok_or_else(|| {
           CommandError::InvalidCommand("higher BFG 10K chainfire levels are deferred".to_string())
+        })?
+      } else if chainfire && weapon_is_nuclear_plasma_rifle {
+        nuclear_plasma_chainfire.ok_or_else(|| {
+          CommandError::InvalidCommand(
+            "higher Nuclear Plasma chainfire levels are deferred".to_string(),
+          )
         })?
       } else {
         let shot_count = if chainfire {

@@ -411,9 +411,9 @@ mod tests {
   #[test]
   fn test_replay_validation_rejects_incompatible_semantics() {
     let mut replay = ReplayLog::new(1234, 10, 10, Position::new(1, 1));
-    // Version 80 predates BFG 10K's third-level chainfire effect and must not
-    // be interpreted by the version-81 engine.
-    assert_eq!(drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION, 81);
+    // Version 81 predates Nuclear Plasma Rifle's second-level chainfire effect
+    // and must not be interpreted by the version-82 engine.
+    assert_eq!(drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION, 82);
     assert_eq!(
       drl_protocol::CURRENT_RNG_SAMPLING_SEMANTICS_VERSION,
       crate::rng::RNG_SAMPLING_SEMANTICS_VERSION

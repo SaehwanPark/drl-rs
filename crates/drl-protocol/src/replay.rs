@@ -21,9 +21,11 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// Gameplay semantics identifier expected by the current replay engine.
 ///
 /// This advances independently from the wire/schema and RNG-sampling versions
-/// when other deterministic simulation rules change. Version `81` includes
-/// BFG 10K's typed third-level seven-projectile chainfire burst; version `80`
-/// includes the typed second-level five-projectile chainfire burst; version `79`
+/// when other deterministic simulation rules change. Version `82` includes
+/// Nuclear Plasma Rifle's typed second-level six-projectile chainfire burst;
+/// version `81` includes BFG 10K's typed third-level seven-projectile
+/// chainfire burst; version `80` includes the typed second-level
+/// five-projectile chainfire burst; version `79`
 /// Nuclear BFG 9000's typed radius-8 ground-item destruction; version `78`
 /// includes Standard BFG 9000's typed radius-8 ground-item destruction;
 /// version `77` includes Nuclear BFG 9000's typed radius-8 actor-only splash;
@@ -65,7 +67,7 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// alternate overload/recharge, the `IF_NORELOAD` policy, Blaster recharge,
 /// the prior Malek's Armor, Missile Launcher, and Combat Shotgun policies, and
 /// the typed ordinary-fire cost policies through Laser Rifle.
-pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 81;
+pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 82;
 
 /// Procedural-generation semantics identifier expected for replays that carry
 /// a procedural generation configuration. Version 2 includes the exact
@@ -85,9 +87,10 @@ pub struct ReplayMetadata {
   /// Engine crate version string.
   pub engine_version: String,
   /// Gameplay semantics version required to interpret the command history.
-  /// Version 81 includes BFG 10K's typed third-level seven-projectile
-  /// chainfire burst; version 80 includes the typed second-level
-  /// five-projectile chainfire burst; version 79 includes Nuclear BFG 9000's
+  /// Version 82 includes Nuclear Plasma Rifle's typed second-level
+  /// six-projectile chainfire burst; version 81 includes BFG 10K's typed
+  /// third-level seven-projectile chainfire burst; version 80 includes the
+  /// typed second-level five-projectile chainfire burst; version 79 includes Nuclear BFG 9000's
   /// typed radius-8 ground-item destruction; version 78 includes Standard BFG 9000's typed radius-8
   /// ground-item destruction; version 77 includes Nuclear BFG 9000's typed
   /// radius-8 actor-only splash; version 76 includes Standard BFG 9000's typed
