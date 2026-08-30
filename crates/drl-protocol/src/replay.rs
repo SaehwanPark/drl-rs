@@ -21,7 +21,8 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// Gameplay semantics identifier expected by the current replay engine.
 ///
 /// This advances independently from the wire/schema and RNG-sampling versions
-/// when other deterministic simulation rules change. Version `75` includes
+/// when other deterministic simulation rules change. Version `76` includes
+/// Standard BFG 9000's typed radius-8 actor-only splash; version `75` includes
 /// BFG 10K's typed radius-2 loose-ammo destruction; version `74` includes its
 /// typed radius-2 actor splash; version `73` includes its typed
 /// first-level four-projectile chainfire burst; version `72` includes Nuclear
@@ -58,7 +59,7 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// alternate overload/recharge, the `IF_NORELOAD` policy, Blaster recharge,
 /// the prior Malek's Armor, Missile Launcher, and Combat Shotgun policies, and
 /// the typed ordinary-fire cost policies through Laser Rifle.
-pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 75;
+pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 76;
 
 /// Procedural-generation semantics identifier expected for replays that carry
 /// a procedural generation configuration. Version 2 includes the exact
@@ -78,7 +79,8 @@ pub struct ReplayMetadata {
   /// Engine crate version string.
   pub engine_version: String,
   /// Gameplay semantics version required to interpret the command history.
-  /// Version 75 includes BFG 10K's typed radius-2 loose-ammo destruction;
+  /// Version 76 includes Standard BFG 9000's typed radius-8 actor-only splash;
+  /// version 75 includes BFG 10K's typed radius-2 loose-ammo destruction;
   /// version 74 includes its typed radius-2 actor splash; version 73 includes
   /// its typed first-level four-projectile chainfire burst; version 72 includes
   /// Nuclear Plasma Rifle's typed first-level four-projectile

@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-29
-Current project version: `0.2.266`
+Current project version: `0.2.267`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -68,6 +68,11 @@ BFG 10K records its typed exact-hit, five-projectile ordinary-fire,
 five-cell-per-projectile, delayed-explosion, and bounded first-level
 four-projectile/twenty-cell chainfire fragments plus its bounded radius-2
 actor-only explosion fanout and thresholded ordinary-ammo destruction;
+Standard BFG 9000 records its typed exact-hit, one-projectile,
+forty-cell-per-shot, and delayed-explosion fragments plus its bounded radius-8
+actor-only fanout (one `10d6` Plasma roll per clear cell, source self-safety,
+radial integer `damage / 16` knockback, and normal death/drop/game-over
+follow-up);
 Standard
 Shotgun records its typed one-cell knockback hit and one-shell ammo-cost
 fragments; Plasma Shotgun records its typed one-projectile ordinary-fire and
@@ -292,9 +297,13 @@ Presentation Boundary
     preflights and debits ammo before the ordinary single-projectile combat
     path. LOS, range, action cost, damage RNG, and existing attack/damage
     events remain unchanged. Its direct-target hit now emits one typed
-    `Bfg9000ExplosionScheduled` event with delay 33, radius 8, and knockback 16;
-    explosion geometry, splash, knockback application, and projectile routing
-    remain separate policy work.
+    `Bfg9000ExplosionScheduled` event with delay 33, radius 8, and knockback 16,
+    then resolves the bounded immediate actor-only radius-8 fanout through the
+    shared deterministic blast geometry. The firing actor is self-safe; other
+    actors receive one `10d6` Plasma roll per clear cell and radial integer
+    `damage / 16` knockback before environmental damage. Secondary chains,
+    terrain/content and ground-item effects, delayed timing/state-machine
+    parity, and projectile routing remain separate policy work.
     Nuclear BFG 9000 opts into the same typed exact-hit policy without changing
     its recharge or alternate-overload state; its direct-target hit now emits
     one typed `NuclearBfg9000ExplosionScheduled` event with delay 33, radius 8,
