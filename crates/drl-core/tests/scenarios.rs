@@ -2584,6 +2584,74 @@ fn chaingun_fifth_chainfire_vertical_scenario_preserves_replay() {
 }
 
 #[test]
+fn chaingun_sixth_chainfire_vertical_scenario_preserves_replay() {
+  let mut scenario = Scenario::from_ascii(
+    "ChaingunSixthChainfireVertical",
+    "Chaingun carries its sixth-stage chainfire encounter",
+    "########\n#@...h.#\n#......#\n########\n",
+  )
+  .unwrap();
+  scenario.seed = 0;
+  scenario.monsters[0].name = "Static Target".to_string();
+  scenario.monsters[0].hp = 10_000;
+  scenario.monsters[0].speed = 0;
+  scenario.player_config = Some(PlayerSpawnConfig {
+    hp: 50,
+    max_hp: 50,
+    speed: 100,
+    initial_items: Vec::new(),
+    equipped_weapon: Some(ItemSpawnKind::Chaingun),
+    equipped_armor: None,
+    equipped_armor_durability: None,
+  });
+
+  let target = Position::new(5, 1);
+  let commands = [
+    Command::AttackRangedChainfire(target),
+    Command::AttackRangedChainfire(target),
+    Command::AttackRangedChainfire(target),
+    Command::AttackRangedChainfire(target),
+    Command::AttackRangedChainfire(target),
+    Command::AttackRangedChainfire(target),
+  ];
+  let (game, events, _metrics, replay) =
+    ScenarioRunner::run_commands(&scenario, &commands).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let target_id = game
+    .world()
+    .actors()
+    .values()
+    .find(|actor| !actor.is_player())
+    .unwrap()
+    .id();
+  assert_eq!(
+    events
+      .iter()
+      .filter(|event| matches!(
+        event,
+        GameEvent::AttackResolved {
+          attacker_id,
+          target_id: event_target,
+          is_ranged: true,
+          ..
+        } if *attacker_id == player_id && *event_target == target_id
+      ))
+      .count(),
+    31
+  );
+  let weapon = game.world().player().unwrap().equipment().weapon().unwrap();
+  let properties = weapon.weapon_properties().unwrap();
+  assert_eq!(properties.current_clip, 9);
+  assert_eq!(properties.chainfire_level, 6);
+  assert_eq!(replay.commands, commands);
+
+  let (replayed_game, replay_events) = ReplayEngine::run(&replay).unwrap();
+  assert_eq!(replayed_game, game);
+  assert_eq!(replay_events, events);
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}
+
+#[test]
 fn laser_rifle_fifth_chainfire_vertical_scenario_preserves_replay() {
   let mut scenario = Scenario::from_ascii(
     "LaserRifleFifthChainfireVertical",
