@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.286`
+Current project version: `0.2.287`
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,17 +25,16 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — BFG 10K Fifth-Level Chainfire
+## 2. Active Implementation Slice: M9 — Laser Rifle Fifth-Level Chainfire
 
 ### 2.1 Objective
 
-Extend the delivered typed BFG 10K first-, second-, third-, and fourth-level
-chainfire commands with the legacy-pinned fifth warm-up level. After accepted
-four-, five-, and seven-projectile bursts leave the weapon at warm-up level
-four, a valid fifth-level command must emit seven exact-hit projectiles,
-consume thirty-five cells, preserve the existing delayed-explosion schedule
-and bounded radius-2 fanout behavior, and advance the warm-up state to level
-five.
+Extend the delivered typed Laser Rifle first-, second-, third-, and
+fourth-level chainfire commands with the legacy-pinned fifth warm-up level.
+After accepted four-, five-, and seven-projectile bursts leave the weapon at
+warm-up level four, a valid fifth-level command must emit seven ranged
+projectiles, consume seven cells, preserve ordered combat behavior, and advance
+the warm-up state to level five.
 
 ### 2.1a Scope and steering gate
 
@@ -43,44 +42,38 @@ five.
 - **Steering gates:** Gate A rejected-input safety and Gate B explicit replay
   compatibility remain active acceptance constraints; Gate C catalog ownership
   and Gate D typed behavior evidence remain closed for this bounded extension.
-- **Observable outcome:** A fifth-level BFG 10K chainfire command is admitted
-  only for a living visible target, a loaded clip of at least thirty-five
-  cells, and a weapon warm-up level of four. It consumes thirty-five cells,
-  emits seven ordered exact-hit outcomes with the existing per-hit delayed
-  explosion schedule, preserves deterministic post-lethal no-op continuation
-  slots and bounded radius-2 fanout, and advances warm-up to level five.
+- **Observable outcome:** A fifth-level Laser Rifle chainfire command is
+  admitted only for a living visible target, a loaded clip of at least seven
+  cells, and a weapon warm-up level of four. It consumes seven cells, emits
+  seven ordered ranged outcomes, preserves deterministic post-lethal no-op
+  continuation slots, and advances warm-up to level five.
   Ordinary fire still resets the warm-up state, and the sixth level remains
   rejected atomically.
-- **Gameplay/replay impact:** Gameplay semantics advance from `94` to `95`;
+- **Gameplay/replay impact:** Gameplay semantics advance from `95` to `96`;
   replay wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.285` to `0.2.286`.
+  unchanged. Project version advances from `0.2.286` to `0.2.287`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary,
   typed projectile-count/cost policy and generic execution; `drl-protocol` owns
   the semantic `AttackRanged`/`AttackRangedAimed` commands and typed event
   projection, while replay/MCP and browser boundaries
   serialize and route it without duplicating gameplay rules.
-- **Evidence boundary:** Pinned BFG 10K item and chainfire evidence in
-  `docs/legacy-behavior/bfg10k-chainfire.md`,
-  `docs/legacy-behavior/bfg10k-shot-cost.md`, and the existing exact-hit and
-  explosion evidence, together with the typed delayed-explosion/radius-2
-  contract and focused direct-core/replay/MCP/browser tests, are authoritative.
-  Controlled legacy runtime, browser capture, and audiovisual comparisons
-  remain `NOT_RUN`.
+- **Evidence boundary:** Pinned Laser Rifle profile evidence in
+  `docs/legacy-behavior/laser-rifle-profile.md`, together with the existing
+  typed ranged, replay, MCP, and browser tests, is authoritative. Controlled
+  legacy runtime, browser capture, and audiovisual comparisons remain
+  `NOT_RUN`.
 - **Non-goals:** Sixth and later chainfire levels, legacy target rotation or
-  scatter/spread routing, delayed explosion timing/state-machine changes,
-  terrain/content effects, splash-immunity changes, exact callback timing/
-  accuracy, new command variants or callback registries, unrelated gameplay
-  balance, replay migrations, runtime Lua, and browser/audio/WebGPU capture
-  parity.
+  scatter/spread routing, exact callback timing/accuracy, new command variants
+  or callback registries, unrelated gameplay balance, replay migrations,
+  runtime Lua, and browser/audio/WebGPU capture parity.
 
 ### 2.2 Why this slice is bounded
 
-The immutable BFG 10K profile, semantic command, and first-, second-, third-,
-and fourth-level transitions already exist. This extension adds only one typed
-warm-up profile and its deterministic count/cost selection while reusing the
-existing generic exact-hit, delayed-explosion, replay, MCP, browser, and
-transactional boundaries without adding a pending queue, new dispatcher, or
-callback system.
+The immutable Laser Rifle profile, semantic command, and first-, second-,
+third-, and fourth-level transitions already exist. This extension adds only
+one typed warm-up profile and its deterministic count/cost selection while
+reusing the existing generic ranged, replay, MCP, browser, and transactional
+boundaries without adding a pending queue, new dispatcher, or callback system.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -3983,6 +3976,33 @@ contract was:
   immunity changes, exact callback timing/accuracy, controlled legacy runtime,
   browser capture, and audiovisual parity `NOT_RUN` where comparison evidence
   is unavailable.
+
+### 2.7f3 Historical Laser Rifle fifth-level chainfire target
+
+The delivered `0.2.287` target extended the Laser Rifle first-, second-, third-,
+and fourth-level chainfire commands with the pinned fifth warm-up level. Its
+contract was:
+
+- [x] preserve the first-, second-, third-, and fourth-level four-, five-, and
+  seven-projectile/four-, five-, and seven-cell contracts and admit a fifth
+  command only while the weapon warm-up level is four and the target is still
+  a valid visible living actor;
+- [x] resolve the legacy level-two-and-later formula `shots = 5 + (5 div 2) =
+  7`, consuming exactly seven loaded cells for the seven-projectile ranged
+  volley;
+- [x] preserve ordered event output and deterministic post-lethal no-op
+  continuation slots without changing the existing ordinary-fire behavior;
+- [x] advance warm-up state to level five only after acceptance, keep ordinary
+  fire's reset behavior, and reject the sixth level or an under-supplied clip
+  without changing game, clip, turn, or RNG state;
+- [x] preserve direct-core, replay, ScenarioRunner, MCP legal-action/JSON,
+  physical `C` key, and BrowserSession event/state parity;
+- [x] advance project version from `0.2.286` to `0.2.287` and gameplay
+  semantics from `95` to `96` while preserving replay schema, RNG, generator,
+  and ruleset identities;
+- [x] keep sixth-and-later chainfire levels, target rotation, scatter/routing,
+  exact timing/accuracy, controlled legacy runtime, browser capture, and
+  audiovisual parity `NOT_RUN` where comparison evidence is unavailable.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 

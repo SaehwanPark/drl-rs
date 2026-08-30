@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.286`
+Current project version: `0.2.287`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.286)
+## 3. Current Progress Summary (`VERSION` 0.2.287)
 
 ### Delivered Foundations
 
@@ -1626,7 +1626,9 @@ scripting.
   direct-target volley in `0.2.200`, and its bounded first- through
   fourth-level chainfire in `0.2.283`; BFG 10K's bounded first- through
   fifth-level chainfire is delivered in `0.2.286`, and Nuclear Plasma's
-  bounded first- through fifth-level chainfire is delivered in `0.2.285`,
+  bounded first- through fifth-level chainfire is delivered in `0.2.285`; the
+  Laser Rifle's bounded first- through fifth-level chainfire is delivered in
+  `0.2.287`,
   while exact-hit, explosion, and mod callbacks remain open.
 - [x] Vertical BFG 10K shot-cost encounter preserves the typed five-cell
   one-shot policy through deterministic scenario/replay, MCP, and
@@ -1727,10 +1729,11 @@ scripting.
   open.
 - [x] Laser Rifle has an immutable behavior profile for its five-projectile
   ordinary fire and one-cell-per-projectile cost plus bounded first-, second-,
-  third-, and fourth-level four-, five-, seven-, and seven-projectile
-  chainfire transitions; generic ranged execution resolves the ordered ordinary
-  and chainfire volleys and atomically rejects clips below their aggregate
-  costs, while higher levels, runtime, and audiovisual parity remain open.
+  third-, fourth-, and fifth-level four-, five-, seven-, seven-, and
+  seven-projectile chainfire transitions; generic ranged execution resolves
+  the ordered ordinary and chainfire volleys and atomically rejects clips
+  below their aggregate costs, while sixth-and-later levels, runtime, and
+  audiovisual parity remain open.
 - [x] Trigun has an immutable behavior profile for its one-projectile,
   one-round ordinary fire and shared +3/doubled-cost aimed-fire policy; generic
   ranged execution remains authoritative while alternate reload/nuke behavior,
@@ -1826,17 +1829,18 @@ scripting.
   audiovisual parity remain open.
 - [x] Laser Rifle has an immutable behavior profile for its five-projectile
   ordinary fire and one-cell per-projectile cost plus bounded first-, second-,
-  third-, and fourth-level four-, five-, seven-, and seven-projectile
-  chainfire transitions; generic ranged execution resolves the ordered
-  five-cell volley and chainfire bursts, preflights aggregate costs, and
-  preserves atomic below-cost rejection while exact timing/accuracy, runtime,
-  and audiovisual parity remain open.
+  third-, fourth-, and fifth-level four-, five-, seven-, seven-, and
+  seven-projectile chainfire transitions; generic ranged execution resolves
+  the ordered five-cell volley and chainfire bursts, preflights aggregate
+  costs, and preserves atomic below-cost rejection while exact timing/accuracy,
+  sixth-and-later levels, runtime, and audiovisual parity remain open.
 - [x] Laser Rifle's delivered five-projectile ordinary-fire contract has a
   deterministic direct-core/BrowserSession boundary check covering identical
   events, fair observations, render effects, scene projections, five-cell clip
-  consumption, and replay determinism; its first-, second-, third-, and
-  fourth-level chainfire boundaries are covered separately; controlled legacy
-  runtime, browser capture, and audiovisual parity remain open.
+  consumption, and replay determinism; its first-, second-, third-, fourth-,
+  and fifth-level chainfire boundaries are covered separately; sixth-and-later
+  levels, controlled legacy runtime, browser capture, and audiovisual parity
+  remain open.
 - [x] Minigun's delivered eight-projectile ordinary-fire contract has a
   deterministic direct-core/BrowserSession boundary check covering identical
   events, fair observations, render effects, scene projections, eight-round
@@ -1907,6 +1911,13 @@ scripting.
   and atomic fifth-level rejection; target rotation/spread, exact
   timing/accuracy, controlled legacy runtime, browser capture, and audiovisual
   parity remain open.
+- [x] Laser Rifle's delivered fifth-level chainfire contract extends the same
+  boundary with the pinned seven-projectile/seven-cell continuation formula
+  through warm-up level five, including deterministic ScenarioRunner/replay,
+  MCP legal-action/JSON, physical `C` routing, BrowserSession parity, and
+  atomic sixth-level/under-supply rejection; sixth-and-later levels, target
+  rotation/spread, exact timing/accuracy, controlled legacy runtime, browser
+  capture, and audiovisual parity remain open.
 - [x] Nuclear Plasma Rifle's delivered first-level chainfire contract has a
   deterministic direct-core/replay/MCP/BrowserSession boundary check covering
   four ordered events, fair observations, render effects, scene projections,
@@ -2283,6 +2294,15 @@ scripting.
   verified; sixth-and-later levels, target rotation/scatter routing, exact
   timing/accuracy, controlled runtime, browser capture, and audiovisual parity
   remain open. Gameplay semantics advance to `95`.
+- **M9 Laser Rifle fifth-level chainfire (`0.2.287`):** Laser Rifle now
+  accepts its pinned warm-up level-four continuation: seven ordered ranged
+  projectiles, seven loaded cells, deterministic post-lethal no-op continuation
+  slots, and warm-up advancement to level five. ScenarioRunner/replay,
+  direct-core, MCP legal-action/JSON, physical `C` routing, and BrowserSession
+  parity plus atomic sixth-level/under-supply rejection are verified;
+  sixth-and-later levels, target rotation/scatter routing, exact timing/
+  accuracy, controlled runtime, browser capture, and audiovisual parity remain
+  open. Gameplay semantics advance to `96`.
 - **M9 Nuclear Plasma fourth-level chainfire (`0.2.284`):** Nuclear Plasma now
   accepts its pinned warm-up level-three continuation: nine ordered ranged
   projectiles, nine loaded cells, recharge-backed ScenarioRunner/replay,

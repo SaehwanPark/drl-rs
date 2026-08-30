@@ -789,12 +789,17 @@ pub const LASER_RIFLE_FOURTH_CHAINFIRE_PROJECTILE_COUNT: u32 =
 /// Pinned Cell cost for the fourth Laser Rifle chainfire level.
 pub const LASER_RIFLE_FOURTH_CHAINFIRE_SHOT_COST: u32 =
   LASER_RIFLE_FOURTH_CHAINFIRE_PROJECTILE_COUNT;
+/// Pinned projectile count for the fifth Laser Rifle chainfire level.
+pub const LASER_RIFLE_FIFTH_CHAINFIRE_PROJECTILE_COUNT: u32 =
+  LASER_RIFLE_FOURTH_CHAINFIRE_PROJECTILE_COUNT;
+/// Pinned Cell cost for the fifth Laser Rifle chainfire level.
+pub const LASER_RIFLE_FIFTH_CHAINFIRE_SHOT_COST: u32 = LASER_RIFLE_FIFTH_CHAINFIRE_PROJECTILE_COUNT;
 
 /// Returns the bounded Laser Rifle chainfire profile for a warm-up level.
 ///
 /// The legacy five-shot weapon emits four projectiles at level zero, its full
-/// five-projectile volley at level one, and seven projectiles at levels two and
-/// three; higher levels remain deferred.
+/// five-projectile volley at level one, and seven projectiles at levels two,
+/// three, and four; higher levels remain deferred.
 #[must_use]
 pub const fn laser_rifle_chainfire_profile(level: u8) -> Option<(u32, u32)> {
   match level {
@@ -813,6 +818,10 @@ pub const fn laser_rifle_chainfire_profile(level: u8) -> Option<(u32, u32)> {
     3 => Some((
       LASER_RIFLE_FOURTH_CHAINFIRE_PROJECTILE_COUNT,
       LASER_RIFLE_FOURTH_CHAINFIRE_SHOT_COST,
+    )),
+    4 => Some((
+      LASER_RIFLE_FIFTH_CHAINFIRE_PROJECTILE_COUNT,
+      LASER_RIFLE_FIFTH_CHAINFIRE_SHOT_COST,
     )),
     _ => None,
   }
@@ -842,6 +851,11 @@ const LASER_RIFLE_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
     level: 3,
     shot_count: LASER_RIFLE_FOURTH_CHAINFIRE_PROJECTILE_COUNT,
     ammo_cost: LASER_RIFLE_FOURTH_CHAINFIRE_SHOT_COST,
+  }),
+  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
+    level: 4,
+    shot_count: LASER_RIFLE_FIFTH_CHAINFIRE_PROJECTILE_COUNT,
+    ammo_cost: LASER_RIFLE_FIFTH_CHAINFIRE_SHOT_COST,
   }),
 ];
 
@@ -1819,7 +1833,14 @@ mod tests {
         LASER_RIFLE_FOURTH_CHAINFIRE_SHOT_COST,
       ))
     );
-    assert_eq!(laser_rifle_chainfire_profile(4), None);
+    assert_eq!(
+      laser_rifle_chainfire_profile(4),
+      Some((
+        LASER_RIFLE_FIFTH_CHAINFIRE_PROJECTILE_COUNT,
+        LASER_RIFLE_FIFTH_CHAINFIRE_SHOT_COST,
+      ))
+    );
+    assert_eq!(laser_rifle_chainfire_profile(5), None);
   }
 
   #[test]
@@ -2313,6 +2334,11 @@ mod tests {
           level: 3,
           shot_count: LASER_RIFLE_FOURTH_CHAINFIRE_PROJECTILE_COUNT,
           ammo_cost: LASER_RIFLE_FOURTH_CHAINFIRE_SHOT_COST,
+        }),
+        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
+          level: 4,
+          shot_count: LASER_RIFLE_FIFTH_CHAINFIRE_PROJECTILE_COUNT,
+          ammo_cost: LASER_RIFLE_FIFTH_CHAINFIRE_SHOT_COST,
         }),
       ]
     );
