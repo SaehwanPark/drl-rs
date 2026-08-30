@@ -6710,14 +6710,62 @@ mod tests {
       .expect("Laser Rifle");
     assert_eq!(fifth_laser.chainfire_level, 5);
     assert_eq!(fifth_laser.clip, Some((10, 40)));
+    let sixth_command = Command::AttackRangedChainfire(target_position);
     assert_eq!(
       BrowserSession::command_for_key("C", &fifth_step.after),
+      Some(sixth_command)
+    );
+    let sixth_expected_events = direct
+      .step(sixth_command)
+      .expect("direct sixth Laser Rifle chainfire command");
+    let sixth_step = browser
+      .submit(sixth_command)
+      .expect("browser sixth Laser Rifle chainfire command");
+    assert_eq!(sixth_step.events, sixth_expected_events);
+    assert_eq!(sixth_step.after, direct.observe_player());
+    assert_eq!(
+      sixth_step.effects,
+      effect_timeline_for_observations(
+        &sixth_step.before,
+        &sixth_step.after,
+        &sixth_expected_events,
+      )
+    );
+    assert_eq!(
+      browser.scene(),
+      RenderScene::from_observation(&sixth_step.after)
+    );
+    assert_eq!(
+      sixth_expected_events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          drl_protocol::GameEvent::AttackResolved {
+            attacker_id,
+            target_id: event_target,
+            is_ranged: true,
+            ..
+          } if *attacker_id == direct.world().player_id().unwrap() && *event_target == target_id
+        ))
+        .count(),
+      7
+    );
+    let sixth_laser = sixth_step
+      .after
+      .equipped_weapon
+      .as_ref()
+      .expect("Laser Rifle");
+    assert_eq!(sixth_laser.chainfire_level, 6);
+    assert_eq!(sixth_laser.clip, Some((3, 40)));
+    assert_eq!(
+      BrowserSession::command_for_key("C", &sixth_step.after),
       None
     );
     expected_events.extend(second_expected_events);
     expected_events.extend(third_expected_events);
     expected_events.extend(fourth_expected_events);
     expected_events.extend(fifth_expected_events);
+    expected_events.extend(sixth_expected_events);
 
     let mut command_replay = setup_replay;
     command_replay.record_command(command);
@@ -6725,6 +6773,7 @@ mod tests {
     command_replay.record_command(third_command);
     command_replay.record_command(fourth_command);
     command_replay.record_command(fifth_command);
+    command_replay.record_command(sixth_command);
     let (replayed, replay_events) =
       drl_core::ReplayEngine::run(&command_replay).expect("vertical command replay");
     assert_eq!(replay_events, expected_events);
