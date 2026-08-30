@@ -622,11 +622,17 @@ pub const MINIGUN_CHAINFIRE_SHOT_COST: u32 = 6;
 pub const MINIGUN_SECOND_CHAINFIRE_PROJECTILE_COUNT: u32 = MINIGUN_PROJECTILE_COUNT;
 /// Pinned 9mm cost for the second Minigun chainfire level.
 pub const MINIGUN_SECOND_CHAINFIRE_SHOT_COST: u32 = MINIGUN_SECOND_CHAINFIRE_PROJECTILE_COUNT;
+/// Pinned projectile count for the third Minigun chainfire level.
+pub const MINIGUN_THIRD_CHAINFIRE_PROJECTILE_COUNT: u32 =
+  MINIGUN_PROJECTILE_COUNT + (MINIGUN_PROJECTILE_COUNT / 2);
+/// Pinned 9mm cost for the third Minigun chainfire level.
+pub const MINIGUN_THIRD_CHAINFIRE_SHOT_COST: u32 = MINIGUN_THIRD_CHAINFIRE_PROJECTILE_COUNT;
 
 /// Returns the bounded Minigun chainfire profile for a warm-up level.
 ///
 /// The legacy eight-shot weapon emits six projectiles at level zero and its
-/// full eight-projectile volley at level one; higher levels remain deferred.
+/// full eight-projectile volley at level one and twelve projectiles at level
+/// two; higher levels remain deferred.
 #[must_use]
 pub const fn minigun_chainfire_profile(level: u8) -> Option<(u32, u32)> {
   match level {
@@ -637,6 +643,10 @@ pub const fn minigun_chainfire_profile(level: u8) -> Option<(u32, u32)> {
     1 => Some((
       MINIGUN_SECOND_CHAINFIRE_PROJECTILE_COUNT,
       MINIGUN_SECOND_CHAINFIRE_SHOT_COST,
+    )),
+    2 => Some((
+      MINIGUN_THIRD_CHAINFIRE_PROJECTILE_COUNT,
+      MINIGUN_THIRD_CHAINFIRE_SHOT_COST,
     )),
     _ => None,
   }
@@ -656,6 +666,11 @@ const MINIGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
     level: 1,
     shot_count: MINIGUN_SECOND_CHAINFIRE_PROJECTILE_COUNT,
     ammo_cost: MINIGUN_SECOND_CHAINFIRE_SHOT_COST,
+  }),
+  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
+    level: 2,
+    shot_count: MINIGUN_THIRD_CHAINFIRE_PROJECTILE_COUNT,
+    ammo_cost: MINIGUN_THIRD_CHAINFIRE_SHOT_COST,
   }),
 ];
 
@@ -1570,7 +1585,14 @@ mod tests {
         MINIGUN_SECOND_CHAINFIRE_SHOT_COST,
       ))
     );
-    assert_eq!(minigun_chainfire_profile(2), None);
+    assert_eq!(
+      minigun_chainfire_profile(2),
+      Some((
+        MINIGUN_THIRD_CHAINFIRE_PROJECTILE_COUNT,
+        MINIGUN_THIRD_CHAINFIRE_SHOT_COST,
+      ))
+    );
+    assert_eq!(minigun_chainfire_profile(3), None);
   }
 
   #[test]
@@ -1986,6 +2008,11 @@ mod tests {
           level: 1,
           shot_count: MINIGUN_SECOND_CHAINFIRE_PROJECTILE_COUNT,
           ammo_cost: MINIGUN_SECOND_CHAINFIRE_SHOT_COST,
+        }),
+        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
+          level: 2,
+          shot_count: MINIGUN_THIRD_CHAINFIRE_PROJECTILE_COUNT,
+          ammo_cost: MINIGUN_THIRD_CHAINFIRE_SHOT_COST,
         }),
       ]
     );

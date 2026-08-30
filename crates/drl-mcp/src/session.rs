@@ -2806,6 +2806,18 @@ mod tests {
     session
       .step(second.command)
       .expect("second Minigun chainfire action");
+    let third = compute_legal_actions(&session.get_observation().unwrap())
+      .into_iter()
+      .find(|action| action.action == "Chainfire")
+      .expect("third Minigun chainfire should be advertised");
+    assert_eq!(
+      third.command,
+      Command::AttackRangedChainfire(Position::new(3, 1))
+    );
+    assert!(third.description.contains("12 projectiles, 12 rounds"));
+    session
+      .step(third.command)
+      .expect("third Minigun chainfire action");
     assert!(
       !compute_legal_actions(&session.get_observation().unwrap())
         .iter()

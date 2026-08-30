@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.277`
+Current project version: `0.2.278`
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,15 +25,16 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Minigun Second-Level Chainfire
+## 2. Active Implementation Slice: M9 — Minigun Third-Level Chainfire
 
 ### 2.1 Objective
 
-Extend the delivered typed Minigun first-level chainfire command with the
-legacy-pinned second warm-up level. After an accepted six-projectile burst
-leaves the weapon at warm-up level one, a valid second-level command must emit
-eight projectiles, charge eight rounds, preserve the existing ordered ranged
-attack behavior, and advance the warm-up state to level two.
+Extend the delivered typed Minigun first- and second-level chainfire command
+with the legacy-pinned third warm-up level. After accepted six- and
+eight-projectile bursts leave the weapon at warm-up level two, a valid
+third-level command must emit twelve projectiles, charge twelve rounds,
+preserve the existing ordered ranged attack behavior, and advance the warm-up
+state to level three.
 
 ### 2.1a Scope and steering gate
 
@@ -41,26 +42,26 @@ attack behavior, and advance the warm-up state to level two.
 - **Steering gates:** Gate A rejected-input safety and Gate B explicit replay
   compatibility remain active acceptance constraints; Gate C catalog ownership
   and Gate D typed behavior evidence remain closed for this bounded extension.
-- **Observable outcome:** A second-level Minigun chainfire command is admitted
-  only for a living visible target, a loaded clip of at least eight rounds, and
-  a weapon warm-up level of one. It consumes eight rounds, emits eight ordered
+- **Observable outcome:** A third-level Minigun chainfire command is admitted
+  only for a living visible target, a loaded clip of at least twelve rounds,
+  and a weapon warm-up level of two. It consumes twelve rounds, emits twelve ordered
   ranged attack outcomes, preserves deterministic post-lethal no-op
-  continuation slots, and advances warm-up to level two. Ordinary fire still
-  resets the warm-up state, and the third level remains rejected atomically.
-- **Gameplay/replay impact:** Gameplay semantics advance from `85` to `86`;
+  continuation slots, and advances warm-up to level three. Ordinary fire still
+  resets the warm-up state, and the fourth level remains rejected atomically.
+- **Gameplay/replay impact:** Gameplay semantics advance from `86` to `87`;
   replay wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.276` to `0.2.277`.
+  unchanged. Project version advances from `0.2.277` to `0.2.278`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary,
   typed projectile-count/cost policy and generic execution; `drl-protocol` owns
   the semantic `AttackRanged`/`AttackRangedAimed` commands and typed event
   projection, while replay/MCP and browser boundaries
   serialize and route it without duplicating gameplay rules.
-- **Evidence boundary:** Pinned Chaingun item and chainfire evidence in
+- **Evidence boundary:** Pinned Minigun item and chainfire evidence in
   `docs/legacy-behavior/minigun-profile.md`, together with the
   existing typed ranged contract and focused direct-core/replay/MCP/browser
   tests, are authoritative. Controlled legacy runtime, browser capture, and
   audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** Third and later chainfire levels, legacy target rotation or
+- **Non-goals:** Fourth and later chainfire levels, legacy target rotation or
   scatter/spread routing, exact callback timing/accuracy, overload/recharge
   changes, new command variants or callback registries, unrelated gameplay
   balance, replay migrations, runtime Lua, and browser/audio/WebGPU capture
@@ -68,9 +69,9 @@ attack behavior, and advance the warm-up state to level two.
 
 ### 2.2 Why this slice is bounded
 
-The immutable Minigun profile, semantic command, and first-level transition
-already exist. This extension adds only one typed warm-up profile and its
-deterministic count/cost selection while reusing the
+The immutable Minigun profile, semantic command, and first- and second-level
+transitions already exist. This extension adds only one typed warm-up profile
+and its deterministic count/cost selection while reusing the
 existing generic ranged, replay, MCP, browser, and transactional boundaries
 without adding a pending queue, new dispatcher, or callback system.
 
@@ -3700,7 +3701,7 @@ Its contract must:
   browser capture, and audiovisual parity `NOT_RUN` where comparison evidence
   is unavailable.
 
-### 2.7et Current Minigun second-level chainfire target
+### 2.7et Historical Minigun second-level chainfire target
 
 The bounded implementation target for this revision extends the delivered
 Minigun first-level chainfire command with the pinned second warm-up level.
@@ -3722,6 +3723,34 @@ Its contract must:
   semantics from `85` to `86` while preserving replay schema, RNG, generator,
   and ruleset identities;
 - [x] keep third-and-later chainfire levels, legacy target rotation,
+  scatter/spread routing, exact callback timing/accuracy, controlled runtime,
+  browser capture, and audiovisual parity `NOT_RUN` where comparison evidence
+  is unavailable.
+
+### 2.7eu Current Minigun third-level chainfire target
+
+The bounded implementation target for this revision extends the delivered
+Minigun second-level chainfire command with the pinned third warm-up level.
+Its contract must:
+
+- [ ] preserve the first- and second-level six-projectile/six-round and
+  eight-projectile/eight-round contracts and admit a third command only while
+  the weapon warm-up level is two and the target is still a valid visible
+  living actor;
+- [ ] resolve the legacy level-two formula `shots = 8 + (8 div 2) = 12`,
+  consuming exactly twelve loaded 9mm rounds for the twelve-projectile ranged
+  volley;
+- [ ] preserve ordered event output and deterministic post-lethal no-op
+  continuation slots without changing the existing ordinary-fire behavior;
+- [ ] advance warm-up state to level three only after acceptance, keep ordinary
+  fire's reset behavior, and reject the fourth level without changing game,
+  clip, turn, or RNG state;
+- [ ] preserve direct-core, replay, MCP legal-action/JSON, physical `C` key,
+  and BrowserSession event/state parity;
+- [ ] advance project version from `0.2.277` to `0.2.278` and gameplay
+  semantics from `86` to `87` while preserving replay schema, RNG, generator,
+  and ruleset identities;
+- [ ] keep fourth-and-later chainfire levels, legacy target rotation,
   scatter/spread routing, exact callback timing/accuracy, controlled runtime,
   browser capture, and audiovisual parity `NOT_RUN` where comparison evidence
   is unavailable.

@@ -109,6 +109,47 @@ fn minigun_second_chainfire_emits_eight_projectiles_and_advances_state() {
 }
 
 #[test]
+fn minigun_third_chainfire_emits_twelve_projectiles_and_advances_state() {
+  let mut game = equipped_minigun(2_260);
+  let target = Position::new(5, 2);
+  let target_id = game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 10_000, 0, (1, 6))
+    .unwrap();
+  let player_id = game.world().player_id().unwrap();
+  game
+    .step(Command::AttackRangedChainfire(target))
+    .expect("first Minigun chainfire burst should be accepted");
+  game
+    .step(Command::AttackRangedChainfire(target))
+    .expect("second Minigun chainfire burst should be accepted");
+
+  let events = game
+    .step(Command::AttackRangedChainfire(target))
+    .expect("third Minigun chainfire burst should be accepted");
+
+  let weapon = game.world().player().unwrap().equipment().weapon().unwrap();
+  assert_eq!(weapon.weapon_properties().unwrap().current_clip, 174);
+  assert_eq!(weapon.weapon_properties().unwrap().chainfire_level, 3);
+  assert_eq!(
+    events
+      .iter()
+      .filter(|event| matches!(
+        event,
+        GameEvent::AttackResolved {
+          attacker_id,
+          target_id: event_target,
+          is_ranged: true,
+          ..
+        } if *attacker_id == player_id && *event_target == target_id
+      ))
+      .count(),
+    12,
+    "Minigun third chainfire must resolve twelve ordered projectiles"
+  );
+}
+
+#[test]
 fn minigun_chainfire_keeps_six_outcomes_after_lethal_target() {
   let mut lethal_case = None;
 
@@ -210,6 +251,42 @@ fn minigun_second_chainfire_below_eight_round_cost_rejection_is_atomic() {
 }
 
 #[test]
+fn minigun_third_chainfire_below_twelve_round_cost_rejection_is_atomic() {
+  let mut game = equipped_minigun(2_341);
+  let target = Position::new(5, 2);
+  game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 10_000, 0, (1, 6))
+    .unwrap();
+  game
+    .step(Command::AttackRangedChainfire(target))
+    .expect("first Minigun chainfire burst");
+  game
+    .step(Command::AttackRangedChainfire(target))
+    .expect("second Minigun chainfire burst");
+  let player_id = game.world().player_id().unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 11;
+  let before = game.clone();
+
+  assert_eq!(
+    game
+      .step(Command::AttackRangedChainfire(target))
+      .unwrap_err(),
+    CommandError::NoAmmoInClip
+  );
+  assert_eq!(game, before);
+}
+
+#[test]
 fn minigun_ordinary_fire_resets_chainfire_warmup() {
   let mut game = equipped_minigun(2_342);
   let target = Position::new(5, 2);
@@ -223,6 +300,9 @@ fn minigun_ordinary_fire_resets_chainfire_warmup() {
   game
     .step(Command::AttackRangedChainfire(target))
     .expect("second Minigun chainfire burst");
+  game
+    .step(Command::AttackRangedChainfire(target))
+    .expect("third Minigun chainfire burst");
   game
     .step(Command::AttackRanged(target))
     .expect("ordinary fire after Minigun chainfire");
@@ -256,6 +336,9 @@ fn minigun_higher_chainfire_level_is_rejected_without_mutation() {
   game
     .step(Command::AttackRangedChainfire(target))
     .expect("second Minigun chainfire burst");
+  game
+    .step(Command::AttackRangedChainfire(target))
+    .expect("third Minigun chainfire burst");
   let before = game.clone();
 
   assert_eq!(
@@ -338,6 +421,46 @@ fn minigun_chainfire_replay_preserves_six_then_eight_projectile_bursts_determini
       ))
       .count(),
     14
+  );
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}
+
+#[test]
+fn minigun_chainfire_replay_preserves_six_then_eight_then_twelve_projectile_bursts_deterministically()
+ {
+  let player_start = Position::new(5, 5);
+  let mut replay =
+    ReplayLog::new(2_348, 12, 12, player_start).with_player_config(PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: Vec::new(),
+      equipped_weapon: Some(ItemSpawnKind::Minigun),
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    });
+  let target = Position::new(6, 5);
+  replay.record_monster(MonsterSpawnSpec::new(target, "Target", 10_000, 0, (1, 6)));
+  replay.record_command(Command::AttackRangedChainfire(target));
+  replay.record_command(Command::AttackRangedChainfire(target));
+  replay.record_command(Command::AttackRangedChainfire(target));
+
+  let (game, events) = ReplayEngine::run(&replay).expect("Minigun chainfire replay should run");
+  let weapon = game.world().player().unwrap().equipment().weapon().unwrap();
+  assert_eq!(weapon.weapon_properties().unwrap().current_clip, 174);
+  assert_eq!(weapon.weapon_properties().unwrap().chainfire_level, 3);
+  assert_eq!(
+    events
+      .iter()
+      .filter(|event| matches!(
+        event,
+        GameEvent::AttackResolved {
+          is_ranged: true,
+          ..
+        }
+      ))
+      .count(),
+    26
   );
   assert!(ReplayEngine::verify_determinism(&replay).unwrap());
 }

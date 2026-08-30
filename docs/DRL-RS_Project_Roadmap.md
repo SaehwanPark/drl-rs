@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.277`
+Current project version: `0.2.278`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.277)
+## 3. Current Progress Summary (`VERSION` 0.2.278)
 
 ### Delivered Foundations
 
@@ -1065,6 +1065,13 @@ verification item uses explicit status semantics:
   rotation/scatter routing, exact timing/accuracy, controlled runtime, browser
   capture, and audiovisual parity remain open. Gameplay semantics advance to
   `86`.
+- **M9 Minigun third-level chainfire (active target `0.2.278`):** Extend the
+  typed Minigun warm-up sequence with the pinned level-two formula
+  `8 + (8 div 2) = 12`, consuming twelve loaded 9mm rounds and emitting twelve
+  ordered outcomes while preserving atomic rejection, replay, MCP, physical
+  `C`, and BrowserSession boundaries. Fourth-and-later levels, target
+  rotation/scatter routing, exact timing/accuracy, controlled runtime, browser
+  capture, and audiovisual parity remain open; gameplay semantics target `87`.
 - **M9 BFG 10K radius-2 explosion fanout (`0.2.265`):** Each successful BFG
   10K direct-target hit now preserves its schedule event and immediately
   resolves a deterministic actor-only radius-2 fanout: one `6d4` Plasma roll
@@ -1784,10 +1791,11 @@ scripting.
   preserves atomic below-cost rejection while spread/falloff, exact timing,
   runtime, and audiovisual parity remain open.
 - [x] Minigun has an immutable behavior profile for its eight-projectile
-  ordinary fire and one-round per-projectile cost plus a bounded first-level
-  six-projectile/six-round chainfire transition; generic ranged execution
-  remains authoritative for both ordinary and chainfire commands while higher
-  levels, exact timing/accuracy, runtime, and audiovisual parity remain open.
+  ordinary fire and one-round per-projectile cost plus bounded first-, second-,
+  and third-level six-, eight-, and twelve-projectile chainfire transitions;
+  generic ranged execution remains authoritative for both ordinary and
+  chainfire commands while fourth-and-later levels, exact timing/accuracy,
+  runtime, and audiovisual parity remain open.
 - [x] Chaingun has an immutable behavior profile for its four-projectile
   ordinary fire and one-round per-projectile cost; generic ranged execution
   resolves the ordered four-round volley, preflights its aggregate cost, and
@@ -1829,6 +1837,17 @@ scripting.
   atomic under-supply rejection; higher chainfire levels, target
   rotation/spread, exact timing/accuracy, controlled legacy runtime, browser
   capture, and audiovisual parity remain open.
+- [x] Minigun's delivered second-level chainfire contract has a deterministic
+  direct-core/replay/MCP/BrowserSession boundary check covering eight ordered
+  events, fair observations, render effects, scene projections, eight-round
+  clip consumption, physical `C` routing, observable warm-up advancement/reset,
+  and atomic under-supply rejection; third-and-later levels, target
+  rotation/spread, exact timing/accuracy, controlled legacy runtime, browser
+  capture, and audiovisual parity remain open.
+- [ ] Minigun's third-level chainfire contract extends the same boundary with
+  the pinned twelve-projectile/twelve-round formula and atomic fourth-level
+  rejection; target rotation/spread, exact timing/accuracy, controlled legacy
+  runtime, browser capture, and audiovisual parity remain open.
 - [x] Plasma Rifle's delivered first-level chainfire contract has a deterministic
   direct-core/replay/MCP/BrowserSession boundary check covering four ordered
   events, fair observations, render effects, scene projections, four-cell clip
