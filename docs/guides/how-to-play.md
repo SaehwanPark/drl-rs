@@ -24,7 +24,7 @@ description: "Comprehensive gameplay manual covering movement, targeting, combat
 | **Wait Turn** | `.` / `Space` | `5` | Pass one turn (100 energy units) |
 | **Target & Fire** | `F` -> `Enter` | `F` | Target nearest enemy and fire |
 | **Aimed Fire** | `Shift` + `F` | — | Precise aimed shot (+3 accuracy, 2× time) |
-| **First-Level Chainfire** | `C` | — | Fire the available Chaingun/Minigun/Plasma Rifle burst (3, 6, or 4 projectiles) |
+| **First-Level Chainfire** | `C` | — | Fire the available Chaingun/Minigun/Plasma Rifle/Laser Rifle burst (3 or 6 rotary projectiles; 4 energy projectiles) |
 | **Reload Weapon** | `R` | `R` | Reload equipped ranged weapon |
 | **Pick Up Item** | `G` / `,` | `G` | Pick up weapon, ammo, or item on ground |
 | **Descend Stairs** | `>` / `.` | `>` | Take the exit stairs to next floor |

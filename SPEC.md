@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-29
-Current project version: `0.2.261`
+Current project version: `0.2.262`
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,14 +25,14 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Plasma Rifle First-Level Chainfire Execution
+## 2. Active Implementation Slice: M9 — Laser Rifle First-Level Chainfire Execution
 
 ### 2.1 Objective
 
-Extend the existing typed first-level chainfire command to the standard Plasma
-Rifle. The accepted command must preserve the pinned six-projectile ordinary
-profile, consume four cells for four ordered first-level alternate outcomes,
-and advance the existing observable warm-up state transactionally.
+Extend the existing typed first-level chainfire command to the Laser Rifle. The
+accepted command must preserve the pinned five-projectile ordinary profile,
+consume four cells for four ordered first-level alternate outcomes, and advance
+the existing observable warm-up state transactionally.
 
 ### 2.1a Scope and steering gate
 
@@ -41,34 +41,33 @@ and advance the existing observable warm-up state transactionally.
   compatibility remain active acceptance constraints; Gate C catalog ownership
   and Gate D typed behavior evidence remain closed for this bounded extension.
 - **Observable outcome:** The existing `AttackRangedChainfire(Position)` command
-  is accepted for the standard Plasma Rifle only at warm-up level `0` with at
-  least four loaded cells. It emits exactly four ordered ranged outcomes, fills
-  post-lethal slots with deterministic no-op misses, consumes four cells, and
-  advances the warm-up level to `1`; ordinary fire resets that level to `0`.
-- **Gameplay/replay impact:** Gameplay semantics advance from `69` to `70`;
+  is accepted for the Laser Rifle only at warm-up level `0` with at least four
+  loaded cells. It emits exactly four ordered ranged outcomes, fills post-lethal
+  slots with deterministic no-op misses, consumes four cells, and advances the
+  warm-up level to `1`; ordinary fire resets that level to `0`.
+- **Gameplay/replay impact:** Gameplay semantics advance from `70` to `71`;
   replay wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.260` to `0.2.261`.
+  unchanged. Project version advances from `0.2.261` to `0.2.262`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary,
   typed projectile-count/cost policy and generic execution; `drl-protocol` owns
   the semantic `AttackRanged`/`AttackRangedAimed` commands and typed event
   projection, while replay/MCP and browser boundaries
   serialize and route it without duplicating gameplay rules.
-- **Evidence boundary:** Pinned Plasma Rifle item and alternate-fire evidence in
-  `docs/legacy-behavior/plasma-rifle-profile.md`, the existing Chaingun/Minigun
-  chainfire execution contracts, and focused direct-core/replay/MCP/browser
-  tests are authoritative. Controlled legacy runtime, browser capture, and
-  audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** Higher chainfire levels, Nuclear Plasma Rifle overload or
-  recharge behavior, target rotation/spread, exact callback timing/accuracy,
-  callback state-machine parity, new command variants or callback registries,
-  unrelated gameplay balance, replay migrations, runtime Lua, and
-  browser/audio/WebGPU capture parity.
+- **Evidence boundary:** Pinned Laser Rifle item and alternate-fire evidence in
+  `docs/legacy-behavior/laser-rifle-profile.md`, the existing typed chainfire
+  execution contracts, and focused direct-core/replay/MCP/browser tests are
+  authoritative. Controlled legacy runtime, browser capture, and audiovisual
+  comparisons remain `NOT_RUN`.
+- **Non-goals:** Higher chainfire levels, target rotation/spread, exact callback
+  timing/accuracy, callback state-machine parity, new command variants or
+  callback registries, unrelated gameplay balance, replay migrations, runtime
+  Lua, and browser/audio/WebGPU capture parity.
 
 ### 2.2 Why this slice is bounded
 
 The immutable profile and semantic command already exist from the preceding
-declaration and Chaingun/Minigun slices. This extension adds only standard
-Plasma Rifle eligibility, the four-projectile/four-cell execution path, and its
+declaration and Chaingun/Minigun/Plasma Rifle slices. This extension adds only
+Laser Rifle eligibility, the four-projectile/four-cell execution path, and its
 existing MCP/browser projections. It reuses the prepare/commit boundary,
 warm-up state, replay envelope, and deterministic event contract without adding
 a new dispatcher or callback system.
@@ -3269,7 +3268,7 @@ Chaingun chainfire command to Minigun. Its contract must:
   timing/accuracy, controlled runtime, browser capture, and audiovisual parity
   `NOT_RUN` where comparison evidence is unavailable.
 
-### 2.7ed Current Plasma Rifle first-level chainfire execution target
+### 2.7ed Historical Plasma Rifle first-level chainfire execution target
 
 The bounded implementation target for this revision extends the existing typed
 chainfire command to the standard Plasma Rifle. Its contract must:
@@ -3292,6 +3291,29 @@ chainfire command to the standard Plasma Rifle. Its contract must:
   target rotation/spread, exact legacy timing/accuracy, controlled runtime,
   browser capture, and audiovisual parity `NOT_RUN` where comparison evidence
   is unavailable.
+
+### 2.7ee Current Laser Rifle first-level chainfire execution target
+
+The bounded implementation target for this revision extends the existing typed
+chainfire command to the Laser Rifle. Its contract must:
+
+- [x] accept `AttackRangedChainfire` only for the Laser Rifle at warm-up level
+  `0` with at least four loaded cells, after validating target, LOS, range, and
+  death-drop destinations;
+- [x] emit exactly four ordered ranged outcomes against the requested target,
+  fill post-lethal slots with deterministic no-op misses without extra damage or
+  RNG, consume four clip cells, and advance warm-up state only after acceptance;
+- [x] reset the shared warm-up state on ordinary fire and reject higher levels,
+  wrong weapons, and under-supplied clips atomically;
+- [x] advertise and execute the same semantic action through replay/MCP JSON,
+  fair legal-action probing, physical browser `C` routing, and `BrowserSession`
+  parity tests;
+- [x] advance project version from `0.2.261` to `0.2.262` and gameplay
+  semantics from `70` to `71` while preserving replay schema, RNG, generator,
+  and ruleset identities;
+- [x] keep higher chainfire levels, target rotation/spread, exact legacy
+  timing/accuracy, controlled runtime, browser capture, and audiovisual parity
+  `NOT_RUN` where comparison evidence is unavailable.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
@@ -3806,6 +3828,13 @@ projectiles and four cells after the six-projectile ordinary profile. Direct
 core, replay, MCP, physical `C` routing, and BrowserSession parity are verified;
 higher levels, Nuclear Plasma behavior, exact timing/accuracy, controlled
 runtime, browser capture, and audiovisual parity remain open.
+
+The `0.2.262` successor extends the same typed first-level chainfire command to
+the Laser Rifle. Pinned legacy `Shots div 3` adjustment yields four projectiles
+and four cells after the five-projectile ordinary profile. Direct core, replay,
+MCP, physical `C` routing, and BrowserSession parity are verified; higher
+levels, target rotation/spread, exact timing/accuracy, controlled runtime,
+browser capture, and audiovisual parity remain open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity

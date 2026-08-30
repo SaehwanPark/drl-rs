@@ -411,14 +411,14 @@ mod tests {
   #[test]
   fn test_replay_validation_rejects_incompatible_semantics() {
     let mut replay = ReplayLog::new(1234, 10, 10, Position::new(1, 1));
-    // Version 69 predates Plasma Rifle's first-level chainfire execution and
-    // must not be interpreted by the version-70 engine.
-    assert_eq!(drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION, 70);
+    // Version 70 predates Laser Rifle's first-level chainfire execution and
+    // must not be interpreted by the version-71 engine.
+    assert_eq!(drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION, 71);
     assert_eq!(
       drl_protocol::CURRENT_RNG_SAMPLING_SEMANTICS_VERSION,
       crate::rng::RNG_SAMPLING_SEMANTICS_VERSION
     );
-    replay.metadata.gameplay_semantics_version = 69;
+    replay.metadata.gameplay_semantics_version = 70;
     let error = ReplayEngine::validate(&replay).unwrap_err();
     assert!(error.contains("unsupported gameplay semantics version"));
 
