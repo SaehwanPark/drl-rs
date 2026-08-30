@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.272`
+Current project version: `0.2.273`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.272)
+## 3. Current Progress Summary (`VERSION` 0.2.273)
 
 ### Delivered Foundations
 
@@ -1015,6 +1015,16 @@ verification item uses explicit status semantics:
   are verified; fourth-and-later levels, target rotation/scatter routing,
   delayed timing, controlled runtime, browser capture, and audiovisual parity
   remain open. Gameplay semantics advance to `81`.
+- **M9 Nuclear Plasma second-level chainfire (`0.2.273`):** The typed
+  chainfire command now accepts warm-up level one, applying the pinned
+  six-projectile formula, preflighting and consuming six cells, emitting six
+  ordered ranged outcomes with deterministic post-lethal no-op continuation
+  slots, and advancing warm-up to level two. Direct-core, replay, MCP
+  legal-action/JSON, physical `C` routing, and BrowserSession parity plus
+  atomic third-level rejection are verified; third-and-later levels, target
+  rotation/scatter routing, exact timing/accuracy, overload/recharge changes,
+  controlled runtime, browser capture, and audiovisual parity remain open.
+  Gameplay semantics advance to `82`.
 - **M9 BFG 10K radius-2 explosion fanout (`0.2.265`):** Each successful BFG
   10K direct-target hit now preserves its schedule event and immediately
   resolves a deterministic actor-only radius-2 fanout: one `6d4` Plasma roll
@@ -1631,10 +1641,11 @@ scripting.
   routing, runtime, and audiovisual parity remain open.
 - [x] Nuclear Plasma Rifle has an immutable behavior profile for its ordered
   six-projectile/one-cell ordinary-fire volley, bounded first-level
-  four-projectile/four-cell chainfire, alternate-overload, and
+  four-projectile/four-cell and second-level six-projectile/six-cell chainfire,
+  alternate-overload, and
   delay-40/cadence-2/amount-1 recharge fragments; generic ranged and dedicated
-  transitions remain authoritative while higher chainfire levels, runtime, and
-  audiovisual parity remain open.
+  transitions remain authoritative while third-and-later chainfire levels,
+  runtime, and audiovisual parity remain open.
 - [x] Blaster has an immutable behavior profile for its current one-projectile
   ordinary fire and one-cell cost followed by its delay-30/cadence-10/amount-1
   recharge fragment; generic ranged execution and the dedicated transition
@@ -1799,6 +1810,14 @@ scripting.
   advancement/reset, and atomic under-supply rejection; higher levels, overload
   map effects, target rotation/spread, exact timing/accuracy, controlled legacy
   runtime, browser capture, and audiovisual parity remain open.
+- [x] Nuclear Plasma Rifle's delivered second-level chainfire contract has a
+  deterministic direct-core/replay/MCP/BrowserSession boundary check covering
+  six ordered events, fair observations, render effects, scene projections,
+  six-cell clip consumption, physical `C` routing, observable warm-up
+  advancement/reset, and atomic under-supply rejection; third-and-later levels,
+  overload/recharge changes, target rotation/spread, exact timing/accuracy,
+  controlled legacy runtime, browser capture, and audiovisual parity remain
+  open.
 - [x] BFG 10K's delivered first-level chainfire contract has a deterministic
   direct-core/replay/MCP/BrowserSession boundary check covering four ordered
   exact-hit events, fair observations, render effects, scene projections,
@@ -2027,6 +2046,15 @@ scripting.
   rotation/scatter routing, delayed timing, controlled runtime, browser
   capture, and audiovisual parity remain open. Gameplay semantics advance to
   `81`.
+- **M9 Nuclear Plasma second-level chainfire (`0.2.273`):** Nuclear Plasma
+  Rifle now accepts its pinned warm-up level-one continuation: six ordered
+  ranged projectiles, six loaded cells, deterministic post-lethal no-op
+  continuation slots, and warm-up advancement to level two. Direct-core,
+  replay, MCP legal-action/JSON, physical `C` routing, and BrowserSession
+  parity plus atomic third-level rejection are verified; later levels, target
+  rotation/scatter routing, exact timing/accuracy, overload/recharge changes,
+  controlled runtime, browser capture, and audiovisual parity remain open.
+  Gameplay semantics advance to `82`.
 - **M9 BFG 10K radius-2 explosion fanout (`0.2.265`):** Successful BFG 10K
   hits now preserve their schedule metadata and immediately resolve the
   bounded actor-only radius-2 fanout in stable center/ring order, consuming one

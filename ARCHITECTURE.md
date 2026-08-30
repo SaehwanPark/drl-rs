@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.272`
+Current project version: `0.2.273`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -63,7 +63,8 @@ transition; Laser Rifle records its typed five-projectile ordinary-fire and
 one-cell-per-projectile ammo-cost fragments plus a bounded first-level
 four-projectile chainfire transition; Nuclear Plasma Rifle records its typed
 six-projectile ordinary-fire, one-cell-per-projectile, overload, and recharge
-fragments plus a bounded first-level four-projectile chainfire transition;
+fragments plus bounded first- and second-level four- and six-projectile
+chainfire transitions;
 BFG 10K records its typed exact-hit, five-projectile ordinary-fire,
 five-cell-per-projectile, delayed-explosion, and bounded first-level
 four-projectile/twenty-cell, second-level five-projectile/twenty-five-cell, and
@@ -99,8 +100,8 @@ Assault Shotgun records its typed ordinary single-shell reload and
 capped full-deficit reload fragments;
 Revenant's Launcher records its typed
 exact-hit attack fragment;
-Nuclear Plasma records its typed
-alternate-overload and periodic-recharge fragments; the BFG family profiles
+Nuclear Plasma records its typed first- and second-level chainfire,
+alternate-overload, and periodic-recharge fragments; the BFG family profiles
 record exact-hit, typed projectile-count,
 ammunition-cost, and delayed-explosion metadata. Dedicated runtime command
 paths remain the execution authority; higher chainfire levels, scatter, and
@@ -255,9 +256,9 @@ Presentation Boundary
     radius-1 geometry, 5d3 splash rolls, radial knockback policy, and bounded
     ground-ammo destruction; Railgun's dedicated resolver owns clear-ray
     traversal and shared-damage piercing;
-    Nuclear Plasma's profile records its
-    six-projectile ordinary-fire and six-cell cost fragments alongside overload
-    and recharge without claiming chainfire.
+    Nuclear Plasma's profile records its six-projectile ordinary-fire and
+    six-cell cost fragments alongside its typed first- and second-level
+    chainfire, overload, and recharge fragments.
     Profiles describe
     behavior without string keys or runtime callbacks; dedicated transition
     modules remain the execution authority.

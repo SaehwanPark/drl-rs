@@ -1,8 +1,8 @@
 # Nuclear Plasma Rifle typed behavior-profile evidence
 
-Status: delivered typed behavior profile and first-level chainfire execution in
-`0.2.263`; higher chainfire levels, controlled legacy runtime comparison, and
-audiovisual parity remain `NOT_RUN`.
+Status: delivered typed behavior profile and first- plus second-level chainfire
+execution in `0.2.273`; third-and-later chainfire levels, controlled legacy
+runtime comparison, and audiovisual parity remain `NOT_RUN`.
 
 ## Pinned source
 
@@ -25,13 +25,15 @@ evidence.
 
 The immutable `NUCLEAR_PLASMA_BEHAVIOR` profile records the six-projectile
 ordinary volley, one-cell cost, first-level
-`AlternateAction::Chainfire { shot_count: 4, ammo_cost: 4 }`, typed
-`AlternateAction::Overload`, and `PeriodicEffect::Recharge` fragments (delay
-`40`, cadence `2`, amount `1`). Generic ranged execution owns the bounded
-chainfire command while dedicated `nuclear_overload` and `WeaponRechargeState`
-transitions remain the execution authorities for their existing actions; no new
-command, callback registry, replay-wire field, or recharge timing is added.
+`AlternateAction::Chainfire { shot_count: 4, ammo_cost: 4 }`, second-level
+`AlternateAction::ChainfireLevel { level: 1, shot_count: 6, ammo_cost: 6 }`,
+typed `AlternateAction::Overload`, and `PeriodicEffect::Recharge` fragments
+(delay `40`, cadence `2`, amount `1`). Generic ranged execution owns the
+bounded chainfire command while dedicated `nuclear_overload` and
+`WeaponRechargeState` transitions remain the execution authorities for their
+existing actions; no new command, callback registry, replay-wire field, or
+recharge timing is added.
 
-The profile intentionally does not claim higher chainfire levels, dynamic
-target rotation, or other deferred weapon behavior. Those remain separate
-evidence-backed slices.
+The profile intentionally does not claim third-and-later chainfire levels,
+dynamic target rotation, or other deferred weapon behavior. Those remain
+separate evidence-backed slices.

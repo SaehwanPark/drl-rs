@@ -908,10 +908,33 @@ pub const NUCLEAR_BFG9000_BEHAVIOR: BehaviorProfile =
 pub const NUCLEAR_PLASMA_PROJECTILE_COUNT: u32 = 6;
 /// Pinned projectile count for the first Nuclear Plasma chainfire level.
 pub const NUCLEAR_PLASMA_CHAINFIRE_PROJECTILE_COUNT: u32 = 4;
+/// Pinned projectile count for the second Nuclear Plasma chainfire level.
+pub const NUCLEAR_PLASMA_SECOND_CHAINFIRE_PROJECTILE_COUNT: u32 = NUCLEAR_PLASMA_PROJECTILE_COUNT;
 /// Pinned per-projectile clip cost for an ordinary Nuclear Plasma Rifle shot.
 pub const NUCLEAR_PLASMA_SHOT_COST: u32 = 1;
 /// Pinned Cell cost for the first Nuclear Plasma chainfire level.
 pub const NUCLEAR_PLASMA_CHAINFIRE_SHOT_COST: u32 = 4;
+/// Pinned Cell cost for the second Nuclear Plasma chainfire level.
+pub const NUCLEAR_PLASMA_SECOND_CHAINFIRE_SHOT_COST: u32 =
+  NUCLEAR_PLASMA_SECOND_CHAINFIRE_PROJECTILE_COUNT * NUCLEAR_PLASMA_SHOT_COST;
+
+/// Returns the bounded Nuclear Plasma Rifle chainfire profile for a warm-up
+/// level. The legacy six-shot weapon emits four projectiles at level zero and
+/// its full six-projectile volley at level one; higher levels remain deferred.
+#[must_use]
+pub const fn nuclear_plasma_chainfire_profile(level: u8) -> Option<(u32, u32)> {
+  match level {
+    0 => Some((
+      NUCLEAR_PLASMA_CHAINFIRE_PROJECTILE_COUNT,
+      NUCLEAR_PLASMA_CHAINFIRE_SHOT_COST,
+    )),
+    1 => Some((
+      NUCLEAR_PLASMA_SECOND_CHAINFIRE_PROJECTILE_COUNT,
+      NUCLEAR_PLASMA_SECOND_CHAINFIRE_SHOT_COST,
+    )),
+    _ => None,
+  }
+}
 
 const NUCLEAR_PLASMA_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
   BehaviorSpec::Attack(AttackEffect::ProjectileCount(
@@ -924,6 +947,11 @@ const NUCLEAR_PLASMA_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
   BehaviorSpec::Alternate(AlternateAction::Chainfire {
     shot_count: NUCLEAR_PLASMA_CHAINFIRE_PROJECTILE_COUNT,
     ammo_cost: NUCLEAR_PLASMA_CHAINFIRE_SHOT_COST,
+  }),
+  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
+    level: 1,
+    shot_count: NUCLEAR_PLASMA_SECOND_CHAINFIRE_PROJECTILE_COUNT,
+    ammo_cost: NUCLEAR_PLASMA_SECOND_CHAINFIRE_SHOT_COST,
   }),
   BehaviorSpec::Alternate(AlternateAction::Overload),
   BehaviorSpec::Periodic(PeriodicEffect::Recharge {
@@ -1388,6 +1416,25 @@ mod tests {
   }
 
   #[test]
+  fn nuclear_plasma_chainfire_profile_matches_pinned_warmup_levels() {
+    assert_eq!(
+      nuclear_plasma_chainfire_profile(0),
+      Some((
+        NUCLEAR_PLASMA_CHAINFIRE_PROJECTILE_COUNT,
+        NUCLEAR_PLASMA_CHAINFIRE_SHOT_COST,
+      ))
+    );
+    assert_eq!(
+      nuclear_plasma_chainfire_profile(1),
+      Some((
+        NUCLEAR_PLASMA_SECOND_CHAINFIRE_PROJECTILE_COUNT,
+        NUCLEAR_PLASMA_SECOND_CHAINFIRE_SHOT_COST,
+      ))
+    );
+    assert_eq!(nuclear_plasma_chainfire_profile(2), None);
+  }
+
+  #[test]
   fn behavior_vocabulary_covers_explicit_trigger_categories() {
     const SPECS: &[BehaviorSpec] = &[
       BehaviorSpec::Passive(PassiveModifier {
@@ -1635,6 +1682,11 @@ mod tests {
         BehaviorSpec::Alternate(AlternateAction::Chainfire {
           shot_count: NUCLEAR_PLASMA_CHAINFIRE_PROJECTILE_COUNT,
           ammo_cost: NUCLEAR_PLASMA_CHAINFIRE_SHOT_COST,
+        }),
+        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
+          level: 1,
+          shot_count: NUCLEAR_PLASMA_SECOND_CHAINFIRE_PROJECTILE_COUNT,
+          ammo_cost: NUCLEAR_PLASMA_SECOND_CHAINFIRE_SHOT_COST,
         }),
         BehaviorSpec::Alternate(AlternateAction::Overload),
         BehaviorSpec::Periodic(PeriodicEffect::Recharge {

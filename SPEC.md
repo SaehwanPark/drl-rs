@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.272`
+Current project version: `0.2.273`
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,16 +25,15 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — BFG 10K Third-Level Chainfire
+## 2. Active Implementation Slice: M9 — Nuclear Plasma Second-Level Chainfire
 
 ### 2.1 Objective
 
-Extend the delivered typed BFG 10K second-level chainfire command with the
-legacy-pinned third warm-up level. After accepted four- and five-projectile
-bursts leave the weapon at warm-up level two, a valid third-level command must
-emit seven exact-hit projectiles, charge thirty-five cells, preserve each
-successful hit's existing delayed-explosion and splash behavior, and advance
-the warm-up state to level three.
+Extend the delivered typed Nuclear Plasma Rifle first-level chainfire command
+with the legacy-pinned second warm-up level. After an accepted four-projectile
+burst leaves the weapon at warm-up level one, a valid second-level command must
+emit six projectiles, charge six cells, preserve the existing ordered ranged
+attack behavior, and advance the warm-up state to level two.
 
 ### 2.1a Scope and steering gate
 
@@ -42,41 +41,38 @@ the warm-up state to level three.
 - **Steering gates:** Gate A rejected-input safety and Gate B explicit replay
   compatibility remain active acceptance constraints; Gate C catalog ownership
   and Gate D typed behavior evidence remain closed for this bounded extension.
-- **Observable outcome:** A third-level BFG 10K chainfire command is admitted
-  only for a living visible target, a loaded clip of at least thirty-five
-  cells, and a weapon warm-up level of two. It consumes thirty-five cells,
-  emits seven ordered exact-hit attack outcomes, preserves the existing
-  per-hit delay-25/radius-2/knockback-16 schedule and immediate splash
-  resolution, and advances warm-up to level three. Post-lethal continuation
-  slots remain deterministic no-op misses. Ordinary fire still resets the
-  warm-up state, and the fourth level remains rejected atomically.
-- **Gameplay/replay impact:** Gameplay semantics advance from `80` to `81`;
+- **Observable outcome:** A second-level Nuclear Plasma chainfire command is
+  admitted only for a living visible target, a loaded clip of at least six
+  cells, and a weapon warm-up level of one. It consumes six cells, emits six
+  ordered ranged attack outcomes, preserves deterministic post-lethal no-op
+  continuation slots, and advances warm-up to level two. Ordinary fire still
+  resets the warm-up state, and the third level remains rejected atomically.
+- **Gameplay/replay impact:** Gameplay semantics advance from `81` to `82`;
   replay wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.271` to `0.2.272`.
+  unchanged. Project version advances from `0.2.272` to `0.2.273`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary,
   typed projectile-count/cost policy and generic execution; `drl-protocol` owns
   the semantic `AttackRanged`/`AttackRangedAimed` commands and typed event
   projection, while replay/MCP and browser boundaries
   serialize and route it without duplicating gameplay rules.
-- **Evidence boundary:** Pinned BFG 10K item and chainfire evidence in
-  `docs/legacy-behavior/bfg10k-chainfire.md`, together with the existing typed
-  schedule/splash contract and focused direct-core/replay/MCP/browser tests,
-  are authoritative. Controlled legacy runtime, browser capture, and
+- **Evidence boundary:** Pinned Nuclear Plasma item and chainfire evidence in
+  `docs/legacy-behavior/nuclear-plasma-volley-profile.md`, together with the
+  existing typed ranged contract and focused direct-core/replay/MCP/browser
+  tests, are authoritative. Controlled legacy runtime, browser capture, and
   audiovisual comparisons remain `NOT_RUN`.
-- **Non-goals:** Fourth and later chainfire levels, legacy target rotation or
-  scatter/spread routing, projectile routing, delayed timing/state-machine
-  parity, EFCHAIN secondary visual explosions, terrain/content mutation,
-  splash-immunity traits, exact callback timing/accuracy, new command variants
-  or callback registries, unrelated gameplay balance, replay migrations,
-  runtime Lua, and browser/audio/WebGPU capture parity.
+- **Non-goals:** Third and later chainfire levels, legacy target rotation or
+  scatter/spread routing, exact callback timing/accuracy, overload/recharge
+  changes, new command variants or callback registries, unrelated gameplay
+  balance, replay migrations, runtime Lua, and browser/audio/WebGPU capture
+  parity.
 
 ### 2.2 Why this slice is bounded
 
-The immutable profile, semantic command, schedule event, and immediate splash
-already exist for the BFG 10K. This extension adds only one typed warm-up
-profile and its deterministic count/cost selection while reusing the existing
-direct-hit, replay, MCP, browser, reload, and transactional boundaries without
-adding a pending queue, new dispatcher, or callback system.
+The immutable Nuclear Plasma profile, semantic command, and first-level
+transition already exist. This extension adds only one typed warm-up profile
+and its deterministic count/cost selection while reusing the existing generic
+ranged, replay, MCP, browser, and transactional boundaries without adding a
+pending queue, new dispatcher, or callback system.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -3568,11 +3564,10 @@ command with the pinned second warm-up level. Its contract was:
   browser capture, and audiovisual parity `NOT_RUN` where comparison evidence
   is unavailable.
 
-### 2.7eo Current BFG 10K third-level chainfire target
+### 2.7eo Historical BFG 10K third-level chainfire target
 
-The bounded implementation target for this revision extends the delivered
-BFG 10K second-level chainfire command with the pinned third warm-up level.
-Its contract must:
+The delivered `0.2.272` target extended the BFG 10K second-level chainfire
+command with the pinned third warm-up level. Its contract was:
 
 - [x] preserve the first- and second-level four- and five-projectile contracts
   and admit a third command only while the weapon warm-up level is two and the
@@ -3597,6 +3592,33 @@ Its contract must:
   splash-immunity traits, exact callback timing/accuracy, controlled runtime,
   browser capture, and audiovisual parity `NOT_RUN` where comparison evidence
   is unavailable.
+
+### 2.7ep Current Nuclear Plasma second-level chainfire target
+
+The bounded implementation target for this revision extends the delivered
+Nuclear Plasma Rifle first-level chainfire command with the pinned second
+warm-up level. Its contract must:
+
+- [x] preserve the first-level four-projectile/four-cell contract and admit a
+  second command only while the weapon warm-up level is one and the target is
+  still a valid visible living actor;
+- [x] resolve the legacy level-one formula `shots = 6`, consuming exactly six
+  loaded cells for the six-projectile ranged volley;
+- [x] preserve ordered event output and deterministic post-lethal no-op
+  continuation slots without changing the existing overload or recharge
+  transitions;
+- [x] advance warm-up state to level two only after acceptance, keep ordinary
+  fire's reset behavior, and reject the third level without changing game,
+  clip, turn, or RNG state;
+- [x] preserve direct-core, replay, MCP legal-action/JSON, physical `C` key,
+  and BrowserSession event/state parity;
+- [x] advance project version from `0.2.272` to `0.2.273` and gameplay
+  semantics from `81` to `82` while preserving replay schema, RNG, generator,
+  and ruleset identities;
+- [x] keep third-and-later chainfire levels, legacy target rotation,
+  scatter/spread routing, exact callback timing/accuracy, overload/recharge
+  policy changes, controlled runtime, browser capture, and audiovisual parity
+  `NOT_RUN` where comparison evidence is unavailable.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 

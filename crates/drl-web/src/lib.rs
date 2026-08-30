@@ -8,8 +8,8 @@ use drl_assets::{AtlasId, AtlasTextureSource, SpriteUv};
 use drl_core::item::Item;
 use drl_core::{
   CHAINGUN_CHAINFIRE_SHOT_COST, Game, LASER_RIFLE_CHAINFIRE_SHOT_COST, MINIGUN_CHAINFIRE_SHOT_COST,
-  NUCLEAR_PLASMA_CHAINFIRE_SHOT_COST, PLASMA_RIFLE_CHAINFIRE_SHOT_COST, Tile,
-  bfg10k_chainfire_profile,
+  PLASMA_RIFLE_CHAINFIRE_SHOT_COST, Tile, bfg10k_chainfire_profile,
+  nuclear_plasma_chainfire_profile,
 };
 use drl_protocol::{
   Command, Direction, ItemArchetype, ItemId, ItemSpawnKind, ItemSpawnSpec, ItemView, MonsterKind,
@@ -67,7 +67,9 @@ fn chainfire_ammo_cost(archetype: ItemArchetype, level: u8) -> Option<u32> {
     ItemArchetype::Minigun if level == 0 => Some(MINIGUN_CHAINFIRE_SHOT_COST),
     ItemArchetype::PlasmaRifle if level == 0 => Some(PLASMA_RIFLE_CHAINFIRE_SHOT_COST),
     ItemArchetype::LaserRifle if level == 0 => Some(LASER_RIFLE_CHAINFIRE_SHOT_COST),
-    ItemArchetype::NuclearPlasmaRifle if level == 0 => Some(NUCLEAR_PLASMA_CHAINFIRE_SHOT_COST),
+    ItemArchetype::NuclearPlasmaRifle => {
+      nuclear_plasma_chainfire_profile(level).map(|(_, cost)| cost)
+    }
     _ => None,
   }
 }
@@ -6551,7 +6553,7 @@ mod tests {
 
     let mut direct = initial.clone();
     let mut browser = BrowserSession::from_game(initial);
-    let expected_events = direct
+    let mut expected_events = direct
       .step(command)
       .expect("direct Nuclear Plasma chainfire command");
     let step = browser
@@ -6587,8 +6589,61 @@ mod tests {
         .chainfire_level,
       1
     );
+    let second_command = Command::AttackRangedChainfire(target_position);
+    assert_eq!(
+      BrowserSession::command_for_key("C", &direct.observe_player()),
+      Some(second_command)
+    );
+    let second_expected_events = direct
+      .step(second_command)
+      .expect("direct second Nuclear Plasma chainfire command");
+    let second_step = browser
+      .submit(second_command)
+      .expect("browser second Nuclear Plasma chainfire command");
+    assert_eq!(second_step.events, second_expected_events);
+    assert_eq!(second_step.after, direct.observe_player());
+    assert_eq!(
+      second_step.effects,
+      effect_timeline_for_observations(
+        &second_step.before,
+        &second_step.after,
+        &second_expected_events,
+      )
+    );
+    assert_eq!(
+      browser.scene(),
+      RenderScene::from_observation(&second_step.after)
+    );
+    assert_eq!(
+      second_expected_events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          drl_protocol::GameEvent::AttackResolved {
+            attacker_id,
+            target_id: event_target,
+            is_ranged: true,
+            ..
+          } if *attacker_id == direct.world().player_id().unwrap() && *event_target == target_id
+        ))
+        .count(),
+      6
+    );
+    let nuclear_plasma = second_step
+      .after
+      .equipped_weapon
+      .as_ref()
+      .expect("Nuclear Plasma Rifle");
+    assert_eq!(nuclear_plasma.chainfire_level, 2);
+    assert_eq!(nuclear_plasma.clip, Some((14, 24)));
+    assert_eq!(
+      BrowserSession::command_for_key("C", &second_step.after),
+      None
+    );
+    expected_events.extend(second_expected_events);
     let mut command_replay = setup_replay;
     command_replay.record_command(command);
+    command_replay.record_command(second_command);
     let (replayed, replay_events) =
       drl_core::ReplayEngine::run(&command_replay).expect("vertical command replay");
     assert_eq!(replay_events, expected_events);
