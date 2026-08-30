@@ -17,11 +17,12 @@ use crate::behavior::{
   ANTI_FREAK_JACKAL_EXPLOSION_DELAY, ANTI_FREAK_JACKAL_EXPLOSION_KNOCKBACK,
   ANTI_FREAK_JACKAL_EXPLOSION_RADIUS, BFG10K_EXPLOSION_DELAY, BFG10K_EXPLOSION_KNOCKBACK,
   BFG10K_EXPLOSION_RADIUS, BFG9000_EXPLOSION_DELAY, BFG9000_EXPLOSION_KNOCKBACK,
-  BFG9000_EXPLOSION_RADIUS, LavaRechargeOutcome, MedicalRepairOutcome,
-  NUCLEAR_BFG9000_EXPLOSION_DELAY, NUCLEAR_BFG9000_EXPLOSION_KNOCKBACK,
+  BFG9000_EXPLOSION_RADIUS, LavaRechargeOutcome, MINIGUN_CHAINFIRE_PROJECTILE_COUNT,
+  MedicalRepairOutcome, NUCLEAR_BFG9000_EXPLOSION_DELAY, NUCLEAR_BFG9000_EXPLOSION_KNOCKBACK,
   NUCLEAR_BFG9000_EXPLOSION_RADIUS, PISTOL_AIMED_ACCURACY_BONUS, PISTOL_AIMED_FIRE_COST_MULTIPLIER,
   WeaponRechargeOutcome,
 };
+use crate::chaingun::{CHAINGUN_CHAINFIRE_PROJECTILE_COUNT, ChainfireTransition};
 use crate::combat::CombatResolver;
 use crate::combat_shotgun::{CombatShotgunReloadPlan, CombatShotgunTransition};
 use crate::environment::{entered_tile_damage, movement_cost};
@@ -1710,6 +1711,7 @@ impl Game {
       weapon_is_nuclear_bfg9000,
       weapon_is_anti_freak_jackal,
       weapon_is_chaingun,
+      weapon_is_minigun,
     ) = {
       let player = self
         .state
@@ -1727,16 +1729,20 @@ impl Game {
       if !props.is_ranged {
         return Err(CommandError::NoEquippedWeapon);
       }
+      let weapon_is_chaingun = weapon.archetype() == drl_protocol::ItemArchetype::Chaingun;
+      let weapon_is_minigun = weapon.archetype() == drl_protocol::ItemArchetype::Minigun;
       if chainfire {
-        if weapon.archetype() != drl_protocol::ItemArchetype::Chaingun {
+        if !weapon_is_chaingun && !weapon_is_minigun {
           return Err(CommandError::InvalidCommand(
-            "chainfire is only available for the Chaingun".to_string(),
+            "chainfire is only available for the Chaingun or Minigun".to_string(),
           ));
         }
-        if !crate::chaingun::ChaingunTransition::can_chainfire(props) {
-          return Err(CommandError::InvalidCommand(
-            "higher Chaingun chainfire levels are deferred".to_string(),
-          ));
+        if !ChainfireTransition::can_chainfire(props) {
+          return Err(CommandError::InvalidCommand(if weapon_is_minigun {
+            "higher Minigun chainfire levels are deferred".to_string()
+          } else {
+            "higher Chaingun chainfire levels are deferred".to_string()
+          }));
         }
       }
       if aimed
@@ -1764,7 +1770,11 @@ impl Game {
         return Err(CommandError::TargetOutOfRange(target_pos));
       }
       let shot_count = if chainfire {
-        crate::chaingun::CHAINGUN_CHAINFIRE_PROJECTILE_COUNT
+        if weapon_is_minigun {
+          MINIGUN_CHAINFIRE_PROJECTILE_COUNT
+        } else {
+          CHAINGUN_CHAINFIRE_PROJECTILE_COUNT
+        }
       } else {
         weapon.projectile_count()
       };
@@ -1784,7 +1794,6 @@ impl Game {
         weapon.archetype() == drl_protocol::ItemArchetype::NuclearBfg9000;
       let weapon_is_anti_freak_jackal =
         weapon.archetype() == drl_protocol::ItemArchetype::AntiFreakJackal;
-      let weapon_is_chaingun = weapon.archetype() == drl_protocol::ItemArchetype::Chaingun;
       (
         props.fire_cost,
         shot_count,
@@ -1796,6 +1805,7 @@ impl Game {
         weapon_is_nuclear_bfg9000,
         weapon_is_anti_freak_jackal,
         weapon_is_chaingun,
+        weapon_is_minigun,
       )
     };
 
@@ -1874,7 +1884,7 @@ impl Game {
         // A chainfire burst reserves and reports every projectile even when an
         // earlier projectile kills the target.  Dead-target continuations are
         // deterministic no-op misses: they consume no additional RNG or
-        // damage and keep the fixed three-outcome event contract. Ordinary
+        // damage and keep the fixed chainfire-outcome event contract. Ordinary
         // fire retains its historical early-stop behavior below.
         if chainfire
           && !self
@@ -2036,14 +2046,14 @@ impl Game {
     {
       weapon.reset_weapon_recharge_timer();
       weapon.mark_pump_action_after_fire();
-      if chainfire && weapon_is_chaingun {
-        crate::chaingun::ChaingunTransition::advance(
+      if chainfire && (weapon_is_chaingun || weapon_is_minigun) {
+        ChainfireTransition::advance(
           weapon
             .weapon_properties_mut()
             .ok_or(CommandError::NoEquippedWeapon)?,
         );
       } else if !chainfire {
-        crate::chaingun::ChaingunTransition::reset(
+        ChainfireTransition::reset(
           weapon
             .weapon_properties_mut()
             .ok_or(CommandError::NoEquippedWeapon)?,

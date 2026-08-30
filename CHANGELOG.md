@@ -3,6 +3,23 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.260]
+
+- Extended the existing typed first-level chainfire command to the Minigun.
+  A Minigun at warm-up level zero now preflights and consumes six 9mm rounds,
+  emits six ordered ranged outcomes (with deterministic no-op continuations
+  after a lethal target), and advances/reset warm-up state transactionally.
+  Direct-core, replay, MCP, physical browser-key, and `BrowserSession` parity
+  plus atomic rejection are covered; higher levels, target rotation/spread,
+  exact timing/accuracy, controlled runtime, browser capture, and audiovisual
+  parity remain deferred. Gameplay semantics advance from `68` to `69`.
+
+## [0.2.259]
+
+- Rebranded the project and workspace from `drl-rust` to `drl-rs`, refreshed the
+  contributor-facing README, and published the repository documentation portal
+  and GitHub Pages workflow without changing gameplay semantics.
+
 ## [0.2.258]
 
 - Added the immutable Minigun first-level chainfire behavior profile. Pinned

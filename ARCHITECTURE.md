@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-29
-Current project version: `0.2.259`
+Current project version: `0.2.260`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -53,10 +53,10 @@ reload, and capped full-deficit reload fragments; Double Shotgun records its
 typed two-projectile dual-shot and two-shell ammo-cost fragments; Super Shotgun
 records its typed two-projectile dual-shot and two-shell aggregate ammo-cost
 fragments; Minigun records its typed eight-projectile ordinary-fire and
-one-round-per-projectile ammo-cost fragments plus a declarative first-level
-six-projectile chainfire profile; Chaingun records its typed
+one-round-per-projectile ammo-cost fragments plus a bounded first-level
+six-projectile chainfire transition; Chaingun records its typed
 four-projectile ordinary-fire and one-round-per-projectile ammo-cost fragments
-plus a bounded first-level three-projectile chainfire transition; Laser Rifle
+plus the same bounded first-level three-projectile chainfire transition; Laser Rifle
 records its typed five-projectile ordinary-fire and
 one-cell-per-projectile ammo-cost fragments; Standard
 Shotgun records its typed one-cell knockback hit and one-shell ammo-cost
@@ -80,8 +80,8 @@ Nuclear Plasma records its typed
 alternate-overload and periodic-recharge fragments; the BFG family profiles
 record exact-hit, typed projectile-count,
 ammunition-cost, and delayed-explosion metadata. Dedicated runtime command
-paths remain the execution authority; chainfire, scatter, and projectile
-routing are not inferred from these profiles.
+paths remain the execution authority; higher chainfire levels, scatter, and
+projectile routing are not inferred from these profiles.
 
 ---
 

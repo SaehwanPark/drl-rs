@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-29
-Current project version: `0.2.259`
+Current project version: `0.2.260`
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,52 +25,52 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Minigun First-Level Chainfire Profile
+## 2. Active Implementation Slice: M9 — Minigun First-Level Chainfire Execution
 
 ### 2.1 Objective
 
-Record the pinned first-level Minigun alternate chainfire as an immutable typed
-behavior profile. The declaration must preserve the eight-projectile ordinary
-profile, add a six-projectile/six-round first-level alternate fragment, and keep
-runtime execution, command routing, and callback behavior explicitly deferred.
+Extend the existing typed first-level chainfire command to Minigun. The accepted
+command must preserve the pinned eight-projectile ordinary profile, consume six
+9mm rounds for six ordered first-level alternate outcomes, and advance the
+existing observable warm-up state transactionally.
 
 ### 2.1a Scope and steering gate
 
 - **Steering priority:** Vertical canonical fidelity with typed legacy behavior.
-- **Steering gates:** Gate A rejected-input safety, Gate B explicit replay
-  compatibility, Gate C catalog ownership, and Gate D callback behavior
-  evidence remain closed for this contract-only slice.
-- **Observable outcome:** `MINIGUN_BEHAVIOR.specs()` contains ordered ordinary
-  projectile/cost fragments followed by
-  `AlternateAction::Chainfire { shot_count: 6, ammo_cost: 6 }`; no command,
-  replay field, or gameplay state changes.
-- **Gameplay/replay impact:** Gameplay semantics remain `68`; replay wire/schema,
-  RNG sampling, generator, and ruleset identities remain unchanged. Project
-  version advances from `0.2.257` to `0.2.258`.
+- **Steering gates:** Gate A rejected-input safety and Gate B explicit replay
+  compatibility remain active acceptance constraints; Gate C catalog ownership
+  and Gate D typed behavior evidence remain closed for this bounded extension.
+- **Observable outcome:** The existing `AttackRangedChainfire(Position)` command
+  is accepted for a Minigun only at warm-up level `0` with at least six loaded
+  9mm rounds. It emits exactly six ordered ranged outcomes, fills post-lethal
+  slots with deterministic no-op misses, consumes six rounds, and advances the
+  warm-up level to `1`; ordinary fire resets that level to `0`.
+- **Gameplay/replay impact:** Gameplay semantics advance from `68` to `69`;
+  replay wire/schema, RNG sampling, generator, and ruleset identities remain
+  unchanged. Project version advances from `0.2.259` to `0.2.260`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary,
   typed projectile-count/cost policy and generic execution; `drl-protocol` owns
   the semantic `AttackRanged`/`AttackRangedAimed` commands and typed event
   projection, while replay/MCP and browser boundaries
   serialize and route it without duplicating gameplay rules.
 - **Evidence boundary:** Pinned Minigun item and alternate-fire evidence in
-  `docs/legacy-behavior/minigun-profile.md`, the immutable profile declaration,
-  and its exact-order unit test are authoritative. Controlled
-  legacy runtime, browser capture, and audiovisual comparisons remain
-  `NOT_RUN`.
-- **Non-goals:** Chainfire command routing or execution, higher levels, legacy
-  target rotation/spread, exact callback timing/accuracy, callback state-machine
-  parity, audiovisual presentation comparison, new callback registries,
-  unrelated gameplay balance, replay-file migrations, runtime Lua, and
-  browser/audio/WebGPU capture parity.
+  `docs/legacy-behavior/minigun-profile.md`, the existing Chaingun chainfire
+  execution contract, and focused direct-core/replay/MCP/browser tests are
+  authoritative. Controlled legacy runtime, browser capture, and audiovisual
+  comparisons remain `NOT_RUN`.
+- **Non-goals:** Higher chainfire levels, target rotation/spread, exact callback
+  timing/accuracy, callback state-machine parity, new command variants or
+  callback registries, unrelated gameplay balance, replay migrations, runtime
+  Lua, and browser/audio/WebGPU capture parity.
 
 ### 2.2 Why this slice is bounded
 
-The existing typed behavior model already records immutable ordinary-fire
-fragments. This slice adds only Minigun's first-level alternate declaration in
-that model, preserving declaration order and avoiding a new command, dispatcher,
-mutable warm-up state, replay field, or execution path. It therefore exercises
-the content-model gate without broadening runtime behavior or making an
-audiovisual claim.
+The immutable profile and semantic command already exist from the preceding
+declaration and Chaingun slices. This extension adds only weapon eligibility,
+the six-projectile/six-round execution path, and its existing MCP/browser
+projections. It reuses the prepare/commit boundary, warm-up state, replay
+envelope, and deterministic event contract without adding a new dispatcher or
+callback system.
 
 Additional broad scalar-only family additions remain gated by the open behavior
 and evidence criteria in Section 2.8.
@@ -3227,7 +3227,7 @@ contract must:
   semantics from `66` to `68` while preserving replay schema, RNG, generator,
   and ruleset identities.
 
-### 2.7eb Current Minigun first-level chainfire profile target
+### 2.7eb Historical Minigun first-level chainfire profile target
 
 The bounded implementation target for this revision is an immutable profile
 for the pinned Minigun first-level alternate chainfire. Its contract must:
@@ -3244,6 +3244,29 @@ for the pinned Minigun first-level alternate chainfire. Its contract must:
 - [x] advance project version from `0.2.257` to `0.2.258` while preserving
   gameplay semantics `68`, replay schema, RNG, generator, and ruleset
   identities.
+
+### 2.7ec Current Minigun first-level chainfire execution target
+
+The bounded implementation target for this revision extends the existing typed
+Chaingun chainfire command to Minigun. Its contract must:
+
+- [x] accept `AttackRangedChainfire` only for a Minigun at warm-up level `0`
+  with at least six loaded 9mm rounds, after validating target, LOS, range, and
+  death-drop destinations;
+- [x] emit exactly six ordered ranged outcomes against the requested target,
+  fill post-lethal slots with deterministic no-op misses without extra damage or
+  RNG, consume six clip rounds, and advance warm-up state only after acceptance;
+- [x] reset the shared warm-up state on ordinary fire and reject higher levels,
+  wrong weapons, and under-supplied clips atomically;
+- [x] advertise and execute the same semantic action through replay/MCP JSON,
+  fair legal-action probing, physical browser `C` routing, and `BrowserSession`
+  parity tests;
+- [x] advance project version from `0.2.259` to `0.2.260` and gameplay
+  semantics from `68` to `69` while preserving replay schema, RNG, generator,
+  and ruleset identities;
+- [x] keep higher chainfire levels, target rotation/spread, exact legacy
+  timing/accuracy, controlled runtime, browser capture, and audiovisual parity
+  `NOT_RUN` where comparison evidence is unavailable.
 
 ### 2.8 Exit Gates Before Broad Content Migration Resumes
 
@@ -3747,10 +3770,10 @@ capture, and audiovisual parity remain open.
 
 The `0.2.258` successor adds Minigun's immutable first-level chainfire profile.
 Pinned legacy `Shots div 3` adjustment yields six projectiles and six 9mm
-rounds after the eight-projectile ordinary profile. This declaration does not
-add a command, dispatcher, replay field, or gameplay-state mutation; chainfire
-execution, routing, exact timing/accuracy, controlled runtime, browser capture,
-and audiovisual parity remain open.
+rounds after the eight-projectile ordinary profile. The `0.2.260` successor
+executes that profile through the existing typed chainfire command and browser/
+MCP boundaries while leaving higher levels, exact timing/accuracy, controlled
+runtime, browser capture, and audiovisual parity open.
 
 Reference-runtime comparison remains `NOT_RUN` when the controlled legacy
 execution environment is unavailable. Source similarity alone is not parity

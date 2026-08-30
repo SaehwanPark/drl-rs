@@ -1,9 +1,8 @@
 # Minigun typed behavior-profile evidence
 
-Status: delivered typed ordinary-fire eight-shot profile and declarative
-first-level chainfire profile for `0.2.258`; chainfire execution,
-spread/routing, controlled legacy runtime comparison, and audiovisual parity
-remain `NOT_RUN`.
+Status: delivered typed ordinary-fire eight-shot profile and first-level
+chainfire execution for `0.2.260`; higher-level chainfire, spread/routing,
+controlled legacy runtime comparison, and audiovisual parity remain `NOT_RUN`.
 
 ## Pinned source
 
@@ -23,7 +22,7 @@ Evidence is pinned to revision
   chainfire adjustments require alternate fire.
 - `src/dfbeing.pas:1484-1488` reduces a first-level alternate burst by
   `Shots div 3`, yielding six projectiles for the eight-shot Minigun; later
-  chainfire levels remain outside this bounded profile slice.
+  chainfire levels remain outside this bounded execution slice.
 - `src/dfbeing.pas:1496-1514` checks and debits the aggregate ammunition cost
   before emitting the ordered projectile loop at `:498-510`.
 
@@ -32,11 +31,12 @@ Evidence is pinned to revision
 The immutable `drl_core::behavior::MINIGUN_BEHAVIOR` profile records ordered
 `AttackEffect::ProjectileCount(8)`,
 `ResourceCost::Ammo { ammo_type: Ammo9mm, amount: 1 }`, and
-`AlternateAction::Chainfire { shot_count: 6, ammo_cost: 6 }` fragments. This
-slice is declaration-only: the existing ranged command path remains execution
-authority, and no generic chainfire dispatcher or alternate command is added.
-Direct integration tests continue to verify eight attack events, eight-round
-consumption, atomic below-cost rejection, and deterministic replay.
+`AlternateAction::Chainfire { shot_count: 6, ammo_cost: 6 }` fragments. The
+existing `AttackRangedChainfire` command now accepts Minigun at warm-up level
+zero, preflights six loaded rounds, emits six ordered outcomes (deterministic
+no-op misses fill post-lethal slots), consumes six clip rounds, and advances
+the shared warm-up state only after acceptance. Direct-core, replay, MCP, and
+BrowserSession tests verify the boundary and atomic rejection.
 
-Chainfire execution and the legacy alternate perk's exact routing, timing, and
-accuracy remain deferred; source similarity alone is not parity proof.
+Higher chainfire levels and the legacy alternate perk's exact routing, timing,
+and accuracy remain deferred; source similarity alone is not parity proof.
