@@ -8047,6 +8047,112 @@ mod tests {
     );
     expected_events.extend(thirteenth_expected_events);
 
+    let fourteenth_reload_expected_events = direct
+      .step(Command::Reload)
+      .expect("direct fourteenth BFG 10K chainfire reload");
+    let fourteenth_reload_step = browser
+      .submit(Command::Reload)
+      .expect("browser fourteenth BFG 10K chainfire reload");
+    assert_eq!(
+      fourteenth_reload_step.events,
+      fourteenth_reload_expected_events
+    );
+    assert_eq!(fourteenth_reload_step.after, direct.observe_player());
+    assert_eq!(
+      fourteenth_reload_step.effects,
+      effect_timeline_for_observations(
+        &fourteenth_reload_step.before,
+        &fourteenth_reload_step.after,
+        &fourteenth_reload_expected_events,
+      )
+    );
+    assert_eq!(
+      browser.scene(),
+      RenderScene::from_observation(&fourteenth_reload_step.after)
+    );
+    expected_events.extend(fourteenth_reload_expected_events);
+    let fourteenth_reloaded = fourteenth_reload_step
+      .after
+      .equipped_weapon
+      .as_ref()
+      .expect("BFG 10K");
+    assert_eq!(fourteenth_reloaded.chainfire_level, 13);
+    assert_eq!(fourteenth_reloaded.clip, Some((50, 50)));
+
+    let fourteenth_target_position = direct
+      .world()
+      .get_actor(target_id)
+      .expect("BFG 10K target should survive thirteenth reload")
+      .position();
+    let fourteenth_command = Command::AttackRangedChainfire(fourteenth_target_position);
+    assert_eq!(
+      BrowserSession::command_for_key("C", &fourteenth_reload_step.after),
+      Some(fourteenth_command)
+    );
+    let fourteenth_expected_events = direct
+      .step(fourteenth_command)
+      .expect("direct fourteenth BFG 10K chainfire command");
+    let fourteenth_step = browser
+      .submit(fourteenth_command)
+      .expect("browser fourteenth BFG 10K chainfire command");
+    assert_eq!(fourteenth_step.events, fourteenth_expected_events);
+    assert_eq!(fourteenth_step.after, direct.observe_player());
+    assert_eq!(
+      fourteenth_step.effects,
+      effect_timeline_for_observations(
+        &fourteenth_step.before,
+        &fourteenth_step.after,
+        &fourteenth_expected_events,
+      )
+    );
+    assert_eq!(
+      browser.scene(),
+      RenderScene::from_observation(&fourteenth_step.after)
+    );
+    assert_eq!(
+      fourteenth_expected_events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          drl_protocol::GameEvent::AttackResolved {
+            attacker_id,
+            target_id: event_target,
+            outcome: drl_protocol::AttackOutcome::Hit { .. },
+            is_ranged: true,
+          } if *attacker_id == direct.world().player_id().unwrap() && *event_target == target_id
+        ))
+        .count(),
+      7
+    );
+    assert_eq!(
+      fourteenth_expected_events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          drl_protocol::GameEvent::Bfg10kExplosionScheduled {
+            target_id: event_target,
+            delay: 25,
+            radius: 2,
+            knockback: 16,
+            ..
+          } if *event_target == target_id
+        ))
+        .count(),
+      7
+    );
+    let fourteenth_bfg10k = fourteenth_step
+      .after
+      .equipped_weapon
+      .as_ref()
+      .expect("BFG 10K");
+    assert_eq!(fourteenth_bfg10k.chainfire_level, 14);
+    assert_eq!(fourteenth_bfg10k.clip, Some((15, 50)));
+    assert_eq!(
+      BrowserSession::command_for_key("C", &fourteenth_step.after),
+      None
+    );
+    expected_events.extend(fourteenth_expected_events);
+
     let mut command_replay = setup_replay;
     command_replay.record_command(command);
     command_replay.record_command(second_command);
@@ -8072,6 +8178,8 @@ mod tests {
     command_replay.record_command(twelfth_command);
     command_replay.record_command(Command::Reload);
     command_replay.record_command(thirteenth_command);
+    command_replay.record_command(Command::Reload);
+    command_replay.record_command(fourteenth_command);
     let (replayed, replay_events) =
       drl_core::ReplayEngine::run(&command_replay).expect("vertical command replay");
     assert_eq!(replay_events, expected_events);
