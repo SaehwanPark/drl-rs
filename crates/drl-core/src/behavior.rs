@@ -618,6 +618,29 @@ pub const MINIGUN_PROJECTILE_COUNT: u32 = 8;
 pub const MINIGUN_CHAINFIRE_PROJECTILE_COUNT: u32 = 6;
 /// Pinned 9mm cost for the first Minigun chainfire level.
 pub const MINIGUN_CHAINFIRE_SHOT_COST: u32 = 6;
+/// Pinned projectile count for the second Minigun chainfire level.
+pub const MINIGUN_SECOND_CHAINFIRE_PROJECTILE_COUNT: u32 = MINIGUN_PROJECTILE_COUNT;
+/// Pinned 9mm cost for the second Minigun chainfire level.
+pub const MINIGUN_SECOND_CHAINFIRE_SHOT_COST: u32 = MINIGUN_SECOND_CHAINFIRE_PROJECTILE_COUNT;
+
+/// Returns the bounded Minigun chainfire profile for a warm-up level.
+///
+/// The legacy eight-shot weapon emits six projectiles at level zero and its
+/// full eight-projectile volley at level one; higher levels remain deferred.
+#[must_use]
+pub const fn minigun_chainfire_profile(level: u8) -> Option<(u32, u32)> {
+  match level {
+    0 => Some((
+      MINIGUN_CHAINFIRE_PROJECTILE_COUNT,
+      MINIGUN_CHAINFIRE_SHOT_COST,
+    )),
+    1 => Some((
+      MINIGUN_SECOND_CHAINFIRE_PROJECTILE_COUNT,
+      MINIGUN_SECOND_CHAINFIRE_SHOT_COST,
+    )),
+    _ => None,
+  }
+}
 
 const MINIGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
   BehaviorSpec::Attack(AttackEffect::ProjectileCount(MINIGUN_PROJECTILE_COUNT)),
@@ -628,6 +651,11 @@ const MINIGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
   BehaviorSpec::Alternate(AlternateAction::Chainfire {
     shot_count: MINIGUN_CHAINFIRE_PROJECTILE_COUNT,
     ammo_cost: MINIGUN_CHAINFIRE_SHOT_COST,
+  }),
+  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
+    level: 1,
+    shot_count: MINIGUN_SECOND_CHAINFIRE_PROJECTILE_COUNT,
+    ammo_cost: MINIGUN_SECOND_CHAINFIRE_SHOT_COST,
   }),
 ];
 
@@ -1527,6 +1555,25 @@ mod tests {
   }
 
   #[test]
+  fn minigun_chainfire_profile_matches_pinned_warmup_levels() {
+    assert_eq!(
+      minigun_chainfire_profile(0),
+      Some((
+        MINIGUN_CHAINFIRE_PROJECTILE_COUNT,
+        MINIGUN_CHAINFIRE_SHOT_COST
+      ))
+    );
+    assert_eq!(
+      minigun_chainfire_profile(1),
+      Some((
+        MINIGUN_SECOND_CHAINFIRE_PROJECTILE_COUNT,
+        MINIGUN_SECOND_CHAINFIRE_SHOT_COST,
+      ))
+    );
+    assert_eq!(minigun_chainfire_profile(2), None);
+  }
+
+  #[test]
   fn behavior_vocabulary_covers_explicit_trigger_categories() {
     const SPECS: &[BehaviorSpec] = &[
       BehaviorSpec::Passive(PassiveModifier {
@@ -1934,6 +1981,11 @@ mod tests {
         BehaviorSpec::Alternate(AlternateAction::Chainfire {
           shot_count: 6,
           ammo_cost: 6,
+        }),
+        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
+          level: 1,
+          shot_count: MINIGUN_SECOND_CHAINFIRE_PROJECTILE_COUNT,
+          ammo_cost: MINIGUN_SECOND_CHAINFIRE_SHOT_COST,
         }),
       ]
     );
