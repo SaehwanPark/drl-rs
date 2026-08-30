@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.312`
+Current project version: `0.2.313`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -55,10 +55,10 @@ records its typed two-projectile dual-shot and two-shell aggregate ammo-cost
 fragments; Minigun records its typed eight-projectile ordinary-fire and
 one-round-per-projectile ammo-cost fragments plus bounded first-, second-, and
 third-level six-, eight-, and twelve-projectile chainfire transitions;
-Chaingun records its typed
-four-projectile ordinary-fire and one-round-per-projectile ammo-cost fragments
-plus bounded first-, second-, third-, fourth-, fifth-, sixth-, seventh-, and
-eighth-level three-, four-, six-, six-, six-, six-, six-, and six-projectile
+Chaingun records its typed four-projectile ordinary-fire and
+one-round-per-projectile ammo-cost fragments plus bounded first-, second-,
+third-, fourth-, fifth-, sixth-, seventh-, eighth-, and ninth-level three-,
+four-, six-, six-, six-, six-, six-, six-, and six-projectile
 chainfire transitions;
 Plasma
 Rifle records its typed six-projectile ordinary-fire and one-cell-per-projectile

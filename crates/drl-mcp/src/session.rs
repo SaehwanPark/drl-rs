@@ -2609,6 +2609,16 @@ mod tests {
     session
       .step(eighth.command)
       .expect("eighth chainfire action");
+    let ninth = compute_legal_actions(&session.get_observation().unwrap())
+      .into_iter()
+      .find(|action| action.action == "Chainfire")
+      .expect("ninth Chaingun chainfire should be advertised");
+    assert_eq!(
+      ninth.command,
+      Command::AttackRangedChainfire(Position::new(3, 1))
+    );
+    assert!(ninth.description.contains("6 projectiles, 6 rounds"));
+    session.step(ninth.command).expect("ninth chainfire action");
     assert!(
       !compute_legal_actions(&session.get_observation().unwrap())
         .iter()
@@ -3105,6 +3115,63 @@ mod tests {
         .chainfire_level,
       8
     );
+    let ninth_command = Command::AttackRangedChainfire(target_position);
+    assert!(
+      compute_legal_actions(&direct.observe_player())
+        .iter()
+        .any(|action| action.command == ninth_command)
+    );
+    let ninth_expected_events = direct
+      .step(ninth_command)
+      .expect("direct ninth Chaingun chainfire command");
+    let (ninth_events, ninth_observation, ninth_outcome) = session
+      .step(ninth_command)
+      .expect("MCP ninth Chaingun chainfire command");
+    assert_eq!(ninth_events, ninth_expected_events);
+    assert_eq!(session.game.as_ref().unwrap(), &direct);
+    assert_eq!(ninth_observation, direct.observe_player());
+    assert_eq!(ninth_outcome, None);
+    assert_eq!(
+      ninth_events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          GameEvent::AttackResolved {
+            attacker_id,
+            target_id: event_target,
+            is_ranged: true,
+            ..
+          } if *attacker_id == player_id && *event_target == target_id
+        ))
+        .count(),
+      6
+    );
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .current_clip,
+      28
+    );
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .chainfire_level,
+      9
+    );
     assert!(
       !compute_legal_actions(&direct.observe_player())
         .iter()
@@ -3118,6 +3185,7 @@ mod tests {
     expected_events.extend(seventh_events);
     expected_events.extend(reload_events);
     expected_events.extend(eighth_events);
+    expected_events.extend(ninth_events);
 
     let replay = session.export_replay().expect("MCP replay export");
     let (replayed, replay_events) =
