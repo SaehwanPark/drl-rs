@@ -6790,7 +6790,7 @@ mod tests {
       hp: 50,
       max_hp: 50,
       speed: 100,
-      initial_items: vec![ItemSpawnKind::AmmoCells(570)],
+      initial_items: vec![ItemSpawnKind::AmmoCells(605)],
       equipped_weapon: Some(ItemSpawnKind::Bfg10k),
       equipped_armor: None,
       equipped_armor_durability: None,
@@ -8471,6 +8471,112 @@ mod tests {
     );
     expected_events.extend(seventeenth_expected_events);
 
+    let eighteenth_reload_expected_events = direct
+      .step(Command::Reload)
+      .expect("direct eighteenth BFG 10K chainfire reload");
+    let eighteenth_reload_step = browser
+      .submit(Command::Reload)
+      .expect("browser eighteenth BFG 10K chainfire reload");
+    assert_eq!(
+      eighteenth_reload_step.events,
+      eighteenth_reload_expected_events
+    );
+    assert_eq!(eighteenth_reload_step.after, direct.observe_player());
+    assert_eq!(
+      eighteenth_reload_step.effects,
+      effect_timeline_for_observations(
+        &eighteenth_reload_step.before,
+        &eighteenth_reload_step.after,
+        &eighteenth_reload_expected_events,
+      )
+    );
+    assert_eq!(
+      browser.scene(),
+      RenderScene::from_observation(&eighteenth_reload_step.after)
+    );
+    expected_events.extend(eighteenth_reload_expected_events);
+    let eighteenth_reloaded = eighteenth_reload_step
+      .after
+      .equipped_weapon
+      .as_ref()
+      .expect("BFG 10K");
+    assert_eq!(eighteenth_reloaded.chainfire_level, 17);
+    assert_eq!(eighteenth_reloaded.clip, Some((50, 50)));
+
+    let eighteenth_target_position = direct
+      .world()
+      .get_actor(target_id)
+      .expect("BFG 10K target should survive seventeenth reload")
+      .position();
+    let eighteenth_command = Command::AttackRangedChainfire(eighteenth_target_position);
+    assert_eq!(
+      BrowserSession::command_for_key("C", &eighteenth_reload_step.after),
+      Some(eighteenth_command)
+    );
+    let eighteenth_expected_events = direct
+      .step(eighteenth_command)
+      .expect("direct eighteenth BFG 10K chainfire command");
+    let eighteenth_step = browser
+      .submit(eighteenth_command)
+      .expect("browser eighteenth BFG 10K chainfire command");
+    assert_eq!(eighteenth_step.events, eighteenth_expected_events);
+    assert_eq!(eighteenth_step.after, direct.observe_player());
+    assert_eq!(
+      eighteenth_step.effects,
+      effect_timeline_for_observations(
+        &eighteenth_step.before,
+        &eighteenth_step.after,
+        &eighteenth_expected_events,
+      )
+    );
+    assert_eq!(
+      browser.scene(),
+      RenderScene::from_observation(&eighteenth_step.after)
+    );
+    assert_eq!(
+      eighteenth_expected_events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          drl_protocol::GameEvent::AttackResolved {
+            attacker_id,
+            target_id: event_target,
+            outcome: drl_protocol::AttackOutcome::Hit { .. },
+            is_ranged: true,
+          } if *attacker_id == direct.world().player_id().unwrap() && *event_target == target_id
+        ))
+        .count(),
+      7
+    );
+    assert_eq!(
+      eighteenth_expected_events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          drl_protocol::GameEvent::Bfg10kExplosionScheduled {
+            target_id: event_target,
+            delay: 25,
+            radius: 2,
+            knockback: 16,
+            ..
+          } if *event_target == target_id
+        ))
+        .count(),
+      7
+    );
+    let eighteenth_bfg10k = eighteenth_step
+      .after
+      .equipped_weapon
+      .as_ref()
+      .expect("BFG 10K");
+    assert_eq!(eighteenth_bfg10k.chainfire_level, 18);
+    assert_eq!(eighteenth_bfg10k.clip, Some((15, 50)));
+    assert_eq!(
+      BrowserSession::command_for_key("C", &eighteenth_step.after),
+      None
+    );
+    expected_events.extend(eighteenth_expected_events);
+
     let mut command_replay = setup_replay;
     command_replay.record_command(command);
     command_replay.record_command(second_command);
@@ -8504,6 +8610,8 @@ mod tests {
     command_replay.record_command(sixteenth_command);
     command_replay.record_command(Command::Reload);
     command_replay.record_command(seventeenth_command);
+    command_replay.record_command(Command::Reload);
+    command_replay.record_command(eighteenth_command);
     let (replayed, replay_events) =
       drl_core::ReplayEngine::run(&command_replay).expect("vertical command replay");
     assert_eq!(replay_events, expected_events);

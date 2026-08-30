@@ -1088,6 +1088,26 @@ fn bfg10k_seventeenth_chainfire_emits_seven_exact_hits_and_advances_state() {
 }
 
 #[test]
+fn bfg10k_eighteenth_chainfire_emits_seven_exact_hits_and_advances_state() {
+  let mut game = equipped_bfg10k(2_742);
+  let target = Position::new(8, 2);
+  let target_id = game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 10_000, 0, (1, 7))
+    .unwrap();
+  let player_id = game.world().player_id().unwrap();
+
+  let events = advance_bfg10k_chainfire_to_level(&mut game, target, 18);
+
+  let weapon = game.world().player().unwrap().equipment().weapon().unwrap();
+  let props = weapon.weapon_properties().unwrap();
+  assert_eq!(props.current_clip, 15);
+  assert_eq!(props.chainfire_level, 18);
+  assert_eq!(ranged_events(&events, player_id), 7);
+  assert_eq!(bfg10k_schedules(&events, target_id), 7);
+}
+
+#[test]
 fn bfg10k_chainfire_keeps_four_outcomes_after_lethal_target() {
   let mut game = equipped_bfg10k(2_701);
   let target = Position::new(5, 2);
@@ -1194,7 +1214,7 @@ fn bfg10k_ordinary_fire_resets_chainfire_warmup() {
 }
 
 #[test]
-fn bfg10k_eighteenth_chainfire_level_is_rejected_without_mutation() {
+fn bfg10k_nineteenth_chainfire_level_is_rejected_without_mutation() {
   let mut game = equipped_bfg10k(2_704);
   let target = Position::new(5, 2);
   let target_id = game
@@ -1395,6 +1415,10 @@ fn bfg10k_eighteenth_chainfire_level_is_rejected_without_mutation() {
   game
     .step(Command::AttackRangedChainfire(third_target))
     .expect("seventeenth BFG 10K chainfire burst");
+  set_bfg10k_clip(&mut game, 50);
+  game
+    .step(Command::AttackRangedChainfire(third_target))
+    .expect("eighteenth BFG 10K chainfire burst");
   let before = game.clone();
 
   assert_eq!(
@@ -2151,6 +2175,28 @@ fn bfg10k_seventeenth_chainfire_below_thirty_five_cell_cost_rejection_is_atomic(
     .unwrap();
 
   advance_bfg10k_chainfire_to_level(&mut game, target, 16);
+  set_bfg10k_clip(&mut game, 34);
+  let before = game.clone();
+
+  assert_eq!(
+    game
+      .step(Command::AttackRangedChainfire(target))
+      .unwrap_err(),
+    CommandError::NoAmmoInClip
+  );
+  assert_eq!(game, before);
+}
+
+#[test]
+fn bfg10k_eighteenth_chainfire_below_thirty_five_cell_cost_rejection_is_atomic() {
+  let mut game = equipped_bfg10k(2_743);
+  let target = Position::new(8, 2);
+  game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 10_000, 0, (1, 7))
+    .unwrap();
+
+  advance_bfg10k_chainfire_to_level(&mut game, target, 17);
   set_bfg10k_clip(&mut game, 34);
   let before = game.clone();
 
@@ -3078,6 +3124,57 @@ fn bfg10k_seventeenth_chainfire_replay_is_deterministic() {
       .filter(|event| matches!(event, GameEvent::Bfg10kExplosionScheduled { .. }))
       .count(),
     114
+  );
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}
+
+#[test]
+fn bfg10k_eighteenth_chainfire_replay_is_deterministic() {
+  let player_start = Position::new(5, 5);
+  let mut replay =
+    ReplayLog::new(2_742, 12, 12, player_start).with_player_config(PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: vec![ItemSpawnKind::AmmoCells(605)],
+      equipped_weapon: Some(ItemSpawnKind::Bfg10k),
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    });
+  let target = Position::new(11, 5);
+  replay.record_monster(MonsterSpawnSpec::new(target, "Target", 10_000, 0, (1, 7)));
+  replay.record_command(Command::AttackRangedChainfire(target));
+  replay.record_command(Command::AttackRangedChainfire(target));
+  for _ in 0..16 {
+    replay.record_command(Command::Reload);
+    replay.record_command(Command::AttackRangedChainfire(target));
+  }
+
+  let (game, events) =
+    ReplayEngine::run(&replay).expect("BFG 10K eighteenth chainfire replay should run");
+  let weapon = game.world().player().unwrap().equipment().weapon().unwrap();
+  let props = weapon.weapon_properties().unwrap();
+  assert_eq!(props.current_clip, 15);
+  assert_eq!(props.chainfire_level, 18);
+  assert_eq!(
+    events
+      .iter()
+      .filter(|event| matches!(
+        event,
+        GameEvent::AttackResolved {
+          is_ranged: true,
+          ..
+        }
+      ))
+      .count(),
+    121
+  );
+  assert_eq!(
+    events
+      .iter()
+      .filter(|event| matches!(event, GameEvent::Bfg10kExplosionScheduled { .. }))
+      .count(),
+    121
   );
   assert!(ReplayEngine::verify_determinism(&replay).unwrap());
 }

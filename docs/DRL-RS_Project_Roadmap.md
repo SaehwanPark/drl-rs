@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.301`
+Current project version: `0.2.302`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.301)
+## 3. Current Progress Summary (`VERSION` 0.2.302)
 
 ### Delivered Foundations
 
@@ -1632,8 +1632,8 @@ scripting.
   `0.2.295`, twelfth-level chainfire delivered in `0.2.296`, and thirteenth-level
   chainfire delivered in `0.2.297`, fourteenth-level chainfire delivered in
   `0.2.298`, fifteenth-level chainfire delivered in `0.2.299`, sixteenth-level
-  chainfire delivered in `0.2.300`, and seventeenth-level chainfire delivered
-  in `0.2.301`; Nuclear
+  chainfire delivered in `0.2.300`, seventeenth-level chainfire delivered in
+  `0.2.301`, and eighteenth-level chainfire delivered in `0.2.302`; Nuclear
   Plasma's
   bounded first- through sixth-level chainfire is delivered in `0.2.289`; the
   Laser Rifle's bounded first- through sixth-level chainfire is delivered in
@@ -1780,6 +1780,15 @@ scripting.
   Direct-core, reload-backed ScenarioRunner/replay, MCP legal-action/JSON,
   physical `C` routing, BrowserSession parity, and atomic
   eighteenth-level/under-supply rejection are covered; eighteenth-and-later
+  levels, target rotation, scatter/routing, delayed timing, runtime, and
+  audiovisual parity remain open.
+- [x] BFG 10K eighteenth-level chainfire accepts warm-up level seventeen after
+  a reload, applies the pinned seven-projectile/five-cell-per-projectile
+  profile, consumes thirty-five cells, preserves per-hit delayed-explosion and
+  immediate splash behavior, and advances warm-up to level eighteen.
+  Direct-core, reload-backed ScenarioRunner/replay, MCP legal-action/JSON,
+  physical `C` routing, BrowserSession parity, and atomic
+  nineteenth-level/under-supply rejection are covered; nineteenth-and-later
   levels, target rotation, scatter/routing, delayed timing, runtime, and
   audiovisual parity remain open.
 - [x] Standard BFG 9000 direct-target fire emits one ordered delayed-explosion
@@ -2623,6 +2632,16 @@ scripting.
   levels, target rotation/scatter routing, exact timing/accuracy, controlled
   runtime, browser capture, and audiovisual parity remain open. Gameplay
   semantics advance to `110`.
+- **M9 BFG 10K eighteenth-level chainfire (`0.2.302`):** BFG 10K now accepts
+  its pinned warm-up level-seventeen continuation: seven ordered exact-hit
+  projectiles, thirty-five loaded cells, the existing
+  delay-25/radius-2/knockback-16 splash boundary, and warm-up advancement to
+  level eighteen. Reload-backed ScenarioRunner/replay, direct-core, MCP
+  legal-action/JSON, physical `C`, and BrowserSession parity plus atomic
+  nineteenth-level/under-supply rejection are verified; nineteenth-and-later
+  levels, target rotation/scatter routing, exact timing/accuracy, controlled
+  runtime, browser capture, and audiovisual parity remain open. Gameplay
+  semantics advance to `111`.
 - **M9 BFG 10K radius-2 explosion fanout (`0.2.265`):** Successful BFG 10K
   hits now preserve their schedule metadata and immediately resolve the
   bounded actor-only radius-2 fanout in stable center/ring order, consuming one
