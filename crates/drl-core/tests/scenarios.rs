@@ -1161,6 +1161,92 @@ fn bfg10k_fourth_chainfire_vertical_scenario_preserves_replay() {
 }
 
 #[test]
+fn bfg10k_fifth_chainfire_vertical_scenario_preserves_replay() {
+  let mut scenario = Scenario::from_ascii(
+    "Bfg10kFifthChainfireVertical",
+    "BFG 10K carries its fifth-stage chainfire encounter across reloads",
+    "########\n#@....h#\n#......#\n########\n",
+  )
+  .unwrap();
+  scenario.seed = 0;
+  scenario.monsters[0].name = "Static Target".to_string();
+  scenario.monsters[0].hp = 10_000;
+  scenario.monsters[0].speed = 0;
+  scenario.player_config = Some(PlayerSpawnConfig {
+    hp: 50,
+    max_hp: 50,
+    speed: 100,
+    initial_items: vec![ItemSpawnKind::AmmoCells(150)],
+    equipped_weapon: Some(ItemSpawnKind::Bfg10k),
+    equipped_armor: None,
+    equipped_armor_durability: None,
+  });
+
+  let target = Position::new(6, 1);
+  let commands = [
+    Command::AttackRangedChainfire(target),
+    Command::AttackRangedChainfire(target),
+    Command::Reload,
+    Command::AttackRangedChainfire(target),
+    Command::Reload,
+    Command::AttackRangedChainfire(target),
+    Command::Reload,
+    Command::AttackRangedChainfire(target),
+  ];
+  let (game, events, _metrics, replay) =
+    ScenarioRunner::run_commands(&scenario, &commands).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  let target_id = game
+    .world()
+    .actors()
+    .values()
+    .find(|actor| !actor.is_player())
+    .unwrap()
+    .id();
+  assert_eq!(
+    events
+      .iter()
+      .filter(|event| matches!(
+        event,
+        GameEvent::AttackResolved {
+          attacker_id,
+          target_id: event_target,
+          is_ranged: true,
+          ..
+        } if *attacker_id == player_id && *event_target == target_id
+      ))
+      .count(),
+    30
+  );
+  assert_eq!(
+    events
+      .iter()
+      .filter(|event| matches!(
+        event,
+        GameEvent::Bfg10kExplosionScheduled {
+          entity_id,
+          target_id: event_target,
+          delay: 25,
+          radius: 2,
+          knockback: 16,
+        } if *entity_id == player_id && *event_target == target_id
+      ))
+      .count(),
+    30
+  );
+  let weapon = game.world().player().unwrap().equipment().weapon().unwrap();
+  let properties = weapon.weapon_properties().unwrap();
+  assert_eq!(properties.current_clip, 15);
+  assert_eq!(properties.chainfire_level, 5);
+  assert_eq!(replay.commands, commands);
+
+  let (replayed_game, replay_events) = ReplayEngine::run(&replay).unwrap();
+  assert_eq!(replayed_game, game);
+  assert_eq!(replay_events, events);
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}
+
+#[test]
 fn standard_bfg_shot_cost_vertical_scenario_preserves_clip_and_replay() {
   let mut scenario = Scenario::from_ascii(
     "StandardBfgShotCostVertical",

@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.285`
+Current project version: `0.2.286`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.285)
+## 3. Current Progress Summary (`VERSION` 0.2.286)
 
 ### Delivered Foundations
 
@@ -1624,9 +1624,10 @@ scripting.
   BFG's 40-cell shot cost in `0.2.188`, BFG10K exact-hit in `0.2.189`, and
   BFG10K's typed five-cell shot cost in `0.2.190`, its typed five-projectile
   direct-target volley in `0.2.200`, and its bounded first- through
-  fourth-level chainfire in `0.2.283`; Nuclear Plasma's bounded first- through
-  fifth-level chainfire is delivered in `0.2.285`, while exact-hit, explosion,
-  and mod callbacks remain open.
+  fourth-level chainfire in `0.2.283`; BFG 10K's bounded first- through
+  fifth-level chainfire is delivered in `0.2.286`, and Nuclear Plasma's
+  bounded first- through fifth-level chainfire is delivered in `0.2.285`,
+  while exact-hit, explosion, and mod callbacks remain open.
 - [x] Vertical BFG 10K shot-cost encounter preserves the typed five-cell
   one-shot policy through deterministic scenario/replay, MCP, and
   BrowserSession/direct-core parity. The five-projectile direct-target volley
@@ -1647,7 +1648,7 @@ scripting.
   cells, preserves per-hit delayed-explosion and immediate splash behavior,
   and advances warm-up to level two. Direct-core, replay, MCP legal-action/
   JSON, physical `C` routing, BrowserSession parity, and atomic third-level
-  rejection are covered; fourth-and-later levels, target rotation, scatter/
+  rejection are covered; sixth-and-later levels, target rotation, scatter/
   routing, delayed timing, runtime, and audiovisual parity remain open.
 - [x] BFG 10K third-level chainfire accepts warm-up level two after a reload,
   applies the pinned seven-projectile/five-cell-per-projectile profile,
@@ -1655,7 +1656,7 @@ scripting.
   immediate splash behavior, and advances warm-up to level three. Direct-core,
   reload-backed replay, MCP legal-action/JSON, physical `C` routing,
   BrowserSession parity, and atomic fourth-level rejection are covered;
-  fourth-and-later levels, target rotation, scatter/routing, delayed timing,
+  sixth-and-later levels, target rotation, scatter/routing, delayed timing,
   runtime, and audiovisual parity remain open.
 - [x] BFG 10K fourth-level chainfire accepts warm-up level three after a
   reload, applies the pinned seven-projectile/five-cell-per-projectile
@@ -1663,7 +1664,15 @@ scripting.
   immediate splash behavior, and advances warm-up to level four. Direct-core,
   reload-backed ScenarioRunner/replay, MCP legal-action/JSON, physical `C`
   routing, BrowserSession parity, and atomic fifth-level/under-supply
-  rejection are covered; fifth-and-later levels, target rotation,
+  rejection are covered; sixth-and-later levels, target rotation,
+  scatter/routing, delayed timing, runtime, and audiovisual parity remain open.
+- [x] BFG 10K fifth-level chainfire accepts warm-up level four after a reload,
+  applies the pinned seven-projectile/five-cell-per-projectile profile,
+  consumes thirty-five cells, preserves per-hit delayed-explosion and
+  immediate splash behavior, and advances warm-up to level five. Direct-core,
+  reload-backed ScenarioRunner/replay, MCP legal-action/JSON, physical `C`
+  routing, BrowserSession parity, and atomic sixth-level/under-supply
+  rejection are covered; sixth-and-later levels, target rotation,
   scatter/routing, delayed timing, runtime, and audiovisual parity remain open.
 - [x] Standard BFG 9000 direct-target fire emits one ordered delayed-explosion
   schedule event carrying delay `33`, radius `8`, and knockback `16`, then
@@ -1941,7 +1950,7 @@ scripting.
   advancement/reset, per-hit delayed-explosion schedule metadata, and atomic
   under-supply rejection; its bounded radius-2 actor fanout now covers `6d4`
   Plasma damage, no distance falloff, radial `damage / 16` knockback, and
-  death/drop follow-up. Fifth-and-later levels, scatter/routing, delayed timing,
+  death/drop follow-up. Sixth-and-later levels, scatter/routing, delayed timing,
   terrain/content effects, ground-item destruction, splash-immunity traits,
   exact timing/accuracy, controlled legacy runtime, browser capture, and
   audiovisual parity remain open.
@@ -1950,6 +1959,14 @@ scripting.
   physical `C`, and BrowserSession parity with seven ordered exact-hit events,
   thirty-five-cell clip consumption, warm-up advancement to level four, and
   atomic fifth-level/under-supply rejection; target rotation/spread, delayed
+  timing, terrain/content effects, splash-immunity traits, exact timing/
+  accuracy, controlled legacy runtime, browser capture, and audiovisual parity
+  remain open.
+- [x] BFG 10K's delivered fifth-level chainfire contract extends the same
+  boundary through reload-backed ScenarioRunner/replay, MCP legal-action/JSON,
+  physical `C`, and BrowserSession parity with seven ordered exact-hit events,
+  thirty-five-cell clip consumption, warm-up advancement to level five, and
+  atomic sixth-level/under-supply rejection; target rotation/spread, delayed
   timing, terrain/content effects, splash-immunity traits, exact timing/
   accuracy, controlled legacy runtime, browser capture, and audiovisual parity
   remain open.
@@ -2254,9 +2271,18 @@ scripting.
   boundary, and warm-up advancement to level four. Reload-backed
   ScenarioRunner/replay, direct-core, MCP legal-action/JSON, physical `C`, and
   BrowserSession parity plus atomic fifth-level/under-supply rejection are
-  verified; later levels, target rotation/scatter routing, exact timing/
+  verified; sixth-and-later levels, target rotation/scatter routing, exact timing/
   accuracy, controlled runtime, browser capture, and audiovisual parity remain
   open. Gameplay semantics advance to `92`.
+- **M9 BFG 10K fifth-level chainfire (`0.2.286`):** BFG 10K now accepts its
+  pinned warm-up level-four continuation: seven ordered exact-hit projectiles,
+  thirty-five loaded cells, the existing delay-25/radius-2/knockback-16 splash
+  boundary, and warm-up advancement to level five. Reload-backed
+  ScenarioRunner/replay, direct-core, MCP legal-action/JSON, physical `C`, and
+  BrowserSession parity plus atomic sixth-level/under-supply rejection are
+  verified; sixth-and-later levels, target rotation/scatter routing, exact
+  timing/accuracy, controlled runtime, browser capture, and audiovisual parity
+  remain open. Gameplay semantics advance to `95`.
 - **M9 Nuclear Plasma fourth-level chainfire (`0.2.284`):** Nuclear Plasma now
   accepts its pinned warm-up level-three continuation: nine ordered ranged
   projectiles, nine loaded cells, recharge-backed ScenarioRunner/replay,
@@ -2265,16 +2291,16 @@ scripting.
   rotation/scatter routing, overload changes, exact timing/accuracy, controlled
   runtime, browser capture, and audiovisual parity remain open. Gameplay
   semantics advanced to `93`.
-- **M9 Nuclear Plasma fifth-level chainfire (active target `0.2.285`):** Extend
-  the typed Nuclear Plasma warm-up sequence with the pinned level-two-and-later
-  formula `shots = 6 + (6 div 2) = 9`, consuming nine loaded cells and
+- **M9 Nuclear Plasma fifth-level chainfire (`0.2.285`):** Nuclear Plasma now
+  accepts the typed Nuclear Plasma warm-up sequence with the pinned
+  level-two-and-later formula `shots = 6 + (6 div 2) = 9`, consuming nine loaded cells and
   emitting nine ordered ranged outcomes after the existing delay-40/cadence-2
   recharge path restores the clip. ScenarioRunner/replay, direct-core, MCP
   legal-action/JSON, physical `C`, and BrowserSession parity plus atomic
-  sixth-level and under-supply rejection are in scope. Sixth and later levels,
+  sixth-level and under-supply rejection are verified. Sixth and later levels,
   target rotation/scatter routing, overload changes, exact timing/accuracy,
   controlled runtime, browser capture, and audiovisual parity remain open;
-  gameplay semantics target `94`.
+  gameplay semantics remain at `94`.
 - **M9 BFG 10K radius-2 explosion fanout (`0.2.265`):** Successful BFG 10K
   hits now preserve their schedule metadata and immediately resolve the
   bounded actor-only radius-2 fanout in stable center/ring order, consuming one

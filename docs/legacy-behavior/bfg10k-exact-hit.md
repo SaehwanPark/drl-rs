@@ -18,7 +18,8 @@ Gameplay semantics `38` (project version `0.2.200`) extends the typed exact-hit
 policy to BFG 10K's five-projectile direct-target volley. Valid visible,
 in-range shots bypass only the to-hit RNG for each projectile while retaining
 clip, action cost, damage RNG, and existing attack/damage events; invalid
-commands remain atomic. The `0.2.264` first-level chainfire slice reuses that
-exact-hit policy for four ordered projectiles. Scatter, fifth-and-later chainfire levels,
-projectile routing, explosions, mods, controlled legacy runtime, and
-audiovisual comparison remain separate slices or `NOT_RUN`.
+commands remain atomic. The `0.2.264` first-level chainfire slice and the
+bounded `0.2.286` fifth-level extension reuse that exact-hit policy for four,
+five, seven, seven, and seven ordered projectiles. Scatter, sixth-and-later
+chainfire levels, projectile routing, explosions, mods, controlled legacy
+runtime, and audiovisual comparison remain separate slices or `NOT_RUN`.
