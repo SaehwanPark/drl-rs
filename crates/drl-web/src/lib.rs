@@ -6,7 +6,10 @@
 
 use drl_assets::{AtlasId, AtlasTextureSource, SpriteUv};
 use drl_core::item::Item;
-use drl_core::{CHAINGUN_CHAINFIRE_SHOT_COST, Game, MINIGUN_CHAINFIRE_SHOT_COST, Tile};
+use drl_core::{
+  CHAINGUN_CHAINFIRE_SHOT_COST, Game, MINIGUN_CHAINFIRE_SHOT_COST,
+  PLASMA_RIFLE_CHAINFIRE_SHOT_COST, Tile,
+};
 use drl_protocol::{
   Command, Direction, ItemArchetype, ItemId, ItemSpawnKind, ItemSpawnSpec, ItemView, MonsterKind,
   MonsterSpawnSpec, PlayerObservation, Position, ReplayLog,
@@ -60,6 +63,7 @@ fn first_level_chainfire_ammo_cost(archetype: ItemArchetype) -> Option<u32> {
   match archetype {
     ItemArchetype::Chaingun => Some(CHAINGUN_CHAINFIRE_SHOT_COST),
     ItemArchetype::Minigun => Some(MINIGUN_CHAINFIRE_SHOT_COST),
+    ItemArchetype::PlasmaRifle => Some(PLASMA_RIFLE_CHAINFIRE_SHOT_COST),
     _ => None,
   }
 }
@@ -6044,6 +6048,94 @@ mod tests {
     );
     assert_eq!(
       step.after.equipped_weapon.expect("Minigun").chainfire_level,
+      1
+    );
+    let mut command_replay = setup_replay;
+    command_replay.record_command(command);
+    let (replayed, replay_events) =
+      drl_core::ReplayEngine::run(&command_replay).expect("vertical command replay");
+    assert_eq!(replay_events, expected_events);
+    assert_eq!(replayed, direct);
+    assert!(
+      drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism")
+    );
+  }
+
+  #[test]
+  fn plasma_rifle_chainfire_vertical_browser_boundary_matches_direct_core() {
+    let player_position = Position::new(1, 1);
+    let player_config = PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: vec![ItemSpawnKind::AmmoCells(6)],
+      equipped_weapon: Some(ItemSpawnKind::PlasmaRifle),
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    };
+    let target_position = Position::new(3, 1);
+    let mut setup_replay =
+      ReplayLog::new(2_447, 8, 4, player_position).with_player_config(player_config);
+    setup_replay.record_monster(MonsterSpawnSpec::new(
+      target_position,
+      "Static Target",
+      500,
+      0,
+      (1, 7),
+    ));
+
+    let (initial, setup_events) =
+      drl_core::ReplayEngine::run(&setup_replay).expect("vertical replay setup");
+    assert!(setup_events.is_empty());
+    let target_id = initial
+      .world()
+      .actors()
+      .values()
+      .find(|actor| !actor.is_player())
+      .expect("static target")
+      .id();
+    let command = Command::AttackRangedChainfire(target_position);
+    assert_eq!(
+      BrowserSession::command_for_key("C", &initial.observe_player()),
+      Some(command)
+    );
+
+    let mut direct = initial.clone();
+    let mut browser = BrowserSession::from_game(initial);
+    let expected_events = direct
+      .step(command)
+      .expect("direct Plasma Rifle chainfire command");
+    let step = browser
+      .submit(command)
+      .expect("browser Plasma Rifle chainfire command");
+    assert_eq!(step.events, expected_events);
+    assert_eq!(step.after, direct.observe_player());
+    assert_eq!(
+      step.effects,
+      effect_timeline_for_observations(&step.before, &step.after, &expected_events,)
+    );
+    assert_eq!(browser.scene(), RenderScene::from_observation(&step.after));
+    assert_eq!(
+      expected_events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          drl_protocol::GameEvent::AttackResolved {
+            attacker_id,
+            target_id: event_target,
+            is_ranged: true,
+            ..
+          } if *attacker_id == direct.world().player_id().unwrap() && *event_target == target_id
+        ))
+        .count(),
+      4
+    );
+    assert_eq!(
+      step
+        .after
+        .equipped_weapon
+        .expect("Plasma Rifle")
+        .chainfire_level,
       1
     );
     let mut command_replay = setup_replay;

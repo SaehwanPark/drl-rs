@@ -713,8 +713,12 @@ pub const PLASMA_SHOTGUN_BEHAVIOR: BehaviorProfile =
 
 /// Pinned projectile count for an ordinary Plasma Rifle shot.
 pub const PLASMA_RIFLE_PROJECTILE_COUNT: u32 = 6;
+/// Pinned projectile count for the first Plasma Rifle chainfire level.
+pub const PLASMA_RIFLE_CHAINFIRE_PROJECTILE_COUNT: u32 = 4;
 /// Pinned per-projectile clip cost for an ordinary Plasma Rifle shot.
 pub const PLASMA_RIFLE_SHOT_COST: u32 = 1;
+/// Pinned Cell cost for the first Plasma Rifle chainfire level.
+pub const PLASMA_RIFLE_CHAINFIRE_SHOT_COST: u32 = 4;
 
 const PLASMA_RIFLE_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
   BehaviorSpec::Attack(AttackEffect::ProjectileCount(PLASMA_RIFLE_PROJECTILE_COUNT)),
@@ -722,9 +726,13 @@ const PLASMA_RIFLE_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
     ammo_type: AmmoType::Cell,
     amount: PLASMA_RIFLE_SHOT_COST,
   }),
+  BehaviorSpec::Alternate(AlternateAction::Chainfire {
+    shot_count: PLASMA_RIFLE_CHAINFIRE_PROJECTILE_COUNT,
+    ammo_cost: PLASMA_RIFLE_CHAINFIRE_SHOT_COST,
+  }),
 ];
 
-/// Immutable typed profile for the current Plasma Rifle ordinary-fire volley.
+/// Immutable typed profile for the current Plasma Rifle volley and chainfire.
 pub const PLASMA_RIFLE_BEHAVIOR: BehaviorProfile =
   BehaviorProfile::new(PLASMA_RIFLE_BEHAVIOR_SPECS);
 
@@ -1753,6 +1761,10 @@ mod tests {
         BehaviorSpec::Cost(ResourceCost::Ammo {
           ammo_type: AmmoType::Cell,
           amount: PLASMA_RIFLE_SHOT_COST,
+        }),
+        BehaviorSpec::Alternate(AlternateAction::Chainfire {
+          shot_count: PLASMA_RIFLE_CHAINFIRE_PROJECTILE_COUNT,
+          ammo_cost: PLASMA_RIFLE_CHAINFIRE_SHOT_COST,
         }),
       ]
     );
