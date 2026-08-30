@@ -2511,6 +2511,26 @@ mod tests {
     target.hp_mut().max = 10_000;
     target.hp_mut().current = 10_000;
 
+    // The catalog walks through one reload and thirteen bursts. Add enough
+    // reserve ammunition that the advertised-action assertions exercise the
+    // full bounded profile instead of stopping at the default 30-round stack.
+    let ammo_id = session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .allocate_item_id();
+    session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .get_actor_mut(player_id)
+      .expect("Chaingun chainfire player")
+      .inventory_mut()
+      .add_item(drl_core::item::Item::ammo_9mm(ammo_id, 40))
+      .expect("reserve ammunition for Chaingun catalog walk");
+
     let observation = session.get_observation().unwrap();
     let chainfire = compute_legal_actions(&observation)
       .into_iter()
@@ -2653,6 +2673,18 @@ mod tests {
     session
       .step(twelfth.command)
       .expect("twelfth chainfire action");
+    let thirteenth = compute_legal_actions(&session.get_observation().unwrap())
+      .into_iter()
+      .find(|action| action.action == "Chainfire")
+      .expect("thirteenth Chaingun chainfire should be advertised");
+    assert_eq!(
+      thirteenth.command,
+      Command::AttackRangedChainfire(Position::new(3, 1))
+    );
+    assert!(thirteenth.description.contains("6 projectiles, 6 rounds"));
+    session
+      .step(thirteenth.command)
+      .expect("thirteenth chainfire action");
     assert!(
       !compute_legal_actions(&session.get_observation().unwrap())
         .iter()
@@ -3377,6 +3409,63 @@ mod tests {
         .chainfire_level,
       12
     );
+    let thirteenth_command = Command::AttackRangedChainfire(target_position);
+    assert!(
+      compute_legal_actions(&direct.observe_player())
+        .iter()
+        .any(|action| action.command == thirteenth_command)
+    );
+    let thirteenth_expected_events = direct
+      .step(thirteenth_command)
+      .expect("direct thirteenth Chaingun chainfire command");
+    let (thirteenth_events, thirteenth_observation, thirteenth_outcome) = session
+      .step(thirteenth_command)
+      .expect("MCP thirteenth Chaingun chainfire command");
+    assert_eq!(thirteenth_events, thirteenth_expected_events);
+    assert_eq!(session.game.as_ref().unwrap(), &direct);
+    assert_eq!(thirteenth_observation, direct.observe_player());
+    assert_eq!(thirteenth_outcome, None);
+    assert_eq!(
+      thirteenth_events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          GameEvent::AttackResolved {
+            attacker_id,
+            target_id: event_target,
+            is_ranged: true,
+            ..
+          } if *attacker_id == player_id && *event_target == target_id
+        ))
+        .count(),
+      6
+    );
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .current_clip,
+      4
+    );
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .chainfire_level,
+      13
+    );
     assert!(
       !compute_legal_actions(&direct.observe_player())
         .iter()
@@ -3394,6 +3483,7 @@ mod tests {
     expected_events.extend(tenth_events);
     expected_events.extend(eleventh_events);
     expected_events.extend(twelfth_events);
+    expected_events.extend(thirteenth_events);
 
     let replay = session.export_replay().expect("MCP replay export");
     let (replayed, replay_events) =
