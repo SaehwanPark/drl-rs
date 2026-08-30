@@ -6,7 +6,7 @@ use drl_protocol::{
   PlayerSpawnConfig, Position, ReplayLog,
 };
 
-fn equipped_plasma_rifle(seed: u64) -> Game {
+fn equipped_nuclear_plasma_rifle(seed: u64) -> Game {
   let mut game = Game::new(seed, 10, 6, Position::new(2, 2)).unwrap();
   let player_id = game.world().player_id().unwrap();
   let weapon_id = game.world_mut().allocate_item_id();
@@ -15,7 +15,7 @@ fn equipped_plasma_rifle(seed: u64) -> Game {
     .get_actor_mut(player_id)
     .unwrap()
     .equipment_mut()
-    .equip(EquipmentSlot::Weapon, Item::plasma_rifle(weapon_id))
+    .equip(EquipmentSlot::Weapon, Item::nuclear_plasma_rifle(weapon_id))
     .unwrap();
   game
 }
@@ -37,8 +37,8 @@ fn ranged_events(events: &[GameEvent], player_id: drl_protocol::EntityId) -> usi
 }
 
 #[test]
-fn plasma_rifle_first_chainfire_emits_four_projectiles_and_advances_state() {
-  let mut game = equipped_plasma_rifle(2_360);
+fn nuclear_plasma_first_chainfire_emits_four_projectiles_and_advances_state() {
+  let mut game = equipped_nuclear_plasma_rifle(2_560);
   let target = Position::new(5, 2);
   let target_id = game
     .world_mut()
@@ -48,10 +48,10 @@ fn plasma_rifle_first_chainfire_emits_four_projectiles_and_advances_state() {
 
   let events = game
     .step(Command::AttackRangedChainfire(target))
-    .expect("first Plasma Rifle chainfire burst should be accepted");
+    .expect("first Nuclear Plasma chainfire burst should be accepted");
 
   let weapon = game.world().player().unwrap().equipment().weapon().unwrap();
-  assert_eq!(weapon.weapon_properties().unwrap().current_clip, 2);
+  assert_eq!(weapon.weapon_properties().unwrap().current_clip, 20);
   assert_eq!(weapon.weapon_properties().unwrap().chainfire_level, 1);
   assert_eq!(ranged_events(&events, player_id), 4);
   assert!(events.iter().any(|event| matches!(
@@ -66,11 +66,11 @@ fn plasma_rifle_first_chainfire_emits_four_projectiles_and_advances_state() {
 }
 
 #[test]
-fn plasma_rifle_chainfire_keeps_four_outcomes_after_lethal_target() {
+fn nuclear_plasma_chainfire_keeps_four_outcomes_after_lethal_target() {
   let mut lethal_case = None;
 
-  for seed in 2_361..2_440 {
-    let mut game = equipped_plasma_rifle(seed);
+  for seed in 2_561..2_640 {
+    let mut game = equipped_nuclear_plasma_rifle(seed);
     let target = Position::new(5, 2);
     let target_id = game
       .world_mut()
@@ -99,13 +99,13 @@ fn plasma_rifle_chainfire_keeps_four_outcomes_after_lethal_target() {
 
   assert!(
     lethal_case.is_some(),
-    "fixed seed window should include a lethal first-projectile Plasma Rifle chainfire"
+    "fixed seed window should include a lethal first-projectile Nuclear Plasma chainfire"
   );
 }
 
 #[test]
-fn plasma_rifle_chainfire_below_four_cell_cost_rejection_is_atomic() {
-  let mut game = equipped_plasma_rifle(2_441);
+fn nuclear_plasma_chainfire_below_four_cell_cost_rejection_is_atomic() {
+  let mut game = equipped_nuclear_plasma_rifle(2_641);
   let target = Position::new(5, 2);
   game
     .world_mut()
@@ -134,8 +134,8 @@ fn plasma_rifle_chainfire_below_four_cell_cost_rejection_is_atomic() {
 }
 
 #[test]
-fn plasma_rifle_ordinary_fire_resets_chainfire_warmup() {
-  let mut game = equipped_plasma_rifle(2_442);
+fn nuclear_plasma_ordinary_fire_resets_chainfire_warmup() {
+  let mut game = equipped_nuclear_plasma_rifle(2_642);
   let target = Position::new(5, 2);
   game
     .world_mut()
@@ -143,7 +143,7 @@ fn plasma_rifle_ordinary_fire_resets_chainfire_warmup() {
     .unwrap();
   game
     .step(Command::AttackRangedChainfire(target))
-    .expect("first Plasma Rifle chainfire burst");
+    .expect("first Nuclear Plasma chainfire burst");
   let player_id = game.world().player_id().unwrap();
   game
     .world_mut()
@@ -154,10 +154,10 @@ fn plasma_rifle_ordinary_fire_resets_chainfire_warmup() {
     .unwrap()
     .weapon_properties_mut()
     .unwrap()
-    .current_clip = 6;
+    .current_clip = 24;
   game
     .step(Command::AttackRanged(target))
-    .expect("ordinary fire after Plasma Rifle chainfire");
+    .expect("ordinary fire after Nuclear Plasma chainfire");
 
   assert_eq!(
     game
@@ -175,8 +175,8 @@ fn plasma_rifle_ordinary_fire_resets_chainfire_warmup() {
 }
 
 #[test]
-fn plasma_rifle_higher_chainfire_level_is_rejected_without_mutation() {
-  let mut game = equipped_plasma_rifle(2_443);
+fn nuclear_plasma_higher_chainfire_level_is_rejected_without_mutation() {
+  let mut game = equipped_nuclear_plasma_rifle(2_643);
   let target = Position::new(5, 2);
   game
     .world_mut()
@@ -184,28 +184,28 @@ fn plasma_rifle_higher_chainfire_level_is_rejected_without_mutation() {
     .unwrap();
   game
     .step(Command::AttackRangedChainfire(target))
-    .expect("first Plasma Rifle chainfire burst");
+    .expect("first Nuclear Plasma chainfire burst");
   let before = game.clone();
 
   assert_eq!(
     game
       .step(Command::AttackRangedChainfire(target))
       .unwrap_err(),
-    CommandError::InvalidCommand("higher Plasma Rifle chainfire levels are deferred".to_string())
+    CommandError::InvalidCommand("higher Nuclear Plasma chainfire levels are deferred".to_string())
   );
   assert_eq!(game, before);
 }
 
 #[test]
-fn plasma_rifle_chainfire_replay_is_deterministic() {
+fn nuclear_plasma_chainfire_replay_is_deterministic() {
   let player_start = Position::new(5, 5);
   let mut replay =
-    ReplayLog::new(2_444, 12, 12, player_start).with_player_config(PlayerSpawnConfig {
+    ReplayLog::new(2_644, 12, 12, player_start).with_player_config(PlayerSpawnConfig {
       hp: 50,
       max_hp: 50,
       speed: 100,
       initial_items: Vec::new(),
-      equipped_weapon: Some(ItemSpawnKind::PlasmaRifle),
+      equipped_weapon: Some(ItemSpawnKind::NuclearPlasmaRifle),
       equipped_armor: None,
       equipped_armor_durability: None,
     });
@@ -214,9 +214,9 @@ fn plasma_rifle_chainfire_replay_is_deterministic() {
   replay.record_command(Command::AttackRangedChainfire(target));
 
   let (game, events) =
-    ReplayEngine::run(&replay).expect("Plasma Rifle chainfire replay should run");
+    ReplayEngine::run(&replay).expect("Nuclear Plasma chainfire replay should run");
   let weapon = game.world().player().unwrap().equipment().weapon().unwrap();
-  assert_eq!(weapon.weapon_properties().unwrap().current_clip, 2);
+  assert_eq!(weapon.weapon_properties().unwrap().current_clip, 20);
   assert_eq!(weapon.weapon_properties().unwrap().chainfire_level, 1);
   assert_eq!(
     events
@@ -232,34 +232,4 @@ fn plasma_rifle_chainfire_replay_is_deterministic() {
     4
   );
   assert!(ReplayEngine::verify_determinism(&replay).unwrap());
-}
-
-#[test]
-fn chainfire_rejects_pistol_without_mutation() {
-  let mut game = Game::new(2_445, 10, 6, Position::new(2, 2)).unwrap();
-  let target = Position::new(5, 2);
-  game
-    .world_mut()
-    .spawn_monster(target, "Static Target", 500, 100, (1, 7))
-    .unwrap();
-  let player_id = game.world().player_id().unwrap();
-  let weapon_id = game.world_mut().allocate_item_id();
-  game
-    .world_mut()
-    .get_actor_mut(player_id)
-    .unwrap()
-    .equipment_mut()
-    .equip(EquipmentSlot::Weapon, Item::pistol(weapon_id))
-    .unwrap();
-  let before = game.clone();
-
-  assert_eq!(
-    game
-      .step(Command::AttackRangedChainfire(target))
-      .unwrap_err(),
-    CommandError::InvalidCommand(
-      "chainfire is only available for the Chaingun, Minigun, Plasma Rifle, Laser Rifle, or Nuclear Plasma Rifle".to_string()
-    )
-  );
-  assert_eq!(game, before);
 }

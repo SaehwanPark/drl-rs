@@ -1,9 +1,10 @@
 # Nuclear Plasma Rifle typed ordinary-volley evidence
 
-Status: delivered typed Nuclear Plasma Rifle ordinary-fire support in
-`0.2.249`; chainfire, controlled legacy runtime comparison, and audiovisual
-parity remain `NOT_RUN`. Existing overload and periodic recharge evidence is
-retained in `nuclear-plasma-profile.md` and `nuclear-plasma.md`.
+Status: delivered typed Nuclear Plasma Rifle ordinary-fire and first-level
+chainfire support in `0.2.263`; higher chainfire levels, controlled legacy
+runtime comparison, and audiovisual parity remain `NOT_RUN`. Existing overload
+and periodic recharge evidence is retained in `nuclear-plasma-profile.md` and
+`nuclear-plasma.md`.
 
 ## Pinned source
 
@@ -26,17 +27,18 @@ evidence.
 ## DRL-Rust boundary
 
 `NUCLEAR_PLASMA_BEHAVIOR` now records six ordered projectiles and one Cell per
-projectile alongside the existing typed overload and delay-40/cadence-2/amount-1
-recharge fragments. Generic ranged execution remains authoritative for target,
-line-of-sight, range, damage RNG, event ordering, and transactional clip
-consumption; one accepted command consumes six cells, emits six ordered ranged
-events, and resets the typed recharge timer.
+projectile alongside its four-projectile/four-cell first-level chainfire,
+existing typed overload, and delay-40/cadence-2/amount-1 recharge fragments.
+Generic ranged execution remains authoritative for target, line-of-sight,
+range, damage RNG, event ordering, and transactional clip consumption; one
+accepted ordinary command consumes six cells, while first-level chainfire
+consumes four and emits four ordered ranged events.
 
 ScenarioRunner/replay, MCP JSON/catalog, and `BrowserSession` tests verify
-deterministic parity. A clip below six cells is rejected before mutation, and
-the existing overload, chainfire exclusion, and periodic-recharge ownership are
-unchanged.
+deterministic parity for both ordinary and chainfire commands. Clips below six
+ordinary or four chainfire cells are rejected before mutation, and the existing
+overload and periodic-recharge ownership are unchanged.
 
-Chainfire callback state, alternate target routing, exact timing, controlled
-runtime, browser capture, and audiovisual parity remain deferred; source
-similarity alone is not parity proof.
+Higher chainfire callback state, alternate target routing, exact timing,
+controlled runtime, browser capture, and audiovisual parity remain deferred;
+source similarity alone is not parity proof.
