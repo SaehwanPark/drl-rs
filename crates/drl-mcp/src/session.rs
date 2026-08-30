@@ -7,9 +7,9 @@ use drl_core::grid::Tile;
 use drl_core::scenario::Scenario;
 use drl_core::{
   Game, LASER_RIFLE_CHAINFIRE_PROJECTILE_COUNT, LASER_RIFLE_CHAINFIRE_SHOT_COST,
-  MINIGUN_CHAINFIRE_PROJECTILE_COUNT, MINIGUN_CHAINFIRE_SHOT_COST,
   PLASMA_RIFLE_CHAINFIRE_PROJECTILE_COUNT, PLASMA_RIFLE_CHAINFIRE_SHOT_COST, ReplayEngine,
-  bfg10k_chainfire_profile, chaingun_chainfire_profile, nuclear_plasma_chainfire_profile,
+  bfg10k_chainfire_profile, chaingun_chainfire_profile, minigun_chainfire_profile,
+  nuclear_plasma_chainfire_profile,
 };
 use drl_protocol::{
   Command, Direction, EpisodeMetrics, EquipmentSlot, GameEvent, ItemArchetype, ItemCategory,
@@ -35,10 +35,7 @@ fn chainfire_profile(archetype: ItemArchetype, level: u8) -> Option<(u32, u32)> 
   match archetype {
     ItemArchetype::Bfg10k => bfg10k_chainfire_profile(level),
     ItemArchetype::Chaingun => chaingun_chainfire_profile(level),
-    ItemArchetype::Minigun if level == 0 => Some((
-      MINIGUN_CHAINFIRE_PROJECTILE_COUNT,
-      MINIGUN_CHAINFIRE_SHOT_COST,
-    )),
+    ItemArchetype::Minigun => minigun_chainfire_profile(level),
     ItemArchetype::PlasmaRifle if level == 0 => Some((
       PLASMA_RIFLE_CHAINFIRE_PROJECTILE_COUNT,
       PLASMA_RIFLE_CHAINFIRE_SHOT_COST,
@@ -2746,7 +2743,7 @@ mod tests {
   }
 
   #[test]
-  fn test_legal_action_catalog_advertises_first_minigun_chainfire_only_once() {
+  fn test_legal_action_catalog_advertises_minigun_chainfire_levels() {
     let mut session = McpSession::new();
     session
       .load_scenario("\n#######\n#@.h..#\n#######\n", None)
@@ -2766,6 +2763,26 @@ mod tests {
       )
       .unwrap();
 
+    let target_id = session
+      .game
+      .as_ref()
+      .unwrap()
+      .world()
+      .actors()
+      .values()
+      .find(|actor| !actor.is_player())
+      .expect("Minigun chainfire target")
+      .id();
+    let target = session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .get_actor_mut(target_id)
+      .expect("Minigun chainfire target");
+    target.hp_mut().max = 10_000;
+    target.hp_mut().current = 10_000;
+
     let observation = session.get_observation().unwrap();
     let chainfire = compute_legal_actions(&observation)
       .into_iter()
@@ -2777,6 +2794,18 @@ mod tests {
     );
     assert!(chainfire.description.contains("6 projectiles, 6 rounds"));
     session.step(chainfire.command).expect("chainfire action");
+    let second = compute_legal_actions(&session.get_observation().unwrap())
+      .into_iter()
+      .find(|action| action.action == "Chainfire")
+      .expect("second Minigun chainfire should be advertised");
+    assert_eq!(
+      second.command,
+      Command::AttackRangedChainfire(Position::new(3, 1))
+    );
+    assert!(second.description.contains("8 projectiles, 8 rounds"));
+    session
+      .step(second.command)
+      .expect("second Minigun chainfire action");
     assert!(
       !compute_legal_actions(&session.get_observation().unwrap())
         .iter()
