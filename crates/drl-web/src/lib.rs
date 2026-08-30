@@ -10260,6 +10260,10 @@ mod tests {
       1,
       (2, 4),
     ));
+    setup_replay.record_item(ItemSpawnSpec::new(
+      target_position,
+      ItemSpawnKind::AmmoCells(2),
+    ));
     let (initial, setup_events) =
       drl_core::ReplayEngine::run(&setup_replay).expect("BFG 10K vertical replay setup");
     assert!(setup_events.is_empty());
@@ -10301,6 +10305,13 @@ mod tests {
       5
     );
     assert_bfg10k_volley_events(&expected_events, player_id, target_id);
+    assert!(expected_events.iter().any(|event| {
+      matches!(
+        event,
+        drl_protocol::GameEvent::GroundItemDestroyed { position, .. }
+          if *position == target_position
+      )
+    }));
     assert!(
       expected_events
         .iter()

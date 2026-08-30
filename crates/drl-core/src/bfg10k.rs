@@ -8,6 +8,8 @@ use crate::{fov, grid::Map, rng::GameRng};
 pub const BFG10K_EXPLOSION_DAMAGE_DICE: u32 = 6;
 /// Number of sides on each BFG 10K explosion die.
 pub const BFG10K_EXPLOSION_DAMAGE_DIE_SIDES: u32 = 4;
+/// Legacy threshold above which a BFG 10K blast destroys loose ammunition.
+pub const BFG10K_GROUND_ITEM_DESTRUCTION_THRESHOLD: u32 = 10;
 
 /// Returns the bounded radius-2 blast cells in deterministic order.
 ///
@@ -57,6 +59,12 @@ pub fn roll_explosion_damage(rng: &mut GameRng) -> u32 {
   (0..BFG10K_EXPLOSION_DAMAGE_DICE)
     .map(|_| rng.gen_range(1..BFG10K_EXPLOSION_DAMAGE_DIE_SIDES + 1))
     .sum()
+}
+
+/// Returns whether a BFG 10K blast destroys an ordinary loose-ammo stack.
+#[must_use]
+pub const fn should_destroy_bfg10k_ground_item(damage: u32) -> bool {
+  damage > BFG10K_GROUND_ITEM_DESTRUCTION_THRESHOLD
 }
 
 /// Converts a rolled explosion result to the pinned integer knockback distance.
@@ -110,5 +118,11 @@ mod tests {
     assert_eq!(knockback_distance(16, 16), 1);
     assert_eq!(knockback_distance(24, 16), 1);
     assert_eq!(knockback_distance(24, 0), 0);
+  }
+
+  #[test]
+  fn ground_item_destruction_uses_strict_legacy_threshold() {
+    assert!(!should_destroy_bfg10k_ground_item(10));
+    assert!(should_destroy_bfg10k_ground_item(11));
   }
 }

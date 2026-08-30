@@ -26,7 +26,7 @@ use crate::behavior::{
 };
 use crate::bfg10k::{
   knockback_distance as bfg10k_knockback_distance, radius_two_blast_positions,
-  roll_explosion_damage,
+  roll_explosion_damage, should_destroy_bfg10k_ground_item,
 };
 use crate::chaingun::{CHAINGUN_CHAINFIRE_PROJECTILE_COUNT, ChainfireTransition};
 use crate::combat::CombatResolver;
@@ -2356,65 +2356,72 @@ impl Game {
         .living_actor_at(blast_position)
         .map(|actor| actor.id());
       let target_id = target_id.filter(|target_id| processed_actors.insert(*target_id));
-
-      let Some(target_id) = target_id else {
-        continue;
-      };
-
-      let target_position = self
-        .state
-        .world
-        .get_actor(target_id)
-        .ok_or(CommandError::EntityNotFound(target_id))?
-        .position();
-      let knockback = bfg10k_knockback_distance(damage, BFG10K_EXPLOSION_KNOCKBACK);
-      if target_position == center {
-        self.apply_knockback(source_id, target_id, knockback, events)?;
-      } else if let Some(direction) = splash_knockback_direction(center, target_position) {
-        self.apply_anti_freak_knockback(target_id, direction, knockback, events)?;
-      }
-
-      let (taken, lethal, death_cause) =
-        self
+      let mut lethal_target = None;
+      if let Some(target_id) = target_id {
+        let target_position = self
           .state
           .world
-          .apply_damage(target_id, damage, DamageSource::Environment)?;
-      let remaining = self
-        .state
-        .world
-        .get_actor(target_id)
-        .map_or(0, |actor| actor.hp().current);
-      events.push(GameEvent::DamageApplied {
-        target_id,
-        amount: taken,
-        remaining_hp: remaining,
-        source: DamageSource::Environment,
-        damage_type: Some(DamageType::Plasma),
-      });
+          .get_actor(target_id)
+          .ok_or(CommandError::EntityNotFound(target_id))?
+          .position();
+        let knockback = bfg10k_knockback_distance(damage, BFG10K_EXPLOSION_KNOCKBACK);
+        if target_position == center {
+          self.apply_knockback(source_id, target_id, knockback, events)?;
+        } else if let Some(direction) = splash_knockback_direction(center, target_position) {
+          self.apply_anti_freak_knockback(target_id, direction, knockback, events)?;
+        }
 
-      if !lethal {
-        continue;
+        let (taken, lethal, death_cause) =
+          self
+            .state
+            .world
+            .apply_damage(target_id, damage, DamageSource::Environment)?;
+        let remaining = self
+          .state
+          .world
+          .get_actor(target_id)
+          .map_or(0, |actor| actor.hp().current);
+        events.push(GameEvent::DamageApplied {
+          target_id,
+          amount: taken,
+          remaining_hp: remaining,
+          source: DamageSource::Environment,
+          damage_type: Some(DamageType::Plasma),
+        });
+
+        lethal_target = lethal.then_some((target_id, death_cause));
       }
 
-      let death_drop = self
-        .state
-        .world
-        .get_actor(target_id)
-        .and_then(|actor| actor.death_drop());
-      let death_position = self
-        .state
-        .world
-        .get_actor(target_id)
-        .map_or(blast_position, |actor| actor.position());
-      events.push(GameEvent::ActorDied {
-        entity_id: target_id,
-        cause: death_cause.unwrap_or(DeathCause::Environment),
-      });
-      if let Some(drop_kind) = death_drop {
-        self.spawn_death_drop(target_id, death_position, drop_kind, events)?;
+      if should_destroy_bfg10k_ground_item(damage)
+        && let Some(item_id) = self.state.world.destroy_ground_ammo_at(blast_position)
+      {
+        events.push(GameEvent::GroundItemDestroyed {
+          item_id,
+          position: blast_position,
+        });
       }
-      if self.state.world.player_id() == Some(target_id) {
-        self.state.is_game_over = true;
+
+      if let Some((target_id, death_cause)) = lethal_target {
+        let death_drop = self
+          .state
+          .world
+          .get_actor(target_id)
+          .and_then(|actor| actor.death_drop());
+        let death_position = self
+          .state
+          .world
+          .get_actor(target_id)
+          .map_or(blast_position, |actor| actor.position());
+        events.push(GameEvent::ActorDied {
+          entity_id: target_id,
+          cause: death_cause.unwrap_or(DeathCause::Environment),
+        });
+        if let Some(drop_kind) = death_drop {
+          self.spawn_death_drop(target_id, death_position, drop_kind, events)?;
+        }
+        if self.state.world.player_id() == Some(target_id) {
+          self.state.is_game_over = true;
+        }
       }
     }
 

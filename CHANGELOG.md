@@ -3,6 +3,18 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.266]
+
+- Extended BFG 10K's bounded radius-2 actor fanout with the legacy-pinned
+  ordinary loose-ammo destruction rule. A per-cell `6d4` Plasma roll greater
+  than `10` now removes the lowest-ID ordinary ammo stack on that clear blast
+  cell and emits `GroundItemDestroyed` after that cell's actor processing but
+  before lethal death/drop follow-up. Cells without actors still apply the
+  ground-item rule. Ammo packs, non-ammunition ground items, terrain, and
+  delayed timing remain unchanged. Direct-core, replay, MCP, and BrowserSession
+  parity plus strict-threshold and RNG tests are covered. Gameplay semantics
+  advance from `74` to `75`.
+
 ## [0.2.265]
 
 - Extended BFG 10K explosion schedules with a bounded actor-only radius-2

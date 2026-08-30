@@ -144,7 +144,7 @@ fn bfg10k_splash_knockback_precedes_lethal_death_drop() {
       .world_mut()
       .get_actor_mut(victim_id)
       .unwrap()
-      .set_death_drop(Some(ItemSpawnKind::AmmoCells(2)));
+      .set_death_drop(Some(ItemSpawnKind::SmallMedPack));
     let events = game
       .step(Command::AttackRanged(center))
       .expect("BFG 10K direct fire should resolve");
