@@ -36,7 +36,7 @@ fn environment_damage_for(events: &[GameEvent], target_id: drl_protocol::EntityI
 }
 
 #[test]
-fn nuclear_bfg_radius_eight_splash_is_actor_only_and_self_safe() {
+fn nuclear_bfg_radius_eight_splash_is_self_safe_and_damages_each_actor_once() {
   let seed = 31_000;
   let center = Position::new(14, 12);
   let mut game = equipped_nuclear_bfg(seed);
@@ -49,12 +49,6 @@ fn nuclear_bfg_radius_eight_splash_is_actor_only_and_self_safe() {
     .world_mut()
     .spawn_monster(Position::new(16, 12), "Ring Target", 500, 0, (0, 0))
     .unwrap();
-  let ground_item_id = game.world_mut().allocate_item_id();
-  game
-    .world_mut()
-    .spawn_ground_item(Position::new(17, 12), Item::ammo_cells(ground_item_id, 2))
-    .unwrap();
-
   let mut expected_rng = game.rng().clone();
   expected_rng.gen_range(8..49);
   for _ in radius_eight_blast_positions(game.world().map(), center) {
@@ -77,12 +71,6 @@ fn nuclear_bfg_radius_eight_splash_is_actor_only_and_self_safe() {
       .iter()
       .any(|event| { matches!(event, GameEvent::NuclearBfg9000ExplosionScheduled { .. }) })
   );
-  assert!(
-    events
-      .iter()
-      .all(|event| !matches!(event, GameEvent::GroundItemDestroyed { .. }))
-  );
-  assert!(game.world().ground_items().contains_key(&ground_item_id));
 }
 
 #[test]
@@ -155,5 +143,4 @@ fn nuclear_bfg_splash_preserves_knockback_before_lethal_death_drop() {
   assert!(death_index < drop_index);
   assert_eq!(environment_damage_for(&events, center_id).len(), 1);
   assert!(!game.world().get_actor(victim_id).unwrap().is_alive());
-  assert_eq!(game.world().ground_items().len(), 1);
 }

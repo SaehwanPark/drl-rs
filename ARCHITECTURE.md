@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.269`
+Current project version: `0.2.270`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -75,9 +75,10 @@ radial integer `damage / 16` knockback, thresholded lowest-ID ordinary
 ground-item destruction, and normal death/drop/game-over follow-up);
 Nuclear BFG 9000 records its typed exact-hit, one-projectile,
 forty-cell-per-shot, recharge, overload, and delayed-explosion fragments plus
-its bounded radius-8 actor-only fanout (one `8d6` Plasma roll per clear cell,
-source self-safety, radial integer `damage / 16` knockback, and normal
-death/drop/game-over follow-up);
+its bounded radius-8 actor fanout (one `8d6` Plasma roll per clear cell,
+source self-safety, radial integer `damage / 16` knockback, thresholded
+lowest-ID ordinary ground-item destruction, and normal death/drop/game-over
+follow-up);
 Standard
 Shotgun records its typed one-cell knockback hit and one-shell ammo-cost
 fragments; Plasma Shotgun records its typed one-projectile ordinary-fire and
@@ -314,8 +315,15 @@ Presentation Boundary
     Nuclear BFG 9000 opts into the same typed exact-hit policy without changing
     its recharge or alternate-overload state; its direct-target hit now emits
     one typed `NuclearBfg9000ExplosionScheduled` event with delay 33, radius 8,
-    and knockback 16. Explosion geometry, splash, projectile routing, NukeRun,
-    and the recharge/overload effects remain separate policy work.
+    and knockback 16, then resolves the bounded immediate radius-8 fanout
+    through the shared deterministic blast geometry. The firing actor is
+    self-safe; other actors receive one `8d6` Plasma roll per clear cell and
+    radial integer `damage / 16` knockback before environmental damage. A roll
+    greater than 10 removes at most the lowest-ID ordinary ground item on that
+    cell after actor processing and before lethal follow-up. Explosion
+    secondary chains, terrain/content mutation, delayed timing/state-machine
+    parity, projectile routing, NukeRun, and the recharge/overload effects
+    remain separate policy work.
     Revenant’s Launcher opts into the same typed exact-hit policy without
     changing its one-rocket clip or damage policy; homing, projectile routing,
     delayed explosions, and timing remain separate policy work.

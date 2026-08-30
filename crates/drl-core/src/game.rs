@@ -46,6 +46,7 @@ use crate::level_definition::standard_procedural;
 use crate::malek_armor::MalekRechargeOutcome;
 use crate::missile_launcher::{MissileLauncherReloadPlan, MissileLauncherTransition};
 use crate::nuclear_bfg9000::{
+  NUCLEAR_BFG9000_GROUND_ITEM_DESTRUCTION_THRESHOLD,
   radius_eight_blast_positions as nuclear_bfg9000_radius_eight_blast_positions,
   roll_explosion_damage as roll_nuclear_bfg9000_explosion_damage,
 };
@@ -79,7 +80,7 @@ pub struct Game {
   state: GameState,
 }
 
-/// Policy inputs shared by the bounded actor-only explosion resolvers.
+/// Policy inputs shared by the bounded explosion resolvers.
 #[derive(Clone, Copy)]
 struct ActorSplashPolicy {
   roll_damage: fn(&mut GameRng) -> u32,
@@ -90,7 +91,6 @@ struct ActorSplashPolicy {
 /// Typed ground-item policy applied after each blast cell's actor processing.
 #[derive(Clone, Copy)]
 enum GroundItemSplashPolicy {
-  None,
   LooseAmmo { threshold: u32 },
   Any { threshold: u32 },
 }
@@ -2433,7 +2433,9 @@ impl Game {
       ActorSplashPolicy {
         roll_damage: roll_nuclear_bfg9000_explosion_damage,
         source_self_safe: true,
-        ground_item: GroundItemSplashPolicy::None,
+        ground_item: GroundItemSplashPolicy::Any {
+          threshold: NUCLEAR_BFG9000_GROUND_ITEM_DESTRUCTION_THRESHOLD,
+        },
       },
       events,
     )
@@ -2497,7 +2499,6 @@ impl Game {
       }
 
       let destroyed_item = match policy.ground_item {
-        GroundItemSplashPolicy::None => None,
         GroundItemSplashPolicy::LooseAmmo { threshold } if damage > threshold => {
           self.state.world.destroy_ground_ammo_at(blast_position)
         }

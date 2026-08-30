@@ -141,6 +141,9 @@ pub use nuclear_bfg9000::{
   radius_eight_blast_positions as nuclear_bfg9000_radius_eight_blast_positions,
   roll_explosion_damage as roll_nuclear_bfg9000_explosion_damage,
 };
+pub use nuclear_bfg9000::{
+  NUCLEAR_BFG9000_GROUND_ITEM_DESTRUCTION_THRESHOLD, should_destroy_nuclear_bfg9000_ground_item,
+};
 pub use nuclear_overload::{
   NUCLEAR_OVERLOAD_FLOOR_COUNTDOWN, NUCLEAR_OVERLOAD_HAZARD_COUNTDOWN, NUCLEAR_OVERLOAD_SCORE_COST,
 };
