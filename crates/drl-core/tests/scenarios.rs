@@ -5,7 +5,7 @@ use drl_core::replay::ReplayEngine;
 use drl_core::scenario::{Scenario, ScenarioRunner};
 use drl_protocol::{
   ActionCost, AttackOutcome, Command, DamageSource, Direction, GameEvent, ItemId, ItemSpawnKind,
-  PlayerSpawnConfig, Position, RunOutcome, ScenarioFixture, TileKind,
+  ItemSpawnSpec, PlayerSpawnConfig, Position, RunOutcome, ScenarioFixture, TileKind,
 };
 
 fn assert_bfg10k_volley_events(
@@ -317,7 +317,6 @@ fn test_scenario_custom_player_spawn_config() {
     equipped_armor: Some(ItemSpawnKind::GreenArmor),
     equipped_armor_durability: None,
   });
-
   let game = scenario.instantiate().unwrap();
   let player = game.world().player().unwrap();
   assert_eq!(player.hp().current, 100);
@@ -1100,6 +1099,9 @@ fn standard_bfg_shot_cost_vertical_scenario_preserves_clip_and_replay() {
   });
 
   let target = Position::new(5, 1);
+  scenario
+    .items
+    .push(ItemSpawnSpec::new(target, ItemSpawnKind::SmallMedPack));
   let commands = [Command::AttackRanged(target)];
   let (game, events, _metrics, replay) =
     ScenarioRunner::run_commands(&scenario, &commands).unwrap();
@@ -1123,6 +1125,30 @@ fn standard_bfg_shot_cost_vertical_scenario_preserves_clip_and_replay() {
     )
   }));
   assert_standard_bfg_schedule_event(&events, player_id, target_id);
+  let center_damage_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::DamageApplied {
+          target_id: event_target,
+          source: DamageSource::Environment,
+          damage_type: Some(drl_protocol::DamageType::Plasma),
+          ..
+        } if *event_target == target_id
+      )
+    })
+    .expect("standard BFG center target should receive splash damage");
+  let destroyed_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::GroundItemDestroyed { position, .. } if *position == target
+      )
+    })
+    .expect("standard BFG should destroy the center ground item");
+  assert!(center_damage_index < destroyed_index);
   let attack_index = events
     .iter()
     .position(|event| matches!(event, GameEvent::AttackResolved { .. }))

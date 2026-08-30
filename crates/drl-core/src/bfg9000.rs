@@ -8,6 +8,8 @@ use crate::{explosion::radius_blast_positions, grid::Map, rng::GameRng};
 pub const BFG9000_EXPLOSION_DAMAGE_DICE: u32 = 10;
 /// Number of sides on each Standard BFG 9000 explosion die.
 pub const BFG9000_EXPLOSION_DAMAGE_DIE_SIDES: u32 = 6;
+/// Legacy threshold above which a Standard BFG 9000 blast destroys a ground item.
+pub const BFG9000_GROUND_ITEM_DESTRUCTION_THRESHOLD: u32 = 10;
 
 /// Returns the bounded radius-8 blast cells in deterministic order.
 #[must_use]
@@ -20,6 +22,12 @@ pub fn roll_explosion_damage(rng: &mut GameRng) -> u32 {
   (0..BFG9000_EXPLOSION_DAMAGE_DICE)
     .map(|_| rng.gen_range(1..BFG9000_EXPLOSION_DAMAGE_DIE_SIDES + 1))
     .sum()
+}
+
+/// Returns whether a Standard BFG 9000 blast destroys an ordinary ground item.
+#[must_use]
+pub const fn should_destroy_bfg9000_ground_item(damage: u32) -> bool {
+  damage > BFG9000_GROUND_ITEM_DESTRUCTION_THRESHOLD
 }
 
 #[cfg(test)]
@@ -49,5 +57,11 @@ mod tests {
     let mut probe = GameRng::from_seed(10_001);
     let damage = roll_explosion_damage(&mut probe);
     assert!((10..=60).contains(&damage));
+  }
+
+  #[test]
+  fn ground_item_destruction_uses_strict_legacy_threshold() {
+    assert!(!should_destroy_bfg9000_ground_item(10));
+    assert!(should_destroy_bfg9000_ground_item(11));
   }
 }

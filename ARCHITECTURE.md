@@ -1,7 +1,7 @@
 # Architecture
 
-Last reviewed: 2026-08-29
-Current project version: `0.2.268`
+Last reviewed: 2026-08-30
+Current project version: `0.2.269`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -70,9 +70,9 @@ four-projectile/twenty-cell chainfire fragments plus its bounded radius-2
 actor-only explosion fanout and thresholded ordinary-ammo destruction;
 Standard BFG 9000 records its typed exact-hit, one-projectile,
 forty-cell-per-shot, and delayed-explosion fragments plus its bounded radius-8
-actor-only fanout (one `10d6` Plasma roll per clear cell, source self-safety,
-radial integer `damage / 16` knockback, and normal death/drop/game-over
-follow-up);
+actor fanout (one `10d6` Plasma roll per clear cell, source self-safety,
+radial integer `damage / 16` knockback, thresholded lowest-ID ordinary
+ground-item destruction, and normal death/drop/game-over follow-up);
 Nuclear BFG 9000 records its typed exact-hit, one-projectile,
 forty-cell-per-shot, recharge, overload, and delayed-explosion fragments plus
 its bounded radius-8 actor-only fanout (one `8d6` Plasma roll per clear cell,
@@ -303,12 +303,14 @@ Presentation Boundary
     path. LOS, range, action cost, damage RNG, and existing attack/damage
     events remain unchanged. Its direct-target hit now emits one typed
     `Bfg9000ExplosionScheduled` event with delay 33, radius 8, and knockback 16,
-    then resolves the bounded immediate actor-only radius-8 fanout through the
-    shared deterministic blast geometry. The firing actor is self-safe; other
-    actors receive one `10d6` Plasma roll per clear cell and radial integer
-    `damage / 16` knockback before environmental damage. Secondary chains,
-    terrain/content and ground-item effects, delayed timing/state-machine
-    parity, and projectile routing remain separate policy work.
+    then resolves the bounded immediate radius-8 fanout through the shared
+    deterministic blast geometry. The firing actor is self-safe; other actors
+    receive one `10d6` Plasma roll per clear cell and radial integer
+    `damage / 16` knockback before environmental damage. A roll greater than
+    10 removes at most the lowest-ID ordinary ground item on that cell after
+    actor processing and before lethal follow-up. Secondary chains,
+    terrain/content mutation, delayed timing/state-machine parity, and
+    projectile routing remain separate policy work.
     Nuclear BFG 9000 opts into the same typed exact-hit policy without changing
     its recharge or alternate-overload state; its direct-target hit now emits
     one typed `NuclearBfg9000ExplosionScheduled` event with delay 33, radius 8,
