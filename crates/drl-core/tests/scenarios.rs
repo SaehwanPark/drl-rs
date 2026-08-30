@@ -2335,6 +2335,76 @@ fn nuclear_plasma_periodic_recharge_vertical_scenario_preserves_replay() {
 }
 
 #[test]
+fn nuclear_plasma_fourth_chainfire_vertical_scenario_preserves_replay() {
+  let mut scenario = Scenario::from_ascii(
+    "NuclearPlasmaFourthChainfireVertical",
+    "Nuclear Plasma Rifle reaches its fourth chainfire level after recharge",
+    "########\n#@..h..#\n#......#\n########\n",
+  )
+  .unwrap();
+  scenario.seed = 2_652;
+  scenario.monsters[0].name = "Static Target".to_string();
+  scenario.monsters[0].hp = 10_000;
+  scenario.monsters[0].speed = 0;
+  scenario.monsters[0].ranged_damage = None;
+  scenario.monsters[0].ranged_range = 0;
+  scenario.player_config = Some(PlayerSpawnConfig {
+    hp: 50,
+    max_hp: 50,
+    speed: 100,
+    initial_items: Vec::new(),
+    equipped_weapon: Some(ItemSpawnKind::NuclearPlasmaRifle),
+    equipped_armor: None,
+    equipped_armor_durability: None,
+  });
+
+  let target = Position::new(4, 1);
+  let mut commands = Vec::with_capacity(51);
+  commands.extend([
+    Command::AttackRangedChainfire(target),
+    Command::AttackRangedChainfire(target),
+    Command::AttackRangedChainfire(target),
+  ]);
+  commands.extend(std::iter::repeat_n(Command::Wait, 47));
+  commands.push(Command::AttackRangedChainfire(target));
+
+  let (game, events, _metrics, replay) =
+    ScenarioRunner::run_commands(&scenario, &commands).unwrap();
+  let player_id = game.world().player_id().unwrap();
+  assert_eq!(
+    events
+      .iter()
+      .filter(|event| matches!(
+        event,
+        GameEvent::AttackResolved {
+          attacker_id,
+          is_ranged: true,
+          ..
+        } if *attacker_id == player_id
+      ))
+      .count(),
+    28
+  );
+  assert_eq!(
+    events
+      .iter()
+      .filter(|event| matches!(event, GameEvent::WeaponRecharged { .. }))
+      .count(),
+    4
+  );
+  let weapon = game.world().player().unwrap().equipment().weapon().unwrap();
+  let properties = weapon.weapon_properties().unwrap();
+  assert_eq!(properties.current_clip, 0);
+  assert_eq!(properties.chainfire_level, 4);
+  assert_eq!(replay.commands, commands);
+
+  let (replayed_game, replay_events) = ReplayEngine::run(&replay).unwrap();
+  assert_eq!(replayed_game, game);
+  assert_eq!(replay_events, events);
+  assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}
+
+#[test]
 fn nuclear_bfg_periodic_recharge_vertical_scenario_preserves_replay() {
   let target_position = Position::new(2, 1);
   let mut scenario = Scenario::from_ascii(

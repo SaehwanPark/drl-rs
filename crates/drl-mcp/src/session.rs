@@ -3179,6 +3179,32 @@ mod tests {
     );
     assert!(third.description.contains("9 projectiles, 9 rounds"));
     session.step(third.command).expect("third chainfire action");
+    let player_id = session.game.as_ref().unwrap().world().player_id().unwrap();
+    session
+      .game
+      .as_mut()
+      .unwrap()
+      .world_mut()
+      .get_actor_mut(player_id)
+      .unwrap()
+      .equipment_mut()
+      .weapon_mut()
+      .unwrap()
+      .weapon_properties_mut()
+      .unwrap()
+      .current_clip = 24;
+    let fourth = compute_legal_actions(&session.get_observation().unwrap())
+      .into_iter()
+      .find(|action| action.action == "Chainfire")
+      .expect("fourth Nuclear Plasma chainfire should be advertised");
+    assert_eq!(
+      fourth.command,
+      Command::AttackRangedChainfire(Position::new(3, 1))
+    );
+    assert!(fourth.description.contains("9 projectiles, 9 rounds"));
+    session
+      .step(fourth.command)
+      .expect("fourth chainfire action");
     assert!(
       !compute_legal_actions(&session.get_observation().unwrap())
         .iter()
@@ -5494,6 +5520,92 @@ mod tests {
         .any(|action| action.action == "Chainfire")
     );
     expected_events.extend(third_events);
+
+    for _ in 0..47 {
+      let wait_expected_events = direct
+        .step(Command::Wait)
+        .expect("direct Nuclear Plasma recharge wait");
+      let (wait_events, wait_observation, wait_outcome) = session
+        .step(Command::Wait)
+        .expect("MCP Nuclear Plasma recharge wait");
+      assert_eq!(wait_events, wait_expected_events);
+      assert_eq!(session.game.as_ref().unwrap(), &direct);
+      assert_eq!(wait_observation, direct.observe_player());
+      assert_eq!(wait_outcome, None);
+      expected_events.extend(wait_events);
+    }
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .current_clip,
+      9
+    );
+
+    let fourth_command = Command::AttackRangedChainfire(target_position);
+    assert!(
+      compute_legal_actions(&direct.observe_player())
+        .iter()
+        .any(|action| action.command == fourth_command)
+    );
+    let fourth_expected_events = direct
+      .step(fourth_command)
+      .expect("direct fourth Nuclear Plasma chainfire command");
+    let (fourth_events, fourth_observation, fourth_outcome) = session
+      .step(fourth_command)
+      .expect("MCP fourth Nuclear Plasma chainfire command");
+    assert_eq!(fourth_events, fourth_expected_events);
+    assert_eq!(session.game.as_ref().unwrap(), &direct);
+    assert_eq!(fourth_observation, direct.observe_player());
+    assert_eq!(fourth_outcome, None);
+    assert_eq!(
+      fourth_events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          GameEvent::AttackResolved {
+            attacker_id,
+            target_id: event_target,
+            is_ranged: true,
+            ..
+          } if *attacker_id == player_id && *event_target == target_id
+        ))
+        .count(),
+      9
+    );
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .current_clip,
+      0
+    );
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .chainfire_level,
+      4
+    );
+    expected_events.extend(fourth_events);
 
     let replay = session.export_replay().expect("MCP replay export");
     let (replayed, replay_events) =

@@ -1,7 +1,7 @@
 # Nuclear Plasma Rifle typed ordinary-volley evidence
 
 Status: delivered typed Nuclear Plasma Rifle ordinary-fire and first-, second-,
-plus third-level chainfire support in `0.2.274`; fourth-and-later chainfire levels,
+third-, plus fourth-level chainfire support in `0.2.284`; fifth-and-later chainfire levels,
 controlled legacy runtime comparison, and audiovisual parity remain `NOT_RUN`.
 Existing overload and periodic recharge evidence is retained in
 `nuclear-plasma-profile.md` and `nuclear-plasma.md`.
@@ -31,9 +31,9 @@ evidence.
 
 `NUCLEAR_PLASMA_BEHAVIOR` now records six ordered projectiles and one Cell per
 projectile alongside its four-projectile/four-cell first-level,
-six-projectile/six-cell second-level, and nine-projectile/nine-cell third-level
-chainfire, existing typed overload, and delay-40/cadence-2/amount-1 recharge
-fragments. Generic ranged execution remains authoritative for target,
+six-projectile/six-cell second-level, and nine-projectile/nine-cell third- and
+fourth-level chainfire, existing typed overload, and delay-40/cadence-2/amount-1
+recharge fragments. Generic ranged execution remains authoritative for target,
 line-of-sight, range, damage RNG, event ordering, and transactional clip
 consumption; one accepted ordinary command consumes six cells, while first-,
 second-, and third-level chainfire consume four, six, and nine cells
@@ -45,6 +45,6 @@ ordinary/second-level or four first-level chainfire cells are rejected before
 mutation, and the existing overload and periodic-recharge ownership are
 unchanged.
 
-Fourth-and-later chainfire callback state, alternate target routing, exact
+Fifth-and-later chainfire callback state, alternate target routing, exact
 timing, controlled runtime, browser capture, and audiovisual parity remain
 deferred; source similarity alone is not parity proof.
