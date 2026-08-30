@@ -3,6 +3,18 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.312]
+
+- Extended Chaingun chainfire with the pinned eighth warm-up level: after the
+  three-, four-, and prior six-projectile bursts, the eighth command reloads
+  from reserve ammunition, consumes six rounds, and emits six ordered ranged
+  outcomes, advancing warm-up to level eight. ScenarioRunner/replay,
+  direct-core, MCP legal-action/JSON, physical `C`/reload routing, and
+  BrowserSession parity plus atomic ninth-level and under-supply rejection are
+  covered. Higher levels, target routing, exact timing, controlled runtime,
+  browser capture, and audiovisual parity remain deferred. Gameplay semantics
+  advance from `120` to `121`.
+
 ## [0.2.311]
 
 - Extended Chaingun chainfire with the pinned seventh warm-up level: after the

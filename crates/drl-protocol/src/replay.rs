@@ -21,10 +21,11 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// Gameplay semantics identifier expected by the current replay engine.
 ///
 /// This advances independently from the wire/schema and RNG-sampling versions
-/// when other deterministic simulation rules change. Version `120` includes
-/// Chaingun's typed seventh-level six-projectile chainfire burst; version `119`
-/// includes Chaingun's typed sixth-level six-projectile chainfire burst;
-/// version `118`
+/// when other deterministic simulation rules change. Version `121` includes
+/// Chaingun's typed eighth-level six-projectile chainfire burst; version `120`
+/// includes Chaingun's typed seventh-level six-projectile chainfire burst;
+/// version `119` includes Chaingun's typed sixth-level six-projectile chainfire
+/// burst; version `118`
 /// includes Chaingun's typed fifth-level six-projectile chainfire burst;
 /// version `117` includes Chaingun's typed fourth-level six-projectile
 /// chainfire burst; version `116` includes Laser Rifle's typed seventh-level
@@ -114,7 +115,7 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// seventh-level chainfire, the prior Malek's Armor, Missile Launcher, and
 /// Combat Shotgun policies, and the typed ordinary-fire cost policies through
 /// Laser Rifle.
-pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 120;
+pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 121;
 
 /// Procedural-generation semantics identifier expected for replays that carry
 /// a procedural generation configuration. Version 2 includes the exact
@@ -134,8 +135,9 @@ pub struct ReplayMetadata {
   /// Engine crate version string.
   pub engine_version: String,
   /// Gameplay semantics version required to interpret the command history.
-  /// Version 120 includes Chaingun's typed seventh-level six-projectile
-  /// chainfire burst; version 119 includes Chaingun's typed sixth-level
+  /// Version 121 includes Chaingun's typed eighth-level six-projectile
+  /// chainfire burst; version 120 includes Chaingun's typed seventh-level
+  /// six-projectile chainfire burst; version 119 includes Chaingun's typed sixth-level
   /// six-projectile chainfire burst; version 118 includes Chaingun's typed fifth-level
   /// six-projectile chainfire burst; version 117 includes Chaingun's typed
   /// fourth-level six-projectile chainfire burst; version 116 includes Laser
