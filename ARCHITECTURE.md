@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.271`
+Current project version: `0.2.272`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -66,9 +66,10 @@ six-projectile ordinary-fire, one-cell-per-projectile, overload, and recharge
 fragments plus a bounded first-level four-projectile chainfire transition;
 BFG 10K records its typed exact-hit, five-projectile ordinary-fire,
 five-cell-per-projectile, delayed-explosion, and bounded first-level
-four-projectile/twenty-cell plus second-level five-projectile/twenty-five-cell
-chainfire fragments plus its bounded radius-2 actor-only explosion fanout and
-thresholded ordinary-ammo destruction;
+four-projectile/twenty-cell, second-level five-projectile/twenty-five-cell, and
+third-level seven-projectile/thirty-five-cell chainfire fragments plus its
+bounded radius-2 actor-only explosion fanout and thresholded ordinary-ammo
+destruction;
 Standard BFG 9000 records its typed exact-hit, one-projectile,
 forty-cell-per-shot, and delayed-explosion fragments plus its bounded radius-8
 actor fanout (one `10d6` Plasma roll per clear cell, source self-safety,
@@ -334,8 +335,9 @@ Presentation Boundary
     BFG 10K opts into typed exact-hit, five-projectile direct-target volley,
     five-cell-per-projectile shot-cost, delayed explosion schedule metadata
     (delay 25, radius 2, knockback 16), the bounded first-level
-    four-projectile/twenty-cell and second-level five-projectile/twenty-five-cell
-    chainfire transitions, and the immediate
+    four-projectile/twenty-cell, second-level five-projectile/twenty-five-cell,
+    and third-level seven-projectile/thirty-five-cell chainfire transitions,
+    and the immediate
     actor-only radius-2 fanout (6d4 Plasma per clear cell, no distance falloff,
     integer damage/16 knockback) and destroys one lowest-ID ordinary loose-ammo
     stack per clear cell when damage exceeds 10. Delayed timing, terrain/content
