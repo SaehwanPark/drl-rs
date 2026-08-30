@@ -10,9 +10,9 @@ the projectile count. `TBeing.FireRanged` preflights and debits this total in
 
 The DRL-Rust profile implements the typed five-cell per-projectile clip cost for
 the existing five-projectile direct-target path and bounded first- through
-eighteenth-level chainfire paths. A valid visible, in-range BFG 10K volley with a
+nineteenth-level chainfire paths. A valid visible, in-range BFG 10K volley with a
 full clip consumes twenty-five cells; the first two chainfire levels consume
-twenty and twenty-five cells, followed by sixteen seven-projectile levels that
+twenty and twenty-five cells, followed by seventeen seven-projectile levels that
 each consume thirty-five cells.
 Clips below the required totals reject atomically. Scatter, projectile routing,
 explosion geometry, and
