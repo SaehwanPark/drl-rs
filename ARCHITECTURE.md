@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.284`
+Current project version: `0.2.285`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -68,8 +68,8 @@ third-, and fourth-level four-, five-, seven-, and seven-projectile chainfire
 transitions; Nuclear
 Plasma Rifle records its typed
 six-projectile ordinary-fire, one-cell-per-projectile, overload, and recharge
-fragments plus bounded first-, second-, and third-level four-, six-, and
-nine-projectile chainfire transitions;
+fragments plus bounded first-, second-, third-, fourth-, and fifth-level four-,
+six-, nine-, nine-, and nine-projectile chainfire transitions;
 BFG 10K records its typed exact-hit, five-projectile ordinary-fire,
 five-cell-per-projectile, delayed-explosion, and bounded first-level
 four-projectile/twenty-cell, second-level five-projectile/twenty-five-cell, and
@@ -105,7 +105,7 @@ Assault Shotgun records its typed ordinary single-shell reload and
 capped full-deficit reload fragments;
 Revenant's Launcher records its typed
 exact-hit attack fragment;
-Nuclear Plasma records its typed first-, second-, third-, and fourth-level chainfire,
+Nuclear Plasma records its typed first-, second-, third-, fourth-, and fifth-level chainfire,
 alternate-overload, and periodic-recharge fragments; the BFG family profiles
 record exact-hit, typed projectile-count,
 ammunition-cost, and delayed-explosion metadata. Dedicated runtime command
@@ -262,8 +262,8 @@ Presentation Boundary
     ground-ammo destruction; Railgun's dedicated resolver owns clear-ray
     traversal and shared-damage piercing;
     Nuclear Plasma's profile records its six-projectile ordinary-fire and
-    six-cell cost fragments alongside its typed first-, second-, and
-    third- and fourth-level chainfire, overload, and recharge fragments.
+    six-cell cost fragments alongside its typed first-, second-, third-,
+    fourth-, and fifth-level chainfire, overload, and recharge fragments.
     Profiles describe
     behavior without string keys or runtime callbacks; dedicated transition
     modules remain the execution authority.

@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.284`
+Current project version: `0.2.285`
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,16 +25,16 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Nuclear Plasma Fourth-Level Chainfire
+## 2. Active Implementation Slice: M9 — Nuclear Plasma Fifth-Level Chainfire
 
 ### 2.1 Objective
 
-Extend the delivered typed Nuclear Plasma Rifle first-, second-, and third-level
-chainfire commands with the legacy-pinned fourth warm-up level. After accepted
-four-, six-, and nine-projectile bursts leave the weapon at warm-up level three,
-a valid fourth-level command must emit nine ranged projectiles, charge nine
-cells, preserve the existing automatic recharge and ordered attack behavior,
-and advance the warm-up state to level four.
+Extend the delivered typed Nuclear Plasma Rifle first-, second-, third-, and
+fourth-level chainfire commands with the legacy-pinned fifth warm-up level.
+After accepted four-, six-, and nine-projectile bursts leave the weapon at
+warm-up level four, a valid fifth-level command must emit nine ranged
+projectiles, charge nine cells, preserve the existing automatic recharge and
+ordered attack behavior, and advance the warm-up state to level five.
 
 ### 2.1a Scope and steering gate
 
@@ -42,16 +42,15 @@ and advance the warm-up state to level four.
 - **Steering gates:** Gate A rejected-input safety and Gate B explicit replay
   compatibility remain active acceptance constraints; Gate C catalog ownership
   and Gate D typed behavior evidence remain closed for this bounded extension.
-- **Observable outcome:** A fourth-level Nuclear Plasma chainfire command is
+- **Observable outcome:** A fifth-level Nuclear Plasma chainfire command is
   admitted only for a living visible target, a loaded clip of at least nine cells,
-  and a weapon warm-up level of three. It consumes nine cells, emits
-  nine ordered ranged attack outcomes, preserves deterministic post-lethal
-  no-op continuation slots, and
-  advances warm-up to level four. Ordinary fire still resets the warm-up state,
-  and the fifth level remains rejected atomically.
-- **Gameplay/replay impact:** Gameplay semantics advance from `92` to `93`;
+  and a weapon warm-up level of four. It consumes nine cells, emits nine
+  ordered ranged attack outcomes, preserves deterministic post-lethal no-op
+  continuation slots, and advances warm-up to level five. Ordinary fire still
+  resets the warm-up state, and the sixth level remains rejected atomically.
+- **Gameplay/replay impact:** Gameplay semantics advance from `93` to `94`;
   replay wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.283` to `0.2.284`.
+  unchanged. Project version advances from `0.2.284` to `0.2.285`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary,
   typed projectile-count/cost policy and generic execution; `drl-protocol` owns
   the semantic `AttackRanged`/`AttackRangedAimed` commands and typed event
@@ -64,7 +63,7 @@ and advance the warm-up state to level four.
   browser tests, are
   authoritative. Controlled legacy runtime, browser capture, and audiovisual
   comparisons remain `NOT_RUN`.
-- **Non-goals:** Fifth and later chainfire levels, legacy target rotation or
+- **Non-goals:** Sixth and later chainfire levels, legacy target rotation or
   scatter/spread routing, overload/map effects, recharge timing beyond the
   existing bounded policy, exact callback timing/accuracy, new command variants
   or callback registries, unrelated gameplay balance, replay migrations,
@@ -73,9 +72,9 @@ and advance the warm-up state to level four.
 ### 2.2 Why this slice is bounded
 
 The immutable Nuclear Plasma profile, semantic command, and first-, second-,
-and third-level transitions already exist. This extension adds only one typed
-warm-up profile and its deterministic count/cost selection while reusing the
-existing generic ranged, recharge, replay, MCP, browser, and transactional
+third-, and fourth-level transitions already exist. This extension adds only
+one typed warm-up profile and its deterministic count/cost selection while
+reusing the existing generic ranged, recharge, replay, MCP, browser, and transactional
 boundaries without adding a pending queue, new dispatcher, or callback system.
 
 Additional broad scalar-only family additions remain gated by the open behavior
@@ -3917,6 +3916,35 @@ level. Its contract was:
   semantics from `92` to `93` while preserving replay schema, RNG, generator,
   and ruleset identities;
 - [x] keep fifth-and-later chainfire levels, overload/map effects, target
+  rotation, scatter/routing, exact callback timing/accuracy, controlled legacy
+  runtime, browser capture, and audiovisual parity `NOT_RUN` where comparison
+  evidence is unavailable.
+
+### 2.7f1 Historical Nuclear Plasma fifth-level chainfire target
+
+The delivered `0.2.285` target extended the Nuclear Plasma Rifle first-,
+second-, third-, and fourth-level chainfire commands with the pinned fifth
+warm-up level. Its contract was:
+
+- [x] preserve the first-, second-, third-, and fourth-level four-, six-, and
+  nine-projectile/nine-cell contracts and admit a fifth command only while the
+  weapon warm-up level is four and the target is still a valid visible living
+  actor;
+- [x] resolve the legacy level-two-and-later formula `shots = 6 + (6 div 2) =
+  9`, consuming exactly nine loaded cells for the nine-projectile ranged
+  volley;
+- [x] preserve the existing automatic recharge delay/cadence policy while
+  emitting nine ordered ranged events and deterministic post-lethal no-op
+  continuation slots;
+- [x] advance warm-up state to level five only after acceptance, keep ordinary
+  fire's reset behavior, and reject the sixth level or an under-supplied clip
+  without changing game, clip, turn, or RNG state;
+- [x] preserve direct-core, recharge-backed ScenarioRunner/replay, MCP
+  legal-action/JSON, physical `C` key, and BrowserSession event/state parity;
+- [x] advance project version from `0.2.284` to `0.2.285` and gameplay
+  semantics from `93` to `94` while preserving replay schema, RNG, generator,
+  and ruleset identities;
+- [x] keep sixth-and-later chainfire levels, overload/map effects, target
   rotation, scatter/routing, exact callback timing/accuracy, controlled legacy
   runtime, browser capture, and audiovisual parity `NOT_RUN` where comparison
   evidence is unavailable.
