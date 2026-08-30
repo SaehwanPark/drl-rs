@@ -23,7 +23,8 @@ use crate::behavior::{
   NUCLEAR_PLASMA_CHAINFIRE_PROJECTILE_COUNT, PISTOL_AIMED_ACCURACY_BONUS,
   PISTOL_AIMED_FIRE_COST_MULTIPLIER, PLASMA_RIFLE_CHAINFIRE_PROJECTILE_COUNT,
   WeaponRechargeOutcome, bfg10k_chainfire_profile, chaingun_chainfire_profile,
-  minigun_chainfire_profile, nuclear_plasma_chainfire_profile, plasma_rifle_chainfire_profile,
+  laser_rifle_chainfire_profile, minigun_chainfire_profile, nuclear_plasma_chainfire_profile,
+  plasma_rifle_chainfire_profile,
 };
 use crate::bfg10k::{
   BFG10K_GROUND_ITEM_DESTRUCTION_THRESHOLD, knockback_distance as bfg10k_knockback_distance,
@@ -1772,6 +1773,7 @@ impl Game {
         weapon.archetype() == drl_protocol::ItemArchetype::NuclearPlasmaRifle;
       let bfg10k_chainfire = bfg10k_chainfire_profile(props.chainfire_level);
       let chaingun_chainfire = chaingun_chainfire_profile(props.chainfire_level);
+      let laser_rifle_chainfire = laser_rifle_chainfire_profile(props.chainfire_level);
       let minigun_chainfire = minigun_chainfire_profile(props.chainfire_level);
       let plasma_rifle_chainfire = plasma_rifle_chainfire_profile(props.chainfire_level);
       let nuclear_plasma_chainfire = nuclear_plasma_chainfire_profile(props.chainfire_level);
@@ -1793,6 +1795,8 @@ impl Game {
           chaingun_chainfire.is_some()
         } else if weapon_is_minigun {
           minigun_chainfire.is_some()
+        } else if weapon_is_laser_rifle {
+          laser_rifle_chainfire.is_some()
         } else if weapon_is_plasma_rifle {
           plasma_rifle_chainfire.is_some()
         } else if weapon_is_nuclear_plasma_rifle {
@@ -1857,6 +1861,12 @@ impl Game {
       } else if chainfire && weapon_is_minigun {
         minigun_chainfire.ok_or_else(|| {
           CommandError::InvalidCommand("higher Minigun chainfire levels are deferred".to_string())
+        })?
+      } else if chainfire && weapon_is_laser_rifle {
+        laser_rifle_chainfire.ok_or_else(|| {
+          CommandError::InvalidCommand(
+            "higher Laser Rifle chainfire levels are deferred".to_string(),
+          )
         })?
       } else if chainfire && weapon_is_plasma_rifle {
         plasma_rifle_chainfire.ok_or_else(|| {

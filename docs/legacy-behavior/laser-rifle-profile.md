@@ -1,8 +1,9 @@
 # Laser Rifle typed behavior-profile evidence
 
-Status: delivered typed ordinary-fire five-shot profile and first-level
-chainfire execution in `0.2.262`; higher chainfire levels, spread/routing,
-controlled legacy runtime comparison, and audiovisual parity remain `NOT_RUN`.
+Status: delivered typed ordinary-fire five-shot profile and first- and
+second-level chainfire execution in `0.2.280`; higher chainfire levels,
+spread/routing, controlled legacy runtime comparison, and audiovisual parity
+remain `NOT_RUN`.
 
 ## Pinned source
 
@@ -19,8 +20,9 @@ Evidence is pinned to revision
 - `src/dfitem.pas:627-634` clamps the effective per-projectile cost to at
   least one and multiplies it by the resolved shot count before firing.
 - `src/dfbeing.pas:1477-1491` resolves ordinary fire to five projectiles and
-  the first chainfire level's `5 - (5 div 3) = 4` projectiles; chainfire
-  adjustments require alternate fire.
+  the chainfire warm-up formula: level zero uses `5 - (5 div 3) = 4`, level
+  one keeps `5`, and level two and later add `5 div 2`; chainfire adjustments
+  require alternate fire.
 - `src/dfbeing.pas:1496-1514` checks and debits the aggregate ammunition cost
   before emitting the ordered projectile loop at `:498-510`.
 
@@ -28,12 +30,13 @@ Evidence is pinned to revision
 
 The immutable `drl_core::behavior::LASER_RIFLE_BEHAVIOR` profile records
 ordered `AttackEffect::ProjectileCount(5)`, one-cell ordinary cost, and
-`AlternateAction::Chainfire { shot_count: 4, ammo_cost: 4 }` fragments. The
-existing ranged command path remains execution authority for target/LOS/range
-and death-drop preflight, damage RNG, event ordering, and transactional clip
-consumption. Direct integration tests verify five ordered ordinary events,
-four ordered chainfire events, four-cell chainfire consumption, atomic
-below-cost rejection, warm-up reset/advancement, and deterministic replay.
+`AlternateAction::Chainfire` fragments for four/four and five/five projectile/
+cell levels. The existing ranged command path remains execution authority for
+target/LOS/range and death-drop preflight, damage RNG, event ordering, and
+transactional clip consumption. Direct integration tests verify five ordered
+ordinary events, four- and five-ordered chainfire events, four- and five-cell
+chainfire consumption, atomic below-cost rejection, warm-up reset/advancement,
+and deterministic replay.
 
 Higher chainfire levels, the legacy alternate perk's exact routing, timing,
 and accuracy, controlled runtime comparison, and audiovisual parity remain
