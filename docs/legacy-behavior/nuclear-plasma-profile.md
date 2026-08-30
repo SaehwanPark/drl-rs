@@ -1,8 +1,9 @@
 # Nuclear Plasma Rifle typed behavior-profile evidence
 
 Status: delivered typed behavior profile and first-, second-, third-, fourth-,
-plus fifth-level chainfire execution in `0.2.285`; sixth-and-later chainfire levels,
-controlled legacy runtime comparison, and audiovisual parity remain `NOT_RUN`.
+fifth-, and sixth-level chainfire execution in `0.2.289`; seventh-and-later
+chainfire levels, controlled legacy runtime comparison, and audiovisual parity
+remain `NOT_RUN`.
 
 ## Pinned source
 
@@ -30,7 +31,9 @@ ordinary volley, one-cell cost, first-level
 third-level `AlternateAction::ChainfireLevel { level: 2, shot_count: 9,
 ammo_cost: 9 }`, fourth-level `AlternateAction::ChainfireLevel { level: 3,
 shot_count: 9, ammo_cost: 9 }`, fifth-level `AlternateAction::ChainfireLevel {
-level: 4, shot_count: 9, ammo_cost: 9 }`, typed `AlternateAction::Overload`, and
+level: 4, shot_count: 9, ammo_cost: 9 }`, and sixth-level
+`AlternateAction::ChainfireLevel { level: 5, shot_count: 9, ammo_cost: 9 }`,
+typed `AlternateAction::Overload`, and
 `PeriodicEffect::Recharge` fragments
 (delay `40`, cadence `2`, amount `1`). Generic ranged execution owns the
 bounded chainfire command while dedicated `nuclear_overload` and
@@ -38,6 +41,6 @@ bounded chainfire command while dedicated `nuclear_overload` and
 existing actions; no new command, callback registry, replay-wire field, or
 recharge timing is added.
 
-The profile intentionally does not claim sixth-and-later chainfire levels,
+The profile intentionally does not claim seventh-and-later chainfire levels,
 dynamic target rotation, or other deferred weapon behavior. Those remain
 separate evidence-backed slices.

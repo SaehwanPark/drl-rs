@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.288`
+Current project version: `0.2.289`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -106,7 +106,7 @@ Assault Shotgun records its typed ordinary single-shell reload and
 capped full-deficit reload fragments;
 Revenant's Launcher records its typed
 exact-hit attack fragment;
-Nuclear Plasma records its typed first-, second-, third-, fourth-, and fifth-level chainfire,
+Nuclear Plasma records its typed first-, second-, third-, fourth-, fifth-, and sixth-level chainfire,
 alternate-overload, and periodic-recharge fragments; the BFG family profiles
 record exact-hit, typed projectile-count,
 ammunition-cost, and delayed-explosion metadata. Dedicated runtime command
@@ -264,7 +264,7 @@ Presentation Boundary
     traversal and shared-damage piercing;
     Nuclear Plasma's profile records its six-projectile ordinary-fire and
     six-cell cost fragments alongside its typed first-, second-, third-,
-    fourth-, and fifth-level chainfire, overload, and recharge fragments.
+    fourth-, fifth-, and sixth-level chainfire, overload, and recharge fragments.
     Profiles describe
     behavior without string keys or runtime callbacks; dedicated transition
     modules remain the execution authority.
