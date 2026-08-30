@@ -411,9 +411,9 @@ mod tests {
   #[test]
   fn test_replay_validation_rejects_incompatible_semantics() {
     let mut replay = ReplayLog::new(1234, 10, 10, Position::new(1, 1));
-    // Version 97 predates Nuclear Plasma Rifle's sixth-level chainfire effect
-    // and must not be interpreted by the version-98 engine.
-    assert_eq!(drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION, 98);
+    // Version 98 predates BFG 10K's sixth-level chainfire effect and must not
+    // be interpreted by the version-99 engine.
+    assert_eq!(drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION, 99);
     assert_eq!(
       drl_protocol::CURRENT_RNG_SAMPLING_SEMANTICS_VERSION,
       crate::rng::RNG_SAMPLING_SEMANTICS_VERSION
