@@ -10570,6 +10570,10 @@ mod tests {
       1,
       (2, 4),
     ));
+    setup_replay.record_item(ItemSpawnSpec::new(
+      target_position,
+      ItemSpawnKind::SmallMedPack,
+    ));
     let (initial, setup_events) =
       drl_core::ReplayEngine::run(&setup_replay).expect("Nuclear BFG vertical replay setup");
     assert!(setup_events.is_empty());
@@ -10637,6 +10641,31 @@ mod tests {
       1,
       "browser Nuclear BFG splash must damage the second actor exactly once"
     );
+    let splash_damage_index = expected_events
+      .iter()
+      .position(|event| {
+        matches!(
+          event,
+          drl_protocol::GameEvent::DamageApplied {
+            target_id: event_target,
+            source: drl_protocol::DamageSource::Environment,
+            damage_type: Some(drl_protocol::DamageType::Plasma),
+            ..
+          } if *event_target == target_id
+        )
+      })
+      .expect("browser Nuclear BFG center actor should receive splash damage");
+    let destroyed_index = expected_events
+      .iter()
+      .position(|event| {
+        matches!(
+          event,
+          drl_protocol::GameEvent::GroundItemDestroyed { position, .. }
+            if *position == target_position
+        )
+      })
+      .expect("browser Nuclear BFG should destroy the center ground item");
+    assert!(splash_damage_index < destroyed_index);
     assert_eq!(
       direct
         .world()

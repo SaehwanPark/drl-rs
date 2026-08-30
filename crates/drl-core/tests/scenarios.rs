@@ -1310,6 +1310,9 @@ fn nuclear_bfg_shot_cost_vertical_scenario_preserves_clip_and_replay() {
   });
 
   let target = Position::new(5, 1);
+  scenario
+    .items
+    .push(ItemSpawnSpec::new(target, ItemSpawnKind::SmallMedPack));
   let commands = [Command::AttackRanged(target)];
   let (game, events, _metrics, replay) =
     ScenarioRunner::run_commands(&scenario, &commands).unwrap();
@@ -1358,6 +1361,30 @@ fn nuclear_bfg_shot_cost_vertical_scenario_preserves_clip_and_replay() {
     1,
     "Nuclear BFG splash must damage the second actor exactly once"
   );
+  let center_damage_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::DamageApplied {
+          target_id: event_target,
+          source: DamageSource::Environment,
+          damage_type: Some(drl_protocol::DamageType::Plasma),
+          ..
+        } if *event_target == target_id
+      )
+    })
+    .expect("Nuclear BFG center target should receive splash damage");
+  let destroyed_index = events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        GameEvent::GroundItemDestroyed { position, .. } if *position == target
+      )
+    })
+    .expect("Nuclear BFG should destroy the center ground item");
+  assert!(center_damage_index < destroyed_index);
   let attack_index = events
     .iter()
     .position(|event| matches!(event, GameEvent::AttackResolved { .. }))

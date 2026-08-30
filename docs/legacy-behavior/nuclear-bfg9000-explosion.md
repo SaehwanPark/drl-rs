@@ -1,9 +1,10 @@
 # Nuclear BFG 9000 delayed explosion evidence
 
-Status: delivered bounded typed schedule metadata and immediate actor-only
-radius-8 fanout for `0.2.268`; EFCHAIN secondary explosions, terrain/content
-and ground-item effects, delayed timing/state-machine parity, controlled runtime
-comparison, and audiovisual parity remain open or `NOT_RUN`.
+Status: delivered bounded typed schedule metadata, immediate actor fanout, and
+thresholded ordinary ground-item destruction in `0.2.270`; EFCHAIN secondary
+explosions, terrain/content mutation, delayed timing/state-machine parity,
+controlled runtime comparison, and audiovisual parity remain open or
+`NOT_RUN`.
 
 ## Pinned source
 
@@ -25,18 +26,22 @@ and an untracked `fpcvalkyrie/` directory; none overlap the sources below.
   radius-8 schedule. `src/dflevel.pas:991-1095` rolls the assigned damage
   independently per clear cell, suppresses distance falloff for
   `EFNODISTANCEDROP`, skips the active firing actor for `EFSELFSAFE`, and
-  applies knockback before actor damage.
+  applies knockback before actor damage. The same routine removes the
+  lowest-ID non-feature ground item when the rolled damage is greater than
+  `10`, after actor processing and before lethal follow-up.
 
 ## DRL-Rust boundary
 
-Gameplay semantics `77` (project version `0.2.268`) records one typed
+Gameplay semantics `79` (project version `0.2.270`) records one typed
 `NuclearBfg9000ExplosionScheduled` event after the Nuclear BFG 9000
 direct-target hit, carrying delay `33`, radius `8`, and knockback `16`, then
-resolves an immediate deterministic actor-only radius-8 fanout. Each clear
+resolves an immediate deterministic radius-8 fanout. Each clear
 cell consumes one `8d6` Plasma roll without distance falloff; the firing actor
 is splash-safe, other living actors are de-duplicated and receive radial
 integer `damage / 16` knockback before environmental damage, and lethal
-death/drop/game-over follow-up remains ordered. EFCHAIN secondary explosions,
-terrain/content and ground-item effects, delayed timing, projectile routing,
-NukeRun, controlled legacy runtime, and audiovisual comparison remain separate
-slices or `NOT_RUN`.
+death/drop/game-over follow-up remains ordered. After actor processing, a roll
+greater than `10` removes at most the lowest-ID ordinary ground item on that
+blast cell and emits `GroundItemDestroyed` before lethal follow-up. EFCHAIN
+secondary explosions, terrain/content mutation, delayed timing, projectile
+routing, NukeRun, controlled legacy runtime, and audiovisual comparison remain
+separate slices or `NOT_RUN`.
