@@ -2,8 +2,8 @@
 
 Last reviewed: 2026-08-31
 Baseline branch: `main`
-Baseline merge commit: `b0a36fab6e116f0e1b0ac2b06e62b14b52ad4951`
-Latest pull request inspected: `#428`
+Baseline merge commit: `447176ba9655bfe93ab4c958a3faa385a447d91d`
+Latest pull request inspected: `#429`
 Baseline project version: `0.2.320`
 
 ## Purpose
@@ -18,7 +18,7 @@ catalogs, and typed behavior foundations. Those results remain architecture and
 test invariants. The gates below supersede the old slice-selection order because
 the remaining risks are semantic micro-slicing, transaction cost, and
 control-plane drift; persistent-history compatibility remains a protected
-invariant after Gate A closure.
+invariant, not an open gate, after Gate A closure.
 
 ## Current diagnosis
 
@@ -204,6 +204,7 @@ roadmap and active specification from verified evidence.
 
 Re-audit after chainfire semantic consolidation merge, or before broad M9
 migration resumes, whichever happens first. The current audited tree is
-`main` at `b0a36fa` (PR #428, version `0.2.320`); local and hosted checks passed
-for M10, while human, audiovisual, performance, and reference-capture surfaces
-remain `NOT_RUN` where prerequisites are unavailable.
+`main` at `447176b` (PR #429, version `0.2.320`); local and hosted checks passed
+for M10, while the M9 candidate is pending review/merge and human,
+audiovisual, performance, and reference-capture surfaces remain `NOT_RUN` where
+prerequisites are unavailable.

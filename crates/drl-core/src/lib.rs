@@ -15,6 +15,7 @@ pub mod batch;
 pub mod behavior;
 pub mod bfg10k;
 pub mod bfg9000;
+pub mod chainfire;
 pub mod chaingun;
 pub mod combat;
 pub mod combat_shotgun;
@@ -162,6 +163,10 @@ pub use bfg9000::{
   BFG9000_EXPLOSION_DAMAGE_DICE, BFG9000_EXPLOSION_DAMAGE_DIE_SIDES,
   BFG9000_GROUND_ITEM_DESTRUCTION_THRESHOLD, radius_eight_blast_positions,
   should_destroy_bfg9000_ground_item,
+};
+pub use chainfire::{
+  ChainfireBurst, ChainfireState, ChainfireWeapon, advance_level as advance_chainfire_level,
+  chainfire_burst, chainfire_profile, reset_level as reset_chainfire_level,
 };
 pub use chaingun::{
   CHAINGUN_CHAINFIRE_PROJECTILE_COUNT, CHAINGUN_CHAINFIRE_SHOT_COST, ChainfireTransition,

@@ -17,14 +17,10 @@ use crate::behavior::{
   ANTI_FREAK_JACKAL_EXPLOSION_DELAY, ANTI_FREAK_JACKAL_EXPLOSION_KNOCKBACK,
   ANTI_FREAK_JACKAL_EXPLOSION_RADIUS, BFG10K_EXPLOSION_DELAY, BFG10K_EXPLOSION_KNOCKBACK,
   BFG10K_EXPLOSION_RADIUS, BFG9000_EXPLOSION_DELAY, BFG9000_EXPLOSION_KNOCKBACK,
-  BFG9000_EXPLOSION_RADIUS, LASER_RIFLE_CHAINFIRE_PROJECTILE_COUNT, LavaRechargeOutcome,
-  MINIGUN_CHAINFIRE_PROJECTILE_COUNT, MedicalRepairOutcome, NUCLEAR_BFG9000_EXPLOSION_DELAY,
-  NUCLEAR_BFG9000_EXPLOSION_KNOCKBACK, NUCLEAR_BFG9000_EXPLOSION_RADIUS,
-  NUCLEAR_PLASMA_CHAINFIRE_PROJECTILE_COUNT, PISTOL_AIMED_ACCURACY_BONUS,
-  PISTOL_AIMED_FIRE_COST_MULTIPLIER, PLASMA_RIFLE_CHAINFIRE_PROJECTILE_COUNT,
-  WeaponRechargeOutcome, bfg10k_chainfire_profile, chaingun_chainfire_profile,
-  laser_rifle_chainfire_profile, minigun_chainfire_profile, nuclear_plasma_chainfire_profile,
-  plasma_rifle_chainfire_profile,
+  BFG9000_EXPLOSION_RADIUS, LavaRechargeOutcome, MedicalRepairOutcome,
+  NUCLEAR_BFG9000_EXPLOSION_DELAY, NUCLEAR_BFG9000_EXPLOSION_KNOCKBACK,
+  NUCLEAR_BFG9000_EXPLOSION_RADIUS, PISTOL_AIMED_ACCURACY_BONUS, PISTOL_AIMED_FIRE_COST_MULTIPLIER,
+  WeaponRechargeOutcome,
 };
 use crate::bfg10k::{
   BFG10K_GROUND_ITEM_DESTRUCTION_THRESHOLD, knockback_distance as bfg10k_knockback_distance,
@@ -34,7 +30,7 @@ use crate::bfg9000::{
   BFG9000_GROUND_ITEM_DESTRUCTION_THRESHOLD, radius_eight_blast_positions,
   roll_explosion_damage as roll_bfg9000_explosion_damage,
 };
-use crate::chaingun::{CHAINGUN_CHAINFIRE_PROJECTILE_COUNT, ChainfireTransition};
+use crate::chainfire::{advance_level, chainfire_profile, reset_level};
 use crate::combat::CombatResolver;
 use crate::combat_shotgun::{CombatShotgunReloadPlan, CombatShotgunTransition};
 use crate::environment::{entered_tile_damage, movement_cost};
@@ -1742,11 +1738,6 @@ impl Game {
       weapon_is_bfg9000,
       weapon_is_nuclear_bfg9000,
       weapon_is_anti_freak_jackal,
-      weapon_is_chaingun,
-      weapon_is_minigun,
-      weapon_is_plasma_rifle,
-      weapon_is_laser_rifle,
-      weapon_is_nuclear_plasma_rifle,
     ) = {
       let player = self
         .state
@@ -1764,62 +1755,16 @@ impl Game {
       if !props.is_ranged {
         return Err(CommandError::NoEquippedWeapon);
       }
-      let weapon_is_chaingun = weapon.archetype() == drl_protocol::ItemArchetype::Chaingun;
-      let weapon_is_minigun = weapon.archetype() == drl_protocol::ItemArchetype::Minigun;
-      let weapon_is_plasma_rifle = weapon.archetype() == drl_protocol::ItemArchetype::PlasmaRifle;
-      let weapon_is_laser_rifle = weapon.archetype() == drl_protocol::ItemArchetype::LaserRifle;
       let weapon_is_bfg10k = weapon.archetype() == drl_protocol::ItemArchetype::Bfg10k;
-      let weapon_is_nuclear_plasma_rifle =
-        weapon.archetype() == drl_protocol::ItemArchetype::NuclearPlasmaRifle;
-      let bfg10k_chainfire = bfg10k_chainfire_profile(props.chainfire_level);
-      let chaingun_chainfire = chaingun_chainfire_profile(props.chainfire_level);
-      let laser_rifle_chainfire = laser_rifle_chainfire_profile(props.chainfire_level);
-      let minigun_chainfire = minigun_chainfire_profile(props.chainfire_level);
-      let plasma_rifle_chainfire = plasma_rifle_chainfire_profile(props.chainfire_level);
-      let nuclear_plasma_chainfire = nuclear_plasma_chainfire_profile(props.chainfire_level);
-      if chainfire {
-        if !weapon_is_bfg10k
-          && !weapon_is_chaingun
-          && !weapon_is_minigun
-          && !weapon_is_plasma_rifle
-          && !weapon_is_laser_rifle
-          && !weapon_is_nuclear_plasma_rifle
-        {
-          return Err(CommandError::InvalidCommand(
+      let chainfire_burst = if chainfire {
+        Some(chainfire_profile(weapon.archetype(), props.chainfire_level).ok_or_else(|| {
+          CommandError::InvalidCommand(
             "chainfire is only available for the BFG 10K, Chaingun, Minigun, Plasma Rifle, Laser Rifle, or Nuclear Plasma Rifle".to_string(),
-          ));
-        }
-        let chainfire_available = if weapon_is_bfg10k {
-          bfg10k_chainfire.is_some()
-        } else if weapon_is_chaingun {
-          chaingun_chainfire.is_some()
-        } else if weapon_is_minigun {
-          minigun_chainfire.is_some()
-        } else if weapon_is_laser_rifle {
-          laser_rifle_chainfire.is_some()
-        } else if weapon_is_plasma_rifle {
-          plasma_rifle_chainfire.is_some()
-        } else if weapon_is_nuclear_plasma_rifle {
-          nuclear_plasma_chainfire.is_some()
-        } else {
-          ChainfireTransition::can_chainfire(props)
-        };
-        if !chainfire_available {
-          return Err(CommandError::InvalidCommand(if weapon_is_bfg10k {
-            "higher BFG 10K chainfire levels are deferred".to_string()
-          } else if weapon_is_minigun {
-            "higher Minigun chainfire levels are deferred".to_string()
-          } else if weapon_is_plasma_rifle {
-            "higher Plasma Rifle chainfire levels are deferred".to_string()
-          } else if weapon_is_laser_rifle {
-            "higher Laser Rifle chainfire levels are deferred".to_string()
-          } else if weapon_is_nuclear_plasma_rifle {
-            "higher Nuclear Plasma chainfire levels are deferred".to_string()
-          } else {
-            "higher Chaingun chainfire levels are deferred".to_string()
-          }));
-        }
-      }
+          )
+        })?)
+      } else {
+        None
+      };
       if aimed
         && !matches!(
           weapon.archetype(),
@@ -1844,55 +1789,14 @@ impl Game {
       if distance > props.range {
         return Err(CommandError::TargetOutOfRange(target_pos));
       }
-      let (shot_count, ammo_cost) = if chainfire && weapon_is_bfg10k {
-        bfg10k_chainfire.ok_or_else(|| {
-          CommandError::InvalidCommand("higher BFG 10K chainfire levels are deferred".to_string())
-        })?
-      } else if chainfire && weapon_is_nuclear_plasma_rifle {
-        nuclear_plasma_chainfire.ok_or_else(|| {
-          CommandError::InvalidCommand(
-            "higher Nuclear Plasma chainfire levels are deferred".to_string(),
-          )
-        })?
-      } else if chainfire && weapon_is_chaingun {
-        chaingun_chainfire.ok_or_else(|| {
-          CommandError::InvalidCommand("higher Chaingun chainfire levels are deferred".to_string())
-        })?
-      } else if chainfire && weapon_is_minigun {
-        minigun_chainfire.ok_or_else(|| {
-          CommandError::InvalidCommand("higher Minigun chainfire levels are deferred".to_string())
-        })?
-      } else if chainfire && weapon_is_laser_rifle {
-        laser_rifle_chainfire.ok_or_else(|| {
-          CommandError::InvalidCommand(
-            "higher Laser Rifle chainfire levels are deferred".to_string(),
-          )
-        })?
-      } else if chainfire && weapon_is_plasma_rifle {
-        plasma_rifle_chainfire.ok_or_else(|| {
-          CommandError::InvalidCommand(
-            "higher Plasma Rifle chainfire levels are deferred".to_string(),
-          )
-        })?
-      } else {
-        let shot_count = if chainfire {
-          if weapon_is_minigun {
-            MINIGUN_CHAINFIRE_PROJECTILE_COUNT
-          } else if weapon_is_plasma_rifle {
-            PLASMA_RIFLE_CHAINFIRE_PROJECTILE_COUNT
-          } else if weapon_is_laser_rifle {
-            LASER_RIFLE_CHAINFIRE_PROJECTILE_COUNT
-          } else if weapon_is_nuclear_plasma_rifle {
-            NUCLEAR_PLASMA_CHAINFIRE_PROJECTILE_COUNT
-          } else {
-            CHAINGUN_CHAINFIRE_PROJECTILE_COUNT
-          }
-        } else {
-          weapon.projectile_count()
-        };
-        // Keep emitted projectile count separate from typed clip cost (BFG
-        // families charge their evidence-backed per-projectile amounts).
-        (shot_count, shot_count.saturating_mul(weapon.shot_cost()))
+      let (shot_count, ammo_cost) = match chainfire_burst {
+        Some(burst) => (burst.projectile_count(), burst.ammo_cost()),
+        None => {
+          let shot_count = weapon.projectile_count();
+          // Keep emitted projectile count separate from typed clip cost (BFG
+          // families charge their evidence-backed per-projectile amounts).
+          (shot_count, shot_count.saturating_mul(weapon.shot_cost()))
+        }
       };
       if props.current_clip < ammo_cost {
         return Err(CommandError::NoAmmoInClip);
@@ -1916,11 +1820,6 @@ impl Game {
         weapon_is_bfg9000,
         weapon_is_nuclear_bfg9000,
         weapon_is_anti_freak_jackal,
-        weapon_is_chaingun,
-        weapon_is_minigun,
-        weapon_is_plasma_rifle,
-        weapon_is_laser_rifle,
-        weapon_is_nuclear_plasma_rifle,
       )
     };
 
@@ -2178,25 +2077,12 @@ impl Game {
     {
       weapon.reset_weapon_recharge_timer();
       weapon.mark_pump_action_after_fire();
-      if chainfire
-        && (weapon_is_bfg10k
-          || weapon_is_chaingun
-          || weapon_is_minigun
-          || weapon_is_plasma_rifle
-          || weapon_is_laser_rifle
-          || weapon_is_nuclear_plasma_rifle)
-      {
-        ChainfireTransition::advance(
-          weapon
-            .weapon_properties_mut()
-            .ok_or(CommandError::NoEquippedWeapon)?,
-        );
-      } else if !chainfire {
-        ChainfireTransition::reset(
-          weapon
-            .weapon_properties_mut()
-            .ok_or(CommandError::NoEquippedWeapon)?,
-        );
+      if let Some(properties) = weapon.weapon_properties_mut() {
+        properties.chainfire_level = if chainfire {
+          advance_level(properties.chainfire_level)
+        } else {
+          reset_level()
+        };
       }
     }
 

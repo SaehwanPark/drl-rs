@@ -1499,7 +1499,7 @@ fn chaingun_ordinary_fire_resets_chainfire_warmup() {
 }
 
 #[test]
-fn chaingun_fifteenth_chainfire_level_is_rejected_without_mutation() {
+fn chaingun_fifteenth_chainfire_level_uses_the_whole_rule() {
   let (mut game, _weapon_id) = equipped_chaingun(2_244);
   let target = Position::new(5, 2);
   game
@@ -1563,15 +1563,24 @@ fn chaingun_fifteenth_chainfire_level_is_rejected_without_mutation() {
   game
     .step(Command::AttackRangedChainfire(target))
     .expect("fourteenth chainfire burst");
-  let before = game.clone();
+  let player_id = game.world().player_id().unwrap();
 
+  game
+    .step(Command::AttackRangedChainfire(target))
+    .expect("sustained fifteenth chainfire burst");
   assert_eq!(
     game
-      .step(Command::AttackRangedChainfire(target))
-      .unwrap_err(),
-    CommandError::InvalidCommand("higher Chaingun chainfire levels are deferred".to_string())
+      .world()
+      .get_actor(player_id)
+      .unwrap()
+      .equipment()
+      .weapon()
+      .unwrap()
+      .weapon_properties()
+      .unwrap()
+      .chainfire_level,
+    15
   );
-  assert_eq!(game, before);
 }
 
 #[test]

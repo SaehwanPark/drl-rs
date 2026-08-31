@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-31
-Current project version: `0.2.320`
+Current project version: `0.2.321`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.320)
+## 3. Current Progress Summary (`VERSION` 0.2.321)
 
 ### Delivered Foundations
 
@@ -1203,6 +1203,14 @@ verification item uses explicit status semantics:
   checks cover exact V3 round trips, mismatch ordering, unbound legacy
   rejection, bounded malformed input, and actionable browser recovery;
   controlled human/browser capture remains `NOT_RUN` where unavailable.
+- **M9 whole-rule chainfire state model (`0.2.321`, candidate)**: The six
+  chainfire families now share one typed initial/warming/sustained/saturated
+  model with formula-derived projectile counts, aggregate ammunition costs,
+  saturating advancement, and ordinary-fire reset. Full-burst shortage
+  rejection remains atomic; direct core, replay, MCP, and BrowserSession
+  projections use the same model. All six families have saturated and
+  under-supply boundary vectors; independent review and hosted checks remain
+  pending at this checkpoint.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
@@ -1212,7 +1220,8 @@ verification item uses explicit status semantics:
 ### Active & Open Work
 
 - **Latest Audited Checkpoint:** `main` merge commit `b0a36fa`, merged PR #428,
-  and project version `0.2.320`. Repository and WASM/browser hosted checks
+  and project version `0.2.320`; the M9 candidate advances the working tree to
+  `0.2.321`. Repository and WASM/browser hosted checks
   passed for the delivered revision. Controlled human, audiovisual, and
   reference-capture surfaces remain `NOT_RUN` where prerequisites are
   unavailable. The checkpointed progression audit is
@@ -1228,11 +1237,12 @@ verification item uses explicit status semantics:
   identities; mismatches reject before command execution; V1/V2 tokens remain
   provenance-free and are rejected without migration. Native, WASM, headless
   browser, repository, and hosted checks passed for the merged revision.
-- **Next Eligible Slice (M9):** With M10 Gate A closed, consolidate chainfire
-  into one evidenced typed state model for initial, second, sustained, and
-  saturated states, including partial-ammunition policy, reset, target
-  continuation/routing, and weapon traits. Another PR whose primary outcome is
-  the next plateau level is ineligible.
+- **Active Candidate (M9):** With M10 Gate A closed, the working-tree
+  candidate consolidates chainfire into one evidenced typed state model for
+  initial, warming, sustained, and saturated states, including full-burst
+  ammunition policy, reset, target continuation, and an explicit future trait
+  boundary. Another PR whose primary outcome is the next plateau level is
+  ineligible; this candidate remains pending independent review and merge.
 - **Following Correctness Slice (M1/M11):** Measure accepted/rejected command
   throughput and allocation behavior, assign transaction ownership at the core
   and boundary layers, and remove redundant cloning or introduce prepared
