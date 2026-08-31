@@ -1,7 +1,7 @@
 # DRL Delivery Steering Gates
 
 Last reviewed: 2026-08-31
-Baseline: `main` at `262957e0d0471022a2128f8acba3120dd946f6e9`
+Baseline: `main` at `b0a36fab6e116f0e1b0ac2b06e62b14b52ad4951`
 
 ## Purpose
 
@@ -13,16 +13,17 @@ slice.
 If this file and the steering document diverge, the steering document is
 authoritative and delivery pauses until this reference is reconciled.
 
-## Gate A — Persistent histories bind their interpreter
+## Gate A — Persistent histories bind their interpreter (closed by M10)
 
 A slice that writes or restores a command history must bind the history to the
 gameplay, RNG-sampling, generator, ruleset/content, and fixed-session identities
 needed to interpret it. Validate compatibility before execution.
 
-Until browser snapshot V3 closes this gate, another replay-visible gameplay
-change is ineligible. Legacy tokens without semantic provenance must be
-rejected or covered by an explicit evidenced migration; do not assign them a
-current identity by assumption.
+M10 delivered this invariant in merged PR #428 (`b0a36fa`) with direct,
+browser-storage, and cross-version fixtures. Future replay-visible
+gameplay-semantics changes must preserve it. Legacy tokens without semantic
+provenance must be rejected or covered by an explicit evidenced migration; do
+not assign them a current identity by assumption.
 
 ## Gate B — Fidelity work closes a semantic branch
 

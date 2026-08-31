@@ -3,7 +3,7 @@
 Last reviewed: 2026-08-31
 Current project version: `0.2.320`
 Audited checkpoint: `main` at
-`262957e` (merged PR #427; branch input revision for this slice)
+`b0a36fa` (merged PR #428; post-merge revision for this slice)
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -196,10 +196,12 @@ recorded identities.
 - [x] Independent determinism review returns `pass` after comparing the active
   specification, implementation, tests, persistent-history identity, and
   rejection transaction.
-- [ ] `sh scripts/check-repository.sh` and `scripts/check-version.sh` pass; the
-  relevant hosted repository checks pass for the reviewed revision. Local
-  WASM-target and headless Chrome checks pass; hosted CI remains pending.
-- [ ] On delivery, roadmap, architecture, changelog, browser persistence notes,
+- [x] `sh scripts/check-repository.sh` and `scripts/check-version.sh` pass; the
+  relevant hosted repository and WASM/browser checks pass for the reviewed
+  merge revision `b0a36fa` (PR #428). Local WASM-target and headless Chrome
+  checks pass; controlled human, audiovisual, and reference-capture surfaces
+  remain `NOT_RUN` where their prerequisites are unavailable.
+- [x] On delivery, roadmap, architecture, changelog, browser persistence notes,
   and steering Gate A are reconciled from verified evidence.
 
 ### 2.9 Non-goals
