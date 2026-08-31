@@ -4,6 +4,8 @@ Last reviewed: 2026-08-31
 Current project version: `0.2.322`
 Audited starting checkpoint: `main` at
 `34f6df38652efaf92f2463257802c0d53dc05094` (merged PR #431; M9 delivered)
+Delivery checkpoint: `main` at
+`1cd423374801772e9d5643d579f2d3465e3f0cc5` (merged PR #432; Gate C closed)
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -22,6 +24,10 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
   the claim.
 
 ## 2. Active implementation slice: M1/M11 — Gate C transaction baseline
+
+Slice status: **delivered and verified** at the delivery checkpoint above.
+The next active slice will be selected after this reconciliation; this section
+remains the bounded specification for the just-delivered Gate C work.
 
 ### 2.1 Objective
 
@@ -96,21 +102,21 @@ At audited starting revision `34f6df3` (version `0.2.321`):
 
 ### 2.6 Acceptance criteria
 
-- [ ] A benchmark-only target runs with fixed fixtures and emits repeatable,
+- [x] A benchmark-only target runs with fixed fixtures and emits repeatable,
   machine-readable accepted/rejected throughput and allocation measurements.
-- [ ] Core rejected-command equality and RNG preservation remain covered by the
+- [x] Core rejected-command equality and RNG preservation remain covered by the
   existing command-atomicity matrix.
-- [ ] Removing the BrowserSession outer snapshot preserves rejected-session
+- [x] Removing the BrowserSession outer snapshot preserves rejected-session
   equality and accepted history/presentation behavior.
-- [ ] MCP candidate clones are documented as admission probes rather than
+- [x] MCP candidate clones are documented as admission probes rather than
   rollback snapshots, with no duplicate legality policy introduced.
-- [ ] The retained core snapshot has an explicit one-snapshot-per-command
+- [x] The retained core snapshot has an explicit one-snapshot-per-command
   budget and a documented prepare/commit exit condition.
-- [ ] Gameplay/replay/snapshot identities remain unchanged and no benchmark
+- [x] Gameplay/replay/snapshot identities remain unchanged and no benchmark
   dependency is added to production crates.
-- [ ] Local format, check, test, clippy, benchmark, repository, and version
+- [x] Local format, check, test, clippy, benchmark, repository, and version
   checks pass; relevant hosted checks pass for the reviewed merge revision.
-- [ ] Roadmap, README, architecture, changelog, browser guide, and steering
+- [x] Roadmap, README, architecture, changelog, browser guide, and steering
   records are reconciled from verified evidence; unavailable GPU, human,
   audiovisual, performance, and legacy captures remain `NOT_RUN`.
 

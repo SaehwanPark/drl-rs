@@ -1,7 +1,7 @@
 # DRL Delivery Steering Gates
 
 Last reviewed: 2026-08-31
-Baseline: `main` at `180f7dd2d350b11c114ae4f5fdbc27ba12d32829`
+Baseline: `main` at `1cd423374801772e9d5643d579f2d3465e3f0cc5`
 
 ## Purpose
 
@@ -39,8 +39,8 @@ Atomicity does not decide whether a partial action is accepted. It requires the
 chosen accepted or rejected result to commit as one transaction.
 
 M9 closes this gate for chainfire with six-family saturation and under-supply
-vectors, replay/MCP/BrowserSession parity, and independent review. Gate C is
-the next active stop gate.
+vectors, replay/MCP/BrowserSession parity, and independent review. M1/M11
+closes Gate C in merged PR #432; M0 control-plane work is next.
 
 ## Gate C — Rollback has an exit budget
 
@@ -53,11 +53,11 @@ Retain safety backstops until equivalent tests exist. Remove redundant outer
 rollback or migrate hot paths toward validate/prepare/commit only from measured
 evidence.
 
-The active `0.2.322` candidate supplies the benchmark, allocation counters,
-ownership map, BrowserSession outer-clone removal, and explicit core snapshot
-budget required for closure. Its Gate C status remains candidate-only until
-merge, hosted checks, and independent review are recorded against the audited
-main revision.
+M1/M11 closes this gate in merged PR #432 (`1cd4233`) at version `0.2.322`.
+The five-case benchmark supplies allocation counters and ownership evidence;
+the redundant BrowserSession outer clone is removed; and the core snapshot
+budget remains explicit. Local and hosted checks plus independent determinism
+and code reviews are recorded against the audited main revision.
 
 ## Gate D — Scope and review are auditable
 

@@ -1211,13 +1211,14 @@ verification item uses explicit status semantics:
   projections use the same model. All six families have saturated and
   under-supply boundary vectors; independent review and hosted checks pass for
   merged PR #430.
-- **M1/M11 Gate C transaction baseline (`0.2.322`, candidate)**: A
+- **M1/M11 Gate C transaction baseline (`0.2.322`, delivered in PR #432)**: A
   dependency-free benchmark target records fixed accepted and rejected
   `drl-core::Game::step` workloads with timing and allocation medians. The
   redundant `BrowserSession` outer simulation snapshot is removed; core
   rollback remains a documented one-snapshot backstop, MCP candidate clones
   are classified as fair-observation admission probes, and inventory staging
-  remains local. Merge and hosted-review reconciliation are pending.
+  remains local. Local and hosted checks pass, and independent determinism and
+  code reviews were reconciled against the merged main revision.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
@@ -1227,13 +1228,11 @@ verification item uses explicit status semantics:
 ### Active & Open Work
 
 - **Latest Audited Checkpoint:** `main` merge commit
-  `180f7dd2d350b11c114ae4f5fdbc27ba12d32829`, merged PR #430, and project
-  version `0.2.321`. The `0.2.322` Gate C transaction baseline is the active
-  candidate on a temporary branch and is not yet an audited main checkpoint.
-  Repository and WASM/browser hosted checks and independent determinism review
-  pass for the delivered revision. Controlled human, audiovisual, and
-  reference-capture surfaces remain `NOT_RUN` where prerequisites are
-  unavailable. The checkpointed progression audit is
+  `1cd423374801772e9d5643d579f2d3465e3f0cc5`, merged PR #432, and project
+  version `0.2.322`. Repository and WASM/browser hosted checks plus independent
+  determinism and code reviews pass for the delivered revision. Controlled
+  human, audiovisual, and reference-capture surfaces remain `NOT_RUN` where
+  prerequisites are unavailable. The checkpointed progression audit is
   [`docs/steering/audit-2026-08-30-post-0.2.318.md`](steering/audit-2026-08-30-post-0.2.318.md).
 - **Steering Disposition — Gate A closed:** Preserve the deterministic core,
   explicit RNG/replay identities, typed content, observation boundary, and
@@ -1256,15 +1255,16 @@ verification item uses explicit status semantics:
   warming, sustained, and saturated states, including full-burst ammunition
   policy, reset, target continuation, and an explicit future trait boundary.
   Another PR whose primary outcome is the next plateau level is ineligible.
-- **Following Correctness Slice (M1/M11):** Measure accepted/rejected command
-  throughput and allocation behavior, assign transaction ownership at the core
-  and boundary layers, and remove redundant cloning or introduce prepared
-  actions only with equivalent atomicity evidence.
-- **Active Candidate — M1/M11 Gate C (`0.2.322`):** The transaction baseline
-  benchmark, BrowserSession clone removal, exact rejected-session regression,
-  and ownership documentation are implemented on the review branch. Gate C
-  remains open until hosted checks and independent review are reconciled into
-  the audited main checkpoint.
+- **Delivered Slice — M1/M11 Gate C (`0.2.322`):** PR #432 records accepted
+  and rejected transaction throughput/allocation baselines, removes the
+  redundant BrowserSession outer snapshot, preserves the core rollback
+  backstop, and documents core/browser/MCP ownership. The five-case contract
+  benchmark, exact rejection matrix, browser regression, local checks, hosted
+  checks, and independent reviews are reconciled against main at
+  `1cd423374801772e9d5643d579f2d3465e3f0cc5`; Gate C is closed.
+- **Following Correctness Slice (M0):** Add a structural repository check that
+  keeps `SPEC.md` to one active slice and record/enforce the required
+  independent-review and branch-protection policy before 1.0.
 - **Process Gate (M0):** Keep `SPEC.md` bounded to one active slice and require
   an attributable independent determinism-review disposition for every
   replay-visible or legacy-fidelity slice. Record and enforce the repository's
@@ -1354,7 +1354,7 @@ Build the standalone, pure Rust game state and turn execution loop.
 - [x] Deterministic turn step execution (`Game::step`) with collision checks.
 - [x] Ordered simulation event stream (`GameEvent`).
 - [x] Replay execution engine (`ReplayEngine`) with bit-exact reproducibility.
-- [ ] Benchmark representative accepted/rejected command throughput and
+- [x] Benchmark representative accepted/rejected command throughput and
   allocations, assign transaction ownership at core and outer boundaries, and
   retire redundant full-state cloning without weakening exact rejection
   identity.
