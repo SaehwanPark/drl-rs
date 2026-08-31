@@ -580,7 +580,7 @@ fn laser_rifle_ordinary_fire_resets_chainfire_warmup() {
 }
 
 #[test]
-fn laser_rifle_eighth_chainfire_level_is_rejected_without_mutation() {
+fn laser_rifle_sustained_under_supply_remains_atomic() {
   let mut game = equipped_laser_rifle(2_543);
   let target = Position::new(5, 2);
   game
@@ -625,7 +625,7 @@ fn laser_rifle_eighth_chainfire_level_is_rejected_without_mutation() {
     game
       .step(Command::AttackRangedChainfire(target))
       .unwrap_err(),
-    CommandError::InvalidCommand("higher Laser Rifle chainfire levels are deferred".to_string())
+    CommandError::NoAmmoInClip
   );
   assert_eq!(game, before);
 }

@@ -492,7 +492,7 @@ fn nuclear_plasma_ordinary_fire_resets_chainfire_warmup() {
 }
 
 #[test]
-fn nuclear_plasma_eighth_chainfire_level_is_rejected_without_mutation() {
+fn nuclear_plasma_eighth_chainfire_level_uses_the_whole_rule() {
   let mut game = equipped_nuclear_plasma_rifle(2_643);
   let target = Position::new(5, 2);
   game
@@ -551,15 +551,23 @@ fn nuclear_plasma_eighth_chainfire_level_is_rejected_without_mutation() {
   game
     .step(Command::AttackRangedChainfire(target))
     .expect("seventh Nuclear Plasma chainfire burst");
-  let before = game.clone();
+  let player_id = game.world().player_id().unwrap();
 
-  assert_eq!(
-    game
-      .step(Command::AttackRangedChainfire(target))
-      .unwrap_err(),
-    CommandError::InvalidCommand("higher Nuclear Plasma chainfire levels are deferred".to_string())
-  );
-  assert_eq!(game, before);
+  let events = game
+    .step(Command::AttackRangedChainfire(target))
+    .expect("sustained Nuclear Plasma chainfire burst");
+  assert_eq!(ranged_events(&events, player_id), 9);
+  let properties = game
+    .world()
+    .player()
+    .unwrap()
+    .equipment()
+    .weapon()
+    .unwrap()
+    .weapon_properties()
+    .unwrap();
+  assert_eq!(properties.chainfire_level, 8);
+  assert_eq!(properties.current_clip, 6);
 }
 
 #[test]

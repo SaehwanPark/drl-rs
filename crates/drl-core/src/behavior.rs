@@ -200,9 +200,17 @@ pub enum KillEffect {
 /// Explicit alternate action families; behavior remains in dedicated handlers.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AlternateAction {
+  /// Resolve every continuation level through the unified chainfire model.
+  ChainfireModel { archetype: ItemArchetype },
   /// Fire a weapon's first-level chainfire burst.
+  ///
+  /// This compatibility form is retained for older profile consumers. New
+  /// profiles use [`Self::ChainfireModel`] so one model owns every level.
   Chainfire { shot_count: u32, ammo_cost: u32 },
   /// Fire a specific subsequent chainfire warm-up level.
+  ///
+  /// This compatibility form is retained for historical profile consumers;
+  /// it is no longer emitted by current behavior profiles.
   ChainfireLevel {
     level: u8,
     shot_count: u32,
@@ -612,101 +620,14 @@ pub const BFG10K_TWENTY_FIRST_CHAINFIRE_PROJECTILE_COUNT: u32 =
 pub const BFG10K_TWENTY_FIRST_CHAINFIRE_SHOT_COST: u32 =
   BFG10K_TWENTY_FIRST_CHAINFIRE_PROJECTILE_COUNT * BFG10K_SHOT_COST;
 
-/// Returns the bounded BFG 10K chainfire profile for a warm-up level.
+/// Returns the compatibility tuple for the unified BFG 10K chainfire model.
 ///
-/// The legacy level zero burst is four projectiles, level one is the full
-/// five-projectile volley, and levels two through twenty add half the
-/// configured shot count for seven projectiles. Twenty-second and later levels
-/// remain outside this slice.
+/// New execution code should use [`crate::chainfire::chainfire_profile`]
+/// directly. This adapter preserves the tuple-shaped API for callers that
+/// still consume the legacy behavior module.
 #[must_use]
 pub const fn bfg10k_chainfire_profile(level: u8) -> Option<(u32, u32)> {
-  match level {
-    0 => Some((
-      BFG10K_CHAINFIRE_PROJECTILE_COUNT,
-      BFG10K_CHAINFIRE_SHOT_COST,
-    )),
-    1 => Some((
-      BFG10K_SECOND_CHAINFIRE_PROJECTILE_COUNT,
-      BFG10K_SECOND_CHAINFIRE_SHOT_COST,
-    )),
-    2 => Some((
-      BFG10K_THIRD_CHAINFIRE_PROJECTILE_COUNT,
-      BFG10K_THIRD_CHAINFIRE_SHOT_COST,
-    )),
-    3 => Some((
-      BFG10K_FOURTH_CHAINFIRE_PROJECTILE_COUNT,
-      BFG10K_FOURTH_CHAINFIRE_SHOT_COST,
-    )),
-    4 => Some((
-      BFG10K_FIFTH_CHAINFIRE_PROJECTILE_COUNT,
-      BFG10K_FIFTH_CHAINFIRE_SHOT_COST,
-    )),
-    5 => Some((
-      BFG10K_SIXTH_CHAINFIRE_PROJECTILE_COUNT,
-      BFG10K_SIXTH_CHAINFIRE_SHOT_COST,
-    )),
-    6 => Some((
-      BFG10K_SEVENTH_CHAINFIRE_PROJECTILE_COUNT,
-      BFG10K_SEVENTH_CHAINFIRE_SHOT_COST,
-    )),
-    7 => Some((
-      BFG10K_EIGHTH_CHAINFIRE_PROJECTILE_COUNT,
-      BFG10K_EIGHTH_CHAINFIRE_SHOT_COST,
-    )),
-    8 => Some((
-      BFG10K_NINTH_CHAINFIRE_PROJECTILE_COUNT,
-      BFG10K_NINTH_CHAINFIRE_SHOT_COST,
-    )),
-    9 => Some((
-      BFG10K_TENTH_CHAINFIRE_PROJECTILE_COUNT,
-      BFG10K_TENTH_CHAINFIRE_SHOT_COST,
-    )),
-    10 => Some((
-      BFG10K_ELEVENTH_CHAINFIRE_PROJECTILE_COUNT,
-      BFG10K_ELEVENTH_CHAINFIRE_SHOT_COST,
-    )),
-    11 => Some((
-      BFG10K_TWELFTH_CHAINFIRE_PROJECTILE_COUNT,
-      BFG10K_TWELFTH_CHAINFIRE_SHOT_COST,
-    )),
-    12 => Some((
-      BFG10K_THIRTEENTH_CHAINFIRE_PROJECTILE_COUNT,
-      BFG10K_THIRTEENTH_CHAINFIRE_SHOT_COST,
-    )),
-    13 => Some((
-      BFG10K_FOURTEENTH_CHAINFIRE_PROJECTILE_COUNT,
-      BFG10K_FOURTEENTH_CHAINFIRE_SHOT_COST,
-    )),
-    14 => Some((
-      BFG10K_FIFTEENTH_CHAINFIRE_PROJECTILE_COUNT,
-      BFG10K_FIFTEENTH_CHAINFIRE_SHOT_COST,
-    )),
-    15 => Some((
-      BFG10K_SIXTEENTH_CHAINFIRE_PROJECTILE_COUNT,
-      BFG10K_SIXTEENTH_CHAINFIRE_SHOT_COST,
-    )),
-    16 => Some((
-      BFG10K_SEVENTEENTH_CHAINFIRE_PROJECTILE_COUNT,
-      BFG10K_SEVENTEENTH_CHAINFIRE_SHOT_COST,
-    )),
-    17 => Some((
-      BFG10K_EIGHTEENTH_CHAINFIRE_PROJECTILE_COUNT,
-      BFG10K_EIGHTEENTH_CHAINFIRE_SHOT_COST,
-    )),
-    18 => Some((
-      BFG10K_NINETEENTH_CHAINFIRE_PROJECTILE_COUNT,
-      BFG10K_NINETEENTH_CHAINFIRE_SHOT_COST,
-    )),
-    19 => Some((
-      BFG10K_TWENTIETH_CHAINFIRE_PROJECTILE_COUNT,
-      BFG10K_TWENTIETH_CHAINFIRE_SHOT_COST,
-    )),
-    20 => Some((
-      BFG10K_TWENTY_FIRST_CHAINFIRE_PROJECTILE_COUNT,
-      BFG10K_TWENTY_FIRST_CHAINFIRE_SHOT_COST,
-    )),
-    _ => None,
-  }
+  crate::chainfire::chainfire_profile_tuple(ItemArchetype::Bfg10k, level)
 }
 
 /// Pinned standard BFG 9000 delayed explosion interval.
@@ -736,109 +657,8 @@ const BFG10K_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
     ammo_type: AmmoType::Cell,
     amount: BFG10K_SHOT_COST,
   }),
-  BehaviorSpec::Alternate(AlternateAction::Chainfire {
-    shot_count: BFG10K_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: BFG10K_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 1,
-    shot_count: BFG10K_SECOND_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: BFG10K_SECOND_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 2,
-    shot_count: BFG10K_THIRD_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: BFG10K_THIRD_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 3,
-    shot_count: BFG10K_FOURTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: BFG10K_FOURTH_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 4,
-    shot_count: BFG10K_FIFTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: BFG10K_FIFTH_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 5,
-    shot_count: BFG10K_SIXTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: BFG10K_SIXTH_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 6,
-    shot_count: BFG10K_SEVENTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: BFG10K_SEVENTH_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 7,
-    shot_count: BFG10K_EIGHTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: BFG10K_EIGHTH_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 8,
-    shot_count: BFG10K_NINTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: BFG10K_NINTH_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 9,
-    shot_count: BFG10K_TENTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: BFG10K_TENTH_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 10,
-    shot_count: BFG10K_ELEVENTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: BFG10K_ELEVENTH_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 11,
-    shot_count: BFG10K_TWELFTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: BFG10K_TWELFTH_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 12,
-    shot_count: BFG10K_THIRTEENTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: BFG10K_THIRTEENTH_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 13,
-    shot_count: BFG10K_FOURTEENTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: BFG10K_FOURTEENTH_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 14,
-    shot_count: BFG10K_FIFTEENTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: BFG10K_FIFTEENTH_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 15,
-    shot_count: BFG10K_SIXTEENTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: BFG10K_SIXTEENTH_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 16,
-    shot_count: BFG10K_SEVENTEENTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: BFG10K_SEVENTEENTH_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 17,
-    shot_count: BFG10K_EIGHTEENTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: BFG10K_EIGHTEENTH_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 18,
-    shot_count: BFG10K_NINETEENTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: BFG10K_NINETEENTH_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 19,
-    shot_count: BFG10K_TWENTIETH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: BFG10K_TWENTIETH_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 20,
-    shot_count: BFG10K_TWENTY_FIRST_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: BFG10K_TWENTY_FIRST_CHAINFIRE_SHOT_COST,
+  BehaviorSpec::Alternate(AlternateAction::ChainfireModel {
+    archetype: ItemArchetype::Bfg10k,
   }),
 ];
 
@@ -891,28 +711,10 @@ pub const MINIGUN_THIRD_CHAINFIRE_PROJECTILE_COUNT: u32 =
 /// Pinned 9mm cost for the third Minigun chainfire level.
 pub const MINIGUN_THIRD_CHAINFIRE_SHOT_COST: u32 = MINIGUN_THIRD_CHAINFIRE_PROJECTILE_COUNT;
 
-/// Returns the bounded Minigun chainfire profile for a warm-up level.
-///
-/// The legacy eight-shot weapon emits six projectiles at level zero and its
-/// full eight-projectile volley at level one and twelve projectiles at level
-/// two; higher levels remain deferred.
+/// Returns the compatibility tuple for the unified Minigun chainfire model.
 #[must_use]
 pub const fn minigun_chainfire_profile(level: u8) -> Option<(u32, u32)> {
-  match level {
-    0 => Some((
-      MINIGUN_CHAINFIRE_PROJECTILE_COUNT,
-      MINIGUN_CHAINFIRE_SHOT_COST,
-    )),
-    1 => Some((
-      MINIGUN_SECOND_CHAINFIRE_PROJECTILE_COUNT,
-      MINIGUN_SECOND_CHAINFIRE_SHOT_COST,
-    )),
-    2 => Some((
-      MINIGUN_THIRD_CHAINFIRE_PROJECTILE_COUNT,
-      MINIGUN_THIRD_CHAINFIRE_SHOT_COST,
-    )),
-    _ => None,
-  }
+  crate::chainfire::chainfire_profile_tuple(ItemArchetype::Minigun, level)
 }
 
 const MINIGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
@@ -921,19 +723,8 @@ const MINIGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
     ammo_type: AmmoType::Ammo9mm,
     amount: 1,
   }),
-  BehaviorSpec::Alternate(AlternateAction::Chainfire {
-    shot_count: MINIGUN_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: MINIGUN_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 1,
-    shot_count: MINIGUN_SECOND_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: MINIGUN_SECOND_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 2,
-    shot_count: MINIGUN_THIRD_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: MINIGUN_THIRD_CHAINFIRE_SHOT_COST,
+  BehaviorSpec::Alternate(AlternateAction::ChainfireModel {
+    archetype: ItemArchetype::Minigun,
   }),
 ];
 
@@ -1009,72 +800,10 @@ pub const CHAINGUN_FOURTEENTH_CHAINFIRE_PROJECTILE_COUNT: u32 =
 pub const CHAINGUN_FOURTEENTH_CHAINFIRE_SHOT_COST: u32 =
   CHAINGUN_FOURTEENTH_CHAINFIRE_PROJECTILE_COUNT;
 
-/// Returns the bounded Chaingun chainfire profile for a warm-up level.
-///
-/// The legacy four-shot weapon emits three projectiles at level zero and its
-/// full four-projectile volley at level one, and six projectiles at levels two
-/// through thirteen; higher levels remain deferred.
+/// Returns the compatibility tuple for the unified Chaingun chainfire model.
 #[must_use]
 pub const fn chaingun_chainfire_profile(level: u8) -> Option<(u32, u32)> {
-  match level {
-    0 => Some((
-      crate::chaingun::CHAINGUN_CHAINFIRE_PROJECTILE_COUNT,
-      crate::chaingun::CHAINGUN_CHAINFIRE_SHOT_COST,
-    )),
-    1 => Some((
-      CHAINGUN_SECOND_CHAINFIRE_PROJECTILE_COUNT,
-      CHAINGUN_SECOND_CHAINFIRE_SHOT_COST,
-    )),
-    2 => Some((
-      CHAINGUN_THIRD_CHAINFIRE_PROJECTILE_COUNT,
-      CHAINGUN_THIRD_CHAINFIRE_SHOT_COST,
-    )),
-    3 => Some((
-      CHAINGUN_FOURTH_CHAINFIRE_PROJECTILE_COUNT,
-      CHAINGUN_FOURTH_CHAINFIRE_SHOT_COST,
-    )),
-    4 => Some((
-      CHAINGUN_FIFTH_CHAINFIRE_PROJECTILE_COUNT,
-      CHAINGUN_FIFTH_CHAINFIRE_SHOT_COST,
-    )),
-    5 => Some((
-      CHAINGUN_SIXTH_CHAINFIRE_PROJECTILE_COUNT,
-      CHAINGUN_SIXTH_CHAINFIRE_SHOT_COST,
-    )),
-    6 => Some((
-      CHAINGUN_SEVENTH_CHAINFIRE_PROJECTILE_COUNT,
-      CHAINGUN_SEVENTH_CHAINFIRE_SHOT_COST,
-    )),
-    7 => Some((
-      CHAINGUN_EIGHTH_CHAINFIRE_PROJECTILE_COUNT,
-      CHAINGUN_EIGHTH_CHAINFIRE_SHOT_COST,
-    )),
-    8 => Some((
-      CHAINGUN_NINTH_CHAINFIRE_PROJECTILE_COUNT,
-      CHAINGUN_NINTH_CHAINFIRE_SHOT_COST,
-    )),
-    9 => Some((
-      CHAINGUN_TENTH_CHAINFIRE_PROJECTILE_COUNT,
-      CHAINGUN_TENTH_CHAINFIRE_SHOT_COST,
-    )),
-    10 => Some((
-      CHAINGUN_ELEVENTH_CHAINFIRE_PROJECTILE_COUNT,
-      CHAINGUN_ELEVENTH_CHAINFIRE_SHOT_COST,
-    )),
-    11 => Some((
-      CHAINGUN_TWELFTH_CHAINFIRE_PROJECTILE_COUNT,
-      CHAINGUN_TWELFTH_CHAINFIRE_SHOT_COST,
-    )),
-    12 => Some((
-      CHAINGUN_THIRTEENTH_CHAINFIRE_PROJECTILE_COUNT,
-      CHAINGUN_THIRTEENTH_CHAINFIRE_SHOT_COST,
-    )),
-    13 => Some((
-      CHAINGUN_FOURTEENTH_CHAINFIRE_PROJECTILE_COUNT,
-      CHAINGUN_FOURTEENTH_CHAINFIRE_SHOT_COST,
-    )),
-    _ => None,
-  }
+  crate::chainfire::chainfire_profile_tuple(ItemArchetype::Chaingun, level)
 }
 
 const CHAINGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
@@ -1083,74 +812,8 @@ const CHAINGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
     ammo_type: AmmoType::Ammo9mm,
     amount: 1,
   }),
-  BehaviorSpec::Alternate(AlternateAction::Chainfire {
-    shot_count: crate::chaingun::CHAINGUN_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: crate::chaingun::CHAINGUN_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 1,
-    shot_count: CHAINGUN_SECOND_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: CHAINGUN_SECOND_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 2,
-    shot_count: CHAINGUN_THIRD_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: CHAINGUN_THIRD_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 3,
-    shot_count: CHAINGUN_FOURTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: CHAINGUN_FOURTH_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 4,
-    shot_count: CHAINGUN_FIFTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: CHAINGUN_FIFTH_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 5,
-    shot_count: CHAINGUN_SIXTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: CHAINGUN_SIXTH_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 6,
-    shot_count: CHAINGUN_SEVENTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: CHAINGUN_SEVENTH_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 7,
-    shot_count: CHAINGUN_EIGHTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: CHAINGUN_EIGHTH_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 8,
-    shot_count: CHAINGUN_NINTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: CHAINGUN_NINTH_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 9,
-    shot_count: CHAINGUN_TENTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: CHAINGUN_TENTH_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 10,
-    shot_count: CHAINGUN_ELEVENTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: CHAINGUN_ELEVENTH_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 11,
-    shot_count: CHAINGUN_TWELFTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: CHAINGUN_TWELFTH_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 12,
-    shot_count: CHAINGUN_THIRTEENTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: CHAINGUN_THIRTEENTH_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 13,
-    shot_count: CHAINGUN_FOURTEENTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: CHAINGUN_FOURTEENTH_CHAINFIRE_SHOT_COST,
+  BehaviorSpec::Alternate(AlternateAction::ChainfireModel {
+    archetype: ItemArchetype::Chaingun,
   }),
 ];
 
@@ -1196,44 +859,10 @@ pub const LASER_RIFLE_SEVENTH_CHAINFIRE_PROJECTILE_COUNT: u32 =
 pub const LASER_RIFLE_SEVENTH_CHAINFIRE_SHOT_COST: u32 =
   LASER_RIFLE_SEVENTH_CHAINFIRE_PROJECTILE_COUNT;
 
-/// Returns the bounded Laser Rifle chainfire profile for a warm-up level.
-///
-/// The legacy five-shot weapon emits four projectiles at level zero, its full
-/// five-projectile volley at level one, and seven projectiles at levels two
-/// through six; higher levels remain deferred.
+/// Returns the compatibility tuple for the unified Laser Rifle chainfire model.
 #[must_use]
 pub const fn laser_rifle_chainfire_profile(level: u8) -> Option<(u32, u32)> {
-  match level {
-    0 => Some((
-      LASER_RIFLE_CHAINFIRE_PROJECTILE_COUNT,
-      LASER_RIFLE_CHAINFIRE_SHOT_COST,
-    )),
-    1 => Some((
-      LASER_RIFLE_SECOND_CHAINFIRE_PROJECTILE_COUNT,
-      LASER_RIFLE_SECOND_CHAINFIRE_SHOT_COST,
-    )),
-    2 => Some((
-      LASER_RIFLE_THIRD_CHAINFIRE_PROJECTILE_COUNT,
-      LASER_RIFLE_THIRD_CHAINFIRE_SHOT_COST,
-    )),
-    3 => Some((
-      LASER_RIFLE_FOURTH_CHAINFIRE_PROJECTILE_COUNT,
-      LASER_RIFLE_FOURTH_CHAINFIRE_SHOT_COST,
-    )),
-    4 => Some((
-      LASER_RIFLE_FIFTH_CHAINFIRE_PROJECTILE_COUNT,
-      LASER_RIFLE_FIFTH_CHAINFIRE_SHOT_COST,
-    )),
-    5 => Some((
-      LASER_RIFLE_SIXTH_CHAINFIRE_PROJECTILE_COUNT,
-      LASER_RIFLE_SIXTH_CHAINFIRE_SHOT_COST,
-    )),
-    6 => Some((
-      LASER_RIFLE_SEVENTH_CHAINFIRE_PROJECTILE_COUNT,
-      LASER_RIFLE_SEVENTH_CHAINFIRE_SHOT_COST,
-    )),
-    _ => None,
-  }
+  crate::chainfire::chainfire_profile_tuple(ItemArchetype::LaserRifle, level)
 }
 
 const LASER_RIFLE_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
@@ -1242,39 +871,8 @@ const LASER_RIFLE_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
     ammo_type: AmmoType::Cell,
     amount: 1,
   }),
-  BehaviorSpec::Alternate(AlternateAction::Chainfire {
-    shot_count: LASER_RIFLE_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: LASER_RIFLE_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 1,
-    shot_count: LASER_RIFLE_SECOND_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: LASER_RIFLE_SECOND_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 2,
-    shot_count: LASER_RIFLE_THIRD_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: LASER_RIFLE_THIRD_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 3,
-    shot_count: LASER_RIFLE_FOURTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: LASER_RIFLE_FOURTH_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 4,
-    shot_count: LASER_RIFLE_FIFTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: LASER_RIFLE_FIFTH_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 5,
-    shot_count: LASER_RIFLE_SIXTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: LASER_RIFLE_SIXTH_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 6,
-    shot_count: LASER_RIFLE_SEVENTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: LASER_RIFLE_SEVENTH_CHAINFIRE_SHOT_COST,
+  BehaviorSpec::Alternate(AlternateAction::ChainfireModel {
+    archetype: ItemArchetype::LaserRifle,
   }),
 ];
 
@@ -1404,23 +1002,10 @@ pub const PLASMA_RIFLE_CHAINFIRE_SHOT_COST: u32 = 4;
 pub const PLASMA_RIFLE_SECOND_CHAINFIRE_SHOT_COST: u32 =
   PLASMA_RIFLE_SECOND_CHAINFIRE_PROJECTILE_COUNT * PLASMA_RIFLE_SHOT_COST;
 
-/// Returns the bounded Plasma Rifle chainfire profile for a warm-up level.
-///
-/// The legacy six-shot weapon emits four projectiles at level zero and its
-/// full six-projectile volley at level one; higher levels remain deferred.
+/// Returns the compatibility tuple for the unified Plasma Rifle chainfire model.
 #[must_use]
 pub const fn plasma_rifle_chainfire_profile(level: u8) -> Option<(u32, u32)> {
-  match level {
-    0 => Some((
-      PLASMA_RIFLE_CHAINFIRE_PROJECTILE_COUNT,
-      PLASMA_RIFLE_CHAINFIRE_SHOT_COST,
-    )),
-    1 => Some((
-      PLASMA_RIFLE_SECOND_CHAINFIRE_PROJECTILE_COUNT,
-      PLASMA_RIFLE_SECOND_CHAINFIRE_SHOT_COST,
-    )),
-    _ => None,
-  }
+  crate::chainfire::chainfire_profile_tuple(ItemArchetype::PlasmaRifle, level)
 }
 
 const PLASMA_RIFLE_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
@@ -1429,14 +1014,8 @@ const PLASMA_RIFLE_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
     ammo_type: AmmoType::Cell,
     amount: PLASMA_RIFLE_SHOT_COST,
   }),
-  BehaviorSpec::Alternate(AlternateAction::Chainfire {
-    shot_count: PLASMA_RIFLE_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: PLASMA_RIFLE_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 1,
-    shot_count: PLASMA_RIFLE_SECOND_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: PLASMA_RIFLE_SECOND_CHAINFIRE_SHOT_COST,
+  BehaviorSpec::Alternate(AlternateAction::ChainfireModel {
+    archetype: ItemArchetype::PlasmaRifle,
   }),
 ];
 
@@ -1584,43 +1163,11 @@ pub const NUCLEAR_PLASMA_SIXTH_CHAINFIRE_SHOT_COST: u32 =
 pub const NUCLEAR_PLASMA_SEVENTH_CHAINFIRE_SHOT_COST: u32 =
   NUCLEAR_PLASMA_SEVENTH_CHAINFIRE_PROJECTILE_COUNT * NUCLEAR_PLASMA_SHOT_COST;
 
-/// Returns the bounded Nuclear Plasma Rifle chainfire profile for a warm-up
-/// level. The legacy six-shot weapon emits four projectiles at level zero, its
-/// full six-projectile volley at level one, and nine projectiles at levels two
-/// through six; higher levels remain deferred.
+/// Returns the compatibility tuple for the unified Nuclear Plasma Rifle
+/// chainfire model.
 #[must_use]
 pub const fn nuclear_plasma_chainfire_profile(level: u8) -> Option<(u32, u32)> {
-  match level {
-    0 => Some((
-      NUCLEAR_PLASMA_CHAINFIRE_PROJECTILE_COUNT,
-      NUCLEAR_PLASMA_CHAINFIRE_SHOT_COST,
-    )),
-    1 => Some((
-      NUCLEAR_PLASMA_SECOND_CHAINFIRE_PROJECTILE_COUNT,
-      NUCLEAR_PLASMA_SECOND_CHAINFIRE_SHOT_COST,
-    )),
-    2 => Some((
-      NUCLEAR_PLASMA_THIRD_CHAINFIRE_PROJECTILE_COUNT,
-      NUCLEAR_PLASMA_THIRD_CHAINFIRE_SHOT_COST,
-    )),
-    3 => Some((
-      NUCLEAR_PLASMA_FOURTH_CHAINFIRE_PROJECTILE_COUNT,
-      NUCLEAR_PLASMA_FOURTH_CHAINFIRE_SHOT_COST,
-    )),
-    4 => Some((
-      NUCLEAR_PLASMA_FIFTH_CHAINFIRE_PROJECTILE_COUNT,
-      NUCLEAR_PLASMA_FIFTH_CHAINFIRE_SHOT_COST,
-    )),
-    5 => Some((
-      NUCLEAR_PLASMA_SIXTH_CHAINFIRE_PROJECTILE_COUNT,
-      NUCLEAR_PLASMA_SIXTH_CHAINFIRE_SHOT_COST,
-    )),
-    6 => Some((
-      NUCLEAR_PLASMA_SEVENTH_CHAINFIRE_PROJECTILE_COUNT,
-      NUCLEAR_PLASMA_SEVENTH_CHAINFIRE_SHOT_COST,
-    )),
-    _ => None,
-  }
+  crate::chainfire::chainfire_profile_tuple(ItemArchetype::NuclearPlasmaRifle, level)
 }
 
 const NUCLEAR_PLASMA_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
@@ -1631,39 +1178,8 @@ const NUCLEAR_PLASMA_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
     ammo_type: AmmoType::Cell,
     amount: NUCLEAR_PLASMA_SHOT_COST,
   }),
-  BehaviorSpec::Alternate(AlternateAction::Chainfire {
-    shot_count: NUCLEAR_PLASMA_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: NUCLEAR_PLASMA_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 1,
-    shot_count: NUCLEAR_PLASMA_SECOND_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: NUCLEAR_PLASMA_SECOND_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 2,
-    shot_count: NUCLEAR_PLASMA_THIRD_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: NUCLEAR_PLASMA_THIRD_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 3,
-    shot_count: NUCLEAR_PLASMA_FOURTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: NUCLEAR_PLASMA_FOURTH_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 4,
-    shot_count: NUCLEAR_PLASMA_FIFTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: NUCLEAR_PLASMA_FIFTH_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 5,
-    shot_count: NUCLEAR_PLASMA_SIXTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: NUCLEAR_PLASMA_SIXTH_CHAINFIRE_SHOT_COST,
-  }),
-  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-    level: 6,
-    shot_count: NUCLEAR_PLASMA_SEVENTH_CHAINFIRE_PROJECTILE_COUNT,
-    ammo_cost: NUCLEAR_PLASMA_SEVENTH_CHAINFIRE_SHOT_COST,
+  BehaviorSpec::Alternate(AlternateAction::ChainfireModel {
+    archetype: ItemArchetype::NuclearPlasmaRifle,
   }),
   BehaviorSpec::Alternate(AlternateAction::Overload),
   BehaviorSpec::Periodic(PeriodicEffect::Recharge {
@@ -2250,7 +1766,13 @@ mod tests {
         BFG10K_TWENTY_FIRST_CHAINFIRE_SHOT_COST,
       ))
     );
-    assert_eq!(bfg10k_chainfire_profile(21), None);
+    assert_eq!(
+      bfg10k_chainfire_profile(21),
+      Some((
+        BFG10K_THIRD_CHAINFIRE_PROJECTILE_COUNT,
+        BFG10K_THIRD_CHAINFIRE_SHOT_COST,
+      ))
+    );
   }
 
   #[test]
@@ -2304,7 +1826,13 @@ mod tests {
         NUCLEAR_PLASMA_SEVENTH_CHAINFIRE_SHOT_COST,
       ))
     );
-    assert_eq!(nuclear_plasma_chainfire_profile(7), None);
+    assert_eq!(
+      nuclear_plasma_chainfire_profile(7),
+      Some((
+        NUCLEAR_PLASMA_THIRD_CHAINFIRE_PROJECTILE_COUNT,
+        NUCLEAR_PLASMA_THIRD_CHAINFIRE_SHOT_COST,
+      ))
+    );
   }
 
   #[test]
@@ -2407,7 +1935,13 @@ mod tests {
         CHAINGUN_FOURTEENTH_CHAINFIRE_SHOT_COST,
       ))
     );
-    assert_eq!(chaingun_chainfire_profile(14), None);
+    assert_eq!(
+      chaingun_chainfire_profile(14),
+      Some((
+        CHAINGUN_THIRD_CHAINFIRE_PROJECTILE_COUNT,
+        CHAINGUN_THIRD_CHAINFIRE_SHOT_COST,
+      ))
+    );
   }
 
   #[test]
@@ -2433,7 +1967,13 @@ mod tests {
         MINIGUN_THIRD_CHAINFIRE_SHOT_COST,
       ))
     );
-    assert_eq!(minigun_chainfire_profile(3), None);
+    assert_eq!(
+      minigun_chainfire_profile(3),
+      Some((
+        MINIGUN_THIRD_CHAINFIRE_PROJECTILE_COUNT,
+        MINIGUN_THIRD_CHAINFIRE_SHOT_COST,
+      ))
+    );
   }
 
   #[test]
@@ -2452,7 +1992,7 @@ mod tests {
         PLASMA_RIFLE_SECOND_CHAINFIRE_SHOT_COST,
       ))
     );
-    assert_eq!(plasma_rifle_chainfire_profile(2), None);
+    assert_eq!(plasma_rifle_chainfire_profile(2), Some((9, 9)));
   }
 
   #[test]
@@ -2506,7 +2046,13 @@ mod tests {
         LASER_RIFLE_SEVENTH_CHAINFIRE_SHOT_COST,
       ))
     );
-    assert_eq!(laser_rifle_chainfire_profile(7), None);
+    assert_eq!(
+      laser_rifle_chainfire_profile(7),
+      Some((
+        LASER_RIFLE_THIRD_CHAINFIRE_PROJECTILE_COUNT,
+        LASER_RIFLE_THIRD_CHAINFIRE_SHOT_COST,
+      ))
+    );
   }
 
   #[test]
@@ -2690,109 +2236,8 @@ mod tests {
           ammo_type: AmmoType::Cell,
           amount: BFG10K_SHOT_COST,
         }),
-        BehaviorSpec::Alternate(AlternateAction::Chainfire {
-          shot_count: BFG10K_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: BFG10K_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 1,
-          shot_count: BFG10K_SECOND_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: BFG10K_SECOND_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 2,
-          shot_count: BFG10K_THIRD_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: BFG10K_THIRD_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 3,
-          shot_count: BFG10K_FOURTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: BFG10K_FOURTH_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 4,
-          shot_count: BFG10K_FIFTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: BFG10K_FIFTH_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 5,
-          shot_count: BFG10K_SIXTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: BFG10K_SIXTH_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 6,
-          shot_count: BFG10K_SEVENTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: BFG10K_SEVENTH_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 7,
-          shot_count: BFG10K_EIGHTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: BFG10K_EIGHTH_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 8,
-          shot_count: BFG10K_NINTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: BFG10K_NINTH_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 9,
-          shot_count: BFG10K_TENTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: BFG10K_TENTH_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 10,
-          shot_count: BFG10K_ELEVENTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: BFG10K_ELEVENTH_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 11,
-          shot_count: BFG10K_TWELFTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: BFG10K_TWELFTH_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 12,
-          shot_count: BFG10K_THIRTEENTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: BFG10K_THIRTEENTH_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 13,
-          shot_count: BFG10K_FOURTEENTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: BFG10K_FOURTEENTH_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 14,
-          shot_count: BFG10K_FIFTEENTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: BFG10K_FIFTEENTH_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 15,
-          shot_count: BFG10K_SIXTEENTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: BFG10K_SIXTEENTH_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 16,
-          shot_count: BFG10K_SEVENTEENTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: BFG10K_SEVENTEENTH_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 17,
-          shot_count: BFG10K_EIGHTEENTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: BFG10K_EIGHTEENTH_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 18,
-          shot_count: BFG10K_NINETEENTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: BFG10K_NINETEENTH_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 19,
-          shot_count: BFG10K_TWENTIETH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: BFG10K_TWENTIETH_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 20,
-          shot_count: BFG10K_TWENTY_FIRST_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: BFG10K_TWENTY_FIRST_CHAINFIRE_SHOT_COST,
+        BehaviorSpec::Alternate(AlternateAction::ChainfireModel {
+          archetype: ItemArchetype::Bfg10k,
         }),
       ]
     );
@@ -2844,39 +2289,8 @@ mod tests {
           ammo_type: AmmoType::Cell,
           amount: NUCLEAR_PLASMA_SHOT_COST,
         }),
-        BehaviorSpec::Alternate(AlternateAction::Chainfire {
-          shot_count: NUCLEAR_PLASMA_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: NUCLEAR_PLASMA_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 1,
-          shot_count: NUCLEAR_PLASMA_SECOND_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: NUCLEAR_PLASMA_SECOND_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 2,
-          shot_count: NUCLEAR_PLASMA_THIRD_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: NUCLEAR_PLASMA_THIRD_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 3,
-          shot_count: NUCLEAR_PLASMA_FOURTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: NUCLEAR_PLASMA_FOURTH_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 4,
-          shot_count: NUCLEAR_PLASMA_FIFTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: NUCLEAR_PLASMA_FIFTH_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 5,
-          shot_count: NUCLEAR_PLASMA_SIXTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: NUCLEAR_PLASMA_SIXTH_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 6,
-          shot_count: NUCLEAR_PLASMA_SEVENTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: NUCLEAR_PLASMA_SEVENTH_CHAINFIRE_SHOT_COST,
+        BehaviorSpec::Alternate(AlternateAction::ChainfireModel {
+          archetype: ItemArchetype::NuclearPlasmaRifle,
         }),
         BehaviorSpec::Alternate(AlternateAction::Overload),
         BehaviorSpec::Periodic(PeriodicEffect::Recharge {
@@ -3024,19 +2438,8 @@ mod tests {
           ammo_type: AmmoType::Ammo9mm,
           amount: 1,
         }),
-        BehaviorSpec::Alternate(AlternateAction::Chainfire {
-          shot_count: 6,
-          ammo_cost: 6,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 1,
-          shot_count: MINIGUN_SECOND_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: MINIGUN_SECOND_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 2,
-          shot_count: MINIGUN_THIRD_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: MINIGUN_THIRD_CHAINFIRE_SHOT_COST,
+        BehaviorSpec::Alternate(AlternateAction::ChainfireModel {
+          archetype: ItemArchetype::Minigun,
         }),
       ]
     );
@@ -3048,74 +2451,8 @@ mod tests {
           ammo_type: AmmoType::Ammo9mm,
           amount: 1,
         }),
-        BehaviorSpec::Alternate(AlternateAction::Chainfire {
-          shot_count: crate::chaingun::CHAINGUN_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: crate::chaingun::CHAINGUN_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 1,
-          shot_count: CHAINGUN_SECOND_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: CHAINGUN_SECOND_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 2,
-          shot_count: CHAINGUN_THIRD_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: CHAINGUN_THIRD_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 3,
-          shot_count: CHAINGUN_FOURTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: CHAINGUN_FOURTH_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 4,
-          shot_count: CHAINGUN_FIFTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: CHAINGUN_FIFTH_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 5,
-          shot_count: CHAINGUN_SIXTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: CHAINGUN_SIXTH_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 6,
-          shot_count: CHAINGUN_SEVENTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: CHAINGUN_SEVENTH_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 7,
-          shot_count: CHAINGUN_EIGHTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: CHAINGUN_EIGHTH_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 8,
-          shot_count: CHAINGUN_NINTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: CHAINGUN_NINTH_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 9,
-          shot_count: CHAINGUN_TENTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: CHAINGUN_TENTH_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 10,
-          shot_count: CHAINGUN_ELEVENTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: CHAINGUN_ELEVENTH_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 11,
-          shot_count: CHAINGUN_TWELFTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: CHAINGUN_TWELFTH_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 12,
-          shot_count: CHAINGUN_THIRTEENTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: CHAINGUN_THIRTEENTH_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 13,
-          shot_count: CHAINGUN_FOURTEENTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: CHAINGUN_FOURTEENTH_CHAINFIRE_SHOT_COST,
+        BehaviorSpec::Alternate(AlternateAction::ChainfireModel {
+          archetype: ItemArchetype::Chaingun,
         }),
       ]
     );
@@ -3127,39 +2464,8 @@ mod tests {
           ammo_type: AmmoType::Cell,
           amount: 1,
         }),
-        BehaviorSpec::Alternate(AlternateAction::Chainfire {
-          shot_count: LASER_RIFLE_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: LASER_RIFLE_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 1,
-          shot_count: LASER_RIFLE_SECOND_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: LASER_RIFLE_SECOND_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 2,
-          shot_count: LASER_RIFLE_THIRD_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: LASER_RIFLE_THIRD_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 3,
-          shot_count: LASER_RIFLE_FOURTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: LASER_RIFLE_FOURTH_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 4,
-          shot_count: LASER_RIFLE_FIFTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: LASER_RIFLE_FIFTH_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 5,
-          shot_count: LASER_RIFLE_SIXTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: LASER_RIFLE_SIXTH_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 6,
-          shot_count: LASER_RIFLE_SEVENTH_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: LASER_RIFLE_SEVENTH_CHAINFIRE_SHOT_COST,
+        BehaviorSpec::Alternate(AlternateAction::ChainfireModel {
+          archetype: ItemArchetype::LaserRifle,
         }),
       ]
     );
@@ -3238,14 +2544,8 @@ mod tests {
           ammo_type: AmmoType::Cell,
           amount: PLASMA_RIFLE_SHOT_COST,
         }),
-        BehaviorSpec::Alternate(AlternateAction::Chainfire {
-          shot_count: PLASMA_RIFLE_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: PLASMA_RIFLE_CHAINFIRE_SHOT_COST,
-        }),
-        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
-          level: 1,
-          shot_count: PLASMA_RIFLE_SECOND_CHAINFIRE_PROJECTILE_COUNT,
-          ammo_cost: PLASMA_RIFLE_SECOND_CHAINFIRE_SHOT_COST,
+        BehaviorSpec::Alternate(AlternateAction::ChainfireModel {
+          archetype: ItemArchetype::PlasmaRifle,
         }),
       ]
     );

@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-31
-Current project version: `0.2.320`
+Current project version: `0.2.321`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -40,46 +40,28 @@ Typed behavior profiles remain immutable compile-time descriptions. Acid Spitter
 records its typed one-projectile ordinary-fire and ten-rocket ammo-cost
 fragments alongside its Acid-to-Water terrain-reload and score-cost fragments;
 Mega Buster records its typed three-projectile ordinary-fire and three-round
-per-projectile ammo-cost fragments;
-Grammaton records its typed Single/Burst/Auto mode and score-cost fragments; Jackhammer
-records its typed Burst/Single mode and score-cost fragments; Lava Armor records
-its typed terrain-gated durability-recharge fragment; Malek's Armor records its
-typed durability-recharge fragment; Blaster records its
-typed one-projectile ordinary-fire, one-cell cost, shared aimed-fire (+3
-accuracy, 2× action-cost), and periodic-recharge fragments; Missile Launcher records its typed ordinary
-single-rocket reload and capped full-deficit reload fragments; Combat Shotgun
-records its typed pump-only chamber action (200 units), ordinary single-shell
-reload, and capped full-deficit reload fragments; Double Shotgun records its
-typed two-projectile dual-shot and two-shell ammo-cost fragments; Super Shotgun
-records its typed two-projectile dual-shot and two-shell aggregate ammo-cost
-fragments; Minigun records its typed eight-projectile ordinary-fire and
-one-round-per-projectile ammo-cost fragments plus bounded first-, second-, and
-third-level six-, eight-, and twelve-projectile chainfire transitions;
-Chaingun records its typed four-projectile ordinary-fire and
-one-round-per-projectile ammo-cost fragments plus bounded first-, second-,
-third-, fourth-, fifth-, sixth-, seventh-, eighth-, ninth-, tenth-, eleventh-,
-twelfth-, thirteenth-, and fourteenth-level three-, four-, six-, six-, six-,
-six-, six-, six-, six-, and six-projectile
-chainfire transitions;
-Plasma
-Rifle records its typed six-projectile ordinary-fire and one-cell-per-projectile
-ammo-cost fragments plus bounded first-level four-projectile/four-cell and
-second-level six-projectile/six-cell chainfire transitions; Laser Rifle records
-its typed five-projectile ordinary-fire and
-one-cell-per-projectile ammo-cost fragments plus bounded first-, second-,
-third-, fourth-, fifth-, sixth-, and seventh-level four-, five-, seven-,
-seven-, seven-, seven-, and seven-projectile chainfire transitions; Nuclear
-Plasma Rifle records its typed
-six-projectile ordinary-fire, one-cell-per-projectile, overload, and recharge
-fragments plus bounded first-, second-, third-, fourth-, fifth-, sixth-, and
-seventh-level four-, six-, nine-, nine-, nine-, nine-, and nine-projectile
-chainfire transitions;
-BFG 10K records its typed exact-hit, five-projectile ordinary-fire,
-five-cell-per-projectile, delayed-explosion, and bounded first-level
-four-projectile/twenty-cell, second-level five-projectile/twenty-five-cell, and
-third-, fourth-, fifth-, sixth-, seventh-, eighth-, ninth-, tenth-, eleventh-, twelfth-, thirteenth-, fourteenth-, fifteenth-, sixteenth-, seventeenth-, eighteenth-, nineteenth-, twentieth-, and twenty-first-level seven-projectile/thirty-five-cell
-chainfire fragments
-plus its bounded radius-2 actor-only explosion fanout and thresholded
+per-projectile ammo-cost fragments; Grammaton records its typed Single/Burst/Auto
+mode and score-cost fragments; Jackhammer records its typed Burst/Single mode
+and score-cost fragments; Lava Armor records its typed terrain-gated
+durability-recharge fragment; Malek's Armor records its typed durability-recharge
+fragment; Blaster records its typed one-projectile ordinary-fire, one-cell cost,
+shared aimed-fire (+3 accuracy, 2× action-cost), and periodic-recharge fragments;
+Missile Launcher records its typed ordinary single-rocket reload and capped
+full-deficit reload fragments; Combat Shotgun records its typed pump-only
+chamber action (200 units), ordinary single-shell reload, and capped full-deficit
+reload fragments; Double Shotgun records its typed two-projectile dual-shot and
+two-shell ammo-cost fragments; Super Shotgun records its typed two-projectile
+dual-shot and two-shell aggregate ammo-cost fragments. The six chainfire
+families (Minigun, Chaingun, Plasma Rifle, Laser Rifle, Nuclear Plasma Rifle,
+and BFG 10K) share the core-owned `drl_core::chainfire` model: one ordinary
+projectile count and per-projectile cost feed initial (`0`), warming (`1`),
+sustained (`2..=254`), and saturated (`255`) states. The model applies
+`n - n div 3` at initial, `n` while warming, and `n + n div 2` for sustained
+and saturated bursts, then multiplies by the typed per-projectile cost. A
+complete burst is validated before clip/RNG mutation, accepted bursts advance
+the state with saturating arithmetic, and ordinary fire resets it; MCP and
+browser projections call this same model. BFG 10K additionally records its
+typed exact-hit, delayed-explosion, radius-2 actor fanout, and thresholded
 ordinary-ammo destruction;
 Standard BFG 9000 records its typed exact-hit, one-projectile,
 forty-cell-per-shot, and delayed-explosion fragments plus its bounded radius-8
@@ -110,12 +92,12 @@ Assault Shotgun records its typed ordinary single-shell reload and
 capped full-deficit reload fragments;
 Revenant's Launcher records its typed
 exact-hit attack fragment;
-Nuclear Plasma records its typed first-, second-, third-, fourth-, fifth-, sixth-, and seventh-level chainfire,
-alternate-overload, and periodic-recharge fragments; the BFG family profiles
-record exact-hit, typed projectile-count,
+Nuclear Plasma records its typed alternate-overload and periodic-recharge
+fragments; the BFG family profiles record exact-hit, typed projectile-count,
 ammunition-cost, and delayed-explosion metadata. Dedicated runtime command
-paths remain the execution authority; higher chainfire levels, scatter, and
-projectile routing are not inferred from these profiles.
+paths remain the execution authority; legacy partial-ammo fallback, rotational
+target routing, trait callbacks, scatter, and projectile routing are not
+inferred from the typed model.
 
 ---
 

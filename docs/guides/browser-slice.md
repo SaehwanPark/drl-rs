@@ -51,6 +51,11 @@ graph LR
 - **Target Indicator**: Shows active target name, health state, and range.
 - **Minimap**: High-contrast text/ASCII explored map projection for quick orientation and screen readers.
 
+Chainfire-capable weapons share the core's typed whole-rule model. The `C`
+control projects the current initial, warming, sustained, or saturated burst;
+the displayed ammunition requirement is the full aggregate cost, and a
+shortage rejects the command without changing the session or random stream.
+
 ---
 
 ## 📴 Offline PWA & Service Worker Support

@@ -323,7 +323,7 @@ fn minigun_ordinary_fire_resets_chainfire_warmup() {
 }
 
 #[test]
-fn minigun_higher_chainfire_level_is_rejected_without_mutation() {
+fn minigun_sustained_chainfire_level_uses_the_whole_rule() {
   let mut game = equipped_minigun(2_343);
   let target = Position::new(5, 2);
   game
@@ -339,15 +339,70 @@ fn minigun_higher_chainfire_level_is_rejected_without_mutation() {
   game
     .step(Command::AttackRangedChainfire(target))
     .expect("third Minigun chainfire burst");
-  let before = game.clone();
+  let player_id = game.world().player_id().unwrap();
 
-  assert_eq!(
-    game
-      .step(Command::AttackRangedChainfire(target))
-      .unwrap_err(),
-    CommandError::InvalidCommand("higher Minigun chainfire levels are deferred".to_string())
-  );
-  assert_eq!(game, before);
+  let events = game
+    .step(Command::AttackRangedChainfire(target))
+    .expect("sustained Minigun chainfire burst");
+  assert_eq!(ranged_events(&events, player_id), 12);
+  let properties = game
+    .world()
+    .player()
+    .unwrap()
+    .equipment()
+    .weapon()
+    .unwrap()
+    .weapon_properties()
+    .unwrap();
+  assert_eq!(properties.chainfire_level, 4);
+  assert_eq!(properties.current_clip, 162);
+}
+
+#[test]
+fn minigun_saturated_chainfire_uses_the_whole_rule_and_keeps_state_saturated() {
+  let mut game = equipped_minigun(2_344);
+  let target = Position::new(5, 2);
+  let player_id = game.world().player_id().unwrap();
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .chainfire_level = u8::MAX;
+  game
+    .world_mut()
+    .get_actor_mut(player_id)
+    .unwrap()
+    .equipment_mut()
+    .weapon_mut()
+    .unwrap()
+    .weapon_properties_mut()
+    .unwrap()
+    .current_clip = 12;
+  game
+    .world_mut()
+    .spawn_monster(target, "Static Target", 10_000, 0, (1, 6))
+    .unwrap();
+
+  let events = game
+    .step(Command::AttackRangedChainfire(target))
+    .expect("saturated Minigun chainfire burst");
+  let properties = game
+    .world()
+    .player()
+    .unwrap()
+    .equipment()
+    .weapon()
+    .unwrap()
+    .weapon_properties()
+    .unwrap();
+  assert_eq!(ranged_events(&events, player_id), 12);
+  assert_eq!(properties.current_clip, 0);
+  assert_eq!(properties.chainfire_level, u8::MAX);
 }
 
 #[test]

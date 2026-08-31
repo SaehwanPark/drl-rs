@@ -1274,7 +1274,7 @@ fn bfg10k_ordinary_fire_resets_chainfire_warmup() {
 }
 
 #[test]
-fn bfg10k_twenty_second_chainfire_level_is_rejected_without_mutation() {
+fn bfg10k_twenty_second_chainfire_under_supply_remains_atomic() {
   let mut game = equipped_bfg10k(2_704);
   let target = Position::new(5, 2);
   let target_id = game
@@ -1499,7 +1499,7 @@ fn bfg10k_twenty_second_chainfire_level_is_rejected_without_mutation() {
         game.world().get_actor(target_id).unwrap().position(),
       ))
       .unwrap_err(),
-    CommandError::InvalidCommand("higher BFG 10K chainfire levels are deferred".to_string())
+    CommandError::NoAmmoInClip
   );
   assert_eq!(game, before);
 }

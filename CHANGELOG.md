@@ -3,6 +3,19 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.321]
+
+- Delivered M9's whole-rule chainfire state model for BFG 10K, Chaingun,
+  Minigun, Plasma Rifle, Laser Rifle, and Nuclear Plasma Rifle. One typed
+  initial/warming/sustained/saturated model now derives projectile counts and
+  aggregate ammunition costs for every `u8` state, with saturating advancement,
+  ordinary-fire reset, and full-burst atomic under-supply rejection. Direct
+  core, replay, MCP legal-action, and BrowserSession projections use the same
+  model; all six families have saturated Game vectors and MCP parity coverage.
+  Gameplay semantics advance from `127` to `128`; legacy partial-ammo,
+  rotational-target, trait-callback, audiovisual, and controlled runtime
+  comparisons remain explicitly open or `NOT_RUN`.
+
 ## [0.2.320]
 
 - Delivered M10 semantics-bound browser snapshot V3. New local saves bind the

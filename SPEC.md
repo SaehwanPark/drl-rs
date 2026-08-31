@@ -1,9 +1,9 @@
 # Specification
 
 Last reviewed: 2026-08-31
-Current project version: `0.2.320`
-Audited checkpoint: `main` at
-`b0a36fa` (merged PR #428; post-merge revision for this slice)
+Current project version: `0.2.321`
+Audited starting checkpoint: `main` at
+`447176b` (merged PR #429; M9 candidate is the working-tree slice)
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -21,210 +21,143 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 - `INCONCLUSIVE` — **Evidence unresolved**: available evidence cannot support
   the claim.
 
-## 2. Active implementation slice: M10 — Semantics-bound browser snapshot V3
+## 2. Active implementation slice: M9 — Whole-rule chainfire state model
 
 ### 2.1 Objective
 
-Replace the browser's semantics-unbound command-history save token with a V3
-token that records the identities required to interpret its commands. Restore
-must reject incompatible or provenance-free histories before simulation,
-rebuild a compatible session in temporary state, and commit only after every
-command succeeds.
+Replace the current per-level chainfire plateau tables with one typed,
+deterministic state model for the six supported alternate-fire weapon families.
+The model must make initial, warming, sustained, and saturated states explicit,
+derive volley size and aggregate ammunition cost from one integer formula,
+preserve transactional rejection, and name the current target and trait
+boundaries without importing legacy callback machinery.
 
-This closes steering Gate A. It is a compatibility and transaction slice, not
-a gameplay feature.
+This is a Gate B fidelity slice. It advances gameplay semantics while keeping
+the replay, MCP, browser, and presentation boundaries deterministic.
 
 ### 2.2 Audited starting point
 
-At version `0.2.319`:
+At audited starting revision `447176b` (version `0.2.320`):
 
-- `drl-web::persistence` writes strict V2 tokens containing snapshot version,
-  fixed-content identity, command count, and encoded commands;
-- `BrowserSession::restore_snapshot` decodes the token, constructs the current
-  fixed M4 session, and resubmits its commands under current rules;
-- V1 tokens are accepted and migrated to V2 after successful restore;
-- the token does not record gameplay, RNG-sampling, generator, or ruleset
-  identities;
-- replay V2 already records and validates those identities;
-- current identities are gameplay `127`, RNG-sampling `1`, generator `2`,
-  ruleset `drl-rs-ruleset-v1`, and fixed content `fixed-m4-v1`.
+- `drl-core::behavior` exposes separate per-family profile functions and
+  constants for bounded levels, with sustained plateaus repeated as individual
+  entries;
+- `Game::execute_player_ranged_attack` selects one family profile and rejects
+  levels outside that table before consuming clip state or combat RNG;
+- `chainfire_level` is a single `u8`, advanced after accepted chainfire and
+  reset by ordinary fire;
+- chainfire reserves a complete burst, emits deterministic no-op continuation
+  misses after a lethal target, and rejects under-supply atomically;
+- replay V2 and the semantics-bound browser snapshot V3 already identify the
+  gameplay semantics version, so this slice must make one explicit replay
+  version decision rather than silently changing history meaning.
 
-Therefore a V1/V2 snapshot can be syntactically valid yet be silently
-reinterpreted by a later build. Successful execution under the later build is
-not proof of compatibility with the state that originally wrote the token.
+The legacy source at revision `17d9be1204751899b2d69d8d3a2dde247bd0cc5c`
+uses the same integer state byte for all `2..255` chainfire levels: level zero
+subtracts one third of the ordinary shot count, level one is unchanged, and
+levels two through 255 add half the ordinary shot count. Its partial-ammo
+fallback, rotational target routing, and Lua trait hooks are separately
+classified in the evidence artifact and are not copied by assumption.
 
 ### 2.3 Scope and ownership
 
-- **Steering gate:** Gate A — persistent histories bind their interpreter.
-- **Primary owner:** `drl-web::persistence` owns the browser token grammar and
-  bounds; `BrowserSession` owns temporary reconstruction and final commit.
-- **Identity source:** snapshot code imports the canonical current identities
-  from `drl-protocol`; it must not duplicate their numeric/string values.
-- **Core boundary:** `drl-core` remains the execution authority. This slice
-  does not add snapshot policy or browser storage to core.
-- **Project version:** implementation advances `VERSION` from `0.2.319` to
-  `0.2.320`.
-- **Gameplay/replay semantics:** gameplay remains `127`; replay wire schema,
-  RNG-sampling, generator, and ruleset identities do not change. Snapshot wire
-  format advances from V2 to V3.
+- **Steering gate:** Gate B — fidelity slices close semantic branches, not
+  counters.
+- **Primary owner:** `drl-core::chainfire` owns the pure state model; `Game`
+  remains the execution and transaction authority; replay/MCP/browser remain
+  projections of the core result.
+- **Identity source:** each model maps a protocol `ItemArchetype` to one
+  ordinary projectile count and per-projectile ammunition cost; no boundary
+  duplicates the formulas.
+- **Project version:** implementation advances `VERSION` from `0.2.320` to
+  `0.2.321`.
+- **Gameplay/replay semantics:** gameplay semantics advances from `127` to
+  `128`; replay wire/schema, RNG-sampling, generator, ruleset, and snapshot V3
+  grammars do not change. V3 snapshots carrying `127` become incompatible by
+  the existing identity policy.
 
-### 2.4 V3 token contract
+### 2.4 Typed model contract
 
-The canonical textual token is:
+For ordinary projectile count `n`, per-projectile ammunition cost `c`, and
+chainfire level `l`, the model exposes:
 
-```text
-DRL-RUST-BROWSER-SAVE/3:<content>:<gameplay>:<rng>:<generator>:<ruleset>:<count>:<payload>
-```
+| State | Level | Projectile count | Aggregate cost |
+| --- | --- | --- | --- |
+| Initial | `0` | `n - (n div 3)` | count × `c` |
+| Warming | `1` | `n` | count × `c` |
+| Sustained | `2..=254` | `n + (n div 2)` | count × `c` |
+| Saturated | `255` | `n + (n div 2)` | count × `c` |
 
-Where:
+The model uses saturating arithmetic for the `u8` state transition. Saturated
+advancement remains `255`; ordinary fire resets to `0`. The current DRL-Rust
+resource decision is full-burst-only: if the aggregate cost is unavailable,
+the command rejects before RNG or mutation. Target routing remains an explicit
+fixed-requested-target policy with deterministic no-op continuation events
+after a lethal target. The core has no player-trait state, so legacy Ammochain
+and Entrenchment hooks are recorded as a future typed trait policy rather than
+silently simulated.
 
-- `<content>` is the fixed browser-session content identity;
-- `<gameplay>`, `<rng>`, and `<generator>` are canonical unsigned decimal
-  integers with no sign, padding, or alternate representation;
-- `<ruleset>` is the stable ruleset identity;
-- `<count>` is the canonical command count;
-- `<payload>` retains the current deterministic command encoding and ordering.
+### 2.5 Transaction and boundary contract
 
-The shipped bounds remain 16 KiB per token and 4,096 commands. Parsing remains
-strict and allocation-bounded. Empty histories are valid with count `0` and an
-empty payload. Count/payload disagreement, malformed numbers, unknown commands,
-extra delimiters, or a token over either bound rejects without execution.
+- All six supported families (BFG 10K, Chaingun, Minigun, Plasma Rifle, Laser
+  Rifle, and Nuclear Plasma Rifle) use the same pure model and accept saturated
+  sustained levels.
+- A chainfire command validates target, weapon, model, and full aggregate cost
+  before consuming clip state or combat RNG; failed commands preserve exact
+  game/RNG identity and chainfire level.
+- Accepted bursts emit the model's ordered projectile count, advance the state
+  once, and retain the existing deterministic post-lethal no-op continuation.
+- Ordinary fire and non-chainfire actions reset the state. Reload does not
+  invent a new chainfire rule; it only restores ammunition as currently
+  implemented.
+- Direct core, replay, MCP, and BrowserSession projections must report the same
+  state, events, observations, and error identity for representative sustained
+  and saturated commands.
 
-The exact current values are read from their owners when encoding. Tests may
-pin the checkpoint values, but production code must not create a second
-constant set.
+### 2.6 Acceptance criteria
 
-### 2.5 Compatibility policy
+- [x] A pure typed model exposes all four state classes, formulas, costs,
+  saturation, and reset/advance transitions with unit tests.
+- [x] All six weapon families use the model; family-specific higher-level
+  rejection paths and duplicated runtime formulas are removed.
+- [x] Existing initial, warming, and sustained vectors remain unchanged; each
+  family has a saturated-level vector.
+- [x] Full-burst under-supply remains an atomic rejection with no RNG or state
+  advance; ordinary fire resets chainfire.
+- [x] Fixed-target routing and post-lethal continuation are named and covered;
+  legacy rotational spread remains outside this slice.
+- [x] The absent current-core trait model is documented as an explicit future
+  policy; no Ammochain/Entrenchment behavior is inferred from names alone.
+- [x] Direct core, replay, MCP, and BrowserSession boundaries remain
+  deterministic for representative sustained and saturated commands.
+- [x] Gameplay semantics advances exactly once; replay wire/schema and snapshot
+  V3 parsing remain otherwise unchanged.
+- [ ] `sh scripts/check-repository.sh`, `scripts/check-version.sh`, and the
+  relevant hosted repository/WASM checks pass for the reviewed merge revision.
+- [ ] Independent determinism review returns `pass` with evidence classes,
+  exact rejection identity, and persistent-history impact recorded.
+- [ ] Roadmap, README, architecture, changelog, browser guide, and steering
+  records are reconciled from verified evidence; unavailable runtime,
+  audiovisual, human, performance, and legacy captures remain `NOT_RUN`.
 
-V3 restore validates, in this order:
+### 2.7 Non-goals
 
-1. overall byte bound and token prefix/version;
-2. fixed-content identity;
-3. gameplay semantics identity;
-4. RNG-sampling identity;
-5. generator identity;
-6. ruleset identity;
-7. command-count and payload structure;
-8. command execution in a temporary `BrowserSession`.
+- No projectile accuracy, timing, scatter, delayed-explosion, splash, or
+  audiovisual changes.
+- No partial-ammo execution, best-effort continuation, or new trait subsystem.
+- No Lua runtime, callback registry, or mechanical translation of legacy
+  architecture.
+- No claim of controlled legacy runtime parity where the required environment
+  is unavailable.
 
-No command executes until checks 1–7 succeed. Each semantic mismatch returns a
-diagnostic that identifies the mismatched field and the found/expected value.
-Unknown future token versions remain distinguishable from malformed tokens.
+### 2.8 Evidence boundary
 
-V1 and V2 tokens are **semantics-unbound**. Because they contain no engine or
-release identity, the implementation must not label them as current and replay
-them speculatively. In this slice:
-
-- direct restore rejects V1/V2 with a distinct unbound-semantics error;
-- browser storage follows the existing bounded quarantine/recovery policy;
-- the active session remains playable and unchanged;
-- automatic V1-to-V2 migration is retired;
-- no V1/V2 token is rewritten as V3 unless a later, separately specified
-  migration can prove its source semantics.
-
-This intentionally prefers explicit save incompatibility over silent state
-reinterpretation during pre-1.0 development.
-
-### 2.6 Transaction contract
-
-Restore is a two-phase operation:
-
-```text
-decode + validate identities
-          |
-          v
-construct temporary fixed session
-          |
-          v
-execute every decoded command
-          |
-          +---- error: discard temporary state; preserve active session
-          |
-          v
-commit complete restored session
-```
-
-On every error, the active session's complete game, observation, successful
-command history, error state, and saved token remain unchanged except for the
-already-defined bounded quarantine/diagnostic side effect at the browser
-storage shell. No failed restore writes a migrated token.
-
-Successful V3 restore produces the same final `Game`, events/observable state,
-and command history as direct execution from the fixed session under the exact
-recorded identities.
-
-### 2.7 User-visible recovery
-
-- Startup/load diagnostics state that an older or incompatible save cannot be
-  safely interpreted by this build.
-- Failure does not prevent starting or continuing a playable current session.
-- The existing accessible Clear Save confirmation remains the explicit recovery
-  action; this slice does not silently delete user storage.
-- Storage read, quarantine, cleanup, or rewrite failure remains a warning and
-  must not corrupt the active session.
-
-### 2.8 Acceptance criteria
-
-- [x] New snapshots encode V3 with canonical current content, gameplay,
-  RNG-sampling, generator, and ruleset identities.
-- [x] V3 round-trips empty and representative complete command histories with
-  exact command order and canonical count encoding.
-- [x] Production snapshot code imports semantic identities from
-  `drl-protocol` rather than duplicating checkpoint literals.
-- [x] A mismatch in each identity field rejects before session construction or
-  command execution and reports the specific incompatibility.
-- [x] V1 and V2 fixtures reject as semantics-unbound; no automatic migration or
-  V3 rewrite occurs.
-- [x] Unsupported future versions, malformed fields, count mismatch, unknown
-  commands, oversized counts, and oversized tokens retain distinct bounded
-  failure behavior where currently defined.
-- [x] Every failed direct restore preserves exact active `BrowserSession`
-  authority, including game and successful command history.
-- [x] Every failed storage restore preserves the active session and original
-  saved value except for the existing bounded quarantine policy.
-- [x] Successful restore commits only after all commands execute and matches
-  direct fixed-session execution under the recorded identities.
-- [x] Save/load browser controls expose an actionable incompatible-save
-  diagnostic and preserve accessible clear/cancel recovery.
-- [x] Replay V2 compatibility validation remains unchanged and no snapshot
-  identity policy is moved into `drl-core`.
-- [x] Focused native tests cover codec, compatibility ordering,
-  transactionality, storage recovery, and exact checkpoint fixtures.
-- [x] Supported WASM/browser contract tests cover V3 save/load and incompatible
-  stored-token recovery; unavailable human/audiovisual comparison stays
-  `NOT_RUN`.
-- [x] Independent determinism review returns `pass` after comparing the active
-  specification, implementation, tests, persistent-history identity, and
-  rejection transaction.
-- [x] `sh scripts/check-repository.sh` and `scripts/check-version.sh` pass; the
-  relevant hosted repository and WASM/browser checks pass for the reviewed
-  merge revision `b0a36fa` (PR #428). Local WASM-target and headless Chrome
-  checks pass; controlled human, audiovisual, and reference-capture surfaces
-  remain `NOT_RUN` where their prerequisites are unavailable.
-- [x] On delivery, roadmap, architecture, changelog, browser persistence notes,
-  and steering Gate A are reconciled from verified evidence.
-
-### 2.9 Non-goals
-
-- No chainfire, combat, AI, RNG, generator, ruleset, balance, or content-policy
-  change.
-- No generalized cross-version gameplay migration framework.
-- No best-effort replay of provenance-free V1/V2 saves.
-- No online account, cloud save, backend, encryption, or compression work.
-- No service-worker/cache redesign, offline-lifecycle expansion, or unrelated
-  browser UI refactor.
-- No broad module split unless a small extraction is required to make the
-  compatibility validator pure and independently testable.
-- No claim that browser save V3 makes older replay or snapshot formats
-  cross-version compatible.
-
-### 2.10 Evidence boundary
-
-This slice is driven by current Rust compatibility contracts rather than a
-legacy gameplay rule. Repository/native and supported WASM/browser tests can
-prove current V3 behavior. Legacy runtime, audiovisual parity, broad browser
-support, assistive-technology acceptance, and long-horizon migration remain
-outside the claim and are `NOT_RUN` unless separately executed and recorded.
+The legacy source establishes the integer state formulas and transition
+conditions, but not current-Rust RNG or event traces. Current Rust tests prove
+the typed model and boundary behavior. Controlled legacy runtime, target
+rotation/spread parity, trait hooks, human play, broad browser coverage,
+audiovisual parity, and performance remain `NOT_RUN`/open unless separately
+recorded.
 
 ## 3. Enduring invariants
 

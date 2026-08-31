@@ -6,10 +6,7 @@
 
 use drl_assets::{AtlasId, AtlasTextureSource, SpriteUv};
 use drl_core::item::Item;
-use drl_core::{
-  Game, Tile, bfg10k_chainfire_profile, chaingun_chainfire_profile, laser_rifle_chainfire_profile,
-  minigun_chainfire_profile, nuclear_plasma_chainfire_profile, plasma_rifle_chainfire_profile,
-};
+use drl_core::{Game, Tile, chainfire_profile};
 use drl_protocol::{
   Command, Direction, ItemArchetype, ItemId, ItemSpawnKind, ItemSpawnSpec, ItemView, MonsterKind,
   MonsterSpawnSpec, PlayerObservation, Position, ReplayLog,
@@ -60,17 +57,7 @@ fn inventory_markup(items: &[ItemView]) -> String {
 const MAX_MINIMAP_CELLS: u64 = 4096;
 
 fn chainfire_ammo_cost(archetype: ItemArchetype, level: u8) -> Option<u32> {
-  match archetype {
-    ItemArchetype::Bfg10k => bfg10k_chainfire_profile(level).map(|(_, cost)| cost),
-    ItemArchetype::Chaingun => chaingun_chainfire_profile(level).map(|(_, cost)| cost),
-    ItemArchetype::Minigun => minigun_chainfire_profile(level).map(|(_, cost)| cost),
-    ItemArchetype::PlasmaRifle => plasma_rifle_chainfire_profile(level).map(|(_, cost)| cost),
-    ItemArchetype::LaserRifle => laser_rifle_chainfire_profile(level).map(|(_, cost)| cost),
-    ItemArchetype::NuclearPlasmaRifle => {
-      nuclear_plasma_chainfire_profile(level).map(|(_, cost)| cost)
-    }
-    _ => None,
-  }
+  chainfire_profile(archetype, level).map(|burst| burst.ammo_cost())
 }
 
 /// Renders the fair minimap projection as a bounded, accessible text grid.
@@ -2110,6 +2097,104 @@ mod tests {
   use super::*;
   use drl_protocol::{ItemArchetype, ItemCategory, PlayerSpawnConfig, Position, TileKind};
 
+  type ChainfireWeaponCase = (ItemArchetype, fn(ItemId) -> Item, u32, u32);
+
+  #[test]
+  fn chainfire_cost_projection_accepts_saturated_levels_for_every_family() {
+    let cases = [
+      (ItemArchetype::Bfg10k, 35),
+      (ItemArchetype::Chaingun, 6),
+      (ItemArchetype::Minigun, 12),
+      (ItemArchetype::PlasmaRifle, 9),
+      (ItemArchetype::LaserRifle, 7),
+      (ItemArchetype::NuclearPlasmaRifle, 9),
+    ];
+    for (archetype, expected_cost) in cases {
+      assert_eq!(chainfire_ammo_cost(archetype, u8::MAX), Some(expected_cost));
+    }
+  }
+
+  #[test]
+  fn browser_session_accepts_saturated_chainfire_for_every_family() {
+    let cases: &[ChainfireWeaponCase] = &[
+      (ItemArchetype::Bfg10k, Item::bfg10k, 7, 35),
+      (ItemArchetype::Chaingun, Item::chaingun, 6, 6),
+      (ItemArchetype::Minigun, Item::minigun, 12, 12),
+      (ItemArchetype::PlasmaRifle, Item::plasma_rifle, 9, 9),
+      (ItemArchetype::LaserRifle, Item::laser_rifle, 7, 7),
+      (
+        ItemArchetype::NuclearPlasmaRifle,
+        Item::nuclear_plasma_rifle,
+        9,
+        9,
+      ),
+    ];
+
+    for (index, &(archetype, make_weapon, expected_projectiles, expected_cost)) in
+      cases.iter().enumerate()
+    {
+      let target = Position::new(5, 2);
+      let mut game = Game::new(3_700 + index as u64, 10, 6, Position::new(2, 2))
+        .expect("saturated browser game");
+      let player_id = game.world().player_id().expect("player identity");
+      let weapon_id = game.world_mut().allocate_item_id();
+      game
+        .world_mut()
+        .get_actor_mut(player_id)
+        .expect("browser player")
+        .equipment_mut()
+        .equip(drl_protocol::EquipmentSlot::Weapon, make_weapon(weapon_id))
+        .expect("saturated browser weapon");
+      let target_id = game
+        .world_mut()
+        .spawn_monster(target, "Static Target", 100_000, 0, (1, 7))
+        .expect("saturated browser target");
+      let properties = game
+        .world_mut()
+        .get_actor_mut(player_id)
+        .expect("browser player")
+        .equipment_mut()
+        .weapon_mut()
+        .expect("browser weapon")
+        .weapon_properties_mut()
+        .expect("browser weapon properties");
+      properties.chainfire_level = u8::MAX;
+      properties.current_clip = expected_cost;
+
+      let mut direct = game.clone();
+      let mut browser = BrowserSession::from_game(game);
+      let command = Command::AttackRangedChainfire(target);
+      let expected_events = direct
+        .step(command)
+        .unwrap_or_else(|error| panic!("direct saturated {archetype:?} burst: {error}"));
+      let step = browser
+        .submit(command)
+        .unwrap_or_else(|error| panic!("browser saturated {archetype:?} burst: {error}"));
+      assert_eq!(step.events, expected_events);
+      assert_eq!(step.after, direct.observe_player());
+      assert_eq!(
+        step
+          .events
+          .iter()
+          .filter(|event| matches!(
+            event,
+            drl_protocol::GameEvent::AttackResolved {
+              attacker_id,
+              target_id: event_target,
+              is_ranged: true,
+              ..
+            } if *attacker_id == player_id && *event_target == target_id
+          ))
+          .count(),
+        expected_projectiles as usize
+      );
+      let weapon = step.after.equipped_weapon.expect("browser weapon view");
+      assert_eq!(weapon.archetype, archetype);
+      assert_eq!(weapon.chainfire_level, u8::MAX);
+      assert_eq!(weapon.clip.map(|(loaded, _)| loaded), Some(0));
+    }
+  }
+
   fn assert_bfg10k_volley_events(
     events: &[drl_protocol::GameEvent],
     attacker_id: drl_protocol::EntityId,
@@ -2574,7 +2659,7 @@ mod tests {
     let token = session.snapshot_token().expect("snapshot encoding");
     assert_eq!(
       token,
-      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:127:1:2:drl-rs-ruleset-v1:4:mr;mr;mr;p"
+      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:128:1:2:drl-rs-ruleset-v1:4:mr;mr;mr;p"
     );
 
     let mut restored = BrowserSession::new().expect("fixed session");
@@ -2590,7 +2675,7 @@ mod tests {
     let token = session.snapshot_token().expect("snapshot encoding");
     assert_eq!(
       token,
-      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:127:1:2:drl-rs-ruleset-v1:0:"
+      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:128:1:2:drl-rs-ruleset-v1:0:"
     );
     let decoded = persistence::decode_snapshot_with_format(&token).expect("snapshot decoding");
     assert_eq!(decoded.format, persistence::SnapshotFormat::V3);
@@ -2615,11 +2700,11 @@ mod tests {
   fn snapshot_rejects_corruption_and_unknown_versions() {
     let mut session = BrowserSession::new().expect("fixed session");
     assert_eq!(
-      session.restore_snapshot("DRL-RUST-BROWSER-SAVE/4:fixed-m4-v1:127:1:2:drl-rs-ruleset-v1:0:"),
+      session.restore_snapshot("DRL-RUST-BROWSER-SAVE/4:fixed-m4-v1:128:1:2:drl-rs-ruleset-v1:0:"),
       Err(SnapshotError::UnsupportedVersion("4".to_string()))
     );
     assert_eq!(
-      session.restore_snapshot("DRL-RUST-BROWSER-SAVE/3:other:127:1:2:drl-rs-ruleset-v1:1:w"),
+      session.restore_snapshot("DRL-RUST-BROWSER-SAVE/3:other:128:1:2:drl-rs-ruleset-v1:1:w"),
       Err(SnapshotError::UnsupportedContent("other".to_string()))
     );
     assert_eq!(
@@ -2653,28 +2738,28 @@ mod tests {
   fn snapshot_rejects_each_incompatible_identity_before_restore() {
     let cases = [
       (
-        "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:126:1:2:drl-rs-ruleset-v1:0:",
+        "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:127:1:2:drl-rs-ruleset-v1:0:",
         SnapshotError::UnsupportedGameplaySemantics {
-          found: 126,
+          found: 127,
           expected: drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION,
         },
       ),
       (
-        "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:127:0:2:drl-rs-ruleset-v1:0:",
+        "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:128:0:2:drl-rs-ruleset-v1:0:",
         SnapshotError::UnsupportedRngSamplingSemantics {
           found: 0,
           expected: drl_protocol::CURRENT_RNG_SAMPLING_SEMANTICS_VERSION,
         },
       ),
       (
-        "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:127:1:1:drl-rs-ruleset-v1:0:",
+        "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:128:1:1:drl-rs-ruleset-v1:0:",
         SnapshotError::UnsupportedGeneratorSemantics {
           found: 1,
           expected: drl_protocol::CURRENT_GENERATOR_SEMANTICS_VERSION,
         },
       ),
       (
-        "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:127:1:2:legacy-ruleset:0:",
+        "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:128:1:2:legacy-ruleset:0:",
         SnapshotError::UnsupportedRuleset {
           found: "legacy-ruleset".to_string(),
           expected: drl_protocol::CURRENT_RULESET_ID.to_string(),
@@ -2696,11 +2781,11 @@ mod tests {
   fn snapshot_rejects_noncanonical_v3_numbers_and_count_mismatches() {
     let mut session = BrowserSession::new().expect("fixed session");
     for token in [
-      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:0127:1:2:drl-rs-ruleset-v1:0:",
-      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:+127:1:2:drl-rs-ruleset-v1:0:",
-      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:127:1:2:drl-rs-ruleset-v1:01:w",
-      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:127:1:2:drl-rs-ruleset-v1:2:w",
-      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:127:1:2:drl-rs-ruleset-v1:1:é",
+      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:0128:1:2:drl-rs-ruleset-v1:0:",
+      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:+128:1:2:drl-rs-ruleset-v1:0:",
+      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:128:1:2:drl-rs-ruleset-v1:01:w",
+      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:128:1:2:drl-rs-ruleset-v1:2:w",
+      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:128:1:2:drl-rs-ruleset-v1:1:é",
     ] {
       assert_eq!(
         session.restore_snapshot(token),
@@ -2731,7 +2816,7 @@ mod tests {
       .submit(Command::Move(Direction::East))
       .expect("legal command");
     let before = session.clone();
-    let token = "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:127:1:2:drl-rs-ruleset-v1:2:mr;x";
+    let token = "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:128:1:2:drl-rs-ruleset-v1:2:mr;x";
 
     assert_eq!(
       session.restore_snapshot(token),
@@ -6730,7 +6815,7 @@ mod tests {
     assert_eq!(chaingun.clip, Some((34, 40)));
     assert_eq!(
       BrowserSession::command_for_key("C", &fourteenth_step.after),
-      None
+      Some(Command::AttackRangedChainfire(target_position))
     );
     expected_events.extend(third_expected_events);
     expected_events.extend(fourth_expected_events);
@@ -6938,7 +7023,7 @@ mod tests {
     assert_eq!(minigun.clip, Some((174, 200)));
     assert_eq!(
       BrowserSession::command_for_key("C", &third_step.after),
-      None
+      Some(Command::AttackRangedChainfire(target_position))
     );
     expected_events.extend(second_expected_events);
     expected_events.extend(third_expected_events);
@@ -14564,7 +14649,7 @@ mod wasm_tests {
       .expect("restore V3 snapshot");
     assert_eq!(restored, expected);
 
-    let rejected_token = token.replace(":127:", ":126:");
+    let rejected_token = token.replace(":128:", ":127:");
     storage
       .set_item(crate::wasm::SAVE_STORAGE_KEY, &rejected_token)
       .expect("write rejected active save");
@@ -14575,7 +14660,7 @@ mod wasm_tests {
     assert_eq!(
       error,
       SnapshotError::UnsupportedGameplaySemantics {
-        found: 126,
+        found: 127,
         expected: drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION,
       }
     );

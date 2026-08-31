@@ -5,11 +5,7 @@ use crate::replay_json::MAX_REPLAY_DIMENSION;
 use drl_core::generator::LevelGeneratorConfig;
 use drl_core::grid::Tile;
 use drl_core::scenario::Scenario;
-use drl_core::{
-  Game, ReplayEngine, bfg10k_chainfire_profile, chaingun_chainfire_profile,
-  laser_rifle_chainfire_profile, minigun_chainfire_profile, nuclear_plasma_chainfire_profile,
-  plasma_rifle_chainfire_profile,
-};
+use drl_core::{Game, ReplayEngine, chainfire_profile as canonical_chainfire_profile};
 use drl_protocol::{
   Command, Direction, EpisodeMetrics, EquipmentSlot, GameEvent, ItemArchetype, ItemCategory,
   ItemId, ItemView, OmniscientObservation, PlayerObservation, Position, ProceduralGenerationConfig,
@@ -31,15 +27,8 @@ pub struct LegalAction {
 }
 
 fn chainfire_profile(archetype: ItemArchetype, level: u8) -> Option<(u32, u32)> {
-  match archetype {
-    ItemArchetype::Bfg10k => bfg10k_chainfire_profile(level),
-    ItemArchetype::Chaingun => chaingun_chainfire_profile(level),
-    ItemArchetype::Minigun => minigun_chainfire_profile(level),
-    ItemArchetype::PlasmaRifle => plasma_rifle_chainfire_profile(level),
-    ItemArchetype::LaserRifle => laser_rifle_chainfire_profile(level),
-    ItemArchetype::NuclearPlasmaRifle => nuclear_plasma_chainfire_profile(level),
-    _ => None,
-  }
+  canonical_chainfire_profile(archetype, level)
+    .map(|burst| (burst.projectile_count(), burst.ammo_cost()))
 }
 
 impl LegalAction {
@@ -2511,9 +2500,9 @@ mod tests {
     target.hp_mut().max = 10_000;
     target.hp_mut().current = 10_000;
 
-    // The catalog walks through one reload and thirteen bursts. Add enough
-    // reserve ammunition that the advertised-action assertions exercise the
-    // full bounded profile instead of stopping at the default 30-round stack.
+    // The catalog walks through one reload and fourteen bursts. Add enough
+    // reserve ammunition that every warm-up and sustained assertion has a
+    // complete burst available.
     let ammo_id = session
       .game
       .as_mut()
@@ -2705,11 +2694,11 @@ mod tests {
     session
       .step(fourteenth.command)
       .expect("fourteenth chainfire action");
-    assert!(
-      !compute_legal_actions(&session.get_observation().unwrap())
-        .iter()
-        .any(|action| action.action == "Chainfire")
-    );
+    let sustained = compute_legal_actions(&session.get_observation().unwrap())
+      .into_iter()
+      .find(|action| action.action == "Chainfire")
+      .expect("sustained Chaingun chainfire should remain advertised");
+    assert!(sustained.description.contains("6 projectiles, 6 rounds"));
   }
 
   #[test]
@@ -3564,11 +3553,11 @@ mod tests {
         .chainfire_level,
       14
     );
-    assert!(
-      !compute_legal_actions(&direct.observe_player())
-        .iter()
-        .any(|action| action.action == "Chainfire")
-    );
+    let sustained = compute_legal_actions(&direct.observe_player())
+      .into_iter()
+      .find(|action| action.action == "Chainfire")
+      .expect("sustained Chaingun chainfire should remain advertised");
+    assert!(sustained.description.contains("6 projectiles, 6 rounds"));
     expected_events.extend(second_events);
     expected_events.extend(third_events);
     expected_events.extend(fourth_events);
@@ -3669,11 +3658,11 @@ mod tests {
     session
       .step(third.command)
       .expect("third Minigun chainfire action");
-    assert!(
-      !compute_legal_actions(&session.get_observation().unwrap())
-        .iter()
-        .any(|action| action.action == "Chainfire")
-    );
+    let sustained = compute_legal_actions(&session.get_observation().unwrap())
+      .into_iter()
+      .find(|action| action.action == "Chainfire")
+      .expect("sustained Minigun chainfire should remain advertised");
+    assert!(sustained.description.contains("12 projectiles, 12 rounds"));
   }
 
   #[test]
@@ -10173,5 +10162,168 @@ mod tests {
     session.set_dev_mode(true);
     assert!(session.is_dev_mode());
     assert!(session.get_dev_state().is_ok());
+  }
+
+  #[test]
+  fn saturated_chainfire_mcp_catalog_and_execution_match_direct_core() {
+    let cases = [
+      (
+        ItemArchetype::Bfg10k,
+        drl_core::item::Item::bfg10k as fn(ItemId) -> drl_core::item::Item,
+        7,
+        35,
+      ),
+      (
+        ItemArchetype::Chaingun,
+        drl_core::item::Item::chaingun as fn(ItemId) -> drl_core::item::Item,
+        6,
+        6,
+      ),
+      (
+        ItemArchetype::Minigun,
+        drl_core::item::Item::minigun as fn(ItemId) -> drl_core::item::Item,
+        12,
+        12,
+      ),
+      (
+        ItemArchetype::PlasmaRifle,
+        drl_core::item::Item::plasma_rifle as fn(ItemId) -> drl_core::item::Item,
+        9,
+        9,
+      ),
+      (
+        ItemArchetype::LaserRifle,
+        drl_core::item::Item::laser_rifle as fn(ItemId) -> drl_core::item::Item,
+        7,
+        7,
+      ),
+      (
+        ItemArchetype::NuclearPlasmaRifle,
+        drl_core::item::Item::nuclear_plasma_rifle as fn(ItemId) -> drl_core::item::Item,
+        9,
+        9,
+      ),
+    ];
+
+    for (index, (archetype, make_weapon, expected_projectiles, expected_cost)) in
+      cases.into_iter().enumerate()
+    {
+      let player_position = Position::new(1, 1);
+      let target_position = Position::new(5, 1);
+      let player_config = drl_protocol::PlayerSpawnConfig {
+        hp: 50,
+        max_hp: 50,
+        speed: 100,
+        initial_items: Vec::new(),
+        equipped_weapon: None,
+        equipped_armor: None,
+        equipped_armor_durability: None,
+      };
+      let mut setup_replay = ReplayLog::new(3_300 + index as u64, 8, 4, player_position)
+        .with_player_config(player_config);
+      setup_replay.record_monster(drl_protocol::MonsterSpawnSpec::new(
+        target_position,
+        "Static Target",
+        100_000,
+        0,
+        (1, 7),
+      ));
+
+      let mut session = McpSession::new();
+      session
+        .load_replay(setup_replay)
+        .expect("load saturated chainfire replay setup");
+      let player_id = session.game.as_ref().unwrap().world().player_id().unwrap();
+      let weapon_id = session
+        .game
+        .as_mut()
+        .unwrap()
+        .world_mut()
+        .allocate_item_id();
+      session
+        .game
+        .as_mut()
+        .unwrap()
+        .world_mut()
+        .get_actor_mut(player_id)
+        .unwrap()
+        .equipment_mut()
+        .equip(EquipmentSlot::Weapon, make_weapon(weapon_id))
+        .expect("equip saturated chainfire weapon");
+      let weapon = session
+        .game
+        .as_mut()
+        .unwrap()
+        .world_mut()
+        .get_actor_mut(player_id)
+        .unwrap()
+        .equipment_mut()
+        .weapon_mut()
+        .unwrap();
+      let properties = weapon.weapon_properties_mut().unwrap();
+      properties.chainfire_level = u8::MAX;
+      properties.current_clip = expected_cost;
+
+      let initial = session.game.as_ref().unwrap().clone();
+      let command = Command::AttackRangedChainfire(target_position);
+      let advertised = compute_legal_actions(&initial.observe_player())
+        .into_iter()
+        .find(|action| action.command == command)
+        .expect("saturated chainfire must be advertised through MCP");
+      assert!(advertised.description.contains(&format!(
+        "{expected_projectiles} projectiles, {expected_cost} rounds"
+      )));
+
+      let mut direct = initial.clone();
+      let expected_events = direct
+        .step(command)
+        .expect("direct saturated chainfire command");
+      let (events, observation, outcome) = session
+        .step(command)
+        .expect("MCP saturated chainfire command");
+      assert_eq!(events, expected_events);
+      assert_eq!(session.game.as_ref().unwrap(), &direct);
+      assert_eq!(observation, direct.observe_player());
+      assert_eq!(
+        outcome, None,
+        "unexpected saturated outcome for {archetype:?}"
+      );
+      assert_eq!(
+        events
+          .iter()
+          .filter(|event| matches!(
+            event,
+            GameEvent::AttackResolved {
+              attacker_id,
+              is_ranged: true,
+              ..
+            } if *attacker_id == player_id
+          ))
+          .count(),
+        expected_projectiles
+      );
+      let properties = direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap();
+      assert_eq!(properties.current_clip, 0);
+      assert_eq!(properties.chainfire_level, u8::MAX);
+      assert_eq!(
+        archetype,
+        direct
+          .world()
+          .player()
+          .unwrap()
+          .equipment()
+          .weapon()
+          .unwrap()
+          .archetype()
+      );
+    }
   }
 }
