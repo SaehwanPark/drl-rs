@@ -1,7 +1,7 @@
 # DRL Delivery Steering Gates
 
 Last reviewed: 2026-08-31
-Baseline: `main` at `e598ae2365a6c610f8a181d74e6f773f30c9d2f4`
+Baseline: `main` at `49add3aecf7886dea40590497132fabe4b56f06b`
 
 ## Purpose
 
@@ -40,7 +40,8 @@ chosen accepted or rejected result to commit as one transaction.
 
 M9 closes this gate for chainfire with six-family saturation and under-supply
 vectors, replay/MCP/BrowserSession parity, and independent review. M1/M11
-closes Gate C in merged PR #432; M0 control-plane work is next.
+closes Gate C in merged PR #432; M0's required-review and branch-protection
+policy is delivered, so vertical canonical-fidelity work is next.
 
 ## Gate C — Rollback has an exit budget
 
@@ -70,8 +71,10 @@ impact, checks, review disposition, and unavailable surfaces in the handoff or
 PR. Hosted checks do not substitute for the review edge.
 
 M0 delivered the repository SPEC structural checker and deterministic rejection
-fixtures in merged PR #434 (`e598ae2`). Required independent-review and branch-
-protection enforcement remains a separate open policy item.
+fixtures in merged PR #434 (`e598ae2`), then delivered required independent
+review and branch-protection enforcement in PR #436 (`49add3a`) with the
+hosted policy workflow reconciled in PR #437. Gate D is closed for the current
+policy; future slices still require the same review receipt and live settings.
 
 ## Gate E — Claims remain evidence-bounded
 

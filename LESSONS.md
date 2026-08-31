@@ -206,6 +206,22 @@ truth.
   revisions, local and hosted results, explicit NOT_RUN surfaces, and a clean
   branch check before measuring usage or selecting more work.
 
+## Bind review receipts to the final PR metadata
+
+- **Context:** A required-review policy may inspect API metadata rather than
+  the checked-out diff.
+- **Symptom:** A superficially valid approval can survive a new commit, a later
+  reviewer state, pagination, or a rename and still be counted for protected
+  code.
+- **Resolution:** Normalize every review page, reduce each reviewer's latest
+  state before filtering by the current head, require the receipt's exact
+  commit, and match both `filename` and `previous_filename`. Keep the live
+  branch-protection settings and their solo-maintainer exception in the same
+  auditable evidence chain.
+- **Prevention:** Fixture-test stale heads, later changes-requested reviews,
+  paginated responses, and renames; run the hosted policy workflow on every
+  pull-request revision before merging.
+
 When an aggregate PR check remains `pending`, inspect the workflow run's
 step-level state before treating it as stalled; merge only after each required
 repository and WASM job has reached a passing terminal state.
