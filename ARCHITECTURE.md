@@ -565,10 +565,10 @@ Presentation Boundary
 ### `drl-app` — Headless CLI & MCP Runner
 - **Role**: Native executable for running headless demos, deterministic cohort
   study reports, canonical replay-file verification, and stdio MCP sessions.
-  Replay verification reads files or stdin only at this boundary, then reuses
-  the MCP V2 decoder and core `ReplayEngine`; a deterministic subprocess
-  lifecycle contract checks the MCP transport separately from in-process
-  semantics.
+  Replay verification reads bounded UTF-8 files or stdin only at this boundary,
+  caps JSON nesting before parsing, then reuses the MCP V2 decoder and core
+  `ReplayEngine`; a deterministic subprocess lifecycle contract checks the MCP
+  transport separately from in-process semantics.
 - **Dependencies**: Depends on `drl-core`, `drl-protocol`, `drl-mcp`.
 
 ### `drl-script` — Content Conversion Boundary

@@ -1241,7 +1241,7 @@ verification item uses explicit status semantics:
 ### Active & Open Work
 
 - **Latest Audited Checkpoint:** `main` merge commit
-  `8e86f26`, merged PR #439, and project version `0.2.325`. Repository and
+  `7735d47`, merged PR #440, and project version `0.2.325`. Repository and
   WASM/browser hosted checks, independent review, and the JSON compatibility
   fixtures pass for the delivered M13 slice; its hosted Review policy check
   failed closed because the sole maintainer cannot create a non-self approval,
@@ -1294,12 +1294,13 @@ verification item uses explicit status semantics:
   review pass; full external-client and transport compatibility remain open,
   while the sole-maintainer hosted Review policy failure is recorded above.
 - **Active Slice — M13/M6 replay-file verification CLI (`0.2.326`):** The
-  native `drl-rs replay verify [path|-]` command reads the canonical V2 JSON
-  envelope from a UTF-8 file or stdin, reuses the public MCP decoder, and
-  performs a two-run `ReplayEngine` determinism check. Malformed, unsafe,
-  incompatible, unreadable, and execution-invalid inputs fail closed with
-  stable diagnostics; replay migration, network IO, and cross-version
-  interchange remain open until the final review/merge checkpoint is recorded.
+  native `drl-rs replay verify [path|-]` command reads the exact canonical V2
+  JSON envelope from a bounded UTF-8 file or stdin, reuses the public MCP
+  decoder, and performs a two-run `ReplayEngine` determinism check. Input is
+  capped at 8 MiB and 64 JSON nesting levels; malformed, unsafe, incompatible,
+  unreadable, and execution-invalid inputs fail closed with stable diagnostics.
+  Replay migration, network IO, and cross-version interchange remain open
+  until the final review/merge checkpoint is recorded.
 - **Process Gate (M0, closed):** Keep `SPEC.md` bounded to one active slice and
   require an attributable independent determinism-review disposition for every
   replay-visible or legacy-fidelity slice. PR #436 records and enforces the
@@ -1315,8 +1316,8 @@ verification item uses explicit status semantics:
   identified lifecycle gating, notification side effects, ordered batch
   responses, explicit null-ID responses, and malformed-input errors; reconnect,
   full external-client compatibility, replay migration, and deployment remain
-  open. The native `replay verify` command now covers current-V2 file/stdin
-  verification without changing the MCP transport boundary.
+  open. The native `replay verify` command now covers bounded current-V2
+  file/stdin verification without changing the MCP transport boundary.
 - **M12 Accessibility**: Static and native contracts cover generated names,
   escaping, live-channel boundaries, help association, focus styling, and
   diagnostic recovery; startup now classifies insecure contexts and missing
@@ -1513,8 +1514,8 @@ tooling.
   read-only, including inactive-session verification and fail-closed malformed
   input handling. MCP session creation enforces bounded dimensions and
   procedural parameters before export; same-version object loading is
-  delivered while replay-file IO, migration, and external interchange remain
-  open.
+  delivered while MCP filesystem IO and migration remain outside this boundary;
+  native CLI file/stdin verification is tracked separately in M13.
 - [x] `tools/list` and `resources/list` provide deterministic fixed-size pages
   with method-scoped cursors, stable reconstruction, final-page omission, and
   fail-closed invalid-cursor handling; broader MCP compatibility remains open.

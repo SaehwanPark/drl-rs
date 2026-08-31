@@ -57,6 +57,9 @@ At audited starting revision `7735d47` (version `0.2.325`):
   file/stdin reads, diagnostics, and process-facing errors.
 - **Decoder/execution:** `drl_mcp::replay_json::from_json_value` and
   `drl_core::ReplayEngine::verify_determinism` remain the sole semantic owners.
+- **Resource bounds:** the CLI rejects UTF-8 payloads over 8 MiB before JSON
+  parsing and limits JSON nesting to 64 levels, keeping untrusted file/stdin
+  input bounded before semantic replay limits apply.
 - **Project version:** implementation advances `VERSION` from `0.2.325` to
   `0.2.326`.
 - **Gameplay/replay semantics:** no schema, command, RNG, generator, ruleset,
@@ -65,10 +68,13 @@ At audited starting revision `7735d47` (version `0.2.325`):
 ### 2.4 Review and branch contract
 
 - The only accepted input format is the canonical V2 JSON envelope; unknown
-  JSON properties retain the decoder's existing tolerance.
+  JSON properties retain the decoder's existing tolerance, while the CLI
+  requires the exact `drl-rs-replay-v2` format identifier.
 - A path names a UTF-8 file; `-` reads all UTF-8 input from stdin. Missing,
   unreadable, malformed, unsafe, incompatible, or execution-invalid input
   fails closed with a deterministic diagnostic and non-zero status.
+- Input is capped at 8 MiB and JSON nesting at 64 levels before the decoder's
+  replay container bounds are evaluated.
 - Successful verification emits byte-identical output across repeated runs and
   across file/stdin sources.
 - No filesystem, process, or stream concerns enter `drl-core`.
@@ -81,6 +87,8 @@ At audited starting revision `7735d47` (version `0.2.325`):
   fail before replay execution with stable diagnostics.
 - [x] Repeated verification and file/stdin verification produce identical
   success output; failures return a non-zero process status.
+- [x] The CLI bounds raw UTF-8 input and JSON nesting before semantic decode,
+  and rejects the decoder's legacy replay-format alias at this boundary.
 - [x] Focused CLI tests, formatting, clippy, repository gate, web contracts,
   and version transition pass on the final revision.
 - [ ] An attributable independent determinism-review receipt covers the exact

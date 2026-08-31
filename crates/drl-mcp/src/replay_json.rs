@@ -9,7 +9,9 @@ use std::collections::BTreeMap;
 
 pub use crate::replay_json_decode::from_json_value;
 
-const FORMAT: &str = "drl-rs-replay-v2";
+/// Canonical format identifier emitted by the V2 replay JSON projection.
+pub const REPLAY_FORMAT: &str = "drl-rs-replay-v2";
+const FORMAT: &str = REPLAY_FORMAT;
 const SCHEMA_VERSION: u32 = 2;
 pub(crate) const MAX_REPLAY_DIMENSION: u32 = 512;
 pub(crate) const MAX_PROCEDURAL_ROOMS: u32 = 64;

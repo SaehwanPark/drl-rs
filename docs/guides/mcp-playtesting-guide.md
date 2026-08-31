@@ -99,5 +99,6 @@ You are an autonomous playtesting agent playing drl-rs.
    an MCP session with `cargo run -p drl-app --bin drl-rs -- replay verify replay.json`,
    or with `cargo run -p drl-app --bin drl-rs -- replay verify -` when piping
    the JSON on standard input. The command accepts only the current V2
-   envelope; migration and cross-version replay interchange remain unsupported.
+   envelope; the CLI enforces the exact canonical format and bounded input;
+   migration and cross-version replay interchange remain unsupported.
 ```
