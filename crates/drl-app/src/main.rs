@@ -14,8 +14,10 @@ use drl_protocol::{
 use std::io;
 
 mod cohort_cli;
+mod replay_cli;
 
 use cohort_cli::run_cohort_command;
+use replay_cli::run_replay_command;
 
 fn main() {
   let args = std::env::args().skip(1).collect::<Vec<_>>();
@@ -27,6 +29,16 @@ fn main() {
       Ok(report) => print!("{report}"),
       Err(error) => {
         eprintln!("cohort: {error}");
+        std::process::exit(2);
+      }
+    }
+    return;
+  }
+  if args.first().is_some_and(|arg| arg == "replay") {
+    match run_replay_command(&args[1..]) {
+      Ok(report) => print!("{report}"),
+      Err(error) => {
+        eprintln!("{error}");
         std::process::exit(2);
       }
     }

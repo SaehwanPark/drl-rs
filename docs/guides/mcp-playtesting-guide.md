@@ -95,4 +95,10 @@ You are an autonomous playtesting agent playing drl-rs.
    - Step into doorways to prevent swarm attacks.
    - Stand on stairs and call `descend` to complete levels.
 5. Save your replay with `game_save_replay` and verify reproducibility with `game_verify_replay`.
+   The resulting canonical `drl-rs-replay-v2` JSON can also be checked outside
+   an MCP session with `cargo run -p drl-app --bin drl-rs -- replay verify replay.json`,
+   or with `cargo run -p drl-app --bin drl-rs -- replay verify -` when piping
+   the JSON on standard input. The command accepts only the current V2
+   envelope; the CLI enforces the exact canonical format and bounded input;
+   migration and cross-version replay interchange remain unsupported.
 ```

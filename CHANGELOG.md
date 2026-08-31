@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.326]
+
+- Added the native `drl-rs replay verify [path|-]` command. It reads the
+  exact canonical `drl-rs-replay-v2` envelope from a bounded UTF-8 file or
+  stdin, reuses the MCP decoder, and verifies current-engine determinism with
+  stable diagnostics and fail-closed non-zero errors. Input is capped at 8 MiB
+  with 64 JSON nesting levels. Replay migration, network IO, and cross-version
+  interchange remain open.
+
 ## [0.2.325]
 
 - Hardened the zero-dependency MCP JSON parser for external-client input:

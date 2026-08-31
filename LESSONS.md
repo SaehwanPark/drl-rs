@@ -226,6 +226,19 @@ When an aggregate PR check remains `pending`, inspect the workflow run's
 step-level state before treating it as stalled; merge only after each required
 repository and WASM job has reached a passing terminal state.
 
+## Keep replay file IO at the application boundary
+
+- **Context:** The canonical replay JSON decoder and deterministic engine are
+  reusable from native tooling, but the simulation core must remain free of
+  filesystem and process concerns.
+- **Resolution:** Put path/stdin selection, UTF-8 reads, stable diagnostics, and
+  exit-status mapping in `drl-app`; inject a `Read` implementation in unit
+  tests, then pass the parsed value through the existing MCP decoder and
+  `ReplayEngine::verify_determinism` without duplicating validation.
+- **Prevention:** Treat replay migration, network IO, and cross-version
+  interchange as separate capabilities; a file-verification command proves
+  only current-engine V2 acceptance.
+
 ## Clean generated Python caches after repository gates
 
 - **Context:** The repository gate invokes Python content tooling from the

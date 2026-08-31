@@ -2,8 +2,8 @@
 
 Last reviewed: 2026-08-31
 Baseline branch: `main`
-Baseline merge commit: `8e86f26`
-Latest pull request inspected: `#439`
+Baseline merge commit: `7735d47`
+Latest pull request inspected: `#440`
 Baseline project version: `0.2.325`
 
 ## Purpose
@@ -217,10 +217,12 @@ invariants into accepted architecture/ADRs as appropriate, and update the
 roadmap and active specification from verified evidence.
 
 Re-audit before broad M9 migration resumes, or when a new stop-gate candidate
-is selected. The current audited tree is `main` at `8e86f26` (PR #439, version
+is selected. The current audited tree is `main` at `7735d47` (PR #440, version
 `0.2.325`); local checks, independent review, and hosted Repository/WASM
-checks passed for the M13 JSON compatibility slice. Its hosted Review policy
-check failed closed for the sole-maintainer PR and was merged under the live
-`enforce_admins=false` exception; human, audiovisual, performance, and
-reference-capture surfaces remain `NOT_RUN` where prerequisites are
-unavailable.
+checks passed for the delivered M13 JSON compatibility slice. The preceding
+JSON PR #439 used the documented solo-maintainer `enforce_admins=false`
+exception after its Review policy check failed closed. The active replay-file
+CLI slice adds only native file/stdin verification at the `drl-app` boundary;
+its PR is pending review/merge and has no delivery claim here. Human,
+audiovisual, performance, and reference-capture surfaces remain `NOT_RUN`
+where prerequisites are unavailable.

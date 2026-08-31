@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-31
-Current project version: `0.2.325`
+Current project version: `0.2.326`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -564,9 +564,11 @@ Presentation Boundary
 
 ### `drl-app` — Headless CLI & MCP Runner
 - **Role**: Native executable for running headless demos, deterministic cohort
-  study reports, batch sweeps, and stdio MCP sessions. A deterministic
-  subprocess lifecycle contract checks this transport separately from the
-  in-process MCP semantics.
+  study reports, canonical replay-file verification, and stdio MCP sessions.
+  Replay verification reads bounded UTF-8 files or stdin only at this boundary,
+  caps JSON nesting before parsing, then reuses the MCP V2 decoder and core
+  `ReplayEngine`; a deterministic subprocess lifecycle contract checks the MCP
+  transport separately from in-process semantics.
 - **Dependencies**: Depends on `drl-core`, `drl-protocol`, `drl-mcp`.
 
 ### `drl-script` — Content Conversion Boundary

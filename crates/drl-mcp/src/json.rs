@@ -127,7 +127,16 @@ impl JsonValue {
 
   /// Parses a JSON string into a `JsonValue`.
   pub fn parse(input: &str) -> Result<Self, String> {
-    let mut parser = JsonParser::new(input);
+    Self::parse_with_limits(input, usize::MAX)
+  }
+
+  /// Parses JSON with a caller-selected maximum nesting depth.
+  ///
+  /// The default [`Self::parse`] entry point preserves the historical
+  /// unlimited-depth behavior for protocol callers. File-facing boundaries
+  /// should select a finite limit before accepting untrusted input.
+  pub fn parse_with_limits(input: &str, max_depth: usize) -> Result<Self, String> {
+    let mut parser = JsonParser::new(input, max_depth);
     let value = parser.parse_value()?;
     parser.skip_whitespace();
     if !parser.is_eof() {
@@ -356,14 +365,16 @@ fn number_literal_is_integer(raw: &str) -> bool {
 struct JsonParser<'a> {
   chars: Vec<char>,
   pos: usize,
+  max_depth: usize,
   _phantom: std::marker::PhantomData<&'a str>,
 }
 
 impl<'a> JsonParser<'a> {
-  fn new(input: &'a str) -> Self {
+  fn new(input: &'a str, max_depth: usize) -> Self {
     Self {
       chars: input.chars().collect(),
       pos: 0,
+      max_depth,
       _phantom: std::marker::PhantomData,
     }
   }
@@ -395,13 +406,23 @@ impl<'a> JsonParser<'a> {
   }
 
   fn parse_value(&mut self) -> Result<JsonValue, String> {
+    self.parse_value_at_depth(0)
+  }
+
+  fn parse_value_at_depth(&mut self, depth: usize) -> Result<JsonValue, String> {
+    if depth > self.max_depth {
+      return Err(format!(
+        "JSON nesting exceeds maximum depth {}",
+        self.max_depth
+      ));
+    }
     self.skip_whitespace();
     match self.peek() {
       Some('n') => self.parse_null(),
       Some('t') | Some('f') => self.parse_bool(),
       Some('"') => self.parse_string().map(JsonValue::String),
-      Some('[') => self.parse_array(),
-      Some('{') => self.parse_object(),
+      Some('[') => self.parse_array(depth),
+      Some('{') => self.parse_object(depth),
       Some(c) if c == '-' || c.is_ascii_digit() => self.parse_number(),
       Some(other) => Err(format!(
         "Unexpected character '{other}' at index {} in JSON input",
@@ -575,7 +596,7 @@ impl<'a> JsonParser<'a> {
     Ok(JsonValue::Number(num))
   }
 
-  fn parse_array(&mut self) -> Result<JsonValue, String> {
+  fn parse_array(&mut self, depth: usize) -> Result<JsonValue, String> {
     if self.advance() != Some('[') {
       return Err(format!("Expected '[' at index {}", self.pos));
     }
@@ -587,7 +608,7 @@ impl<'a> JsonParser<'a> {
 
     let mut items = Vec::new();
     loop {
-      let val = self.parse_value()?;
+      let val = self.parse_value_at_depth(depth.saturating_add(1))?;
       items.push(val);
       self.skip_whitespace();
       match self.peek() {
@@ -610,7 +631,7 @@ impl<'a> JsonParser<'a> {
     Ok(JsonValue::Array(items))
   }
 
-  fn parse_object(&mut self) -> Result<JsonValue, String> {
+  fn parse_object(&mut self, depth: usize) -> Result<JsonValue, String> {
     if self.advance() != Some('{') {
       return Err(format!("Expected '{{' at index {}", self.pos));
     }
@@ -628,7 +649,7 @@ impl<'a> JsonParser<'a> {
       if self.advance() != Some(':') {
         return Err(format!("Expected ':' after key at index {}", self.pos));
       }
-      let val = self.parse_value()?;
+      let val = self.parse_value_at_depth(depth.saturating_add(1))?;
       entries.insert(key, val);
       self.skip_whitespace();
       match self.peek() {

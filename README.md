@@ -20,6 +20,7 @@ The project delivers a pure, deterministic headless simulation core, an interact
 - **WebGPU Browser Edition**: High-performance pixel-art graphics rendered via native WebGPU shaders in desktop Chromium browsers, with an accessible HTML shell and offline PWA service worker caching.
 - **Semantics-Bound Browser Saves**: V3 local saves bind the fixed-content, gameplay, RNG-sampling, generator, and ruleset identities; incompatible or provenance-free histories are rejected safely with a clear recovery path.
 - **Model Context Protocol (MCP) Interface**: Full stdio JSON-RPC 2.0 tool suite (`step`, `observe`, `list_actions`, `verify_replay`) allowing AI assistants (Claude, Antigravity, custom agents) to play and evaluate scenarios. The zero-dependency JSON boundary accepts valid UTF-16 surrogate-pair escapes and rejects malformed surrogate or raw-control input before dispatch.
+- **Replay-File Verification CLI**: The native `drl-rs replay verify [path|-]` command reads the exact canonical V2 replay envelope from a bounded UTF-8 file or stdin and performs a deterministic double-run check with stable diagnostics.
 - **Reviewable Determinism Controls**: Protected simulation and legacy-fidelity paths require an attributable independent determinism-review receipt, with repository and browser checks enforced on `main`.
 - **Rich Tactical Arsenal**: Typed weapon behavior covers six chainfire families (BFG 10K, Chaingun, Minigun, Plasma Rifle, Laser Rifle, and Nuclear Plasma Rifle) with one deterministic initial/warming/sustained/saturated whole-rule model, full-burst atomic ammunition checks, and fixed-target continuation. It also covers deterministic BFG fanout, BFG 9000 actor fanout, shotgun reloads, kinetic pellet knockback, plasma energy volleys, and exotic unique artifacts (Trigun, Subtle Knife, Grammaton).
 - **Procedural Dungeon Generation**: Deterministic level layouts with rooms, corridors, stairwells, fluid hazard terrains (acid, lava, mud), and dynamic monster spawning.
@@ -43,6 +44,10 @@ cargo run -p drl-app --bin drl-rs
 
 # Run deterministic procedural cohort study
 cargo run -p drl-app --bin drl-rs -- cohort --seed 42 --episodes 100 --bot greedy
+
+# Verify a canonical V2 replay file (use `-` to read JSON from stdin)
+cargo run -p drl-app --bin drl-rs -- replay verify path/to/replay.json
+cargo run -p drl-app --bin drl-rs -- replay verify - < path/to/replay.json
 
 # Validate the fixed accepted/rejected transaction benchmark contract
 sh scripts/check-transaction-benchmark.sh
