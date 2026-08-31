@@ -4,7 +4,8 @@ Last reviewed: 2026-08-31
 Current project version: `0.2.326`
 Audited starting checkpoint: `main` at
 `7735d47` (merged PR #440; M13 JSON compatibility reconciled)
-Delivery checkpoint: pending final implementation/review merge
+Delivery checkpoint: `main` at
+`fb22886` (merged PR #441; replay-file verification delivered)
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -24,8 +25,7 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 
 ## 2. Active implementation slice: M13/M6 — replay-file verification CLI
 
-Slice status: **implemented and locally verified**; final review and merge are
-pending.
+Slice status: **delivered and verified** at the delivery checkpoint above.
 
 ### 2.1 Objective
 
@@ -91,10 +91,11 @@ At audited starting revision `7735d47` (version `0.2.325`):
   and rejects the decoder's legacy replay-format alias at this boundary.
 - [x] Focused CLI tests, formatting, clippy, repository gate, web contracts,
   and version transition pass on the final revision.
-- [ ] An attributable independent determinism-review receipt covers the exact
-  final implementation commit; hosted Repository/WASM checks pass. Any
-  sole-maintainer Review policy failure is recorded truthfully with the live
-  documented exception.
+- [x] An attributable independent determinism-review receipt covers the exact
+  implementation commit `8ad2922a82a7edf4a12df359b48e9949ddd9bd18`; hosted
+  Repository/WASM checks pass for merged `fb2288644b4cabb7b28db15068801c9e79636f6e`.
+  The sole-maintainer Review policy failure is recorded truthfully with the
+  live documented `enforce_admins=false` exception.
 
 ### 2.6 Non-goals
 
@@ -111,7 +112,10 @@ The CLI proves current-Rust decoding and deterministic verification for a
 caller-supplied canonical V2 replay. It does not prove migration,
 cross-version compatibility, arbitrary external replay interchange, or
 browser, human, audiovisual, and legacy-runtime behavior; those surfaces
-remain open or `NOT_RUN` in the roadmap.
+remain open or `NOT_RUN` in the roadmap. The source implementation was
+independently reviewed at `8ad2922a82a7edf4a12df359b48e9949ddd9bd18`; the
+protected-path Review policy check failed closed for the sole maintainer and
+the merged PR used the documented live admin exception.
 
 ## 3. Enduring invariants
 
