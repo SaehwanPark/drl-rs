@@ -2662,6 +2662,44 @@ mod tests {
   }
 
   #[test]
+  fn late_rejection_preserves_session_without_outer_checkpoint() {
+    let mut session = BrowserSession::new().expect("fixed session");
+    let target_position = Position::new(5, 8);
+    let target_id = session
+      .game
+      .world_mut()
+      .spawn_monster(target_position, "Dropper", 1, 0, (1, 1))
+      .expect("spawn target");
+    session
+      .game
+      .world_mut()
+      .get_actor_mut(target_id)
+      .expect("target actor")
+      .set_death_drop(Some(ItemSpawnKind::SmallMedPack));
+    session
+      .game
+      .world_mut()
+      .map_mut()
+      .set_tile(target_position, Tile::Wall);
+    let game_before = session.game.clone();
+    let commands_before = session.commands.clone();
+    let replay_before = session.replay_log();
+
+    let error = session
+      .submit(Command::AttackMelee(Direction::East))
+      .expect_err("blocked death drop must reject");
+
+    assert_eq!(
+      error,
+      drl_protocol::CommandError::BlockedByTerrain(target_position).to_string()
+    );
+    assert_eq!(session.game, game_before);
+    assert_eq!(session.commands, commands_before);
+    assert_eq!(session.replay_log(), replay_before);
+    assert_eq!(session.last_error(), Some(error.as_str()));
+  }
+
+  #[test]
   fn snapshot_round_trip_replays_fixed_session_deterministically() {
     let mut session = BrowserSession::new().expect("fixed session");
     for command in [

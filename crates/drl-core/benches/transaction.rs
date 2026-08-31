@@ -16,6 +16,7 @@ const SCHEMA_VERSION: u32 = 1;
 const DEFAULT_ITERATIONS: usize = 100_000;
 const DEFAULT_SAMPLES: usize = 5;
 const DEFAULT_WARMUP: usize = 10_000;
+const BENCH_SEED: u64 = 42;
 const FIXTURE_WIDTH: u32 = 20;
 const FIXTURE_HEIGHT: u32 = 15;
 
@@ -254,7 +255,7 @@ fn emit_measurement(
 ) {
   let ns_per_operation = measurement.elapsed_ns / config.iterations as u128;
   println!(
-    "{{\"schema_version\":{SCHEMA_VERSION},\"benchmark\":\"{BENCHMARK_NAME}\",\"case\":\"{case}\",\"ownership\":\"core.rollback\",\"fixture_width\":{FIXTURE_WIDTH},\"fixture_height\":{FIXTURE_HEIGHT},\"sample\":{sample},\"median\":{is_median},\"iterations\":{},\"warmup\":{},\"elapsed_ns\":{},\"ns_per_operation\":{ns_per_operation},\"operations_per_second\":{},\"allocations\":{},\"deallocations\":{},\"allocated_bytes\":{},\"deallocated_bytes\":{}}}",
+    "{{\"schema_version\":{SCHEMA_VERSION},\"benchmark\":\"{BENCHMARK_NAME}\",\"case\":\"{case}\",\"ownership\":\"core.rollback\",\"seed\":{BENCH_SEED},\"fixture_width\":{FIXTURE_WIDTH},\"fixture_height\":{FIXTURE_HEIGHT},\"sample\":{sample},\"median\":{is_median},\"iterations\":{},\"warmup\":{},\"elapsed_ns\":{},\"ns_per_operation\":{ns_per_operation},\"operations_per_second\":{},\"allocations\":{},\"deallocations\":{},\"allocated_bytes\":{},\"deallocated_bytes\":{}}}",
     config.iterations,
     config.warmup,
     measurement.elapsed_ns,
@@ -292,19 +293,37 @@ fn run_case(
 }
 
 fn wait_game() -> Game {
-  Game::new_arena(0xD1A001, FIXTURE_WIDTH, FIXTURE_HEIGHT).expect("fixed arena")
+  Game::new_arena(BENCH_SEED, FIXTURE_WIDTH, FIXTURE_HEIGHT).expect("fixed arena")
 }
 
 fn move_game() -> Game {
-  Game::new(0xD1A002, FIXTURE_WIDTH, FIXTURE_HEIGHT, Position::new(2, 1)).expect("fixed arena")
+  Game::new(
+    BENCH_SEED,
+    FIXTURE_WIDTH,
+    FIXTURE_HEIGHT,
+    Position::new(2, 1),
+  )
+  .expect("fixed arena")
 }
 
 fn blocked_move_game() -> Game {
-  Game::new(0xD1A003, FIXTURE_WIDTH, FIXTURE_HEIGHT, Position::new(1, 1)).expect("fixed arena")
+  Game::new(
+    BENCH_SEED,
+    FIXTURE_WIDTH,
+    FIXTURE_HEIGHT,
+    Position::new(1, 1),
+  )
+  .expect("fixed arena")
 }
 
 fn out_of_bounds_ranged_game() -> Game {
-  Game::new(0xD1A004, FIXTURE_WIDTH, FIXTURE_HEIGHT, Position::new(1, 1)).expect("fixed arena")
+  Game::new(
+    BENCH_SEED,
+    FIXTURE_WIDTH,
+    FIXTURE_HEIGHT,
+    Position::new(1, 1),
+  )
+  .expect("fixed arena")
 }
 
 fn json_string(value: &str) -> String {
@@ -332,7 +351,7 @@ fn main() {
     .unwrap_or_default()
     .as_secs();
   println!(
-    "{{\"schema_version\":{SCHEMA_VERSION},\"benchmark\":\"{BENCHMARK_NAME}\",\"kind\":\"metadata\",\"revision\":\"{}\",\"timestamp_unix\":{timestamp_unix},\"rust_version\":\"{}\",\"arch\":\"{}\",\"os\":\"{}\",\"profile\":\"bench\",\"fixture_width\":{FIXTURE_WIDTH},\"fixture_height\":{FIXTURE_HEIGHT},\"ownership\":\"core.rollback\"}}",
+    "{{\"schema_version\":{SCHEMA_VERSION},\"benchmark\":\"{BENCHMARK_NAME}\",\"kind\":\"metadata\",\"revision\":\"{}\",\"timestamp_unix\":{timestamp_unix},\"rust_version\":\"{}\",\"arch\":\"{}\",\"os\":\"{}\",\"profile\":\"bench\",\"seed\":{BENCH_SEED},\"fixture_width\":{FIXTURE_WIDTH},\"fixture_height\":{FIXTURE_HEIGHT},\"ownership\":\"core.rollback\"}}",
     json_string(&revision),
     json_string(&rust_version),
     std::env::consts::ARCH,

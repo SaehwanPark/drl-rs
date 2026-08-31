@@ -40,6 +40,8 @@ if metadata.get("profile") != "bench":
     raise SystemExit("transaction benchmark must use the optimized bench profile")
 if metadata.get("ownership") != "core.rollback":
     raise SystemExit("transaction benchmark ownership is not core.rollback")
+if metadata.get("seed") != 42:
+    raise SystemExit("transaction benchmark seed must remain 42")
 
 expected_cases = {
     "core.accepted.wait",
@@ -62,6 +64,8 @@ for case in expected_cases:
             raise SystemExit(f"{case} did not honor contract bounds")
         if record.get("ownership") != "core.rollback":
             raise SystemExit(f"{case} has an invalid ownership label")
+        if record.get("seed") != 42:
+            raise SystemExit(f"{case} did not use fixed seed 42")
         if record.get("elapsed_ns", 0) <= 0:
             raise SystemExit(f"{case} did no measurable work")
         for field in ("allocations", "deallocations", "allocated_bytes", "deallocated_bytes"):
