@@ -20,6 +20,7 @@ The project delivers a pure, deterministic headless simulation core, an interact
 - **WebGPU Browser Edition**: High-performance pixel-art graphics rendered via native WebGPU shaders in desktop Chromium browsers, with an accessible HTML shell and offline PWA service worker caching.
 - **Semantics-Bound Browser Saves**: V3 local saves bind the fixed-content, gameplay, RNG-sampling, generator, and ruleset identities; incompatible or provenance-free histories are rejected safely with a clear recovery path.
 - **Model Context Protocol (MCP) Interface**: Full stdio JSON-RPC 2.0 tool suite (`step`, `observe`, `list_actions`, `verify_replay`) allowing AI assistants (Claude, Antigravity, custom agents) to play and evaluate scenarios.
+- **Reviewable Determinism Controls**: Protected simulation and legacy-fidelity paths require an attributable independent determinism-review receipt, with repository and browser checks enforced on `main`.
 - **Rich Tactical Arsenal**: Typed weapon behavior covers six chainfire families (BFG 10K, Chaingun, Minigun, Plasma Rifle, Laser Rifle, and Nuclear Plasma Rifle) with one deterministic initial/warming/sustained/saturated whole-rule model, full-burst atomic ammunition checks, and fixed-target continuation. It also covers deterministic BFG fanout, BFG 9000 actor fanout, shotgun reloads, kinetic pellet knockback, plasma energy volleys, and exotic unique artifacts (Trigun, Subtle Knife, Grammaton).
 - **Procedural Dungeon Generation**: Deterministic level layouts with rooms, corridors, stairwells, fluid hazard terrains (acid, lava, mud), and dynamic monster spawning.
 
@@ -122,12 +123,12 @@ Contributions are welcome! Follow these steps to build and verify your changes:
    sh scripts/check-web.sh
    ```
    The repository check includes positive and negative fixtures for the
-   `SPEC.md` structural guard, so a historical multi-slice ledger fails before
-   broader validation runs.
+   `SPEC.md` structural guard and review/branch-policy contracts, so control-
+   plane drift fails before broader validation runs.
 3. **Coding Standards**:
    - Rust 2024 edition, 2-space indentation, no literal tabs, no trailing whitespace.
    - Code changes require a single `x.y.z` version bump in `VERSION` and `Cargo.toml`.
-   - See [CONTRIBUTING.md](CONTRIBUTING.md) for full pull request and review guidelines.
+   - See [CONTRIBUTING.md](CONTRIBUTING.md) and the [required-review decision](docs/steering/decisions/required-review-and-branch-protection.md) for pull request and review guidelines.
 
 ---
 

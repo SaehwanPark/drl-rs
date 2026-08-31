@@ -51,6 +51,9 @@ slice before implementation proceeds.
 - [`decisions/content-catalog-and-typed-behavior-model.md`](decisions/content-catalog-and-typed-behavior-model.md)
   — one authoritative compile-time catalog plus a bounded typed Rust behavior
   vocabulary instead of callback sprawl.
+- [`decisions/required-review-and-branch-protection.md`](decisions/required-review-and-branch-protection.md)
+  — attributable independent determinism-review receipts and required `main`
+  branch settings for protected paths.
 - [`audit-2026-08-23.md`](audit-2026-08-23.md) — audit findings that motivated
   the earlier 0.2.88 steering wave; retained as historical evidence.
 - [`drop-in-manifest.md`](drop-in-manifest.md) — file-level map for the steering/harness overlay.
