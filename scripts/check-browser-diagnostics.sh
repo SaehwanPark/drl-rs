@@ -26,6 +26,11 @@ grep -F 'Offline cache unavailable' "$offline_cache" >/dev/null
 grep -F 'updateViaCache: "none"' "$offline_cache" >/dev/null
 grep -F 'Offline cache update is ready' "$offline_cache" >/dev/null
 grep -F 'Audio unavailable' "$bootstrap" >/dev/null
+grep -F 'Saved session incompatible' "$wasm" >/dev/null
+grep -F 'Use Clear save to remove it, then save a new session from this build.' "$wasm" >/dev/null
+grep -F 'persistence_diagnostic_active' "$wasm" >/dev/null
+grep -F 'data-diagnostic-source' "$wasm" >/dev/null
+grep -F 'data-diagnostic-source' "$bootstrap" >/dev/null
 grep -F 'fn set_diagnostic' "$wasm" >/dev/null
 grep -F 'WebGPU presentation unavailable' "$wasm" >/dev/null
 if grep -F 'fetch(' "$bootstrap" >/dev/null; then

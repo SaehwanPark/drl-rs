@@ -1,9 +1,9 @@
 # Specification
 
 Last reviewed: 2026-08-31
-Current project version: `0.2.319`
+Current project version: `0.2.320`
 Audited checkpoint: `main` at
-`3796a2ff50c748c45b50ade1d07d68a3f9c06395` (merged PR #426)
+`262957e` (merged PR #427; branch input revision for this slice)
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -36,7 +36,7 @@ a gameplay feature.
 
 ### 2.2 Audited starting point
 
-At version `0.2.318`:
+At version `0.2.319`:
 
 - `drl-web::persistence` writes strict V2 tokens containing snapshot version,
   fixed-content identity, command count, and encoded commands;
@@ -62,8 +62,8 @@ not proof of compatibility with the state that originally wrote the token.
   from `drl-protocol`; it must not duplicate their numeric/string values.
 - **Core boundary:** `drl-core` remains the execution authority. This slice
   does not add snapshot policy or browser storage to core.
-- **Project version:** implementation advances `VERSION` from `0.2.318` to
-  `0.2.319`.
+- **Project version:** implementation advances `VERSION` from `0.2.319` to
+  `0.2.320`.
 - **Gameplay/replay semantics:** gameplay remains `127`; replay wire schema,
   RNG-sampling, generator, and ruleset identities do not change. Snapshot wire
   format advances from V2 to V3.
@@ -165,40 +165,40 @@ recorded identities.
 
 ### 2.8 Acceptance criteria
 
-- [ ] New snapshots encode V3 with canonical current content, gameplay,
+- [x] New snapshots encode V3 with canonical current content, gameplay,
   RNG-sampling, generator, and ruleset identities.
-- [ ] V3 round-trips empty and representative complete command histories with
+- [x] V3 round-trips empty and representative complete command histories with
   exact command order and canonical count encoding.
-- [ ] Production snapshot code imports semantic identities from
+- [x] Production snapshot code imports semantic identities from
   `drl-protocol` rather than duplicating checkpoint literals.
-- [ ] A mismatch in each identity field rejects before session construction or
+- [x] A mismatch in each identity field rejects before session construction or
   command execution and reports the specific incompatibility.
-- [ ] V1 and V2 fixtures reject as semantics-unbound; no automatic migration or
+- [x] V1 and V2 fixtures reject as semantics-unbound; no automatic migration or
   V3 rewrite occurs.
-- [ ] Unsupported future versions, malformed fields, count mismatch, unknown
+- [x] Unsupported future versions, malformed fields, count mismatch, unknown
   commands, oversized counts, and oversized tokens retain distinct bounded
   failure behavior where currently defined.
-- [ ] Every failed direct restore preserves exact active `BrowserSession`
+- [x] Every failed direct restore preserves exact active `BrowserSession`
   authority, including game and successful command history.
-- [ ] Every failed storage restore preserves the active session and original
+- [x] Every failed storage restore preserves the active session and original
   saved value except for the existing bounded quarantine policy.
-- [ ] Successful restore commits only after all commands execute and matches
+- [x] Successful restore commits only after all commands execute and matches
   direct fixed-session execution under the recorded identities.
-- [ ] Save/load browser controls expose an actionable incompatible-save
+- [x] Save/load browser controls expose an actionable incompatible-save
   diagnostic and preserve accessible clear/cancel recovery.
-- [ ] Replay V2 compatibility validation remains unchanged and no snapshot
+- [x] Replay V2 compatibility validation remains unchanged and no snapshot
   identity policy is moved into `drl-core`.
-- [ ] Focused native tests cover codec, compatibility ordering,
+- [x] Focused native tests cover codec, compatibility ordering,
   transactionality, storage recovery, and exact checkpoint fixtures.
-- [ ] Supported WASM/browser contract tests cover V3 save/load and incompatible
+- [x] Supported WASM/browser contract tests cover V3 save/load and incompatible
   stored-token recovery; unavailable human/audiovisual comparison stays
   `NOT_RUN`.
-- [ ] Independent determinism review returns `pass` after comparing the active
+- [x] Independent determinism review returns `pass` after comparing the active
   specification, implementation, tests, persistent-history identity, and
   rejection transaction.
 - [ ] `sh scripts/check-repository.sh` and `scripts/check-version.sh` pass; the
-  relevant hosted repository and WASM browser checks pass for the reviewed
-  revision.
+  relevant hosted repository checks pass for the reviewed revision. Local
+  WASM-target and headless Chrome checks pass; hosted CI remains pending.
 - [ ] On delivery, roadmap, architecture, changelog, browser persistence notes,
   and steering Gate A are reconciled from verified evidence.
 

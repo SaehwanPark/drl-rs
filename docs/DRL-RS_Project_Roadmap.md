@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-31
-Current project version: `0.2.319`
+Current project version: `0.2.320`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.319)
+## 3. Current Progress Summary (`VERSION` 0.2.320)
 
 ### Delivered Foundations
 
@@ -1192,9 +1192,17 @@ verification item uses explicit status semantics:
   Mjollnir, Subtle Knife, Trigun, Anti-Freak Jackal, Minigun, Onyx Armor,
   Phaseshift Armor, Gothic Armor, Malek's Armor, Cybernetic Armor, and
   Necroarmor, Medical Powerarmor, Lava Armor, and Shielded Armor variants;
-  syntax-versioned fixed-session snapshot tokens with localStorage persistence,
-  bounded rejected-save quarantine, and a static service-worker cache. Snapshot
-  semantics identity remains open under the active M10 slice.
+  semantics-bound V3 fixed-session snapshot tokens with localStorage
+  persistence, bounded rejected-save quarantine, and a static service-worker
+  cache. V3 binds the canonical fixed-content, gameplay, RNG-sampling,
+  generator, and ruleset identities; provenance-free V1/V2 histories are
+  rejected rather than replayed or migrated.
+- **M10 semantics-bound snapshot V3 candidate (`0.2.320`)**: Browser saves now carry the
+  complete interpreter identity, validate it before reconstruction, and commit
+  only a fully replayed temporary session. Native and supported WASM contract
+  checks cover exact V3 round trips, mismatch ordering, unbound legacy
+  rejection, bounded malformed input, and actionable browser recovery;
+  controlled human/browser capture remains `NOT_RUN` where unavailable.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
@@ -1203,21 +1211,20 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Latest Audited Checkpoint:** `main` merge commit `3796a2f`, merged PR #426,
-  audited tree `3d42ba5a`, and project version `0.2.318`. Hosted repository,
-  WASM browser, merge-commit CI, and Pages checks passed. The checkpointed
-  progression audit is
+- **Latest Audited Checkpoint:** `main` merge commit `262957e`, merged PR #427,
+  and project version `0.2.319`. Hosted repository, merge-commit CI, and Pages
+  checks passed for that baseline. The checkpointed progression audit is
   [`docs/steering/audit-2026-08-30-post-0.2.318.md`](steering/audit-2026-08-30-post-0.2.318.md).
-- **Steering Disposition — Major Correction, No Rewrite:** Preserve the
-  deterministic core, explicit RNG/replay identities, typed content,
-  observation boundary, and browser/MCP projections. Stop counter-only
-  chainfire continuations, bind browser command-history saves to their
-  interpreter identity, measure the interim rollback backstop, and restore an
-  independently auditable single-slice control plane.
-- **Active Slice (M10):** `SPEC.md` defines semantics-bound browser snapshot V3.
-  New tokens must carry fixed-content, gameplay, RNG-sampling, generator, and
-  ruleset identities; mismatches reject before command execution; V1/V2 tokens
-  remain provenance-free and may not be relabeled as current by assumption.
+- **Steering Disposition — Gate A candidate closure:** Preserve the deterministic
+  core, explicit RNG/replay identities, typed content, observation boundary, and
+  browser/MCP projections. The M10 candidate binds browser command histories to
+  their interpreter identity; Gate A remains pending hosted review and merge
+  while counter-only chainfire continuations remain stopped.
+- **M10 candidate (`0.2.320`):** Semantics-bound browser snapshot V3
+  carries fixed-content, gameplay, RNG-sampling, generator, and ruleset
+  identities; mismatches reject before command execution; V1/V2 tokens remain
+  provenance-free and are rejected without migration. The candidate is ready
+  for PR handoff after local and headless-browser verification.
 - **Next Eligible Slice (M9):** After M10 Gate A closes, consolidate chainfire
   into one evidenced typed state model for initial, second, sustained, and
   saturated states, including partial-ammunition policy, reset, target
@@ -3174,13 +3181,15 @@ Implement robust client-side save state and offline browser capabilities.
   [`docs/acceptance/browser-offline-2026-08-23.md`](acceptance/browser-offline-2026-08-23.md).
 - [x] Corruption recovery policy: fail-closed restore, bounded quarantine, and
   playable boot/load when storage cleanup is unavailable.
-- [x] Syntactic V1-to-V2 save migration after successful transactional restore;
-  storage-write failures remain playable warnings. V1/V2 do not bind gameplay
-  semantics and are not claimed cross-version compatible.
-- [ ] **Active slice:** snapshot V3 binds fixed content, gameplay,
+- [x] Historical syntactic V1-to-V2 save migration after successful
+  transactional restore; storage-write failures remained playable warnings.
+  V1/V2 did not bind gameplay semantics and were not claimed cross-version
+  compatible.
+- [x] Snapshot V3 binds fixed content, gameplay,
   RNG-sampling, generator, and ruleset identities; mismatches and provenance-
   free V1/V2 histories reject before execution while preserving the active
-  session and explicit recovery path.
+  session and explicit recovery path. The implementation advances the project
+  version to `0.2.320` and keeps replay V2 semantics unchanged.
 - [x] Explicit non-goal: No online accounts or centralized backend services.
 
 ---

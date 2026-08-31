@@ -20,12 +20,25 @@ fi
 cargo check --locked -p drl-web --target wasm32-unknown-unknown
 cargo test --locked -p drl-assets -p drl-render -p drl-audio -p drl-web
 
-if command -v wasm-pack >/dev/null 2>&1 \
-  && { command -v google-chrome >/dev/null 2>&1 \
-    || command -v google-chrome-stable >/dev/null 2>&1 \
-    || command -v chrome >/dev/null 2>&1 \
-    || command -v chromium >/dev/null 2>&1 \
-    || command -v chromium-browser >/dev/null 2>&1; }; then
+browser_runner=""
+for browser_command in google-chrome google-chrome-stable chrome chromium chromium-browser; do
+  if command -v "$browser_command" >/dev/null 2>&1; then
+    browser_runner="$browser_command"
+    break
+  fi
+done
+if [ -z "$browser_runner" ]; then
+  for browser_path in \
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+    "/Applications/Chromium.app/Contents/MacOS/Chromium"; do
+    if [ -x "$browser_path" ]; then
+      browser_runner="$browser_path"
+      break
+    fi
+  done
+fi
+
+if command -v wasm-pack >/dev/null 2>&1 && [ -n "$browser_runner" ]; then
   wasm-pack test --headless --chrome crates/drl-web
 else
   printf '%s\n' 'WASM browser runner unavailable; native contract tests passed, browser tests NOT_RUN.'

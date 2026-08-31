@@ -26,7 +26,9 @@ function writeStatus(message) {
   status.textContent = message;
 }
 
-function writeDiagnostic(title, detail, action) {
+function writeDiagnostic(title, detail, action, source = "general") {
+  if (diagnostics.getAttribute("data-diagnostic-source") === "persistence" && source !== "persistence") return;
+  diagnostics.setAttribute("data-diagnostic-source", source);
   diagnosticTitle.textContent = title;
   diagnosticDetail.textContent = detail;
   diagnosticAction.textContent = action;
@@ -34,11 +36,28 @@ function writeDiagnostic(title, detail, action) {
   diagnostics.focus({ preventScroll: true });
 }
 
-function clearDiagnostic() {
+function clearDiagnostic(source = null) {
+  if (source !== null && diagnostics.getAttribute("data-diagnostic-source") !== source) return;
+  diagnostics.removeAttribute("data-diagnostic-source");
   diagnostics.hidden = true;
   diagnosticTitle.textContent = "Browser support diagnostic";
   diagnosticDetail.textContent = "";
   diagnosticAction.textContent = "";
+}
+
+function writePersistenceStatus(message) {
+  const incompatible = message.startsWith(" Saved session ignored")
+    || message.startsWith("Saved session ignored");
+  if (incompatible) {
+    diagnostics.setAttribute("data-diagnostic-source", "persistence");
+  } else if (
+    message.startsWith("Session saved")
+    || message.startsWith("Session loaded")
+    || message.startsWith("Saved session cleared")
+  ) {
+    clearDiagnostic("persistence");
+  }
+  writeStatus(message);
 }
 
 function queueAudioSetting(setting) {
@@ -92,6 +111,9 @@ start.addEventListener("click", async () => {
     // `boot()` writes the accurate ready/suspended/unavailable audio state.
     // Keep that message instead of assuming audio or graphics success.
     const readyMessage = status.textContent || `Ready (${result}).`;
+    if (readyMessage.includes("Saved session ignored")) {
+      diagnostics.setAttribute("data-diagnostic-source", "persistence");
+    }
     const offlineMessage = await offlineCacheReady;
     if (offlineMessage.includes("Offline cache unavailable")) {
       writeDiagnostic(
@@ -118,15 +140,20 @@ inventory.addEventListener("click", (event) => {
 });
 
 restart.addEventListener("click", () => {
-  if (started) writeStatus(restart_game());
+  if (!started) return;
+  const message = restart_game();
+  if (message === "Restarted deterministic M4 session.") {
+    clearDiagnostic("persistence");
+  }
+  writeStatus(message);
 });
 
 saveButton.addEventListener("click", () => {
-  if (started) writeStatus(save());
+  if (started) writePersistenceStatus(save());
 });
 
 loadButton.addEventListener("click", () => {
-  if (started) writeStatus(load());
+  if (started) writePersistenceStatus(load());
 });
 
 function closeClearSaveDialog(statusMessage) {
@@ -146,7 +173,10 @@ cancelClearSaveButton.addEventListener("click", () => {
 });
 
 confirmClearSaveButton.addEventListener("click", () => {
-  closeClearSaveDialog(clear_save());
+  const message = clear_save();
+  writePersistenceStatus(message);
+  clearSaveDialog.hidden = true;
+  clearSaveButton.focus();
 });
 
 document.addEventListener("keydown", (event) => {

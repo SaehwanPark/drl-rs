@@ -373,7 +373,7 @@ pub fn validate_texture_source_dimensions(
 }
 
 /// A browser-facing simulation session with transactional command handling.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BrowserSession {
   game: Game,
   last_error: Option<String>,
@@ -683,8 +683,8 @@ pub(crate) mod wasm {
     static VISIBILITY_LISTENER: RefCell<Option<Closure<dyn FnMut()>>> = const { RefCell::new(None) };
   }
 
-  const SAVE_STORAGE_KEY: &str = "drl-rust:m4-session:v1";
-  const REJECTED_SAVE_STORAGE_KEY: &str = "drl-rust:m4-session:v1:rejected";
+  pub(crate) const SAVE_STORAGE_KEY: &str = "drl-rust:m4-session:v1";
+  pub(crate) const REJECTED_SAVE_STORAGE_KEY: &str = "drl-rust:m4-session:v1:rejected";
 
   fn browser_storage() -> Result<Storage, SnapshotError> {
     let window = web_sys::window()
@@ -697,25 +697,11 @@ pub(crate) mod wasm {
       .ok_or_else(|| SnapshotError::Initialization("localStorage unavailable".to_string()))
   }
 
-  fn persist_session(session: &BrowserSession) -> Result<(), SnapshotError> {
+  pub(crate) fn persist_session(session: &BrowserSession) -> Result<(), SnapshotError> {
     let token = session.snapshot_token()?;
     browser_storage()?
       .set_item(SAVE_STORAGE_KEY, &token)
       .map_err(|error| SnapshotError::Initialization(format!("save failed: {error:?}")))
-  }
-
-  fn migrate_legacy_snapshot(
-    session: &BrowserSession,
-    format: persistence::SnapshotFormat,
-  ) -> Option<String> {
-    (format == persistence::SnapshotFormat::V1)
-      .then(|| persist_session(session).err())
-      .flatten()
-      .map(|error| {
-        format!(
-          " Legacy save restored, but migration to the current format failed ({error}); use Save to retry."
-        )
-      })
   }
 
   fn remove_persisted_session() -> Result<(), SnapshotError> {
@@ -730,7 +716,10 @@ pub(crate) mod wasm {
       .map_err(|error| SnapshotError::Initialization(format!("quarantine clear failed: {error:?}")))
   }
 
-  fn quarantine_persisted_session(token: &str, error: &SnapshotError) -> Result<(), SnapshotError> {
+  pub(crate) fn quarantine_persisted_session(
+    token: &str,
+    error: &SnapshotError,
+  ) -> Result<(), SnapshotError> {
     let storage = browser_storage()?;
     let record = persistence::encode_quarantine_record(token, error);
     storage
@@ -762,12 +751,18 @@ pub(crate) mod wasm {
   }
 
   fn save_after_command(session: &BrowserSession) -> Option<String> {
-    persist_session(session).err().map(|error| {
+    let warning = persist_session(session).err().map(|error| {
       format!(" Save warning: current session was not persisted ({error}); use Save to retry.")
-    })
+    });
+    if warning.is_none() {
+      if let Some(document) = web_sys::window().and_then(|window| window.document()) {
+        clear_persistence_diagnostic(&document);
+      }
+    }
+    warning
   }
 
-  fn read_persisted_session() -> Result<Option<String>, SnapshotError> {
+  pub(crate) fn read_persisted_session() -> Result<Option<String>, SnapshotError> {
     browser_storage()?
       .get_item(SAVE_STORAGE_KEY)
       .map_err(|error| SnapshotError::Initialization(format!("load failed: {error:?}")))
@@ -1474,9 +1469,48 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
     }
   }
 
+  fn clear_persistence_diagnostic(document: &web_sys::Document) {
+    let Some(panel) = document.get_element_by_id("game-diagnostics") else {
+      return;
+    };
+    let persistence_diagnostic_active = document
+      .get_element_by_id("diagnostics-title")
+      .and_then(|node| node.text_content())
+      .as_deref()
+      == Some("Saved session incompatible");
+    if !persistence_diagnostic_active {
+      return;
+    }
+    let _ = panel.set_attribute("hidden", "");
+    let _ = panel.remove_attribute("data-diagnostic-source");
+    if let Some(title_node) = document.get_element_by_id("diagnostics-title") {
+      title_node.set_text_content(Some("Browser support diagnostic"));
+    }
+    if let Some(detail_node) = document.get_element_by_id("diagnostics-detail") {
+      detail_node.set_text_content(Some(""));
+    }
+    if let Some(action_node) = document.get_element_by_id("diagnostics-action") {
+      action_node.set_text_content(Some(""));
+    }
+  }
+
   fn set_diagnostic(document: &web_sys::Document, title: &str, detail: &str, action: &str) {
+    let persistence_diagnostic_active = document
+      .get_element_by_id("diagnostics-title")
+      .and_then(|node| node.text_content())
+      .as_deref()
+      == Some("Saved session incompatible");
+    if persistence_diagnostic_active && title != "Saved session incompatible" {
+      return;
+    }
     if let Some(panel) = document.get_element_by_id("game-diagnostics") {
       let _ = panel.remove_attribute("hidden");
+      let source = if title == "Saved session incompatible" {
+        "persistence"
+      } else {
+        "general"
+      };
+      let _ = panel.set_attribute("data-diagnostic-source", source);
     }
     if let Some(title_node) = document.get_element_by_id("diagnostics-title") {
       title_node.set_text_content(Some(title));
@@ -1649,14 +1683,7 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
       BrowserSession::new().map_err(|error| JsValue::from_str(&error.to_string()))?;
     let restore_message = match read_persisted_session() {
       Ok(Some(token)) => match session.restore_snapshot_with_format(&token) {
-        Ok(format) => {
-          let status = if format == persistence::SnapshotFormat::V1 {
-            " Restored and migrated the legacy saved session.".to_string()
-          } else {
-            " Restored the saved session.".to_string()
-          };
-          append_persistence_warning(status, migrate_legacy_snapshot(&session, format))
-        }
+        Ok(_) => " Restored the saved session.".to_string(),
         Err(error) => rejected_save_message(&token, &error),
       },
       Ok(None) => String::new(),
@@ -1701,6 +1728,14 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
       None => format!("{audio_message}{restore_message} Textures uploaded: {texture_count}."),
     };
     status.set_text_content(Some(&message));
+    if restore_message.starts_with(" Saved session ignored") {
+      set_diagnostic(
+        &document,
+        "Saved session incompatible",
+        &restore_message,
+        "Use Clear save to remove it, then save a new session from this build.",
+      );
+    }
     if let Err(error) = start_animation_loop() {
       set_status(
         &document,
@@ -1903,6 +1938,12 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
           let quarantine_warning = remove_rejected_session().err().map(|error| {
             format!(" Rejected-save quarantine clear warning: {error}; use Clear Save to retry.")
           });
+          let clear_warning = clear_warning.or(quarantine_warning);
+          if clear_warning.is_none() {
+            if let Some(document) = web_sys::window().and_then(|window| window.document()) {
+              clear_persistence_diagnostic(&document);
+            }
+          }
           ANIMATION_CLOCK.with(|clock| clock.borrow_mut().reset());
           let observation = session.observation();
           if let Some(document) = web_sys::window().and_then(|window| window.document()) {
@@ -1914,7 +1955,6 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
             session.particle_decal_sprites(),
           );
           let status = "Restarted deterministic M4 session.".to_string();
-          let clear_warning = clear_warning.or(quarantine_warning);
           if let Some(warning) = clear_warning.as_deref()
             && let Some(document) = web_sys::window().and_then(|window| window.document())
           {
@@ -1959,13 +1999,10 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
       session.restore_snapshot_with_format(&token)
     });
     match result {
-      Ok(format) => {
-        let migration_warning = SESSION.with(|session_slot| {
-          session_slot
-            .borrow()
-            .as_ref()
-            .and_then(|session| migrate_legacy_snapshot(session, format))
-        });
+      Ok(_) => {
+        if let Some(document) = web_sys::window().and_then(|window| window.document()) {
+          clear_persistence_diagnostic(&document);
+        }
         ANIMATION_CLOCK.with(|clock| clock.borrow_mut().reset());
         TARGET.with(|target_slot| *target_slot.borrow_mut() = None);
         if let Some(document) = web_sys::window().and_then(|window| window.document()) {
@@ -1980,14 +2017,20 @@ fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
             }
           });
         }
-        let status = if format == persistence::SnapshotFormat::V1 {
-          "Session loaded and migrated from the legacy format.".to_string()
-        } else {
-          "Session loaded from this device.".to_string()
-        };
-        append_persistence_warning(status, migration_warning)
+        "Session loaded from this device.".to_string()
       }
-      Err(error) => rejected_save_message(&token, &error),
+      Err(error) => {
+        let status = rejected_save_message(&token, &error);
+        if let Some(document) = web_sys::window().and_then(|window| window.document()) {
+          set_diagnostic(
+            &document,
+            "Saved session incompatible",
+            &status,
+            "Use Clear save to remove it, then save a new session from this build.",
+          );
+        }
+        status
+      }
     }
   }
 
@@ -2529,7 +2572,10 @@ mod tests {
     let expected_observation = session.observation();
     let expected_replay = session.replay_log();
     let token = session.snapshot_token().expect("snapshot encoding");
-    assert_eq!(token, "DRL-RUST-BROWSER-SAVE/2:fixed-m4-v1:4:mr;mr;mr;p");
+    assert_eq!(
+      token,
+      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:127:1:2:drl-rs-ruleset-v1:4:mr;mr;mr;p"
+    );
 
     let mut restored = BrowserSession::new().expect("fixed session");
     restored.restore_snapshot(&token).expect("snapshot restore");
@@ -2539,33 +2585,29 @@ mod tests {
   }
 
   #[test]
-  fn v1_snapshot_restores_and_reencodes_as_v2() {
-    let legacy = "DRL-RUST-BROWSER-SAVE/1:fixed-m4-v1:mr;mr;mr;p";
-    let mut expected = BrowserSession::new().expect("fixed session");
-    for command in [
-      Command::Move(Direction::East),
-      Command::Move(Direction::East),
-      Command::Move(Direction::East),
-      Command::Pickup,
-    ] {
-      expected.submit(command).expect("legal command");
-    }
-
-    let mut restored = BrowserSession::new().expect("fixed session");
-    restored
-      .restore_snapshot(legacy)
-      .expect("legacy snapshot restore");
-    assert_eq!(restored.observation(), expected.observation());
-    assert_eq!(restored.replay_log(), expected.replay_log());
+  fn v3_snapshot_round_trips_empty_history() {
+    let session = BrowserSession::new().expect("fixed session");
+    let token = session.snapshot_token().expect("snapshot encoding");
     assert_eq!(
-      restored.snapshot_token().expect("migrated encoding"),
-      "DRL-RUST-BROWSER-SAVE/2:fixed-m4-v1:4:mr;mr;mr;p"
+      token,
+      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:127:1:2:drl-rs-ruleset-v1:0:"
+    );
+    let decoded = persistence::decode_snapshot_with_format(&token).expect("snapshot decoding");
+    assert_eq!(decoded.format, persistence::SnapshotFormat::V3);
+    assert!(decoded.commands.is_empty());
+  }
+
+  #[test]
+  fn v1_and_v2_snapshots_are_rejected_as_unbound() {
+    let legacy = "DRL-RUST-BROWSER-SAVE/1:fixed-m4-v1:mr;mr;mr;p";
+    let mut restored = BrowserSession::new().expect("fixed session");
+    assert_eq!(
+      restored.restore_snapshot(legacy),
+      Err(SnapshotError::UnboundSemantics("1".to_string()))
     );
     assert_eq!(
-      persistence::decode_snapshot_with_format(legacy)
-        .expect("legacy decode")
-        .format,
-      persistence::SnapshotFormat::V1
+      restored.restore_snapshot("DRL-RUST-BROWSER-SAVE/2:fixed-m4-v1:4:mr;mr;mr;p"),
+      Err(SnapshotError::UnboundSemantics("2".to_string()))
     );
   }
 
@@ -2573,11 +2615,11 @@ mod tests {
   fn snapshot_rejects_corruption_and_unknown_versions() {
     let mut session = BrowserSession::new().expect("fixed session");
     assert_eq!(
-      session.restore_snapshot("DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:w"),
-      Err(SnapshotError::UnsupportedVersion("3".to_string()))
+      session.restore_snapshot("DRL-RUST-BROWSER-SAVE/4:fixed-m4-v1:127:1:2:drl-rs-ruleset-v1:0:"),
+      Err(SnapshotError::UnsupportedVersion("4".to_string()))
     );
     assert_eq!(
-      session.restore_snapshot("DRL-RUST-BROWSER-SAVE/1:other:w"),
+      session.restore_snapshot("DRL-RUST-BROWSER-SAVE/3:other:127:1:2:drl-rs-ruleset-v1:1:w"),
       Err(SnapshotError::UnsupportedContent("other".to_string()))
     );
     assert_eq!(
@@ -2608,25 +2650,96 @@ mod tests {
   }
 
   #[test]
+  fn snapshot_rejects_each_incompatible_identity_before_restore() {
+    let cases = [
+      (
+        "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:126:1:2:drl-rs-ruleset-v1:0:",
+        SnapshotError::UnsupportedGameplaySemantics {
+          found: 126,
+          expected: drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION,
+        },
+      ),
+      (
+        "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:127:0:2:drl-rs-ruleset-v1:0:",
+        SnapshotError::UnsupportedRngSamplingSemantics {
+          found: 0,
+          expected: drl_protocol::CURRENT_RNG_SAMPLING_SEMANTICS_VERSION,
+        },
+      ),
+      (
+        "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:127:1:1:drl-rs-ruleset-v1:0:",
+        SnapshotError::UnsupportedGeneratorSemantics {
+          found: 1,
+          expected: drl_protocol::CURRENT_GENERATOR_SEMANTICS_VERSION,
+        },
+      ),
+      (
+        "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:127:1:2:legacy-ruleset:0:",
+        SnapshotError::UnsupportedRuleset {
+          found: "legacy-ruleset".to_string(),
+          expected: drl_protocol::CURRENT_RULESET_ID.to_string(),
+        },
+      ),
+    ];
+    for (token, expected_error) in cases {
+      let mut session = BrowserSession::new().expect("fixed session");
+      session
+        .submit(Command::Move(Direction::East))
+        .expect("legal command");
+      let before = session.clone();
+      assert_eq!(session.restore_snapshot(token), Err(expected_error));
+      assert_eq!(session, before);
+    }
+  }
+
+  #[test]
+  fn snapshot_rejects_noncanonical_v3_numbers_and_count_mismatches() {
+    let mut session = BrowserSession::new().expect("fixed session");
+    for token in [
+      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:0127:1:2:drl-rs-ruleset-v1:0:",
+      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:+127:1:2:drl-rs-ruleset-v1:0:",
+      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:127:1:2:drl-rs-ruleset-v1:01:w",
+      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:127:1:2:drl-rs-ruleset-v1:2:w",
+      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:127:1:2:drl-rs-ruleset-v1:1:é",
+    ] {
+      assert_eq!(
+        session.restore_snapshot(token),
+        Err(SnapshotError::Malformed)
+      );
+    }
+  }
+
+  #[test]
   fn rejected_snapshot_keeps_the_active_session_unchanged() {
     let mut session = BrowserSession::new().expect("fixed session");
     session
       .submit(Command::Move(Direction::East))
       .expect("legal command");
-    let before_observation = session.observation();
-    let before_replay = session.replay_log();
-    let before_token = session.snapshot_token().expect("snapshot encoding");
+    let before = session.clone();
 
     assert_eq!(
       session.restore_snapshot("DRL-RUST-BROWSER-SAVE/1:fixed-m4-v1:w;;p"),
       Err(SnapshotError::Malformed)
     );
-    assert_eq!(session.observation(), before_observation);
-    assert_eq!(session.replay_log(), before_replay);
+    assert_eq!(session, before);
+  }
+
+  #[test]
+  fn late_replay_failure_keeps_the_active_session_unchanged() {
+    let mut session = BrowserSession::new().expect("fixed session");
+    session
+      .submit(Command::Move(Direction::East))
+      .expect("legal command");
+    let before = session.clone();
+    let token = "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:127:1:2:drl-rs-ruleset-v1:2:mr;x";
+
     assert_eq!(
-      session.snapshot_token().expect("snapshot encoding"),
-      before_token
+      session.restore_snapshot(token),
+      Err(SnapshotError::CommandRejected(
+        "no stairs present at current position (5, 8)".to_string(),
+      ))
     );
+    assert_eq!(session, before);
   }
 
   #[test]
@@ -14409,12 +14522,81 @@ mod tests {
 
 #[cfg(all(test, target_arch = "wasm32"))]
 mod wasm_tests {
+  use crate::{BrowserSession, Command, Direction, SnapshotError};
   use wasm_bindgen_test::*;
+  use web_sys::window;
 
   wasm_bindgen_test_configure!(run_in_browser);
 
   #[wasm_bindgen_test]
   fn key_contract_is_stable() {
     assert!(crate::key_command("ArrowUp").contains("Move"));
+  }
+
+  #[wasm_bindgen_test]
+  fn v3_storage_round_trip_and_rejection_quarantine_are_bounded() {
+    let storage = window()
+      .expect("browser window")
+      .local_storage()
+      .expect("localStorage access")
+      .expect("localStorage available");
+    storage
+      .remove_item(crate::wasm::SAVE_STORAGE_KEY)
+      .expect("remove active save");
+    storage
+      .remove_item(crate::wasm::REJECTED_SAVE_STORAGE_KEY)
+      .expect("remove rejected save");
+
+    let mut expected = BrowserSession::new().expect("fixed session");
+    expected
+      .submit(Command::Move(Direction::East))
+      .expect("legal command");
+    let token = expected.snapshot_token().expect("snapshot encoding");
+    crate::wasm::persist_session(&expected).expect("persist V3 snapshot");
+    assert_eq!(
+      crate::wasm::read_persisted_session().expect("read V3 snapshot"),
+      Some(token.clone())
+    );
+
+    let mut restored = BrowserSession::new().expect("fixed session");
+    restored
+      .restore_snapshot(&token)
+      .expect("restore V3 snapshot");
+    assert_eq!(restored, expected);
+
+    let rejected_token = token.replace(":127:", ":126:");
+    storage
+      .set_item(crate::wasm::SAVE_STORAGE_KEY, &rejected_token)
+      .expect("write rejected active save");
+    let before = restored.clone();
+    let error = restored
+      .restore_snapshot(&rejected_token)
+      .expect_err("incompatible snapshot must reject");
+    assert_eq!(
+      error,
+      SnapshotError::UnsupportedGameplaySemantics {
+        found: 126,
+        expected: drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION,
+      }
+    );
+    assert_eq!(restored, before);
+    crate::wasm::quarantine_persisted_session(&rejected_token, &error)
+      .expect("quarantine rejected snapshot");
+    assert!(
+      crate::wasm::read_persisted_session()
+        .expect("read cleared active save")
+        .is_none()
+    );
+    let rejected_record = storage
+      .get_item(crate::wasm::REJECTED_SAVE_STORAGE_KEY)
+      .expect("read quarantine")
+      .expect("quarantine record");
+    assert!(rejected_record.contains("error=unsupported snapshot gameplay semantics"));
+    storage
+      .remove_item(crate::wasm::SAVE_STORAGE_KEY)
+      .expect("cleanup active save");
+    storage
+      .remove_item(crate::wasm::REJECTED_SAVE_STORAGE_KEY)
+      .expect("cleanup rejected save");
   }
 }

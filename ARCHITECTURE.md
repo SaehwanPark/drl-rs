@@ -1,7 +1,7 @@
 # Architecture
 
-Last reviewed: 2026-08-30
-Current project version: `0.2.318`
+Last reviewed: 2026-08-31
+Current project version: `0.2.320`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -461,12 +461,13 @@ Presentation Boundary
     and outline-mask straight-alpha compositing.
   - Browser animation loop: `requestAnimationFrame` driving elapsed rendering
     with `visibilitychange` clock rebasing.
-  - State Persistence: `SessionSnapshot` codec with localStorage save/load.
-    Rejected values are quarantined in a bounded browser-owned slot before
-    active storage cleanup; future version migration is explicit and gated.
-    The DOM shell requires an explicit accessible Clear Save confirmation before
-    calling the Rust-owned storage removal export; cancel and Escape do not
-    mutate the save or active simulation.
+  - State Persistence: V3 `SessionSnapshot` codec with localStorage save/load,
+    bound to canonical fixed-content and interpreter identities. Rejected
+    values are quarantined in a bounded browser-owned slot before active
+    storage cleanup; provenance-free V1/V2 histories are not replayed or
+    migrated. The DOM shell requires an explicit accessible Clear Save
+    confirmation before calling the Rust-owned storage removal export; cancel
+    and Escape do not mutate the save or active simulation.
   - Release Packaging: Bootstrap-independent service worker registration,
     service worker caching with no-HTTP-cache update checks and waiting-update
     status, release manifest validation, digest sidecars, checkout-identity
@@ -739,9 +740,12 @@ Presentation Boundary
 
 ### 4.9 Persistence & Release Packaging
 - **Session Snapshots**: `drl-web::persistence` encodes complete command
-  histories as strict V2 command-count tokens, accepts only the shipped V1
-  token for transactional replay, and migrates successful V1 restores in the
-  existing storage slot.
+  histories as strict V3 command-count tokens bound to the canonical fixed
+  content, gameplay, RNG-sampling, generator, and ruleset identities exported
+  by `drl-protocol`. V3 compatibility is validated before transactional replay;
+  syntactically valid V1/V2 histories are rejected as provenance-free rather
+  than replayed or migrated. Rejected browser saves follow the bounded
+  quarantine policy and leave the active session playable.
 - **Service Worker Cache**: Versioned same-origin worker caches static bundles
   keyed by project version and commit hash; reads open only the current release
   cache and fail closed when its shell/assets are absent.

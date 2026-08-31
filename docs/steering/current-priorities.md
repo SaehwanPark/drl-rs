@@ -1,10 +1,10 @@
 # Near-Term Development Steering
 
-Last reviewed: 2026-08-30
+Last reviewed: 2026-08-31
 Baseline branch: `main`
-Baseline merge commit: `3796a2ff50c748c45b50ade1d07d68a3f9c06395`
+Baseline merge commit: `262957e0d0471022a2128f8acba3120dd946f6e9`
 Latest pull request inspected: `#426`
-Baseline project version: `0.2.318`
+Baseline project version: `0.2.319`
 
 ## Purpose
 
@@ -29,8 +29,10 @@ Development has nevertheless optimized for locally reviewable increments more
 than for closing complete behavior rules. The clearest example is chainfire:
 the legacy rule groups all levels `2..255`, while recent Rust delivery repeatedly
 adds one plateau value and projects it through many boundaries. In parallel,
-browser command-history saves omit the gameplay identities that interpret
-them, and the interim full-state rollback backstop has no measured exit plan.
+baseline browser command-history saves omit the gameplay identities that
+interpret them, and the interim full-state rollback backstop has no measured
+exit plan. The current M10 candidate binds those histories and is pending its
+hosted PR/merge handoff before Gate A is retired.
 
 Near-term work must reduce those risks before more scalar breadth or another
 counter-level continuation becomes eligible.
