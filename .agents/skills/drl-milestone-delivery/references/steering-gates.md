@@ -1,7 +1,7 @@
 # DRL Delivery Steering Gates
 
-Last reviewed: 2026-08-30
-Baseline: `main` at `3796a2ff50c748c45b50ade1d07d68a3f9c06395`
+Last reviewed: 2026-08-31
+Baseline: `main` at `262957e0d0471022a2128f8acba3120dd946f6e9`
 
 ## Purpose
 

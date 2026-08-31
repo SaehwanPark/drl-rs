@@ -131,6 +131,11 @@ pub const CURRENT_GENERATOR_SEMANTICS_VERSION: u32 = 2;
 /// Ruleset/content identity expected by the current replay engine.
 pub const CURRENT_RULESET_ID: &str = "drl-rs-ruleset-v1";
 
+/// Fixed browser-session content identity expected by the current snapshot
+/// decoder. This identifies the deterministic M4 arena and its initial
+/// content, independently of the general ruleset identity.
+pub const CURRENT_FIXED_CONTENT_ID: &str = "fixed-m4-v1";
+
 /// Metadata header describing engine environment and replay context.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ReplayMetadata {

@@ -36,7 +36,11 @@ graph LR
 ### Top Action Bar
 - **Start Game**: Initializes WebGPU context and unlocks audio playback on first user gesture.
 - **Restart**: Restarts the session with the initial seed.
-- **Save / Load**: Saves game state to browser `localStorage` and restores on demand.
+- **Save / Load**: Saves a semantics-bound V3 command history to browser
+  `localStorage` and restores it only when fixed-content, gameplay, RNG,
+  generator, and ruleset identities match. Incompatible or provenance-free
+  saves are quarantined with an actionable diagnostic; the active session stays
+  playable.
 - **Clear Save**: Opens a modal confirmation dialog to safely wipe quarantined or saved session tokens.
 - **Mute / Volume**: Controls procedural Web Audio sound cues and master gain.
 

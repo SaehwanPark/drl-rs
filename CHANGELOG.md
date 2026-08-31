@@ -3,6 +3,19 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.320]
+
+- Delivered M10 semantics-bound browser snapshot V3. New local saves bind the
+  canonical fixed-content, gameplay, RNG-sampling, generator, and ruleset
+  identities and validate them before temporary reconstruction. Incompatible
+  identities and syntactically valid provenance-free V1/V2 histories reject
+  without simulation or migration; failed restores preserve the active
+  session, while browser storage keeps bounded quarantine and exposes an
+  actionable diagnostic. Native and WASM contract checks cover exact round
+  trips, command codec variants, mismatch ordering, malformed bounds, and
+  browser recovery. Replay V2 and `drl-core` gameplay semantics are unchanged;
+  controlled browser capture remains `NOT_RUN` where the runner is unavailable.
+
 ## [0.2.318]
 
 - Extended Chaingun chainfire with the pinned fourteenth warm-up level: after

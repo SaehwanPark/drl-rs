@@ -1,11 +1,15 @@
 //! Versioned fixed-session save tokens for the browser boundary.
 
-use drl_protocol::{Command, Direction, EquipmentSlot, ItemId, Position};
+use drl_protocol::{
+  CURRENT_FIXED_CONTENT_ID, CURRENT_GAMEPLAY_SEMANTICS_VERSION,
+  CURRENT_GENERATOR_SEMANTICS_VERSION, CURRENT_RNG_SAMPLING_SEMANTICS_VERSION, CURRENT_RULESET_ID,
+  Command, Direction, EquipmentSlot, ItemId, Position,
+};
 
 const SNAPSHOT_PREFIX: &str = "DRL-RUST-BROWSER-SAVE/";
 const SNAPSHOT_V1: &str = "1";
 const SNAPSHOT_V2: &str = "2";
-const SNAPSHOT_CONTENT: &str = "fixed-m4-v1";
+const SNAPSHOT_V3: &str = "3";
 const SNAPSHOT_MAX_BYTES: usize = 16 * 1024;
 const SNAPSHOT_MAX_COMMANDS: usize = 4096;
 #[cfg(any(target_arch = "wasm32", test))]
@@ -18,6 +22,16 @@ pub enum SnapshotError {
   UnsupportedVersion(String),
   /// The token targets a different fixed-session content profile.
   UnsupportedContent(String),
+  /// The token was written without the semantic identities required for safe restore.
+  UnboundSemantics(String),
+  /// The token targets a different gameplay semantics version.
+  UnsupportedGameplaySemantics { found: u32, expected: u32 },
+  /// The token targets a different bounded-RNG sampling semantics version.
+  UnsupportedRngSamplingSemantics { found: u32, expected: u32 },
+  /// The token targets a different procedural-generator semantics version.
+  UnsupportedGeneratorSemantics { found: u32, expected: u32 },
+  /// The token targets a different ruleset/content policy.
+  UnsupportedRuleset { found: String, expected: String },
   /// The token has an invalid prefix, command, number, or delimiter.
   Malformed,
   /// The token exceeds the bounded browser-session save policy.
@@ -34,8 +48,41 @@ impl std::fmt::Display for SnapshotError {
       Self::UnsupportedVersion(version) => {
         write!(formatter, "unsupported snapshot version {version}")
       }
-      Self::UnsupportedContent(content) => {
-        write!(formatter, "unsupported snapshot content {content}")
+      Self::UnsupportedContent(found) => {
+        write!(
+          formatter,
+          "unsupported snapshot content {found}; expected {CURRENT_FIXED_CONTENT_ID}"
+        )
+      }
+      Self::UnboundSemantics(version) => {
+        write!(
+          formatter,
+          "snapshot version {version} has no semantic identity; save it again with a compatible build"
+        )
+      }
+      Self::UnsupportedGameplaySemantics { found, expected } => {
+        write!(
+          formatter,
+          "unsupported snapshot gameplay semantics {found}; expected {expected}"
+        )
+      }
+      Self::UnsupportedRngSamplingSemantics { found, expected } => {
+        write!(
+          formatter,
+          "unsupported snapshot RNG sampling semantics {found}; expected {expected}"
+        )
+      }
+      Self::UnsupportedGeneratorSemantics { found, expected } => {
+        write!(
+          formatter,
+          "unsupported snapshot generator semantics {found}; expected {expected}"
+        )
+      }
+      Self::UnsupportedRuleset { found, expected } => {
+        write!(
+          formatter,
+          "unsupported snapshot ruleset {found}; expected {expected}"
+        )
       }
       Self::Malformed => write!(formatter, "malformed browser-session snapshot"),
       Self::TooLarge => write!(formatter, "browser-session snapshot is too large"),
@@ -51,6 +98,7 @@ impl std::error::Error for SnapshotError {}
 pub(crate) enum SnapshotFormat {
   V1,
   V2,
+  V3,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -149,25 +197,27 @@ fn encode_command(command: Command) -> Result<String, SnapshotError> {
 }
 
 fn decode_command(token: &str) -> Result<Command, SnapshotError> {
-  if token.is_empty() {
+  let mut characters = token.chars();
+  let opcode = characters.next().ok_or(SnapshotError::Malformed)?;
+  if !opcode.is_ascii() {
     return Err(SnapshotError::Malformed);
   }
-  let (opcode, rest) = token.split_at(1);
+  let rest = characters.as_str();
   match opcode {
-    "m" => Ok(Command::Move(parse_direction(rest)?)),
-    "a" => Ok(Command::AttackMelee(parse_direction(rest)?)),
-    "r" => Ok(Command::AttackRanged(parse_position(rest)?)),
-    "t" => Ok(Command::AttackRangedAimed(parse_position(rest)?)),
-    "h" => Ok(Command::AttackRangedChainfire(parse_position(rest)?)),
-    "w" if rest.is_empty() => Ok(Command::Wait),
-    "p" if rest.is_empty() => Ok(Command::Pickup),
-    "d" => Ok(Command::Drop(parse_item_id(rest)?)),
-    "e" => Ok(Command::Equip(parse_item_id(rest)?)),
-    "u" if rest == "w" => Ok(Command::Unequip(EquipmentSlot::Weapon)),
-    "u" if rest == "a" => Ok(Command::Unequip(EquipmentSlot::Armor)),
-    "c" => Ok(Command::Use(parse_item_id(rest)?)),
-    "v" => Ok(Command::Invoke(parse_item_id(rest)?)),
-    "b" => {
+    'm' => Ok(Command::Move(parse_direction(rest)?)),
+    'a' => Ok(Command::AttackMelee(parse_direction(rest)?)),
+    'r' => Ok(Command::AttackRanged(parse_position(rest)?)),
+    't' => Ok(Command::AttackRangedAimed(parse_position(rest)?)),
+    'h' => Ok(Command::AttackRangedChainfire(parse_position(rest)?)),
+    'w' if rest.is_empty() => Ok(Command::Wait),
+    'p' if rest.is_empty() => Ok(Command::Pickup),
+    'd' => Ok(Command::Drop(parse_item_id(rest)?)),
+    'e' => Ok(Command::Equip(parse_item_id(rest)?)),
+    'u' if rest == "w" => Ok(Command::Unequip(EquipmentSlot::Weapon)),
+    'u' if rest == "a" => Ok(Command::Unequip(EquipmentSlot::Armor)),
+    'c' => Ok(Command::Use(parse_item_id(rest)?)),
+    'v' => Ok(Command::Invoke(parse_item_id(rest)?)),
+    'b' => {
       let (item_id, confirmed) = rest.split_once(':').ok_or(SnapshotError::Malformed)?;
       let confirmed = match confirmed {
         "0" => false,
@@ -179,8 +229,8 @@ fn decode_command(token: &str) -> Result<Command, SnapshotError> {
         confirmed,
       })
     }
-    "l" if rest.is_empty() => Ok(Command::Reload),
-    "x" if rest.is_empty() => Ok(Command::Descend),
+    'l' if rest.is_empty() => Ok(Command::Reload),
+    'x' if rest.is_empty() => Ok(Command::Descend),
     _ => Err(SnapshotError::Malformed),
   }
 }
@@ -191,7 +241,7 @@ pub(crate) fn encode_snapshot(commands: &[Command]) -> Result<String, SnapshotEr
   }
   let payload = encode_payload(commands)?;
   let mut token = format!(
-    "{SNAPSHOT_PREFIX}{SNAPSHOT_V2}:{SNAPSHOT_CONTENT}:{}:",
+    "{SNAPSHOT_PREFIX}{SNAPSHOT_V3}:{CURRENT_FIXED_CONTENT_ID}:{CURRENT_GAMEPLAY_SEMANTICS_VERSION}:{CURRENT_RNG_SAMPLING_SEMANTICS_VERSION}:{CURRENT_GENERATOR_SEMANTICS_VERSION}:{CURRENT_RULESET_ID}:{}:",
     commands.len()
   );
   token.push_str(&payload);
@@ -223,14 +273,46 @@ fn decode_payload(payload: &str) -> Result<Vec<Command>, SnapshotError> {
   commands.map(decode_command).collect()
 }
 
+fn parse_canonical_u32(value: &str) -> Result<u32, SnapshotError> {
+  if value.is_empty()
+    || (value.len() > 1 && value.starts_with('0'))
+    || !value.bytes().all(|byte| byte.is_ascii_digit())
+  {
+    return Err(SnapshotError::Malformed);
+  }
+  value.parse::<u32>().map_err(|_| SnapshotError::Malformed)
+}
+
+fn parse_canonical_count(value: &str) -> Result<usize, SnapshotError> {
+  if value.is_empty()
+    || (value.len() > 1 && value.starts_with('0'))
+    || !value.bytes().all(|byte| byte.is_ascii_digit())
+  {
+    return Err(SnapshotError::Malformed);
+  }
+  let count = value
+    .parse::<usize>()
+    .map_err(|_| SnapshotError::TooLarge)?;
+  if count > SNAPSHOT_MAX_COMMANDS {
+    return Err(SnapshotError::TooLarge);
+  }
+  Ok(count)
+}
+
+fn require_content(content: &str) -> Result<(), SnapshotError> {
+  if content == CURRENT_FIXED_CONTENT_ID {
+    Ok(())
+  } else {
+    Err(SnapshotError::UnsupportedContent(content.to_string()))
+  }
+}
+
 fn decode_v1(versioned: &str) -> Result<DecodedSnapshot, SnapshotError> {
   let mut parts = versioned.splitn(2, ':');
   let Some(content) = parts.next() else {
     return Err(SnapshotError::Malformed);
   };
-  if content != SNAPSHOT_CONTENT {
-    return Err(SnapshotError::UnsupportedContent(content.to_string()));
-  }
+  require_content(content)?;
   let Some(payload) = parts.next() else {
     return Err(SnapshotError::Malformed);
   };
@@ -245,22 +327,11 @@ fn decode_v2(versioned: &str) -> Result<DecodedSnapshot, SnapshotError> {
   let Some(content) = parts.next() else {
     return Err(SnapshotError::Malformed);
   };
-  if content != SNAPSHOT_CONTENT {
-    return Err(SnapshotError::UnsupportedContent(content.to_string()));
-  }
+  require_content(content)?;
   let Some(count_text) = parts.next() else {
     return Err(SnapshotError::Malformed);
   };
-  let count = count_text
-    .parse::<usize>()
-    .map_err(|_| SnapshotError::Malformed)?;
-  if count > SNAPSHOT_MAX_COMMANDS || count.to_string() != count_text {
-    return Err(if count > SNAPSHOT_MAX_COMMANDS {
-      SnapshotError::TooLarge
-    } else {
-      SnapshotError::Malformed
-    });
-  }
+  let count = parse_canonical_count(count_text)?;
   let Some(payload) = parts.next() else {
     return Err(SnapshotError::Malformed);
   };
@@ -271,6 +342,55 @@ fn decode_v2(versioned: &str) -> Result<DecodedSnapshot, SnapshotError> {
   Ok(DecodedSnapshot {
     commands,
     format: SnapshotFormat::V2,
+  })
+}
+
+fn decode_v3(versioned: &str) -> Result<DecodedSnapshot, SnapshotError> {
+  let mut parts = versioned.splitn(7, ':');
+  let content = parts.next().ok_or(SnapshotError::Malformed)?;
+  require_content(content)?;
+
+  let gameplay = parse_canonical_u32(parts.next().ok_or(SnapshotError::Malformed)?)?;
+  if gameplay != CURRENT_GAMEPLAY_SEMANTICS_VERSION {
+    return Err(SnapshotError::UnsupportedGameplaySemantics {
+      found: gameplay,
+      expected: CURRENT_GAMEPLAY_SEMANTICS_VERSION,
+    });
+  }
+
+  let rng_sampling = parse_canonical_u32(parts.next().ok_or(SnapshotError::Malformed)?)?;
+  if rng_sampling != CURRENT_RNG_SAMPLING_SEMANTICS_VERSION {
+    return Err(SnapshotError::UnsupportedRngSamplingSemantics {
+      found: rng_sampling,
+      expected: CURRENT_RNG_SAMPLING_SEMANTICS_VERSION,
+    });
+  }
+
+  let generator = parse_canonical_u32(parts.next().ok_or(SnapshotError::Malformed)?)?;
+  if generator != CURRENT_GENERATOR_SEMANTICS_VERSION {
+    return Err(SnapshotError::UnsupportedGeneratorSemantics {
+      found: generator,
+      expected: CURRENT_GENERATOR_SEMANTICS_VERSION,
+    });
+  }
+
+  let ruleset = parts.next().ok_or(SnapshotError::Malformed)?;
+  if ruleset != CURRENT_RULESET_ID {
+    return Err(SnapshotError::UnsupportedRuleset {
+      found: ruleset.to_string(),
+      expected: CURRENT_RULESET_ID.to_string(),
+    });
+  }
+
+  let count = parse_canonical_count(parts.next().ok_or(SnapshotError::Malformed)?)?;
+  let payload = parts.next().ok_or(SnapshotError::Malformed)?;
+  let commands = decode_payload(payload)?;
+  if commands.len() != count {
+    return Err(SnapshotError::Malformed);
+  }
+  Ok(DecodedSnapshot {
+    commands,
+    format: SnapshotFormat::V3,
   })
 }
 
@@ -289,8 +409,15 @@ pub(crate) fn decode_snapshot_with_format(token: &str) -> Result<DecodedSnapshot
     return Err(SnapshotError::Malformed);
   };
   match version {
-    SNAPSHOT_V1 => decode_v1(remainder),
-    SNAPSHOT_V2 => decode_v2(remainder),
+    SNAPSHOT_V1 => {
+      decode_v1(remainder)?;
+      Err(SnapshotError::UnboundSemantics(version.to_string()))
+    }
+    SNAPSHOT_V2 => {
+      decode_v2(remainder)?;
+      Err(SnapshotError::UnboundSemantics(version.to_string()))
+    }
+    SNAPSHOT_V3 => decode_v3(remainder),
     _ => Err(SnapshotError::UnsupportedVersion(version.to_string())),
   }
 }

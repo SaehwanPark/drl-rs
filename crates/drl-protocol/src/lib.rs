@@ -23,10 +23,10 @@ pub use observation::{
   TileView,
 };
 pub use replay::{
-  CURRENT_GAMEPLAY_SEMANTICS_VERSION, CURRENT_GENERATOR_SEMANTICS_VERSION,
-  CURRENT_RNG_SAMPLING_SEMANTICS_VERSION, CURRENT_RULESET_ID, ItemSpawnKind, ItemSpawnSpec,
-  MonsterSpawnSpec, PlayerSpawnConfig, ProceduralGenerationConfig, ReplayExecutionError, ReplayLog,
-  ReplayMetadata, ReplayVersion,
+  CURRENT_FIXED_CONTENT_ID, CURRENT_GAMEPLAY_SEMANTICS_VERSION,
+  CURRENT_GENERATOR_SEMANTICS_VERSION, CURRENT_RNG_SAMPLING_SEMANTICS_VERSION, CURRENT_RULESET_ID,
+  ItemSpawnKind, ItemSpawnSpec, MonsterSpawnSpec, PlayerSpawnConfig, ProceduralGenerationConfig,
+  ReplayExecutionError, ReplayLog, ReplayMetadata, ReplayVersion,
 };
 pub use scenario::{ScenarioFixture, ScenarioMap};
 pub use types::{
@@ -58,5 +58,10 @@ mod tests {
     assert_eq!(replay.commands[0], Command::Move(Direction::East));
     assert_eq!(replay.commands[1], Command::Wait);
     assert_eq!(replay.version, ReplayVersion::V2);
+  }
+
+  #[test]
+  fn fixed_content_identity_is_exported_for_bound_snapshots() {
+    assert_eq!(CURRENT_FIXED_CONTENT_ID, "fixed-m4-v1");
   }
 }
