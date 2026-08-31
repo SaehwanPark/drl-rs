@@ -269,11 +269,13 @@ decision.
 
 Import only from the pinned legacy Git revision recorded in the asset manifest,
 never from a dirty checkout. Keep source path, attribution, license, and
-checksum records with every asset group. The graphics atlas is CC BY-SA 4.0;
-legacy code, audio/music, and fonts require separate rights decisions.
-Legacy-derived descriptive/creative text embedded in Rust or content
-definitions is also a separate provenance review question; see
-`docs/release-rights.md`.
+checksum records with every asset group. The graphics atlas is CC BY-SA 4.0.
+Legacy sound effects, music tracks, and bitmap fonts are approved for in-game
+use, but must remain untracked by Git and excluded from static distribution
+binaries. Use `scripts/prepare-legacy-assets.sh` to populate assets locally from
+the pre-downloaded checkout (`../doom-the-roughlike-original`) or official
+release binaries. Legacy-derived descriptive/creative text embedded in Rust or
+content definitions is reviewed under `docs/release-rights.md`.
 
 ---
 

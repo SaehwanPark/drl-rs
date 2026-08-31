@@ -1,7 +1,7 @@
 # Specification
 
-Last reviewed: 2026-08-30
-Current project version: `0.2.318`
+Last reviewed: 2026-08-31
+Current project version: `0.2.319`
 Audited checkpoint: `main` at
 `3796a2ff50c748c45b50ade1d07d68a3f9c06395` (merged PR #426)
 

@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
-Last reviewed: 2026-08-30
-Current project version: `0.2.318`
+Last reviewed: 2026-08-31
+Current project version: `0.2.319`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.318)
+## 3. Current Progress Summary (`VERSION` 0.2.319)
 
 ### Delivered Foundations
 
@@ -1252,8 +1252,17 @@ verification item uses explicit status semantics:
   repository and hosted ephemeral-key CI smoke coverage plus local private-key
   path/permission hygiene; production key governance and trust-root policy
   remain open.
+- **M3 Asset Clearance & Preparation (`0.2.319`)**: Approved sound effects,
+  music tracks, and bitmap fonts have an automated local preparation workflow
+  (`scripts/prepare-legacy-assets.sh`, `scripts/import-legacy-fonts.sh`,
+  `scripts/import-legacy-sound.sh`, `scripts/import-legacy-music.sh`), while
+  remaining untracked by Git (`.gitignore`) and excluded from static release
+  bundles. `scripts/check-assets.sh` verifies graphics integrity, audits
+  untracked Git safety, and reports optional local audio/font inventory;
+  client-side playback and decoding pipelines remain open.
 - **Open Audiovisual Parity (M8)**: Exact legacy outline/glow and lighting/LUT
-  equations from reference captures, HUD typography, and replacement audio.
+  equations from reference captures, HUD typography, and client-side audio/music/font
+  decoding and playback.
 - **Controlled Reference Captures (M3, M7, M8)**: Runtime captures are `NOT_RUN`
   on macOS arm64; pending execution in a controlled Linux x86-64 environment.
 - **Content Breadth & Balance (M9, M11)**: Full typed migration, expanded
@@ -1346,10 +1355,16 @@ Establish asset pipelines, licensing boundaries, and legacy capture manifests.
 - [x] Reference capture manifest tooling (`scripts/check-reference-capture.sh`).
 - [x] Automated capture manifest preflight fixture tests
   (`scripts/test-reference-capture.sh`).
+- [x] Asset approval policy, untracked Git boundaries (`.gitignore`), and
+  automated preparation tooling (`scripts/prepare-legacy-assets.sh`,
+  `scripts/import-legacy-fonts.sh`, `scripts/import-legacy-sound.sh`,
+  `scripts/import-legacy-music.sh`) for sound, music, and font assets.
+- [x] Automated asset audit and Git boundary verification (`scripts/check-assets.sh`).
 - [ ] Controlled legacy runtime captures in a rights-cleared Linux x86-64
   environment (currently `NOT_RUN` on macOS arm64).
 - [ ] Validated capture-to-game fidelity comparison matrix.
-- [ ] Rights clearance and asset tracking for audio, music, and fonts.
+- [ ] Client-side platform-neutral decoding interfaces in `drl-assets` and
+  `drl-audio` for optional sound, music, and font asset packs.
 
 ---
 
@@ -1527,7 +1542,20 @@ rigorous contracts.
 - [ ] Broader tint sources and content animation/effect timing.
 - [ ] Capture-backed particle decal visual regressions.
 - [ ] HUD typography, layout, and minimap parity.
-- [ ] Rights-cleared replacement audio and music tracks.
+- [ ] Bitmap font rendering: Decode and render legacy bitmap font glyphs
+  (`assets/legacy/drl/fonts/font10x19.png` / `font.dat`) into GPU text overlays,
+  HUD message logs, character sheets, and mortem displays.
+- [ ] Client sound effects pipeline: Map semantic `AudioCue` events to legacy
+  WAV audio buffers (from `assets/legacy/drlhq/sound/` and
+  `assets/legacy/drllq/sound/`) with procedural tone synthesis fallback when
+  WAV assets are absent.
+- [ ] Client background music player: Dynamic background music controller
+  supporting HQ MP3 tracks (`assets/legacy/drlhq/music/`) and LQ MIDI tracks
+  (`assets/legacy/drllq/music/`) mapped to dungeon episodes, danger states,
+  and victory/defeat screens.
+- [ ] Client-side asset mounting: Local filesystem asset loader for native
+  desktop/CLI builds and user-provided asset pack loading (via file picker,
+  drag-and-drop, or OPFS/IndexedDB) for browser clients.
 - [ ] Automated pixel-level and audio regression test harness.
 
 ---
@@ -3220,6 +3248,9 @@ diagnostics.
 - [ ] Production key custody, secret provisioning, rotation, and trust-root
   policy.
 - [ ] Dynamic WCAG 2.1 AA and screen-reader accessibility acceptance.
+- [ ] Client-side asset pack detection and diagnostic status in startup panel
+  (reporting presence of graphics, HQ/LQ audio, and bitmap fonts with automatic
+  procedural synthesis fallback).
 - [x] Real-world browser service-worker installation, offline navigation, and
   reload acceptance on the local desktop Chromium target; OS-level install
   prompts and production HTTPS deployment remain M13 scope.
@@ -3288,7 +3319,8 @@ invariants:
 - [ ] Cross-browser validation for Firefox and Safari.
 - [ ] Mobile/touch interface and responsive on-screen controls.
 - [ ] Gamepad / controller input support.
-- [ ] Native desktop application packaging for Linux, macOS, and Windows.
+- [ ] Native desktop application packaging for Linux, macOS, and Windows with
+  direct local filesystem asset directory loading.
 
 ---
 

@@ -7,6 +7,8 @@ Derek Yu and Łukasz Śliwiński and grants CC BY-SA 4.0. The copied `LICENSE`,
 `MANIFEST.txt`, and `SHA256SUMS` files are the machine-checkable attribution
 and revision record.
 
-The repository MIT license does not relicense these legacy graphics. Do not
-add legacy code (GPL), audio/music binaries, or fonts to the browser bundle
-without a separate rights decision.
+The repository MIT license does not relicense these legacy graphics. Sound
+effects, music tracks, and bitmap fonts are approved for in-game use when
+downloaded separately from official DRL binaries or prepared locally via
+`scripts/prepare-legacy-assets.sh`, but must remain untracked by Git and excluded
+from static release bundles. Legacy code (GPL) remains excluded.

@@ -117,7 +117,8 @@ Contributions are welcome! Follow these steps to build and verify your changes:
 
 ---
 
-## 📜 License
+## 📜 License & Asset Policy
 
 - **Source Code**: Licensed under the [MIT License](LICENSE).
-- **Legacy Graphics**: Original 2D graphics imported from ChaosForge under attribution in `assets/legacy/drl/graphics/LICENSE`.
+- **Legacy Graphics**: Original 2D graphics imported from ChaosForge under attribution in `assets/legacy/drl/graphics/LICENSE` ([CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)).
+- **Sound, Music & Fonts**: Approved for in-game use, downloaded separately from official DRL game binaries ([https://drl.chaosforge.org/](https://drl.chaosforge.org/)), and excluded from repository tracking and release distribution packages. See [`assets/README.md`](assets/README.md) for preparation instructions.
