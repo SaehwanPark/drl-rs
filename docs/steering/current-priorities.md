@@ -2,9 +2,9 @@
 
 Last reviewed: 2026-08-31
 Baseline branch: `main`
-Baseline merge commit: `180f7dd2d350b11c114ae4f5fdbc27ba12d32829`
-Latest pull request inspected: `#430`
-Baseline project version: `0.2.321` (active `0.2.322` candidate under review)
+Baseline merge commit: `1cd423374801772e9d5643d579f2d3465e3f0cc5`
+Latest pull request inspected: `#432`
+Baseline project version: `0.2.322`
 
 ## Purpose
 
@@ -16,9 +16,9 @@ The previous `0.2.88` steering wave successfully established command rejection
 evidence, unbiased RNG sampling, explicit replay metadata, routine content
 catalogs, and typed behavior foundations. Those results remain architecture and
 test invariants. The gates below supersede the old slice-selection order because
-the remaining risks are semantic micro-slicing, transaction cost, and
-control-plane drift; persistent-history compatibility remains a protected
-invariant, not an open gate, after Gate A closure.
+the remaining risks are semantic micro-slicing and control-plane drift;
+persistent-history compatibility and transaction ownership are protected
+invariants, not open gates, after Gate A and Gate C closure.
 
 ## Current diagnosis
 
@@ -31,11 +31,12 @@ than for closing complete behavior rules. The clearest example is chainfire:
 the legacy rule groups all levels `2..255`, while recent Rust delivery repeatedly
 adds one plateau value and projects it through many boundaries. In parallel,
 pre-M10 browser command-history saves omitted the gameplay identities that
-interpret them, and the interim full-state rollback backstop has no measured
-exit plan. M10 binds those histories and Gate A is closed; M9 now closes the
-whole-rule chainfire branch and Gate B. The remaining risks are rollback cost
-and control-plane drift. Persistent-history compatibility is a protected
-invariant, not a current risk or open gate.
+interpret them, and the interim full-state rollback backstop had no measured
+exit plan. M10 binds those histories and Gate A is closed; M9 closes the
+whole-rule chainfire branch and Gate B; M1/M11 measures transaction cost and
+closes Gate C. The remaining risk is control-plane drift. Persistent-history
+compatibility and transaction ownership are protected invariants, not current
+risks or open gates.
 
 Near-term work must reduce those risks before more scalar breadth or another
 counter-level continuation becomes eligible.
@@ -44,22 +45,17 @@ counter-level continuation becomes eligible.
 
 Until the remaining gates below close, select work in this order:
 
-1. **Measured transaction ownership (M1/M11)**
-   - establish command throughput/allocation baselines;
-   - remove redundant boundary clones where core atomicity is sufficient;
-   - move hot accepted paths toward validate/prepare/commit without weakening
-     exact rejection identity.
-2. **Reviewable control plane (M0)**
+1. **Reviewable control plane (M0)**
    - keep `SPEC.md` to one active slice;
    - require an attributable independent determinism review for every
      replay-visible or legacy-fidelity slice;
    - decide and enforce review/branch-protection policy before 1.0.
-3. **Vertical canonical fidelity**
+2. **Vertical canonical fidelity**
    - select bounded end-to-end mechanics that close a complete behavior branch.
-4. **Controlled reference captures**
+3. **Controlled reference captures**
    - run when the required environment exists; unavailable work stays
      `NOT_RUN`.
-5. **Resume broad content and platform expansion**
+4. **Resume broad content and platform expansion**
    - only after the applicable gates below close.
 
 ## Development stop gates
@@ -93,8 +89,8 @@ rejected result commits; it does not choose which result is canonical.
 
 M9 closes this gate in merged PR #430 (`180f7dd`) with the shared typed model,
 six-family saturation vectors, atomic under-supply checks, replay/MCP/
-BrowserSession parity, and an independent determinism review. Gate C is now the
-next stop gate.
+BrowserSession parity, and an independent determinism review. M1/M11 closes
+Gate C in merged PR #432; M0 control-plane work is now the next stop gate.
 
 ### Gate C — The rollback backstop has an exit budget
 
@@ -109,12 +105,13 @@ safe, and any retained full-state clone has a documented reason and budget.
 Exact `Game` equality on rejection remains an enduring invariant after this
 temporary gate closes.
 
-The active `0.2.322` candidate records this benchmark and ownership evidence,
-removes the redundant BrowserSession outer snapshot, and keeps the core's
-one-snapshot backstop with an explicit prepare/commit exit condition. MCP
-candidate clones remain fair-observation admission probes; inventory staging is
-local atomicity. Gate C remains open in this document until the candidate is
-merged, hosted checks pass, and the independent review artifact is reconciled.
+M1/M11 closed this gate in merged PR #432 (`1cd4233`) at version `0.2.322`.
+The five-case contract benchmark records accepted and rejected throughput and
+allocation behavior; the redundant BrowserSession outer snapshot is removed;
+the core one-snapshot backstop has an explicit prepare/commit exit condition;
+MCP candidate clones remain fair-observation admission probes; and inventory
+staging remains local atomicity. Local and hosted checks plus independent
+determinism and code reviews were reconciled against the merged revision.
 
 ### Gate D — Canonical scope and review are independently auditable
 
@@ -209,8 +206,8 @@ Retire each temporary gate when its acceptance evidence exists, promote durable
 invariants into accepted architecture/ADRs as appropriate, and update the
 roadmap and active specification from verified evidence.
 
-Re-audit before broad M9 migration resumes, or when the Gate C candidate is
-merged. The current audited tree is `main` at `180f7dd` (PR #430, version
-`0.2.321`); local and hosted checks passed for M9, while human, audiovisual,
-performance, and reference-capture surfaces remain `NOT_RUN` where
-prerequisites are unavailable.
+Re-audit before broad M9 migration resumes, or when a new stop-gate candidate
+is selected. The current audited tree is `main` at `1cd4233` (PR #432, version
+`0.2.322`); local and hosted checks plus independent reviews passed for Gate C,
+while human, audiovisual, performance, and reference-capture surfaces remain
+`NOT_RUN` where prerequisites are unavailable.
