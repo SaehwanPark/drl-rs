@@ -27,6 +27,8 @@ if [ -n "$whitespace_hits" ]; then
 fi
 
 git diff HEAD --check -- . ':(exclude)assets/legacy/drl/graphics/LICENSE'
+sh scripts/check-spec-structure.sh SPEC.md
+sh scripts/test-spec-structure.sh
 sh scripts/check-agent-harness.sh
 scripts/check-reference-capture.sh
 sh scripts/check-transaction-benchmark.sh

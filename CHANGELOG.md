@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.323]
+
+- Added a repository-level SPEC structural guard and deterministic fixture
+  contract. `check-repository.sh` now rejects duplicate or nested active-slice
+  headings and extra top-level history sections before broader validation;
+  gameplay, replay, RNG, protocol, content, and browser behavior are unchanged.
+
 ## [0.2.322]
 
 - Added a dependency-free, benchmark-only Gate C transaction baseline with

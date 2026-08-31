@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-31
-Current project version: `0.2.322`
+Current project version: `0.2.323`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.322)
+## 3. Current Progress Summary (`VERSION` 0.2.323)
 
 ### Delivered Foundations
 
@@ -1219,6 +1219,11 @@ verification item uses explicit status semantics:
   are classified as fair-observation admission probes, and inventory staging
   remains local. Local and hosted checks pass, and independent determinism and
   code reviews were reconciled against the merged main revision.
+- **M0 SPEC structural guard (`0.2.323`, candidate)**: A POSIX shell checker
+  validates the canonical three-section `SPEC.md` shape and exactly one active
+  implementation-slice heading. Deterministic temporary fixtures reject
+  duplicate/nested active slices and extra top-level history sections; the
+  candidate is pending hosted review and final reconciliation.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
@@ -1228,11 +1233,13 @@ verification item uses explicit status semantics:
 ### Active & Open Work
 
 - **Latest Audited Checkpoint:** `main` merge commit
-  `1cd423374801772e9d5643d579f2d3465e3f0cc5`, merged PR #432, and project
+  `cdb3660035576c23b88e0b8fa7473781d3161467`, merged PR #433, and project
   version `0.2.322`. Repository and WASM/browser hosted checks plus independent
-  determinism and code reviews pass for the delivered revision. Controlled
-  human, audiovisual, and reference-capture surfaces remain `NOT_RUN` where
-  prerequisites are unavailable. The checkpointed progression audit is
+  determinism and code reviews pass for the delivered revision. The `0.2.323`
+  M0 SPEC structural guard is the active candidate on a temporary branch.
+  Controlled human, audiovisual, and reference-capture surfaces remain
+  `NOT_RUN` where prerequisites are unavailable. The checkpointed progression
+  audit is
   [`docs/steering/audit-2026-08-30-post-0.2.318.md`](steering/audit-2026-08-30-post-0.2.318.md).
 - **Steering Disposition — Gate A closed:** Preserve the deterministic core,
   explicit RNG/replay identities, typed content, observation boundary, and
@@ -1262,9 +1269,10 @@ verification item uses explicit status semantics:
   benchmark, exact rejection matrix, browser regression, local checks, hosted
   checks, and independent reviews are reconciled against main at
   `1cd423374801772e9d5643d579f2d3465e3f0cc5`; Gate C is closed.
-- **Following Correctness Slice (M0):** Add a structural repository check that
-  keeps `SPEC.md` to one active slice and record/enforce the required
-  independent-review and branch-protection policy before 1.0.
+- **Active Candidate — M0 SPEC structural guard (`0.2.323`):** Add a
+  structural repository check that keeps `SPEC.md` to one active slice and
+  rejects historical ledger sections. The independent-review and
+  branch-protection policy remains a separate open M0 item.
 - **Process Gate (M0):** Keep `SPEC.md` bounded to one active slice and require
   an attributable independent determinism-review disposition for every
   replay-visible or legacy-fidelity slice. Record and enforce the repository's

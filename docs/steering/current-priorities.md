@@ -2,9 +2,9 @@
 
 Last reviewed: 2026-08-31
 Baseline branch: `main`
-Baseline merge commit: `1cd423374801772e9d5643d579f2d3465e3f0cc5`
-Latest pull request inspected: `#432`
-Baseline project version: `0.2.322`
+Baseline merge commit: `cdb3660035576c23b88e0b8fa7473781d3161467`
+Latest pull request inspected: `#433`
+Baseline project version: `0.2.322` (active `0.2.323` candidate)
 
 ## Purpose
 
@@ -123,6 +123,10 @@ Gate D closes as a temporary stop gate when structural checks prevent multiple
 active specifications and the repository records how required review is
 enforced. The enduring rule remains: `SPEC.md` expands one active slice, while
 delivered history belongs in the roadmap, changelog, evidence notes, and Git.
+
+The active `0.2.323` candidate adds the structural SPEC checker and deterministic
+fixture contract. The independent-review and branch-protection policy remains
+open until a separately scoped M0 slice records and enforces it.
 
 ### Gate E — Claims remain evidence-bounded
 
