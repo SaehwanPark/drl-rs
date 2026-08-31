@@ -44,6 +44,20 @@ run_fail() {
   fi
 }
 
+run_fail_metadata() {
+  if env \
+    DRL_REVIEW_POLICY_PR="$pr" \
+    DRL_REVIEW_POLICY_REPO="$repository" \
+    DRL_REVIEW_POLICY_FILES_JSON="$1" \
+    DRL_REVIEW_POLICY_AUTHOR="$author" \
+    DRL_REVIEW_POLICY_HEAD_SHA="$head_sha" \
+    DRL_REVIEW_POLICY_REVIEWS="${2:-[]}" \
+    "$script" "$check" >"$temp_root/output" 2>&1; then
+    printf 'Expected metadata policy failure, got:\n%s\n' "$(sed -n '1,40p' "$temp_root/output")" >&2
+    exit 1
+  fi
+}
+
 run_pass 'README.md'
 
 run_fail 'crates/drl-core/src/game.rs'
@@ -74,7 +88,13 @@ run_fail 'crates/drl-core/src/game.rs' '[
   {"user":{"login":"reviewer"},"state":"APPROVED","body":"drl-determinism-review: PASS","submitted_at":"2026-08-31T12:00:00Z","commit_id":"head-old"}
 ]'
 
-run_fail 'docs/legacy-behavior/renamed.md
-crates/drl-core/src/old-name.rs'
+run_fail_metadata '[
+  {"filename":"docs/legacy-behavior/renamed.md","previous_filename":"crates/drl-core/src/old-name.rs"}
+]'
+
+run_fail 'crates/drl-core/src/game.rs' '[
+  {"user":{"login":"reviewer"},"state":"APPROVED","body":"drl-determinism-review: PASS","submitted_at":"2026-08-31T12:00:00Z","commit_id":"head-current"},
+  {"user":{"login":"reviewer"},"state":"CHANGES_REQUESTED","body":"Found an unresolved issue in an older review.","submitted_at":"2026-08-31T12:01:00Z","commit_id":"head-old"}
+]'
 
 printf '%s\n' 'Review-policy fixtures: PASS'

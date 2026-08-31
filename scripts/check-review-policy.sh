@@ -44,8 +44,13 @@ fetch_api() {
   fi
 }
 
-if [ "${DRL_REVIEW_POLICY_FILES+x}" = x ]; then
-  changed_files=$DRL_REVIEW_POLICY_FILES
+if [ "${DRL_REVIEW_POLICY_FILES_JSON+x}" = x ]; then
+  changed_file_metadata=$DRL_REVIEW_POLICY_FILES_JSON
+elif [ "${DRL_REVIEW_POLICY_FILES+x}" = x ]; then
+  if ! changed_file_metadata=$(printf '%s\n' "$DRL_REVIEW_POLICY_FILES" | jq -R -s \
+    'split("\n") | map(select(length > 0))'); then
+    policy_failure 'fixture file metadata is not valid'
+  fi
 else
   if ! command -v gh >/dev/null 2>&1; then
     if [ "${GITHUB_ACTIONS:-false}" = true ]; then
@@ -67,21 +72,28 @@ else
     policy_not_run 'GitHub credentials are unavailable locally'
   fi
 
-  if ! changed_files=$(fetch_api --paginate \
-    "repos/$repository/pulls/$pull_request_number/files" \
-    --jq '.[] | .filename, (.previous_filename // empty)'); then
+  if ! changed_file_metadata=$(fetch_api --paginate --slurp \
+    "repos/$repository/pulls/$pull_request_number/files"); then
     policy_failure 'pull-request file metadata could not be inspected'
   fi
 fi
 
-protected_files=$(printf '%s\n' "$changed_files" | awk '
-  function protected(path) {
-    return path ~ /^crates\/(drl-core|drl-protocol|drl-mcp|drl-app|drl-web|drl-script)\// ||
-      path ~ /^docs\/legacy-behavior\//
-  }
-  protected($0) { print; found = 1 }
-  END { if (!found) exit 1 }
-' || :)
+if ! protected_files=$(printf '%s\n' "$changed_file_metadata" | jq -r '
+  [ .[]
+    | if type == "array" then .[] else . end
+    | if type == "string" then .
+      elif type == "object" then .filename, (.previous_filename // empty)
+      else empty
+      end
+  ]
+  | .[]
+  | select(
+      test("^crates/(drl-core|drl-protocol|drl-mcp|drl-app|drl-web|drl-script)/") or
+      test("^docs/legacy-behavior/")
+    )
+'); then
+  policy_failure 'pull-request file metadata is not valid JSON'
+fi
 
 if [ -z "$protected_files" ]; then
   printf '%s\n' 'Review policy: PASS (pull request has no protected paths)'
@@ -143,14 +155,14 @@ if ! review_receipt=$(printf '%s\n' "$reviews" | jq -r \
   [ .[]
     | if type == "array" then .[] else . end
     | select((.user.login // "") != "" and
-        (.submitted_at // "") != "" and
-        (.commit_id // "") == $head_sha)
+        (.submitted_at // "") != "")
   ]
   | sort_by(.submitted_at)
   | reduce .[] as $review ({}; .[$review.user.login] = $review)
   | any(.[];
       (.user.login != $author and
        .state == "APPROVED" and
+       .commit_id == $head_sha and
        has_receipt)
     )
 '); then
