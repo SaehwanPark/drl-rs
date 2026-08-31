@@ -2,9 +2,9 @@
 
 Last reviewed: 2026-08-31
 Baseline branch: `main`
-Baseline merge commit: `e598ae2365a6c610f8a181d74e6f773f30c9d2f4`
-Latest pull request inspected: `#434`
-Baseline project version: `0.2.323`
+Baseline merge commit: `49add3aecf7886dea40590497132fabe4b56f06b`
+Latest pull request inspected: `#436`
+Baseline project version: `0.2.324`
 
 ## Purpose
 
@@ -34,22 +34,23 @@ pre-M10 browser command-history saves omitted the gameplay identities that
 interpret them, and the interim full-state rollback backstop had no measured
 exit plan. M10 binds those histories and Gate A is closed; M9 closes the
 whole-rule chainfire branch and Gate B; M1/M11 measures transaction cost and
-closes Gate C. The remaining risk is control-plane drift. Persistent-history
-compatibility and transaction ownership are protected invariants, not current
-risks or open gates.
+closes Gate C. M0 now records and enforces the control-plane review policy;
+persistent-history compatibility, transaction ownership, and review enforcement
+are protected invariants rather than open gates.
 
-Near-term work must reduce those risks before more scalar breadth or another
-counter-level continuation becomes eligible.
+Near-term work may resume bounded vertical canonical-fidelity slices; broad
+scalar-only migration remains ineligible while any applicable evidence or
+behavior gate is open.
 
 ## Priority order
 
-Until the remaining gates below close, select work in this order:
+With the temporary control-plane gates closed, select work in this order:
 
-1. **Reviewable control plane (M0)**
+1. **Reviewable control plane (M0, closed)**
    - keep `SPEC.md` to one active slice;
    - require an attributable independent determinism review for every
-     replay-visible or legacy-fidelity slice;
-   - decide and enforce review/branch-protection policy before 1.0.
+   replay-visible or legacy-fidelity slice;
+   - retain the required review and branch-protection policy before 1.0.
 2. **Vertical canonical fidelity**
    - select bounded end-to-end mechanics that close a complete behavior branch.
 3. **Controlled reference captures**
@@ -90,7 +91,7 @@ rejected result commits; it does not choose which result is canonical.
 M9 closes this gate in merged PR #430 (`180f7dd`) with the shared typed model,
 six-family saturation vectors, atomic under-supply checks, replay/MCP/
 BrowserSession parity, and an independent determinism review. M1/M11 closes
-Gate C in merged PR #432; M0 control-plane work is now the next stop gate.
+Gate C in merged PR #432; M0 now closes the temporary control-plane gate.
 
 ### Gate C — The rollback backstop has an exit budget
 
@@ -113,7 +114,7 @@ MCP candidate clones remain fair-observation admission probes; and inventory
 staging remains local atomicity. Local and hosted checks plus independent
 determinism and code reviews were reconciled against the merged revision.
 
-### Gate D — Canonical scope and review are independently auditable
+### Gate D — Canonical scope and review are independently auditable (closed)
 
 Do not append delivered slice history to `SPEC.md` or accept a replay-visible
 or legacy-fidelity slice without an attributable independent determinism-review
@@ -125,8 +126,13 @@ enforced. The enduring rule remains: `SPEC.md` expands one active slice, while
 delivered history belongs in the roadmap, changelog, evidence notes, and Git.
 
 M0 delivered the structural SPEC checker and deterministic fixture contract in
-merged PR #434 (`e598ae2`). The independent-review and branch-protection policy
-remains open as a separately scoped M0 slice.
+merged PR #434 (`e598ae2`), then delivered the independent-review receipt and
+branch-protection policy in merged PR #436 (`49add3a`). The exact current-head
+receipt is independently reviewed, deterministic fixtures pass, and the live
+`main` API reports one approving review, stale-review dismissal, strict status
+updates, the `Repository checks`, `WASM browser checks`, and `Review policy`
+contexts, with `enforce_admins=false` recorded as the temporary solo-maintainer
+exception.
 
 ### Gate E — Claims remain evidence-bounded
 
@@ -211,8 +217,8 @@ invariants into accepted architecture/ADRs as appropriate, and update the
 roadmap and active specification from verified evidence.
 
 Re-audit before broad M9 migration resumes, or when a new stop-gate candidate
-is selected. The current audited tree is `main` at `e598ae2` (PR #434, version
-`0.2.323`); local and hosted checks plus independent review passed for the
-structural Gate D slice, while human, audiovisual, performance, and
-reference-capture surfaces remain `NOT_RUN` where prerequisites are
-unavailable.
+is selected. The current audited tree is `main` at `49add3a` (PR #436, version
+`0.2.324`); local and hosted checks, independent review, and live branch
+settings passed for the closed Gate D slice, while human, audiovisual,
+performance, and reference-capture surfaces remain `NOT_RUN` where
+prerequisites are unavailable.

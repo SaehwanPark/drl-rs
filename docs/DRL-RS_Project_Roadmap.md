@@ -1225,12 +1225,13 @@ verification item uses explicit status semantics:
   duplicate/nested active slices and extra top-level history sections; the
   repository and WASM/browser hosted checks plus independent review pass for
   the merged main revision.
-- **M0 required-review policy (`0.2.324`, active slice)**: Protected
+- **M0 required-review policy (`0.2.324`, delivered in PR #436)**: Protected
   simulation and legacy-fidelity paths now have a read-only review-policy
   workflow, deterministic receipt fixtures, a branch-protection inspector, a
-  pull-request template, and a steering decision. Live `main` settings and
-  final Gate D closure remain open until the reviewed merge and API inspection
-  are reconciled.
+  pull-request template, and a steering decision. Live `main` settings require
+  one approving review, stale-review dismissal, strict updates, and the three
+  repository/browser/policy contexts; the branch checker passes against the
+  API with the documented solo-maintainer exception.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
@@ -1240,12 +1241,12 @@ verification item uses explicit status semantics:
 ### Active & Open Work
 
 - **Latest Audited Checkpoint:** `main` merge commit
-  `22795a70b13b360bb0d94b28e1b591bc30543fd6`, merged PR #435, and project
-  version `0.2.323`. Repository and WASM/browser hosted checks plus independent
-  review pass for the delivered revision. The active `0.2.324` policy slice is
-  being reviewed on a temporary branch; controlled human, audiovisual, and
-  reference-capture surfaces remain `NOT_RUN` where prerequisites are
-  unavailable. The checkpointed progression audit is
+  `49add3aecf7886dea40590497132fabe4b56f06b`, merged PR #436, and project
+  version `0.2.324`. Repository and WASM/browser hosted checks, independent
+  review, and live branch-protection inspection pass for the delivered policy;
+  controlled human, audiovisual, and reference-capture surfaces remain
+  `NOT_RUN` where prerequisites are unavailable. The checkpointed progression
+  audit is
   [`docs/steering/audit-2026-08-30-post-0.2.318.md`](steering/audit-2026-08-30-post-0.2.318.md).
 - **Steering Disposition — Gate A closed:** Preserve the deterministic core,
   explicit RNG/replay identities, typed content, observation boundary, and
@@ -1277,16 +1278,15 @@ verification item uses explicit status semantics:
   `1cd423374801772e9d5643d579f2d3465e3f0cc5`; Gate C is closed.
 - **Delivered Slice — M0 SPEC structural guard (`0.2.323`):** PR #434 adds a
   structural repository check that keeps `SPEC.md` to one active slice and
-  rejects historical ledger sections. The independent-review and
-  branch-protection policy remains a separate open M0 item.
-- **Following Correctness Slice (M0 policy):** Record and enforce the required
-  independent determinism-review and branch-protection policy for
-  replay-visible and legacy-fidelity work before 1.0. The active slice adds
-  read-only receipt checks and deterministic fixtures; live `main` settings and
-  final reconciliation remain open until the reviewed merge.
-- **Process Gate (M0):** Keep `SPEC.md` bounded to one active slice and require
-  an attributable independent determinism-review disposition for every
-  replay-visible or legacy-fidelity slice. Record and enforce the repository's
+  rejects historical ledger sections; the follow-on policy is now delivered.
+- **Delivered Slice — M0 required-review policy (`0.2.324`):** PR #436 records
+  the exact current-head independent determinism-review receipt, validates
+  review pagination and rename provenance, and adds a base-revision read-only
+  workflow plus deterministic policy fixtures. Live `main` branch protection
+  is configured and inspected, so temporary Gate D is closed.
+- **Process Gate (M0, closed):** Keep `SPEC.md` bounded to one active slice and
+  require an attributable independent determinism-review disposition for every
+  replay-visible or legacy-fidelity slice. PR #436 records and enforces the
   required-review/branch-protection decision before 1.0.
 - **M9 Content Evidence**: Base, expansion, user-item, being, terrain-cell,
   and special-level evidence slices are delivered without runtime Lua or
