@@ -4,6 +4,8 @@ Last reviewed: 2026-08-31
 Current project version: `0.2.324`
 Audited starting checkpoint: `main` at
 `22795a70b13b360bb0d94b28e1b591bc30543fd6` (merged PR #435; M0 guard reconciled)
+Delivery checkpoint: `main` at
+`49add3aecf7886dea40590497132fabe4b56f06b` (merged PR #436; policy delivered)
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -23,8 +25,8 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 
 ## 2. Active implementation slice: M0 — required review and branch policy
 
-Slice status: **open**; this is the bounded follow-on needed to close the
-remaining temporary Gate D control-plane condition.
+Slice status: **delivered and verified** at the delivery checkpoint above;
+live `main` settings were inspected after merge.
 
 ### 2.1 Objective
 
@@ -89,27 +91,27 @@ At audited starting revision `22795a7` (version `0.2.323`):
 
 ### 2.5 Acceptance criteria
 
-- [ ] `scripts/check-review-policy.sh` identifies protected paths and rejects
+- [x] `scripts/check-review-policy.sh` identifies protected paths and rejects
   missing, self-authored, stale, or receipt-free review evidence while
   accepting one current independent receipt.
-- [ ] `scripts/test-review-policy.sh` covers no-protected-change, rejection,
+- [x] `scripts/test-review-policy.sh` covers no-protected-change, rejection,
   independent-approval, and latest-review-state fixtures.
-- [ ] `scripts/check-branch-protection.sh` validates the required review and
+- [x] `scripts/check-branch-protection.sh` validates the required review and
   status settings, reports an unprotected branch as a failure, and supports a
   deterministic fixture input.
-- [ ] `scripts/test-branch-protection.sh` covers the passing settings and each
+- [x] `scripts/test-branch-protection.sh` covers the passing settings and each
   required-setting failure.
-- [ ] `.github/workflows/review-policy.yml`, `.github/pull_request_template.md`,
+- [x] `.github/workflows/review-policy.yml`, `.github/pull_request_template.md`,
   and the steering decision document make the receipt and setting contract
   discoverable without executing pull-request code.
-- [ ] `main` has the required settings applied and the branch checker passes
+- [x] `main` has the required settings applied and the branch checker passes
   against the live GitHub API; the documented solo-maintainer exception is
   visible in the setting evidence.
-- [ ] The policy has no production-crate dependency and changes no gameplay,
+- [x] The policy has no production-crate dependency and changes no gameplay,
   replay, RNG, protocol, content, or browser behavior.
-- [ ] Local shell, repository, version, and documentation checks pass; hosted
+- [x] Local shell, repository, version, and documentation checks pass; hosted
   `Repository checks`, `WASM browser checks`, and `Review policy` checks pass
-  for the reviewed merge revision.
+  for the reviewed policy workflow revision.
 
 ### 2.6 Non-goals
 
