@@ -1,11 +1,9 @@
 # Specification
 
 Last reviewed: 2026-08-31
-Current project version: `0.2.322`
+Current project version: `0.2.323`
 Audited starting checkpoint: `main` at
-`34f6df38652efaf92f2463257802c0d53dc05094` (merged PR #431; M9 delivered)
-Delivery checkpoint: `main` at
-`1cd423374801772e9d5643d579f2d3465e3f0cc5` (merged PR #432; Gate C closed)
+`cdb3660035576c23b88e0b8fa7473781d3161467` (merged PR #433; Gate C records reconciled)
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -23,119 +21,87 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 - `INCONCLUSIVE` — **Evidence unresolved**: available evidence cannot support
   the claim.
 
-## 2. Active implementation slice: M1/M11 — Gate C transaction baseline
-
-Slice status: **delivered and verified** at the delivery checkpoint above.
-The next active slice will be selected after this reconciliation; this section
-remains the bounded specification for the just-delivered Gate C work.
+## 2. Active implementation slice: M0 — SPEC structural guard
 
 ### 2.1 Objective
 
-Measure the cost of the existing command transaction boundary and remove one
-verified redundant outer snapshot. The slice must produce a repeatable,
-machine-readable accepted/rejected core benchmark with allocation counters,
-make transaction ownership explicit at core and boundary layers, and retain the
-core rollback backstop until a measured prepare/commit migration is justified.
+Add a repository-level structural check that keeps `SPEC.md` as one bounded
+active implementation slice instead of allowing delivered slices to accumulate
+as a historical ledger. The check must validate the canonical top-level shape,
+reject duplicate or extra slice sections, and run as part of the repository
+contract before implementation work is accepted.
 
-This is a Gate C transaction-ownership slice. It does not change gameplay
-semantics, replay identities, or the fair observation boundary.
+This is a Gate D control-plane slice. It changes no game behavior, replay
+identity, RNG sampling, content catalog, protocol schema, or presentation
+boundary.
 
 ### 2.2 Audited starting point
 
-At audited starting revision `34f6df3` (version `0.2.321`):
+At audited starting revision `cdb3660` (version `0.2.322`):
 
-- `Game::step` clones the complete `GameState` for every command and restores
-  it on rejection; exact `Game` equality, including RNG state, is an enduring
-  correctness invariant.
-- `BrowserSession::submit` takes a second full `Game` snapshot even though the
-  core already owns rollback; the browser also owns observation, presentation,
-  and successful-command history bookkeeping.
-- `McpSession::legal_actions` clones once per candidate to probe core legality
-  from a fair observation. Those clones are admission probes, not rollback.
-- Inventory insertion retains a separate local staging clone. Removing the
-  core snapshot wholesale is unsafe while late fallible handlers remain.
-- No benchmark target or allocation measurement exists yet.
+- `SPEC.md` documents one active implementation slice and keeps delivered
+  history in the roadmap, changelog, evidence, and Git.
+- `scripts/check-repository.sh` runs the existing harness and contract checks,
+  but no checker enforces the `SPEC.md` top-level shape.
+- The roadmap keeps the remaining M0 item open: add a structural repository
+  check that prevents a historical multi-slice SPEC ledger.
 
 ### 2.3 Scope and ownership
 
-- **Steering gate:** Gate C — the rollback backstop has an exit budget.
-- **Primary owner:** `drl-core::Game::step` owns authoritative simulation
-  rollback and RNG atomicity; boundary layers own only their respective
-  bookkeeping or admission policy.
-- **Benchmark owner:** `crates/drl-core/benches/transaction.rs` is a
-  benchmark-only executable with a counting allocator; it must not affect
-  normal library allocation behavior.
-- **Project version:** implementation advances `VERSION` from `0.2.321` to
-  `0.2.322`.
-- **Gameplay/replay semantics:** gameplay, replay wire/schema, RNG-sampling,
-  generator, ruleset, and snapshot V3 identities remain unchanged.
+- **Steering gate:** Gate D — canonical scope and review must remain auditable.
+- **Primary owner:** `scripts/check-spec-structure.sh` owns the structural
+  contract; `scripts/test-spec-structure.sh` owns its positive and negative
+  fixture cases; `scripts/check-repository.sh` invokes both.
+- **Project version:** implementation advances `VERSION` from `0.2.322` to
+  `0.2.323`.
+- **Gameplay/replay semantics:** no gameplay, replay, RNG-sampling, generator,
+  ruleset, snapshot, protocol, or content identity changes.
 
-### 2.4 Benchmark contract
+### 2.4 Structural contract
 
-- The optimized benchmark uses fixed seed `42`, a `20×15` arena, setup outside
-  the timed region, `std::hint::black_box`, and bounded defaults of 10,000
-  warm-up operations plus five measured samples of 100,000 operations. Its
-  repository contract uses three samples of 1,000 operations after 100 warm-up
-  operations so the check exercises more than a one-operation smoke path.
-- It measures accepted `Command::Wait` and alternating movement plus rejected
-  blocked movement, out-of-bounds ranged targeting, and a late death-drop
-  failure. Timing and allocation counters run in separate passes, and the
-  output reports per-sample and median elapsed time, operations/sec,
-  allocation/deallocation calls, and allocated/deallocated bytes.
-- Output is machine-readable and includes schema, revision, host/toolchain,
-  profile, fixture, command label, iteration counts, and explicit ownership
-  labels. Timings and allocation counts are same-host baseline evidence, not
-  universal performance targets.
+- The canonical `SPEC.md` has exactly these level-two headings, in order:
+  `1. Status vocabulary`, `2. Active implementation slice: ...`, and
+  `3. Enduring invariants`.
+- CommonMark's up-to-three-leading-space ATX heading form is recognized, so
+  indentation cannot bypass the guard.
+- Exactly one level-two heading begins with `## 2. Active implementation
+  slice:`; any second active-slice heading or any extra level-two section is
+  rejected as a possible historical ledger.
+- Subsections under the active slice remain allowed, but a second active-slice
+  marker at any heading depth is rejected.
+- The checker accepts a caller-provided path for isolated fixture tests and
+  reports failures without mutating the repository.
 
-### 2.5 Transaction and boundary contract
+### 2.5 Acceptance criteria
 
-- Every `Game::step` retains one complete `GameState` snapshot per command
-  until a future prepare/commit slice proves equivalent rejection identity.
-- `BrowserSession::submit` relies on core rollback and takes zero additional
-  simulation snapshots; it still owns presentation observations, effects,
-  error text, and successful-command history.
-- `McpSession::legal_actions` retains one cloned core probe per candidate as
-  fair-observation admission validation; `McpSession::step` owns metrics,
-  replay, and terminal bookkeeping after the core accepts the command.
-- Inventory staging clones remain local atomicity guards and are not counted as
-  outer transaction ownership.
+- [ ] `scripts/check-spec-structure.sh SPEC.md` accepts the canonical shape and
+  rejects duplicate active slices, extra top-level history sections, and nested
+  active-slice markers.
+- [ ] `scripts/test-spec-structure.sh` exercises the accepted fixture and each
+  rejection case with deterministic, bounded temporary files.
+- [ ] `scripts/check-repository.sh` invokes the structural checker and its
+  fixture contract before the broader repository checks.
+- [ ] The check is shell/POSIX-only, has no production-crate dependency, and
+  does not alter gameplay, replay, RNG, protocol, content, or browser behavior.
+- [ ] M0 roadmap/steering records identify the delivered guard while the
+  independent-review/branch-protection policy item remains explicitly open.
+- [ ] Local format, check, test, clippy, repository, and version checks pass;
+  hosted checks pass for the reviewed merge revision.
 
-### 2.6 Acceptance criteria
+### 2.6 Non-goals
 
-- [x] A benchmark-only target runs with fixed fixtures and emits repeatable,
-  machine-readable accepted/rejected throughput and allocation measurements.
-- [x] Core rejected-command equality and RNG preservation remain covered by the
-  existing command-atomicity matrix.
-- [x] Removing the BrowserSession outer snapshot preserves rejected-session
-  equality and accepted history/presentation behavior.
-- [x] MCP candidate clones are documented as admission probes rather than
-  rollback snapshots, with no duplicate legality policy introduced.
-- [x] The retained core snapshot has an explicit one-snapshot-per-command
-  budget and a documented prepare/commit exit condition.
-- [x] Gameplay/replay/snapshot identities remain unchanged and no benchmark
-  dependency is added to production crates.
-- [x] Local format, check, test, clippy, benchmark, repository, and version
-  checks pass; relevant hosted checks pass for the reviewed merge revision.
-- [x] Roadmap, README, architecture, changelog, browser guide, and steering
-  records are reconciled from verified evidence; unavailable GPU, human,
-  audiovisual, performance, and legacy captures remain `NOT_RUN`.
+- No enforcement of GitHub branch protection or review permissions in this
+  slice; that is the separate remaining M0 checklist item.
+- No parser for Markdown prose, checkbox counts, or historical roadmap entries.
+- No changes to Rust crates, gameplay semantics, replay formats, or runtime
+  behavior.
 
-### 2.7 Non-goals
+### 2.7 Evidence boundary
 
-- No wholesale removal of the core rollback snapshot or broad prepare/commit
-  refactor.
-- No MCP legal-action redesign, observation-policy duplication, or new gameplay
-  semantics.
-- No universal performance target or cross-host ranking from timing output.
-- No browser/GPU, human, audiovisual, or controlled legacy-runtime parity claim.
-
-### 2.8 Evidence boundary
-
-The benchmark proves current-Rust transaction cost and allocation behavior only
-for its declared fixed fixture and host. Exact rejection tests prove state
-identity; the benchmark does not replace them. Browser presentation cost, MCP
-probe cost, inventory staging, controlled runtime comparison, and broad
-performance/generalization remain separately labeled `NOT_RUN` or open.
+The checker proves only the declared structural shape of the selected
+`SPEC.md` path and its fixture cases. It does not prove review enforcement,
+branch protection, semantic correctness of slice content, or completion of any
+roadmap item beyond the checked structural contract.
 
 ## 3. Enduring invariants
 

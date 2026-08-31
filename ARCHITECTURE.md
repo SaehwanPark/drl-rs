@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-31
-Current project version: `0.2.322`
+Current project version: `0.2.323`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -801,7 +801,8 @@ The repository enforces architectural boundaries via automated test suites:
   milestone-delivery skill define temporary stop gates. A gate is retired only
   after its acceptance evidence exists and enduring documentation is reconciled.
 - **Repository Health**: `sh scripts/check-repository.sh` runs formatting,
-  clippy, unit tests, integration tests, and harness checks.
+  clippy, unit tests, integration tests, harness checks, and the SPEC structural
+  guard that prevents a historical multi-slice ledger.
 - **Asset Manifest**: `sh scripts/check-assets.sh` verifies graphics licensing
   and SHA-256 checksums.
 - **Release-rights Inventory**: `sh scripts/check-release-rights.sh` validates

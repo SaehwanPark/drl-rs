@@ -158,6 +158,8 @@ for path in \
   docs/reference-captures/manifest.md \
   docs/reference-captures/fidelity-matrix.md \
   scripts/check-assets.sh \
+  scripts/check-spec-structure.sh \
+  scripts/test-spec-structure.sh \
   scripts/check-version.sh \
   scripts/check-web.sh
 do

@@ -1,7 +1,7 @@
 # DRL Delivery Steering Gates
 
 Last reviewed: 2026-08-31
-Baseline: `main` at `1cd423374801772e9d5643d579f2d3465e3f0cc5`
+Baseline: `main` at `cdb3660035576c23b88e0b8fa7473781d3161467`
 
 ## Purpose
 
@@ -68,6 +68,10 @@ determinism-review result before acceptance.
 The milestone owner records branch/input revision, gate, evidence, semantic
 impact, checks, review disposition, and unavailable surfaces in the handoff or
 PR. Hosted checks do not substitute for the review edge.
+
+The active `0.2.323` M0 candidate adds a repository SPEC structural checker and
+deterministic rejection fixtures. Required independent-review and branch-
+protection enforcement remains a separate open policy item.
 
 ## Gate E — Claims remain evidence-bounded
 

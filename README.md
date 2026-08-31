@@ -102,6 +102,8 @@ Detailed guides and specifications are hosted on the **[DRL-rs Documentation Por
 - `CHANGELOG.md`: Contributor and user-visible change history.
 - `docs/DRL-RS_Project_Roadmap.md`: Canonical project roadmap and milestone gates.
 - `docs/steering/README.md`: Active steering decisions and stop gates.
+- `scripts/check-spec-structure.sh`: Structural guard for the one-slice
+  `SPEC.md` contract (also included in `check-repository.sh`).
 
 ---
 
@@ -119,6 +121,9 @@ Contributions are welcome! Follow these steps to build and verify your changes:
    sh scripts/check-repository.sh
    sh scripts/check-web.sh
    ```
+   The repository check includes positive and negative fixtures for the
+   `SPEC.md` structural guard, so a historical multi-slice ledger fails before
+   broader validation runs.
 3. **Coding Standards**:
    - Rust 2024 edition, 2-space indentation, no literal tabs, no trailing whitespace.
    - Code changes require a single `x.y.z` version bump in `VERSION` and `Cargo.toml`.
