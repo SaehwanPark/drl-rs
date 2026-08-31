@@ -1258,7 +1258,8 @@ verification item uses explicit status semantics:
 - **Steering Disposition — Gate B closed for chainfire:** The shared typed model
   covers all evidenced state classes, saturation, full-burst resource policy,
   reset, fixed-target continuation, and explicit trait boundaries. Gate C's
-  measured transaction-ownership work is now the next correctness priority.
+  measured transaction-ownership work is delivered; vertical canonical-fidelity
+  work is now the next correctness priority.
 - **Delivered Slice — M10 (`0.2.320`):** Semantics-bound browser snapshot V3
   carries fixed-content, gameplay, RNG-sampling, generator, and ruleset
   identities; mismatches reject before command execution; V1/V2 tokens remain
