@@ -4,6 +4,8 @@ Last reviewed: 2026-08-31
 Current project version: `0.2.323`
 Audited starting checkpoint: `main` at
 `cdb3660035576c23b88e0b8fa7473781d3161467` (merged PR #433; Gate C records reconciled)
+Delivery checkpoint: `main` at
+`e598ae2365a6c610f8a181d74e6f773f30c9d2f4` (merged PR #434; SPEC guard delivered)
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -22,6 +24,11 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
   the claim.
 
 ## 2. Active implementation slice: M0 — SPEC structural guard
+
+Slice status: **delivered and verified** at the delivery checkpoint above.
+The next M0 policy slice will be selected after this reconciliation; this
+section remains the bounded specification for the just-delivered structural
+guard.
 
 ### 2.1 Objective
 
@@ -74,18 +81,18 @@ At audited starting revision `cdb3660` (version `0.2.322`):
 
 ### 2.5 Acceptance criteria
 
-- [ ] `scripts/check-spec-structure.sh SPEC.md` accepts the canonical shape and
+- [x] `scripts/check-spec-structure.sh SPEC.md` accepts the canonical shape and
   rejects duplicate active slices, extra top-level history sections, and nested
   active-slice markers.
-- [ ] `scripts/test-spec-structure.sh` exercises the accepted fixture and each
+- [x] `scripts/test-spec-structure.sh` exercises the accepted fixture and each
   rejection case with deterministic, bounded temporary files.
-- [ ] `scripts/check-repository.sh` invokes the structural checker and its
+- [x] `scripts/check-repository.sh` invokes the structural checker and its
   fixture contract before the broader repository checks.
-- [ ] The check is shell/POSIX-only, has no production-crate dependency, and
+- [x] The check is shell/POSIX-only, has no production-crate dependency, and
   does not alter gameplay, replay, RNG, protocol, content, or browser behavior.
-- [ ] M0 roadmap/steering records identify the delivered guard while the
+- [x] M0 roadmap/steering records identify the delivered guard while the
   independent-review/branch-protection policy item remains explicitly open.
-- [ ] Local format, check, test, clippy, repository, and version checks pass;
+- [x] Local format, check, test, clippy, repository, and version checks pass;
   hosted checks pass for the reviewed merge revision.
 
 ### 2.6 Non-goals

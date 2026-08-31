@@ -1219,11 +1219,12 @@ verification item uses explicit status semantics:
   are classified as fair-observation admission probes, and inventory staging
   remains local. Local and hosted checks pass, and independent determinism and
   code reviews were reconciled against the merged main revision.
-- **M0 SPEC structural guard (`0.2.323`, candidate)**: A POSIX shell checker
+- **M0 SPEC structural guard (`0.2.323`, delivered in PR #434)**: A POSIX shell checker
   validates the canonical three-section `SPEC.md` shape and exactly one active
   implementation-slice heading. Deterministic temporary fixtures reject
   duplicate/nested active slices and extra top-level history sections; the
-  candidate is pending hosted review and final reconciliation.
+  repository and WASM/browser hosted checks plus independent review pass for
+  the merged main revision.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
@@ -1233,13 +1234,11 @@ verification item uses explicit status semantics:
 ### Active & Open Work
 
 - **Latest Audited Checkpoint:** `main` merge commit
-  `cdb3660035576c23b88e0b8fa7473781d3161467`, merged PR #433, and project
-  version `0.2.322`. Repository and WASM/browser hosted checks plus independent
-  determinism and code reviews pass for the delivered revision. The `0.2.323`
-  M0 SPEC structural guard is the active candidate on a temporary branch.
-  Controlled human, audiovisual, and reference-capture surfaces remain
-  `NOT_RUN` where prerequisites are unavailable. The checkpointed progression
-  audit is
+  `e598ae2365a6c610f8a181d74e6f773f30c9d2f4`, merged PR #434, and project
+  version `0.2.323`. Repository and WASM/browser hosted checks plus independent
+  review pass for the delivered revision. Controlled human, audiovisual, and
+  reference-capture surfaces remain `NOT_RUN` where prerequisites are
+  unavailable. The checkpointed progression audit is
   [`docs/steering/audit-2026-08-30-post-0.2.318.md`](steering/audit-2026-08-30-post-0.2.318.md).
 - **Steering Disposition — Gate A closed:** Preserve the deterministic core,
   explicit RNG/replay identities, typed content, observation boundary, and
@@ -1269,10 +1268,13 @@ verification item uses explicit status semantics:
   benchmark, exact rejection matrix, browser regression, local checks, hosted
   checks, and independent reviews are reconciled against main at
   `1cd423374801772e9d5643d579f2d3465e3f0cc5`; Gate C is closed.
-- **Active Candidate — M0 SPEC structural guard (`0.2.323`):** Add a
+- **Delivered Slice — M0 SPEC structural guard (`0.2.323`):** PR #434 adds a
   structural repository check that keeps `SPEC.md` to one active slice and
   rejects historical ledger sections. The independent-review and
   branch-protection policy remains a separate open M0 item.
+- **Following Correctness Slice (M0 policy):** Record and enforce the required
+  independent determinism-review and branch-protection policy for
+  replay-visible and legacy-fidelity work before 1.0.
 - **Process Gate (M0):** Keep `SPEC.md` bounded to one active slice and require
   an attributable independent determinism-review disposition for every
   replay-visible or legacy-fidelity slice. Record and enforce the repository's
@@ -1344,7 +1346,7 @@ agent workflow.
   `scripts/check-version.sh`.
 - [x] Record the post-`0.2.318` checkpointed progression audit and reset
   `SPEC.md` to one bounded active slice.
-- [ ] Add a structural repository check that prevents `SPEC.md` from becoming
+- [x] Add a structural repository check that prevents `SPEC.md` from becoming
   a historical multi-slice ledger again.
 - [ ] Record and enforce required independent determinism review and branch
   protection policy for replay-visible/legacy-fidelity work before 1.0.

@@ -2,9 +2,9 @@
 
 Last reviewed: 2026-08-31
 Baseline branch: `main`
-Baseline merge commit: `cdb3660035576c23b88e0b8fa7473781d3161467`
-Latest pull request inspected: `#433`
-Baseline project version: `0.2.322` (active `0.2.323` candidate)
+Baseline merge commit: `e598ae2365a6c610f8a181d74e6f773f30c9d2f4`
+Latest pull request inspected: `#434`
+Baseline project version: `0.2.323`
 
 ## Purpose
 
@@ -124,9 +124,9 @@ active specifications and the repository records how required review is
 enforced. The enduring rule remains: `SPEC.md` expands one active slice, while
 delivered history belongs in the roadmap, changelog, evidence notes, and Git.
 
-The active `0.2.323` candidate adds the structural SPEC checker and deterministic
-fixture contract. The independent-review and branch-protection policy remains
-open until a separately scoped M0 slice records and enforces it.
+M0 delivered the structural SPEC checker and deterministic fixture contract in
+merged PR #434 (`e598ae2`). The independent-review and branch-protection policy
+remains open as a separately scoped M0 slice.
 
 ### Gate E — Claims remain evidence-bounded
 
@@ -211,7 +211,8 @@ invariants into accepted architecture/ADRs as appropriate, and update the
 roadmap and active specification from verified evidence.
 
 Re-audit before broad M9 migration resumes, or when a new stop-gate candidate
-is selected. The current audited tree is `main` at `1cd4233` (PR #432, version
-`0.2.322`); local and hosted checks plus independent reviews passed for Gate C,
-while human, audiovisual, performance, and reference-capture surfaces remain
-`NOT_RUN` where prerequisites are unavailable.
+is selected. The current audited tree is `main` at `e598ae2` (PR #434, version
+`0.2.323`); local and hosted checks plus independent review passed for the
+structural Gate D slice, while human, audiovisual, performance, and
+reference-capture surfaces remain `NOT_RUN` where prerequisites are
+unavailable.
