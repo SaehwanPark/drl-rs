@@ -2685,6 +2685,26 @@ mod tests {
     session
       .step(thirteenth.command)
       .expect("thirteenth chainfire action");
+    let reload = compute_legal_actions(&session.get_observation().unwrap())
+      .into_iter()
+      .find(|action| action.action == "Reload")
+      .expect("Chaingun reload should be advertised before fourteenth chainfire");
+    assert_eq!(reload.command, Command::Reload);
+    session
+      .step(reload.command)
+      .expect("reload before fourteenth chainfire action");
+    let fourteenth = compute_legal_actions(&session.get_observation().unwrap())
+      .into_iter()
+      .find(|action| action.action == "Chainfire")
+      .expect("fourteenth Chaingun chainfire should be advertised");
+    assert_eq!(
+      fourteenth.command,
+      Command::AttackRangedChainfire(Position::new(3, 1))
+    );
+    assert!(fourteenth.description.contains("6 projectiles, 6 rounds"));
+    session
+      .step(fourteenth.command)
+      .expect("fourteenth chainfire action");
     assert!(
       !compute_legal_actions(&session.get_observation().unwrap())
         .iter()
@@ -2700,7 +2720,7 @@ mod tests {
       hp: 50,
       max_hp: 50,
       speed: 100,
-      initial_items: vec![drl_protocol::ItemSpawnKind::Ammo9mm(40)],
+      initial_items: vec![drl_protocol::ItemSpawnKind::Ammo9mm(80)],
       equipped_weapon: Some(drl_protocol::ItemSpawnKind::Chaingun),
       equipped_armor: None,
       equipped_armor_durability: None,
@@ -3466,6 +3486,84 @@ mod tests {
         .chainfire_level,
       13
     );
+    let second_reload_command = Command::Reload;
+    let second_reload_expected_events = direct
+      .step(second_reload_command)
+      .expect("direct second Chaingun chainfire reload");
+    let (second_reload_events, second_reload_observation, second_reload_outcome) = session
+      .step(second_reload_command)
+      .expect("MCP second Chaingun chainfire reload");
+    assert_eq!(second_reload_events, second_reload_expected_events);
+    assert_eq!(session.game.as_ref().unwrap(), &direct);
+    assert_eq!(second_reload_observation, direct.observe_player());
+    assert_eq!(second_reload_outcome, None);
+    assert!(second_reload_events.iter().any(|event| matches!(
+      event,
+      GameEvent::WeaponReloaded {
+        entity_id,
+        ammo_loaded: 36,
+        current_clip: 40,
+        max_clip: 40,
+        ..
+      } if *entity_id == player_id
+    )));
+    let fourteenth_command = Command::AttackRangedChainfire(target_position);
+    assert!(
+      compute_legal_actions(&direct.observe_player())
+        .iter()
+        .any(|action| action.command == fourteenth_command)
+    );
+    let fourteenth_expected_events = direct
+      .step(fourteenth_command)
+      .expect("direct fourteenth Chaingun chainfire command");
+    let (fourteenth_events, fourteenth_observation, fourteenth_outcome) = session
+      .step(fourteenth_command)
+      .expect("MCP fourteenth Chaingun chainfire command");
+    assert_eq!(fourteenth_events, fourteenth_expected_events);
+    assert_eq!(session.game.as_ref().unwrap(), &direct);
+    assert_eq!(fourteenth_observation, direct.observe_player());
+    assert_eq!(fourteenth_outcome, None);
+    assert_eq!(
+      fourteenth_events
+        .iter()
+        .filter(|event| matches!(
+          event,
+          GameEvent::AttackResolved {
+            attacker_id,
+            target_id: event_target,
+            is_ranged: true,
+            ..
+          } if *attacker_id == player_id && *event_target == target_id
+        ))
+        .count(),
+      6
+    );
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .current_clip,
+      34
+    );
+    assert_eq!(
+      direct
+        .world()
+        .player()
+        .unwrap()
+        .equipment()
+        .weapon()
+        .unwrap()
+        .weapon_properties()
+        .unwrap()
+        .chainfire_level,
+      14
+    );
     assert!(
       !compute_legal_actions(&direct.observe_player())
         .iter()
@@ -3484,6 +3582,8 @@ mod tests {
     expected_events.extend(eleventh_events);
     expected_events.extend(twelfth_events);
     expected_events.extend(thirteenth_events);
+    expected_events.extend(second_reload_events);
+    expected_events.extend(fourteenth_events);
 
     let replay = session.export_replay().expect("MCP replay export");
     let (replayed, replay_events) =

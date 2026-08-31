@@ -1002,12 +1002,18 @@ pub const CHAINGUN_THIRTEENTH_CHAINFIRE_PROJECTILE_COUNT: u32 =
 /// Pinned 9mm cost for the thirteenth Chaingun chainfire level.
 pub const CHAINGUN_THIRTEENTH_CHAINFIRE_SHOT_COST: u32 =
   CHAINGUN_THIRTEENTH_CHAINFIRE_PROJECTILE_COUNT;
+/// Pinned projectile count for the fourteenth Chaingun chainfire level.
+pub const CHAINGUN_FOURTEENTH_CHAINFIRE_PROJECTILE_COUNT: u32 =
+  CHAINGUN_THIRTEENTH_CHAINFIRE_PROJECTILE_COUNT;
+/// Pinned 9mm cost for the fourteenth Chaingun chainfire level.
+pub const CHAINGUN_FOURTEENTH_CHAINFIRE_SHOT_COST: u32 =
+  CHAINGUN_FOURTEENTH_CHAINFIRE_PROJECTILE_COUNT;
 
 /// Returns the bounded Chaingun chainfire profile for a warm-up level.
 ///
 /// The legacy four-shot weapon emits three projectiles at level zero and its
 /// full four-projectile volley at level one, and six projectiles at levels two
-/// through twelve; higher levels remain deferred.
+/// through thirteen; higher levels remain deferred.
 #[must_use]
 pub const fn chaingun_chainfire_profile(level: u8) -> Option<(u32, u32)> {
   match level {
@@ -1062,6 +1068,10 @@ pub const fn chaingun_chainfire_profile(level: u8) -> Option<(u32, u32)> {
     12 => Some((
       CHAINGUN_THIRTEENTH_CHAINFIRE_PROJECTILE_COUNT,
       CHAINGUN_THIRTEENTH_CHAINFIRE_SHOT_COST,
+    )),
+    13 => Some((
+      CHAINGUN_FOURTEENTH_CHAINFIRE_PROJECTILE_COUNT,
+      CHAINGUN_FOURTEENTH_CHAINFIRE_SHOT_COST,
     )),
     _ => None,
   }
@@ -1136,6 +1146,11 @@ const CHAINGUN_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
     level: 12,
     shot_count: CHAINGUN_THIRTEENTH_CHAINFIRE_PROJECTILE_COUNT,
     ammo_cost: CHAINGUN_THIRTEENTH_CHAINFIRE_SHOT_COST,
+  }),
+  BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
+    level: 13,
+    shot_count: CHAINGUN_FOURTEENTH_CHAINFIRE_PROJECTILE_COUNT,
+    ammo_cost: CHAINGUN_FOURTEENTH_CHAINFIRE_SHOT_COST,
   }),
 ];
 
@@ -2385,7 +2400,14 @@ mod tests {
         CHAINGUN_THIRTEENTH_CHAINFIRE_SHOT_COST,
       ))
     );
-    assert_eq!(chaingun_chainfire_profile(13), None);
+    assert_eq!(
+      chaingun_chainfire_profile(13),
+      Some((
+        CHAINGUN_FOURTEENTH_CHAINFIRE_PROJECTILE_COUNT,
+        CHAINGUN_FOURTEENTH_CHAINFIRE_SHOT_COST,
+      ))
+    );
+    assert_eq!(chaingun_chainfire_profile(14), None);
   }
 
   #[test]
@@ -3089,6 +3111,11 @@ mod tests {
           level: 12,
           shot_count: CHAINGUN_THIRTEENTH_CHAINFIRE_PROJECTILE_COUNT,
           ammo_cost: CHAINGUN_THIRTEENTH_CHAINFIRE_SHOT_COST,
+        }),
+        BehaviorSpec::Alternate(AlternateAction::ChainfireLevel {
+          level: 13,
+          shot_count: CHAINGUN_FOURTEENTH_CHAINFIRE_PROJECTILE_COUNT,
+          ammo_cost: CHAINGUN_FOURTEENTH_CHAINFIRE_SHOT_COST,
         }),
       ]
     );
