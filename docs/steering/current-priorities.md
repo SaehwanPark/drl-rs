@@ -2,9 +2,9 @@
 
 Last reviewed: 2026-08-31
 Baseline branch: `main`
-Baseline merge commit: `447176ba9655bfe93ab4c958a3faa385a447d91d`
-Latest pull request inspected: `#429`
-Baseline project version: `0.2.320`
+Baseline merge commit: `180f7dd2d350b11c114ae4f5fdbc27ba12d32829`
+Latest pull request inspected: `#430`
+Baseline project version: `0.2.321`
 
 ## Purpose
 
@@ -32,9 +32,10 @@ the legacy rule groups all levels `2..255`, while recent Rust delivery repeatedl
 adds one plateau value and projects it through many boundaries. In parallel,
 pre-M10 browser command-history saves omitted the gameplay identities that
 interpret them, and the interim full-state rollback backstop has no measured
-exit plan. M10 now binds those histories and Gate A is closed; the remaining
-risks are chainfire semantic completeness, rollback cost, and control-plane
-drift.
+exit plan. M10 binds those histories and Gate A is closed; M9 now closes the
+whole-rule chainfire branch and Gate B. The remaining risks are rollback cost
+and control-plane drift. Persistent-history compatibility is a protected
+invariant, not a current risk or open gate.
 
 Near-term work must reduce those risks before more scalar breadth or another
 counter-level continuation becomes eligible.
@@ -43,28 +44,22 @@ counter-level continuation becomes eligible.
 
 Until the remaining gates below close, select work in this order:
 
-1. **Whole-rule chainfire fidelity (M9)**
-   - replace per-level plateaus with evidenced state classes and saturation;
-   - decide ammunition shortage, target continuation/routing, reset, and trait
-     interactions from pinned evidence or an explicit DRL-Rust policy;
-   - verify equivalence classes and boundaries across core, replay, MCP, and
-     browser without duplicating gameplay policy.
-2. **Measured transaction ownership (M1/M11)**
+1. **Measured transaction ownership (M1/M11)**
    - establish command throughput/allocation baselines;
    - remove redundant boundary clones where core atomicity is sufficient;
    - move hot accepted paths toward validate/prepare/commit without weakening
      exact rejection identity.
-3. **Reviewable control plane (M0)**
+2. **Reviewable control plane (M0)**
    - keep `SPEC.md` to one active slice;
    - require an attributable independent determinism review for every
      replay-visible or legacy-fidelity slice;
    - decide and enforce review/branch-protection policy before 1.0.
-4. **Vertical canonical fidelity**
+3. **Vertical canonical fidelity**
    - select bounded end-to-end mechanics that close a complete behavior branch.
-5. **Controlled reference captures**
+4. **Controlled reference captures**
    - run when the required environment exists; unavailable work stays
      `NOT_RUN`.
-6. **Resume broad content and platform expansion**
+5. **Resume broad content and platform expansion**
    - only after the applicable gates below close.
 
 ## Development stop gates
@@ -95,6 +90,11 @@ second, sustained, and saturated states plus ammunition shortage, reset, target
 continuation/routing, and applicable weapon traits. Canonical differences must
 be identified as DRL-Rust decisions. Atomicity describes how an accepted or
 rejected result commits; it does not choose which result is canonical.
+
+M9 closes this gate in merged PR #430 (`180f7dd`) with the shared typed model,
+six-family saturation vectors, atomic under-supply checks, replay/MCP/
+BrowserSession parity, and an independent determinism review. Gate C is now the
+next stop gate.
 
 ### Gate C — The rollback backstop has an exit budget
 
@@ -202,9 +202,8 @@ Retire each temporary gate when its acceptance evidence exists, promote durable
 invariants into accepted architecture/ADRs as appropriate, and update the
 roadmap and active specification from verified evidence.
 
-Re-audit after chainfire semantic consolidation merge, or before broad M9
-migration resumes, whichever happens first. The current audited tree is
-`main` at `447176b` (PR #429, version `0.2.320`); local and hosted checks passed
-for M10, while the M9 candidate is pending review/merge and human,
-audiovisual, performance, and reference-capture surfaces remain `NOT_RUN` where
-prerequisites are unavailable.
+Re-audit before broad M9 migration resumes, or when Gate C's transaction budget
+evidence is available. The current audited tree is `main` at `180f7dd`
+(PR #430, version `0.2.321`); local and hosted checks passed for M9, while
+human, audiovisual, performance, and reference-capture surfaces remain
+`NOT_RUN` where prerequisites are unavailable.

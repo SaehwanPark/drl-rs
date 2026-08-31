@@ -1203,14 +1203,14 @@ verification item uses explicit status semantics:
   checks cover exact V3 round trips, mismatch ordering, unbound legacy
   rejection, bounded malformed input, and actionable browser recovery;
   controlled human/browser capture remains `NOT_RUN` where unavailable.
-- **M9 whole-rule chainfire state model (`0.2.321`, candidate)**: The six
+- **M9 whole-rule chainfire state model (`0.2.321`)**: The six
   chainfire families now share one typed initial/warming/sustained/saturated
   model with formula-derived projectile counts, aggregate ammunition costs,
   saturating advancement, and ordinary-fire reset. Full-burst shortage
   rejection remains atomic; direct core, replay, MCP, and BrowserSession
   projections use the same model. All six families have saturated and
-  under-supply boundary vectors; independent review and hosted checks remain
-  pending at this checkpoint.
+  under-supply boundary vectors; independent review and hosted checks pass for
+  merged PR #430.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
@@ -1219,30 +1219,34 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Latest Audited Checkpoint:** `main` merge commit `b0a36fa`, merged PR #428,
-  and project version `0.2.320`; the M9 candidate advances the working tree to
-  `0.2.321`. Repository and WASM/browser hosted checks
-  passed for the delivered revision. Controlled human, audiovisual, and
-  reference-capture surfaces remain `NOT_RUN` where prerequisites are
-  unavailable. The checkpointed progression audit is
+- **Latest Audited Checkpoint:** `main` merge commit
+  `180f7dd2d350b11c114ae4f5fdbc27ba12d32829`, merged PR #430, and project
+  version `0.2.321`. Repository and WASM/browser hosted checks and independent
+  determinism review pass for the delivered revision. Controlled human,
+  audiovisual, and reference-capture surfaces remain `NOT_RUN` where
+  prerequisites are unavailable. The checkpointed progression audit is
   [`docs/steering/audit-2026-08-30-post-0.2.318.md`](steering/audit-2026-08-30-post-0.2.318.md).
 - **Steering Disposition — Gate A closed:** Preserve the deterministic core,
   explicit RNG/replay identities, typed content, observation boundary, and
   browser/MCP projections. M10 now binds browser command histories to their
   interpreter identity, rejects mismatches before simulation, preserves the
   active session transactionally, and rejects provenance-free V1/V2 histories.
-  Counter-only chainfire continuations remain stopped by Gate B.
+  Counter-only chainfire continuations remain stopped by Gate B; the whole-rule
+  chainfire model in PR #430 closes that semantic branch.
+- **Steering Disposition — Gate B closed for chainfire:** The shared typed model
+  covers all evidenced state classes, saturation, full-burst resource policy,
+  reset, fixed-target continuation, and explicit trait boundaries. Gate C's
+  measured transaction-ownership work is now the next correctness priority.
 - **Delivered Slice — M10 (`0.2.320`):** Semantics-bound browser snapshot V3
   carries fixed-content, gameplay, RNG-sampling, generator, and ruleset
   identities; mismatches reject before command execution; V1/V2 tokens remain
   provenance-free and are rejected without migration. Native, WASM, headless
   browser, repository, and hosted checks passed for the merged revision.
-- **Active Candidate (M9):** With M10 Gate A closed, the working-tree
-  candidate consolidates chainfire into one evidenced typed state model for
-  initial, warming, sustained, and saturated states, including full-burst
-  ammunition policy, reset, target continuation, and an explicit future trait
-  boundary. Another PR whose primary outcome is the next plateau level is
-  ineligible; this candidate remains pending independent review and merge.
+- **Delivered Slice — M9 (`0.2.321`):** With M10 Gate A closed, PR #430
+  consolidates chainfire into one evidenced typed state model for initial,
+  warming, sustained, and saturated states, including full-burst ammunition
+  policy, reset, target continuation, and an explicit future trait boundary.
+  Another PR whose primary outcome is the next plateau level is ineligible.
 - **Following Correctness Slice (M1/M11):** Measure accepted/rejected command
   throughput and allocation behavior, assign transaction ownership at the core
   and boundary layers, and remove redundant cloning or introduce prepared
@@ -3156,11 +3160,11 @@ scripting.
   replay determinism, MCP, and BrowserSession boundary parity. Shot-cost,
   projectile routing, explosions, NukeRun, runtime, and audiovisual parity
   remain open.
-- [ ] Consolidate chainfire as one evidenced typed state model covering the
+- [x] Consolidate chainfire as one evidenced typed state model covering the
   initial, second, sustained `2..255`, and saturated states; ammunition
   shortage, reset, target continuation/routing, and weapon-trait policy must be
-  explicit. Per-level plateau continuations after `0.2.318` are blocked by
-  steering Gate B.
+  explicit. PR #430 delivers this boundary; per-level plateau continuations
+  after `0.2.318` remain blocked by steering Gate B.
 - [ ] Full migration of legacy monsters, weapons, armor, mods, and consumable
   items.
 - [ ] Full migration of special levels, vaults, and dungeon branches.

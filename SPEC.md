@@ -4,6 +4,8 @@ Last reviewed: 2026-08-31
 Current project version: `0.2.321`
 Audited starting checkpoint: `main` at
 `447176b` (merged PR #429; M9 candidate is the working-tree slice)
+Delivery checkpoint: `main` at
+`180f7dd2d350b11c114ae4f5fdbc27ba12d32829` (merged PR #430; M9 delivered)
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -132,11 +134,12 @@ silently simulated.
   deterministic for representative sustained and saturated commands.
 - [x] Gameplay semantics advances exactly once; replay wire/schema and snapshot
   V3 parsing remain otherwise unchanged.
-- [ ] `sh scripts/check-repository.sh`, `scripts/check-version.sh`, and the
-  relevant hosted repository/WASM checks pass for the reviewed merge revision.
-- [ ] Independent determinism review returns `pass` with evidence classes,
+- [x] `sh scripts/check-repository.sh`, `scripts/check-version.sh`, and the
+  relevant hosted repository/WASM checks pass for reviewed merge revision
+  `180f7dd` (PR #430).
+- [x] Independent determinism review returns `pass` with evidence classes,
   exact rejection identity, and persistent-history impact recorded.
-- [ ] Roadmap, README, architecture, changelog, browser guide, and steering
+- [x] Roadmap, README, architecture, changelog, browser guide, and steering
   records are reconciled from verified evidence; unavailable runtime,
   audiovisual, human, performance, and legacy captures remain `NOT_RUN`.
 
