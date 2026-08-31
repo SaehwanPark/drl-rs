@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-08-30
-Current project version: `0.2.317`
+Current project version: `0.2.318`
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns overall milestone scope,
 ordering, and delivery tracking. The current steering constraints in
@@ -25,16 +25,16 @@ contracts, acceptance criteria, and verification boundaries.
 
 ---
 
-## 2. Active Implementation Slice: M9 — Chaingun Thirteenth-Level Chainfire
+## 2. Active Implementation Slice: M9 — Chaingun Fourteenth-Level Chainfire
 
 ### 2.1 Objective
 
-Extend the delivered typed Chaingun first- through twelfth-level chainfire
-commands with one legacy-pinned thirteenth-level continuation. After accepted
+Extend the delivered typed Chaingun first- through thirteenth-level chainfire
+commands with one legacy-pinned fourteenth-level continuation. After accepted
 three-, four-, and six-projectile bursts leave the weapon at warm-up level
-twelve, a valid thirteenth-level command must emit six ordered ranged
+thirteen, a valid fourteenth-level command must emit six ordered ranged
 projectiles, consume six rounds, preserve the existing damage and event
-ordering, and advance the warm-up state to level thirteen.
+ordering, and advance the warm-up state to level fourteen.
 
 ### 2.1a Scope and steering gate
 
@@ -42,16 +42,16 @@ ordering, and advance the warm-up state to level thirteen.
 - **Steering gates:** Gate A rejected-input safety and Gate B explicit replay
   compatibility remain active acceptance constraints; Gate C catalog ownership
   and Gate D typed behavior evidence remain closed for this bounded extension.
-- **Observable outcome:** A thirteenth-level Chaingun chainfire command is
+- **Observable outcome:** A fourteenth-level Chaingun chainfire command is
   admitted only for a living visible target, a loaded clip of at least six
-  rounds, and a weapon warm-up level of twelve. It consumes six rounds, emits
+  rounds, and a weapon warm-up level of thirteen. It consumes six rounds, emits
   six ordered ranged outcomes, preserves deterministic post-lethal no-op
-  continuation slots, and advances warm-up to level thirteen. Ordinary fire
-  still resets the warm-up state, and the fourteenth level remains rejected
+  continuation slots, and advances warm-up to level fourteen. Ordinary fire
+  still resets the warm-up state, and the fifteenth level remains rejected
   atomically.
-- **Gameplay/replay impact:** Gameplay semantics advance from `125` to `126`;
+- **Gameplay/replay impact:** Gameplay semantics advance from `126` to `127`;
   replay wire/schema, RNG sampling, generator, and ruleset identities remain
-  unchanged. Project version advances from `0.2.316` to `0.2.317`.
+  unchanged. Project version advances from `0.2.317` to `0.2.318`.
 - **Protocol/domain ownership:** `drl-core` owns the typed behavior vocabulary,
   typed projectile-count/cost policy and generic execution; `drl-protocol` owns
   the semantic `AttackRanged`/`AttackRangedAimed` commands and typed event
@@ -62,7 +62,7 @@ ordering, and advance the warm-up state to level thirteen.
   typed ranged, replay, MCP, and browser tests, is authoritative.
   Controlled legacy runtime, browser capture, and audiovisual comparisons
   remain `NOT_RUN`.
-- **Non-goals:** Fourteenth and later chainfire levels, alternate target routing,
+- **Non-goals:** Fifteenth and later chainfire levels, alternate target routing,
   target rotation/spread, recharge changes, exact callback timing/accuracy, new
   command variants or callback registries, unrelated gameplay balance, replay
   migrations, runtime Lua, and browser/audio/WebGPU capture parity.
@@ -70,7 +70,7 @@ ordering, and advance the warm-up state to level thirteen.
 ### 2.2 Why this slice is bounded
 
 The immutable Chaingun profile, semantic command, and first- through
-twelfth-level transitions already exist. This extension adds only one typed
+thirteenth-level transitions already exist. This extension adds only one typed
 warm-up profile and its deterministic count/cost selection while reusing the
 existing generic ranged, replay, MCP, browser, and transactional boundaries
 without adding a pending queue, new dispatcher, or callback system.
@@ -4844,11 +4844,10 @@ chainfire commands with the pinned twelfth warm-up level. Its contract was:
   callback timing/accuracy, controlled legacy runtime, browser capture, and
   audiovisual parity `NOT_RUN` where comparison evidence is unavailable.
 
-### 2.7f33 Current Chaingun thirteenth-level chainfire target
+### 2.7f33 Historical Chaingun thirteenth-level chainfire target
 
-The bounded implementation target for this revision extends the Chaingun
-first- through twelfth-level chainfire commands with the pinned thirteenth
-warm-up level. Its contract is:
+The delivered `0.2.317` target extended the Chaingun first- through twelfth-level
+chainfire commands with the pinned thirteenth warm-up level. Its contract was:
 
 - [x] preserve the first- through twelfth-level three-, four-, and six-
   projectile/three-, four-, six-, six-, six-, six-, six-, six-, six-, six-, six-,
@@ -4868,7 +4867,35 @@ warm-up level. Its contract is:
 - [x] advance project version from `0.2.316` to `0.2.317` and gameplay
   semantics from `125` to `126` while preserving replay schema, RNG, generator,
   and ruleset identities;
-- [ ] keep fourteenth-and-later chainfire levels, target rotation/spread, exact
+- [x] keep fourteenth-and-later chainfire levels, target rotation/spread, exact
+  callback timing/accuracy, controlled legacy runtime, browser capture, and
+  audiovisual parity `NOT_RUN` where comparison evidence is unavailable.
+
+### 2.7f34 Current Chaingun fourteenth-level chainfire target
+
+The bounded implementation target for this revision extends the Chaingun
+first- through thirteenth-level chainfire commands with the pinned fourteenth
+warm-up level. Its contract is:
+
+- [x] preserve the first- through thirteenth-level three-, four-, and six-
+  projectile/three-, four-, six-, six-, six-, six-, six-, six-, six-, six-, six-,
+  and six-round contracts and admit a fourteenth command only while the weapon
+  warm-up level is thirteen and the target is still a valid visible living actor;
+- [x] resolve the legacy level-two-and-later formula `shots = 4 + (4 div 2) =
+  6`, consuming exactly six loaded rounds for the ordered ranged volley after
+  the thirteenth-level continuation;
+- [x] preserve target, line-of-sight, damage RNG, event ordering, and
+  deterministic post-lethal no-op continuation slots through the existing
+  generic ranged path;
+- [x] advance warm-up state to level fourteen only after acceptance, keep
+  ordinary fire's reset behavior, and reject the fifteenth level or an
+  under-supplied clip without changing game, clip, turn, or RNG state;
+- [x] preserve direct-core, ScenarioRunner/replay, MCP legal-action/JSON,
+  physical `C` key, and BrowserSession event/state parity;
+- [x] advance project version from `0.2.317` to `0.2.318` and gameplay
+  semantics from `126` to `127` while preserving replay schema, RNG, generator,
+  and ruleset identities;
+- [ ] keep fifteenth-and-later chainfire levels, target rotation/spread, exact
   callback timing/accuracy, controlled legacy runtime, browser capture, and
   audiovisual parity `NOT_RUN` where comparison evidence is unavailable.
 
