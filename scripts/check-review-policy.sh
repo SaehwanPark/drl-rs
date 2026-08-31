@@ -68,7 +68,8 @@ else
   fi
 
   if ! changed_files=$(fetch_api --paginate \
-    "repos/$repository/pulls/$pull_request_number/files" --jq '.[].filename'); then
+    "repos/$repository/pulls/$pull_request_number/files" \
+    --jq '.[] | .filename, (.previous_filename // empty)'); then
     policy_failure 'pull-request file metadata could not be inspected'
   fi
 fi
@@ -102,24 +103,48 @@ else
   fi
 fi
 
-if [ -z "$author" ]; then
+head_sha=${DRL_REVIEW_POLICY_HEAD_SHA:-}
+if [ -z "$head_sha" ]; then
+  if ! command -v gh >/dev/null 2>&1; then
+    if [ "${GITHUB_ACTIONS:-false}" = true ]; then
+      policy_failure 'gh is unavailable while protected paths are changed'
+    fi
+    policy_not_run 'gh is unavailable while protected paths are changed'
+  fi
+  if ! pull_request_metadata=$(fetch_api "repos/$repository/pulls/$pull_request_number"); then
+    policy_failure 'pull-request head metadata could not be inspected'
+  fi
+  if [ -z "${author:-}" ]; then
+    author=$(printf '%s\n' "$pull_request_metadata" | jq -r '.user.login // empty')
+  fi
+  head_sha=$(printf '%s\n' "$pull_request_metadata" | jq -r '.head.sha // empty')
+fi
+
+if [ -z "${author:-}" ]; then
   policy_failure 'pull-request author is missing'
+fi
+if [ -z "$head_sha" ]; then
+  policy_failure 'pull-request head SHA is missing'
 fi
 
 if [ "${DRL_REVIEW_POLICY_REVIEWS+x}" = x ]; then
   reviews=$DRL_REVIEW_POLICY_REVIEWS
 else
-  if ! reviews=$(fetch_api --paginate \
+  if ! reviews=$(fetch_api --paginate --slurp \
     "repos/$repository/pulls/$pull_request_number/reviews"); then
     policy_failure 'pull-request review metadata could not be inspected'
   fi
 fi
 
-if ! review_receipt=$(printf '%s\n' "$reviews" | jq -r --arg author "$author" '
+if ! review_receipt=$(printf '%s\n' "$reviews" | jq -r \
+  --arg author "$author" --arg head_sha "$head_sha" '
   def has_receipt:
     ((.body // "") | contains("drl-determinism-review: PASS"));
   [ .[]
-    | select((.user.login // "") != "" and (.submitted_at // "") != "")
+    | if type == "array" then .[] else . end
+    | select((.user.login // "") != "" and
+        (.submitted_at // "") != "" and
+        (.commit_id // "") == $head_sha)
   ]
   | sort_by(.submitted_at)
   | reduce .[] as $review ({}; .[$review.user.login] = $review)

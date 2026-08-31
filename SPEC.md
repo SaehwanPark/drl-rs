@@ -68,8 +68,9 @@ At audited starting revision `22795a7` (version `0.2.323`):
   `crates/drl-protocol/`, `crates/drl-mcp/`, `crates/drl-app/`,
   `crates/drl-web/`, `crates/drl-script/`, or `docs/legacy-behavior/`.
 - A pull request that changes a protected path passes only when a reviewer
-  other than the pull-request author has a current `APPROVED` review whose
-  body contains the exact receipt `drl-determinism-review: PASS`.
+  other than the pull-request author has a current-head `APPROVED` review whose
+  body contains the exact receipt `drl-determinism-review: PASS`. Reviews for
+  an older head are not current evidence.
 - The `Review policy` workflow runs from the base revision with read-only
   permissions on pull-request open, synchronize, reopen, ready-for-review,
   and review-state changes. It reports `NOT_RUN` only when no pull request or

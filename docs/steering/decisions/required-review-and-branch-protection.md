@@ -36,17 +36,19 @@ The protected paths are:
 
 The hosted `Review policy` check reads pull-request metadata with a read-only
 token. For a pull request changing one of these paths, the latest submitted
-review by each reviewer is considered. At least one reviewer other than the
-author must have state `APPROVED` and a body containing the exact receipt:
+review by each reviewer for the current pull-request head is considered. At
+least one reviewer other than the author must have state `APPROVED` and a body
+containing the exact receipt:
 
 ```text
 drl-determinism-review: PASS
 ```
 
-A later `CHANGES_REQUESTED` or other review state from that reviewer removes
-the receipt until the reviewer approves the current revision again. The check
-does not judge review quality; the independent reviewer owns that judgment and
-the linked review artifact.
+A review for an older head, or a later `CHANGES_REQUESTED` or other review
+state from that reviewer on the current head, removes the receipt until the
+reviewer approves the current revision again. The check does not judge review
+quality; the independent reviewer owns that judgment and the linked review
+artifact.
 
 ### 2. Hosted execution boundary
 

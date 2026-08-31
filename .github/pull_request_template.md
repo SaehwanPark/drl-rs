@@ -18,9 +18,10 @@
 
 ## Determinism review
 
-For a protected-path change, an independent reviewer must inspect the final
-revision and leave the exact receipt below in the review body. The reviewer
-must not be the pull-request author.
+For a protected-path change, an independent reviewer must inspect the current
+head revision and leave the exact receipt below in the review body. A receipt
+for an older commit does not satisfy the policy, and the reviewer must not be
+the pull-request author.
 
 `drl-determinism-review: PASS`
 
