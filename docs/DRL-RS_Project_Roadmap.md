@@ -1197,7 +1197,7 @@ verification item uses explicit status semantics:
   cache. V3 binds the canonical fixed-content, gameplay, RNG-sampling,
   generator, and ruleset identities; provenance-free V1/V2 histories are
   rejected rather than replayed or migrated.
-- **M10 semantics-bound snapshot V3 candidate (`0.2.320`)**: Browser saves now carry the
+- **M10 semantics-bound snapshot V3 (`0.2.320`)**: Browser saves now carry the
   complete interpreter identity, validate it before reconstruction, and commit
   only a fully replayed temporary session. Native and supported WASM contract
   checks cover exact V3 round trips, mismatch ordering, unbound legacy
@@ -1211,21 +1211,24 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Latest Audited Checkpoint:** `main` merge commit `262957e`, merged PR #427,
-  and project version `0.2.319`. Hosted repository, merge-commit CI, and Pages
-  checks passed for that baseline. The checkpointed progression audit is
+- **Latest Audited Checkpoint:** `main` merge commit `b0a36fa`, merged PR #428,
+  and project version `0.2.320`. Repository and WASM/browser hosted checks
+  passed for the delivered revision. Controlled human, audiovisual, and
+  reference-capture surfaces remain `NOT_RUN` where prerequisites are
+  unavailable. The checkpointed progression audit is
   [`docs/steering/audit-2026-08-30-post-0.2.318.md`](steering/audit-2026-08-30-post-0.2.318.md).
-- **Steering Disposition — Gate A candidate closure:** Preserve the deterministic
-  core, explicit RNG/replay identities, typed content, observation boundary, and
-  browser/MCP projections. The M10 candidate binds browser command histories to
-  their interpreter identity; Gate A remains pending hosted review and merge
-  while counter-only chainfire continuations remain stopped.
-- **M10 candidate (`0.2.320`):** Semantics-bound browser snapshot V3
+- **Steering Disposition — Gate A closed:** Preserve the deterministic core,
+  explicit RNG/replay identities, typed content, observation boundary, and
+  browser/MCP projections. M10 now binds browser command histories to their
+  interpreter identity, rejects mismatches before simulation, preserves the
+  active session transactionally, and rejects provenance-free V1/V2 histories.
+  Counter-only chainfire continuations remain stopped by Gate B.
+- **Delivered Slice — M10 (`0.2.320`):** Semantics-bound browser snapshot V3
   carries fixed-content, gameplay, RNG-sampling, generator, and ruleset
   identities; mismatches reject before command execution; V1/V2 tokens remain
-  provenance-free and are rejected without migration. The candidate is ready
-  for PR handoff after local and headless-browser verification.
-- **Next Eligible Slice (M9):** After M10 Gate A closes, consolidate chainfire
+  provenance-free and are rejected without migration. Native, WASM, headless
+  browser, repository, and hosted checks passed for the merged revision.
+- **Next Eligible Slice (M9):** With M10 Gate A closed, consolidate chainfire
   into one evidenced typed state model for initial, second, sustained, and
   saturated states, including partial-ammunition policy, reset, target
   continuation/routing, and weapon traits. Another PR whose primary outcome is

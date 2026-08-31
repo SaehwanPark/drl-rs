@@ -2,9 +2,9 @@
 
 Last reviewed: 2026-08-31
 Baseline branch: `main`
-Baseline merge commit: `262957e0d0471022a2128f8acba3120dd946f6e9`
-Latest pull request inspected: `#426`
-Baseline project version: `0.2.319`
+Baseline merge commit: `b0a36fab6e116f0e1b0ac2b06e62b14b52ad4951`
+Latest pull request inspected: `#428`
+Baseline project version: `0.2.320`
 
 ## Purpose
 
@@ -16,8 +16,9 @@ The previous `0.2.88` steering wave successfully established command rejection
 evidence, unbiased RNG sampling, explicit replay metadata, routine content
 catalogs, and typed behavior foundations. Those results remain architecture and
 test invariants. The gates below supersede the old slice-selection order because
-the current risks are now persistent-history compatibility, semantic
-micro-slicing, transaction cost, and control-plane drift.
+the remaining risks are semantic micro-slicing, transaction cost, and
+control-plane drift; persistent-history compatibility remains a protected
+invariant after Gate A closure.
 
 ## Current diagnosis
 
@@ -29,56 +30,53 @@ Development has nevertheless optimized for locally reviewable increments more
 than for closing complete behavior rules. The clearest example is chainfire:
 the legacy rule groups all levels `2..255`, while recent Rust delivery repeatedly
 adds one plateau value and projects it through many boundaries. In parallel,
-baseline browser command-history saves omit the gameplay identities that
+pre-M10 browser command-history saves omitted the gameplay identities that
 interpret them, and the interim full-state rollback backstop has no measured
-exit plan. The current M10 candidate binds those histories and is pending its
-hosted PR/merge handoff before Gate A is retired.
+exit plan. M10 now binds those histories and Gate A is closed; the remaining
+risks are chainfire semantic completeness, rollback cost, and control-plane
+drift.
 
 Near-term work must reduce those risks before more scalar breadth or another
 counter-level continuation becomes eligible.
 
 ## Priority order
 
-Until the gates below close, select work in this order:
+Until the remaining gates below close, select work in this order:
 
-1. **Semantics-bound browser persistence (M10)**
-   - ship a snapshot format that binds command history to gameplay,
-     RNG-sampling, generator, ruleset, and fixed-content identities;
-   - reject unsupported identities before executing commands;
-   - handle legacy unbound tokens explicitly and transactionally.
-2. **Whole-rule chainfire fidelity (M9)**
+1. **Whole-rule chainfire fidelity (M9)**
    - replace per-level plateaus with evidenced state classes and saturation;
    - decide ammunition shortage, target continuation/routing, reset, and trait
      interactions from pinned evidence or an explicit DRL-Rust policy;
    - verify equivalence classes and boundaries across core, replay, MCP, and
      browser without duplicating gameplay policy.
-3. **Measured transaction ownership (M1/M11)**
+2. **Measured transaction ownership (M1/M11)**
    - establish command throughput/allocation baselines;
    - remove redundant boundary clones where core atomicity is sufficient;
    - move hot accepted paths toward validate/prepare/commit without weakening
      exact rejection identity.
-4. **Reviewable control plane (M0)**
+3. **Reviewable control plane (M0)**
    - keep `SPEC.md` to one active slice;
    - require an attributable independent determinism review for every
      replay-visible or legacy-fidelity slice;
    - decide and enforce review/branch-protection policy before 1.0.
-5. **Vertical canonical fidelity**
+4. **Vertical canonical fidelity**
    - select bounded end-to-end mechanics that close a complete behavior branch.
-6. **Controlled reference captures**
+5. **Controlled reference captures**
    - run when the required environment exists; unavailable work stays
      `NOT_RUN`.
-7. **Resume broad content and platform expansion**
+6. **Resume broad content and platform expansion**
    - only after the applicable gates below close.
 
 ## Development stop gates
 
-### Gate A — Persistent histories bind their interpreter
+### Gate A — Persistent histories bind their interpreter (closed)
 
-Do not merge another replay-visible gameplay-semantics change while browser
-snapshots can silently replay an unversioned command history under current
-rules.
+M10 closed this gate in merged PR #428 (`b0a36fa`). Do not merge another
+replay-visible gameplay-semantics change that weakens the resulting invariant:
+browser snapshots must not silently replay an unversioned command history
+under current rules.
 
-Gate A closes when the active M10 slice proves that:
+The delivered evidence proves that:
 
 - new saves carry the semantic identities required to interpret them;
 - mismatches reject before simulation;
@@ -204,7 +202,8 @@ Retire each temporary gate when its acceptance evidence exists, promote durable
 invariants into accepted architecture/ADRs as appropriate, and update the
 roadmap and active specification from verified evidence.
 
-Re-audit after snapshot V3 and chainfire semantic consolidation merge, or
-before broad M9 migration resumes, whichever happens first. Name the branch,
-latest inspected PR, merge commit, project version, audited tree, local checks,
-hosted checks, and unavailable evidence.
+Re-audit after chainfire semantic consolidation merge, or before broad M9
+migration resumes, whichever happens first. The current audited tree is
+`main` at `b0a36fa` (PR #428, version `0.2.320`); local and hosted checks passed
+for M10, while human, audiovisual, performance, and reference-capture surfaces
+remain `NOT_RUN` where prerequisites are unavailable.
