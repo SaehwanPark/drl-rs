@@ -7,9 +7,12 @@
 *.pyc
 
 # Assets
-/assets/*
-!/assets/drl-rs-banner.png
+# Only the license-cleared graphics bundle and documentation are tracked.
+# Untracked sound, music, and font assets are ignored by git.
+/assets/**
+!/assets/
 !/assets/README.md
+!/assets/drl-rs-banner.png
 !/assets/legacy/
 !/assets/legacy/drl/
 !/assets/legacy/drl/graphics/

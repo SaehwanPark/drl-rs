@@ -85,10 +85,32 @@ Open [http://127.0.0.1:8000](http://127.0.0.1:8000) in desktop Google Chrome, Mi
 
 ---
 
+## Preparing Sound, Music & Font Assets (Optional)
+
+The repository includes license-cleared 2D pixel-art graphics. Sound effects, music tracks, and bitmap fonts are approved for in-game use but are excluded from repository tracking and release binaries.
+
+### For Players & External Contributors
+Download official DRL game binaries directly from [https://drl.chaosforge.org/](https://drl.chaosforge.org/):
+1. Download an official game release package (e.g. `doomrl-win-0997.zip` or `doomrl-linux-x64-0.10.0.tar.gz`).
+2. Extract the archive locally.
+3. Import the assets using the preparation script:
+   ```bash
+   sh scripts/prepare-legacy-assets.sh /path/to/extracted-doomrl-folder
+   ```
+
+### For Internal & Local Development
+If you have the pre-downloaded legacy repository at `../doom-the-roughlike-original`:
+```bash
+sh scripts/prepare-legacy-assets.sh
+```
+
+---
+
 ## Running Quality Checks
 
 Ensure the repository passes all formatting, linter, determinism, and integration contracts:
 ```bash
 sh scripts/check-repository.sh
+sh scripts/check-assets.sh
 sh scripts/check-web.sh
 ```

@@ -33,10 +33,16 @@ git -C "$legacy_repo" ls-tree -r --name-only "$revision" -- bin/data/drl/graphic
     done
 } > "$destination/MANIFEST.txt"
 
-if command -v sha256sum >/dev/null 2>&1; then
-  (cd "$destination" && sha256sum -- *png LICENSE) > "$destination/SHA256SUMS"
-else
-  (cd "$destination" && shasum -a 256 -- *png LICENSE) > "$destination/SHA256SUMS"
-fi
+(
+  cd "$destination"
+  png_files=$(find . -maxdepth 1 -name '*.png' -exec basename {} \; | LC_ALL=C sort)
+  for file in $png_files LICENSE; do
+    if command -v sha256sum >/dev/null 2>&1; then
+      sha256sum "$file"
+    else
+      shasum -a 256 "$file"
+    fi
+  done
+) > "$destination/SHA256SUMS"
 
 printf '%s\n' "Imported tracked legacy graphics from $revision into $destination"
