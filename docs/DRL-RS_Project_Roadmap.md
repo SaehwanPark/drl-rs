@@ -1232,6 +1232,16 @@ verification item uses explicit status semantics:
   one approving review, stale-review dismissal, strict updates, and the three
   repository/browser/policy contexts; the branch checker passes against the
   API with the documented solo-maintainer exception.
+- **M13/M6 replay-file verification CLI (`0.2.326`, delivered in PR #441)**:
+  The native `drl-rs replay verify [path|-]` command reads the exact canonical
+  V2 envelope from a bounded UTF-8 file or stdin, reuses the public MCP
+  decoder, and performs a two-run `ReplayEngine` determinism check. Input is
+  capped at 8 MiB and 64 JSON nesting levels; malformed, unsafe, incompatible,
+  unreadable, and execution-invalid inputs fail closed with stable diagnostics.
+  The implementation was independently reviewed at
+  `8ad2922a82a7edf4a12df359b48e9949ddd9bd18`; Repository/WASM checks pass for
+  merged `fb2288644b4cabb7b28db15068801c9e79636f6e`, while the sole-maintainer
+  Review policy check failed closed under the documented live exception.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
@@ -1241,9 +1251,9 @@ verification item uses explicit status semantics:
 ### Active & Open Work
 
 - **Latest Audited Checkpoint:** `main` merge commit
-  `7735d47`, merged PR #440, and project version `0.2.325`. Repository and
-  WASM/browser hosted checks, independent review, and the JSON compatibility
-  fixtures pass for the delivered M13 slice; its hosted Review policy check
+  `fb22886`, merged PR #441, and project version `0.2.326`. Repository and
+  WASM/browser hosted checks, independent review, and the replay-verification
+  fixtures pass for the delivered M13/M6 slice; its hosted Review policy check
   failed closed because the sole maintainer cannot create a non-self approval,
   so the documented live `enforce_admins=false` exception was used. Controlled
   human, audiovisual, and reference-capture surfaces remain `NOT_RUN` where
@@ -1293,14 +1303,17 @@ verification item uses explicit status semantics:
   Local repository/web checks, hosted Repository/WASM checks, and independent
   review pass; full external-client and transport compatibility remain open,
   while the sole-maintainer hosted Review policy failure is recorded above.
-- **Active Slice — M13/M6 replay-file verification CLI (`0.2.326`):** The
+- **Delivered Slice — M13/M6 replay-file verification CLI (`0.2.326`):** PR
+  #441 merged as `fb22886`. The
   native `drl-rs replay verify [path|-]` command reads the exact canonical V2
   JSON envelope from a bounded UTF-8 file or stdin, reuses the public MCP
   decoder, and performs a two-run `ReplayEngine` determinism check. Input is
   capped at 8 MiB and 64 JSON nesting levels; malformed, unsafe, incompatible,
   unreadable, and execution-invalid inputs fail closed with stable diagnostics.
-  Replay migration, network IO, and cross-version interchange remain open
-  until the final review/merge checkpoint is recorded.
+  The exact source implementation commit
+  `8ad2922a82a7edf4a12df359b48e9949ddd9bd18` has an independent
+  determinism-review PASS; Repository/WASM checks pass, and replay migration,
+  network IO, and cross-version interchange remain open.
 - **Process Gate (M0, closed):** Keep `SPEC.md` bounded to one active slice and
   require an attributable independent determinism-review disposition for every
   replay-visible or legacy-fidelity slice. PR #436 records and enforces the
