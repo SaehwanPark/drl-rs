@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.325]
+
+- Hardened the zero-dependency MCP JSON parser for external-client input:
+  valid UTF-16 surrogate-pair escapes now decode to one Unicode scalar, lone
+  or mismatched surrogate escapes reject deterministically, and raw JSON
+  control characters inside strings fail before dispatch. The MCP initialize
+  path now has an escaped-Unicode client-info fixture; transport reconnect and
+  full external-client compatibility remain open.
+
 ## [0.2.324]
 
 - Added a read-only hosted review-policy check for protected simulation and

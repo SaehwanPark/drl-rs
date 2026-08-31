@@ -123,6 +123,16 @@ fn test_jsonrpc_initialize_handshake() {
 }
 
 #[test]
+fn test_jsonrpc_initialize_accepts_escaped_unicode_client_info() {
+  let mut server = McpServer::new();
+  let request = r#"{"jsonrpc":"2.0","id":27,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"rocket \ud83d\ude80","version":"1.0"}}}"#;
+  let response = JsonValue::parse(&server.handle_request(request)).unwrap();
+
+  assert!(response.get("error").is_none());
+  assert!(response.get("result").is_some());
+}
+
+#[test]
 fn test_jsonrpc_initialize_falls_back_for_unsupported_version() {
   let mut server = McpServer::new();
   let request = r#"{"jsonrpc":"2.0","id":7,"method":"initialize","params":{"protocolVersion":"2099-01-01","capabilities":{},"clientInfo":{"name":"future-client","version":"1"}}}"#;
@@ -911,9 +921,10 @@ fn test_jsonrpc_game_start_rejects_dimensions_outside_replay_bounds() {
 #[test]
 fn test_jsonrpc_supplied_custom_replay_verifies_without_session() {
   let mut source = ready_server();
+  let ascii_map = JsonValue::from("#####\n#@.>#\n#####").to_compact_string();
   let load_request = format!(
-    r#"{{"jsonrpc":"2.0","id":60,"method":"tools/call","params":{{"name":"game_load_scenario","arguments":{{"ascii_map":"{}","max_turns":4}}}}}}"#,
-    "#####\n#@.>#\n#####"
+    r#"{{"jsonrpc":"2.0","id":60,"method":"tools/call","params":{{"name":"game_load_scenario","arguments":{{"ascii_map":{},"max_turns":4}}}}}}"#,
+    ascii_map
   );
   let _ = source.handle_request(&load_request);
   let saved = JsonValue::parse(&source.handle_request(
