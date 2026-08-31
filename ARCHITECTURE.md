@@ -588,8 +588,10 @@ Presentation Boundary
   allocation baselines on a declared host. `BrowserSession` adds no outer
   simulation snapshot; `McpSession` retains one cloned core probe per legal
   candidate as fair-observation admission validation, and inventory staging
-  clones remain local atomicity guards. A representative rejection matrix
-  covers every current command family and compares exact cloned state.
+  clones remain local atomicity guards. The benchmark measures timing with
+  allocator counter updates disabled and collects allocation counters in a
+  separate pass. A representative rejection matrix covers every current
+  command family and compares exact cloned state.
 - **Deterministic PRNG**: All randomness flows through `GameRng`. No ambient or
   thread-local RNG is permitted. Bounded integer sampling uses documented
   rejection sampling under `RNG_SAMPLING_SEMANTICS_VERSION`; core rules use

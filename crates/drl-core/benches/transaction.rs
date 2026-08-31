@@ -4,11 +4,11 @@
 //! as well as elapsed time so the rollback backstop has a reproducible baseline
 //! without adding a benchmark dependency to the simulation crate.
 
-use drl_core::Game;
-use drl_protocol::{Command, Direction, Position};
+use drl_core::{Game, Tile};
+use drl_protocol::{Command, Direction, ItemSpawnKind, Position};
 use std::alloc::{GlobalAlloc, Layout, System};
 use std::hint::black_box;
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::time::{Instant, SystemTime, UNIX_EPOCH};
 
 const BENCHMARK_NAME: &str = "drl-core-transaction";
@@ -17,6 +17,9 @@ const DEFAULT_ITERATIONS: usize = 100_000;
 const DEFAULT_SAMPLES: usize = 5;
 const DEFAULT_WARMUP: usize = 10_000;
 const BENCH_SEED: u64 = 42;
+const CONTRACT_ITERATIONS: usize = 1_000;
+const CONTRACT_SAMPLES: usize = 3;
+const CONTRACT_WARMUP: usize = 100;
 const FIXTURE_WIDTH: u32 = 20;
 const FIXTURE_HEIGHT: u32 = 15;
 
@@ -24,6 +27,7 @@ static ALLOCATIONS: AtomicU64 = AtomicU64::new(0);
 static DEALLOCATIONS: AtomicU64 = AtomicU64::new(0);
 static ALLOCATED_BYTES: AtomicU64 = AtomicU64::new(0);
 static DEALLOCATED_BYTES: AtomicU64 = AtomicU64::new(0);
+static COUNT_ALLOCATIONS: AtomicBool = AtomicBool::new(false);
 
 struct CountingAllocator;
 
@@ -34,7 +38,7 @@ unsafe impl GlobalAlloc for CountingAllocator {
   unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
     // SAFETY: Delegating the exact layout to the system allocator is valid.
     let pointer = unsafe { System.alloc(layout) };
-    if !pointer.is_null() {
+    if !pointer.is_null() && COUNT_ALLOCATIONS.load(Ordering::Relaxed) {
       ALLOCATIONS.fetch_add(1, Ordering::Relaxed);
       ALLOCATED_BYTES.fetch_add(layout.size() as u64, Ordering::Relaxed);
     }
@@ -44,7 +48,7 @@ unsafe impl GlobalAlloc for CountingAllocator {
   unsafe fn alloc_zeroed(&self, layout: Layout) -> *mut u8 {
     // SAFETY: Delegating the exact layout to the system allocator is valid.
     let pointer = unsafe { System.alloc_zeroed(layout) };
-    if !pointer.is_null() {
+    if !pointer.is_null() && COUNT_ALLOCATIONS.load(Ordering::Relaxed) {
       ALLOCATIONS.fetch_add(1, Ordering::Relaxed);
       ALLOCATED_BYTES.fetch_add(layout.size() as u64, Ordering::Relaxed);
     }
@@ -54,14 +58,16 @@ unsafe impl GlobalAlloc for CountingAllocator {
   unsafe fn dealloc(&self, pointer: *mut u8, layout: Layout) {
     // SAFETY: The pointer/layout pair was returned by this allocator.
     unsafe { System.dealloc(pointer, layout) };
-    DEALLOCATIONS.fetch_add(1, Ordering::Relaxed);
-    DEALLOCATED_BYTES.fetch_add(layout.size() as u64, Ordering::Relaxed);
+    if COUNT_ALLOCATIONS.load(Ordering::Relaxed) {
+      DEALLOCATIONS.fetch_add(1, Ordering::Relaxed);
+      DEALLOCATED_BYTES.fetch_add(layout.size() as u64, Ordering::Relaxed);
+    }
   }
 
   unsafe fn realloc(&self, pointer: *mut u8, layout: Layout, new_size: usize) -> *mut u8 {
     // SAFETY: The pointer/layout pair was returned by this allocator.
     let new_pointer = unsafe { System.realloc(pointer, layout, new_size) };
-    if !new_pointer.is_null() {
+    if !new_pointer.is_null() && COUNT_ALLOCATIONS.load(Ordering::Relaxed) {
       ALLOCATIONS.fetch_add(1, Ordering::Relaxed);
       ALLOCATED_BYTES.fetch_add(new_size as u64, Ordering::Relaxed);
       DEALLOCATIONS.fetch_add(1, Ordering::Relaxed);
@@ -117,9 +123,9 @@ impl BenchConfig {
 
     if contract {
       Self {
-        iterations: 1,
-        samples: 1,
-        warmup: 0,
+        iterations: CONTRACT_ITERATIONS,
+        samples: CONTRACT_SAMPLES,
+        warmup: CONTRACT_WARMUP,
       }
     } else {
       config
@@ -178,17 +184,26 @@ struct Measurement {
   deallocated_bytes: u64,
 }
 
-fn measure<F>(mut game: Game, config: BenchConfig, mut workload: F) -> Measurement
+fn measure<F>(create_game: fn() -> Game, config: BenchConfig, mut workload: F) -> Measurement
 where
   F: FnMut(&mut Game, usize),
 {
-  workload(&mut game, config.warmup);
-  AllocationSnapshot::reset();
+  COUNT_ALLOCATIONS.store(false, Ordering::Relaxed);
+  let mut timed_game = create_game();
+  workload(&mut timed_game, config.warmup);
   let started = Instant::now();
-  workload(&mut game, config.iterations);
+  workload(&mut timed_game, config.iterations);
   let elapsed_ns = started.elapsed().as_nanos();
+  black_box(timed_game);
+
+  let mut allocation_game = create_game();
+  workload(&mut allocation_game, config.warmup);
+  AllocationSnapshot::reset();
+  COUNT_ALLOCATIONS.store(true, Ordering::Relaxed);
+  workload(&mut allocation_game, config.iterations);
+  COUNT_ALLOCATIONS.store(false, Ordering::Relaxed);
   let allocations = AllocationSnapshot::read();
-  black_box(game);
+  black_box(allocation_game);
   Measurement {
     elapsed_ns,
     allocations: allocations.allocations,
@@ -240,6 +255,17 @@ fn rejected_out_of_bounds_ranged(game: &mut Game, iterations: usize) {
   }
 }
 
+fn rejected_late_death_drop(game: &mut Game, iterations: usize) {
+  for _ in 0..iterations {
+    let result = game.step(Command::AttackMelee(Direction::East));
+    assert!(
+      result.is_err(),
+      "fixed late death-drop command must be rejected"
+    );
+    let _ = black_box(result);
+  }
+}
+
 fn operations_per_second(elapsed_ns: u128, iterations: usize) -> u128 {
   (iterations as u128 * 1_000_000_000)
     .checked_div(elapsed_ns)
@@ -255,7 +281,7 @@ fn emit_measurement(
 ) {
   let ns_per_operation = measurement.elapsed_ns / config.iterations as u128;
   println!(
-    "{{\"schema_version\":{SCHEMA_VERSION},\"benchmark\":\"{BENCHMARK_NAME}\",\"case\":\"{case}\",\"ownership\":\"core.rollback\",\"seed\":{BENCH_SEED},\"fixture_width\":{FIXTURE_WIDTH},\"fixture_height\":{FIXTURE_HEIGHT},\"sample\":{sample},\"median\":{is_median},\"iterations\":{},\"warmup\":{},\"elapsed_ns\":{},\"ns_per_operation\":{ns_per_operation},\"operations_per_second\":{},\"allocations\":{},\"deallocations\":{},\"allocated_bytes\":{},\"deallocated_bytes\":{}}}",
+    "{{\"schema_version\":{SCHEMA_VERSION},\"benchmark\":\"{BENCHMARK_NAME}\",\"case\":\"{case}\",\"ownership\":\"core.rollback\",\"seed\":{BENCH_SEED},\"fixture_width\":{FIXTURE_WIDTH},\"fixture_height\":{FIXTURE_HEIGHT},\"timing_allocator_counting\":false,\"allocation_measurement\":\"separate_pass\",\"sample\":{sample},\"median\":{is_median},\"iterations\":{},\"warmup\":{},\"elapsed_ns\":{},\"ns_per_operation\":{ns_per_operation},\"operations_per_second\":{},\"allocations\":{},\"deallocations\":{},\"allocated_bytes\":{},\"deallocated_bytes\":{}}}",
     config.iterations,
     config.warmup,
     measurement.elapsed_ns,
@@ -285,7 +311,7 @@ fn run_case(
 ) {
   let mut measurements = Vec::with_capacity(config.samples);
   for sample in 0..config.samples {
-    let measurement = measure(create_game(), config, workload);
+    let measurement = measure(create_game, config, workload);
     emit_measurement(case, sample, false, config, measurement);
     measurements.push(measurement);
   }
@@ -326,6 +352,25 @@ fn out_of_bounds_ranged_game() -> Game {
   .expect("fixed arena")
 }
 
+fn late_death_drop_game() -> Game {
+  let mut game = Game::new_arena(BENCH_SEED, FIXTURE_WIDTH, FIXTURE_HEIGHT).expect("fixed arena");
+  let target_position = Position::new(11, 7);
+  let target_id = game
+    .world_mut()
+    .spawn_monster(target_position, "Dropper", 1, 0, (1, 1))
+    .expect("fixed target");
+  game
+    .world_mut()
+    .get_actor_mut(target_id)
+    .expect("target actor")
+    .set_death_drop(Some(ItemSpawnKind::SmallMedPack));
+  game
+    .world_mut()
+    .map_mut()
+    .set_tile(target_position, Tile::Wall);
+  game
+}
+
 fn json_string(value: &str) -> String {
   let mut escaped = String::with_capacity(value.len());
   for character in value.chars() {
@@ -351,7 +396,7 @@ fn main() {
     .unwrap_or_default()
     .as_secs();
   println!(
-    "{{\"schema_version\":{SCHEMA_VERSION},\"benchmark\":\"{BENCHMARK_NAME}\",\"kind\":\"metadata\",\"revision\":\"{}\",\"timestamp_unix\":{timestamp_unix},\"rust_version\":\"{}\",\"arch\":\"{}\",\"os\":\"{}\",\"profile\":\"bench\",\"seed\":{BENCH_SEED},\"fixture_width\":{FIXTURE_WIDTH},\"fixture_height\":{FIXTURE_HEIGHT},\"ownership\":\"core.rollback\"}}",
+    "{{\"schema_version\":{SCHEMA_VERSION},\"benchmark\":\"{BENCHMARK_NAME}\",\"kind\":\"metadata\",\"revision\":\"{}\",\"timestamp_unix\":{timestamp_unix},\"rust_version\":\"{}\",\"arch\":\"{}\",\"os\":\"{}\",\"profile\":\"bench\",\"seed\":{BENCH_SEED},\"fixture_width\":{FIXTURE_WIDTH},\"fixture_height\":{FIXTURE_HEIGHT},\"timing_allocator_counting\":false,\"allocation_measurement\":\"separate_pass\",\"ownership\":\"core.rollback\"}}",
     json_string(&revision),
     json_string(&rust_version),
     std::env::consts::ARCH,
@@ -371,5 +416,11 @@ fn main() {
     config,
     out_of_bounds_ranged_game,
     rejected_out_of_bounds_ranged,
+  );
+  run_case(
+    "core.rejected.late_death_drop",
+    config,
+    late_death_drop_game,
+    rejected_late_death_drop,
   );
 }

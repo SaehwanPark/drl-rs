@@ -61,8 +61,10 @@ Every state-mutating command submitted to `Game::step()` is wrapped in a transac
 - **Invariant**: `Err => before == after`.
 
 The benchmark-only `crates/drl-core/benches/transaction.rs` target records
-accepted/rejected throughput and allocator counters for fixed same-host
-fixtures. Its results are baselines, not universal performance claims.
+accepted/rejected throughput with allocator counter updates disabled during
+timing, then collects allocator counters in a separate pass for fixed
+same-host fixtures. Its results are baselines, not universal performance
+claims.
 
 ### 3. Separation of Presentation & Simulation
 `drl-render` constructs pure, platform-neutral presentation models (sprite layers, lighting bands, emissive highlights, UI projection rectangles) without executing graphics draw calls. The browser crate (`drl-web`) translates these plans into WebGPU render passes.

@@ -68,9 +68,13 @@ At audited starting revision `34f6df3` (version `0.2.321`):
 
 - The optimized benchmark uses fixed seed `42`, a `20×15` arena, setup outside
   the timed region, `std::hint::black_box`, and bounded defaults of 10,000
-  warm-up operations plus five measured samples of 100,000 operations.
-- It measures accepted `Command::Wait` and rejected blocked movement from
-  `(1, 1)`, and reports per-sample and median elapsed time, operations/sec,
+  warm-up operations plus five measured samples of 100,000 operations. Its
+  repository contract uses three samples of 1,000 operations after 100 warm-up
+  operations so the check exercises more than a one-operation smoke path.
+- It measures accepted `Command::Wait` and alternating movement plus rejected
+  blocked movement, out-of-bounds ranged targeting, and a late death-drop
+  failure. Timing and allocation counters run in separate passes, and the
+  output reports per-sample and median elapsed time, operations/sec,
   allocation/deallocation calls, and allocated/deallocated bytes.
 - Output is machine-readable and includes schema, revision, host/toolchain,
   profile, fixture, command label, iteration counts, and explicit ownership
