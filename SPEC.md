@@ -4,7 +4,8 @@ Last reviewed: 2026-08-31
 Current project version: `0.2.325`
 Audited starting checkpoint: `main` at
 `4ec6561` (merged PR #438; Gate D policy and steering reconciled)
-Delivery checkpoint: pending for the active M13 slice
+Delivery checkpoint: `main` at
+`8e86f26` (merged PR #439; JSON compatibility delivered)
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -24,8 +25,7 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 
 ## 2. Active implementation slice: M13 — MCP JSON compatibility
 
-Slice status: **active**; the delivery checkpoint will be recorded after the
-implementation, review, and hosted checks are merged.
+Slice status: **delivered and verified** at the delivery checkpoint above.
 
 ### 2.1 Objective
 
@@ -83,10 +83,13 @@ At audited starting revision `4ec6561` (version `0.2.324`):
   control characters remain supported.
 - [x] MCP `initialize` accepts an escaped-Unicode `clientInfo.name` through the
   normal JSON-RPC path.
-- [ ] The focused parser/protocol tests, formatting, clippy, repository gate,
+- [x] The focused parser/protocol tests, formatting, clippy, repository gate,
   web contracts, and version transition pass on the final revision.
-- [ ] An attributable independent determinism-review receipt and all required
-  hosted checks pass for the final pull-request head.
+- [x] An attributable independent determinism-review receipt is recorded for
+  the exact final head; hosted Repository/WASM checks pass. The hosted Review
+  policy check fails closed only because the sole maintainer cannot create a
+  non-self approval, and the documented `enforce_admins=false` exception was
+  used without weakening the policy for external contributors.
 
 ### 2.6 Non-goals
 
@@ -102,7 +105,10 @@ At audited starting revision `4ec6561` (version `0.2.324`):
 The parser and in-process protocol fixtures prove only current-Rust JSON
 decoding and initialize acceptance. They do not prove full external-client
 compatibility, transport behavior, or runtime/browser acceptance; those
-surfaces remain `NOT_RUN` or open in the roadmap.
+surfaces remain `NOT_RUN` or open in the roadmap. Review policy enforcement is
+audited separately; this sole-maintainer PR used the documented admin
+exception after the hosted policy check failed closed for lack of a second
+GitHub reviewer.
 
 ## 3. Enduring invariants
 
