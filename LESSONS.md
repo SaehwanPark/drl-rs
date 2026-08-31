@@ -314,3 +314,84 @@ repository and WASM job has reached a passing terminal state.
   attack, hit, knockback, and browser effect spans.
 - **Prevention:** For every fire-mode vertical slice, compare direct and replayed
   events/final state only after the exact toggle-then-attack sequence is present.
+
+## Atomicity does not choose the canonical outcome
+
+- **Context:** A legacy action may accept a reduced result when a complete
+  resource requirement is unavailable, while Rust requires accepted and
+  rejected commands to be transactional.
+- **Symptom:** The implementation rejects an under-supplied multi-shot action
+  and describes that policy as necessary for atomicity even though the legacy
+  path fires the affordable subset.
+- **Cause:** Transaction safety and gameplay policy were collapsed into one
+  decision. Atomicity says that the selected outcome commits completely; it
+  does not require every incomplete request to reject.
+- **Resolution:** Decide accepted, reduced, or rejected behavior from pinned
+  evidence or an explicit DRL-Rust policy, then prepare the complete chosen
+  result before mutation. The post-`0.2.318` chainfire audit records this
+  distinction for partial volleys.
+- **Prevention:** Every resource-sensitive specification states both the
+  canonical outcome policy and the transaction boundary, with separate tests
+  for each.
+
+## Version the interpreter, not only the save grammar
+
+- **Context:** Browser saves and replays persist command histories that are
+  interpreted by gameplay, RNG, generator, content, and ruleset policy.
+- **Symptom:** An old token decodes and executes successfully but reconstructs
+  a different state after a deterministic rule changes.
+- **Cause:** The token version describes its syntax, while the semantic
+  identities that give the commands meaning are absent.
+- **Resolution:** Persist and validate every relevant interpreter identity
+  before executing commands, restore in temporary state, and reject histories
+  with missing or incompatible provenance unless an evidenced migration exists.
+- **Prevention:** Treat every persistent command history as replay metadata:
+  schema compatibility and gameplay compatibility are separate acceptance
+  questions.
+
+## Close behavior classes instead of enumerating plateaus
+
+- **Context:** Legacy code often expresses a large state range with a small
+  formula or state machine.
+- **Symptom:** A sequence of releases adds the next identical counter value,
+  duplicating constants, tests, boundary fixtures, documentation, and semantics
+  bumps without closing the actual rule.
+- **Cause:** The delivery unit followed the observable counter rather than the
+  equivalence classes in the source behavior.
+- **Resolution:** Specify initial, transition, sustained, and saturation classes
+  once; include reset, resource shortage, targeting, and trait interactions in
+  the same bounded semantic branch.
+- **Prevention:** A milestone slice must reduce an unresolved behavior branch.
+  A new counter-only slice is rejected when the value is already covered by an
+  evidenced formula or plateau.
+
+## Give rollback backstops an owner and an exit budget
+
+- **Context:** Full-state cloning is a useful interim guard while mutation-
+  before-error paths are being converted to validate/prepare/commit.
+- **Symptom:** Core and outer wrappers both clone authoritative state on every
+  command, and batch/cohort workloads grow without a throughput or allocation
+  baseline.
+- **Cause:** The safety net became invisible infrastructure after correctness
+  tests passed; no boundary owned its cost or retirement criteria.
+- **Resolution:** Measure representative accepted/rejected workloads, identify
+  which layer owns transactionality, remove redundant outer rollback when the
+  core contract is sufficient, and refactor hot paths only with equivalent
+  rejection evidence.
+- **Prevention:** Every temporary rollback guard records its owner, benchmark,
+  retained-risk rationale, and retirement trigger when introduced.
+
+## Keep the active specification replaceable
+
+- **Context:** The roadmap and changelog own delivered progress, while
+  `SPEC.md` is supposed to expand one active implementation slice.
+- **Symptom:** Historical targets accumulate under labels such as `Current`,
+  `Previous`, and `Historical` until reviewers cannot distinguish the contract
+  being implemented.
+- **Cause:** Each delivery appended its proof to the active control document
+  instead of replacing the completed slice and preserving history in its
+  designated records.
+- **Resolution:** Replace `SPEC.md` when the next slice is selected; retain
+  delivered outcomes in the roadmap, changelog, evidence notes, and Git.
+- **Prevention:** Add a structural check if the file again contains multiple
+  active-slice headings or historical delivery ledgers.

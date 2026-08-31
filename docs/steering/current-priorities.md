@@ -1,175 +1,208 @@
 # Near-Term Development Steering
 
-Last reviewed: 2026-08-23
-Baseline project version: `0.2.88`
+Last reviewed: 2026-08-30
+Baseline branch: `main`
+Baseline merge commit: `3796a2ff50c748c45b50ade1d07d68a3f9c06395`
+Latest pull request inspected: `#426`
+Baseline project version: `0.2.318`
 
 ## Purpose
 
-This document captures the current priority order for DRL-Rust after the first
-large wave of deterministic-engine, browser, tooling, and typed-content work.
-It does not replace the roadmap or the single active slice in `SPEC.md`.
-Instead, milestone owners use it to decide which candidate work is eligible to
-become the next bounded slice.
+This document constrains near-term slice selection after the progression audit
+recorded in [`audit-2026-08-30-post-0.2.318.md`](audit-2026-08-30-post-0.2.318.md).
+It does not replace the roadmap or the one active slice in `SPEC.md`.
+
+The previous `0.2.88` steering wave successfully established command rejection
+evidence, unbiased RNG sampling, explicit replay metadata, routine content
+catalogs, and typed behavior foundations. Those results remain architecture and
+test invariants. The gates below supersede the old slice-selection order because
+the current risks are now persistent-history compatibility, semantic
+micro-slicing, transaction cost, and control-plane drift.
 
 ## Current diagnosis
 
-The project foundation is strong: deterministic simulation, semantic commands,
-replay/scenario infrastructure, WebGPU/WASM presentation, MCP tooling, content
-provenance, CI, and release-rights gates already exist.
+The architecture remains sound. The deterministic core, fair observations,
+explicit RNG, replay/scenario tooling, browser/MCP boundaries, and provenance
+checks should continue.
 
-The main project risk has shifted. Infrastructure and scalar content coverage
-are now advancing faster than canonical DRL behavioral fidelity. The legacy
-game expresses important mechanics through a broad Pascal/Lua hook system;
-porting scalar fields without choosing an explicit Rust behavioral model would
-accumulate migration debt and encourage a new form of callback/special-case
-sprawl.
+Development has nevertheless optimized for locally reviewable increments more
+than for closing complete behavior rules. The clearest example is chainfire:
+the legacy rule groups all levels `2..255`, while recent Rust delivery repeatedly
+adds one plateau value and projects it through many boundaries. In parallel,
+browser command-history saves omit the gameplay identities that interpret
+them, and the interim full-state rollback backstop has no measured exit plan.
 
-A second risk is correctness drift inside the deterministic core. A documented
-transactional-command invariant is only valuable if every rejected command is
-actually state-identical. That invariant must be executable, not aspirational.
+Near-term work must reduce those risks before more scalar breadth or another
+counter-level continuation becomes eligible.
 
 ## Priority order
 
-Until the gates below are closed, select new work in this order:
+Until the gates below close, select work in this order:
 
-1. **Simulation correctness invariants**
-   - rejected-command atomicity;
-   - no mutation or RNG consumption on errors;
-   - property/invariant tests across the command surface.
-2. **Deterministic semantics stability**
-   - unbiased bounded RNG sampling;
-   - golden vectors;
-   - replay semantics/ruleset versioning.
-3. **Content-model scalability**
-   - one authoritative catalog for routine item/content registration;
-   - reduced manual fan-out while retaining compiler exhaustiveness.
-4. **Typed legacy behavior model**
-   - explicit effects/actions/state machines instead of generic callback
-     registries;
-   - validated on difficult legacy examples.
-5. **Protocol/domain boundary cleanup**
-   - protocol owns stable contracts and IDs;
-   - core/domain owns gameplay balance and implementation policy.
-6. **Vertical canonical fidelity**
-   - bounded end-to-end slices with mechanics, behavior, replay/scenario tests,
-     and presentation.
-7. **Resume content breadth**
-   - only after the preceding architecture supports behavior-complete migration.
-8. **Further platform/tooling expansion**
-   - only when it directly enables a fidelity or release requirement.
+1. **Semantics-bound browser persistence (M10)**
+   - ship a snapshot format that binds command history to gameplay,
+     RNG-sampling, generator, ruleset, and fixed-content identities;
+   - reject unsupported identities before executing commands;
+   - handle legacy unbound tokens explicitly and transactionally.
+2. **Whole-rule chainfire fidelity (M9)**
+   - replace per-level plateaus with evidenced state classes and saturation;
+   - decide ammunition shortage, target continuation/routing, reset, and trait
+     interactions from pinned evidence or an explicit DRL-Rust policy;
+   - verify equivalence classes and boundaries across core, replay, MCP, and
+     browser without duplicating gameplay policy.
+3. **Measured transaction ownership (M1/M11)**
+   - establish command throughput/allocation baselines;
+   - remove redundant boundary clones where core atomicity is sufficient;
+   - move hot accepted paths toward validate/prepare/commit without weakening
+     exact rejection identity.
+4. **Reviewable control plane (M0)**
+   - keep `SPEC.md` to one active slice;
+   - require an attributable independent determinism review for every
+     replay-visible or legacy-fidelity slice;
+   - decide and enforce review/branch-protection policy before 1.0.
+5. **Vertical canonical fidelity**
+   - select bounded end-to-end mechanics that close a complete behavior branch.
+6. **Controlled reference captures**
+   - run when the required environment exists; unavailable work stays
+     `NOT_RUN`.
+7. **Resume broad content and platform expansion**
+   - only after the applicable gates below close.
 
 ## Development stop gates
 
-### Gate A — Rejected commands are atomic
+### Gate A — Persistent histories bind their interpreter
 
-Do not add new simulation command families while known mutation-before-error
-paths remain. `Err` must imply exact pre/post game equality.
+Do not merge another replay-visible gameplay-semantics change while browser
+snapshots can silently replay an unversioned command history under current
+rules.
 
-### Gate B — Determinism semantics are explicit
+Gate A closes when the active M10 slice proves that:
 
-Do not declare replay stability across releases until wire schema, gameplay
-semantics, content/ruleset version, and RNG sampling behavior are explicitly
-bound.
+- new saves carry the semantic identities required to interpret them;
+- mismatches reject before simulation;
+- rejected restore preserves the active session and saved token;
+- V1/V2 tokens are rejected or migrated only through an evidenced policy that
+  does not invent missing provenance;
+- direct, browser-storage, and cross-version fixtures cover the contract.
 
-### Gate C — Content registration is not shotgun surgery
+### Gate B — Fidelity slices close semantic branches, not counters
 
-Do not normalize 10+ routine file edits for each ordinary item family as the
-long-term workflow. Compiler exhaustiveness should remain, but routine
-projections should come from one authoritative catalog.
+Do not accept a slice whose primary outcome is the next chainfire warm-up level
+or another identical plateau constant.
 
-### Gate D — Behavior model passes hard cases
+Gate B closes for chainfire when one typed model covers the evidenced initial,
+second, sustained, and saturated states plus ammunition shortage, reset, target
+continuation/routing, and applicable weapon traits. Canonical differences must
+be identified as DRL-Rust decisions. Atomicity describes how an accepted or
+rejected result commits; it does not choose which result is canonical.
 
-Do not resume mass migration of uniques/exotics/special armor after merely
-copying scalar fields. First prove the Rust behavior model against several
-legacy callback-heavy cases.
+### Gate C — The rollback backstop has an exit budget
 
-### Gate E — Fidelity claims remain evidence-bounded
+Do not add another unconditional outer game clone or materially expand cohort
+scale before measuring the cost of the existing rollback path.
 
-No source-level similarity, matching name, copied scalar, or current-Rust test
-is sufficient to claim canonical runtime parity. Runtime/capture claims require
-the controlled reference environment or remain `NOT_RUN`/`INCONCLUSIVE`.
+Gate C closes when a reproducible representative benchmark records accepted
+and rejected command throughput/allocation behavior, transaction ownership is
+explicit at core/browser/MCP boundaries, redundant cloning is removed where
+safe, and any retained full-state clone has a documented reason and budget.
 
-## How to choose a slice
+Exact `Game` equality on rejection remains an enduring invariant after this
+temporary gate closes.
 
-A good slice:
+### Gate D — Canonical scope and review are independently auditable
 
-- closes one named gate or validates one architectural decision;
-- is narrow enough to review independently;
-- has observable acceptance criteria before implementation;
-- uses pinned legacy source/runtime evidence when behavior depends on legacy;
-- leaves canonical documents more truthful and simpler than before.
+Do not append delivered slice history to `SPEC.md` or accept a replay-visible
+or legacy-fidelity slice without an attributable independent determinism-review
+result.
 
-A poor slice at this stage:
+Gate D closes as a temporary stop gate when structural checks prevent multiple
+active specifications and the repository records how required review is
+enforced. The enduring rule remains: `SPEC.md` expands one active slice, while
+delivered history belongs in the roadmap, changelog, evidence notes, and Git.
 
-- adds several scalar-only item families while their callbacks remain deferred;
-- creates another cross-cutting registry to accommodate one new archetype;
-- adds an MCP/browser/release feature unrelated to current fidelity goals;
-- introduces a general plugin/event framework before stress cases demonstrate
-  its need;
-- claims parity from source inspection alone.
+### Gate E — Claims remain evidence-bounded
+
+Source similarity, a matching name, a copied scalar, or a current-Rust test is
+not controlled legacy parity. Runtime, audiovisual, balance, browser, and
+performance claims require the relevant environment and recorded evidence or
+remain `NOT_RUN`/`INCONCLUSIVE`.
+
+This gate is a permanent evidence discipline rather than a task that broad
+content work can “complete.”
+
+## Slice-selection rules
+
+A candidate slice is eligible only when it:
+
+- closes one named gate or is required by a named 1.0 acceptance criterion;
+- states observable outcomes and explicit non-goals before implementation;
+- identifies replay, persistent-history, RNG, generator, and ruleset impact;
+- distinguishes legacy observations from DRL-Rust policy decisions;
+- uses typed, core-owned gameplay policy and thin boundary projections;
+- includes rejection/rollback behavior and cross-version fixtures where
+  applicable;
+- has a bounded independent review surface.
+
+Reject or rescope a candidate that:
+
+- adds the next value in an already-understood plateau;
+- treats full-volley rejection as a consequence of transaction atomicity;
+- replays an old command history under current rules without matching semantic
+  identities;
+- adds a wrapper clone without establishing why the core transaction is
+  insufficient;
+- expands scalar content or tooling while a relevant stop gate is open;
+- claims parity or performance from unavailable evidence.
 
 ## Preferred architecture shape
 
 ```text
-semantic Command
-      |
-      v
-validate / prepare  -----> rejected: no state change
-      |
-      v
-PreparedAction
-      |
-      v
-commit deterministic mutation
-      |
-      +--> GameEvent stream
-      +--> next Game state
+persistent Command history + semantics identity
+                    |
+                    v
+          compatibility validation -----> mismatch: no execution
+                    |
+                    v
+semantic Command -> validate / prepare -----> rejected: no state change
+                    |
+                    v
+              PreparedAction
+                    |
+                    v
+          commit deterministic mutation
+                    |
+                    +--> GameEvent stream
+                    +--> next Game state
 
-legacy Pascal/Lua evidence
-      |
-      v
-build-time evidence / catalog
-      |
-      +--> immutable scalar definitions
-      +--> typed behavior specs
-      +--> explicit unresolved gaps
-
-no runtime Lua
+pinned legacy evidence
+        |
+        v
+typed state classes + explicit DRL-Rust decisions
+        |
+        +--> boundary projections (replay / MCP / browser)
 ```
-
-The catalog should describe content. Behavior should remain explicit enough to
-review and test. Special cases may use dedicated typed state machines where
-composition would be less clear.
 
 ## Progress language
 
-Use separate labels internally and in roadmap notes for:
+Keep these claims separate:
 
 - **definition-covered** — scalar/static metadata migrated;
-- **behavior-covered** — relevant runtime mechanics implemented and tested;
-- **legacy-compared** — controlled comparison against canonical runtime/evidence
-  completed within stated tolerance;
-- **presentation-compared** — controlled visual/audio comparison completed.
+- **behavior-covered** — relevant Rust runtime mechanics implemented and
+  tested;
+- **legacy-compared** — controlled comparison with canonical runtime/evidence;
+- **presentation-compared** — controlled visual/audio comparison;
+- **repeatable-current** — the same declared semantics repeat on the current
+  implementation;
+- **cross-version-compatible** — explicitly supported identities or migration
+  prove compatibility.
 
-A definition-covered item is not behavior-complete by implication.
+## Retirement and re-audit
 
-## Architectural hygiene
+Retire each temporary gate when its acceptance evidence exists, promote durable
+invariants into accepted architecture/ADRs as appropriate, and update the
+roadmap and active specification from verified evidence.
 
-- Split large modules when they contain distinct reasons to change, not to meet
-  arbitrary line counts.
-- Prefer modules over additional crates unless an enforced dependency boundary
-  is valuable.
-- Keep `drl-core` free of ambient state and platform dependencies.
-- Keep `drl-protocol` focused on stable semantic contracts rather than using it
-  as the default home for gameplay balance.
-- Remove or rename placeholder boundaries whose names conflict with accepted
-  architecture, such as a runtime-sounding scripting crate if it remains only a
-  build-time conversion boundary.
-
-## Rights/provenance steering
-
-The release-rights inventory should explicitly track legacy creative text and
-other expression copied into Rust-owned definitions, separately from numeric
-mechanics and graphics assets. This is an evidence/clearance question, not a
-legal conclusion. Unknown status remains explicit and does not silently inherit
-the repository's project-code license.
+Re-audit after snapshot V3 and chainfire semantic consolidation merge, or
+before broad M9 migration resumes, whichever happens first. Name the branch,
+latest inspected PR, merge commit, project version, audited tree, local checks,
+hosted checks, and unavailable evidence.

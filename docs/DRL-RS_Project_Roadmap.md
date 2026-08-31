@@ -1192,10 +1192,9 @@ verification item uses explicit status semantics:
   Mjollnir, Subtle Knife, Trigun, Anti-Freak Jackal, Minigun, Onyx Armor,
   Phaseshift Armor, Gothic Armor, Malek's Armor, Cybernetic Armor, and
   Necroarmor, Medical Powerarmor, Lava Armor, and Shielded Armor variants;
-  versioned
-  fixed-session snapshot codec with localStorage
-  persistence, bounded rejected-save quarantine, and static service-worker
-  cache.
+  syntax-versioned fixed-session snapshot tokens with localStorage persistence,
+  bounded rejected-save quarantine, and a static service-worker cache. Snapshot
+  semantics identity remains open under the active M10 slice.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
@@ -1204,46 +1203,34 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Latest Delivered Milestone Slice (M5/M6/M13)**: `game_load_replay` transactionally
-  restores the exact canonical V2 replay envelope by executing it in temporary
-  core state before replacing the session. The imported replay remains the
-  reset source, optional turn limits preserve terminal outcomes, subsequent
-  valid actions append to its log, and terminal loads expose no legal actions.
-  Malformed input remains `-32602`; simulation failure uses the delivered
-  `tools/call` runtime-result boundary, and active sessions remain byte-
-  identical on rejected loads. The preceding `tools/list`/
-  `resources/list` pagination and tool-execution error-result contracts remain
-  delivered. Replay-file IO, migrations, cross-version/external schemas,
-  reconnect/resume, and broader MCP compatibility remain open.
-  `game_verify_replay` accepts an exact `drl-rust-replay-v2` JSON envelope and
-  verifies it read-only, including without an active session. The preceding
-  0.2.56 export emits every in-memory V1 `ReplayLog` field with deterministic
-  typed commands and byte-identical repeats. The fair
-  legal-action catalog derives candidates from
-  `PlayerObservation`, probes each candidate on a cloned `drl_core::Game`, and
-  uses the filtered set for listing, response payloads, and pre-dispatch
-  admission without mutating live state or exposing hidden search. Unknown/
-  malformed action inputs remain `-32602`, recognized commands omitted from the
-  filtered catalog return `-32001`, and the core remains authoritative. The delivered
-  release-rights inventory and source/optional-bundle gate make the pinned
-  CC BY-SA 4.0 graphics import, excluded legacy code/audio/music/fonts/WADs,
-  and unavailable capture/media evidence explicit without claiming legal
-  clearance. The preceding MCP `tools/list` conditional `allOf`/`if`/`then`
-  branches for move/melee
-  directions, ranged coordinate aliases, item IDs, unequip slots, and
-  no-argument actions remain delivered; unknown properties remain tolerated and
-  runtime dispatch is unchanged. Terminal sessions reject post-outcome actions
-  with `-32001`, stair transitions report `Victory`, and reset/replay/metrics
-  inspection remain available. MCP `initialize` also validates object
-  `capabilities` and string `clientInfo.name`/`version` fields while retaining
-  identified lifecycle gating before discovery, tools, and resources; JSON-RPC
-  request IDs now reject non-scalar values before dispatch, and stateful method
-  envelopes reject non-object params/arguments before execution; stateful tool
-  arguments now reject wrong-typed optional integers before mutation, and
-  `game_verify_replay` exposes deterministic in-memory and supplied canonical
-  V2 replay verification without mutating sessions; `game_step_action` now rejects unsafe numeric
-  coordinates and item IDs before mutation. Hidden-state search, unbounded
-  candidate generation, and external-client compatibility remain open.
+- **Latest Audited Checkpoint:** `main` merge commit `3796a2f`, merged PR #426,
+  audited tree `3d42ba5a`, and project version `0.2.318`. Hosted repository,
+  WASM browser, merge-commit CI, and Pages checks passed. The checkpointed
+  progression audit is
+  [`docs/steering/audit-2026-08-30-post-0.2.318.md`](steering/audit-2026-08-30-post-0.2.318.md).
+- **Steering Disposition — Major Correction, No Rewrite:** Preserve the
+  deterministic core, explicit RNG/replay identities, typed content,
+  observation boundary, and browser/MCP projections. Stop counter-only
+  chainfire continuations, bind browser command-history saves to their
+  interpreter identity, measure the interim rollback backstop, and restore an
+  independently auditable single-slice control plane.
+- **Active Slice (M10):** `SPEC.md` defines semantics-bound browser snapshot V3.
+  New tokens must carry fixed-content, gameplay, RNG-sampling, generator, and
+  ruleset identities; mismatches reject before command execution; V1/V2 tokens
+  remain provenance-free and may not be relabeled as current by assumption.
+- **Next Eligible Slice (M9):** After M10 Gate A closes, consolidate chainfire
+  into one evidenced typed state model for initial, second, sustained, and
+  saturated states, including partial-ammunition policy, reset, target
+  continuation/routing, and weapon traits. Another PR whose primary outcome is
+  the next plateau level is ineligible.
+- **Following Correctness Slice (M1/M11):** Measure accepted/rejected command
+  throughput and allocation behavior, assign transaction ownership at the core
+  and boundary layers, and remove redundant cloning or introduce prepared
+  actions only with equivalent atomicity evidence.
+- **Process Gate (M0):** Keep `SPEC.md` bounded to one active slice and require
+  an attributable independent determinism-review disposition for every
+  replay-visible or legacy-fidelity slice. Record and enforce the repository's
+  required-review/branch-protection decision before 1.0.
 - **M9 Content Evidence**: Base, expansion, user-item, being, terrain-cell,
   and special-level evidence slices are delivered without runtime Lua or
   gameplay overclaims.
@@ -1300,6 +1287,12 @@ agent workflow.
   `sh scripts/check-repository.sh`.
 - [x] Implement strict `VERSION` tracking and transition checks via
   `scripts/check-version.sh`.
+- [x] Record the post-`0.2.318` checkpointed progression audit and reset
+  `SPEC.md` to one bounded active slice.
+- [ ] Add a structural repository check that prevents `SPEC.md` from becoming
+  a historical multi-slice ledger again.
+- [ ] Record and enforce required independent determinism review and branch
+  protection policy for replay-visible/legacy-fidelity work before 1.0.
 
 ---
 
@@ -1314,6 +1307,10 @@ Build the standalone, pure Rust game state and turn execution loop.
 - [x] Deterministic turn step execution (`Game::step`) with collision checks.
 - [x] Ordered simulation event stream (`GameEvent`).
 - [x] Replay execution engine (`ReplayEngine`) with bit-exact reproducibility.
+- [ ] Benchmark representative accepted/rejected command throughput and
+  allocations, assign transaction ownership at core and outer boundaries, and
+  retire redundant full-state cloning without weakening exact rejection
+  identity.
 
 ---
 
@@ -1517,7 +1514,7 @@ rigorous contracts.
 - [x] Bounded semantic DOM minimap text grid with focusable, labelled markup,
   stable glyph mapping, and fail-closed oversized-dimension handling.
 
-#### Present Slice (Expanded in `SPEC.md`)
+#### Most Recently Delivered M8 Slice
 
 - [x] Project explored minimap topology and fair visible actor markers without
   hidden-world access, then expose it through the browser's semantic DOM.
@@ -3111,6 +3108,11 @@ scripting.
   replay determinism, MCP, and BrowserSession boundary parity. Shot-cost,
   projectile routing, explosions, NukeRun, runtime, and audiovisual parity
   remain open.
+- [ ] Consolidate chainfire as one evidenced typed state model covering the
+  initial, second, sustained `2..255`, and saturated states; ammunition
+  shortage, reset, target continuation/routing, and weapon-trait policy must be
+  explicit. Per-level plateau continuations after `0.2.318` are blocked by
+  steering Gate B.
 - [ ] Full migration of legacy monsters, weapons, armor, mods, and consumable
   items.
 - [ ] Full migration of special levels, vaults, and dungeon branches.
@@ -3123,7 +3125,8 @@ scripting.
 
 Implement robust client-side save state and offline browser capabilities.
 
-- [x] Versioned fixed-session command snapshot codec (`SessionSnapshot`).
+- [x] Syntax-versioned fixed-session command snapshot codec
+  (`SessionSnapshot`) with content identity and bounded command counts.
 - [x] Deterministic transactional replay restore from snapshots.
 - [x] Best-effort browser `localStorage` save/load controls in `drl-web`.
 - [x] Versioned static service-worker caching boundary.
@@ -3143,9 +3146,13 @@ Implement robust client-side save state and offline browser capabilities.
   [`docs/acceptance/browser-offline-2026-08-23.md`](acceptance/browser-offline-2026-08-23.md).
 - [x] Corruption recovery policy: fail-closed restore, bounded quarantine, and
   playable boot/load when storage cleanup is unavailable.
-- [x] Replay-compatible save migration for the shipped V1 token into strict V2
-  after successful transactional restore; storage-write failures remain
-  playable warnings.
+- [x] Syntactic V1-to-V2 save migration after successful transactional restore;
+  storage-write failures remain playable warnings. V1/V2 do not bind gameplay
+  semantics and are not claimed cross-version compatible.
+- [ ] **Active slice:** snapshot V3 binds fixed content, gameplay,
+  RNG-sampling, generator, and ruleset identities; mismatches and provenance-
+  free V1/V2 histories reject before execution while preserving the active
+  session and explicit recovery path.
 - [x] Explicit non-goal: No online accounts or centralized backend services.
 
 ---
@@ -3287,7 +3294,7 @@ invariants:
 
 ## 6. Delivery Gates & Verification
 
-Every milestone and pull request must satisfy these automated gates:
+Every milestone and pull request must satisfy the applicable delivery gates:
 
 - **Repository Integrity**: `sh scripts/check-repository.sh` (formatting,
   clippy, unit/integration tests, agent harness checks).
@@ -3299,5 +3306,11 @@ Every milestone and pull request must satisfy these automated gates:
   contract tests).
 - **Release Manifest**: `sh scripts/build-web.sh && sh scripts/check-release-manifest.sh`
   (static artifact bundle validation).
-- **Evidence**: `PASS`, `FAIL`, `INCONCLUSIVE`, and `NOT_RUN` are explicit; remote criteria are never marked complete from local
-  inference.
+- **Current Steering**: `docs/steering/current-priorities.md` constrains slice
+  selection until its temporary gates close; another counter-only chainfire
+  continuation is not eligible.
+- **Independent Review**: Replay-visible and legacy-fidelity slices include an
+  attributable `pass`/`fix`/`blocked` determinism-review disposition before
+  acceptance; hosted checks do not replace that review.
+- **Evidence**: `PASS`, `FAIL`, `INCONCLUSIVE`, and `NOT_RUN` are explicit;
+  remote criteria are never marked complete from local inference.

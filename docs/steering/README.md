@@ -1,8 +1,9 @@
 # Development Steering
 
-Last reviewed: 2026-08-23
-Repository baseline reviewed: `6783f87439ee2708c7d46e2d15d899e7f4b8d9f8`
-Project version at review: `0.2.88`
+Last reviewed: 2026-08-30
+Repository baseline reviewed: `3796a2ff50c748c45b50ade1d07d68a3f9c06395`
+Latest pull request inspected: `#426`
+Project version at review: `0.2.318`
 
 ## Purpose
 
@@ -38,6 +39,9 @@ slice before implementation proceeds.
 
 - [`current-priorities.md`](current-priorities.md) — near-term priority order,
   stop gates, slice-selection rules, and fidelity terminology.
+- [`audit-2026-08-30-post-0.2.318.md`](audit-2026-08-30-post-0.2.318.md) —
+  checkpointed progression audit that supersedes the 0.2.88 audit for current
+  slice selection.
 - [`decisions/atomic-command-transactions.md`](decisions/atomic-command-transactions.md)
   — rejected commands must be exact state identity; prefer validate/prepare/
   commit.
@@ -48,7 +52,7 @@ slice before implementation proceeds.
   — one authoritative compile-time catalog plus a bounded typed Rust behavior
   vocabulary instead of callback sprawl.
 - [`audit-2026-08-23.md`](audit-2026-08-23.md) — audit findings that motivated
-  the current steering changes.
+  the earlier 0.2.88 steering wave; retained as historical evidence.
 - [`drop-in-manifest.md`](drop-in-manifest.md) — file-level map for the steering/harness overlay.
 
 Legacy behavior evidence lives under [`../legacy-behavior/`](../legacy-behavior/);

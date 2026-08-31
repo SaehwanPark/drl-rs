@@ -1,98 +1,97 @@
 # DRL Delivery Steering Gates
 
-Last reviewed: 2026-08-23
+Last reviewed: 2026-08-30
+Baseline: `main` at `3796a2ff50c748c45b50ade1d07d68a3f9c06395`
 
 ## Purpose
 
-This reference operationalizes the temporary near-term gates in
-`docs/steering/current-priorities.md` for milestone delivery. It does
-not create a second source of truth: the roadmap remains canonical and
-`SPEC.md` still defines exactly one active slice.
+This reference operationalizes the current near-term gates in
+`docs/steering/current-priorities.md`. It does not create a second source of
+truth: the roadmap remains canonical and `SPEC.md` defines exactly one active
+slice.
 
-The milestone owner applies these gates when selecting or accepting slices.
-If this reference and `docs/steering/current-priorities.md` diverge, the steering
-document is authoritative and this reference must be reconciled.
+If this file and the steering document diverge, the steering document is
+authoritative and delivery pauses until this reference is reconciled.
 
-## Gate 1 — Atomic rejection
+## Gate A — Persistent histories bind their interpreter
 
-A code-path slice that adds or changes simulation commands cannot pass final
-verification unless representative rejected paths prove exact pre/post `Game`
-equality.
+A slice that writes or restores a command history must bind the history to the
+gameplay, RNG-sampling, generator, ruleset/content, and fixed-session identities
+needed to interpret it. Validate compatibility before execution.
 
-Known mutation-before-error behavior blocks feature breadth in the affected
-subsystem until repaired.
+Until browser snapshot V3 closes this gate, another replay-visible gameplay
+change is ineligible. Legacy tokens without semantic provenance must be
+rejected or covered by an explicit evidenced migration; do not assign them a
+current identity by assumption.
 
-## Gate 2 — Deterministic semantics
+## Gate B — Fidelity work closes a semantic branch
 
-A slice that changes RNG sampling, combat probability, generation randomness,
-item defaults used by replay reconstruction, or other replay-visible policy
-must state whether gameplay semantics are preserved or advanced.
+Do not select the next value in a known plateau as a milestone slice. Group
+behavior by evidenced state classes, transitions, saturation, resource policy,
+reset rules, target behavior, and trait interactions.
 
-Cross-version replay compatibility must not be inferred from a stable wire
-schema alone.
+For chainfire, per-level constants beyond the audited `0.2.318` boundary are
+blocked. The next chainfire slice must cover the whole evidenced rule and name
+every intentional DRL-Rust difference.
 
-## Gate 3 — Content fan-out
+Atomicity does not decide whether a partial action is accepted. It requires the
+chosen accepted or rejected result to commit as one transaction.
 
-Before accepting another broad batch of scalar-only content families, the
-milestone owner must verify that routine content identity has a single
-authoritative registration path or record why the proposed slice cannot wait
-for that foundation.
+## Gate C — Rollback has an exit budget
 
-A one-off content addition needed to exercise the behavior model is allowed.
-Mass breadth is not.
+Rejected commands still require exact pre/post `Game` equality. Before adding
+another unconditional state clone or scaling cohort workloads, record a
+representative throughput/allocation baseline and assign transaction ownership
+at core and outer boundaries.
 
-## Gate 4 — Behavior evidence
+Retain safety backstops until equivalent tests exist. Remove redundant outer
+rollback or migrate hot paths toward validate/prepare/commit only from measured
+evidence.
 
-For legacy items/traits/levels with callbacks, a completed scalar definition is
-reported as definition coverage only.
+## Gate D — Scope and review are auditable
 
-Behavior-complete claims require:
+`SPEC.md` contains one active slice and no historical delivery ledger. A
+replay-visible or legacy-fidelity slice requires an attributable independent
+determinism-review result before acceptance.
 
-- pinned legacy evidence;
-- an explicit Rust behavioral representation;
-- deterministic tests or scenarios;
-- unresolved ordering/interaction questions recorded as gaps.
+The milestone owner records branch/input revision, gate, evidence, semantic
+impact, checks, review disposition, and unavailable surfaces in the handoff or
+PR. Hosted checks do not substitute for the review edge.
 
-## Gate 5 — Vertical fidelity before infrastructure expansion
+## Gate E — Claims remain evidence-bounded
 
-New MCP, release, platform, browser-target, or generalized framework work should
-be selected only when one of these is true:
+Current-Rust tests prove current Rust behavior. Source inspection supports only
+the attributable rule it shows. Runtime, balance, audiovisual, browser, and
+performance claims require the relevant recorded evidence or remain
+`NOT_RUN`/`INCONCLUSIVE`.
 
-- it is required to close the active correctness/fidelity slice;
-- it is required for a named 1.0 acceptance criterion;
-- delaying it would create a concrete migration or security risk.
+## Enduring architecture checks
 
-Otherwise prefer canonical gameplay fidelity work.
+The earlier steering wave delivered foundations that remain mandatory even
+though they no longer define the priority order:
 
-## Gate 6 — Protocol ownership
-
-When a new stable semantic type is needed across boundaries, the milestone owner
-must decide separately:
-
-1. what belongs in the stable protocol contract; and
-2. what gameplay policy belongs in the core/domain implementation.
-
-Do not place balance values in `drl-protocol` solely for convenience.
-
-## Gate 7 — Rights/provenance
-
-When importing legacy creative text, graphics, audio, or other expression, the
-slice must identify the source revision and the redistribution/evidence status.
-Unknown status remains explicit. Numeric/factual mechanics and copied creative
-expression should not be treated as the same rights category by default.
+- rejected commands are exact state identity and consume no RNG;
+- replay-visible changes make an explicit semantics decision;
+- routine content identity is single-sourced where implemented;
+- callback-heavy legacy behavior uses typed Rust policy, not runtime Lua or a
+  generic callback bus;
+- stable protocol contracts and core-owned gameplay policy remain separate;
+- creative-expression provenance and redistribution status remain explicit.
 
 ## Slice-selection checklist
 
-Before implementation, the milestone owner records:
+Before implementation, record:
 
-- which gate the slice closes or why it is exempt;
-- observable success criteria;
-- legacy evidence required;
-- replay/RNG semantic impact;
-- content-catalog impact;
-- protocol/domain ownership impact;
-- explicit non-goals.
+- which current gate the slice closes or which named 1.0 criterion requires it;
+- observable success criteria and explicit non-goals;
+- branch and input revision;
+- legacy evidence and classification required;
+- replay, snapshot, RNG, generator, and ruleset impact;
+- content-catalog and protocol/domain ownership impact;
+- accepted and rejected transaction behavior;
+- independent-review owner and expected artifact;
+- local, hosted, runtime, browser, and capture checks that can actually run.
 
-During review, a determinism reviewer treats any undocumented gate impact as a
-reason for `fix` or `blocked`, depending on whether the evidence can be repaired
-within the bounded slice.
+During review, an undocumented gate impact, invented migration provenance, or
+another counter-only chainfire continuation is a `fix` disposition unless the
+slice must be re-scoped entirely.
