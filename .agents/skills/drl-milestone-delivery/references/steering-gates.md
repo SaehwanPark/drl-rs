@@ -1,7 +1,7 @@
 # DRL Delivery Steering Gates
 
 Last reviewed: 2026-08-31
-Baseline: `main` at `447176ba9655bfe93ab4c958a3faa385a447d91d`
+Baseline: `main` at `180f7dd2d350b11c114ae4f5fdbc27ba12d32829`
 
 ## Purpose
 
@@ -32,11 +32,15 @@ behavior by evidenced state classes, transitions, saturation, resource policy,
 reset rules, target behavior, and trait interactions.
 
 For chainfire, per-level constants beyond the audited `0.2.318` boundary are
-blocked. The next chainfire slice must cover the whole evidenced rule and name
-every intentional DRL-Rust difference.
+blocked. M9 merged as PR #430 (`180f7dd`) and covers the whole evidenced rule;
+future work must name every intentional DRL-Rust difference.
 
 Atomicity does not decide whether a partial action is accepted. It requires the
 chosen accepted or rejected result to commit as one transaction.
+
+M9 closes this gate for chainfire with six-family saturation and under-supply
+vectors, replay/MCP/BrowserSession parity, and independent review. Gate C is
+the next active stop gate.
 
 ## Gate C — Rollback has an exit budget
 
