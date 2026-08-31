@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-31
-Current project version: `0.2.324`
+Current project version: `0.2.325`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -517,6 +517,10 @@ Presentation Boundary
   - Initialize params also require object `capabilities` and `clientInfo`
     fields with string `name` and `version`; unknown nested fields remain
     tolerated and malformed required fields return `-32602`.
+  - The zero-dependency JSON parser decodes valid UTF-16 surrogate-pair
+    escapes, rejects lone/mismatched surrogate code units, and rejects raw
+    `U+0000..U+001F` controls inside strings before MCP dispatch. Escaped
+    controls remain valid; full external-client compatibility is still open.
   - JSON-RPC request IDs are limited to strings, numbers, or explicit `null`;
     boolean, array, and object IDs return `-32600` before dispatch, while
     omitted IDs remain notifications.
@@ -553,8 +557,9 @@ Presentation Boundary
     return `-32003` without changing game state.
   - Stdio transport suppresses responses for omitted-ID notifications and emits
     ordered response arrays for nonempty batches while preserving identified,
-    explicit-null, malformed-request, and empty-batch boundaries; lifecycle
-    enforcement and external-client support remain open.
+    explicit-null, malformed-request, and empty-batch boundaries; parser-level
+    JSON compatibility is covered, while lifecycle reconnect and full
+    external-client support remain open.
 - **Dependencies**: Pure `std` + `drl-protocol` + `drl-core`.
 
 ### `drl-app` — Headless CLI & MCP Runner

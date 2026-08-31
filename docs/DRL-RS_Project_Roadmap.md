@@ -3343,6 +3343,10 @@ Final release readiness, documentation, and static distribution.
   `clientInfo` with string `name`/`version`, returning `-32602` without
   advancing lifecycle for malformed fields; full schema/client compatibility
   remains open.
+- [x] JSON string decoding accepts valid UTF-16 surrogate pairs, rejects lone
+  or mismatched surrogate escapes and raw `U+0000..U+001F` controls, and is
+  covered through an escaped-Unicode `clientInfo.name` initialize fixture;
+  transport reconnect and full external-client compatibility remain open.
 - [x] JSON-RPC request IDs accept strings, numbers, and explicit `null`, while
   boolean/array/object IDs return `-32600` before dispatch; notification and
   batch response boundaries remain deterministic.

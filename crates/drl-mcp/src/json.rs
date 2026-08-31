@@ -463,26 +463,63 @@ impl<'a> JsonParser<'a> {
             'r' => out.push('\r'),
             't' => out.push('\t'),
             'u' => {
-              let mut hex = String::with_capacity(4);
-              for _ in 0..4 {
-                let h = self
-                  .advance()
-                  .ok_or_else(|| "Unfinished unicode escape".to_string())?;
-                hex.push(h);
+              let code_unit = self.parse_unicode_escape()?;
+              match code_unit {
+                0xD800..=0xDBFF => {
+                  let high = u32::from(code_unit);
+                  if self.advance() != Some('\\') || self.advance() != Some('u') {
+                    return Err(format!(
+                      "High surrogate \\u{code_unit:04x} must be followed by a low surrogate"
+                    ));
+                  }
+                  let low = self.parse_unicode_escape()?;
+                  if !(0xDC00..=0xDFFF).contains(&low) {
+                    return Err(format!(
+                      "High surrogate \\u{code_unit:04x} must be followed by a low surrogate, found \\u{low:04x}"
+                    ));
+                  }
+                  let scalar = 0x1_0000 + ((high - 0xD800) << 10) + (u32::from(low) - 0xDC00);
+                  let decoded_char = char::from_u32(scalar)
+                    .ok_or_else(|| format!("Invalid unicode char from code point: {scalar}"))?;
+                  out.push(decoded_char);
+                }
+                0xDC00..=0xDFFF => {
+                  return Err(format!(
+                    "Lone low surrogate \\u{code_unit:04x} is not a valid Unicode scalar"
+                  ));
+                }
+                code_unit => {
+                  let decoded_char = char::from_u32(u32::from(code_unit))
+                    .ok_or_else(|| format!("Invalid unicode char from code point: {code_unit}"))?;
+                  out.push(decoded_char);
+                }
               }
-              let code = u32::from_str_radix(&hex, 16)
-                .map_err(|e| format!("Invalid hex unicode escape \\u{hex}: {e}"))?;
-              let decoded_char = char::from_u32(code)
-                .ok_or_else(|| format!("Invalid unicode char from code point: {code}"))?;
-              out.push(decoded_char);
             }
             other => return Err(format!("Invalid escape sequence '\\{other}'")),
           }
+        }
+        other if other <= '\u{001F}' => {
+          return Err(format!(
+            "Unescaped control character U+{:04X} at index {}",
+            other as u32,
+            self.pos.saturating_sub(1)
+          ));
         }
         other => out.push(other),
       }
     }
     Err("Unterminated string literal".to_string())
+  }
+
+  fn parse_unicode_escape(&mut self) -> Result<u16, String> {
+    let mut hex = String::with_capacity(4);
+    for _ in 0..4 {
+      let h = self
+        .advance()
+        .ok_or_else(|| "Unfinished unicode escape".to_string())?;
+      hex.push(h);
+    }
+    u16::from_str_radix(&hex, 16).map_err(|e| format!("Invalid hex unicode escape \\u{hex}: {e}"))
   }
 
   fn parse_number(&mut self) -> Result<JsonValue, String> {
@@ -659,6 +696,38 @@ mod tests {
       JsonValue::parse("\"hello\\nworld\"").unwrap(),
       JsonValue::String("hello\nworld".to_string())
     );
+  }
+
+  #[test]
+  fn json_strings_decode_utf16_surrogate_pairs() {
+    let value = JsonValue::parse(r#""\ud83d\ude80""#).unwrap();
+    assert_eq!(value, JsonValue::String("🚀".to_string()));
+    assert_eq!(value.to_compact_string(), "\"🚀\"");
+  }
+
+  #[test]
+  fn json_strings_reject_lone_or_mismatched_surrogates() {
+    for input in [
+      r#""\ud83d""#,
+      r#""\ude80""#,
+      r#""\ud83d\u0041""#,
+      r#""\ud83dX""#,
+    ] {
+      assert!(
+        JsonValue::parse(input).is_err(),
+        "accepted invalid JSON: {input}"
+      );
+    }
+  }
+
+  #[test]
+  fn json_strings_reject_unescaped_control_characters() {
+    for input in ["\"line\nbreak\"", "\"tab\tbreak\"", "\"nul\u{0000}break\""] {
+      assert!(
+        JsonValue::parse(input).is_err(),
+        "accepted control character: {input:?}"
+      );
+    }
   }
 
   #[test]

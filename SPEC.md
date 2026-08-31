@@ -1,11 +1,10 @@
 # Specification
 
 Last reviewed: 2026-08-31
-Current project version: `0.2.324`
+Current project version: `0.2.325`
 Audited starting checkpoint: `main` at
-`22795a70b13b360bb0d94b28e1b591bc30543fd6` (merged PR #435; M0 guard reconciled)
-Delivery checkpoint: `main` at
-`49add3aecf7886dea40590497132fabe4b56f06b` (merged PR #436; policy delivered)
+`4ec6561` (merged PR #438; Gate D policy and steering reconciled)
+Delivery checkpoint: pending for the active M13 slice
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -23,112 +22,87 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 - `INCONCLUSIVE` — **Evidence unresolved**: available evidence cannot support
   the claim.
 
-## 2. Active implementation slice: M0 — required review and branch policy
+## 2. Active implementation slice: M13 — MCP JSON compatibility
 
-Slice status: **delivered and verified** at the delivery checkpoint above;
-live `main` settings were inspected after merge.
+Slice status: **active**; the delivery checkpoint will be recorded after the
+implementation, review, and hosted checks are merged.
 
 ### 2.1 Objective
 
-Record and enforce an attributable independent determinism-review receipt for
-replay-visible or legacy-fidelity pull requests, then make the `main` branch
-require that policy alongside the repository and browser checks. The policy
-must remain read-only with respect to pull-request code and must make the
-single-maintainer exception explicit while the repository has no second
-collaborator.
+Make the zero-dependency MCP JSON boundary accept valid JSON strings used by
+external clients, including UTF-16 surrogate-pair escapes, while rejecting
+ill-formed surrogate sequences and unescaped control characters. Prove the
+decoded value through the MCP `initialize` client-info path.
 
-This is a Gate D control-plane slice. It changes no game behavior, replay
-identity, RNG sampling, content catalog, protocol schema, or presentation
-boundary.
+This is a bounded M13 compatibility slice. It changes no game behavior,
+replay identity, RNG sampling, content catalog, protocol envelope, transport
+reconnect, or presentation boundary.
 
 ### 2.2 Audited starting point
 
-At audited starting revision `22795a7` (version `0.2.323`):
+At audited starting revision `4ec6561` (version `0.2.324`):
 
-- `SPEC.md` has an executable structural guard and a deterministic fixture
-  contract; delivered slice history remains outside the active specification.
-- Contributors are asked for one approval, but no automated check verifies an
-  independent determinism-review receipt on protected changes.
-- The GitHub `main` branch is not protected, so required checks and review
-  policy are advisory rather than enforced.
+- `crates/drl-mcp/src/json.rs` decodes each `\\uXXXX` escape directly through
+  `char::from_u32`, so valid UTF-16 surrogate pairs such as
+  `\\ud83d\\ude80` are rejected before MCP dispatch.
+- The same parser accepts raw `U+0000..U+001F` control characters inside JSON
+  strings, which is outside the JSON string grammar.
+- Existing MCP lifecycle and tool tests cover ordinary ASCII client metadata,
+  but no escaped-Unicode initialize fixture protects this compatibility edge.
 
 ### 2.3 Scope and ownership
 
-- **Steering gate:** Gate D — canonical scope and review must remain auditable.
-- **Primary owner:** `scripts/check-review-policy.sh` owns pull-request receipt
-  validation; `scripts/check-branch-protection.sh` owns the inspectable GitHub
-  settings contract; fixture scripts own their bounded positive and negative
-  cases; the workflow owns the hosted status check.
-- **Project version:** implementation advances `VERSION` from `0.2.323` to
-  `0.2.324`.
+- **Roadmap:** M13 — Browser-First 1.0 Release, complete deterministic
+  headless/MCP agent tooling and external-client compatibility.
+- **Primary owner:** `crates/drl-mcp/src/json.rs` owns JSON string decoding;
+  parser unit tests and `crates/drl-mcp/tests/protocol_jsonrpc.rs` own the
+  compatibility fixtures.
+- **Project version:** implementation advances `VERSION` from `0.2.324` to
+  `0.2.325`.
 - **Gameplay/replay semantics:** no gameplay, replay, RNG-sampling, generator,
-  ruleset, snapshot, protocol, or content identity changes.
+  ruleset, snapshot, protocol envelope, or content identity changes.
 
 ### 2.4 Review and branch contract
 
-- A protected path is any change under `crates/drl-core/`,
-  `crates/drl-protocol/`, `crates/drl-mcp/`, `crates/drl-app/`,
-  `crates/drl-web/`, `crates/drl-script/`, or `docs/legacy-behavior/`.
-- A pull request that changes a protected path passes only when a reviewer
-  other than the pull-request author has a current-head `APPROVED` review whose
-  body contains the exact receipt `drl-determinism-review: PASS`. Reviews for
-  an older head are not current evidence.
-- The `Review policy` workflow runs from the base revision with read-only
-  permissions on pull-request open, synchronize, reopen, ready-for-review,
-  and review-state changes. It reports `NOT_RUN` only when no pull request or
-  no local GitHub credentials are available; hosted pull requests fail closed
-  if their metadata cannot be inspected.
-- The branch checker requires one approving review, stale-review dismissal,
-  strict required-status updates, and the `Repository checks`, `WASM browser
-  checks`, and `Review policy` contexts on `main`.
-- The repository currently has one maintainer. Branch protection therefore
-  records `enforce_admins: false` as an explicit temporary exception; external
-  contributors still face the required review and status checks, and the
-  exception must be revisited before a second maintainer is added or 1.0 is
-  declared.
-- Local fixture inputs make the policy deterministic without mutating GitHub
-  settings or requiring network access.
+- JSON `\\uXXXX` escapes are decoded as UTF-16 code units. A high surrogate
+  must be immediately followed by a low-surrogate escape and the pair is
+  combined into one Unicode scalar; either lone surrogate is rejected.
+- Raw control characters from `U+0000` through `U+001F` are rejected inside
+  strings; their escaped forms remain valid.
+- Existing string serialization, numeric safety, notification, batch, and
+  lifecycle behavior remain unchanged.
+- The focused initialize fixture uses an escaped Unicode `clientInfo.name` and
+  proves the decoded request reaches the normal lifecycle validation.
 
 ### 2.5 Acceptance criteria
 
-- [x] `scripts/check-review-policy.sh` identifies protected paths and rejects
-  missing, self-authored, stale, or receipt-free review evidence while
-  accepting one current independent receipt.
-- [x] `scripts/test-review-policy.sh` covers no-protected-change, rejection,
-  independent-approval, and latest-review-state fixtures.
-- [x] `scripts/check-branch-protection.sh` validates the required review and
-  status settings, reports an unprotected branch as a failure, and supports a
-  deterministic fixture input.
-- [x] `scripts/test-branch-protection.sh` covers the passing settings and each
-  required-setting failure.
-- [x] `.github/workflows/review-policy.yml`, `.github/pull_request_template.md`,
-  and the steering decision document make the receipt and setting contract
-  discoverable without executing pull-request code.
-- [x] `main` has the required settings applied and the branch checker passes
-  against the live GitHub API; the documented solo-maintainer exception is
-  visible in the setting evidence.
-- [x] The policy has no production-crate dependency and changes no gameplay,
-  replay, RNG, protocol, content, or browser behavior.
-- [x] Local shell, repository, version, and documentation checks pass; hosted
-  `Repository checks`, `WASM browser checks`, and `Review policy` checks pass
-  for the reviewed policy workflow revision.
+- [x] The parser decodes a valid UTF-16 surrogate pair and preserves the
+  resulting scalar in a `JsonValue::String`.
+- [x] Lone high, lone low, and mismatched surrogate escapes are rejected.
+- [x] Unescaped `U+0000..U+001F` control characters are rejected while escaped
+  control characters remain supported.
+- [x] MCP `initialize` accepts an escaped-Unicode `clientInfo.name` through the
+  normal JSON-RPC path.
+- [ ] The focused parser/protocol tests, formatting, clippy, repository gate,
+  web contracts, and version transition pass on the final revision.
+- [ ] An attributable independent determinism-review receipt and all required
+  hosted checks pass for the final pull-request head.
 
 ### 2.6 Non-goals
 
-- No attempt to judge the quality of a review beyond the attributable exact
-  receipt; the independent reviewer remains responsible for the review record.
-- No write access from the hosted workflow, no automatic reviewer assignment,
-  and no branch-settings mutation from repository checks.
-- No parser for Markdown prose, checkbox counts, or historical roadmap entries.
-- No changes to Rust crates, gameplay semantics, replay formats, or runtime
-  behavior.
+- No full MCP schema or external-client compatibility claim.
+- No transport reconnect/session persistence, replay-file migration, or
+  deployment work.
+- No changes to gameplay semantics, replay formats, RNG, content, or browser
+  presentation.
+- No changes to JSON number handling beyond the existing safety contract.
 
 ### 2.7 Evidence boundary
 
-The policy scripts prove only the declared receipt and branch-setting shape
-against the supplied pull-request or API metadata. They do not prove review
-quality, semantic correctness of the reviewed change, or completion of any
-roadmap item beyond the checked control-plane contract.
+The parser and in-process protocol fixtures prove only current-Rust JSON
+decoding and initialize acceptance. They do not prove full external-client
+compatibility, transport behavior, or runtime/browser acceptance; those
+surfaces remain `NOT_RUN` or open in the roadmap.
 
 ## 3. Enduring invariants
 
