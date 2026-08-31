@@ -1,11 +1,10 @@
 # Specification
 
 Last reviewed: 2026-08-31
-Current project version: `0.2.325`
+Current project version: `0.2.326`
 Audited starting checkpoint: `main` at
-`4ec6561` (merged PR #438; Gate D policy and steering reconciled)
-Delivery checkpoint: `main` at
-`8e86f26` (merged PR #439; JSON compatibility delivered)
+`7735d47` (merged PR #440; M13 JSON compatibility reconciled)
+Delivery checkpoint: pending final implementation/review merge
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -23,92 +22,88 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 - `INCONCLUSIVE` — **Evidence unresolved**: available evidence cannot support
   the claim.
 
-## 2. Active implementation slice: M13 — MCP JSON compatibility
+## 2. Active implementation slice: M13/M6 — replay-file verification CLI
 
-Slice status: **delivered and verified** at the delivery checkpoint above.
+Slice status: **implemented and locally verified**; final review and merge are
+pending.
 
 ### 2.1 Objective
 
-Make the zero-dependency MCP JSON boundary accept valid JSON strings used by
-external clients, including UTF-16 surrogate-pair escapes, while rejecting
-ill-formed surrogate sequences and unescaped control characters. Prove the
-decoded value through the MCP `initialize` client-info path.
+Add a native `drl-rs replay verify [path|-]` command that reads the canonical
+`drl-rs-replay-v2` JSON envelope from a file or standard input, decodes it
+through the public MCP replay decoder, and verifies the replay twice with
+`ReplayEngine::verify_determinism`.
 
-This is a bounded M13 compatibility slice. It changes no game behavior,
-replay identity, RNG sampling, content catalog, protocol envelope, transport
-reconnect, or presentation boundary.
+This is a bounded replay-file IO slice. It changes no replay schema, game
+rules, RNG sampling, content catalog, MCP transport, browser behavior, or
+presentation boundary.
 
 ### 2.2 Audited starting point
 
-At audited starting revision `4ec6561` (version `0.2.324`):
+At audited starting revision `7735d47` (version `0.2.325`):
 
-- `crates/drl-mcp/src/json.rs` decodes each `\\uXXXX` escape directly through
-  `char::from_u32`, so valid UTF-16 surrogate pairs such as
-  `\\ud83d\\ude80` are rejected before MCP dispatch.
-- The same parser accepts raw `U+0000..U+001F` control characters inside JSON
-  strings, which is outside the JSON string grammar.
-- Existing MCP lifecycle and tool tests cover ordinary ASCII client metadata,
-  but no escaped-Unicode initialize fixture protects this compatibility edge.
+- `drl-mcp::replay_json::from_json_value` already decodes and safety-checks the
+  exact V2 envelope, while `ReplayEngine::verify_determinism` already performs
+  two independent current-engine executions.
+- `drl-app` supported the demo, cohort, and MCP dispatch paths but had no
+  filesystem or stdin replay verification command.
+- Replay-file migration, cross-version interchange, and transport reconnect
+  remained explicitly open.
 
 ### 2.3 Scope and ownership
 
-- **Roadmap:** M13 — Browser-First 1.0 Release, complete deterministic
-  headless/MCP agent tooling and external-client compatibility.
-- **Primary owner:** `crates/drl-mcp/src/json.rs` owns JSON string decoding;
-  parser unit tests and `crates/drl-mcp/tests/protocol_jsonrpc.rs` own the
-  compatibility fixtures.
-- **Project version:** implementation advances `VERSION` from `0.2.324` to
-  `0.2.325`.
-- **Gameplay/replay semantics:** no gameplay, replay, RNG-sampling, generator,
-  ruleset, snapshot, protocol envelope, or content identity changes.
+- **Roadmap:** M13 tooling and M6 replay interface completion.
+- **Primary owner:** `crates/drl-app/src/replay_cli.rs` owns argument parsing,
+  file/stdin reads, diagnostics, and process-facing errors.
+- **Decoder/execution:** `drl_mcp::replay_json::from_json_value` and
+  `drl_core::ReplayEngine::verify_determinism` remain the sole semantic owners.
+- **Project version:** implementation advances `VERSION` from `0.2.325` to
+  `0.2.326`.
+- **Gameplay/replay semantics:** no schema, command, RNG, generator, ruleset,
+  or content identity changes.
 
 ### 2.4 Review and branch contract
 
-- JSON `\\uXXXX` escapes are decoded as UTF-16 code units. A high surrogate
-  must be immediately followed by a low-surrogate escape and the pair is
-  combined into one Unicode scalar; either lone surrogate is rejected.
-- Raw control characters from `U+0000` through `U+001F` are rejected inside
-  strings; their escaped forms remain valid.
-- Existing string serialization, numeric safety, notification, batch, and
-  lifecycle behavior remain unchanged.
-- The focused initialize fixture uses an escaped Unicode `clientInfo.name` and
-  proves the decoded request reaches the normal lifecycle validation.
+- The only accepted input format is the canonical V2 JSON envelope; unknown
+  JSON properties retain the decoder's existing tolerance.
+- A path names a UTF-8 file; `-` reads all UTF-8 input from stdin. Missing,
+  unreadable, malformed, unsafe, incompatible, or execution-invalid input
+  fails closed with a deterministic diagnostic and non-zero status.
+- Successful verification emits byte-identical output across repeated runs and
+  across file/stdin sources.
+- No filesystem, process, or stream concerns enter `drl-core`.
 
 ### 2.5 Acceptance criteria
 
-- [x] The parser decodes a valid UTF-16 surrogate pair and preserves the
-  resulting scalar in a `JsonValue::String`.
-- [x] Lone high, lone low, and mismatched surrogate escapes are rejected.
-- [x] Unescaped `U+0000..U+001F` control characters are rejected while escaped
-  control characters remain supported.
-- [x] MCP `initialize` accepts an escaped-Unicode `clientInfo.name` through the
-  normal JSON-RPC path.
-- [x] The focused parser/protocol tests, formatting, clippy, repository gate,
-  web contracts, and version transition pass on the final revision.
-- [x] An attributable independent determinism-review receipt is recorded for
-  the exact final head; hosted Repository/WASM checks pass. The hosted Review
-  policy check fails closed only because the sole maintainer cannot create a
-  non-self approval, and the documented `enforce_admins=false` exception was
-  used without weakening the policy for external contributors.
+- [x] `drl-rs replay verify [path|-]` accepts a valid canonical V2 replay from
+  both a file and stdin.
+- [x] Malformed JSON, unsafe dimensions/containers, and incompatible metadata
+  fail before replay execution with stable diagnostics.
+- [x] Repeated verification and file/stdin verification produce identical
+  success output; failures return a non-zero process status.
+- [x] Focused CLI tests, formatting, clippy, repository gate, web contracts,
+  and version transition pass on the final revision.
+- [ ] An attributable independent determinism-review receipt covers the exact
+  final implementation commit; hosted Repository/WASM checks pass. Any
+  sole-maintainer Review policy failure is recorded truthfully with the live
+  documented exception.
 
 ### 2.6 Non-goals
 
-- No full MCP schema or external-client compatibility claim.
-- No transport reconnect/session persistence, replay-file migration, or
-  deployment work.
-- No changes to gameplay semantics, replay formats, RNG, content, or browser
-  presentation.
-- No changes to JSON number handling beyond the existing safety contract.
+- No replay migration, legacy V1/V2 translation, network replay IO, or broad
+  external-client interchange claim.
+- No changes to gameplay semantics, replay metadata identities, JSON schema,
+  MCP lifecycle, browser persistence, or presentation.
+- No claim of browser, audiovisual, human, legacy-runtime, or cross-version
+  replay acceptance.
 
 ### 2.7 Evidence boundary
 
-The parser and in-process protocol fixtures prove only current-Rust JSON
-decoding and initialize acceptance. They do not prove full external-client
-compatibility, transport behavior, or runtime/browser acceptance; those
-surfaces remain `NOT_RUN` or open in the roadmap. Review policy enforcement is
-audited separately; this sole-maintainer PR used the documented admin
-exception after the hosted policy check failed closed for lack of a second
-GitHub reviewer.
+The CLI proves current-Rust decoding and deterministic verification for a
+caller-supplied canonical V2 replay. It does not prove migration,
+cross-version compatibility, arbitrary external replay interchange, or
+browser, human, audiovisual, and legacy-runtime behavior; those surfaces
+remain open or `NOT_RUN` in the roadmap.
 
 ## 3. Enduring invariants
 

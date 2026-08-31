@@ -219,7 +219,9 @@ roadmap and active specification from verified evidence.
 Re-audit before broad M9 migration resumes, or when a new stop-gate candidate
 is selected. The current audited tree is `main` at `8e86f26` (PR #439, version
 `0.2.325`); local checks, independent review, and hosted Repository/WASM
-checks passed for the M13 JSON compatibility slice. Its hosted Review policy
+checks passed for the M13 JSON compatibility slice. The active replay-file CLI
+slice adds only native file/stdin verification at the `drl-app` boundary; its
+hosted Review policy
 check failed closed for the sole-maintainer PR and was merged under the live
 `enforce_admins=false` exception; human, audiovisual, performance, and
 reference-capture surfaces remain `NOT_RUN` where prerequisites are
