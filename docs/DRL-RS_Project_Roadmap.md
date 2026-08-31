@@ -1241,12 +1241,13 @@ verification item uses explicit status semantics:
 ### Active & Open Work
 
 - **Latest Audited Checkpoint:** `main` merge commit
-  `49add3aecf7886dea40590497132fabe4b56f06b`, merged PR #436, and project
-  version `0.2.324`. Repository and WASM/browser hosted checks, independent
-  review, and live branch-protection inspection pass for the delivered policy;
-  controlled human, audiovisual, and reference-capture surfaces remain
-  `NOT_RUN` where prerequisites are unavailable. The checkpointed progression
-  audit is
+  `8e86f26`, merged PR #439, and project version `0.2.325`. Repository and
+  WASM/browser hosted checks, independent review, and the JSON compatibility
+  fixtures pass for the delivered M13 slice; its hosted Review policy check
+  failed closed because the sole maintainer cannot create a non-self approval,
+  so the documented live `enforce_admins=false` exception was used. Controlled
+  human, audiovisual, and reference-capture surfaces remain `NOT_RUN` where
+  prerequisites are unavailable. The checkpointed progression audit is
   [`docs/steering/audit-2026-08-30-post-0.2.318.md`](steering/audit-2026-08-30-post-0.2.318.md).
 - **Steering Disposition — Gate A closed:** Preserve the deterministic core,
   explicit RNG/replay identities, typed content, observation boundary, and
@@ -1285,6 +1286,13 @@ verification item uses explicit status semantics:
   review pagination and rename provenance, and adds a base-revision read-only
   workflow plus deterministic policy fixtures. Live `main` branch protection
   is configured and inspected, so temporary Gate D is closed.
+- **Delivered Slice — M13 MCP JSON compatibility (`0.2.325`):** PR #439 makes
+  the zero-dependency JSON boundary decode valid UTF-16 surrogate pairs,
+  reject lone/mismatched surrogate escapes and raw `U+0000..U+001F` controls,
+  and exercise an escaped-Unicode `clientInfo.name` through `initialize`.
+  Local repository/web checks, hosted Repository/WASM checks, and independent
+  review pass; full external-client and transport compatibility remain open,
+  while the sole-maintainer hosted Review policy failure is recorded above.
 - **Process Gate (M0, closed):** Keep `SPEC.md` bounded to one active slice and
   require an attributable independent determinism-review disposition for every
   replay-visible or legacy-fidelity slice. PR #436 records and enforces the
