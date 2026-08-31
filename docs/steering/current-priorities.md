@@ -4,7 +4,7 @@ Last reviewed: 2026-08-31
 Baseline branch: `main`
 Baseline merge commit: `180f7dd2d350b11c114ae4f5fdbc27ba12d32829`
 Latest pull request inspected: `#430`
-Baseline project version: `0.2.321`
+Baseline project version: `0.2.321` (active `0.2.322` candidate under review)
 
 ## Purpose
 
@@ -109,6 +109,13 @@ safe, and any retained full-state clone has a documented reason and budget.
 Exact `Game` equality on rejection remains an enduring invariant after this
 temporary gate closes.
 
+The active `0.2.322` candidate records this benchmark and ownership evidence,
+removes the redundant BrowserSession outer snapshot, and keeps the core's
+one-snapshot backstop with an explicit prepare/commit exit condition. MCP
+candidate clones remain fair-observation admission probes; inventory staging is
+local atomicity. Gate C remains open in this document until the candidate is
+merged, hosted checks pass, and the independent review artifact is reconciled.
+
 ### Gate D — Canonical scope and review are independently auditable
 
 Do not append delivered slice history to `SPEC.md` or accept a replay-visible
@@ -202,8 +209,8 @@ Retire each temporary gate when its acceptance evidence exists, promote durable
 invariants into accepted architecture/ADRs as appropriate, and update the
 roadmap and active specification from verified evidence.
 
-Re-audit before broad M9 migration resumes, or when Gate C's transaction budget
-evidence is available. The current audited tree is `main` at `180f7dd`
-(PR #430, version `0.2.321`); local and hosted checks passed for M9, while
-human, audiovisual, performance, and reference-capture surfaces remain
-`NOT_RUN` where prerequisites are unavailable.
+Re-audit before broad M9 migration resumes, or when the Gate C candidate is
+merged. The current audited tree is `main` at `180f7dd` (PR #430, version
+`0.2.321`); local and hosted checks passed for M9, while human, audiovisual,
+performance, and reference-capture surfaces remain `NOT_RUN` where
+prerequisites are unavailable.

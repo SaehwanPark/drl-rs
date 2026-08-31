@@ -53,6 +53,12 @@ Retain safety backstops until equivalent tests exist. Remove redundant outer
 rollback or migrate hot paths toward validate/prepare/commit only from measured
 evidence.
 
+The active `0.2.322` candidate supplies the benchmark, allocation counters,
+ownership map, BrowserSession outer-clone removal, and explicit core snapshot
+budget required for closure. Its Gate C status remains candidate-only until
+merge, hosted checks, and independent review are recorded against the audited
+main revision.
+
 ## Gate D — Scope and review are auditable
 
 `SPEC.md` contains one active slice and no historical delivery ledger. A

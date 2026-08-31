@@ -466,10 +466,11 @@ impl BrowserSession {
     self.game.is_game_over()
   }
 
-  /// Submits one semantic command. Failed commands roll back the session.
+  /// Submits one semantic command. Core `Game::step` owns simulation rollback;
+  /// this boundary only records presentation state after an accepted command
+  /// and the most recent error after a rejection.
   pub fn submit(&mut self, command: Command) -> Result<PresentationStep, String> {
     let before = self.observation();
-    let checkpoint = self.game.clone();
     match self.game.step(command) {
       Ok(events) => {
         self.last_error = None;
@@ -485,7 +486,6 @@ impl BrowserSession {
         })
       }
       Err(error) => {
-        self.game = checkpoint;
         let message = error.to_string();
         self.last_error = Some(message.clone());
         Err(message)
@@ -2641,6 +2641,24 @@ mod tests {
     let error = session.submit(Command::Descend).unwrap_err();
     assert!(!error.is_empty());
     assert_eq!(session.observation(), before);
+  }
+
+  #[test]
+  fn rejected_command_preserves_core_state_without_outer_checkpoint() {
+    let mut session = BrowserSession::new().expect("fixed session");
+    session
+      .submit(Command::Move(Direction::East))
+      .expect("legal command");
+    let game_before = session.game.clone();
+    let commands_before = session.commands.clone();
+    let replay_before = session.replay_log();
+
+    let error = session.submit(Command::Descend).unwrap_err();
+
+    assert_eq!(session.game, game_before);
+    assert_eq!(session.commands, commands_before);
+    assert_eq!(session.replay_log(), replay_before);
+    assert_eq!(session.last_error(), Some(error.as_str()));
   }
 
   #[test]

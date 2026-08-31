@@ -55,6 +55,9 @@ Chainfire-capable weapons share the core's typed whole-rule model. The `C`
 control projects the current initial, warming, sustained, or saturated burst;
 the displayed ammunition requirement is the full aggregate cost, and a
 shortage rejects the command without changing the session or random stream.
+`BrowserSession::submit` delegates transactional rollback to `drl-core::Game::step`
+without taking an outer simulation snapshot; presentation, effects, errors, and
+successful-command history remain browser-boundary bookkeeping.
 
 ---
 

@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-31
-Current project version: `0.2.321`
+Current project version: `0.2.322`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -436,6 +436,10 @@ Presentation Boundary
     Combat Shotgun pump-action and alternate-reload encounters are covered
     by this same
     cross-boundary comparison.
+  - `BrowserSession::submit` relies on `drl-core::Game::step` for the single
+    authoritative rollback snapshot. It owns presentation observations,
+    effects, errors, and successful-command history, but takes no additional
+    full simulation snapshot.
   - Accessible semantic minimap text grid fed by the fair `MinimapState`
     projection; it is bounded and never queries hidden world state.
   - WebGPU pipeline: texture cache, linear `Rgba8Unorm` storage, nearest base
@@ -577,10 +581,15 @@ Presentation Boundary
   override that cost (currently Acid/Lava/Water direct movement uses 1250 and
   Mud direct movement uses 1650).
 - **Transactional command boundary**: `Game::step` snapshots and restores the
-  complete state on any rejection, including turn, world, and RNG. Command
-  handlers still use prepare/commit validation where practical; the bounded
-  rollback guard protects later fallible substeps. A representative rejection
-  matrix covers every current command family and compares exact cloned state.
+  complete state on any rejection, including turn, world, and RNG. This remains
+  an explicit one-snapshot-per-command backstop while late fallible handlers
+  are migrated toward prepare/commit. The benchmark-only
+  `crates/drl-core/benches/transaction.rs` records accepted/rejected timing and
+  allocation baselines on a declared host. `BrowserSession` adds no outer
+  simulation snapshot; `McpSession` retains one cloned core probe per legal
+  candidate as fair-observation admission validation, and inventory staging
+  clones remain local atomicity guards. A representative rejection matrix
+  covers every current command family and compares exact cloned state.
 - **Deterministic PRNG**: All randomness flows through `GameRng`. No ambient or
   thread-local RNG is permitted. Bounded integer sampling uses documented
   rejection sampling under `RNG_SAMPLING_SEMANTICS_VERSION`; core rules use

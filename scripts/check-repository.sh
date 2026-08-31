@@ -29,6 +29,7 @@ fi
 git diff HEAD --check -- . ':(exclude)assets/legacy/drl/graphics/LICENSE'
 sh scripts/check-agent-harness.sh
 scripts/check-reference-capture.sh
+sh scripts/check-transaction-benchmark.sh
 sh scripts/test-cohort-study.sh
 sh scripts/test-legacy-content-converter.sh
 sh scripts/test-legacy-content-bundle.sh
