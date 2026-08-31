@@ -3,6 +3,18 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.324]
+
+- Added a read-only hosted review-policy check for protected simulation and
+  legacy-fidelity paths. The check requires a current independent review with
+  the exact `drl-determinism-review: PASS` receipt, while deterministic local
+  fixtures cover missing, self-authored, stale, and accepted review states.
+- Added a branch-protection inspector and policy decision covering one
+  approving review, stale-review dismissal, strict status updates, and the
+  `Repository checks`, `WASM browser checks`, and `Review policy` contexts.
+  The live solo-maintainer `enforce_admins: false` exception remains explicit
+  and temporary.
+
 ## [0.2.323]
 
 - Added a repository-level SPEC structural guard and deterministic fixture

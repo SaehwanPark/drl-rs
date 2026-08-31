@@ -1,0 +1,35 @@
+name: Review policy
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+  pull_request_review:
+    types:
+      - submitted
+      - edited
+      - dismissed
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  policy:
+    name: Review policy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the pull-request base
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha || github.sha }}
+          persist-credentials: false
+      - name: Validate protected-path review receipt
+        env:
+          DRL_REVIEW_POLICY_PR: ${{ github.event.pull_request.number }}
+          DRL_REVIEW_POLICY_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+        run: sh scripts/check-review-policy.sh

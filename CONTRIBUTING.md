@@ -188,7 +188,12 @@ for agent-created branches). Keep descriptions concise.
    - How it was verified (test commands, manual steps).
    - Any known limitations or follow-up items.
 
-7. **Review** — at least one review approval is required before merging.
+7. **Review** — at least one review approval is required before merging. A PR
+   that changes `drl-core`, `drl-protocol`, `drl-mcp`, `drl-app`, `drl-web`,
+   `drl-script`, or `docs/legacy-behavior` also needs a current approval from
+   a reviewer other than the author whose review body contains the exact
+   receipt `drl-determinism-review: PASS`. The hosted `Review policy` check
+   validates the latest review state for each reviewer.
 
 8. **Merge** using squash-merge to keep `main` history linear.
 
@@ -284,6 +289,10 @@ content definitions is reviewed under `docs/release-rights.md`.
 - Before implementing a milestone item, read `docs/steering/README.md`, the
   current steering priorities, `SPEC.md` (active slice), and the relevant
   roadmap section.
+- Read [the required-review decision](docs/steering/decisions/required-review-and-branch-protection.md)
+  before opening a protected-path PR. The workflow checks out the base
+  revision and uses read-only GitHub permissions; local fixture tests do not
+  mutate branch settings.
 - Update `SPEC.md` to reflect the active slice before writing code.
 - Record verified architectural changes in `ARCHITECTURE.md`. If steering
   identifies an invariant as a correction target, do not describe it as

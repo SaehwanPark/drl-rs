@@ -155,11 +155,16 @@ for path in \
   docs/legacy-behavior/asset-provenance.md \
   docs/legacy-behavior/presentation.md \
   docs/legacy-behavior/audio.md \
+  docs/steering/decisions/required-review-and-branch-protection.md \
   docs/reference-captures/manifest.md \
   docs/reference-captures/fidelity-matrix.md \
   scripts/check-assets.sh \
   scripts/check-spec-structure.sh \
   scripts/test-spec-structure.sh \
+  scripts/check-review-policy.sh \
+  scripts/test-review-policy.sh \
+  scripts/check-branch-protection.sh \
+  scripts/test-branch-protection.sh \
   scripts/check-version.sh \
   scripts/check-web.sh
 do
@@ -211,6 +216,9 @@ require_text "docs/harness/drl-delivery/validation-scenarios.md" "Unlicensed ass
 require_text "docs/harness/drl-delivery/validation-scenarios.md" "Background-tab timing"
 require_text "docs/adr/0007-browser-first-product.md" "Rust/WASM"
 require_text "docs/adr/0008-build-time-legacy-content-migration.md" "no Lua VM"
+require_text "docs/steering/decisions/required-review-and-branch-protection.md" "drl-determinism-review: PASS"
+require_text ".github/workflows/review-policy.yml" "Review policy"
+require_text ".github/pull_request_template.md" "drl-determinism-review: PASS"
 require_text "AGENTS.md" "docs/steering/README.md"
 require_text "AGENTS.md" "DRL_VERSION_BASE"
 require_text "docs/VERSIONING.md" "x.y.z"

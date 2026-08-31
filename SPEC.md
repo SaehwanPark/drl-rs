@@ -1,11 +1,9 @@
 # Specification
 
 Last reviewed: 2026-08-31
-Current project version: `0.2.323`
+Current project version: `0.2.324`
 Audited starting checkpoint: `main` at
-`cdb3660035576c23b88e0b8fa7473781d3161467` (merged PR #433; Gate C records reconciled)
-Delivery checkpoint: `main` at
-`e598ae2365a6c610f8a181d74e6f773f30c9d2f4` (merged PR #434; SPEC guard delivered)
+`22795a70b13b360bb0d94b28e1b591bc30543fd6` (merged PR #435; M0 guard reconciled)
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -23,20 +21,19 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 - `INCONCLUSIVE` — **Evidence unresolved**: available evidence cannot support
   the claim.
 
-## 2. Active implementation slice: M0 — SPEC structural guard
+## 2. Active implementation slice: M0 — required review and branch policy
 
-Slice status: **delivered and verified** at the delivery checkpoint above.
-The next M0 policy slice will be selected after this reconciliation; this
-section remains the bounded specification for the just-delivered structural
-guard.
+Slice status: **open**; this is the bounded follow-on needed to close the
+remaining temporary Gate D control-plane condition.
 
 ### 2.1 Objective
 
-Add a repository-level structural check that keeps `SPEC.md` as one bounded
-active implementation slice instead of allowing delivered slices to accumulate
-as a historical ledger. The check must validate the canonical top-level shape,
-reject duplicate or extra slice sections, and run as part of the repository
-contract before implementation work is accepted.
+Record and enforce an attributable independent determinism-review receipt for
+replay-visible or legacy-fidelity pull requests, then make the `main` branch
+require that policy alongside the repository and browser checks. The policy
+must remain read-only with respect to pull-request code and must make the
+single-maintainer exception explicit while the repository has no second
+collaborator.
 
 This is a Gate D control-plane slice. It changes no game behavior, replay
 identity, RNG sampling, content catalog, protocol schema, or presentation
@@ -44,71 +41,91 @@ boundary.
 
 ### 2.2 Audited starting point
 
-At audited starting revision `cdb3660` (version `0.2.322`):
+At audited starting revision `22795a7` (version `0.2.323`):
 
-- `SPEC.md` documents one active implementation slice and keeps delivered
-  history in the roadmap, changelog, evidence, and Git.
-- `scripts/check-repository.sh` runs the existing harness and contract checks,
-  but no checker enforces the `SPEC.md` top-level shape.
-- The roadmap keeps the remaining M0 item open: add a structural repository
-  check that prevents a historical multi-slice SPEC ledger.
+- `SPEC.md` has an executable structural guard and a deterministic fixture
+  contract; delivered slice history remains outside the active specification.
+- Contributors are asked for one approval, but no automated check verifies an
+  independent determinism-review receipt on protected changes.
+- The GitHub `main` branch is not protected, so required checks and review
+  policy are advisory rather than enforced.
 
 ### 2.3 Scope and ownership
 
 - **Steering gate:** Gate D — canonical scope and review must remain auditable.
-- **Primary owner:** `scripts/check-spec-structure.sh` owns the structural
-  contract; `scripts/test-spec-structure.sh` owns its positive and negative
-  fixture cases; `scripts/check-repository.sh` invokes both.
-- **Project version:** implementation advances `VERSION` from `0.2.322` to
-  `0.2.323`.
+- **Primary owner:** `scripts/check-review-policy.sh` owns pull-request receipt
+  validation; `scripts/check-branch-protection.sh` owns the inspectable GitHub
+  settings contract; fixture scripts own their bounded positive and negative
+  cases; the workflow owns the hosted status check.
+- **Project version:** implementation advances `VERSION` from `0.2.323` to
+  `0.2.324`.
 - **Gameplay/replay semantics:** no gameplay, replay, RNG-sampling, generator,
   ruleset, snapshot, protocol, or content identity changes.
 
-### 2.4 Structural contract
+### 2.4 Review and branch contract
 
-- The canonical `SPEC.md` has exactly these level-two headings, in order:
-  `1. Status vocabulary`, `2. Active implementation slice: ...`, and
-  `3. Enduring invariants`.
-- CommonMark's up-to-three-leading-space ATX heading form is recognized, so
-  indentation cannot bypass the guard.
-- Exactly one level-two heading begins with `## 2. Active implementation
-  slice:`; any second active-slice heading or any extra level-two section is
-  rejected as a possible historical ledger.
-- Subsections under the active slice remain allowed, but a second active-slice
-  marker at any heading depth is rejected.
-- The checker accepts a caller-provided path for isolated fixture tests and
-  reports failures without mutating the repository.
+- A protected path is any change under `crates/drl-core/`,
+  `crates/drl-protocol/`, `crates/drl-mcp/`, `crates/drl-app/`,
+  `crates/drl-web/`, `crates/drl-script/`, or `docs/legacy-behavior/`.
+- A pull request that changes a protected path passes only when a reviewer
+  other than the pull-request author has a current `APPROVED` review whose
+  body contains the exact receipt `drl-determinism-review: PASS`.
+- The `Review policy` workflow runs from the base revision with read-only
+  permissions on pull-request open, synchronize, reopen, ready-for-review,
+  and review-state changes. It reports `NOT_RUN` only when no pull request or
+  no local GitHub credentials are available; hosted pull requests fail closed
+  if their metadata cannot be inspected.
+- The branch checker requires one approving review, stale-review dismissal,
+  strict required-status updates, and the `Repository checks`, `WASM browser
+  checks`, and `Review policy` contexts on `main`.
+- The repository currently has one maintainer. Branch protection therefore
+  records `enforce_admins: false` as an explicit temporary exception; external
+  contributors still face the required review and status checks, and the
+  exception must be revisited before a second maintainer is added or 1.0 is
+  declared.
+- Local fixture inputs make the policy deterministic without mutating GitHub
+  settings or requiring network access.
 
 ### 2.5 Acceptance criteria
 
-- [x] `scripts/check-spec-structure.sh SPEC.md` accepts the canonical shape and
-  rejects duplicate active slices, extra top-level history sections, and nested
-  active-slice markers.
-- [x] `scripts/test-spec-structure.sh` exercises the accepted fixture and each
-  rejection case with deterministic, bounded temporary files.
-- [x] `scripts/check-repository.sh` invokes the structural checker and its
-  fixture contract before the broader repository checks.
-- [x] The check is shell/POSIX-only, has no production-crate dependency, and
-  does not alter gameplay, replay, RNG, protocol, content, or browser behavior.
-- [x] M0 roadmap/steering records identify the delivered guard while the
-  independent-review/branch-protection policy item remains explicitly open.
-- [x] Local format, check, test, clippy, repository, and version checks pass;
-  hosted checks pass for the reviewed merge revision.
+- [ ] `scripts/check-review-policy.sh` identifies protected paths and rejects
+  missing, self-authored, stale, or receipt-free review evidence while
+  accepting one current independent receipt.
+- [ ] `scripts/test-review-policy.sh` covers no-protected-change, rejection,
+  independent-approval, and latest-review-state fixtures.
+- [ ] `scripts/check-branch-protection.sh` validates the required review and
+  status settings, reports an unprotected branch as a failure, and supports a
+  deterministic fixture input.
+- [ ] `scripts/test-branch-protection.sh` covers the passing settings and each
+  required-setting failure.
+- [ ] `.github/workflows/review-policy.yml`, `.github/pull_request_template.md`,
+  and the steering decision document make the receipt and setting contract
+  discoverable without executing pull-request code.
+- [ ] `main` has the required settings applied and the branch checker passes
+  against the live GitHub API; the documented solo-maintainer exception is
+  visible in the setting evidence.
+- [ ] The policy has no production-crate dependency and changes no gameplay,
+  replay, RNG, protocol, content, or browser behavior.
+- [ ] Local shell, repository, version, and documentation checks pass; hosted
+  `Repository checks`, `WASM browser checks`, and `Review policy` checks pass
+  for the reviewed merge revision.
 
 ### 2.6 Non-goals
 
-- No enforcement of GitHub branch protection or review permissions in this
-  slice; that is the separate remaining M0 checklist item.
+- No attempt to judge the quality of a review beyond the attributable exact
+  receipt; the independent reviewer remains responsible for the review record.
+- No write access from the hosted workflow, no automatic reviewer assignment,
+  and no branch-settings mutation from repository checks.
 - No parser for Markdown prose, checkbox counts, or historical roadmap entries.
 - No changes to Rust crates, gameplay semantics, replay formats, or runtime
   behavior.
 
 ### 2.7 Evidence boundary
 
-The checker proves only the declared structural shape of the selected
-`SPEC.md` path and its fixture cases. It does not prove review enforcement,
-branch protection, semantic correctness of slice content, or completion of any
-roadmap item beyond the checked structural contract.
+The policy scripts prove only the declared receipt and branch-setting shape
+against the supplied pull-request or API metadata. They do not prove review
+quality, semantic correctness of the reviewed change, or completion of any
+roadmap item beyond the checked control-plane contract.
 
 ## 3. Enduring invariants
 

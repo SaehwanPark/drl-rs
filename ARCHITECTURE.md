@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-08-31
-Current project version: `0.2.323`
+Current project version: `0.2.324`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -35,6 +35,11 @@ invariants:
   network, or MCP libraries.
 - **No Runtime Scripting**: Lua is treated as build-time reference and
   conversion evidence only; no Lua runtime exists in the WASM browser bundle.
+- **Reviewable Control Plane**: Protected simulation and legacy-fidelity paths
+  require an attributable independent determinism-review receipt. The hosted
+  policy workflow reads pull-request metadata from the base revision with
+  read-only permissions; branch-setting enforcement is an outer repository
+  concern and never enters the simulation boundary.
 
 Typed behavior profiles remain immutable compile-time descriptions. Acid Spitter
 records its typed one-projectile ordinary-fire and ten-rocket ammo-cost
