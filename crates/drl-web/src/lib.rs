@@ -466,10 +466,11 @@ impl BrowserSession {
     self.game.is_game_over()
   }
 
-  /// Submits one semantic command. Failed commands roll back the session.
+  /// Submits one semantic command. Core `Game::step` owns simulation rollback;
+  /// this boundary only records presentation state after an accepted command
+  /// and the most recent error after a rejection.
   pub fn submit(&mut self, command: Command) -> Result<PresentationStep, String> {
     let before = self.observation();
-    let checkpoint = self.game.clone();
     match self.game.step(command) {
       Ok(events) => {
         self.last_error = None;
@@ -485,7 +486,6 @@ impl BrowserSession {
         })
       }
       Err(error) => {
-        self.game = checkpoint;
         let message = error.to_string();
         self.last_error = Some(message.clone());
         Err(message)
@@ -2641,6 +2641,62 @@ mod tests {
     let error = session.submit(Command::Descend).unwrap_err();
     assert!(!error.is_empty());
     assert_eq!(session.observation(), before);
+  }
+
+  #[test]
+  fn rejected_command_preserves_core_state_without_outer_checkpoint() {
+    let mut session = BrowserSession::new().expect("fixed session");
+    session
+      .submit(Command::Move(Direction::East))
+      .expect("legal command");
+    let game_before = session.game.clone();
+    let commands_before = session.commands.clone();
+    let replay_before = session.replay_log();
+
+    let error = session.submit(Command::Descend).unwrap_err();
+
+    assert_eq!(session.game, game_before);
+    assert_eq!(session.commands, commands_before);
+    assert_eq!(session.replay_log(), replay_before);
+    assert_eq!(session.last_error(), Some(error.as_str()));
+  }
+
+  #[test]
+  fn late_rejection_preserves_session_without_outer_checkpoint() {
+    let mut session = BrowserSession::new().expect("fixed session");
+    let target_position = Position::new(5, 8);
+    let target_id = session
+      .game
+      .world_mut()
+      .spawn_monster(target_position, "Dropper", 1, 0, (1, 1))
+      .expect("spawn target");
+    session
+      .game
+      .world_mut()
+      .get_actor_mut(target_id)
+      .expect("target actor")
+      .set_death_drop(Some(ItemSpawnKind::SmallMedPack));
+    session
+      .game
+      .world_mut()
+      .map_mut()
+      .set_tile(target_position, Tile::Wall);
+    let game_before = session.game.clone();
+    let commands_before = session.commands.clone();
+    let replay_before = session.replay_log();
+
+    let error = session
+      .submit(Command::AttackMelee(Direction::East))
+      .expect_err("blocked death drop must reject");
+
+    assert_eq!(
+      error,
+      drl_protocol::CommandError::BlockedByTerrain(target_position).to_string()
+    );
+    assert_eq!(session.game, game_before);
+    assert_eq!(session.commands, commands_before);
+    assert_eq!(session.replay_log(), replay_before);
+    assert_eq!(session.last_error(), Some(error.as_str()));
   }
 
   #[test]

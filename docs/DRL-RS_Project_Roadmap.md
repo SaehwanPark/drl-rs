@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-08-31
-Current project version: `0.2.321`
+Current project version: `0.2.322`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.321)
+## 3. Current Progress Summary (`VERSION` 0.2.322)
 
 ### Delivered Foundations
 
@@ -1211,6 +1211,13 @@ verification item uses explicit status semantics:
   projections use the same model. All six families have saturated and
   under-supply boundary vectors; independent review and hosted checks pass for
   merged PR #430.
+- **M1/M11 Gate C transaction baseline (`0.2.322`, candidate)**: A
+  dependency-free benchmark target records fixed accepted and rejected
+  `drl-core::Game::step` workloads with timing and allocation medians. The
+  redundant `BrowserSession` outer simulation snapshot is removed; core
+  rollback remains a documented one-snapshot backstop, MCP candidate clones
+  are classified as fair-observation admission probes, and inventory staging
+  remains local. Merge and hosted-review reconciliation are pending.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
@@ -1221,10 +1228,12 @@ verification item uses explicit status semantics:
 
 - **Latest Audited Checkpoint:** `main` merge commit
   `180f7dd2d350b11c114ae4f5fdbc27ba12d32829`, merged PR #430, and project
-  version `0.2.321`. Repository and WASM/browser hosted checks and independent
-  determinism review pass for the delivered revision. Controlled human,
-  audiovisual, and reference-capture surfaces remain `NOT_RUN` where
-  prerequisites are unavailable. The checkpointed progression audit is
+  version `0.2.321`. The `0.2.322` Gate C transaction baseline is the active
+  candidate on a temporary branch and is not yet an audited main checkpoint.
+  Repository and WASM/browser hosted checks and independent determinism review
+  pass for the delivered revision. Controlled human, audiovisual, and
+  reference-capture surfaces remain `NOT_RUN` where prerequisites are
+  unavailable. The checkpointed progression audit is
   [`docs/steering/audit-2026-08-30-post-0.2.318.md`](steering/audit-2026-08-30-post-0.2.318.md).
 - **Steering Disposition — Gate A closed:** Preserve the deterministic core,
   explicit RNG/replay identities, typed content, observation boundary, and
@@ -1251,6 +1260,11 @@ verification item uses explicit status semantics:
   throughput and allocation behavior, assign transaction ownership at the core
   and boundary layers, and remove redundant cloning or introduce prepared
   actions only with equivalent atomicity evidence.
+- **Active Candidate — M1/M11 Gate C (`0.2.322`):** The transaction baseline
+  benchmark, BrowserSession clone removal, exact rejected-session regression,
+  and ownership documentation are implemented on the review branch. Gate C
+  remains open until hosted checks and independent review are reconciled into
+  the audited main checkpoint.
 - **Process Gate (M0):** Keep `SPEC.md` bounded to one active slice and require
   an attributable independent determinism-review disposition for every
   replay-visible or legacy-fidelity slice. Record and enforce the repository's

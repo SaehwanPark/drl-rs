@@ -16,7 +16,7 @@ The project delivers a pure, deterministic headless simulation core, an interact
 ## ✨ Key Features
 
 - **Strict Simulation Determinism**: Pure PRNG rejection sampling (`GameRng`), explicit command-driven turn execution, zero ambient state, and bit-exact replay reproducibility.
-- **Transactional Command Safety**: All state-mutating commands are protected by atomic transaction guards. Rejected commands (e.g. empty clips, blocked moves, out-of-range targets) are guaranteed no-ops (`before == after`).
+- **Transactional Command Safety**: All state-mutating commands are protected by atomic transaction guards. Rejected commands (e.g. empty clips, blocked moves, out-of-range targets) are guaranteed no-ops (`before == after`). `drl-core::Game::step` owns one full-state rollback snapshot per command; `BrowserSession` adds no outer simulation snapshot, while MCP legal-action clones remain explicit fair-observation admission probes.
 - **WebGPU Browser Edition**: High-performance pixel-art graphics rendered via native WebGPU shaders in desktop Chromium browsers, with an accessible HTML shell and offline PWA service worker caching.
 - **Semantics-Bound Browser Saves**: V3 local saves bind the fixed-content, gameplay, RNG-sampling, generator, and ruleset identities; incompatible or provenance-free histories are rejected safely with a clear recovery path.
 - **Model Context Protocol (MCP) Interface**: Full stdio JSON-RPC 2.0 tool suite (`step`, `observe`, `list_actions`, `verify_replay`) allowing AI assistants (Claude, Antigravity, custom agents) to play and evaluate scenarios.
@@ -42,6 +42,14 @@ cargo run -p drl-app --bin drl-rs
 
 # Run deterministic procedural cohort study
 cargo run -p drl-app --bin drl-rs -- cohort --seed 42 --episodes 100 --bot greedy
+
+# Validate the fixed accepted/rejected transaction benchmark contract
+sh scripts/check-transaction-benchmark.sh
+
+# Record an optimized same-host transaction baseline (JSONL)
+DRL_BENCH_REVISION=$(git rev-parse HEAD) \
+DRL_BENCH_RUST_VERSION="$(rustc --version)" \
+cargo bench --locked -p drl-core --bench transaction
 ```
 
 ### 3. 🤖 AI Agent via Model Context Protocol (MCP)

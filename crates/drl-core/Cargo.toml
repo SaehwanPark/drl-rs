@@ -8,3 +8,7 @@ authors.workspace = true
 
 [dependencies]
 drl-protocol = { workspace = true }
+
+[[bench]]
+name = "transaction"
+harness = false

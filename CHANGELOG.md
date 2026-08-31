@@ -3,6 +3,17 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.322]
+
+- Added a dependency-free, benchmark-only Gate C transaction baseline with
+  fixed accepted/rejected workloads, machine-readable host/toolchain metadata,
+  timing medians, and allocation counters.
+- Removed the redundant outer `BrowserSession` simulation snapshot while
+  retaining `drl-core::Game::step`'s one-snapshot rollback backstop and exact
+  rejection identity. MCP legal-action clones are documented as intentional
+  fair-observation admission probes; gameplay and replay semantics are
+  unchanged.
+
 ## [0.2.321]
 
 - Delivered M9's whole-rule chainfire state model for BFG 10K, Chaingun,

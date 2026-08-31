@@ -1,11 +1,9 @@
 # Specification
 
 Last reviewed: 2026-08-31
-Current project version: `0.2.321`
+Current project version: `0.2.322`
 Audited starting checkpoint: `main` at
-`447176b` (merged PR #429; M9 candidate is the working-tree slice)
-Delivery checkpoint: `main` at
-`180f7dd2d350b11c114ae4f5fdbc27ba12d32829` (merged PR #430; M9 delivered)
+`34f6df38652efaf92f2463257802c0d53dc05094` (merged PR #431; M9 delivered)
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -23,144 +21,115 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 - `INCONCLUSIVE` — **Evidence unresolved**: available evidence cannot support
   the claim.
 
-## 2. Active implementation slice: M9 — Whole-rule chainfire state model
+## 2. Active implementation slice: M1/M11 — Gate C transaction baseline
 
 ### 2.1 Objective
 
-Replace the current per-level chainfire plateau tables with one typed,
-deterministic state model for the six supported alternate-fire weapon families.
-The model must make initial, warming, sustained, and saturated states explicit,
-derive volley size and aggregate ammunition cost from one integer formula,
-preserve transactional rejection, and name the current target and trait
-boundaries without importing legacy callback machinery.
+Measure the cost of the existing command transaction boundary and remove one
+verified redundant outer snapshot. The slice must produce a repeatable,
+machine-readable accepted/rejected core benchmark with allocation counters,
+make transaction ownership explicit at core and boundary layers, and retain the
+core rollback backstop until a measured prepare/commit migration is justified.
 
-This is a Gate B fidelity slice. It advances gameplay semantics while keeping
-the replay, MCP, browser, and presentation boundaries deterministic.
+This is a Gate C transaction-ownership slice. It does not change gameplay
+semantics, replay identities, or the fair observation boundary.
 
 ### 2.2 Audited starting point
 
-At audited starting revision `447176b` (version `0.2.320`):
+At audited starting revision `34f6df3` (version `0.2.321`):
 
-- `drl-core::behavior` exposes separate per-family profile functions and
-  constants for bounded levels, with sustained plateaus repeated as individual
-  entries;
-- `Game::execute_player_ranged_attack` selects one family profile and rejects
-  levels outside that table before consuming clip state or combat RNG;
-- `chainfire_level` is a single `u8`, advanced after accepted chainfire and
-  reset by ordinary fire;
-- chainfire reserves a complete burst, emits deterministic no-op continuation
-  misses after a lethal target, and rejects under-supply atomically;
-- replay V2 and the semantics-bound browser snapshot V3 already identify the
-  gameplay semantics version, so this slice must make one explicit replay
-  version decision rather than silently changing history meaning.
-
-The legacy source at revision `17d9be1204751899b2d69d8d3a2dde247bd0cc5c`
-uses the same integer state byte for all `2..255` chainfire levels: level zero
-subtracts one third of the ordinary shot count, level one is unchanged, and
-levels two through 255 add half the ordinary shot count. Its partial-ammo
-fallback, rotational target routing, and Lua trait hooks are separately
-classified in the evidence artifact and are not copied by assumption.
+- `Game::step` clones the complete `GameState` for every command and restores
+  it on rejection; exact `Game` equality, including RNG state, is an enduring
+  correctness invariant.
+- `BrowserSession::submit` takes a second full `Game` snapshot even though the
+  core already owns rollback; the browser also owns observation, presentation,
+  and successful-command history bookkeeping.
+- `McpSession::legal_actions` clones once per candidate to probe core legality
+  from a fair observation. Those clones are admission probes, not rollback.
+- Inventory insertion retains a separate local staging clone. Removing the
+  core snapshot wholesale is unsafe while late fallible handlers remain.
+- No benchmark target or allocation measurement exists yet.
 
 ### 2.3 Scope and ownership
 
-- **Steering gate:** Gate B — fidelity slices close semantic branches, not
-  counters.
-- **Primary owner:** `drl-core::chainfire` owns the pure state model; `Game`
-  remains the execution and transaction authority; replay/MCP/browser remain
-  projections of the core result.
-- **Identity source:** each model maps a protocol `ItemArchetype` to one
-  ordinary projectile count and per-projectile ammunition cost; no boundary
-  duplicates the formulas.
-- **Project version:** implementation advances `VERSION` from `0.2.320` to
-  `0.2.321`.
-- **Gameplay/replay semantics:** gameplay semantics advances from `127` to
-  `128`; replay wire/schema, RNG-sampling, generator, ruleset, and snapshot V3
-  grammars do not change. V3 snapshots carrying `127` become incompatible by
-  the existing identity policy.
+- **Steering gate:** Gate C — the rollback backstop has an exit budget.
+- **Primary owner:** `drl-core::Game::step` owns authoritative simulation
+  rollback and RNG atomicity; boundary layers own only their respective
+  bookkeeping or admission policy.
+- **Benchmark owner:** `crates/drl-core/benches/transaction.rs` is a
+  benchmark-only executable with a counting allocator; it must not affect
+  normal library allocation behavior.
+- **Project version:** implementation advances `VERSION` from `0.2.321` to
+  `0.2.322`.
+- **Gameplay/replay semantics:** gameplay, replay wire/schema, RNG-sampling,
+  generator, ruleset, and snapshot V3 identities remain unchanged.
 
-### 2.4 Typed model contract
+### 2.4 Benchmark contract
 
-For ordinary projectile count `n`, per-projectile ammunition cost `c`, and
-chainfire level `l`, the model exposes:
-
-| State | Level | Projectile count | Aggregate cost |
-| --- | --- | --- | --- |
-| Initial | `0` | `n - (n div 3)` | count × `c` |
-| Warming | `1` | `n` | count × `c` |
-| Sustained | `2..=254` | `n + (n div 2)` | count × `c` |
-| Saturated | `255` | `n + (n div 2)` | count × `c` |
-
-The model uses saturating arithmetic for the `u8` state transition. Saturated
-advancement remains `255`; ordinary fire resets to `0`. The current DRL-Rust
-resource decision is full-burst-only: if the aggregate cost is unavailable,
-the command rejects before RNG or mutation. Target routing remains an explicit
-fixed-requested-target policy with deterministic no-op continuation events
-after a lethal target. The core has no player-trait state, so legacy Ammochain
-and Entrenchment hooks are recorded as a future typed trait policy rather than
-silently simulated.
+- The optimized benchmark uses fixed seed `42`, a `20×15` arena, setup outside
+  the timed region, `std::hint::black_box`, and bounded defaults of 10,000
+  warm-up operations plus five measured samples of 100,000 operations. Its
+  repository contract uses three samples of 1,000 operations after 100 warm-up
+  operations so the check exercises more than a one-operation smoke path.
+- It measures accepted `Command::Wait` and alternating movement plus rejected
+  blocked movement, out-of-bounds ranged targeting, and a late death-drop
+  failure. Timing and allocation counters run in separate passes, and the
+  output reports per-sample and median elapsed time, operations/sec,
+  allocation/deallocation calls, and allocated/deallocated bytes.
+- Output is machine-readable and includes schema, revision, host/toolchain,
+  profile, fixture, command label, iteration counts, and explicit ownership
+  labels. Timings and allocation counts are same-host baseline evidence, not
+  universal performance targets.
 
 ### 2.5 Transaction and boundary contract
 
-- All six supported families (BFG 10K, Chaingun, Minigun, Plasma Rifle, Laser
-  Rifle, and Nuclear Plasma Rifle) use the same pure model and accept saturated
-  sustained levels.
-- A chainfire command validates target, weapon, model, and full aggregate cost
-  before consuming clip state or combat RNG; failed commands preserve exact
-  game/RNG identity and chainfire level.
-- Accepted bursts emit the model's ordered projectile count, advance the state
-  once, and retain the existing deterministic post-lethal no-op continuation.
-- Ordinary fire and non-chainfire actions reset the state. Reload does not
-  invent a new chainfire rule; it only restores ammunition as currently
-  implemented.
-- Direct core, replay, MCP, and BrowserSession projections must report the same
-  state, events, observations, and error identity for representative sustained
-  and saturated commands.
+- Every `Game::step` retains one complete `GameState` snapshot per command
+  until a future prepare/commit slice proves equivalent rejection identity.
+- `BrowserSession::submit` relies on core rollback and takes zero additional
+  simulation snapshots; it still owns presentation observations, effects,
+  error text, and successful-command history.
+- `McpSession::legal_actions` retains one cloned core probe per candidate as
+  fair-observation admission validation; `McpSession::step` owns metrics,
+  replay, and terminal bookkeeping after the core accepts the command.
+- Inventory staging clones remain local atomicity guards and are not counted as
+  outer transaction ownership.
 
 ### 2.6 Acceptance criteria
 
-- [x] A pure typed model exposes all four state classes, formulas, costs,
-  saturation, and reset/advance transitions with unit tests.
-- [x] All six weapon families use the model; family-specific higher-level
-  rejection paths and duplicated runtime formulas are removed.
-- [x] Existing initial, warming, and sustained vectors remain unchanged; each
-  family has a saturated-level vector.
-- [x] Full-burst under-supply remains an atomic rejection with no RNG or state
-  advance; ordinary fire resets chainfire.
-- [x] Fixed-target routing and post-lethal continuation are named and covered;
-  legacy rotational spread remains outside this slice.
-- [x] The absent current-core trait model is documented as an explicit future
-  policy; no Ammochain/Entrenchment behavior is inferred from names alone.
-- [x] Direct core, replay, MCP, and BrowserSession boundaries remain
-  deterministic for representative sustained and saturated commands.
-- [x] Gameplay semantics advances exactly once; replay wire/schema and snapshot
-  V3 parsing remain otherwise unchanged.
-- [x] `sh scripts/check-repository.sh`, `scripts/check-version.sh`, and the
-  relevant hosted repository/WASM checks pass for reviewed merge revision
-  `180f7dd` (PR #430).
-- [x] Independent determinism review returns `pass` with evidence classes,
-  exact rejection identity, and persistent-history impact recorded.
-- [x] Roadmap, README, architecture, changelog, browser guide, and steering
-  records are reconciled from verified evidence; unavailable runtime,
-  audiovisual, human, performance, and legacy captures remain `NOT_RUN`.
+- [ ] A benchmark-only target runs with fixed fixtures and emits repeatable,
+  machine-readable accepted/rejected throughput and allocation measurements.
+- [ ] Core rejected-command equality and RNG preservation remain covered by the
+  existing command-atomicity matrix.
+- [ ] Removing the BrowserSession outer snapshot preserves rejected-session
+  equality and accepted history/presentation behavior.
+- [ ] MCP candidate clones are documented as admission probes rather than
+  rollback snapshots, with no duplicate legality policy introduced.
+- [ ] The retained core snapshot has an explicit one-snapshot-per-command
+  budget and a documented prepare/commit exit condition.
+- [ ] Gameplay/replay/snapshot identities remain unchanged and no benchmark
+  dependency is added to production crates.
+- [ ] Local format, check, test, clippy, benchmark, repository, and version
+  checks pass; relevant hosted checks pass for the reviewed merge revision.
+- [ ] Roadmap, README, architecture, changelog, browser guide, and steering
+  records are reconciled from verified evidence; unavailable GPU, human,
+  audiovisual, performance, and legacy captures remain `NOT_RUN`.
 
 ### 2.7 Non-goals
 
-- No projectile accuracy, timing, scatter, delayed-explosion, splash, or
-  audiovisual changes.
-- No partial-ammo execution, best-effort continuation, or new trait subsystem.
-- No Lua runtime, callback registry, or mechanical translation of legacy
-  architecture.
-- No claim of controlled legacy runtime parity where the required environment
-  is unavailable.
+- No wholesale removal of the core rollback snapshot or broad prepare/commit
+  refactor.
+- No MCP legal-action redesign, observation-policy duplication, or new gameplay
+  semantics.
+- No universal performance target or cross-host ranking from timing output.
+- No browser/GPU, human, audiovisual, or controlled legacy-runtime parity claim.
 
 ### 2.8 Evidence boundary
 
-The legacy source establishes the integer state formulas and transition
-conditions, but not current-Rust RNG or event traces. Current Rust tests prove
-the typed model and boundary behavior. Controlled legacy runtime, target
-rotation/spread parity, trait hooks, human play, broad browser coverage,
-audiovisual parity, and performance remain `NOT_RUN`/open unless separately
-recorded.
+The benchmark proves current-Rust transaction cost and allocation behavior only
+for its declared fixed fixture and host. Exact rejection tests prove state
+identity; the benchmark does not replace them. Browser presentation cost, MCP
+probe cost, inventory staging, controlled runtime comparison, and broad
+performance/generalization remain separately labeled `NOT_RUN` or open.
 
 ## 3. Enduring invariants
 
