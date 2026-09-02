@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-09-02
-Current project version: `0.2.335`
+Current project version: `0.2.336`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -341,8 +341,9 @@ Presentation Boundary
     Nuclear BFG 9000 shares the typed forty-cell shot-cost policy with the
     standard BFG while preserving its exact-hit, recharge, and overload state;
     projectile routing, explosions, and NukeRun remain separate policy work.
-    BFG 10K opts into typed exact-hit, five-projectile direct-target volley,
-    five-cell-per-projectile shot-cost, delayed explosion schedule metadata
+    BFG 10K opts into typed exact-hit, five-projectile direct-target volley with
+    typed Plasma mitigation, five-cell-per-projectile shot-cost, delayed
+    explosion schedule metadata
     (delay 25, radius 2, knockback 16), the bounded first-level
     four-projectile/twenty-cell, second-level five-projectile/twenty-five-cell,
     and third-, fourth-, fifth-, sixth-, seventh-, eighth-, ninth-, tenth-, eleventh-, twelfth-, thirteenth-, fourteenth-, fifteenth-, sixteenth-, seventeenth-, eighteenth-, nineteenth-, twentieth-, and twenty-first-level seven-projectile/thirty-five-cell

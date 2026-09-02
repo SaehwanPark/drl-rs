@@ -4,8 +4,8 @@ use drl_core::grid::Tile;
 use drl_core::replay::ReplayEngine;
 use drl_core::scenario::{Scenario, ScenarioRunner};
 use drl_protocol::{
-  ActionCost, AttackOutcome, Command, DamageSource, Direction, GameEvent, ItemId, ItemSpawnKind,
-  ItemSpawnSpec, PlayerSpawnConfig, Position, RunOutcome, ScenarioFixture, TileKind,
+  ActionCost, AttackOutcome, Command, DamageSource, DamageType, Direction, GameEvent, ItemId,
+  ItemSpawnKind, ItemSpawnSpec, PlayerSpawnConfig, Position, RunOutcome, ScenarioFixture, TileKind,
 };
 
 fn assert_bfg10k_volley_events(
@@ -30,7 +30,7 @@ fn assert_bfg10k_volley_events(
         target_id: event_target,
         amount,
         source: DamageSource::Actor(_),
-        damage_type: None,
+        damage_type: Some(DamageType::Plasma),
         ..
       } if *event_target == target_id => damages.push((index, *amount)),
       GameEvent::Bfg10kExplosionScheduled {

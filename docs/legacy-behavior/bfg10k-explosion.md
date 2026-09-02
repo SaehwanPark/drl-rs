@@ -1,9 +1,10 @@
 # BFG 10K delayed explosion evidence
 
 Status: delivered bounded typed schedule metadata, actor-only radius-2 fanout,
-and ordinary loose-ammo destruction in `0.2.266`; delayed timing/state-machine
-parity, terrain/content effects, controlled runtime comparison, and audiovisual parity remain
-`NOT_RUN`.
+and ordinary loose-ammo destruction in `0.2.266`; active `0.2.336` work types
+the five direct target hits as Plasma. Delayed timing/state-machine parity,
+terrain/content effects, controlled runtime comparison, and audiovisual parity
+remain `NOT_RUN`.
 
 ## Pinned source
 
@@ -41,3 +42,14 @@ rather than a pending queue. Terrain/content mutation, non-ammunition
 ground-item destruction, splash immunity, scatter/projectile routing,
 sixth-and-later chainfire levels, mods, controlled legacy runtime, and
 audiovisual comparison remain separate slices or `NOT_RUN`.
+
+Gameplay semantics `138` (project version `0.2.336`) classifies each successful
+BFG 10K direct volley target hit as typed Plasma, preserving the raw `6d4`
+damage roll, exact-hit behavior, five-projectile event order, and RNG stream.
+Blue Armor therefore applies its catalog-defined 20% Plasma resistance before
+flat protection on the direct events. This is a current-Rust classification of
+the existing direct-target path: the cited legacy source routes BFG 10K through
+its scatter/projectile resolver, so this slice does not claim separate legacy
+direct `ApplyDamage` or full scatter/projectile parity. The already delivered
+radius-2 splash remains an environment Plasma path; SPLASMA armor divisors,
+delayed timing, and broader resistance aggregation remain outside the slice.

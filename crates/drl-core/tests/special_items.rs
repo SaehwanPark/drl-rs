@@ -258,7 +258,7 @@ fn assert_bfg10k_volley_events(
         target_id: event_target,
         amount,
         source: DamageSource::Actor(_),
-        damage_type: None,
+        damage_type: Some(DamageType::Plasma),
         ..
       } if *event_target == target_id => damages.push((index, *amount)),
       GameEvent::Bfg10kExplosionScheduled {
