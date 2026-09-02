@@ -12085,7 +12085,28 @@ mod tests {
       start_tick: 0,
       duration_ticks: 3,
     };
-    let expected_effects = [vec![ranged_attack, hit], vec![reload]];
+    let expected_effects = [
+      vec![
+        ranged_attack,
+        hit,
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::Knockback,
+          start_tick: 3,
+          duration_ticks: 2,
+        },
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::Hit,
+          start_tick: 5,
+          duration_ticks: 1,
+        },
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::Hit,
+          start_tick: 6,
+          duration_ticks: 1,
+        },
+      ],
+      vec![reload],
+    ];
     let mut direct = initial.clone();
     let mut browser = BrowserSession::from_game(initial);
     let mut all_events = Vec::new();
@@ -12112,10 +12133,10 @@ mod tests {
       all_events.extend(expected_events);
     }
 
-    assert_eq!(direct.world().player().unwrap().hp().current, 50);
+    assert_eq!(direct.world().player().unwrap().hp().current, 34);
     assert_eq!(
       direct.world().get_actor(target_id).unwrap().hp().current,
-      471
+      445
     );
     let weapon = direct
       .world()

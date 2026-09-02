@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
-Last reviewed: 2026-08-31
-Current project version: `0.2.326`
+Last reviewed: 2026-09-02
+Current project version: `0.2.327`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.326)
+## 3. Current Progress Summary (`VERSION` 0.2.327)
 
 ### Delivered Foundations
 
@@ -1242,6 +1242,15 @@ verification item uses explicit status semantics:
   `8ad2922a82a7edf4a12df359b48e9949ddd9bd18`; Repository/WASM checks pass for
   merged `fb2288644b4cabb7b28db15068801c9e79636f6e`, while the sole-maintainer
   Review policy check failed closed under the documented live exception.
+- **M9 Rocket Launcher actor splash (`0.2.327`, implementation complete on
+  `codex/rocket-launcher-actor-splash`)**: A successful direct hit now emits a
+  typed delay-40/radius-4/knockback-8 schedule event and immediately resolves a
+  bounded actor-only fanout with one `6d6` Fire roll per clear cell, legacy
+  distance falloff, actor de-duplication, radial `damage / 8` knockback, and
+  normal death/drop ordering. Exact rejection identity, replay/scenario,
+  MCP/audio/metrics/render, BrowserSession, and full workspace tests pass;
+  terrain, ground items, delayed queues, projectile routing, rocket-jump,
+  controlled runtime, and audiovisual parity remain open or `NOT_RUN`.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
@@ -1714,7 +1723,9 @@ scripting.
   accuracy/timing and dynamic callbacks remain open.
 - [x] Typed rocket launcher preserves pinned rocket relation, one-shot clip,
   `6d6` damage range, description, replay kind, and `SPRITE_BAZOOKA` slot;
-  blast/effect callbacks and exact accuracy/timing remain open.
+  its bounded actor-only radius-4 direct-hit fanout is delivered in `0.2.327`;
+  terrain/ground-item callbacks, projectile routing, rocket-jump, and exact
+  accuracy/timing remain open.
 - [x] Typed chaingun preserves pinned 9mm relation, 40-round clip, `1d6`
   damage range, description, replay kind, and `SPRITE_CHAINGUN` slot;
   chainfire/burst effects and exact timing/accuracy remain open.
@@ -2497,8 +2508,10 @@ scripting.
   accuracy, runtime, and audiovisual parity remain open.
 - [x] Rocket Launcher has an immutable behavior profile for its current
   one-projectile ordinary fire and one-rocket cost; generic ranged execution
-  remains authoritative while rocket-jump/explosion callback semantics, exact
-  legacy timing/accuracy, runtime, and audiovisual parity remain open.
+  remains authoritative while the bounded actor-only radius-4 direct-hit
+  fanout is covered in `0.2.327`. Terrain/ground-item callbacks, projectile
+  routing, rocket-jump, exact legacy timing/accuracy, runtime, and audiovisual
+  parity remain open.
 - [x] Combat Pistol has an immutable behavior profile for its current
   one-projectile ordinary fire and one-9mm-round cost; generic ranged execution
   remains authoritative while aimed-fire callback semantics, exact legacy
