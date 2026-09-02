@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-09-02
-Current project version: `0.2.332`
+Current project version: `0.2.333`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -93,11 +93,11 @@ five-cell per-projectile ammo-cost fragments; Pistol
 records its typed one-projectile ordinary-fire, one-round 9mm ammo-cost, and
 Pistol/Combat Pistol aimed-fire (+3 accuracy, 2× action-cost) fragments; Rocket Launcher records
 its typed one-projectile ordinary-fire and one-rocket ammo-cost fragments plus a
-delay-40/radius-4/knockback-8 schedule and bounded radius-4 fanout (one `6d6`
-Fire roll per clear cell, legacy distance falloff, radial `damage / 8`
-knockback, source self-damage, and one lowest-ID ordinary ground-item
-destruction when post-falloff damage exceeds `10`; terrain mutation remains
-separate policy work);
+typed direct Fire target path, delay-40/radius-4/knockback-8 schedule, and
+bounded radius-4 fanout (one `6d6` Fire roll per clear cell, legacy distance
+falloff, radial `damage / 8` knockback, source self-damage, and one lowest-ID
+ordinary ground-item destruction when post-falloff damage exceeds `10`; terrain
+mutation remains separate policy work);
 Assault Shotgun records its typed ordinary single-shell reload and
 capped full-deficit reload fragments;
 Revenant's Launcher records its typed
@@ -381,7 +381,8 @@ Presentation Boundary
     types are optionally projected. Blue Armor now carries its catalog-defined
     20% Plasma resistance through typed BFG and Null Pointer actor-splash
     damage, and Red Armor its catalog-defined 25% Fire resistance through
-    typed actor-splash damage, including Anti-Freak Fire;
+    typed actor-splash damage, including Anti-Freak Fire, and the Rocket
+    Launcher's direct target damage now selects the same typed Fire path;
     the broader legacy
     resistance stack, running modifiers,
     prepared-slot consumption,

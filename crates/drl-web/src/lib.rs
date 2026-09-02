@@ -2715,7 +2715,7 @@ mod tests {
     let token = session.snapshot_token().expect("snapshot encoding");
     assert_eq!(
       token,
-      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:134:1:2:drl-rs-ruleset-v1:4:mr;mr;mr;p"
+      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:135:1:2:drl-rs-ruleset-v1:4:mr;mr;mr;p"
     );
 
     let mut restored = BrowserSession::new().expect("fixed session");
@@ -2731,7 +2731,7 @@ mod tests {
     let token = session.snapshot_token().expect("snapshot encoding");
     assert_eq!(
       token,
-      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:134:1:2:drl-rs-ruleset-v1:0:"
+      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:135:1:2:drl-rs-ruleset-v1:0:"
     );
     let decoded = persistence::decode_snapshot_with_format(&token).expect("snapshot decoding");
     assert_eq!(decoded.format, persistence::SnapshotFormat::V3);
@@ -2756,11 +2756,11 @@ mod tests {
   fn snapshot_rejects_corruption_and_unknown_versions() {
     let mut session = BrowserSession::new().expect("fixed session");
     assert_eq!(
-      session.restore_snapshot("DRL-RUST-BROWSER-SAVE/4:fixed-m4-v1:134:1:2:drl-rs-ruleset-v1:0:"),
+      session.restore_snapshot("DRL-RUST-BROWSER-SAVE/4:fixed-m4-v1:135:1:2:drl-rs-ruleset-v1:0:"),
       Err(SnapshotError::UnsupportedVersion("4".to_string()))
     );
     assert_eq!(
-      session.restore_snapshot("DRL-RUST-BROWSER-SAVE/3:other:134:1:2:drl-rs-ruleset-v1:1:w"),
+      session.restore_snapshot("DRL-RUST-BROWSER-SAVE/3:other:135:1:2:drl-rs-ruleset-v1:1:w"),
       Err(SnapshotError::UnsupportedContent("other".to_string()))
     );
     assert_eq!(
@@ -2801,21 +2801,21 @@ mod tests {
         },
       ),
       (
-        "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:134:0:2:drl-rs-ruleset-v1:0:",
+        "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:135:0:2:drl-rs-ruleset-v1:0:",
         SnapshotError::UnsupportedRngSamplingSemantics {
           found: 0,
           expected: drl_protocol::CURRENT_RNG_SAMPLING_SEMANTICS_VERSION,
         },
       ),
       (
-        "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:134:1:1:drl-rs-ruleset-v1:0:",
+        "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:135:1:1:drl-rs-ruleset-v1:0:",
         SnapshotError::UnsupportedGeneratorSemantics {
           found: 1,
           expected: drl_protocol::CURRENT_GENERATOR_SEMANTICS_VERSION,
         },
       ),
       (
-        "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:134:1:2:legacy-ruleset:0:",
+        "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:135:1:2:legacy-ruleset:0:",
         SnapshotError::UnsupportedRuleset {
           found: "legacy-ruleset".to_string(),
           expected: drl_protocol::CURRENT_RULESET_ID.to_string(),
@@ -2837,11 +2837,11 @@ mod tests {
   fn snapshot_rejects_noncanonical_v3_numbers_and_count_mismatches() {
     let mut session = BrowserSession::new().expect("fixed session");
     for token in [
-      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:0134:1:2:drl-rs-ruleset-v1:0:",
-      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:+134:1:2:drl-rs-ruleset-v1:0:",
-      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:134:1:2:drl-rs-ruleset-v1:01:w",
-      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:134:1:2:drl-rs-ruleset-v1:2:w",
-      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:134:1:2:drl-rs-ruleset-v1:1:é",
+      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:0135:1:2:drl-rs-ruleset-v1:0:",
+      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:+135:1:2:drl-rs-ruleset-v1:0:",
+      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:135:1:2:drl-rs-ruleset-v1:01:w",
+      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:135:1:2:drl-rs-ruleset-v1:2:w",
+      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:135:1:2:drl-rs-ruleset-v1:1:é",
     ] {
       assert_eq!(
         session.restore_snapshot(token),
@@ -2872,7 +2872,7 @@ mod tests {
       .submit(Command::Move(Direction::East))
       .expect("legal command");
     let before = session.clone();
-    let token = "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:134:1:2:drl-rs-ruleset-v1:2:mr;x";
+    let token = "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:135:1:2:drl-rs-ruleset-v1:2:mr;x";
 
     assert_eq!(
       session.restore_snapshot(token),
@@ -14726,7 +14726,7 @@ mod wasm_tests {
       .expect("restore V3 snapshot");
     assert_eq!(restored, expected);
 
-    let rejected_token = token.replace(":134:", ":127:");
+    let rejected_token = token.replace(":135:", ":127:");
     storage
       .set_item(crate::wasm::SAVE_STORAGE_KEY, &rejected_token)
       .expect("write rejected active save");

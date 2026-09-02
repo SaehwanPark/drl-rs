@@ -125,7 +125,7 @@ fn rocket_launcher_hit_schedules_and_fans_out_with_falloff() {
           target_id,
           amount,
           source: DamageSource::Actor(_),
-          damage_type: None,
+          damage_type: Some(DamageType::Fire),
           ..
         } if *target_id == center_id && *amount == expected_direct_damage
       )

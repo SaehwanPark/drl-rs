@@ -27,7 +27,7 @@ description: "Comprehensive armory encyclopedia: ballistic firearms, energy weap
 - **Minigun**: Heavy 8-barrel rotary machine gun. Chews through ammo at 8 rounds per salvo, with first-level 6-projectile, second-level 8-projectile, and third-level 12-projectile chainfire bursts for open combat corridors.
 
 ### 4. Heavy Rocket & Explosive Launchers
-- **Rocket Launcher**: High-explosive ordnance firing single rockets with a bounded radius-4 Fire splash; post-falloff damage above 10 destroys one lowest-ID ordinary ground item per blast cell.
+- **Rocket Launcher**: High-explosive ordnance firing single rockets with a typed direct Fire hit and bounded radius-4 Fire splash; Red Armor's typed 25% Fire resistance applies to direct and splash damage, while post-falloff damage above 10 destroys one lowest-ID ordinary ground item per blast cell.
 - **Missile Launcher**: Multi-tube launcher holding up to 4 rockets for continuous area-of-effect suppression.
 - **Anti-Freak Jackal**: Unique aimed-fire sidearm whose successful hit resolves a
   radius-1 `5d3` Fire splash; Red Armor's typed 25% Fire resistance applies
@@ -52,7 +52,7 @@ description: "Comprehensive armory encyclopedia: ballistic firearms, energy weap
 |---|---|---|
 | **Green Armor** | 30% Damage Reduction | Standard combat security vest. Durable and lightweight. |
 | **Blue Armor** | 2 flat protection; 20% Plasma resistance on typed BFG and Null Pointer fanouts | Heavy kevlar and ceramic plate suit. Broader resistance aggregation remains open. |
-| **Red Armor** | 4 flat protection; 25% Fire resistance on typed Rocket and Anti-Freak fanouts | High-grade armor that reduces Fire splash before flat protection. Broader resistance aggregation remains open. |
+| **Red Armor** | 4 flat protection; 25% Fire resistance on typed Rocket direct/splash and Anti-Freak fanouts | High-grade armor that reduces typed Fire damage before flat protection. Broader resistance aggregation remains open. |
 | **Lava Armor** | 75% Thermal Reduction | Self-repairing suit. Standing in lava tiles recharges durability over time. |
 | **Malek's Armor** | 60% All-round Reduction | Ancient demonic power armor. Slowly regenerates durability over time. |
 | **Medical Powerarmor** | 50% All-round Reduction | Equipped with automated trauma systems that stabilize player HP when critical. |

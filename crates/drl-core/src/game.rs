@@ -1992,11 +1992,21 @@ impl Game {
           continue;
         }
 
-        let (taken, actual_lethal, death_cause) = self.state.world.apply_damage(
-          target_monster_id,
-          damage,
-          DamageSource::Actor(player_id),
-        )?;
+        let direct_damage_type = weapon_is_rocket_launcher.then_some(DamageType::Fire);
+        let (taken, actual_lethal, death_cause) = if let Some(damage_type) = direct_damage_type {
+          self.state.world.apply_damage_typed(
+            target_monster_id,
+            damage,
+            DamageSource::Actor(player_id),
+            damage_type,
+          )?
+        } else {
+          self.state.world.apply_damage(
+            target_monster_id,
+            damage,
+            DamageSource::Actor(player_id),
+          )?
+        };
         let remaining = self
           .state
           .world
@@ -2007,7 +2017,7 @@ impl Game {
           amount: taken,
           remaining_hp: remaining,
           source: DamageSource::Actor(player_id),
-          damage_type: None,
+          damage_type: direct_damage_type,
         });
 
         if weapon_is_bfg10k {

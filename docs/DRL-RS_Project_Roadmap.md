@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-09-02
-Current project version: `0.2.332`
+Current project version: `0.2.333`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.332)
+## 3. Current Progress Summary (`VERSION` 0.2.333)
 
 ### Delivered Foundations
 
@@ -1263,15 +1263,15 @@ verification item uses explicit status semantics:
   `ArmorProperties` into typed Rocket actor-splash damage before flat armor
   protection, with deterministic integer rounding, minimum-one handling, and
   explicit non-Fire preservation. Broader legacy resistance aggregation,
-  direct Fire classification, and other resistance families remain out of
-  scope.
+  non-Rocket direct Fire classification, and other resistance families remain
+  out of scope.
 - **M9 Anti-Freak Jackal Fire mitigation (`0.2.330`, delivered in PR #446):**
   The existing radius-1 Anti-Freak actor splash now routes through typed Fire
   damage, so Red Armor's catalog-defined 25% resistance applies before flat
   protection. Same-seed replay coverage proves the armored and unarmored
   paths share the raw `5d3` roll sequence; fanout geometry, knockback,
   ground-ammo threshold, event ordering, and rejection boundaries remain
-  unchanged. Broader legacy resistance aggregation and direct Fire
+  unchanged. Broader legacy resistance aggregation and non-Rocket direct Fire
   classification remain out of scope.
 - **M9 Null Pointer Plasma mitigation (`0.2.331`, delivered in PR #447):**
   The existing radius-1 Null Pointer actor splash now routes through typed
@@ -1289,6 +1289,12 @@ verification item uses explicit status semantics:
   geometry, Fire mitigation, event ordering, and rejection boundaries remain
   unchanged. Feature markers, terrain/content callbacks, delayed queues,
   projectile routing, rocket-jump, and audiovisual parity remain open.
+- **Active M9 Rocket Launcher direct Fire classification (`0.2.333`):** The
+  bounded follow-up branch routes only the direct Rocket Launcher target damage
+  through the existing typed Fire path, so Red Armor's catalog-defined 25%
+  resistance applies before flat protection. Raw damage, RNG order, the already
+  delivered splash/item effects, and every other direct weapon path remain
+  unchanged pending implementation and review.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
@@ -1296,6 +1302,14 @@ verification item uses explicit status semantics:
   optional detached signatures, cache invalidation, and checkout binding.
 
 ### Active & Open Work
+
+- **Active Slice — M9 Rocket Launcher direct Fire classification (`0.2.333`):**
+  The bounded branch from audited `main` `c07a256` routes only the direct
+  Rocket Launcher target damage through typed Fire mitigation. Red Armor's
+  catalog-defined 25% resistance applies before flat protection; raw damage,
+  RNG state, splash/item behavior, rejection boundaries, and boundary
+  projections remain unchanged. Implementation, independent review, hosted
+  checks, and merge checkpoint are pending.
 
 - **Delivered Slice — M9 Rocket Launcher ground-item destruction (`0.2.332`):**
   PR #448 merged as `e902d71`. The exact implementation head
@@ -1892,6 +1906,10 @@ scripting.
   than `10`, emits `GroundItemDestroyed` after actor processing, and preserves
   non-destructive cells; direct-core, replay, MCP, and BrowserSession parity
   are delivered in `0.2.332`.
+- [ ] Rocket Launcher direct target damage is classified as typed `Fire`, so
+  Red Armor's catalog-defined 25% resistance applies before flat protection;
+  raw damage, RNG order, splash/item effects, and other direct weapons remain
+  unchanged until this bounded branch is reviewed and merged.
 - [x] Typed chaingun preserves pinned 9mm relation, 40-round clip, `1d6`
   damage range, description, replay kind, and `SPRITE_CHAINGUN` slot;
   chainfire/burst effects and exact timing/accuracy remain open.

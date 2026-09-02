@@ -1,7 +1,8 @@
 # Rocket Launcher typed behavior-profile evidence
 
-Status: delivered typed profile plus a bounded radius-4 direct-hit fanout and
-thresholded ground-item destruction in `0.2.332`. Rocket-jump,
+Status: delivered typed profile plus a typed direct Fire hit, bounded radius-4
+direct-hit fanout, and thresholded ground-item destruction in `0.2.333`.
+Rocket-jump,
 projectile/cell/feature-item explosion callbacks, exact delayed timing/accuracy,
 controlled runtime comparison, and audiovisual parity remain `NOT_RUN`.
 
