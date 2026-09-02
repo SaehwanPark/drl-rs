@@ -3,6 +3,19 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.339]
+
+- Routed each successful Laser Rifle ordinary-fire and already implemented
+  first-through-seventh-level chainfire direct target hit through the existing
+  typed Plasma path. Blue Armor's catalog-defined 20% Plasma resistance now
+  applies before flat protection, while raw damage, one-roll-per-projectile
+  RNG order, five-projectile volley and chainfire clip costs, warm-up state,
+  event ordering, and rejection boundaries remain unchanged. Focused same-seed,
+  first/seventh-level chainfire, replay, and stale-semantics tests verify the
+  contract; higher chainfire levels, spread/routing, SPLASMA divisors, broader
+  resistance aggregation, and audiovisual parity remain open. Gameplay
+  semantics advance from `140` to `141`.
+
 ## [0.2.338]
 
 - Routed each successful Nuclear Plasma Rifle ordinary-fire and already
