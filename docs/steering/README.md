@@ -1,9 +1,9 @@
 # Development Steering
 
 Last reviewed: 2026-09-02
-Repository baseline reviewed: `7fb27e1`
-Latest pull request inspected: `#446`
-Project version at review: `0.2.330`
+Repository baseline reviewed: `5b87614`
+Latest pull request inspected: `#447`
+Project version at review: `0.2.331`
 
 ## Purpose
 
@@ -65,7 +65,7 @@ the current Gate D stress-case notes are
 [`trigun.md`](../legacy-behavior/trigun.md). The delivered Anti-Freak Jackal
 Fire-mitigation slice added
 [`anti-freak-jackal-fire-profile.md`](../legacy-behavior/anti-freak-jackal-fire-profile.md);
-the active Null Pointer Plasma-mitigation slice adds
+the delivered Null Pointer Plasma-mitigation slice adds
 [`null-pointer-plasma-resistance-profile.md`](../legacy-behavior/null-pointer-plasma-resistance-profile.md).
 
 

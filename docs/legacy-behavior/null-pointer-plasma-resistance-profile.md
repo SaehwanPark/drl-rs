@@ -1,6 +1,6 @@
 # Charch's Null Pointer typed Plasma mitigation evidence
 
-Status: active slice in `0.2.331`; the existing Null Pointer target-score and
+Status: delivered in `0.2.331`; the existing Null Pointer target-score and
 actor-only radius-1 splash behavior remains delivered separately.
 
 ## Pinned legacy evidence
@@ -22,7 +22,7 @@ The pinned legacy revision is
 
 At the audited base `ca31143`, the resolver already emitted a typed
 `DamageApplied` event but called untyped `World::apply_damage`, so Blue Armor's
-catalog-defined 20% Plasma resistance did not affect the splash. The active
+catalog-defined 20% Plasma resistance did not affect the splash. The delivered
 slice routes that one call through `apply_damage_typed` with the existing
 `DamageType::Plasma` vocabulary. Resistance uses the shared integer rounding,
 minimum-one, then flat-protection policy and consumes no RNG. Geometry,

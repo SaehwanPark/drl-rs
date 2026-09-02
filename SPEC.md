@@ -4,7 +4,7 @@ Last reviewed: 2026-09-02
 Current project version: `0.2.331`
 Audited starting checkpoint: `main` at `ca31143` (PR #446 Anti-Freak merge
 and canonical docs reconciliation)
-Delivery checkpoint: pending for `codex/null-pointer-plasma-resistance`
+Delivery checkpoint: `main` merge commit `5b87614` (PR #447, merged)
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -24,7 +24,7 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 
 ## 2. Active implementation slice: M9 — Null Pointer Plasma mitigation
 
-Slice status: **in progress** on the bounded implementation branch above.
+Slice status: **delivered and verified** at the delivery checkpoint above.
 
 ### 2.1 Objective
 
@@ -94,14 +94,14 @@ At audited starting revision `ca31143` (version `0.2.330`):
 
 ### 2.5 Acceptance criteria
 
-- [ ] The Null Pointer actor splash routes through typed Plasma mitigation and
+- [x] The Null Pointer actor splash routes through typed Plasma mitigation and
   retains the existing event, fanout, and death/drop ordering.
-- [ ] A same-seed replay pair proves that Blue Armor reduces the player splash
+- [x] A same-seed replay pair proves that Blue Armor reduces the player splash
   amount by the catalog-defined resistance plus flat protection while the
   unarmored amount remains the fixed raw damage.
-- [ ] Existing Null Pointer rejection/rollback, replay, MCP, metrics/audio/
+- [x] Existing Null Pointer rejection/rollback, replay, MCP, metrics/audio/
   render, and BrowserSession parity tests pass without new wire or RNG behavior.
-- [ ] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
+- [x] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
   hosted checks, and an attributable independent determinism review pass on the
   final implementation commit.
 
@@ -125,9 +125,20 @@ or `NOT_RUN` in the roadmap.
 
 ### 2.8 Delivery evidence
 
-- Delivery evidence is pending. The implementation and review handoff will
-  record the exact final head, hosted run, independent review receipt, and merge
-  checkpoint here after they exist.
+- Independent determinism review of final head
+  `0a066a829781fe98b3d9a3f0b2fa9d3b7e85a174`: **PASS** by
+  `/root/red_armor_review`; no severity-ranked defects or focused fix were
+  required.
+- Local workspace tests, clippy, formatting, version check, repository checks,
+  and native/headless browser checks: **PASS**. The optional reference-capture
+  preflight is `NOT_RUN` because its local manifest is unavailable.
+- PR #447 hosted Repository checks and WASM browser checks: **PASS** in run
+  `33650442297`. The protected-path Review policy check failed closed under the
+  documented solo-maintainer `enforce_admins=false` exception; administrator
+  merge was used after the review receipt was recorded.
+- Merge checkpoint: `5b87614`; the temporary implementation branch was removed
+  locally and remotely. No controlled legacy runtime, audiovisual, balance, or
+  human-play claim is inferred from these checks.
 
 ## 3. Enduring invariants
 

@@ -1273,6 +1273,14 @@ verification item uses explicit status semantics:
   ground-ammo threshold, event ordering, and rejection boundaries remain
   unchanged. Broader legacy resistance aggregation and direct Fire
   classification remain out of scope.
+- **M9 Null Pointer Plasma mitigation (`0.2.331`, delivered in PR #447):**
+  The existing radius-1 Null Pointer actor splash now routes through typed
+  Plasma damage, so Blue Armor's catalog-defined 20% resistance applies before
+  flat protection. Same-seed replay coverage proves the fixed `10d1` fanout
+  preserves RNG state while reducing only the armored recipient's damage;
+  geometry, deduplication, event/death ordering, and rejection boundaries
+  remain unchanged. The legacy SPLASMA armor divisor and broader resistance
+  aggregation remain out of scope.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
@@ -1281,15 +1289,17 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active Slice — M9 Null Pointer Plasma mitigation (`0.2.331`):** The
-  bounded branch routes the existing Null Pointer radius-1 actor splash through
-  typed Plasma damage so Blue Armor's catalog-defined 20% resistance applies
-  before flat protection. Same-seed replay coverage proves the fixed `10d1`
-  fanout preserves RNG state while reducing only the armored recipient's
-  damage. The final implementation, independent review, hosted checks, and
-  merge checkpoint are pending; the legacy SPLASMA armor divisor, broader
-  resistance aggregation, direct Plasma classification, controlled runtime,
-  audiovisual parity, and balance remain open or `NOT_RUN`.
+- **Delivered Slice — M9 Null Pointer Plasma mitigation (`0.2.331`):** PR
+  #447 merged as `5b87614`. The exact implementation head
+  `0a066a829781fe98b3d9a3f0b2fa9d3b7e85a174` routes the existing radius-1
+  Null Pointer actor splash through typed Plasma damage so Blue Armor's
+  catalog-defined 20% resistance applies before flat protection. The
+  independent determinism review returned PASS; local and hosted Repository/
+  WASM checks pass, while the documented solo-maintainer Review-policy
+  exception was used. Same-seed replay coverage proves the fixed `10d1` fanout
+  preserves RNG state; the legacy SPLASMA armor divisor, broader resistance
+  aggregation, direct Plasma classification, controlled runtime, audiovisual
+  parity, and balance remain open or `NOT_RUN`.
 
 - **Delivered Slice — M9 Anti-Freak Jackal Fire mitigation (`0.2.330`):** PR
   #446 merged as `7fb27e1`. The exact final implementation head
@@ -1302,16 +1312,19 @@ verification item uses explicit status semantics:
   broader legacy resistance aggregation, direct Fire classification, controlled
   runtime, audiovisual parity, and balance remain open or `NOT_RUN`.
 
-- **Latest Audited Checkpoint:** `main` merge commit `7fb27e1` (PR #446,
-  version `0.2.330`). The Anti-Freak implementation head
-  `49eda1fa38d483db3515f5ff2b37b2bd4b3b41b1` and final evidence/docs head
-  `de4b0fdc6d95054a7d4aa2cd78e46f6e59def630` have an independent
+- **Latest Audited Checkpoint:** `main` merge commit `5b87614` (PR #447,
+  version `0.2.331`). The Null Pointer implementation head
+  `0a066a829781fe98b3d9a3f0b2fa9d3b7e85a174` has an independent
   determinism-review PASS receipt; local and hosted Repository/WASM checks
   pass. The hosted Review policy check failed closed because the sole
   maintainer cannot create a non-self approval, so the documented live
   `enforce_admins=false` exception was used. Controlled human, audiovisual,
   and reference-capture surfaces remain `NOT_RUN` where prerequisites are
-  unavailable. The Red Armor implementation head
+  unavailable. The preceding Anti-Freak implementation head
+  `49eda1fa38d483db3515f5ff2b37b2bd4b3b41b1` and final evidence/docs head
+  `de4b0fdc6d95054a7d4aa2cd78e46f6e59def630` retain their independent
+  determinism-review PASS receipt; local and hosted Repository/WASM checks
+  pass. The Red Armor implementation head
   `3370713fc66c1585fafa2a0d7fe8d6357902becf` and final docs-only branch head
   `4688048a426d273c13b6ca9d4b3e842c37371d8b` both have independent
   determinism-review PASS receipts; local and hosted Repository/WASM checks
@@ -1416,6 +1429,17 @@ verification item uses explicit status semantics:
   returned PASS; local and hosted Repository/WASM checks pass, and the
   protected-path Review-policy exception is recorded above. Broader legacy
   resistance aggregation, direct Fire classification, controlled runtime,
+  audiovisual parity, and balance remain open or `NOT_RUN`.
+- **Delivered Slice — M9 Null Pointer Plasma mitigation (`0.2.331`):** PR
+  #447 merged as `5b87614`. Final head
+  `0a066a829781fe98b3d9a3f0b2fa9d3b7e85a174` routes the radius-1 actor splash
+  through typed Plasma mitigation, preserving fixed `10d1` damage, fanout
+  geometry, deduplication, event/death ordering, rejection safety, and RNG
+  state while applying Blue Armor's catalog-defined 20% resistance before
+  flat protection. The independent determinism review returned PASS; local and
+  hosted Repository/WASM checks pass, and the protected-path Review-policy
+  exception is recorded above. The legacy SPLASMA armor divisor, broader
+  resistance aggregation, direct Plasma classification, controlled runtime,
   audiovisual parity, and balance remain open or `NOT_RUN`.
 - **Process Gate (M0, closed):** Keep `SPEC.md` bounded to one active slice and
   require an attributable independent determinism-review disposition for every
