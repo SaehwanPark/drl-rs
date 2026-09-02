@@ -7789,6 +7789,7 @@ fn anti_freak_jackal_fire_splash_respects_red_armor_in_same_seed_replays() {
       .max(1)
   );
   assert!(red_damage < plain_damage);
+  assert_eq!(plain_game.rng(), red_game.rng());
   assert!(ReplayEngine::verify_determinism(&plain_replay).unwrap());
   assert!(ReplayEngine::verify_determinism(&red_replay).unwrap());
 }
