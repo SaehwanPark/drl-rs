@@ -1,11 +1,11 @@
 # Nuclear BFG 9000 delayed explosion evidence
 
-Status: active bounded typed direct Plasma classification plus delivered
+Status: delivered bounded typed direct Plasma classification plus delivered
 schedule metadata, immediate actor fanout, and thresholded ordinary ground-item
-destruction (the schedule/fanout/item portions landed in `0.2.270`); EFCHAIN
-secondary explosions, terrain/content mutation, delayed timing/state-machine
-parity, controlled runtime comparison, and audiovisual parity remain open or
-`NOT_RUN`.
+destruction (the schedule/fanout/item portions landed in `0.2.270`; the direct
+classification landed in `0.2.335`, PR #451). EFCHAIN secondary explosions,
+terrain/content mutation, delayed timing/state-machine parity, controlled
+runtime comparison, and audiovisual parity remain open or `NOT_RUN`.
 
 ## Pinned source
 
@@ -47,7 +47,7 @@ secondary explosions, terrain/content mutation, delayed timing, projectile
 routing, NukeRun, controlled legacy runtime, and audiovisual comparison remain
 separate slices or `NOT_RUN`.
 
-The active `0.2.335` slice additionally classifies the existing direct target
+The delivered `0.2.335` slice additionally classifies the existing direct target
 `DamageApplied` event as typed `DamageType::Plasma` so Blue Armor's catalog
 resistance applies before flat protection. The legacy SPLASMA armor divisor,
 durability/body-zone aggregation, and a separate direct `ApplyDamage` event are

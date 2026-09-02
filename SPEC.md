@@ -4,7 +4,7 @@ Last reviewed: 2026-09-02
 Current project version: `0.2.335`
 Audited starting checkpoint: `main` at `3f059d3` (Standard BFG direct-Plasma
 slice and canonical documentation reconciliation)
-Previous delivery checkpoint: `main` merge commit `9132d82` (PR #450, merged)
+Delivery checkpoint: `main` merge commit `c58abc9` (PR #451, merged)
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -24,8 +24,7 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 
 ## 2. Active implementation slice: M9 — Nuclear BFG 9000 direct Plasma classification
 
-Slice status: **implementation in progress** on the temporary branch
-`codex/nuclear-bfg9000-direct-plasma-classification`.
+Slice status: **delivered and verified** on `main` in merge commit `c58abc9`.
 
 ### 2.1 Objective
 
@@ -90,20 +89,20 @@ At audited starting revision `3f059d3` (version `0.2.334`):
 
 ### 2.5 Acceptance criteria
 
-- [ ] Nuclear BFG 9000 direct hits emit typed Plasma damage and Blue Armor
+- [x] Nuclear BFG 9000 direct hits emit typed Plasma damage and Blue Armor
   reduces the applied amount using the existing deterministic
   resistance-before-flat protection formula.
-- [ ] An unarmored control preserves the raw direct damage amount, while the
+- [x] An unarmored control preserves the raw direct damage amount, while the
   same seed keeps the raw roll and final RNG state identical between armored
   and unarmored targets.
-- [ ] Direct replay and repeated replay runs produce identical game state,
+- [x] Direct replay and repeated replay runs produce identical game state,
   event stream, and typed direct-hit projection; stale semantics `136` is
   rejected before execution.
-- [ ] Existing Nuclear BFG splash/ground-item, recharge/overload, rejection/
+- [x] Existing Nuclear BFG splash/ground-item, recharge/overload, rejection/
   rollback, replay, MCP,
   metrics/audio/render, and BrowserSession parity tests pass without new wire
   or RNG behavior.
-- [ ] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
+- [x] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
   hosted checks, and an attributable independent determinism review pass on the
   final implementation commit.
 
@@ -127,9 +126,14 @@ aggregation, durability, balance, audiovisual parity, or human play.
 
 ### 2.8 Delivery evidence
 
-Pending implementation, local/hosted verification, independent review, and
-merge. The optional reference-capture preflight remains `NOT_RUN` unless its
-local manifest becomes available.
+Implementation commit `d2f1236` merged through PR #451 as `c58abc9`. Focused
+and workspace tests, formatting, clippy, version/repository/web checks, hosted
+Repository/WASM checks, and the independent `/root/rocket_review` determinism
+review all passed. The hosted Review-policy check remains the documented
+solo-maintainer exception (`enforce_admins=false`). The optional
+reference-capture preflight remains `NOT_RUN` because its local manifest is
+unavailable; controlled legacy runtime, audiovisual, and human-play surfaces
+remain outside this slice's evidence boundary.
 
 ## 3. Enduring invariants
 
