@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-09-02
-Current project version: `0.2.333`
+Current project version: `0.2.334`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.333)
+## 3. Current Progress Summary (`VERSION` 0.2.334)
 
 ### Delivered Foundations
 
@@ -1296,6 +1296,12 @@ verification item uses explicit status semantics:
   and every other direct weapon path remain unchanged. Independent review,
   replay coverage, and hosted Repository/WASM checks pass; non-Rocket direct
   Fire classification and broader resistance aggregation remain open.
+- **Active M9 Standard BFG 9000 direct Plasma classification (`0.2.334`):** The
+  bounded follow-up branch routes only the Standard BFG 9000 direct target
+  damage through the existing typed Plasma path, so Blue Armor's catalog-defined
+  20% resistance applies before flat protection. Raw damage, exact-hit behavior,
+  RNG order, the already delivered radius-8 splash/item effects, and every
+  other direct weapon path remain unchanged pending implementation and review.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
@@ -1303,6 +1309,14 @@ verification item uses explicit status semantics:
   optional detached signatures, cache invalidation, and checkout binding.
 
 ### Active & Open Work
+
+- **Active Slice — M9 Standard BFG 9000 direct Plasma classification (`0.2.334`):**
+  The bounded branch from audited `main` `c6f77a3` routes only the Standard BFG
+  9000 direct target damage through typed Plasma mitigation. Blue Armor's
+  catalog-defined 20% resistance applies before flat protection; raw damage,
+  exact-hit behavior, RNG state, splash/item behavior, rejection boundaries,
+  and boundary projections remain unchanged. Implementation, independent
+  review, hosted checks, and merge checkpoint are pending.
 
 - **Delivered Slice — M9 Rocket Launcher direct Fire classification (`0.2.333`):**
   PR #449 merged as `5242e3c`. The implementation head `a0a0fcd` routes only the
@@ -1351,7 +1365,7 @@ verification item uses explicit status semantics:
   broader legacy resistance aggregation, direct Fire classification, controlled
   runtime, audiovisual parity, and balance remain open or `NOT_RUN`.
 
-- **Latest Audited Checkpoint:** `main` merge commit `5242e3c` (PR #449,
+- **Latest Audited Checkpoint:** `main` docs checkpoint `c6f77a3` (PR #449,
   version `0.2.333`). The Rocket Launcher direct-Fire implementation head
   `a0a0fcd` has an independent determinism-review PASS receipt; local and
   hosted Repository/WASM checks pass. The hosted Review policy check failed
@@ -1929,6 +1943,11 @@ scripting.
   standard and Nuclear BFG exact-hit behavior is covered in `0.2.184` and
   `0.2.185`; standard BFG's 40-cell shot cost is covered in `0.2.186`, while
   other shot-cost, projectile, and explosion semantics remain open.
+- [ ] Standard BFG 9000 direct target damage is classified as typed `Plasma`, so
+  Blue Armor's catalog-defined 20% resistance applies before flat protection;
+  raw damage, exact-hit behavior, RNG order, splash/item effects, and other
+  direct weapons remain unchanged until this bounded branch is reviewed and
+  merged.
 - [x] Typed double/combat shotguns preserve pinned shell relation, clips,
   damage/range scalars, descriptions, replay kinds, and `SPRITE_DSHOTGUN`/
   `SPRITE_CSHOTGUN` slots; callbacks and spread/falloff remain open.

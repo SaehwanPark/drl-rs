@@ -14,7 +14,8 @@
 
 The item catalog carries `plasma_resistance` into `ArmorProperties`. The typed
 actor damage path applies that percentage before the existing flat protection;
-the BFG actor-splash policies pass `DamageType::Plasma` through this route.
+the Standard BFG direct-target and actor-splash policies pass
+`DamageType::Plasma` through this route.
 Integer arithmetic is deterministic and consumes no RNG. Current Fire, Acid,
 untyped direct hits, armor durability, body zones, weapon/hook bonuses, and
 difficulty modifiers remain outside this bounded slice.

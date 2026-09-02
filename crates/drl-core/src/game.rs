@@ -1992,7 +1992,13 @@ impl Game {
           continue;
         }
 
-        let direct_damage_type = weapon_is_rocket_launcher.then_some(DamageType::Fire);
+        let direct_damage_type = if weapon_is_rocket_launcher {
+          Some(DamageType::Fire)
+        } else if weapon_is_bfg9000 {
+          Some(DamageType::Plasma)
+        } else {
+          None
+        };
         let (taken, actual_lethal, death_cause) = if let Some(damage_type) = direct_damage_type {
           self.state.world.apply_damage_typed(
             target_monster_id,

@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-09-02
-Current project version: `0.2.333`
+Current project version: `0.2.334`
 Audited starting checkpoint: `main` at `c07a256` (Rocket ground-item slice
 and canonical documentation reconciliation)
 Delivery checkpoint: `main` merge commit `5242e3c` (PR #449, merged)
@@ -22,119 +22,110 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 - `INCONCLUSIVE` — **Evidence unresolved**: available evidence cannot support
   the claim.
 
-## 2. Active implementation slice: M9 — Rocket Launcher direct Fire classification
+## 2. Active implementation slice: M9 — Standard BFG 9000 direct Plasma classification
 
-Slice status: **delivered and verified** at the delivery checkpoint above.
+Slice status: **implementation in progress** on the temporary branch
+`codex/bfg9000-direct-plasma-classification`.
 
 ### 2.1 Objective
 
-Complete the Rocket Launcher direct-hit damage-family branch. The pinned legacy
-record declares `6d6 DAMAGE_FIRE`; after a successful direct hit, route only the
-Rocket Launcher target damage through the existing typed Fire path so
-catalog-defined Red Armor resistance applies before flat protection. Preserve
-the already-delivered radius-4 splash, item destruction, event ordering,
-death/drop handling, and transaction boundary.
+Complete the Standard BFG 9000 direct-hit damage-family branch. The pinned
+legacy record declares `10d6 DAMAGE_SPLASMA`; after a successful direct hit,
+route only the Standard BFG 9000 target damage through the existing typed Plasma
+path so catalog-defined Blue Armor resistance applies before flat protection.
+Preserve the already-delivered radius-8 splash, ground-item effect, event
+ordering, death/drop handling, and transaction boundary.
 
-This is a bounded vertical fidelity slice. It changes the direct `DamageApplied`
-event from unclassified to `Some(DamageType::Fire)` only for Rocket Launcher
-hits and leaves every other direct weapon path unchanged.
+This is a bounded vertical fidelity slice. It changes the direct
+`DamageApplied` event from unclassified to `Some(DamageType::Plasma)` only for
+Standard BFG 9000 hits and leaves every other direct weapon path unchanged.
 
 ### 2.2 Audited starting point
 
-At audited starting revision `c07a256` (version `0.2.332`):
+At audited starting revision `c6f77a3` (version `0.2.333`):
 
-- The Rocket Launcher record (`items.lua:657-688`) declares a one-shot `6d6`
-  `DAMAGE_FIRE` weapon, while `dfbeing.pas:2636-2644` propagates the weapon
+- The Standard BFG 9000 record (`eitems.lua:84-120`) declares a `10d6`
+  `DAMAGE_SPLASMA` weapon, while `dfbeing.pas:2636-2644` propagates the weapon
   damage family into direct damage and explosion resolution.
-- Rust already has typed Fire actor damage, catalog-defined Red Armor 25%
-  Fire resistance, and a typed `DamageApplied` event field.
-- The generic direct ranged path still calls untyped `World::apply_damage` and
-  emits `damage_type: None`; the Rocket splash path is already typed Fire.
+- Rust already has typed Plasma actor damage, catalog-defined Blue Armor 20%
+  Plasma resistance, and a typed `DamageApplied` event field. The BFG radius-8
+  splash is already typed Plasma.
+- The shared direct ranged path still calls untyped `World::apply_damage` and
+  emits `damage_type: None` for the Standard BFG 9000 direct hit.
 
 ### 2.3 Scope and ownership
 
-- **Roadmap:** M9 vertical canonical-fidelity completion of the Rocket Launcher
-  direct damage-family branch.
-- **Primary owner:** `Game`'s typed ranged execution boundary selects Fire for
-  the Rocket Launcher direct target; `World` and `Actor` retain the existing
+- **Roadmap:** M9 vertical canonical-fidelity completion of the Standard BFG
+  9000 direct damage-family branch.
+- **Primary owner:** `Game`'s typed ranged execution boundary selects Plasma for
+  the Standard BFG 9000 direct target; `World` and `Actor` retain the existing
   resistance and flat-protection formulas. Boundary crates remain projections.
-- **Content registration:** the existing Rocket Launcher catalog definition is
-  the single source of its identity and damage range; no duplicate weapon table
-  or callback registry is introduced.
-- **Project version:** implementation advances `VERSION` from `0.2.332` to
-  `0.2.333`.
-- **Replay/RNG:** gameplay semantics advance from `134` to `135`; replay wire,
+- **Content registration:** the existing Standard BFG 9000 catalog definition
+  remains the single source of its identity and damage range; no duplicate
+  weapon table or callback registry is introduced.
+- **Project version:** implementation advances `VERSION` from `0.2.333` to
+  `0.2.334`.
+- **Replay/RNG:** gameplay semantics advance from `135` to `136`; replay wire,
   RNG sampling (`1`), generator semantics (`2`), and ruleset identity
   (`drl-rs-ruleset-v1`) remain unchanged. Typed mitigation consumes no RNG.
 - **Protocol/boundaries:** no new wire event or schema is needed; the existing
-  optional `DamageApplied.damage_type` projection carries `Fire`.
+  optional `DamageApplied.damage_type` projection carries `Plasma`.
 
 ### 2.4 Review and branch contract
 
-- A successful Rocket Launcher direct hit emits `DamageApplied` with
-  `damage_type: Some(DamageType::Fire)` and applies the existing Fire resistance
-  before flat protection.
+- A successful Standard BFG 9000 direct hit emits `DamageApplied` with
+  `damage_type: Some(DamageType::Plasma)` and applies the existing Plasma
+  resistance before flat protection.
 - The raw `AttackOutcome::Hit` damage and one-roll RNG stream remain unchanged;
   `AttackOutcome::is_lethal` retains its existing raw-damage contract, while
   actual actor death remains authoritative in `World`.
-- Rocket splash cells retain typed Fire mitigation, thresholded ground-item
-  destruction, geometry, falloff, deduplication, event ordering, and final RNG
-  state.
+- BFG splash cells retain typed Plasma mitigation, thresholded ground-item
+  destruction, self-safe geometry, deduplication, event ordering, and final RNG
+  state. Rocket direct and splash Fire behavior remains unchanged.
 - Other direct weapons retain their untyped damage events and prior mitigation.
 - The existing core transaction guard still owns command rejection and exact
   state/RNG restoration; this slice adds no queue, callback, or new clone.
 
 ### 2.5 Acceptance criteria
 
-- [x] Rocket Launcher direct hits emit typed Fire damage and Red Armor reduces
-  the applied amount using the existing deterministic resistance-before-flat
-  protection formula.
-- [x] An unarmored control preserves the raw direct damage amount, while the
+- [ ] Standard BFG 9000 direct hits emit typed Plasma damage and Blue Armor
+  reduces the applied amount using the existing deterministic
+  resistance-before-flat protection formula.
+- [ ] An unarmored control preserves the raw direct damage amount, while the
   same seed keeps the raw roll and final RNG state identical between armored
   and unarmored targets.
-- [x] Direct replay and repeated replay runs produce identical game state,
-  event stream, and typed direct-hit projection; stale semantics `134` is
+- [ ] Direct replay and repeated replay runs produce identical game state,
+  event stream, and typed direct-hit projection; stale semantics `135` is
   rejected before execution.
-- [x] Existing Rocket splash/ground-item, rejection/rollback, replay, MCP,
+- [ ] Existing BFG splash/ground-item, rejection/rollback, replay, MCP,
   metrics/audio/render, and BrowserSession parity tests pass without new wire
   or RNG behavior.
-- [x] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
+- [ ] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
   hosted checks, and an attributable independent determinism review pass on the
   final implementation commit.
 
 ### 2.6 Non-goals
 
-- No direct Fire classification for other weapons, generic resistance
+- No direct Plasma classification for other weapons, generic resistance
   aggregation, legacy armor durability degradation, or SPLASMA divisors.
-- No projectile routing, delayed queue, terrain/content mutation, feature-item
-  behavior, rocket-jump, callback recreation, or runtime/audiovisual parity.
+- No Nuclear BFG behavior changes, projectile routing, delayed queue,
+  terrain/content mutation, callback recreation, or runtime/audiovisual parity.
 - No change to the replay wire schema, RNG sampling algorithm, generator
   semantics, ruleset identity, or unrelated event projections.
 
 ### 2.7 Evidence boundary
 
-This slice proves the current-Rust Rocket Launcher direct-hit Fire event and
-Red Armor mitigation policy, plus replay determinism and stable boundary
+This slice proves the current-Rust Standard BFG 9000 direct-hit Plasma event and
+Blue Armor mitigation policy, plus replay determinism and stable boundary
 projection. It does not prove controlled legacy runtime, exact timing or
 accuracy, projectile routing, terrain/content behavior, broader resistance
 aggregation, durability, balance, audiovisual parity, or human play.
 
 ### 2.8 Delivery evidence
 
-- Independent determinism review of final head `a0a0fcd`: **PASS** by
-  `/root/rocket_review`; no actionable findings were identified.
-- Local workspace tests, clippy, formatting, version check, repository checks,
-  native/headless browser checks, and `git diff --check`: **PASS**. The optional
-  reference-capture preflight is `NOT_RUN` because its local manifest is
-  unavailable.
-- PR #449 hosted Repository and WASM browser checks: **PASS** in run
-  `33656765327`. The protected-path Review policy check failed closed in run
-  `33656765373` because the sole maintainer cannot create a non-self approval;
-  the documented live `enforce_admins=false` exception was used after the
-  independent review receipt was recorded.
-- Merge checkpoint: `5242e3c`; the temporary implementation branch was removed
-  locally and remotely. No controlled legacy runtime, audiovisual, balance, or
-  human-play claim is inferred from these checks.
+Pending implementation, local/hosted verification, independent review, and
+merge. The optional reference-capture preflight remains `NOT_RUN` unless its
+local manifest becomes available.
 
 ## 3. Enduring invariants
 
