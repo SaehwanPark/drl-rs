@@ -166,8 +166,10 @@ pub struct ReplayMetadata {
   /// Engine crate version string.
   pub engine_version: String,
   /// Gameplay semantics version required to interpret the command history.
-  /// Version 141 includes Laser Rifle's typed Plasma classification on direct
-  /// target damage; version 140 includes Nuclear Plasma Rifle's typed Plasma
+  /// Version 142 includes Blaster's typed Plasma classification on direct
+  /// target damage; version 141 includes Laser Rifle's typed Plasma
+  /// classification on direct target damage; version 140 includes Nuclear
+  /// Plasma Rifle's typed Plasma
   /// classification on direct target damage; version 139 includes Plasma
   /// Rifle's typed Plasma classification on direct target damage; version 138
   /// includes BFG 10K's typed Plasma classification on direct volley target

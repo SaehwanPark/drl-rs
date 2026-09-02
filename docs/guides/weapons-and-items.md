@@ -52,7 +52,7 @@ description: "Comprehensive armory encyclopedia: ballistic firearms, energy weap
 | Armor | Protection | Special Mechanics & Behavior |
 |---|---|---|
 | **Green Armor** | 30% Damage Reduction | Standard combat security vest. Durable and lightweight. |
-| **Blue Armor** | 2 flat protection; 20% Plasma resistance on typed Laser Rifle/Plasma Rifle/Nuclear Plasma Rifle/BFG 10K/Standard/Nuclear BFG direct/fanout and Null Pointer fanouts | Heavy kevlar and ceramic plate suit. Broader resistance aggregation remains open. |
+| **Blue Armor** | 2 flat protection; 20% Plasma resistance on typed Blaster/Laser Rifle/Plasma Rifle/Nuclear Plasma Rifle/BFG 10K/Standard/Nuclear BFG direct/fanout and Null Pointer fanouts | Heavy kevlar and ceramic plate suit. Broader resistance aggregation remains open. |
 | **Red Armor** | 4 flat protection; 25% Fire resistance on typed Rocket direct/splash and Anti-Freak fanouts | High-grade armor that reduces typed Fire damage before flat protection. Broader resistance aggregation remains open. |
 | **Lava Armor** | 75% Thermal Reduction | Self-repairing suit. Standing in lava tiles recharges durability over time. |
 | **Malek's Armor** | 60% All-round Reduction | Ancient demonic power armor. Slowly regenerates durability over time. |
