@@ -4,7 +4,7 @@ Last reviewed: 2026-09-02
 Current project version: `0.2.327`
 Audited starting checkpoint: `main` at
 `d8bf55c` (merged PR #442; replay verification documentation reconciled)
-Delivery checkpoint: **pending**
+Delivery checkpoint: implementation head `16a9836` (PR/merge pending)
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -24,7 +24,8 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 
 ## 2. Active implementation slice: M9 — Rocket Launcher direct-hit actor splash
 
-Slice status: **in progress** from the audited starting checkpoint above.
+Slice status: **verified on branch; PR/merge pending** from the audited starting
+checkpoint above.
 
 ### 2.1 Objective
 
@@ -96,18 +97,18 @@ At audited starting revision `d8bf55c` (version `0.2.326`):
 
 ### 2.5 Acceptance criteria
 
-- [ ] `rocket_launcher.rs` exposes tested radius-4 geometry, `6d6` bounds,
+- [x] `rocket_launcher.rs` exposes tested radius-4 geometry, `6d6` bounds,
   strict distance-falloff math, and integer `damage / 8` knockback.
-- [ ] A successful direct Rocket Launcher hit emits the typed schedule event,
+- [x] A successful direct Rocket Launcher hit emits the typed schedule event,
   consumes the documented per-cell RNG sequence, fans out to each actor once,
   and preserves death/drop/game-over ordering.
-- [ ] Empty-clip, blocked-target, and impossible death-drop rejections are
+- [x] Empty-clip, blocked-target, and impossible death-drop rejections are
   state-identical, including RNG; the fanout does not mutate ground items or
   terrain.
-- [ ] Core, replay, scenario, MCP JSON, audio/metrics, render, and
+- [x] Core, replay, scenario, MCP JSON, audio/metrics, render, and
   BrowserSession parity tests pass, including a replay double-run and a
   browser vertical encounter.
-- [ ] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
+- [x] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
   and an attributable independent determinism review pass on the final
   implementation commit.
 
@@ -127,8 +128,12 @@ This slice proves the current-Rust actor-only Rocket Launcher explosion branch
 and its replay/boundary projections. It does not prove projectile routing,
 terrain/content behavior, delayed timing, controlled legacy runtime,
 audiovisual parity, balance, or human play; those surfaces remain open or
-`NOT_RUN` in the roadmap. The final implementation and independent review
-receipt will be recorded here after verification.
+`NOT_RUN` in the roadmap. The verified branch head is `16a9836`: implementation
+commit `5dfb210` adds the Rocket Launcher behavior and commit `16a9836` updates
+the semantics-bound browser fixtures. The independent read-only determinism
+review covers the exact branch head and returned
+`drl-determinism-review: PASS`. Local repository and web checks pass; hosted PR
+checks and merge status remain pending until handoff.
 
 ## 3. Enduring invariants
 
