@@ -6220,7 +6220,7 @@ fn rocket_launcher_vertical_scenario_preserves_one_shot_reload_and_replay() {
   assert_eq!(metrics.shots_fired, 1);
   assert_eq!(metrics.shots_hit, 1);
   assert_eq!(metrics.damage_dealt, 29);
-  assert_eq!(game.world().get_actor(target_id).unwrap().hp().current, 471);
+  assert_eq!(game.world().get_actor(target_id).unwrap().hp().current, 445);
   let weapon = game
     .world()
     .player()

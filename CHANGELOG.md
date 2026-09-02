@@ -3,6 +3,18 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.327]
+
+- Delivered the bounded Rocket Launcher direct-hit explosion branch. A
+  successful one-projectile hit emits a typed delay-40/radius-4/knockback-8
+  schedule event and resolves a deterministic actor-only fanout with one `6d6`
+  Fire roll per clear cell, legacy distance falloff, de-duplicated actors,
+  radial `damage / 8` knockback, and normal death/drop ordering. Rejected
+  commands retain exact world/turn/RNG identity, while ground items, terrain,
+  delayed core queues, rocket-jump, projectile routing, and audiovisual parity
+  remain open. Gameplay semantics advance from `128` to `129`; core, replay,
+  scenario, MCP, audio/metrics, render, browser, and workspace tests pass.
+
 ## [0.2.326]
 
 - Added the native `drl-rs replay verify [path|-]` command. It reads the

@@ -43,6 +43,7 @@ pub mod null_pointer;
 pub mod pump_action;
 pub mod replay;
 pub mod rng;
+pub mod rocket_launcher;
 pub mod scenario;
 pub mod scheduler;
 pub mod special_level_definition;
@@ -206,6 +207,12 @@ pub use nuke::{NukeError, NukeState};
 pub use pump_action::PUMP_ACTION_COST;
 pub use replay::ReplayEngine;
 pub use rng::GameRng;
+pub use rocket_launcher::{
+  ROCKET_LAUNCHER_EXPLOSION_DAMAGE_DICE, ROCKET_LAUNCHER_EXPLOSION_DAMAGE_DIE_SIDES,
+  ROCKET_LAUNCHER_EXPLOSION_DELAY, ROCKET_LAUNCHER_EXPLOSION_KNOCKBACK,
+  ROCKET_LAUNCHER_EXPLOSION_RADIUS, apply_distance_falloff, radius_four_blast_positions,
+  roll_explosion_damage as roll_rocket_launcher_explosion_damage,
+};
 pub use scenario::{Scenario, ScenarioRunner};
 pub use scheduler::{ACTION_THRESHOLD, Scheduler};
 pub use special_level_definition::{

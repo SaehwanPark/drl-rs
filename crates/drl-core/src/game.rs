@@ -23,8 +23,7 @@ use crate::behavior::{
   WeaponRechargeOutcome,
 };
 use crate::bfg10k::{
-  BFG10K_GROUND_ITEM_DESTRUCTION_THRESHOLD, knockback_distance as bfg10k_knockback_distance,
-  radius_two_blast_positions, roll_explosion_damage,
+  BFG10K_GROUND_ITEM_DESTRUCTION_THRESHOLD, radius_two_blast_positions, roll_explosion_damage,
 };
 use crate::bfg9000::{
   BFG9000_GROUND_ITEM_DESTRUCTION_THRESHOLD, radius_eight_blast_positions,
@@ -56,6 +55,11 @@ use crate::null_pointer::{
 };
 use crate::pump_action::{PUMP_ACTION_COST, ReloadTransition};
 use crate::rng::GameRng;
+use crate::rocket_launcher::{
+  ROCKET_LAUNCHER_EXPLOSION_DELAY, ROCKET_LAUNCHER_EXPLOSION_KNOCKBACK,
+  ROCKET_LAUNCHER_EXPLOSION_RADIUS, radius_four_blast_positions,
+  roll_explosion_damage as roll_rocket_launcher_explosion_damage,
+};
 use crate::scheduler::{ACTION_THRESHOLD, Scheduler};
 use crate::subtle_knife::{SUBTLE_KNIFE_TARGET_DAMAGE, SubtleKnifeError};
 use crate::targeting::TargetingSystem;
@@ -83,12 +87,16 @@ pub struct Game {
 struct ActorSplashPolicy {
   roll_damage: fn(&mut GameRng) -> u32,
   source_self_safe: bool,
+  damage_type: DamageType,
+  knockback: u32,
+  distance_falloff: bool,
   ground_item: GroundItemSplashPolicy,
 }
 
 /// Typed ground-item policy applied after each blast cell's actor processing.
 #[derive(Clone, Copy)]
 enum GroundItemSplashPolicy {
+  None,
   LooseAmmo { threshold: u32 },
   Any { threshold: u32 },
 }
@@ -1738,6 +1746,7 @@ impl Game {
       weapon_is_bfg9000,
       weapon_is_nuclear_bfg9000,
       weapon_is_anti_freak_jackal,
+      weapon_is_rocket_launcher,
     ) = {
       let player = self
         .state
@@ -1810,6 +1819,8 @@ impl Game {
         weapon.archetype() == drl_protocol::ItemArchetype::NuclearBfg9000;
       let weapon_is_anti_freak_jackal =
         weapon.archetype() == drl_protocol::ItemArchetype::AntiFreakJackal;
+      let weapon_is_rocket_launcher =
+        weapon.archetype() == drl_protocol::ItemArchetype::RocketLauncher;
       (
         props.fire_cost,
         shot_count,
@@ -1820,6 +1831,7 @@ impl Game {
         weapon_is_bfg9000,
         weapon_is_nuclear_bfg9000,
         weapon_is_anti_freak_jackal,
+        weapon_is_rocket_launcher,
       )
     };
 
@@ -1838,6 +1850,7 @@ impl Game {
       || weapon_is_bfg10k
       || weapon_is_bfg9000
       || weapon_is_nuclear_bfg9000
+      || weapon_is_rocket_launcher
     {
       let splash_positions = if weapon_is_bfg10k {
         radius_two_blast_positions(self.state.world.map(), target_pos)
@@ -1845,6 +1858,8 @@ impl Game {
         radius_eight_blast_positions(self.state.world.map(), target_pos)
       } else if weapon_is_nuclear_bfg9000 {
         nuclear_bfg9000_radius_eight_blast_positions(self.state.world.map(), target_pos)
+      } else if weapon_is_rocket_launcher {
+        radius_four_blast_positions(self.state.world.map(), target_pos)
       } else {
         radius_one_blast_positions(self.state.world.map(), target_pos)
       };
@@ -2032,6 +2047,15 @@ impl Game {
             knockback: ANTI_FREAK_JACKAL_EXPLOSION_KNOCKBACK,
           });
           self.execute_anti_freak_splash(target_pos, events)?;
+        } else if weapon_is_rocket_launcher {
+          events.push(GameEvent::RocketLauncherExplosionScheduled {
+            entity_id: player_id,
+            target_id: target_monster_id,
+            delay: ROCKET_LAUNCHER_EXPLOSION_DELAY,
+            radius: ROCKET_LAUNCHER_EXPLOSION_RADIUS,
+            knockback: ROCKET_LAUNCHER_EXPLOSION_KNOCKBACK,
+          });
+          self.execute_rocket_launcher_splash(player_id, target_pos, events)?;
         }
 
         if actual_lethal {
@@ -2312,6 +2336,31 @@ impl Game {
     Ok(())
   }
 
+  /// Resolves the bounded Rocket Launcher radius-4 actor splash immediately
+  /// after its schedule event. The legacy delay remains presentation metadata;
+  /// terrain, item, and pending-explosion state are separate work.
+  fn execute_rocket_launcher_splash(
+    &mut self,
+    source_id: drl_protocol::EntityId,
+    center: Position,
+    events: &mut Vec<GameEvent>,
+  ) -> Result<(), CommandError> {
+    self.execute_actor_splash(
+      source_id,
+      center,
+      radius_four_blast_positions(self.state.world.map(), center),
+      ActorSplashPolicy {
+        roll_damage: roll_rocket_launcher_explosion_damage,
+        source_self_safe: false,
+        damage_type: DamageType::Fire,
+        knockback: ROCKET_LAUNCHER_EXPLOSION_KNOCKBACK,
+        distance_falloff: true,
+        ground_item: GroundItemSplashPolicy::None,
+      },
+      events,
+    )
+  }
+
   /// Resolves the bounded BFG 10K radius-2 actor splash immediately after its
   /// schedule event. The legacy delay remains presentation metadata here;
   /// terrain/content mutation and pending explosion state are separate work.
@@ -2328,6 +2377,9 @@ impl Game {
       ActorSplashPolicy {
         roll_damage: roll_explosion_damage,
         source_self_safe: false,
+        damage_type: DamageType::Plasma,
+        knockback: BFG10K_EXPLOSION_KNOCKBACK,
+        distance_falloff: false,
         ground_item: GroundItemSplashPolicy::LooseAmmo {
           threshold: BFG10K_GROUND_ITEM_DESTRUCTION_THRESHOLD,
         },
@@ -2350,6 +2402,9 @@ impl Game {
       ActorSplashPolicy {
         roll_damage: roll_bfg9000_explosion_damage,
         source_self_safe: true,
+        damage_type: DamageType::Plasma,
+        knockback: BFG9000_EXPLOSION_KNOCKBACK,
+        distance_falloff: false,
         ground_item: GroundItemSplashPolicy::Any {
           threshold: BFG9000_GROUND_ITEM_DESTRUCTION_THRESHOLD,
         },
@@ -2372,6 +2427,9 @@ impl Game {
       ActorSplashPolicy {
         roll_damage: roll_nuclear_bfg9000_explosion_damage,
         source_self_safe: true,
+        damage_type: DamageType::Plasma,
+        knockback: NUCLEAR_BFG9000_EXPLOSION_KNOCKBACK,
+        distance_falloff: false,
         ground_item: GroundItemSplashPolicy::Any {
           threshold: NUCLEAR_BFG9000_GROUND_ITEM_DESTRUCTION_THRESHOLD,
         },
@@ -2391,7 +2449,13 @@ impl Game {
   ) -> Result<(), CommandError> {
     let mut processed_actors = BTreeSet::new();
     for blast_position in blast_positions {
-      let damage = (policy.roll_damage)(&mut self.state.rng);
+      let rolled_damage = (policy.roll_damage)(&mut self.state.rng);
+      let distance = center.distance_chebyshev(blast_position);
+      let damage = if policy.distance_falloff {
+        crate::rocket_launcher::apply_distance_falloff(rolled_damage, distance)
+      } else {
+        rolled_damage
+      };
       let target_id = self
         .state
         .world
@@ -2409,7 +2473,7 @@ impl Game {
           .get_actor(target_id)
           .ok_or(CommandError::EntityNotFound(target_id))?
           .position();
-        let knockback = bfg10k_knockback_distance(damage, BFG10K_EXPLOSION_KNOCKBACK);
+        let knockback = damage / policy.knockback.max(1);
         if target_position == center {
           self.apply_knockback(source_id, target_id, knockback, events)?;
         } else if let Some(direction) = splash_knockback_direction(center, target_position) {
@@ -2431,13 +2495,14 @@ impl Game {
           amount: taken,
           remaining_hp: remaining,
           source: DamageSource::Environment,
-          damage_type: Some(DamageType::Plasma),
+          damage_type: Some(policy.damage_type),
         });
 
         lethal_target = lethal.then_some((target_id, death_cause));
       }
 
       let destroyed_item = match policy.ground_item {
+        GroundItemSplashPolicy::None => None,
         GroundItemSplashPolicy::LooseAmmo { threshold } if damage > threshold => {
           self.state.world.destroy_ground_ammo_at(blast_position)
         }

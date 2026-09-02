@@ -2715,7 +2715,7 @@ mod tests {
     let token = session.snapshot_token().expect("snapshot encoding");
     assert_eq!(
       token,
-      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:128:1:2:drl-rs-ruleset-v1:4:mr;mr;mr;p"
+      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:129:1:2:drl-rs-ruleset-v1:4:mr;mr;mr;p"
     );
 
     let mut restored = BrowserSession::new().expect("fixed session");
@@ -2731,7 +2731,7 @@ mod tests {
     let token = session.snapshot_token().expect("snapshot encoding");
     assert_eq!(
       token,
-      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:128:1:2:drl-rs-ruleset-v1:0:"
+      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:129:1:2:drl-rs-ruleset-v1:0:"
     );
     let decoded = persistence::decode_snapshot_with_format(&token).expect("snapshot decoding");
     assert_eq!(decoded.format, persistence::SnapshotFormat::V3);
@@ -2756,11 +2756,11 @@ mod tests {
   fn snapshot_rejects_corruption_and_unknown_versions() {
     let mut session = BrowserSession::new().expect("fixed session");
     assert_eq!(
-      session.restore_snapshot("DRL-RUST-BROWSER-SAVE/4:fixed-m4-v1:128:1:2:drl-rs-ruleset-v1:0:"),
+      session.restore_snapshot("DRL-RUST-BROWSER-SAVE/4:fixed-m4-v1:129:1:2:drl-rs-ruleset-v1:0:"),
       Err(SnapshotError::UnsupportedVersion("4".to_string()))
     );
     assert_eq!(
-      session.restore_snapshot("DRL-RUST-BROWSER-SAVE/3:other:128:1:2:drl-rs-ruleset-v1:1:w"),
+      session.restore_snapshot("DRL-RUST-BROWSER-SAVE/3:other:129:1:2:drl-rs-ruleset-v1:1:w"),
       Err(SnapshotError::UnsupportedContent("other".to_string()))
     );
     assert_eq!(
@@ -2801,21 +2801,21 @@ mod tests {
         },
       ),
       (
-        "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:128:0:2:drl-rs-ruleset-v1:0:",
+        "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:129:0:2:drl-rs-ruleset-v1:0:",
         SnapshotError::UnsupportedRngSamplingSemantics {
           found: 0,
           expected: drl_protocol::CURRENT_RNG_SAMPLING_SEMANTICS_VERSION,
         },
       ),
       (
-        "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:128:1:1:drl-rs-ruleset-v1:0:",
+        "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:129:1:1:drl-rs-ruleset-v1:0:",
         SnapshotError::UnsupportedGeneratorSemantics {
           found: 1,
           expected: drl_protocol::CURRENT_GENERATOR_SEMANTICS_VERSION,
         },
       ),
       (
-        "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:128:1:2:legacy-ruleset:0:",
+        "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:129:1:2:legacy-ruleset:0:",
         SnapshotError::UnsupportedRuleset {
           found: "legacy-ruleset".to_string(),
           expected: drl_protocol::CURRENT_RULESET_ID.to_string(),
@@ -2837,11 +2837,11 @@ mod tests {
   fn snapshot_rejects_noncanonical_v3_numbers_and_count_mismatches() {
     let mut session = BrowserSession::new().expect("fixed session");
     for token in [
-      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:0128:1:2:drl-rs-ruleset-v1:0:",
-      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:+128:1:2:drl-rs-ruleset-v1:0:",
-      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:128:1:2:drl-rs-ruleset-v1:01:w",
-      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:128:1:2:drl-rs-ruleset-v1:2:w",
-      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:128:1:2:drl-rs-ruleset-v1:1:é",
+      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:0129:1:2:drl-rs-ruleset-v1:0:",
+      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:+129:1:2:drl-rs-ruleset-v1:0:",
+      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:129:1:2:drl-rs-ruleset-v1:01:w",
+      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:129:1:2:drl-rs-ruleset-v1:2:w",
+      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:129:1:2:drl-rs-ruleset-v1:1:é",
     ] {
       assert_eq!(
         session.restore_snapshot(token),
@@ -2872,7 +2872,7 @@ mod tests {
       .submit(Command::Move(Direction::East))
       .expect("legal command");
     let before = session.clone();
-    let token = "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:128:1:2:drl-rs-ruleset-v1:2:mr;x";
+    let token = "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:129:1:2:drl-rs-ruleset-v1:2:mr;x";
 
     assert_eq!(
       session.restore_snapshot(token),
@@ -12085,7 +12085,28 @@ mod tests {
       start_tick: 0,
       duration_ticks: 3,
     };
-    let expected_effects = [vec![ranged_attack, hit], vec![reload]];
+    let expected_effects = [
+      vec![
+        ranged_attack,
+        hit,
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::Knockback,
+          start_tick: 3,
+          duration_ticks: 2,
+        },
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::Hit,
+          start_tick: 5,
+          duration_ticks: 1,
+        },
+        drl_render::EffectSpan {
+          effect: drl_render::PresentationEffect::Hit,
+          start_tick: 6,
+          duration_ticks: 1,
+        },
+      ],
+      vec![reload],
+    ];
     let mut direct = initial.clone();
     let mut browser = BrowserSession::from_game(initial);
     let mut all_events = Vec::new();
@@ -12112,10 +12133,10 @@ mod tests {
       all_events.extend(expected_events);
     }
 
-    assert_eq!(direct.world().player().unwrap().hp().current, 50);
+    assert_eq!(direct.world().player().unwrap().hp().current, 34);
     assert_eq!(
       direct.world().get_actor(target_id).unwrap().hp().current,
-      471
+      445
     );
     let weapon = direct
       .world()
@@ -14705,7 +14726,7 @@ mod wasm_tests {
       .expect("restore V3 snapshot");
     assert_eq!(restored, expected);
 
-    let rejected_token = token.replace(":128:", ":127:");
+    let rejected_token = token.replace(":129:", ":127:");
     storage
       .set_item(crate::wasm::SAVE_STORAGE_KEY, &rejected_token)
       .expect("write rejected active save");

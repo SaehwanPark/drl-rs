@@ -1377,6 +1377,7 @@ pub fn effects_for_events(events: &[GameEvent]) -> Vec<PresentationEffect> {
       GameEvent::NullPointerHit { .. }
       | GameEvent::NullPointerExplosionScheduled { .. }
       | GameEvent::AntiFreakJackalExplosionScheduled { .. }
+      | GameEvent::RocketLauncherExplosionScheduled { .. }
       | GameEvent::Bfg10kExplosionScheduled { .. } => None,
       GameEvent::Bfg9000ExplosionScheduled { .. } => None,
       GameEvent::NuclearBfg9000ExplosionScheduled { .. } => None,
@@ -1484,6 +1485,7 @@ fn event_entity_ids(event: &GameEvent) -> [Option<EntityId>; 2] {
     | GameEvent::NullPointerHit { entity_id, .. }
     | GameEvent::NullPointerExplosionScheduled { entity_id, .. }
     | GameEvent::AntiFreakJackalExplosionScheduled { entity_id, .. }
+    | GameEvent::RocketLauncherExplosionScheduled { entity_id, .. }
     | GameEvent::Bfg10kExplosionScheduled { entity_id, .. }
     | GameEvent::Bfg9000ExplosionScheduled { entity_id, .. }
     | GameEvent::NuclearBfg9000ExplosionScheduled { entity_id, .. }

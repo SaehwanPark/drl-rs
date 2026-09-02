@@ -1,11 +1,10 @@
 # Specification
 
-Last reviewed: 2026-08-31
-Current project version: `0.2.326`
+Last reviewed: 2026-09-02
+Current project version: `0.2.327`
 Audited starting checkpoint: `main` at
-`7735d47` (merged PR #440; M13 JSON compatibility reconciled)
-Delivery checkpoint: `main` at
-`fb22886` (merged PR #441; replay-file verification delivered)
+`d8bf55c` (merged PR #442; replay verification documentation reconciled)
+Delivery checkpoint: implementation head `16a9836` (PR/merge pending)
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -23,99 +22,118 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 - `INCONCLUSIVE` — **Evidence unresolved**: available evidence cannot support
   the claim.
 
-## 2. Active implementation slice: M13/M6 — replay-file verification CLI
+## 2. Active implementation slice: M9 — Rocket Launcher direct-hit actor splash
 
-Slice status: **delivered and verified** at the delivery checkpoint above.
+Slice status: **verified on branch; PR/merge pending** from the audited starting
+checkpoint above.
 
 ### 2.1 Objective
 
-Add a native `drl-rs replay verify [path|-]` command that reads the canonical
-`drl-rs-replay-v2` JSON envelope from a file or standard input, decodes it
-through the public MCP replay decoder, and verifies the replay twice with
-`ReplayEngine::verify_determinism`.
+Complete the ordinary Rocket Launcher direct-hit branch with the observed
+legacy explosion payload: one successful hit schedules a typed delay-40,
+radius-4, knockback-8 explosion and immediately resolves a bounded actor-only
+fanout. The fanout uses one deterministic `6d6` Fire roll per clear blast cell,
+applies the legacy distance falloff, de-duplicates actors, applies radial
+integer `damage / 8` knockback before damage, and preserves normal death/drop
+ordering.
 
-This is a bounded replay-file IO slice. It changes no replay schema, game
-rules, RNG sampling, content catalog, MCP transport, browser behavior, or
-presentation boundary.
+This is a bounded vertical fidelity slice. The delay remains presentation
+metadata; no pending effect queue is introduced. Terrain/cell mutation,
+ground-item destruction, splash immunity, wall-impact projectile routing,
+chain explosions, rocket-jump alternate fire, and audiovisual parity remain
+separate work.
 
 ### 2.2 Audited starting point
 
-At audited starting revision `7735d47` (version `0.2.325`):
+At audited starting revision `d8bf55c` (version `0.2.326`):
 
-- `drl-mcp::replay_json::from_json_value` already decodes and safety-checks the
-  exact V2 envelope, while `ReplayEngine::verify_determinism` already performs
-  two independent current-engine executions.
-- `drl-app` supported the demo, cohort, and MCP dispatch paths but had no
-  filesystem or stdin replay verification command.
-- Replay-file migration, cross-version interchange, and transport reconnect
-  remained explicitly open.
+- `ROCKET_LAUNCHER_BEHAVIOR` records one Rocket projectile and one Rocket ammo
+  unit, while generic ranged execution owns legality, direct-hit damage, and
+  clip accounting.
+- `GameEvent` already carries typed delayed-explosion schedule variants and
+  the core already has deterministic radius geometry, actor de-duplication,
+  knockback, death-drop, and replay/browser/MCP projections for related
+  weapons.
+- The legacy item record (`items.lua:657-688`) supplies `6d6`, Fire, radius 4,
+  and delay 40; the explosion loop (`dflevel.pas:991-1095`) supplies one roll
+  per clear cell, distance falloff, actor de-duplication, and default
+  knockback 8. The current Rust Rocket Launcher only performs direct damage.
 
 ### 2.3 Scope and ownership
 
-- **Roadmap:** M13 tooling and M6 replay interface completion.
-- **Primary owner:** `crates/drl-app/src/replay_cli.rs` owns argument parsing,
-  file/stdin reads, diagnostics, and process-facing errors.
-- **Decoder/execution:** `drl_mcp::replay_json::from_json_value` and
-  `drl_core::ReplayEngine::verify_determinism` remain the sole semantic owners.
-- **Resource bounds:** the CLI rejects UTF-8 payloads over 8 MiB before JSON
-  parsing and limits JSON nesting to 64 levels, keeping untrusted file/stdin
-  input bounded before semantic replay limits apply.
-- **Project version:** implementation advances `VERSION` from `0.2.325` to
-  `0.2.326`.
-- **Gameplay/replay semantics:** no schema, command, RNG, generator, ruleset,
-  or content identity changes.
+- **Roadmap:** M9 vertical canonical-fidelity completion for the Rocket
+  Launcher ordinary-fire explosion branch.
+- **Primary owners:** `crates/drl-core/src/rocket_launcher.rs` owns the typed
+  geometry, `6d6` roll, falloff, and knockback constants; `Game` owns the
+  transactional fanout and event ordering; boundary crates only project the
+  new schedule event.
+- **Content registration:** the existing Rocket Launcher catalog entry and
+  behavior profile remain the single source for item identity, projectile
+  count, and ammo cost; no duplicate weapon table is introduced.
+- **Project version:** implementation advances `VERSION` from `0.2.326` to
+  `0.2.327`.
+- **Replay/RNG:** gameplay semantics advance from `128` to `129`; RNG sampling
+  remains version `1`, generator semantics remain version `2`, and the ruleset
+  identity remains `drl-rs-ruleset-v1`. Accepted hits consume one ordered roll
+  per eligible blast cell; rejected commands consume no RNG and preserve the
+  exact `Game` snapshot.
+- **Protocol/boundaries:** add one typed
+  `RocketLauncherExplosionScheduled` event and update metrics, audio, render,
+  MCP JSON, and browser projections without moving gameplay policy out of the
+  core.
 
 ### 2.4 Review and branch contract
 
-- The only accepted input format is the canonical V2 JSON envelope; unknown
-  JSON properties retain the decoder's existing tolerance, while the CLI
-  requires the exact `drl-rs-replay-v2` format identifier.
-- A path names a UTF-8 file; `-` reads all UTF-8 input from stdin. Missing,
-  unreadable, malformed, unsafe, incompatible, or execution-invalid input
-  fails closed with a deterministic diagnostic and non-zero status.
-- Input is capped at 8 MiB and JSON nesting at 64 levels before the decoder's
-  replay container bounds are evaluated.
-- Successful verification emits byte-identical output across repeated runs and
-  across file/stdin sources.
-- No filesystem, process, or stream concerns enter `drl-core`.
+- The schedule event follows the direct `DamageApplied` event for each
+  successful direct projectile and precedes all fanout events. Every eligible
+  actor is processed once in center-then-clockwise-ring order; the active
+  player is not self-safe in this bounded policy.
+- The explosion considers only in-bounds cells with a clear ray from the
+  impact center. It does not destroy ground items or mutate terrain/content.
+- Before clip mutation or combat/splash RNG, validate every possible
+  death-drop destination in the radius-4 fanout. A late validation error
+  restores world, turn, and RNG through the existing core transaction guard.
+- The core remains independent of filesystem, browser, audio, and MCP IO.
 
 ### 2.5 Acceptance criteria
 
-- [x] `drl-rs replay verify [path|-]` accepts a valid canonical V2 replay from
-  both a file and stdin.
-- [x] Malformed JSON, unsafe dimensions/containers, and incompatible metadata
-  fail before replay execution with stable diagnostics.
-- [x] Repeated verification and file/stdin verification produce identical
-  success output; failures return a non-zero process status.
-- [x] The CLI bounds raw UTF-8 input and JSON nesting before semantic decode,
-  and rejects the decoder's legacy replay-format alias at this boundary.
-- [x] Focused CLI tests, formatting, clippy, repository gate, web contracts,
-  and version transition pass on the final revision.
-- [x] An attributable independent determinism-review receipt covers the exact
-  implementation commit `8ad2922a82a7edf4a12df359b48e9949ddd9bd18`; hosted
-  Repository/WASM checks pass for merged `fb2288644b4cabb7b28db15068801c9e79636f6e`.
-  The sole-maintainer Review policy failure is recorded truthfully with the
-  live documented `enforce_admins=false` exception.
+- [x] `rocket_launcher.rs` exposes tested radius-4 geometry, `6d6` bounds,
+  strict distance-falloff math, and integer `damage / 8` knockback.
+- [x] A successful direct Rocket Launcher hit emits the typed schedule event,
+  consumes the documented per-cell RNG sequence, fans out to each actor once,
+  and preserves death/drop/game-over ordering.
+- [x] Empty-clip, blocked-target, and impossible death-drop rejections are
+  state-identical, including RNG; the fanout does not mutate ground items or
+  terrain.
+- [x] Core, replay, scenario, MCP JSON, audio/metrics, render, and
+  BrowserSession parity tests pass, including a replay double-run and a
+  browser vertical encounter.
+- [x] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
+  and an attributable independent determinism review pass on the final
+  implementation commit.
 
 ### 2.6 Non-goals
 
-- No replay migration, legacy V1/V2 translation, network replay IO, or broad
-  external-client interchange claim.
-- No changes to gameplay semantics, replay metadata identities, JSON schema,
-  MCP lifecycle, browser persistence, or presentation.
-- No claim of browser, audiovisual, human, legacy-runtime, or cross-version
-  replay acceptance.
+- No rocket-jump command, homing/wall-impact projectile routing, delayed core
+  queue, `EFCHAIN`, terrain/content mutation, ground-item destruction, or
+  splash-immunity implementation.
+- No broad legacy explosion parity claim; the bounded actor-only policy is an
+  explicit Rust decision where unsupported projectile/cell state remains.
+- No claim of controlled legacy runtime, audiovisual, balance, or human-play
+  parity.
 
 ### 2.7 Evidence boundary
 
-The CLI proves current-Rust decoding and deterministic verification for a
-caller-supplied canonical V2 replay. It does not prove migration,
-cross-version compatibility, arbitrary external replay interchange, or
-browser, human, audiovisual, and legacy-runtime behavior; those surfaces
-remain open or `NOT_RUN` in the roadmap. The source implementation was
-independently reviewed at `8ad2922a82a7edf4a12df359b48e9949ddd9bd18`; the
-protected-path Review policy check failed closed for the sole maintainer and
-the merged PR used the documented live admin exception.
+This slice proves the current-Rust actor-only Rocket Launcher explosion branch
+and its replay/boundary projections. It does not prove projectile routing,
+terrain/content behavior, delayed timing, controlled legacy runtime,
+audiovisual parity, balance, or human play; those surfaces remain open or
+`NOT_RUN` in the roadmap. The verified branch head is `16a9836`: implementation
+commit `5dfb210` adds the Rocket Launcher behavior and commit `16a9836` updates
+the semantics-bound browser fixtures. The independent read-only determinism
+review covers the exact branch head and returned
+`drl-determinism-review: PASS`. Local repository and web checks pass; hosted PR
+checks and merge status remain pending until handoff.
 
 ## 3. Enduring invariants
 

@@ -22,6 +22,10 @@ use crate::null_pointer::{
   NULL_POINTER_MIN_SCORE_COUNT, NULL_POINTER_TARGET_SCORE_COST,
 };
 use crate::pump_action::PUMP_ACTION_COST;
+use crate::rocket_launcher::{
+  ROCKET_LAUNCHER_EXPLOSION_DELAY, ROCKET_LAUNCHER_EXPLOSION_KNOCKBACK,
+  ROCKET_LAUNCHER_EXPLOSION_RADIUS,
+};
 use crate::subtle_knife::{
   SUBTLE_KNIFE_HP_COST, SUBTLE_KNIFE_SCORE_COST, SUBTLE_KNIFE_TARGET_DAMAGE,
 };
@@ -1055,6 +1059,11 @@ const ROCKET_LAUNCHER_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
   BehaviorSpec::Cost(ResourceCost::Ammo {
     ammo_type: AmmoType::Rocket,
     amount: 1,
+  }),
+  BehaviorSpec::Hit(HitEffect::ScheduleExplosion {
+    delay: ROCKET_LAUNCHER_EXPLOSION_DELAY,
+    radius: ROCKET_LAUNCHER_EXPLOSION_RADIUS,
+    knockback: Some(ROCKET_LAUNCHER_EXPLOSION_KNOCKBACK),
   }),
 ];
 
@@ -2570,6 +2579,11 @@ mod tests {
         BehaviorSpec::Cost(ResourceCost::Ammo {
           ammo_type: AmmoType::Rocket,
           amount: 1,
+        }),
+        BehaviorSpec::Hit(HitEffect::ScheduleExplosion {
+          delay: ROCKET_LAUNCHER_EXPLOSION_DELAY,
+          radius: ROCKET_LAUNCHER_EXPLOSION_RADIUS,
+          knockback: Some(ROCKET_LAUNCHER_EXPLOSION_KNOCKBACK),
         }),
       ]
     );
