@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-09-02
-Current project version: `0.2.329`
+Current project version: `0.2.330`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.329)
+## 3. Current Progress Summary (`VERSION` 0.2.330)
 
 ### Delivered Foundations
 
@@ -1273,6 +1273,14 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
+- **Active slice — M9 Anti-Freak Jackal Fire mitigation (`0.2.330`):** The
+  temporary branch `codex/anti-freak-fire-resistance` routes the existing
+  radius-1 Anti-Freak explosion through typed Fire damage so Red Armor's
+  catalog-defined 25% resistance applies before flat protection. Same-seed
+  replay coverage preserves the established fanout, RNG order, knockback,
+  ground-ammo threshold, and event ordering; review, hosted checks, merge, and
+  post-merge reconciliation remain open.
+
 - **Latest Audited Checkpoint:** `main` merge commit `530794c` (PR #445,
   version `0.2.329`). The Red Armor implementation head
   `3370713fc66c1585fafa2a0d7fe8d6357902becf` and final docs-only branch head
@@ -2108,6 +2116,11 @@ scripting.
   emits `GroundItemDestroyed` after damage, and preserves direct-core, replay,
   generic MCP JSON, and BrowserSession parity; terrain/cell destruction,
   callback state/timing, runtime, and audiovisual parity remain open.
+- [ ] Anti-Freak Jackal's existing Fire splash is being routed through the
+  typed damage path so Red Armor's catalog-defined `25%` Fire resistance is
+  applied before flat protection; same-seed replay proof is present on the
+  active branch, while review, hosted checks, merge, and post-merge evidence
+  remain open.
 - [x] Malek's Armor has an immutable behavior profile for its
   delay-50/cadence-5/amount-1 durability-recharge fragment; the dedicated
   transition remains authoritative and armor resistance/degradation, runtime,

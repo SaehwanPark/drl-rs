@@ -29,6 +29,9 @@ description: "Comprehensive armory encyclopedia: ballistic firearms, energy weap
 ### 4. Heavy Rocket & Explosive Launchers
 - **Rocket Launcher**: High-explosive ordnance firing single rockets with a bounded radius-4 actor splash.
 - **Missile Launcher**: Multi-tube launcher holding up to 4 rockets for continuous area-of-effect suppression.
+- **Anti-Freak Jackal**: Unique aimed-fire sidearm whose successful hit resolves a
+  radius-1 `5d3` Fire splash; Red Armor's typed 25% Fire resistance applies
+  before its flat protection on blast damage.
 
 ---
 
@@ -49,7 +52,7 @@ description: "Comprehensive armory encyclopedia: ballistic firearms, energy weap
 |---|---|---|
 | **Green Armor** | 30% Damage Reduction | Standard combat security vest. Durable and lightweight. |
 | **Blue Armor** | 2 flat protection; 20% Plasma resistance on typed BFG fanouts | Heavy kevlar and ceramic plate suit. Broader resistance aggregation remains open. |
-| **Red Armor** | 4 flat protection; 25% Fire resistance on typed Rocket fanouts | High-grade armor that reduces Fire splash before flat protection. Broader resistance aggregation remains open. |
+| **Red Armor** | 4 flat protection; 25% Fire resistance on typed Rocket and Anti-Freak fanouts | High-grade armor that reduces Fire splash before flat protection. Broader resistance aggregation remains open. |
 | **Lava Armor** | 75% Thermal Reduction | Self-repairing suit. Standing in lava tiles recharges durability over time. |
 | **Malek's Armor** | 60% All-round Reduction | Ancient demonic power armor. Slowly regenerates durability over time. |
 | **Medical Powerarmor** | 50% All-round Reduction | Equipped with automated trauma systems that stabilize player HP when critical. |

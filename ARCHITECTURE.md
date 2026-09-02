@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-09-02
-Current project version: `0.2.329`
+Current project version: `0.2.330`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -256,8 +256,10 @@ Presentation Boundary
     its one-projectile/one-round ordinary fire, shared aimed-fire, and
     delay-40/radius-1/default-knockback-8 schedule fragments, while the
     dedicated `anti_freak` module owns deterministic center-plus-eight-neighbor
-    radius-1 geometry, 5d3 splash rolls, radial knockback policy, and bounded
-    ground-ammo destruction; Railgun's dedicated resolver owns clear-ray
+    radius-1 geometry, typed 5d3 Fire splash rolls, radial knockback policy, and
+    bounded ground-ammo destruction; the Anti-Freak actor route uses the shared
+    typed world/armor mitigation path so catalog-defined Red Armor Fire
+    resistance applies before flat protection; Railgun's dedicated resolver owns clear-ray
     traversal and shared-damage piercing;
     Nuclear Plasma's profile records its six-projectile ordinary-fire and
     six-cell cost fragments alongside its typed first-, second-, third-,
@@ -374,7 +376,8 @@ Presentation Boundary
     Mud movement uses the typed 1650-unit terrain cost, and Acid/Fire damage
     types are optionally projected. Blue Armor now carries its catalog-defined
     20% Plasma resistance and Red Armor its catalog-defined 25% Fire
-    resistance through typed actor-splash damage; the broader legacy
+    resistance through typed actor-splash damage, including Anti-Freak Fire;
+    the broader legacy
     resistance stack, running modifiers,
     prepared-slot consumption,
     map-cell explosions, and

@@ -2277,11 +2277,12 @@ impl Game {
         {
           self.apply_anti_freak_knockback(target_id, direction, knockback_distance, events)?;
         }
-        let (taken, lethal, death_cause) =
-          self
-            .state
-            .world
-            .apply_damage(target_id, damage, DamageSource::Environment)?;
+        let (taken, lethal, death_cause) = self.state.world.apply_damage_typed(
+          target_id,
+          damage,
+          DamageSource::Environment,
+          DamageType::Fire,
+        )?;
         let remaining = self
           .state
           .world

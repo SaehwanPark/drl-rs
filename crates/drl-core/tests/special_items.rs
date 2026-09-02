@@ -4,11 +4,12 @@ use drl_core::game::Game;
 use drl_core::grid::Tile;
 use drl_core::item::Item;
 use drl_core::replay::ReplayEngine;
+use drl_core::resistance::apply_damage_resistance;
 use drl_core::{radius_two_blast_positions, roll_explosion_damage};
 use drl_protocol::{
-  ActionCost, AttackOutcome, Command, CommandError, DamageSource, Direction, EquipmentSlot,
-  GameEvent, ItemId, ItemSpawnKind, ItemSpawnSpec, MonsterSpawnSpec, PlayerSpawnConfig, Position,
-  ReplayLog, TileKind,
+  ActionCost, AttackOutcome, Command, CommandError, DamageSource, DamageType, Direction,
+  EquipmentSlot, GameEvent, ItemId, ItemSpawnKind, ItemSpawnSpec, MonsterSpawnSpec,
+  PlayerSpawnConfig, Position, ReplayLog, TileKind,
 };
 
 fn equipped_nuclear_bfg(seed: u64) -> (Game, ItemId) {
@@ -7730,6 +7731,67 @@ fn anti_freak_jackal_splash_fanout_hits_only_radius_one_actors() {
       .any(|item| item.is_ammo())
   );
   assert!(ReplayEngine::verify_determinism(&replay).unwrap());
+}
+
+#[test]
+fn anti_freak_jackal_fire_splash_respects_red_armor_in_same_seed_replays() {
+  fn replay_with_armor(armor: Option<ItemSpawnKind>) -> ReplayLog {
+    let mut replay =
+      ReplayLog::new(0, 8, 6, Position::new(2, 2)).with_player_config(PlayerSpawnConfig {
+        hp: 500,
+        max_hp: 500,
+        speed: 100,
+        initial_items: vec![ItemSpawnKind::Ammo9mm(6)],
+        equipped_weapon: Some(ItemSpawnKind::AntiFreakJackal),
+        equipped_armor: armor,
+        equipped_armor_durability: None,
+      });
+    replay.record_monster(MonsterSpawnSpec::new(
+      Position::new(3, 2),
+      "Blast Target",
+      500,
+      0,
+      (0, 0),
+    ));
+    replay.record_command(Command::AttackRangedAimed(Position::new(3, 2)));
+    replay
+  }
+
+  let plain_replay = replay_with_armor(None);
+  let red_replay = replay_with_armor(Some(ItemSpawnKind::RedArmor));
+  let (plain_game, plain_events) = ReplayEngine::run(&plain_replay).unwrap();
+  let (red_game, red_events) = ReplayEngine::run(&red_replay).unwrap();
+  let plain_player_id = plain_game.world().player_id().unwrap();
+  let red_player_id = red_game.world().player_id().unwrap();
+  let splash_damage = |events: &[GameEvent], player_id| {
+    events
+      .iter()
+      .find_map(|event| match event {
+        GameEvent::DamageApplied {
+          target_id,
+          amount,
+          source: DamageSource::Environment,
+          damage_type: Some(DamageType::Fire),
+          ..
+        } if *target_id == player_id => Some(*amount),
+        _ => None,
+      })
+      .expect("player should receive typed Fire splash")
+  };
+  let plain_damage = splash_damage(&plain_events, plain_player_id);
+  let red_damage = splash_damage(&red_events, red_player_id);
+
+  assert_eq!(plain_player_id, red_player_id);
+  assert_eq!(
+    red_damage,
+    apply_damage_resistance(plain_damage, 25)
+      .saturating_sub(4)
+      .max(1)
+  );
+  assert!(red_damage < plain_damage);
+  assert_eq!(plain_game.rng(), red_game.rng());
+  assert!(ReplayEngine::verify_determinism(&plain_replay).unwrap());
+  assert!(ReplayEngine::verify_determinism(&red_replay).unwrap());
 }
 
 #[test]

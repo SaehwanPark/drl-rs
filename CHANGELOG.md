@@ -3,6 +3,17 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.330]
+
+- Routed the Anti-Freak Jackal's existing radius-1 explosion through typed Fire
+  mitigation. Red Armor's catalog-defined 25% resistance now applies before
+  flat protection on the blast, while the established `5d3` fanout, RNG order,
+  knockback, ground-ammo threshold, event ordering, and rejection boundaries
+  remain unchanged. Same-seed replay coverage proves the armored and unarmored
+  paths share the same raw roll sequence. Gameplay semantics advance from
+  `131` to `132`; broader legacy resistance aggregation and direct Fire
+  classification remain open.
+
 ## [0.2.329]
 
 - Added the bounded Red Armor Fire-resistance path. The catalog now records
