@@ -1,7 +1,7 @@
 //! Simulation world state managing map terrain, actor entities, and ground items.
 
 use drl_protocol::{
-  ActorView, CommandError, EntityId, EquipmentSlot, GroundItemView, ItemId, LevelId,
+  ActorView, CommandError, DamageType, EntityId, EquipmentSlot, GroundItemView, ItemId, LevelId,
   OmniscientObservation, PlayerObservation, Position, Turn,
 };
 use std::collections::{BTreeMap, BTreeSet};
@@ -477,6 +477,35 @@ impl World {
       .ok_or(CommandError::EntityNotFound(target_id))?;
 
     let (taken, lethal) = target.take_damage(amount);
+    let death_cause = if lethal {
+      match source {
+        drl_protocol::DamageSource::Actor(attacker_id) => {
+          Some(drl_protocol::DeathCause::MeleeAttack { attacker_id })
+        }
+        drl_protocol::DamageSource::Environment => Some(drl_protocol::DeathCause::Environment),
+      }
+    } else {
+      None
+    };
+
+    Ok((taken, lethal, death_cause))
+  }
+
+  /// Applies typed damage to an actor, including any catalog-defined armor
+  /// resistance before the existing flat protection rule.
+  pub fn apply_damage_typed(
+    &mut self,
+    target_id: EntityId,
+    amount: u32,
+    source: drl_protocol::DamageSource,
+    damage_type: DamageType,
+  ) -> Result<(u32, bool, Option<drl_protocol::DeathCause>), CommandError> {
+    let target = self
+      .actors
+      .get_mut(&target_id)
+      .ok_or(CommandError::EntityNotFound(target_id))?;
+
+    let (taken, lethal) = target.take_damage_typed(amount, damage_type);
     let death_cause = if lethal {
       match source {
         drl_protocol::DamageSource::Actor(attacker_id) => {

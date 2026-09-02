@@ -1,6 +1,6 @@
 use drl_protocol::{
-  ActionCost, ActorView, EntityId, HitPoints, ItemArchetype, ItemSpawnKind, MonsterKind, Position,
-  Speed,
+  ActionCost, ActorView, DamageType, EntityId, HitPoints, ItemArchetype, ItemSpawnKind,
+  MonsterKind, Position, Speed,
 };
 
 use crate::behavior::{LavaRechargeOutcome, MedicalRepairOutcome, WeaponRechargeOutcome};
@@ -235,8 +235,31 @@ impl Actor {
     if !self.is_alive {
       return (0, false);
     }
-    let armor_prot = self.armor_protection();
-    let net_amount = raw_amount.saturating_sub(armor_prot).max(1);
+    self.apply_protected_damage(raw_amount)
+  }
+
+  /// Applies typed damage after the armor's family-specific resistance and
+  /// existing flat protection. Resistance is intentionally read from the
+  /// equipped catalog-derived armor instance rather than from an archetype
+  /// match in combat code.
+  pub fn take_damage_typed(&mut self, raw_amount: u32, damage_type: DamageType) -> (u32, bool) {
+    if !self.is_alive {
+      return (0, false);
+    }
+    let resistance = self
+      .equipment
+      .armor()
+      .and_then(Item::armor_properties)
+      .map_or(0, |armor| armor.resistance(damage_type));
+    if raw_amount == 0 || resistance >= 100 {
+      return (0, false);
+    }
+    let resisted_amount = crate::resistance::apply_damage_resistance(raw_amount, resistance);
+    self.apply_protected_damage(resisted_amount)
+  }
+
+  fn apply_protected_damage(&mut self, raw_amount: u32) -> (u32, bool) {
+    let net_amount = raw_amount.saturating_sub(self.armor_protection()).max(1);
     let taken = self.hp.take_damage(net_amount);
     if let Some(armor) = self
       .equipment
@@ -634,6 +657,27 @@ mod tests {
     let (taken, _) = actor.take_damage(10);
     assert_eq!(taken, 5);
     assert_eq!(actor.hp().current, 45);
+  }
+
+  #[test]
+  fn blue_armor_mitigates_plasma_before_flat_protection() {
+    let mut actor = Actor::new(EntityId::new(1), Position::new(0, 0), "Marine", true);
+    actor
+      .equipment_mut()
+      .equip(EquipmentSlot::Armor, Item::blue_armor(ItemId::new(10)))
+      .unwrap();
+
+    let (plasma_taken, _) = actor.take_damage_typed(10, DamageType::Plasma);
+    assert_eq!(
+      plasma_taken, 6,
+      "20% resistance leaves 8, then armor blocks 2"
+    );
+
+    let (fire_taken, _) = actor.take_damage_typed(10, DamageType::Fire);
+    assert_eq!(
+      fire_taken, 8,
+      "Blue Armor does not resist Fire in this slice"
+    );
   }
 
   #[test]

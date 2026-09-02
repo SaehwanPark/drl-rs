@@ -193,9 +193,19 @@ fn validate_item_definition(definition: &ItemDefinition) -> Result<(), ContentVa
       protection,
       durability,
       max_durability,
+      plasma_resistance,
     } => {
       require_positive("item", key, "protection", protection)?;
       require_positive("item", key, "max_durability", max_durability)?;
+      if plasma_resistance > 100 {
+        return Err(ContentValidationError::InvalidRange {
+          table: "item",
+          key,
+          field: "plasma_resistance",
+          minimum: plasma_resistance,
+          maximum: 100,
+        });
+      }
       if durability > max_durability {
         return Err(ContentValidationError::InvalidRange {
           table: "item",

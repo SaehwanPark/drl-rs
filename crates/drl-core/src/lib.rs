@@ -42,6 +42,7 @@ pub mod nuke;
 pub mod null_pointer;
 pub mod pump_action;
 pub mod replay;
+pub mod resistance;
 pub mod rng;
 pub mod rocket_launcher;
 pub mod scenario;
@@ -206,6 +207,7 @@ pub use nuclear_overload::{
 pub use nuke::{NukeError, NukeState};
 pub use pump_action::PUMP_ACTION_COST;
 pub use replay::ReplayEngine;
+pub use resistance::apply_damage_resistance;
 pub use rng::GameRng;
 pub use rocket_launcher::{
   ROCKET_LAUNCHER_EXPLOSION_DAMAGE_DICE, ROCKET_LAUNCHER_EXPLOSION_DAMAGE_DIE_SIDES,

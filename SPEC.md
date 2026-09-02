@@ -1,10 +1,10 @@
 # Specification
 
 Last reviewed: 2026-09-02
-Current project version: `0.2.327`
+Current project version: `0.2.328`
 Audited starting checkpoint: `main` at
-`d8bf55c` (merged PR #442; replay verification documentation reconciled)
-Delivery checkpoint: `main` merge commit `41de1e9` (PR #443)
+`626e242` (PR #443 Rocket Launcher merge checkpoint reconciled)
+Delivery checkpoint: pending on the active implementation branch
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -22,120 +22,95 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 - `INCONCLUSIVE` — **Evidence unresolved**: available evidence cannot support
   the claim.
 
-## 2. Active implementation slice: M9 — Rocket Launcher direct-hit actor splash
+## 2. Active implementation slice: M9 — Blue Armor Plasma mitigation
 
-Slice status: **delivered and verified** from the audited starting checkpoint
-above.
+Slice status: **in progress** from the audited starting checkpoint above.
 
 ### 2.1 Objective
 
-Complete the ordinary Rocket Launcher direct-hit branch with the observed
-legacy explosion payload: one successful hit schedules a typed delay-40,
-radius-4, knockback-8 explosion and immediately resolves a bounded actor-only
-fanout. The fanout uses one deterministic `6d6` Fire roll per clear blast cell,
-applies the legacy distance falloff, de-duplicates actors, applies radial
-integer `damage / 8` knockback before damage, and preserves normal death/drop
-ordering.
+Apply the documented Blue Armor `20%` Plasma resistance to the existing typed
+actor-splash damage path. Resistance is applied before the existing flat armor
+protection and uses deterministic integer rounding with the legacy minimum-one
+rule. The item catalog remains the single source for the value; no broad legacy
+resistance stack is recreated.
 
-This is a bounded vertical fidelity slice. The delay remains presentation
-metadata; no pending effect queue is introduced. Terrain/cell mutation,
-ground-item destruction, splash immunity, wall-impact projectile routing,
-chain explosions, rocket-jump alternate fire, and audiovisual parity remain
-separate work.
+This is a bounded vertical fidelity slice. It covers typed actor damage already
+emitted by the BFG Plasma splash and leaves direct Plasma weapon
+classification, armor durability/body zones, equipment slots, hooks, difficulty
+modifiers, and the remaining Fire/Acid resistance families for separate work.
 
 ### 2.2 Audited starting point
 
-At audited starting revision `d8bf55c` (version `0.2.326`):
+At audited starting revision `626e242` (version `0.2.327`):
 
-- `ROCKET_LAUNCHER_BEHAVIOR` records one Rocket projectile and one Rocket ammo
-  unit, while generic ranged execution owns legality, direct-hit damage, and
-  clip accounting.
-- `GameEvent` already carries typed delayed-explosion schedule variants and
-  the core already has deterministic radius geometry, actor de-duplication,
-  knockback, death-drop, and replay/browser/MCP projections for related
-  weapons.
-- The legacy item record (`items.lua:657-688`) supplies `6d6`, Fire, radius 4,
-  and delay 40; the explosion loop (`dflevel.pas:991-1095`) supplies one roll
-  per clear cell, distance falloff, actor de-duplication, and default
-  knockback 8. The current Rust Rocket Launcher only performs direct damage.
+- Blue Armor is definition-covered with protection `2` and durability `100`,
+  but has no typed resistance field or runtime mitigation.
+- `GameEvent::DamageApplied` and the BFG actor-splash policy already carry
+  `DamageType::Plasma`; the world currently routes all damage through the
+  untyped flat-protection path.
+- The legacy item record (`items.lua:56-72`) gives Blue Armor `resist.plasma =
+  20`. Legacy `dfbeing.pas:2078-2182` applies typed percentage resistance
+  before armor protection and clamps nonzero damage to at least one point.
 
 ### 2.3 Scope and ownership
 
-- **Roadmap:** M9 vertical canonical-fidelity completion for the Rocket
-  Launcher ordinary-fire explosion branch.
-- **Primary owners:** `crates/drl-core/src/rocket_launcher.rs` owns the typed
-  geometry, `6d6` roll, falloff, and knockback constants; `Game` owns the
-  transactional fanout and event ordering; boundary crates only project the
-  new schedule event.
-- **Content registration:** the existing Rocket Launcher catalog entry and
-  behavior profile remain the single source for item identity, projectile
-  count, and ammo cost; no duplicate weapon table is introduced.
-- **Project version:** implementation advances `VERSION` from `0.2.326` to
-  `0.2.327`.
-- **Replay/RNG:** gameplay semantics advance from `128` to `129`; RNG sampling
-  remains version `1`, generator semantics remain version `2`, and the ruleset
-  identity remains `drl-rs-ruleset-v1`. Accepted hits consume one ordered roll
-  per eligible blast cell; rejected commands consume no RNG and preserve the
-  exact `Game` snapshot.
-- **Protocol/boundaries:** add one typed
-  `RocketLauncherExplosionScheduled` event and update metrics, audio, render,
-  MCP JSON, and browser projections without moving gameplay policy out of the
-  core.
+- **Roadmap:** M9 vertical canonical-fidelity completion for the Blue Armor
+  Plasma mitigation branch.
+- **Primary owners:** the armor content definition owns the resistance value;
+  `ArmorProperties` exposes typed lookup; `Actor` owns pure mitigation order;
+  `World` and `Game` route typed splash damage; boundary crates remain
+  projections only.
+- **Content registration:** every armor catalog entry carries one resistance
+  field, with Blue Armor set to `20` and other current armors explicitly `0`;
+  no archetype-name match or duplicate resistance table is introduced.
+- **Project version:** implementation advances `VERSION` from `0.2.327` to
+  `0.2.328`.
+- **Replay/RNG:** gameplay semantics advance from `129` to `130`; replay wire,
+  RNG sampling (`1`), generator semantics (`2`), and ruleset identity
+  (`drl-rs-ruleset-v1`) remain unchanged. Resistance consumes no RNG; accepted
+  and rejected command transaction guarantees remain unchanged.
+- **Protocol/boundaries:** no new wire event is needed. Existing typed
+  `DamageApplied` projections remain stable while the core applies the policy.
 
 ### 2.4 Review and branch contract
 
-- The schedule event follows the direct `DamageApplied` event for each
-  successful direct projectile and precedes all fanout events. Every eligible
-  actor is processed once in center-then-clockwise-ring order; the active
-  player is not self-safe in this bounded policy.
-- The explosion considers only in-bounds cells with a clear ray from the
-  impact center. It does not destroy ground items or mutate terrain/content.
-- Before clip mutation or combat/splash RNG, validate every possible
-  death-drop destination in the radius-4 fanout. A late validation error
-  restores world, turn, and RNG through the existing core transaction guard.
+- Percentage mitigation is computed with integer arithmetic, rounds to nearest
+  for positive values, and clamps a nonzero resisted amount to one before flat
+  protection. Zero damage remains zero.
+- The typed route is used by the existing BFG Plasma actor splash; Rocket Fire,
+  untyped direct hits, and environment damage preserve their prior behavior.
+- The existing core transaction guard still owns command rejection and exact
+  state/RNG restoration; this slice adds no new mutable queue or callback.
 - The core remains independent of filesystem, browser, audio, and MCP IO.
 
 ### 2.5 Acceptance criteria
 
-- [x] `rocket_launcher.rs` exposes tested radius-4 geometry, `6d6` bounds,
-  strict distance-falloff math, and integer `damage / 8` knockback.
-- [x] A successful direct Rocket Launcher hit emits the typed schedule event,
-  consumes the documented per-cell RNG sequence, fans out to each actor once,
-  and preserves death/drop/game-over ordering.
-- [x] Empty-clip, blocked-target, and impossible death-drop rejections are
-  state-identical, including RNG; the fanout does not mutate ground items or
-  terrain.
-- [x] Core, replay, scenario, MCP JSON, audio/metrics, render, and
-  BrowserSession parity tests pass, including a replay double-run and a
-  browser vertical encounter.
-- [x] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
+- [ ] Blue Armor’s catalog resistance is carried into `ArmorProperties` and a
+  pure typed mitigation helper covers rounding, minimum-one, and zero cases.
+- [ ] BFG Plasma actor splash routes through typed mitigation; Blue Armor
+  reduces the same deterministic hit while non-Plasma paths remain unchanged.
+- [ ] Existing rejection/rollback, replay, MCP, metrics/audio/render, and
+  BrowserSession parity tests pass without new wire or RNG behavior.
+- [ ] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
   and an attributable independent determinism review pass on the final
   implementation commit.
 
 ### 2.6 Non-goals
 
-- No rocket-jump command, homing/wall-impact projectile routing, delayed core
-  queue, `EFCHAIN`, terrain/content mutation, ground-item destruction, or
-  splash-immunity implementation.
-- No broad legacy explosion parity claim; the bounded actor-only policy is an
-  explicit Rust decision where unsupported projectile/cell state remains.
-- No claim of controlled legacy runtime, audiovisual, balance, or human-play
-  parity.
+- No full legacy resistance aggregation across weapons, body zones, hooks,
+  difficulty, or durability; no new equipment-slot model.
+- No direct Plasma weapon classification, Fire/Acid resistance migration,
+  terrain/content mutation, or audiovisual/balance work.
+- No claim of controlled legacy runtime, audiovisual, balance, browser, or
+  performance parity beyond the current-Rust tests and hosted browser gate.
 
 ### 2.7 Evidence boundary
 
-This slice proves the current-Rust actor-only Rocket Launcher explosion branch
-and its replay/boundary projections. It does not prove projectile routing,
-terrain/content behavior, delayed timing, controlled legacy runtime,
-audiovisual parity, balance, or human play; those surfaces remain open or
-`NOT_RUN` in the roadmap. The verified implementation commit is `5dfb210`, with
-semantics-bound browser fixture correction `16a9836`; PR #443 merged them as
-`41de1e9`. The independent read-only determinism review covers exact branch
-head `16a9836` and returned `drl-determinism-review: PASS`. Local repository and
-web checks pass, as do hosted `Repository checks` and `WASM browser checks`.
-Hosted `Review policy` failed closed because the sole maintainer cannot create a
-non-self approval; the documented live `enforce_admins=false` exception was
-used for the merge.
+This slice will prove the current-Rust Blue Armor mitigation branch for typed
+Plasma actor splash and its stable boundary projections. It will not prove
+legacy body-zone aggregation, direct Plasma classification, other resistance
+families, controlled legacy runtime, audiovisual parity, balance, or human
+play; those surfaces remain open or `NOT_RUN` in the roadmap.
 
 ## 3. Enduring invariants
 
