@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-09-02
-Current project version: `0.2.328`
+Current project version: `0.2.329`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -216,8 +216,9 @@ Presentation Boundary
     current range, accuracy, and timing are Rust policy.
     Blue and red armor preserve protection, descriptions, the shared sprite
     slot, and their presentation tints; Blue Armor's catalog-defined 20%
-    Plasma resistance is applied before flat protection on typed actor splash;
-    med-pack definitions preserve pinned
+    Plasma resistance and Red Armor's catalog-defined 25% Fire resistance are
+    applied before flat protection on their typed actor-splash paths; med-pack
+    definitions preserve pinned
     descriptions while fixed healing remains Rust policy. The explicit
     `behavior` and `subtle_knife` modules own typed callback-derived
     transitions: Medical Powerarmor keeps armor-owned timer state and emits
@@ -372,7 +373,8 @@ Presentation Boundary
     events; Acid/Lava/Water movement uses the typed 1250-unit terrain cost,
     Mud movement uses the typed 1650-unit terrain cost, and Acid/Fire damage
     types are optionally projected. Blue Armor now carries its catalog-defined
-    20% Plasma resistance through typed actor-splash damage; the broader legacy
+    20% Plasma resistance and Red Armor its catalog-defined 25% Fire
+    resistance through typed actor-splash damage; the broader legacy
     resistance stack, running modifiers,
     prepared-slot consumption,
     map-cell explosions, and

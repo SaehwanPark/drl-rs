@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-09-02
-Current project version: `0.2.328`
+Current project version: `0.2.329`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.328)
+## 3. Current Progress Summary (`VERSION` 0.2.329)
 
 ### Delivered Foundations
 
@@ -1258,6 +1258,11 @@ verification item uses explicit status semantics:
   explicit non-Plasma preservation. Broader legacy resistance aggregation,
   direct Plasma classification, and other resistance families remain out of
   scope.
+- **Active M9 Red Armor Fire mitigation (`0.2.329`, pending):** The next
+  bounded fidelity slice carries the documented Red Armor 25% Fire resistance
+  from the item catalog into typed Rocket actor-splash damage before flat armor
+  protection. Broader legacy resistance aggregation, direct Fire
+  classification, and other resistance families remain out of scope.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
@@ -1266,15 +1271,19 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Latest Audited Checkpoint:** `main` merge commit `cc625da`, merged PR #444,
-  and project version `0.2.328`. The exact implementation head `04afd3f` has
-  an independent determinism-review PASS; local and hosted Repository/WASM
-  checks pass. The hosted Review policy check failed closed because the sole
-  maintainer cannot create a non-self approval, so the documented live
-  `enforce_admins=false` exception was used. Controlled human, audiovisual,
-  and reference-capture surfaces remain `NOT_RUN` where prerequisites are
-  unavailable. The checkpointed progression audit is
+- **Latest Audited Checkpoint:** `main` docs-reconciled checkpoint `2dc55b6`
+  (after PR #444, version `0.2.328`). The exact Blue Armor implementation head
+  `04afd3f` has an independent determinism-review PASS; local and hosted
+  Repository/WASM checks pass. The hosted Review policy check failed closed
+  because the sole maintainer cannot create a non-self approval, so the
+  documented live `enforce_admins=false` exception was used. Controlled human,
+  audiovisual, and reference-capture surfaces remain `NOT_RUN` where
+  prerequisites are unavailable. The checkpointed progression audit is
   [`docs/steering/audit-2026-08-30-post-0.2.318.md`](steering/audit-2026-08-30-post-0.2.318.md).
+- **Active Slice Branch:** `codex/red-armor-fire-resistance` starts from
+  `2dc55b6` and targets the catalog-backed Red Armor Fire-mitigation behavior
+  described in `SPEC.md`; delivery remains pending until its checks and
+  independent review complete.
 - **Steering Disposition — Gate A closed:** Preserve the deterministic core,
   explicit RNG/replay identities, typed content, observation boundary, and
   browser/MCP projections. M10 now binds browser command histories to their

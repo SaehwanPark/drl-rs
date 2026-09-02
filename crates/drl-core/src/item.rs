@@ -56,6 +56,7 @@ pub struct ArmorProperties {
   pub durability: u32,
   pub max_durability: u32,
   pub plasma_resistance: u32,
+  pub fire_resistance: u32,
   medical_repair: MedicalRepairState,
   lava_recharge: LavaRechargeState,
   malek_recharge: MalekRechargeState,
@@ -70,6 +71,7 @@ impl ArmorProperties {
       durability,
       max_durability,
       plasma_resistance: 0,
+      fire_resistance: 0,
       medical_repair: MedicalRepairState::new(),
       lava_recharge: LavaRechargeState::new(),
       malek_recharge: MalekRechargeState::new(),
@@ -83,12 +85,20 @@ impl ArmorProperties {
     self
   }
 
+  /// Adds the catalog-defined Fire resistance to this armor instance.
+  #[must_use]
+  pub const fn with_fire_resistance(mut self, fire_resistance: u32) -> Self {
+    self.fire_resistance = fire_resistance;
+    self
+  }
+
   /// Returns the resistance for one typed damage family.
   #[must_use]
   pub const fn resistance(&self, damage_type: DamageType) -> u32 {
     match damage_type {
       DamageType::Plasma => self.plasma_resistance,
-      DamageType::Physical | DamageType::Acid | DamageType::Fire => 0,
+      DamageType::Fire => self.fire_resistance,
+      DamageType::Physical | DamageType::Acid => 0,
     }
   }
 
@@ -1053,9 +1063,11 @@ impl Item {
         durability,
         max_durability,
         plasma_resistance,
+        fire_resistance,
       } => ItemKind::Armor(
         ArmorProperties::new(protection, durability, max_durability)
-          .with_plasma_resistance(plasma_resistance),
+          .with_plasma_resistance(plasma_resistance)
+          .with_fire_resistance(fire_resistance),
       ),
       ItemDefinitionKind::PhaseDevice => ItemKind::PhaseDevice,
     };
