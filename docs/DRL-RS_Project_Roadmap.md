@@ -1312,12 +1312,13 @@ verification item uses explicit status semantics:
   every other direct weapon path remain unchanged. Independent review and
   hosted Repository/WASM checks pass; the documented solo-maintainer
   Review-policy exception remains in force.
-- **M9 BFG 10K direct Plasma classification (`0.2.336`, active on the temporary
-  branch):** The bounded slice routes each successful five-projectile BFG 10K
-  direct target hit through typed Plasma mitigation so Blue Armor resistance
-  applies before flat protection. Existing chainfire, radius-2 splash,
-  ground-item, schedule, ordering, raw-damage, and RNG behavior remain the
-  review contract; implementation and independent evidence are pending.
+- **M9 BFG 10K direct Plasma classification (`0.2.336`, delivered in PR #452):**
+  Each successful five-projectile BFG 10K direct target hit now uses typed
+  Plasma mitigation so Blue Armor resistance applies before flat protection.
+  Existing chainfire, radius-2 splash, ground-item, schedule, ordering,
+  raw-damage, and RNG behavior remain unchanged. Independent review and
+  hosted Repository/WASM checks pass; the documented solo-maintainer
+  Review-policy exception remains in force.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
@@ -1326,15 +1327,17 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active Slice — M9 BFG 10K direct Plasma classification (`0.2.336`):**
-  Temporary branch `codex/bfg10k-direct-plasma-classification` advances the
-  direct BFG 10K target volley from unclassified damage to typed Plasma while
-  preserving five-projectile cost/order, chainfire, radius-2 splash,
-  ground-item destruction, schedule metadata, rejection boundaries, and RNG.
-  Focused direct/replay tests and hosted/independent review evidence are
-  pending; scatter/projectile routing, delayed timing, SPLASMA divisors,
-  broader resistance aggregation, and legacy/runtime surfaces remain open or
-  `NOT_RUN`.
+- **Delivered Slice — M9 BFG 10K direct Plasma classification (`0.2.336`):**
+  PR #452 merged as `0d8b56d`; implementation head `21c9df4` routes each
+  successful BFG 10K direct target hit through typed Plasma mitigation, so Blue
+  Armor's catalog-defined 20% resistance applies before flat protection. Raw
+  damage, five-projectile cost/order, chainfire, radius-2 splash, ground-item
+  behavior, schedules, rejection boundaries, and boundary projections remain
+  unchanged. The independent determinism review returned PASS; local and
+  hosted Repository/WASM checks pass under the documented solo-maintainer
+  Review-policy exception. Scatter/projectile routing, delayed timing,
+  SPLASMA divisors, broader resistance aggregation, and other legacy/runtime
+  surfaces remain open or `NOT_RUN`.
 
 - **Delivered Slice — M9 Nuclear BFG 9000 direct Plasma classification
   (`0.2.335`):** PR #451 merged as `c58abc9`; implementation head `d2f1236`
@@ -1407,17 +1410,17 @@ verification item uses explicit status semantics:
   broader legacy resistance aggregation, direct Fire classification, controlled
   runtime, audiovisual parity, and balance remain open or `NOT_RUN`.
 
-- **Latest Audited Checkpoint:** `main` documentation reconciliation commit
-  `28f413c` (PR #451 merge `c58abc9`, version `0.2.335`). The Nuclear BFG 9000
-  direct-Plasma implementation head `d2f1236` has an independent
-  determinism-review PASS receipt; local and
-  hosted Repository/WASM checks pass. The hosted Review policy check failed
-  closed because the sole maintainer cannot create a non-self approval, so the
+- **Latest Audited Checkpoint:** `main` merge commit `0d8b56d` (PR #452,
+  version `0.2.336`). The BFG 10K direct-Plasma implementation head `21c9df4`
+  has an independent determinism-review PASS receipt; local and hosted
+  Repository/WASM checks pass. The hosted Review policy check failed closed
+  because the sole maintainer cannot create a non-self approval, so the
   documented live `enforce_admins=false` exception was used. Controlled human,
   audiovisual, and reference-capture surfaces remain `NOT_RUN` where
-  prerequisites are unavailable. The preceding Standard BFG 9000 direct-Plasma
-  implementation head `dbbe5e6` and the preceding Rocket Launcher direct-Fire
-  implementation head
+  prerequisites are unavailable. The preceding Nuclear BFG 9000
+  direct-Plasma implementation head `d2f1236`, the preceding Standard BFG 9000
+  direct-Plasma implementation head `dbbe5e6`, and the preceding Rocket
+  Launcher direct-Fire implementation head
   `a0a0fcd` has an independent determinism-review PASS receipt; local and
   hosted Repository/WASM checks pass. The hosted Review policy check failed
   closed because the sole maintainer cannot create a non-self approval, so the
@@ -2008,13 +2011,14 @@ scripting.
   `c58abc9` after focused, workspace, hosted Repository/WASM, and independent
   determinism-review evidence; broader direct Plasma and SPLASMA-divisor
   behavior remain open or `NOT_RUN`.
-- [ ] BFG 10K direct-target volley damage is classified as typed `Plasma`, so
+- [x] BFG 10K direct-target volley damage is classified as typed `Plasma`, so
   Blue Armor's catalog-defined 20% resistance applies before flat protection on
   all five direct hits; raw damage, exact-hit behavior, RNG order, chainfire,
   splash/item effects, and other direct weapons remain unchanged. Focused
-  direct/replay tests and independent/hosted evidence are in progress; scatter,
-  projectile routing, delayed timing, and broader direct Plasma/SPLASMA-divisor
-  behavior remain open or `NOT_RUN`.
+  direct/replay tests, independent review, and hosted Repository/WASM evidence
+  pass in merged PR #452 (`0d8b56d`); scatter, projectile routing, delayed
+  timing, and broader direct Plasma/SPLASMA-divisor behavior remain open or
+  `NOT_RUN`.
 - [x] Typed double/combat shotguns preserve pinned shell relation, clips,
   damage/range scalars, descriptions, replay kinds, and `SPRITE_DSHOTGUN`/
   `SPRITE_CSHOTGUN` slots; callbacks and spread/falloff remain open.

@@ -4,7 +4,7 @@ Last reviewed: 2026-09-02
 Current project version: `0.2.336`
 Audited starting checkpoint: `main` at `28f413c` (Nuclear BFG 9000 direct-Plasma
 slice and canonical documentation reconciliation)
-Delivery checkpoint: **pending** for the active branch
+Delivery checkpoint: `main` merge commit `0d8b56d` (PR #452, merged)
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -24,8 +24,7 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 
 ## 2. Active implementation slice: M9 — BFG 10K direct Plasma classification
 
-Slice status: **implementation complete; handoff in progress** on temporary
-branch `codex/bfg10k-direct-plasma-classification`.
+Slice status: **delivered and verified** at the delivery checkpoint above.
 
 ### 2.1 Objective
 
@@ -138,12 +137,13 @@ Delivery evidence is complete for implementation head `21c9df4`:
   **PASS**. The optional reference-capture preflight is `NOT_RUN` because its
   local manifest is unavailable.
 - PR #452 hosted Repository and WASM browser checks: **PASS** in run
-  `33664274355`. The protected-path Review policy check failed closed in run
-  `33664274159` because the sole maintainer cannot create a non-self approval;
+  `33665154657`. The protected-path Review policy check failed closed in run
+  `33665151877` because the sole maintainer cannot create a non-self approval;
   the documented live `enforce_admins=false` exception remains in force after
   the independent review receipt was recorded.
-- Merge remains pending; no controlled legacy runtime, audiovisual, balance,
-  or human-play claim is inferred from these checks.
+- Merge checkpoint: `0d8b56d`; the temporary implementation branch was removed
+  locally and remotely. No controlled legacy runtime, audiovisual, balance, or
+  human-play claim is inferred from these checks.
 
 ## 3. Enduring invariants
 
