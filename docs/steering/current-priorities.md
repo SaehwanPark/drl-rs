@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-09-02
 Baseline branch: `main`
-Baseline merge commit: `cc625da`
+Baseline merge commit: `2dc55b6`
 Latest pull request inspected: `#444`
 Baseline project version: `0.2.328`
 
@@ -217,7 +217,7 @@ invariants into accepted architecture/ADRs as appropriate, and update the
 roadmap and active specification from verified evidence.
 
 Re-audit before broad M9 migration resumes, or when a new stop-gate candidate
-is selected. The current audited tree is `main` at `cc625da` (PR #444, version
+is selected. The current audited tree is `main` at `2dc55b6` (PR #444, version
 `0.2.328`); local checks, independent review, and hosted Repository/WASM
 checks passed for the delivered bounded Blue Armor Plasma-mitigation slice.
 Its protected-path Review policy check failed closed for the sole maintainer
