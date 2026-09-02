@@ -2090,13 +2090,14 @@ scripting.
   in merged PR #453 (`dff7cb2`); higher chainfire levels, overcharge,
   spread/routing, SPLASMA divisors, and broader direct Plasma behavior remain
   open or `NOT_RUN`.
-- [ ] Nuclear Plasma Rifle ordinary-fire and first-through-seventh-level
+- [x] Nuclear Plasma Rifle ordinary-fire and first-through-seventh-level
   chainfire direct target damage is classified as typed `Plasma`, so Blue
   Armor's catalog-defined 20% resistance applies before flat protection while
   raw rolls, clip costs, warm-up state, periodic recharge, alternate overload,
   RNG order, event ordering, rejection boundaries, and MCP/BrowserSession
   projections remain unchanged. Focused direct/chainfire/replay tests,
-  independent review, and hosted Repository/WASM evidence are in progress;
+  independent review, and hosted Repository/WASM evidence pass in merged PR
+  #454 (`6c6387c`);
   higher chainfire levels, spread/routing, overload/nuke effects, SPLASMA
   divisors, and broader direct Plasma behavior remain open or `NOT_RUN`.
 - [x] Typed double/combat shotguns preserve pinned shell relation, clips,
