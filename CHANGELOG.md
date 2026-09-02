@@ -3,6 +3,18 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.333]
+
+- Routed Rocket Launcher direct target damage through the existing typed Fire
+  path. Red Armor's catalog-defined 25% Fire resistance now applies before
+  flat protection on the direct hit, while raw damage, RNG order, the existing
+  radius-4 splash and thresholded ground-item effect, rejection boundaries,
+  and other direct weapon paths remain unchanged. Focused same-seed direct and
+  replay tests verify the typed event and deterministic mitigation; projectile
+  routing, delayed timing, terrain/content callbacks, rocket-jump, broader
+  resistance aggregation, and audiovisual parity remain open. Gameplay
+  semantics advance from `134` to `135`.
+
 ## [0.2.332]
 
 - Added the bounded Rocket Launcher ground-item explosion effect. After

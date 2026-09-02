@@ -1,10 +1,10 @@
 # Specification
 
 Last reviewed: 2026-09-02
-Current project version: `0.2.332`
-Audited starting checkpoint: `main` at `3806611` (PR #447 Null Pointer merge
-and canonical docs reconciliation)
-Delivery checkpoint: `main` merge commit `e902d71` (PR #448, merged)
+Current project version: `0.2.333`
+Audited starting checkpoint: `main` at `c07a256` (Rocket ground-item slice
+and canonical documentation reconciliation)
+Delivery checkpoint: **pending** for the active branch
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -22,121 +22,109 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 - `INCONCLUSIVE` — **Evidence unresolved**: available evidence cannot support
   the claim.
 
-## 2. Active implementation slice: M9 — Rocket Launcher ground-item destruction
+## 2. Active implementation slice: M9 — Rocket Launcher direct Fire classification
 
-Slice status: **delivered and verified** at the delivery checkpoint above.
+Slice status: **implementation in progress** on the temporary branch
+`codex/rocket-direct-fire-classification`.
 
 ### 2.1 Objective
 
-Complete the existing Rocket Launcher radius-4 explosion branch for the one
-legacy ground-item effect represented by the current Rust world model. After
-each clear blast cell's post-falloff `6d6` Fire damage, remove at most the
-lowest-ID ordinary ground item when damage is strictly greater than `10`, and
-emit the existing `GroundItemDestroyed` event after actor processing. No new
-legacy feature marker is invented; every represented ground item is an
-ordinary item under the current Rust policy.
+Complete the Rocket Launcher direct-hit damage-family branch. The pinned legacy
+record declares `6d6 DAMAGE_FIRE`; after a successful direct hit, route only the
+Rocket Launcher target damage through the existing typed Fire path so
+catalog-defined Red Armor resistance applies before flat protection. Preserve
+the already-delivered radius-4 splash, item destruction, event ordering,
+death/drop handling, and transaction boundary.
 
-This is a bounded vertical fidelity slice. It preserves the existing radius-4
-geometry, one `6d6` roll per clear cell, integer distance falloff, stable actor
-deduplication, typed Fire mitigation, event ordering, death/drop handling, and
-transaction boundaries while adding the missing item effect. Terrain/content
-mutation, feature or indestructible-item markers, chained explosions, delayed
-queues, projectile routing, and rocket-jump behavior remain separate work.
+This is a bounded vertical fidelity slice. It changes the direct `DamageApplied`
+event from unclassified to `Some(DamageType::Fire)` only for Rocket Launcher
+hits and leaves every other direct weapon path unchanged.
 
 ### 2.2 Audited starting point
 
-At audited starting revision `3806611` (version `0.2.331`):
+At audited starting revision `c07a256` (version `0.2.332`):
 
-- The Rocket Launcher record (`items.lua:657-705`) declares a one-shot `6d6`
-  `DAMAGE_FIRE` radius-4 explosion with delay metadata.
-- The pinned explosion loop (`dflevel.pas:1039-1085`) rolls one damage value per
-  clear cell, applies integer distance falloff, processes the actor first, and
-  destroys the cell's item when the resulting damage is greater than `10`.
-- Rust already has deterministic radius-four geometry, typed Fire actor damage,
-  post-falloff damage, `World::destroy_ground_item_at`, and the ordered
-  `GroundItemDestroyed` event. The Rocket policy currently selects no item
-  effect, so the rule is the remaining bounded gap.
+- The Rocket Launcher record (`items.lua:657-688`) declares a one-shot `6d6`
+  `DAMAGE_FIRE` weapon, while `dfbeing.pas:2636-2644` propagates the weapon
+  damage family into direct damage and explosion resolution.
+- Rust already has typed Fire actor damage, catalog-defined Red Armor 25%
+  Fire resistance, and a typed `DamageApplied` event field.
+- The generic direct ranged path still calls untyped `World::apply_damage` and
+  emits `damage_type: None`; the Rocket splash path is already typed Fire.
 
 ### 2.3 Scope and ownership
 
-- **Roadmap:** M9 vertical canonical-fidelity completion for the Rocket Launcher
-  ground-item effect.
-- **Primary owners:** the Rocket resolver owns blast geometry, roll/falloff, and
-  actor ordering; the shared splash policy owns the thresholded item effect;
-  `World` owns deterministic lowest-ID removal; boundary crates remain
-  projections only.
-- **Content registration:** the current ground-item vocabulary is the single
-  source for representable ordinary items; no feature marker or duplicate item
-  destruction table is introduced.
-- **Project version:** implementation advances `VERSION` from `0.2.331` to
-  `0.2.332`.
-- **Replay/RNG:** gameplay semantics advance from `133` to `134`; replay wire,
+- **Roadmap:** M9 vertical canonical-fidelity completion of the Rocket Launcher
+  direct damage-family branch.
+- **Primary owner:** `Game`'s typed ranged execution boundary selects Fire for
+  the Rocket Launcher direct target; `World` and `Actor` retain the existing
+  resistance and flat-protection formulas. Boundary crates remain projections.
+- **Content registration:** the existing Rocket Launcher catalog definition is
+  the single source of its identity and damage range; no duplicate weapon table
+  or callback registry is introduced.
+- **Project version:** implementation advances `VERSION` from `0.2.332` to
+  `0.2.333`.
+- **Replay/RNG:** gameplay semantics advance from `134` to `135`; replay wire,
   RNG sampling (`1`), generator semantics (`2`), and ruleset identity
-  (`drl-rs-ruleset-v1`) remain unchanged. Item destruction consumes no RNG;
-  accepted and rejected command transaction guarantees remain unchanged.
-- **Protocol/boundaries:** no new wire event is needed. Existing typed
-  `DamageApplied` projections remain stable while the core applies the policy.
+  (`drl-rs-ruleset-v1`) remain unchanged. Typed mitigation consumes no RNG.
+- **Protocol/boundaries:** no new wire event or schema is needed; the existing
+  optional `DamageApplied.damage_type` projection carries `Fire`.
 
 ### 2.4 Review and branch contract
 
-- A post-falloff damage result of exactly `10` does not destroy an item; `11` or
-  greater removes at most one lowest-ID ordinary item at that blast cell.
-- The Rocket actor splash keeps its typed Fire path and applies actor damage
-  before `GroundItemDestroyed`, with lethal death/drop follow-up afterward.
-- Fixed damage rolls, geometry, distance falloff, deduplication, event ordering,
-  and final RNG state remain unchanged.
+- A successful Rocket Launcher direct hit emits `DamageApplied` with
+  `damage_type: Some(DamageType::Fire)` and applies the existing Fire resistance
+  before flat protection.
+- The raw `AttackOutcome::Hit` damage and one-roll RNG stream remain unchanged;
+  `AttackOutcome::is_lethal` retains its existing raw-damage contract, while
+  actual actor death remains authoritative in `World`.
+- Rocket splash cells retain typed Fire mitigation, thresholded ground-item
+  destruction, geometry, falloff, deduplication, event ordering, and final RNG
+  state.
+- Other direct weapons retain their untyped damage events and prior mitigation.
 - The existing core transaction guard still owns command rejection and exact
-  state/RNG restoration; this slice adds no new mutable queue or callback.
-- The core remains independent of filesystem, browser, audio, and MCP IO.
+  state/RNG restoration; this slice adds no queue, callback, or new clone.
 
 ### 2.5 Acceptance criteria
 
-- [x] Rocket Launcher blast cells remove the lowest-ID ordinary ground item only
-  for post-falloff damage greater than `10`, preserve non-destructive cells, and
-  emit the event after actor processing.
-- [x] Same-seed direct/replay coverage proves item selection and event output
-  are repeatable while the final RNG state matches the expected per-cell roll
-  stream.
-- [x] Existing Rocket Launcher rejection/rollback, replay, MCP, metrics/audio/
-  render, and BrowserSession parity tests pass without new wire or RNG behavior.
-- [x] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
+- [ ] Rocket Launcher direct hits emit typed Fire damage and Red Armor reduces
+  the applied amount using the existing deterministic resistance-before-flat
+  protection formula.
+- [ ] An unarmored control preserves the raw direct damage amount, while the
+  same seed keeps the raw roll and final RNG state identical between armored
+  and unarmored targets.
+- [ ] Direct replay and repeated replay runs produce identical game state,
+  event stream, and typed direct-hit projection; stale semantics `134` is
+  rejected before execution.
+- [ ] Existing Rocket splash/ground-item, rejection/rollback, replay, MCP,
+  metrics/audio/render, and BrowserSession parity tests pass without new wire
+  or RNG behavior.
+- [ ] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
   hosted checks, and an attributable independent determinism review pass on the
   final implementation commit.
 
 ### 2.6 Non-goals
 
-- No terrain/content mutation, feature or indestructible-item model, chained
-  explosions, delayed queue, projectile routing, or rocket-jump behavior.
-- No direct damage-type classification changes, resistance changes, or new
-  replay/MCP/browser schema.
-- No claim of controlled legacy runtime, audiovisual, balance, browser, or
-  performance parity beyond the current-Rust tests and hosted browser gate.
+- No direct Fire classification for other weapons, generic resistance
+  aggregation, legacy armor durability degradation, or SPLASMA divisors.
+- No projectile routing, delayed queue, terrain/content mutation, feature-item
+  behavior, rocket-jump, callback recreation, or runtime/audiovisual parity.
+- No change to the replay wire schema, RNG sampling algorithm, generator
+  semantics, ruleset identity, or unrelated event projections.
 
 ### 2.7 Evidence boundary
 
-This slice proves the current-Rust Rocket Launcher ground-item rule, its
-post-falloff threshold, deterministic selection, event ordering, replay
-determinism, and stable boundary projections. It will not prove legacy feature
-markers, terrain/content callbacks, delayed timing, projectile routing,
-rocket-jump, controlled legacy runtime, audiovisual parity, balance, or human
-play; those surfaces remain open or `NOT_RUN` in the roadmap.
+This slice proves the current-Rust Rocket Launcher direct-hit Fire event and
+Red Armor mitigation policy, plus replay determinism and stable boundary
+projection. It does not prove controlled legacy runtime, exact timing or
+accuracy, projectile routing, terrain/content behavior, broader resistance
+aggregation, durability, balance, audiovisual parity, or human play.
 
 ### 2.8 Delivery evidence
 
-- Independent determinism review of final head
-  `49f1451f59ce883a84cd10d0e01d8e3793540572`: **PASS** by
-  `/root/red_armor_review`; no severity-ranked defects or focused fix were
-  required.
-- Local workspace tests, clippy, formatting, version check, repository checks,
-  and native/headless browser checks: **PASS**. The optional reference-capture
-  preflight is `NOT_RUN` because its local manifest is unavailable.
-- PR #448 hosted Repository checks and WASM browser checks: **PASS** in run
-  `33653780858`. The protected-path Review policy check failed closed under the
-  documented solo-maintainer `enforce_admins=false` exception; administrator
-  merge was used after the review receipt was recorded.
-- Merge checkpoint: `e902d71`; the temporary implementation branch was removed
-  locally and remotely. No controlled legacy runtime, audiovisual, balance, or
-  human-play claim is inferred from these checks.
+Pending implementation, local/hosted verification, independent review, and
+merge. The optional reference-capture preflight remains `NOT_RUN` unless its
+local manifest becomes available.
 
 ## 3. Enduring invariants
 
