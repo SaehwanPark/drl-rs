@@ -4,7 +4,7 @@ Last reviewed: 2026-09-02
 Current project version: `0.2.339`
 Audited starting checkpoint: `main` at `48f0bb3` (Nuclear Plasma direct-Plasma
 slice and canonical documentation reconciliation)
-Previous delivery checkpoint: `main` merge commit `6c6387c` (PR #454, merged)
+Delivery checkpoint: `main` merge commit `af78fd5` (PR #455, merged)
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -24,8 +24,8 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 
 ## 2. Active implementation slice: M9 — Laser Rifle direct Plasma classification
 
-Slice status: **in progress** on temporary branch
-`codex/laser-rifle-direct-plasma-classification`.
+Slice status: **delivered and verified** at implementation head `c88ebc4`;
+merge checkpoint is `af78fd5` (PR #455, merged).
 
 ### 2.1 Objective
 
@@ -54,8 +54,8 @@ At audited starting revision `48f0bb3` (version `0.2.338`):
   five-projectile ordinary volley and first-through-seventh chainfire
   transitions are already implemented and projected through core, replay, MCP,
   and browser boundaries.
-- The shared direct ranged path still calls untyped `World::apply_damage` and
-  emits `damage_type: None` for each Laser Rifle direct volley hit.
+- The shared direct ranged path called untyped `World::apply_damage` and
+  emitted `damage_type: None` for each Laser Rifle direct volley hit.
 
 ### 2.3 Scope and ownership
 
@@ -94,20 +94,20 @@ At audited starting revision `48f0bb3` (version `0.2.338`):
 
 ### 2.5 Acceptance criteria
 
-- [ ] Laser Rifle direct ordinary and chainfire hits emit typed Plasma damage
+- [x] Laser Rifle direct ordinary and chainfire hits emit typed Plasma damage
   and Blue Armor reduces the applied amounts using the existing deterministic
   resistance-before-flat protection formula.
-- [ ] An unarmored control preserves all successful raw direct damage amounts,
+- [x] An unarmored control preserves all successful raw direct damage amounts,
   while
   the same seed keeps the raw rolls and final RNG state identical between
   armored and unarmored targets.
-- [ ] Direct replay and repeated replay runs produce identical game state,
+- [x] Direct replay and repeated replay runs produce identical game state,
   event stream, and typed direct-volley projection; stale semantics `140` is
   rejected before execution.
-- [ ] Existing Laser Rifle chainfire, rejection/rollback, replay, MCP,
+- [x] Existing Laser Rifle chainfire, rejection/rollback, replay, MCP,
   metrics/audio/render, and BrowserSession parity tests pass without new wire
   or RNG behavior.
-- [ ] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
+- [x] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
   hosted checks, and an attributable independent determinism review pass on the
   final implementation commit.
 
@@ -123,7 +123,7 @@ At audited starting revision `48f0bb3` (version `0.2.338`):
 
 ### 2.7 Evidence boundary
 
-This slice will prove the current-Rust Laser Rifle direct
+This slice proves the current-Rust Laser Rifle direct
 ordinary/chainfire Plasma events and Blue Armor mitigation policy, plus replay
 determinism and stable state/RNG behavior. It does not prove controlled legacy
 runtime, exact timing or accuracy, higher chainfire levels, spread/routing,
@@ -132,11 +132,15 @@ audiovisual parity, or human play.
 
 ### 2.8 Delivery evidence
 
-Delivery evidence is pending implementation, local/hosted verification,
-independent review, and merge. The optional reference-capture preflight remains
-`NOT_RUN` when its local manifest is unavailable; controlled legacy runtime,
-audiovisual, balance, and human-play surfaces remain outside this slice's
-evidence boundary.
+Delivery evidence: implementation head `c88ebc4` merged in PR #455 as
+`af78fd5`. Focused Laser Rifle direct-Plasma tests (3/3), existing Laser Rifle
+chainfire tests (24/24), Laser Rifle browser-boundary tests (2/2), the full
+workspace suite, strict Clippy, version/repository/diff gates, and hosted
+Repository and WASM checks pass. The independent determinism review returned
+PASS. The hosted Review-policy check remains the documented solo-maintainer
+exception; the optional reference-capture preflight is `NOT_RUN` because its
+local manifest is unavailable. Controlled legacy runtime, audiovisual, balance,
+and human-play surfaces remain outside this slice's evidence boundary.
 
 ## 3. Enduring invariants
 

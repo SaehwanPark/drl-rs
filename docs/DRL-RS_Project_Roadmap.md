@@ -1339,14 +1339,16 @@ verification item uses explicit status semantics:
   checks pass under the documented solo-maintainer Review-policy exception;
   higher chainfire levels, spread/routing, overload/nuke effects, SPLASMA
   divisors, broader resistance aggregation, and audiovisual parity remain open.
-- **M9 Laser Rifle direct Plasma classification (`0.2.339`, active):** Each
-  successful ordinary-fire and already implemented first-through-seventh-level
-  chainfire direct target hit is being routed through typed Plasma mitigation
-  so Blue Armor's catalog-defined 20% resistance applies before flat
-  protection. The five-projectile volley, chainfire counts, clip costs,
-  warm-up state, replay/MCP/browser projections, and rejection boundaries are
-  in scope; higher chainfire levels, spread/routing, SPLASMA divisors, broader
-  resistance aggregation, and audiovisual parity remain open.
+- **M9 Laser Rifle direct Plasma classification (`0.2.339`, delivered in PR
+  #455):** Each successful ordinary-fire and already implemented
+  first-through-seventh-level chainfire direct target hit now uses typed Plasma
+  mitigation so Blue Armor's catalog-defined 20% resistance applies before
+  flat protection. The five-projectile volley, chainfire counts, clip costs,
+  warm-up state, replay/MCP/browser projections, and rejection boundaries
+  remain unchanged. Independent review and hosted Repository/WASM checks pass
+  under the documented solo-maintainer Review-policy exception; higher
+  chainfire levels, spread/routing, SPLASMA divisors, broader resistance
+  aggregation, and audiovisual parity remain open.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
@@ -1355,16 +1357,24 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active Slice — M9 Laser Rifle direct Plasma classification (`0.2.339`):**
-  Temporary branch `codex/laser-rifle-direct-plasma-classification` starts at
-  audited main checkpoint `48f0bb3` (version `0.2.338`). The implementation
-  routes successful ordinary-fire and first-through-seventh-level chainfire
-  direct target hits through typed Plasma mitigation while preserving raw
-  damage, clip costs, warm-up state, RNG/replay identities, event ordering,
-  rejection boundaries, and boundary projections. Focused verification is
-  complete locally; independent review, hosted checks, and merge are pending.
-  Higher chainfire levels, spread/routing, SPLASMA divisors, broader resistance
-  aggregation, and audiovisual parity remain outside this slice.
+- **No temporary slice is active.** The Laser Rifle direct Plasma slice is
+  delivered and its canonical evidence is recorded below. The next bounded
+  M9 candidate remains subject to a fresh steering re-audit; higher chainfire
+  levels, spread/routing, SPLASMA divisors, broader resistance aggregation,
+  controlled runtime, and audiovisual parity remain open.
+
+- **Delivered Slice — M9 Laser Rifle direct Plasma classification (`0.2.339`):**
+  PR #455 merged as `af78fd5`; implementation head `c88ebc4` routes successful
+  ordinary-fire and first-through-seventh-level chainfire direct target hits
+  through typed Plasma mitigation, so Blue Armor's catalog-defined 20%
+  resistance applies before flat protection. Raw damage, the five-projectile
+  volley and chainfire clip costs, warm-up state, RNG/replay identities, event
+  ordering, rejection boundaries, and boundary projections remain unchanged.
+  The independent determinism review returned PASS; local and hosted
+  Repository/WASM checks pass under the documented solo-maintainer Review-policy
+  exception. Higher chainfire levels, spread/routing, SPLASMA divisors, broader
+  resistance aggregation, controlled runtime, and audiovisual parity remain
+  open or `NOT_RUN`.
 
 - **Delivered Slice — M9 Nuclear Plasma Rifle direct Plasma classification
   (`0.2.338`):** PR #454 merged as `6c6387c`; implementation head `3f1601e`
@@ -1476,9 +1486,12 @@ verification item uses explicit status semantics:
   broader legacy resistance aggregation, direct Fire classification, controlled
   runtime, audiovisual parity, and balance remain open or `NOT_RUN`.
 
-- **Latest Audited Checkpoint:** `main` at `48f0bb3` (version `0.2.338`), with
-  active Laser Rifle direct-Plasma work on
-  `codex/laser-rifle-direct-plasma-classification`. The Nuclear Plasma Rifle
+- **Latest Audited Checkpoint:** `main` at `af78fd5` (version `0.2.339`), with
+  Laser Rifle direct-Plasma delivered in PR #455. Its implementation head
+  `c88ebc4` has an independent determinism-review PASS receipt; local and
+  hosted Repository/WASM checks pass. The hosted Review-policy check failed
+  closed because the sole maintainer cannot create a non-self approval, so the
+  documented live `enforce_admins=false` exception was used. The Nuclear Plasma Rifle
   direct-Plasma implementation head
   `3f1601e` has an independent determinism-review PASS receipt; local and
   hosted Repository/WASM checks pass. The hosted Review-policy check failed
