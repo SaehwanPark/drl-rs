@@ -1,10 +1,10 @@
 # Specification
 
 Last reviewed: 2026-09-02
-Current project version: `0.2.335`
-Audited starting checkpoint: `main` at `3f059d3` (Standard BFG direct-Plasma
+Current project version: `0.2.336`
+Audited starting checkpoint: `main` at `28f413c` (Nuclear BFG 9000 direct-Plasma
 slice and canonical documentation reconciliation)
-Delivery checkpoint: `main` merge commit `c58abc9` (PR #451, merged)
+Delivery checkpoint: **pending** for the active branch
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -22,50 +22,54 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 - `INCONCLUSIVE` — **Evidence unresolved**: available evidence cannot support
   the claim.
 
-## 2. Active implementation slice: M9 — Nuclear BFG 9000 direct Plasma classification
+## 2. Active implementation slice: M9 — BFG 10K direct Plasma classification
 
-Slice status: **delivered and verified** on `main` in merge commit `c58abc9`.
+Slice status: **implementation complete; handoff in progress** on temporary
+branch `codex/bfg10k-direct-plasma-classification`.
 
 ### 2.1 Objective
 
-Complete the Nuclear BFG 9000 direct-hit damage-family branch. The pinned
-legacy record declares `8d6 DAMAGE_SPLASMA`; after a successful direct hit,
-route only the Nuclear BFG 9000 target damage through the existing typed Plasma
-path so catalog-defined Blue Armor resistance applies before flat protection.
-Preserve the already-delivered radius-8 splash, ground-item effect, recharge,
-overload, event ordering, death/drop handling, and transaction boundary.
+Complete the BFG 10K direct-hit damage-family branch. The pinned legacy record
+declares `6d4 DAMAGE_SPLASMA`; after each successful direct volley hit, route
+only the BFG 10K target damage through the existing typed Plasma path so
+catalog-defined Blue Armor resistance applies before flat protection. Preserve
+the already-delivered five-projectile volley, chainfire progression, radius-2
+splash, ground-item effect, event ordering, death/drop handling, and
+transaction boundary.
 
 This is a bounded vertical fidelity slice. It changes the direct
 `DamageApplied` event from unclassified to `Some(DamageType::Plasma)` only for
-Nuclear BFG 9000 hits and leaves every other direct weapon path unchanged.
+BFG 10K hits and leaves every other direct weapon path unchanged.
 
 ### 2.2 Audited starting point
 
-At audited starting revision `3f059d3` (version `0.2.334`):
+At audited starting revision `28f413c` (version `0.2.335`):
 
-- The Nuclear BFG 9000 record (`eitems.lua:474-518`) declares an `8d6`
-  `DAMAGE_SPLASMA` weapon, while `dfbeing.pas:2636-2644` propagates the weapon
-  damage family into direct damage and explosion resolution.
+- The BFG 10K record (`uitems.lua:730-765`) declares a `6d4`
+  `DAMAGE_SPLASMA` weapon with five configured projectiles, while
+  `dfbeing.pas:476-510` carries the damage family through the scatter-weapon
+  projectile path and `dfbeing.pas:2162-2182` maps Plasma families to plasma
+  resistance.
 - Rust already has typed Plasma actor damage, catalog-defined Blue Armor 20%
-  Plasma resistance, and a typed `DamageApplied` event field. The Nuclear BFG
-  radius-8 splash is already typed Plasma, as are its ground-item and overload
-  boundaries where applicable.
+  Plasma resistance, and a typed `DamageApplied` event field. The BFG 10K
+  radius-2 splash is already typed Plasma, as are its ground-item destruction
+  and delayed schedule boundaries where applicable.
 - The shared direct ranged path still calls untyped `World::apply_damage` and
-  emits `damage_type: None` for the Nuclear BFG 9000 direct hit.
+  emits `damage_type: None` for each BFG 10K direct volley hit.
 
 ### 2.3 Scope and ownership
 
-- **Roadmap:** M9 vertical canonical-fidelity completion of the Nuclear BFG
-  9000 direct damage-family branch.
+- **Roadmap:** M9 vertical canonical-fidelity completion of the BFG 10K direct
+  damage-family branch.
 - **Primary owner:** `Game`'s typed ranged execution boundary selects Plasma for
-  the Nuclear BFG 9000 direct target; `World` and `Actor` retain the existing
-  resistance and flat-protection formulas. Boundary crates remain projections.
-- **Content registration:** the existing Nuclear BFG 9000 catalog definition
-  remains the single source of its identity and damage range; no duplicate
-  weapon table or callback registry is introduced.
-- **Project version:** implementation advances `VERSION` from `0.2.334` to
-  `0.2.335`.
-- **Replay/RNG:** gameplay semantics advance from `136` to `137`; replay wire,
+  the BFG 10K direct target; `World` and `Actor` retain the existing resistance
+  and flat-protection formulas. Boundary crates remain projections.
+- **Content registration:** the existing BFG 10K catalog definition remains
+  the single source of its identity and damage range; no duplicate weapon table
+  or callback registry is introduced.
+- **Project version:** implementation advances `VERSION` from `0.2.335` to
+  `0.2.336`.
+- **Replay/RNG:** gameplay semantics advance from `137` to `138`; replay wire,
   RNG sampling (`1`), generator semantics (`2`), and ruleset identity
   (`drl-rs-ruleset-v1`) remain unchanged. Typed mitigation consumes no RNG.
 - **Protocol/boundaries:** no new wire event or schema is needed; the existing
@@ -73,35 +77,34 @@ At audited starting revision `3f059d3` (version `0.2.334`):
 
 ### 2.4 Review and branch contract
 
-- A successful Nuclear BFG 9000 direct hit emits `DamageApplied` with
+- Every successful BFG 10K direct volley hit emits `DamageApplied` with
   `damage_type: Some(DamageType::Plasma)` and applies the existing Plasma
   resistance before flat protection.
-- The raw `AttackOutcome::Hit` damage and one-roll RNG stream remain unchanged;
-  `AttackOutcome::is_lethal` retains its existing raw-damage contract, while
-  actual actor death remains authoritative in `World`.
-- Nuclear BFG splash cells retain typed Plasma mitigation, thresholded
-  ground-item destruction, self-safe geometry, deduplication, event ordering,
-  and final RNG state. Recharge, alternate overload, and Rocket/Standard BFG
-  behavior remain unchanged.
+- The raw `AttackOutcome::Hit` damages and one-roll-per-projectile RNG stream
+  remain unchanged; `AttackOutcome::is_lethal` retains its existing raw-damage
+  contract, while actual actor death remains authoritative in `World`.
+- BFG 10K splash cells retain typed Plasma mitigation, thresholded ground-item
+  destruction, self-safe geometry, deduplication, event ordering, and final RNG
+  state. Five-projectile volley cost, chainfire progression, delayed schedules,
+  and Rocket/Standard/Nuclear BFG behavior remain unchanged.
 - Other direct weapons retain their untyped damage events and prior mitigation.
 - The existing core transaction guard still owns command rejection and exact
   state/RNG restoration; this slice adds no queue, callback, or new clone.
 
 ### 2.5 Acceptance criteria
 
-- [x] Nuclear BFG 9000 direct hits emit typed Plasma damage and Blue Armor
-  reduces the applied amount using the existing deterministic
+- [x] BFG 10K direct volley hits emit typed Plasma damage and Blue Armor reduces
+  the applied amounts using the existing deterministic
   resistance-before-flat protection formula.
-- [x] An unarmored control preserves the raw direct damage amount, while the
-  same seed keeps the raw roll and final RNG state identical between armored
-  and unarmored targets.
+- [x] An unarmored control preserves all five raw direct damage amounts, while
+  the same seed keeps the raw rolls and final RNG state identical between
+  armored and unarmored targets.
 - [x] Direct replay and repeated replay runs produce identical game state,
-  event stream, and typed direct-hit projection; stale semantics `136` is
+  event stream, and typed direct-volley projection; stale semantics `137` is
   rejected before execution.
-- [x] Existing Nuclear BFG splash/ground-item, recharge/overload, rejection/
-  rollback, replay, MCP,
-  metrics/audio/render, and BrowserSession parity tests pass without new wire
-  or RNG behavior.
+- [x] Existing BFG 10K splash/ground-item, chainfire, rejection/rollback,
+  replay, MCP, metrics/audio/render, and BrowserSession parity tests pass
+  without new wire or RNG behavior.
 - [x] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
   hosted checks, and an attributable independent determinism review pass on the
   final implementation commit.
@@ -110,7 +113,7 @@ At audited starting revision `3f059d3` (version `0.2.334`):
 
 - No direct Plasma classification for other weapons, generic resistance
   aggregation, legacy armor durability degradation, or SPLASMA divisors.
-- No Nuclear BFG splash, recharge, overload, projectile routing, delayed queue,
+- No BFG 10K chainfire, splash, ground-item, projectile routing, delayed queue,
   terrain/content mutation, callback recreation, or runtime/audiovisual parity
   changes beyond the direct target classification.
 - No change to the replay wire schema, RNG sampling algorithm, generator
@@ -118,22 +121,29 @@ At audited starting revision `3f059d3` (version `0.2.334`):
 
 ### 2.7 Evidence boundary
 
-This slice proves the current-Rust Nuclear BFG 9000 direct-hit Plasma event and
+This slice will prove the current-Rust BFG 10K direct-volley Plasma events and
 Blue Armor mitigation policy, plus replay determinism and stable state/RNG
 behavior. It does not prove controlled legacy runtime, exact timing or
-accuracy, projectile routing, terrain/content behavior, broader resistance
-aggregation, durability, balance, audiovisual parity, or human play.
+accuracy, scatter/projectile routing, terrain/content behavior, broader
+resistance aggregation, durability, balance, audiovisual parity, or human play.
 
 ### 2.8 Delivery evidence
 
-Implementation commit `d2f1236` merged through PR #451 as `c58abc9`. Focused
-and workspace tests, formatting, clippy, version/repository/web checks, hosted
-Repository/WASM checks, and the independent `/root/rocket_review` determinism
-review all passed. The hosted Review-policy check remains the documented
-solo-maintainer exception (`enforce_admins=false`). The optional
-reference-capture preflight remains `NOT_RUN` because its local manifest is
-unavailable; controlled legacy runtime, audiovisual, and human-play surfaces
-remain outside this slice's evidence boundary.
+Delivery evidence is complete for implementation head `21c9df4`:
+
+- Independent determinism review: **PASS** by `/root/rocket_review`; no
+  actionable findings were identified.
+- Focused and locked workspace tests, Clippy, formatting, version check,
+  repository checks, native/headless browser checks, and `git diff --check`:
+  **PASS**. The optional reference-capture preflight is `NOT_RUN` because its
+  local manifest is unavailable.
+- PR #452 hosted Repository and WASM browser checks: **PASS** in run
+  `33664274355`. The protected-path Review policy check failed closed in run
+  `33664274159` because the sole maintainer cannot create a non-self approval;
+  the documented live `enforce_admins=false` exception remains in force after
+  the independent review receipt was recorded.
+- Merge remains pending; no controlled legacy runtime, audiovisual, balance,
+  or human-play claim is inferred from these checks.
 
 ## 3. Enduring invariants
 

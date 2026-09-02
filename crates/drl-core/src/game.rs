@@ -1994,7 +1994,7 @@ impl Game {
 
         let direct_damage_type = if weapon_is_rocket_launcher {
           Some(DamageType::Fire)
-        } else if weapon_is_bfg9000 || weapon_is_nuclear_bfg9000 {
+        } else if weapon_is_bfg10k || weapon_is_bfg9000 || weapon_is_nuclear_bfg9000 {
           Some(DamageType::Plasma)
         } else {
           None

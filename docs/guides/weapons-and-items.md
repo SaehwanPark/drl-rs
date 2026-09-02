@@ -43,7 +43,7 @@ description: "Comprehensive armory encyclopedia: ballistic firearms, energy weap
 - **Nuclear Plasma Rifle**: Experimental nuclear core plasma rifle. High-yield discharge, first-, second-, third-, fourth-, fifth-, sixth-, and seventh-level 4/6/9/9/9/9/9-projectile chainfire (four, six, nine, nine, nine, nine, and nine cells), and continuous internal power recharge.
 - **BFG 9000**: The ultimate bio-force weapon. Fires a massive 40-cell typed Plasma ball with a typed direct hit and radius-8 splash, plus massive 16-tile kinetic knockback.
 - **Nuclear BFG 9000**: Self-charging exact-hit variant consuming 40 cells per shot. Its `8d6 DAMAGE_SPLASMA` direct target hit and radius-8 fanout use typed Plasma mitigation; recharge and alternate-overload behavior remain separate policies.
-- **BFG 10K**: Rapid-cycling experimental variant firing five 5-cell plasma charges with delayed schedule explosions; its first-, second-, third-, fourth-, fifth-, sixth-, seventh-, eighth-, ninth-, tenth-, eleventh-, twelfth-, thirteenth-, fourteenth-, fifteenth-, sixteenth-, seventeenth-, eighteenth-, nineteenth-, twentieth-, and twenty-first-level chainfire emits four, five, seven, seven, seven, seven, seven, seven, seven, seven, seven, seven, seven, seven, seven, seven, seven, seven, seven, seven, and seven exact-hit charges for 20, 25, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, and 35 cells.
+- **BFG 10K**: Rapid-cycling experimental variant firing five 5-cell exact-hit plasma charges with typed direct Plasma mitigation and delayed schedule explosions; its first-, second-, third-, fourth-, fifth-, sixth-, seventh-, eighth-, ninth-, tenth-, eleventh-, twelfth-, thirteenth-, fourteenth-, fifteenth-, sixteenth-, seventeenth-, eighteenth-, nineteenth-, twentieth-, and twenty-first-level chainfire emits four, five, seven, seven, seven, seven, seven, seven, seven, seven, seven, seven, seven, seven, seven, seven, seven, seven, seven, seven, and seven exact-hit charges for 20, 25, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, and 35 cells.
 
 ---
 
@@ -52,7 +52,7 @@ description: "Comprehensive armory encyclopedia: ballistic firearms, energy weap
 | Armor | Protection | Special Mechanics & Behavior |
 |---|---|---|
 | **Green Armor** | 30% Damage Reduction | Standard combat security vest. Durable and lightweight. |
-| **Blue Armor** | 2 flat protection; 20% Plasma resistance on typed Standard/Nuclear BFG direct/fanout and Null Pointer fanouts | Heavy kevlar and ceramic plate suit. Broader resistance aggregation remains open. |
+| **Blue Armor** | 2 flat protection; 20% Plasma resistance on typed BFG 10K/Standard/Nuclear BFG direct/fanout and Null Pointer fanouts | Heavy kevlar and ceramic plate suit. Broader resistance aggregation remains open. |
 | **Red Armor** | 4 flat protection; 25% Fire resistance on typed Rocket direct/splash and Anti-Freak fanouts | High-grade armor that reduces typed Fire damage before flat protection. Broader resistance aggregation remains open. |
 | **Lava Armor** | 75% Thermal Reduction | Self-repairing suit. Standing in lava tiles recharges durability over time. |
 | **Malek's Armor** | 60% All-round Reduction | Ancient demonic power armor. Slowly regenerates durability over time. |
