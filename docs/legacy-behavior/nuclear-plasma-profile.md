@@ -24,7 +24,8 @@ evidence.
 
 ## DRL-Rust boundary
 
-The immutable `NUCLEAR_PLASMA_BEHAVIOR` profile records the six-projectile
+The immutable `NUCLEAR_PLASMA_BEHAVIOR` profile records the typed direct Plasma
+target path alongside the six-projectile
 ordinary volley, one-cell cost, first-level
 `AlternateAction::Chainfire { shot_count: 4, ammo_cost: 4 }`, second-level
 `AlternateAction::ChainfireLevel { level: 1, shot_count: 6, ammo_cost: 6 }`,
