@@ -4,7 +4,7 @@ Last reviewed: 2026-09-02
 Current project version: `0.2.327`
 Audited starting checkpoint: `main` at
 `d8bf55c` (merged PR #442; replay verification documentation reconciled)
-Delivery checkpoint: implementation head `16a9836` (PR/merge pending)
+Delivery checkpoint: `main` merge commit `41de1e9` (PR #443)
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -24,8 +24,8 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 
 ## 2. Active implementation slice: M9 — Rocket Launcher direct-hit actor splash
 
-Slice status: **verified on branch; PR/merge pending** from the audited starting
-checkpoint above.
+Slice status: **delivered and verified** from the audited starting checkpoint
+above.
 
 ### 2.1 Objective
 
@@ -128,12 +128,14 @@ This slice proves the current-Rust actor-only Rocket Launcher explosion branch
 and its replay/boundary projections. It does not prove projectile routing,
 terrain/content behavior, delayed timing, controlled legacy runtime,
 audiovisual parity, balance, or human play; those surfaces remain open or
-`NOT_RUN` in the roadmap. The verified branch head is `16a9836`: implementation
-commit `5dfb210` adds the Rocket Launcher behavior and commit `16a9836` updates
-the semantics-bound browser fixtures. The independent read-only determinism
-review covers the exact branch head and returned
-`drl-determinism-review: PASS`. Local repository and web checks pass; hosted PR
-checks and merge status remain pending until handoff.
+`NOT_RUN` in the roadmap. The verified implementation commit is `5dfb210`, with
+semantics-bound browser fixture correction `16a9836`; PR #443 merged them as
+`41de1e9`. The independent read-only determinism review covers exact branch
+head `16a9836` and returned `drl-determinism-review: PASS`. Local repository and
+web checks pass, as do hosted `Repository checks` and `WASM browser checks`.
+Hosted `Review policy` failed closed because the sole maintainer cannot create a
+non-self approval; the documented live `enforce_admins=false` exception was
+used for the merge.
 
 ## 3. Enduring invariants
 

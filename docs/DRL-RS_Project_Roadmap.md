@@ -1242,14 +1242,14 @@ verification item uses explicit status semantics:
   `8ad2922a82a7edf4a12df359b48e9949ddd9bd18`; Repository/WASM checks pass for
   merged `fb2288644b4cabb7b28db15068801c9e79636f6e`, while the sole-maintainer
   Review policy check failed closed under the documented live exception.
-- **M9 Rocket Launcher actor splash (`0.2.327`, implementation complete on
-  `codex/rocket-launcher-actor-splash`)**: A successful direct hit now emits a
-  typed delay-40/radius-4/knockback-8 schedule event and immediately resolves a
-  bounded actor-only fanout with one `6d6` Fire roll per clear cell, legacy
-  distance falloff, actor de-duplication, radial `damage / 8` knockback, and
-  normal death/drop ordering. Exact rejection identity, replay/scenario,
-  MCP/audio/metrics/render, BrowserSession, and full workspace tests pass;
-  terrain, ground items, delayed queues, projectile routing, rocket-jump,
+- **M9 Rocket Launcher actor splash (`0.2.327`, delivered in PR #443)**: A
+  successful direct hit now emits a typed delay-40/radius-4/knockback-8
+  schedule event and immediately resolves a bounded actor-only fanout with one
+  `6d6` Fire roll per clear cell, legacy distance falloff, actor
+  de-duplication, radial `damage / 8` knockback, and normal death/drop
+  ordering. Exact rejection identity, replay/scenario, MCP/audio/metrics/
+  render, BrowserSession, full workspace, and hosted Repository/WASM checks
+  pass; terrain, ground items, delayed queues, projectile routing, rocket-jump,
   controlled runtime, and audiovisual parity remain open or `NOT_RUN`.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
@@ -1260,13 +1260,14 @@ verification item uses explicit status semantics:
 ### Active & Open Work
 
 - **Latest Audited Checkpoint:** `main` merge commit
-  `fb22886`, merged PR #441, and project version `0.2.326`. Repository and
-  WASM/browser hosted checks, independent review, and the replay-verification
-  fixtures pass for the delivered M13/M6 slice; its hosted Review policy check
-  failed closed because the sole maintainer cannot create a non-self approval,
-  so the documented live `enforce_admins=false` exception was used. Controlled
-  human, audiovisual, and reference-capture surfaces remain `NOT_RUN` where
-  prerequisites are unavailable. The checkpointed progression audit is
+  `41de1e9`, merged PR #443, and project version `0.2.327`. Repository and
+  WASM/browser hosted checks pass for the delivered Rocket Launcher slice, and
+  the exact branch head `16a9836` has an independent determinism-review PASS;
+  the hosted Review policy check failed closed because the sole maintainer
+  cannot create a non-self approval, so the documented live
+  `enforce_admins=false` exception was used. Controlled human, audiovisual,
+  and reference-capture surfaces remain `NOT_RUN` where prerequisites are
+  unavailable. The checkpointed progression audit is
   [`docs/steering/audit-2026-08-30-post-0.2.318.md`](steering/audit-2026-08-30-post-0.2.318.md).
 - **Steering Disposition — Gate A closed:** Preserve the deterministic core,
   explicit RNG/replay identities, typed content, observation boundary, and
@@ -1323,6 +1324,16 @@ verification item uses explicit status semantics:
   `8ad2922a82a7edf4a12df359b48e9949ddd9bd18` has an independent
   determinism-review PASS; Repository/WASM checks pass, and replay migration,
   network IO, and cross-version interchange remain open.
+- **Delivered Slice — M9 Rocket Launcher actor splash (`0.2.327`):** PR #443
+  merged as `41de1e9`. The exact source implementation commit `5dfb210` and
+  semantics-bound fixture correction `16a9836` add the typed delay-40/radius-4/
+  knockback-8 schedule and immediate actor-only `6d6` Fire fanout with legacy
+  distance falloff, actor de-duplication, radial `damage / 8` knockback, and
+  normal death/drop ordering. The independent review of branch head `16a9836`
+  returned PASS; Repository and WASM checks pass, while the documented
+  solo-maintainer Review-policy exception was used. Terrain/ground-item
+  effects, delayed queues, projectile routing, rocket-jump, runtime captures,
+  and audiovisual parity remain open or `NOT_RUN`.
 - **Process Gate (M0, closed):** Keep `SPEC.md` bounded to one active slice and
   require an attributable independent determinism-review disposition for every
   replay-visible or legacy-fidelity slice. PR #436 records and enforces the
