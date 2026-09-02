@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-09-02
-Current project version: `0.2.331`
+Current project version: `0.2.332`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.331)
+## 3. Current Progress Summary (`VERSION` 0.2.332)
 
 ### Delivered Foundations
 
@@ -1281,6 +1281,13 @@ verification item uses explicit status semantics:
   geometry, deduplication, event/death ordering, and rejection boundaries
   remain unchanged. The legacy SPLASMA armor divisor and broader resistance
   aggregation remain out of scope.
+- **Active M9 Rocket Launcher ground-item destruction (`0.2.332`):** The
+  bounded follow-up branch adds the pinned post-falloff `6d6` threshold rule:
+  a blast cell with damage greater than `10` removes at most its lowest-ID
+  ordinary ground item after actor processing. Same-seed replay coverage keeps
+  existing radius-4 geometry, Fire mitigation, event ordering, and RNG state
+  explicit; terrain/content callbacks, feature-item markers, delayed queues,
+  projectile routing, rocket-jump, and audiovisual parity remain open.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
@@ -1288,6 +1295,14 @@ verification item uses explicit status semantics:
   optional detached signatures, cache invalidation, and checkout binding.
 
 ### Active & Open Work
+
+- **Active Slice — M9 Rocket Launcher ground-item destruction (`0.2.332`):**
+  The bounded branch from audited `main` `3806611` adds the legacy thresholded
+  ordinary ground-item effect to the existing radius-4 Fire fanout. Post-falloff
+  damage greater than `10` removes only the lowest-ID represented item after
+  actor processing; exact RNG state, geometry, typed mitigation, rejection
+  boundaries, and boundary projections remain unchanged. Implementation,
+  independent review, hosted checks, and merge checkpoint are pending.
 
 - **Delivered Slice — M9 Null Pointer Plasma mitigation (`0.2.331`):** PR
   #447 merged as `5b87614`. The exact implementation head
@@ -1846,8 +1861,13 @@ scripting.
 - [x] Typed rocket launcher preserves pinned rocket relation, one-shot clip,
   `6d6` damage range, description, replay kind, and `SPRITE_BAZOOKA` slot;
   its bounded actor-only radius-4 direct-hit fanout is delivered in `0.2.327`;
-  terrain/ground-item callbacks, projectile routing, rocket-jump, and exact
-  accuracy/timing remain open.
+-  terrain/content callbacks, feature-item markers, projectile routing,
+  rocket-jump, and exact accuracy/timing remain open.
+- [ ] Rocket Launcher radius-4 explosion destroys at most one lowest-ID
+  ordinary ground item per clear blast cell when post-falloff damage is greater
+  than `10`, emits `GroundItemDestroyed` after actor processing, and preserves
+  non-destructive cells; direct-core, replay, MCP, and BrowserSession parity
+  remain required.
 - [x] Typed chaingun preserves pinned 9mm relation, 40-round clip, `1d6`
   damage range, description, replay kind, and `SPRITE_CHAINGUN` slot;
   chainfire/burst effects and exact timing/accuracy remain open.

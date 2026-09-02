@@ -128,7 +128,7 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// seventh-level chainfire, the prior Malek's Armor, Missile Launcher, and
 /// Combat Shotgun policies, and the typed ordinary-fire cost policies through
 /// Laser Rifle.
-pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 133;
+pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 134;
 
 /// Procedural-generation semantics identifier expected for replays that carry
 /// a procedural generation configuration. Version 2 includes the exact
@@ -153,7 +153,9 @@ pub struct ReplayMetadata {
   /// Engine crate version string.
   pub engine_version: String,
   /// Gameplay semantics version required to interpret the command history.
-  /// Version 133 includes Null Pointer's typed Plasma mitigation on actor
+  /// Version 134 includes Rocket Launcher's thresholded ground-item
+  /// destruction after post-falloff damage; version 133 includes Null
+  /// Pointer's typed Plasma mitigation on actor
   /// splash; version 132 includes Anti-Freak Jackal's typed Fire mitigation on
   /// actor splash; version 131 includes Red Armor's typed Fire mitigation on
   /// actor splash; version 130 includes Blue Armor's typed Plasma mitigation
