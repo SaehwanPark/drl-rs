@@ -500,7 +500,7 @@ fn standard_bfg_exact_hit_resolves_even_at_zero_accuracy() {
         target_id: event_target,
         amount,
         source: DamageSource::Actor(attacker_id),
-        damage_type: None,
+        damage_type: Some(DamageType::Plasma),
         ..
       } if *event_target == target_id && *attacker_id == player_id => Some(*amount),
       _ => None,

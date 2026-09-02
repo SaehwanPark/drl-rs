@@ -1,7 +1,8 @@
 # Standard BFG 9000 delayed explosion evidence
 
-Status: delivered bounded typed schedule metadata, immediate actor fanout, and
-thresholded ordinary ground-item destruction in `0.2.269`; delayed
+Status: active bounded typed direct Plasma classification plus delivered
+schedule metadata, immediate actor fanout, and thresholded ordinary ground-item
+destruction (the schedule/fanout/item portions landed in `0.2.269`); delayed
 timing/state-machine parity, controlled runtime comparison, browser capture,
 and audiovisual parity remain `NOT_RUN`.
 
@@ -31,9 +32,10 @@ and an untracked `fpcvalkyrie/` directory; none overlap the sources below.
 
 ## DRL-Rust boundary
 
-Gameplay semantics `78` (project version `0.2.269`) records one typed
-`Bfg9000ExplosionScheduled` event after the standard BFG 9000 direct-target hit,
-then immediately resolves the in-bounds, line-of-sight-cleared radius-8 cells
+Gameplay semantics `136` (project version `0.2.334`) records the Standard BFG
+9000 direct-target hit as typed `DamageType::Plasma`, then emits one typed
+`Bfg9000ExplosionScheduled` event and immediately resolves the in-bounds,
+line-of-sight-cleared radius-8 cells
 in stable center-then-ring order. Each clear cell consumes one `10d6` Plasma
 roll without distance falloff; `EFSELFSAFE` skips the firing actor, other living
 actors are processed once with radial integer `damage / 16` knockback before
