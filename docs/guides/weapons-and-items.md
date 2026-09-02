@@ -29,6 +29,9 @@ description: "Comprehensive armory encyclopedia: ballistic firearms, energy weap
 ### 4. Heavy Rocket & Explosive Launchers
 - **Rocket Launcher**: High-explosive ordnance firing single rockets with a bounded radius-4 actor splash.
 - **Missile Launcher**: Multi-tube launcher holding up to 4 rockets for continuous area-of-effect suppression.
+- **Anti-Freak Jackal**: Unique aimed-fire sidearm whose successful hit resolves a
+  radius-1 `5d3` Fire splash; Red Armor's typed 25% Fire resistance applies
+  before its flat protection on blast damage.
 
 ---
 

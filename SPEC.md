@@ -1,10 +1,11 @@
 # Specification
 
 Last reviewed: 2026-09-02
-Current project version: `0.2.329`
-Audited starting checkpoint: `main` at `2dc55b6` (PR #444 Blue Armor merge
+Current project version: `0.2.330`
+Audited starting checkpoint: `main` at `402ea05` (PR #445 Red Armor merge
 and steering baseline reconciled)
-Delivery checkpoint: `main` merge commit `530794c` (PR #445, merged)
+Delivery checkpoint: **in progress** on temporary branch
+`codex/anti-freak-fire-resistance`
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -22,51 +23,54 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 - `INCONCLUSIVE` — **Evidence unresolved**: available evidence cannot support
   the claim.
 
-## 2. Active implementation slice: M9 — Red Armor Fire mitigation
+## 2. Active implementation slice: M9 — Anti-Freak Jackal Fire mitigation
 
-Slice status: **delivered and verified** at the delivery checkpoint above.
+Slice status: **in progress** on the temporary branch above.
 
 ### 2.1 Objective
 
-Apply the documented Red Armor `25%` Fire resistance to the existing typed
-actor-splash damage path. Resistance is applied before the existing flat armor
-protection and uses deterministic integer rounding with the legacy minimum-one
-rule. The item catalog remains the single source for the value; no broad legacy
-resistance stack is recreated.
+Route the existing Anti-Freak Jackal radius-1 explosion through the typed Fire
+damage path. Red Armor's catalog-defined `25%` Fire resistance is applied before
+the existing flat armor protection with deterministic integer rounding and the
+legacy minimum-one rule. The item catalog remains the single source for the
+value; no broad legacy resistance stack is recreated.
 
-This is a bounded vertical fidelity slice. It covers typed actor damage already
-emitted by the Rocket Fire splash and leaves direct Fire weapon classification,
-armor durability/body zones, equipment slots, hooks, difficulty modifiers, and
-the remaining Plasma/Acid resistance families for separate work.
+This is a bounded vertical fidelity slice. It preserves the existing
+center-plus-eight-neighbor fanout, one `5d3` roll per blast cell, radial
+knockback, raw-damage ground-ammo threshold, event ordering, and transaction
+boundaries while adding the missing typed mitigation. Direct Fire weapon
+classification, armor durability/body zones, equipment slots, hooks, difficulty
+modifiers, and the remaining Plasma/Acid resistance families remain separate
+work.
 
 ### 2.2 Audited starting point
 
-At audited starting revision `2dc55b6` (version `0.2.328`):
+At audited starting revision `402ea05` (version `0.2.329`):
 
-- Red Armor is definition-covered with protection `4` and durability `100`,
-  but has no typed Fire resistance field or runtime mitigation.
-- `GameEvent::DamageApplied` and the Rocket actor-splash policy already carry
-  `DamageType::Fire`; the typed world route currently has no Red Armor Fire
-  resistance to apply.
-- The legacy item record (`items.lua:74-90`) gives Red Armor `resist.fire =
-  25`. Legacy `dfbeing.pas:2078-2182` applies typed percentage resistance
-  before armor protection and clamps nonzero damage to at least one point.
+- Anti-Freak Jackal's custom splash resolver emits a typed Fire event but calls
+  the untyped `World::apply_damage`, so Red Armor does not mitigate its blast.
+- The Anti-Freak item record (`uitems.lua:321-357`) documents `5d3` Fire damage
+  and radius `1`; the pinned explosion loop (`dflevel.pas:1039-1080`) passes its
+  damage type into `ApplyDamage` for each actor.
+- Red Armor is already definition-backed with protection `4`, durability `100`,
+  and `25%` Fire resistance. The typed actor/world path applies that
+  percentage before flat protection using the verified integer rounding and
+  minimum-one policy.
 
 ### 2.3 Scope and ownership
 
-- **Roadmap:** M9 vertical canonical-fidelity completion for the Red Armor
-  Fire mitigation branch.
-- **Primary owners:** the armor content definition owns the resistance value;
-  `ArmorProperties` exposes typed lookup; `Actor` owns pure mitigation order;
-  `World` and `Game` route typed splash damage; boundary crates remain
+- **Roadmap:** M9 vertical canonical-fidelity completion for the Anti-Freak
+  Jackal Fire mitigation branch.
+- **Primary owners:** the Anti-Freak behavior resolver owns blast geometry,
+  rolls, and event ordering; `World` routes typed damage; the armor catalog and
+  `ArmorProperties` own the resistance value and lookup; boundary crates remain
   projections only.
-- **Content registration:** every armor catalog entry carries explicit typed
-  resistance fields, with Red Armor set to `25` Fire, the delivered Blue Armor
-  set to `20` Plasma, and other current values explicitly `0`; no
-  archetype-name match or duplicate resistance table is introduced.
-- **Project version:** implementation advances `VERSION` from `0.2.328` to
-  `0.2.329`.
-- **Replay/RNG:** gameplay semantics advance from `130` to `131`; replay wire,
+- **Content registration:** Red Armor remains the single catalog source for
+  `25` Fire resistance; no archetype-name match or duplicate resistance table
+  is introduced.
+- **Project version:** implementation advances `VERSION` from `0.2.329` to
+  `0.2.330`.
+- **Replay/RNG:** gameplay semantics advance from `131` to `132`; replay wire,
   RNG sampling (`1`), generator semantics (`2`), and ruleset identity
   (`drl-rs-ruleset-v1`) remain unchanged. Resistance consumes no RNG; accepted
   and rejected command transaction guarantees remain unchanged.
@@ -78,59 +82,49 @@ At audited starting revision `2dc55b6` (version `0.2.328`):
 - Percentage mitigation is computed with integer arithmetic, rounds to nearest
   for positive values, and clamps a nonzero resisted amount to one before flat
   protection. Zero damage remains zero.
-- The typed route is used by the existing Rocket Fire actor splash; BFG Plasma
-  retains its delivered Blue Armor mitigation, while untyped direct hits and
-  environment damage preserve their prior behavior.
+- The Anti-Freak actor splash now uses the typed Fire route; the delivered
+  Rocket Fire and BFG Plasma paths retain their behavior, while untyped direct
+  hits and unrelated environment damage preserve their prior behavior.
+- Blast-cell RNG sampling, geometry, knockback, raw ground-ammo threshold, and
+  event/death ordering remain unchanged.
 - The existing core transaction guard still owns command rejection and exact
   state/RNG restoration; this slice adds no new mutable queue or callback.
 - The core remains independent of filesystem, browser, audio, and MCP IO.
 
 ### 2.5 Acceptance criteria
 
-- [x] Red Armor’s catalog resistance is carried into `ArmorProperties` and a
-  pure typed mitigation helper covers rounding, minimum-one, and zero cases.
-- [x] Rocket Fire actor splash routes through typed mitigation; Red Armor
-  reduces the same deterministic hit while Blue Armor Plasma and non-Fire
-  paths remain unchanged.
-- [x] Existing rejection/rollback, replay, MCP, metrics/audio/render, and
-  BrowserSession parity tests pass without new wire or RNG behavior.
-- [x] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
-  and an attributable independent determinism review pass on the final
-  implementation commit.
+- [x] The Anti-Freak actor splash routes through typed Fire mitigation and
+  retains the existing event, knockback, ground-ammo, and death ordering.
+- [x] A same-seed replay pair proves that Red Armor reduces the player splash
+  amount by the catalog-defined resistance plus flat protection while the
+  unarmored amount remains the raw roll.
+- [x] Existing Anti-Freak rejection/rollback, replay, MCP, metrics/audio/render,
+  and BrowserSession parity tests pass without new wire or RNG behavior.
+- [ ] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
+  hosted checks, and an attributable independent determinism review pass on the
+  final implementation commit.
 
 ### 2.6 Non-goals
 
 - No full legacy resistance aggregation across weapons, body zones, hooks,
   difficulty, or durability; no new equipment-slot model.
 - No direct Fire weapon classification, Plasma/Acid resistance migration,
-  terrain/content mutation, or audiovisual/balance work.
+  terrain/cell destruction, or audiovisual/balance work.
 - No claim of controlled legacy runtime, audiovisual, balance, browser, or
   performance parity beyond the current-Rust tests and hosted browser gate.
 
 ### 2.7 Evidence boundary
 
-This slice proves the current-Rust Red Armor mitigation branch for typed
-Fire actor splash and its stable boundary projections. It will not prove
-legacy body-zone aggregation, direct Fire classification, other resistance
-families, controlled legacy runtime, audiovisual parity, balance, or human
-play; those surfaces remain open or `NOT_RUN` in the roadmap.
+This slice proves the current-Rust Anti-Freak Jackal Fire actor-splash route,
+Red Armor mitigation, replay determinism, and stable boundary projections. It
+will not prove legacy body-zone aggregation, direct Fire classification, other
+resistance families, controlled legacy runtime, audiovisual parity, balance, or
+human play; those surfaces remain open or `NOT_RUN` in the roadmap.
 
 ### 2.8 Delivery evidence
 
-- Independent determinism review of implementation head
-  `3370713fc66c1585fafa2a0d7fe8d6357902becf`: **PASS**. The focused
-  follow-up review of docs-only steering reconciliation at final branch head
-  `4688048a426d273c13b6ca9d4b3e842c37371d8b`: **PASS**.
-- Local workspace tests, clippy, formatting, version check, repository checks,
-  and native/headless browser checks: **PASS**. The optional reference-capture
-  preflight is `NOT_RUN` because its local manifest is unavailable.
-- PR #445 hosted Repository checks and WASM browser checks: **PASS** in run
-  `33644720157`. The protected-path Review policy check failed closed under the
-  documented solo-maintainer `enforce_admins=false` exception; administrator
-  merge was used after the review receipt was recorded.
-- Merge checkpoint: `530794c`; the temporary implementation branch was removed
-  locally and remotely. No controlled legacy runtime, audiovisual, balance, or
-  human-play claim is inferred from these checks.
+- Implementation and delivery evidence will be recorded here after the
+  independent review, hosted checks, merge, and post-merge reconciliation.
 
 ## 3. Enduring invariants
 
