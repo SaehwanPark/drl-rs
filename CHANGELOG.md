@@ -3,6 +3,17 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.331]
+
+- Routed Charch's Null Pointer radius-1 actor splash through typed Plasma
+  mitigation. Blue Armor's catalog-defined 20% Plasma resistance now applies
+  before flat protection, while the fixed `10d1` fanout, stable deduplication,
+  event/death ordering, rejection boundaries, and RNG state remain unchanged.
+  Same-seed replay coverage proves the armored and unarmored paths share the
+  same raw roll sequence. Gameplay semantics advance from `132` to `133`;
+  broader legacy resistance aggregation and the legacy SPLASMA armor divisor
+  remain outside this bounded Rust vocabulary.
+
 ## [0.2.330]
 
 - Routed the Anti-Freak Jackal's existing radius-1 explosion through typed Fire

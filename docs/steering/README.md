@@ -62,9 +62,11 @@ Legacy behavior evidence lives under [`../legacy-behavior/`](../legacy-behavior/
 the current Gate D stress-case notes are
 [`medical-powerarmor.md`](../legacy-behavior/medical-powerarmor.md) and
 [`subtle-knife.md`](../legacy-behavior/subtle-knife.md), plus
-[`trigun.md`](../legacy-behavior/trigun.md). The active Anti-Freak Jackal
-Fire-mitigation slice adds
-[`anti-freak-jackal-fire-profile.md`](../legacy-behavior/anti-freak-jackal-fire-profile.md).
+[`trigun.md`](../legacy-behavior/trigun.md). The delivered Anti-Freak Jackal
+Fire-mitigation slice added
+[`anti-freak-jackal-fire-profile.md`](../legacy-behavior/anti-freak-jackal-fire-profile.md);
+the active Null Pointer Plasma-mitigation slice adds
+[`null-pointer-plasma-resistance-profile.md`](../legacy-behavior/null-pointer-plasma-resistance-profile.md).
 
 
 ## Agent harness

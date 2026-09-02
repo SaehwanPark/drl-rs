@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-09-02
-Current project version: `0.2.330`
+Current project version: `0.2.331`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.330)
+## 3. Current Progress Summary (`VERSION` 0.2.331)
 
 ### Delivered Foundations
 
@@ -1280,6 +1280,16 @@ verification item uses explicit status semantics:
   optional detached signatures, cache invalidation, and checkout binding.
 
 ### Active & Open Work
+
+- **Active Slice — M9 Null Pointer Plasma mitigation (`0.2.331`):** The
+  bounded branch routes the existing Null Pointer radius-1 actor splash through
+  typed Plasma damage so Blue Armor's catalog-defined 20% resistance applies
+  before flat protection. Same-seed replay coverage proves the fixed `10d1`
+  fanout preserves RNG state while reducing only the armored recipient's
+  damage. The final implementation, independent review, hosted checks, and
+  merge checkpoint are pending; the legacy SPLASMA armor divisor, broader
+  resistance aggregation, direct Plasma classification, controlled runtime,
+  audiovisual parity, and balance remain open or `NOT_RUN`.
 
 - **Delivered Slice — M9 Anti-Freak Jackal Fire mitigation (`0.2.330`):** PR
   #446 merged as `7fb27e1`. The exact final implementation head

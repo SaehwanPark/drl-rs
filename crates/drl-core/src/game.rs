@@ -2659,10 +2659,11 @@ impl Game {
         continue;
       };
 
-      let (taken, lethal, death_cause) = self.state.world.apply_damage(
+      let (taken, lethal, death_cause) = self.state.world.apply_damage_typed(
         target_id,
         NULL_POINTER_EXPLOSION_DAMAGE,
         DamageSource::Environment,
+        DamageType::Plasma,
       )?;
       let remaining = self
         .state

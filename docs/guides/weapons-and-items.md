@@ -51,7 +51,7 @@ description: "Comprehensive armory encyclopedia: ballistic firearms, energy weap
 | Armor | Protection | Special Mechanics & Behavior |
 |---|---|---|
 | **Green Armor** | 30% Damage Reduction | Standard combat security vest. Durable and lightweight. |
-| **Blue Armor** | 2 flat protection; 20% Plasma resistance on typed BFG fanouts | Heavy kevlar and ceramic plate suit. Broader resistance aggregation remains open. |
+| **Blue Armor** | 2 flat protection; 20% Plasma resistance on typed BFG and Null Pointer fanouts | Heavy kevlar and ceramic plate suit. Broader resistance aggregation remains open. |
 | **Red Armor** | 4 flat protection; 25% Fire resistance on typed Rocket and Anti-Freak fanouts | High-grade armor that reduces Fire splash before flat protection. Broader resistance aggregation remains open. |
 | **Lava Armor** | 75% Thermal Reduction | Self-repairing suit. Standing in lava tiles recharges durability over time. |
 | **Malek's Armor** | 60% All-round Reduction | Ancient demonic power armor. Slowly regenerates durability over time. |
@@ -65,7 +65,7 @@ description: "Comprehensive armory encyclopedia: ballistic firearms, energy weap
 - **Subtle Knife**: Interdimensional blade. Can be **Invoked** to cut through space and instantly sever adjacent enemy lifelines.
 - **Grammaton Beretta**: Dual-action cleric firearm supporting Single, 3-round Burst, and Full-Auto firing modes.
 - **Acid Spitter**: Bio-organic corrosive projector. Uses environmental acid pools to reload corrosive bio-rounds.
-- **Null Pointer**: Experimental glitch weapon. Applies pure `10d1` plasma splash damage directly to visible actors.
+- **Null Pointer**: Experimental glitch weapon. Applies a fixed `10d1` typed Plasma splash to visible actors; Blue Armor's catalog-defined 20% Plasma resistance applies before its flat protection.
 - **Phase Device**: Emergency teleportation device. Instantly relocates the user to a clear floor tile away from danger.
 - **Large / Small Medpacks**: Field medical kits restoring health up to the maximum hit point threshold.
 
