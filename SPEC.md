@@ -4,7 +4,7 @@ Last reviewed: 2026-09-02
 Current project version: `0.2.332`
 Audited starting checkpoint: `main` at `3806611` (PR #447 Null Pointer merge
 and canonical docs reconciliation)
-Delivery checkpoint: pending for `codex/rocket-ground-item-destruction`
+Delivery checkpoint: `main` merge commit `e902d71` (PR #448, merged)
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -24,7 +24,7 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 
 ## 2. Active implementation slice: M9 — Rocket Launcher ground-item destruction
 
-Slice status: **in progress** on the bounded implementation branch above.
+Slice status: **delivered and verified** at the delivery checkpoint above.
 
 ### 2.1 Objective
 
@@ -91,15 +91,15 @@ At audited starting revision `3806611` (version `0.2.331`):
 
 ### 2.5 Acceptance criteria
 
-- [ ] Rocket Launcher blast cells remove the lowest-ID ordinary ground item only
+- [x] Rocket Launcher blast cells remove the lowest-ID ordinary ground item only
   for post-falloff damage greater than `10`, preserve non-destructive cells, and
   emit the event after actor processing.
-- [ ] Same-seed direct/replay coverage proves item selection and event output
+- [x] Same-seed direct/replay coverage proves item selection and event output
   are repeatable while the final RNG state matches the expected per-cell roll
   stream.
-- [ ] Existing Rocket Launcher rejection/rollback, replay, MCP, metrics/audio/
+- [x] Existing Rocket Launcher rejection/rollback, replay, MCP, metrics/audio/
   render, and BrowserSession parity tests pass without new wire or RNG behavior.
-- [ ] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
+- [x] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
   hosted checks, and an attributable independent determinism review pass on the
   final implementation commit.
 
@@ -123,13 +123,20 @@ play; those surfaces remain open or `NOT_RUN` in the roadmap.
 
 ### 2.8 Delivery evidence
 
-- Independent determinism review of the final implementation head: **pending**.
-- Local workspace, browser, repository, and hosted checks: **pending**. The
-  optional reference-capture preflight remains `NOT_RUN` unless its local
-  manifest becomes available.
-- Merge checkpoint and temporary-branch removal: **pending**. Until those
-  checkpoints exist, no controlled legacy runtime, audiovisual, balance, or
-  human-play claim is inferred.
+- Independent determinism review of final head
+  `49f1451f59ce883a84cd10d0e01d8e3793540572`: **PASS** by
+  `/root/red_armor_review`; no severity-ranked defects or focused fix were
+  required.
+- Local workspace tests, clippy, formatting, version check, repository checks,
+  and native/headless browser checks: **PASS**. The optional reference-capture
+  preflight is `NOT_RUN` because its local manifest is unavailable.
+- PR #448 hosted Repository checks and WASM browser checks: **PASS** in run
+  `33653780858`. The protected-path Review policy check failed closed under the
+  documented solo-maintainer `enforce_admins=false` exception; administrator
+  merge was used after the review receipt was recorded.
+- Merge checkpoint: `e902d71`; the temporary implementation branch was removed
+  locally and remotely. No controlled legacy runtime, audiovisual, balance, or
+  human-play claim is inferred from these checks.
 
 ## 3. Enduring invariants
 

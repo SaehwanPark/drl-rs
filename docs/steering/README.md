@@ -1,9 +1,9 @@
 # Development Steering
 
 Last reviewed: 2026-09-02
-Repository baseline reviewed: `5b87614`
-Latest pull request inspected: `#447`
-Project version at review: `0.2.331`
+Repository baseline reviewed: `e902d71`
+Latest pull request inspected: `#448`
+Project version at review: `0.2.332`
 
 ## Purpose
 
@@ -67,6 +67,8 @@ Fire-mitigation slice added
 [`anti-freak-jackal-fire-profile.md`](../legacy-behavior/anti-freak-jackal-fire-profile.md);
 the delivered Null Pointer Plasma-mitigation slice adds
 [`null-pointer-plasma-resistance-profile.md`](../legacy-behavior/null-pointer-plasma-resistance-profile.md).
+The delivered Rocket Launcher ground-item slice is documented in
+[`rocket-launcher-profile.md`](../legacy-behavior/rocket-launcher-profile.md).
 
 
 ## Agent harness

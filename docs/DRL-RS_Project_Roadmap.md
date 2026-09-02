@@ -1281,12 +1281,13 @@ verification item uses explicit status semantics:
   geometry, deduplication, event/death ordering, and rejection boundaries
   remain unchanged. The legacy SPLASMA armor divisor and broader resistance
   aggregation remain out of scope.
-- **Active M9 Rocket Launcher ground-item destruction (`0.2.332`):** The
-  bounded follow-up branch adds the pinned post-falloff `6d6` threshold rule:
-  a blast cell with damage greater than `10` removes at most its lowest-ID
-  ordinary ground item after actor processing. Same-seed replay coverage keeps
-  existing radius-4 geometry, Fire mitigation, event ordering, and RNG state
-  explicit; terrain/content callbacks, feature-item markers, delayed queues,
+- **M9 Rocket Launcher ground-item destruction (`0.2.332`, delivered in PR
+  #448):** The existing radius-4 Rocket Launcher Fire fanout now removes at
+  most the lowest-ID ordinary ground item on each clear blast cell when
+  post-falloff `6d6` damage is greater than `10`, after actor processing.
+  Same-seed direct/replay coverage proves item selection and RNG state;
+  geometry, Fire mitigation, event ordering, and rejection boundaries remain
+  unchanged. Feature markers, terrain/content callbacks, delayed queues,
   projectile routing, rocket-jump, and audiovisual parity remain open.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
@@ -1296,13 +1297,18 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active Slice — M9 Rocket Launcher ground-item destruction (`0.2.332`):**
-  The bounded branch from audited `main` `3806611` adds the legacy thresholded
-  ordinary ground-item effect to the existing radius-4 Fire fanout. Post-falloff
-  damage greater than `10` removes only the lowest-ID represented item after
-  actor processing; exact RNG state, geometry, typed mitigation, rejection
-  boundaries, and boundary projections remain unchanged. Implementation,
-  independent review, hosted checks, and merge checkpoint are pending.
+- **Delivered Slice — M9 Rocket Launcher ground-item destruction (`0.2.332`):**
+  PR #448 merged as `e902d71`. The exact implementation head
+  `49f1451f59ce883a84cd10d0e01d8e3793540572` adds the pinned post-falloff
+  thresholded ordinary ground-item effect to the existing radius-4 Fire
+  fanout: damage greater than `10` removes only the lowest-ID represented item
+  after actor processing. The independent determinism review returned PASS;
+  local and hosted Repository/WASM checks pass, while the documented
+  solo-maintainer Review-policy exception was used. Same-seed direct/replay
+  coverage proves deterministic selection and stable RNG state; feature
+  markers, terrain/content callbacks, delayed queues, projectile routing,
+  rocket-jump, controlled runtime, audiovisual parity, and balance remain open
+  or `NOT_RUN`.
 
 - **Delivered Slice — M9 Null Pointer Plasma mitigation (`0.2.331`):** PR
   #447 merged as `5b87614`. The exact implementation head
@@ -1327,8 +1333,15 @@ verification item uses explicit status semantics:
   broader legacy resistance aggregation, direct Fire classification, controlled
   runtime, audiovisual parity, and balance remain open or `NOT_RUN`.
 
-- **Latest Audited Checkpoint:** `main` merge commit `5b87614` (PR #447,
-  version `0.2.331`). The Null Pointer implementation head
+- **Latest Audited Checkpoint:** `main` merge commit `e902d71` (PR #448,
+  version `0.2.332`). The Rocket Launcher implementation head
+  `49f1451f59ce883a84cd10d0e01d8e3793540572` has an independent
+  determinism-review PASS receipt; local and hosted Repository/WASM checks
+  pass. The hosted Review policy check failed closed because the sole
+  maintainer cannot create a non-self approval, so the documented live
+  `enforce_admins=false` exception was used. Controlled human, audiovisual,
+  and reference-capture surfaces remain `NOT_RUN` where prerequisites are
+  unavailable. The preceding Null Pointer implementation head
   `0a066a829781fe98b3d9a3f0b2fa9d3b7e85a174` has an independent
   determinism-review PASS receipt; local and hosted Repository/WASM checks
   pass. The hosted Review policy check failed closed because the sole
@@ -1456,6 +1469,17 @@ verification item uses explicit status semantics:
   exception is recorded above. The legacy SPLASMA armor divisor, broader
   resistance aggregation, direct Plasma classification, controlled runtime,
   audiovisual parity, and balance remain open or `NOT_RUN`.
+- **Delivered Slice — M9 Rocket Launcher ground-item destruction (`0.2.332`):**
+  PR #448 merged as `e902d71`. Final head
+  `49f1451f59ce883a84cd10d0e01d8e3793540572` adds one lowest-ID ordinary
+  ground-item destruction per clear radius-4 blast cell when post-falloff
+  `6d6` Fire damage exceeds `10`, after actor processing and before lethal
+  follow-up. Direct-core and replay coverage prove strict threshold, item
+  selection, event ordering, and RNG stability; independent review and hosted
+  Repository/WASM checks pass under the documented solo-maintainer
+  Review-policy exception. Feature markers, terrain/content callbacks, delayed
+  queues, projectile routing, rocket-jump, controlled runtime, audiovisual
+  parity, and balance remain open or `NOT_RUN`.
 - **Process Gate (M0, closed):** Keep `SPEC.md` bounded to one active slice and
   require an attributable independent determinism-review disposition for every
   replay-visible or legacy-fidelity slice. PR #436 records and enforces the
