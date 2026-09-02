@@ -4,7 +4,7 @@ Last reviewed: 2026-09-02
 Current project version: `0.2.336`
 Audited starting checkpoint: `main` at `28f413c` (Nuclear BFG 9000 direct-Plasma
 slice and canonical documentation reconciliation)
-Delivery checkpoint: `main` merge commit `c58abc9` (PR #451, merged)
+Delivery checkpoint: **pending** for the active branch
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -24,8 +24,8 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 
 ## 2. Active implementation slice: M9 — BFG 10K direct Plasma classification
 
-Slice status: **in progress** on temporary branch
-`codex/bfg10k-direct-plasma-classification`.
+Slice status: **implementation complete; handoff in progress** on temporary
+branch `codex/bfg10k-direct-plasma-classification`.
 
 ### 2.1 Objective
 
@@ -93,19 +93,19 @@ At audited starting revision `28f413c` (version `0.2.335`):
 
 ### 2.5 Acceptance criteria
 
-- [ ] BFG 10K direct volley hits emit typed Plasma damage and Blue Armor reduces
+- [x] BFG 10K direct volley hits emit typed Plasma damage and Blue Armor reduces
   the applied amounts using the existing deterministic
   resistance-before-flat protection formula.
-- [ ] An unarmored control preserves all five raw direct damage amounts, while
+- [x] An unarmored control preserves all five raw direct damage amounts, while
   the same seed keeps the raw rolls and final RNG state identical between
   armored and unarmored targets.
-- [ ] Direct replay and repeated replay runs produce identical game state,
+- [x] Direct replay and repeated replay runs produce identical game state,
   event stream, and typed direct-volley projection; stale semantics `137` is
   rejected before execution.
-- [ ] Existing BFG 10K splash/ground-item, chainfire, rejection/rollback,
+- [x] Existing BFG 10K splash/ground-item, chainfire, rejection/rollback,
   replay, MCP, metrics/audio/render, and BrowserSession parity tests pass
   without new wire or RNG behavior.
-- [ ] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
+- [x] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
   hosted checks, and an attributable independent determinism review pass on the
   final implementation commit.
 
@@ -129,11 +129,21 @@ resistance aggregation, durability, balance, audiovisual parity, or human play.
 
 ### 2.8 Delivery evidence
 
-Delivery evidence will be recorded after implementation, hosted checks, and an
-independent determinism review complete. The optional reference-capture
-preflight remains `NOT_RUN` when its local manifest is unavailable; controlled
-legacy runtime, audiovisual, and human-play surfaces remain outside this
-slice's evidence boundary.
+Delivery evidence is complete for implementation head `21c9df4`:
+
+- Independent determinism review: **PASS** by `/root/rocket_review`; no
+  actionable findings were identified.
+- Focused and locked workspace tests, Clippy, formatting, version check,
+  repository checks, native/headless browser checks, and `git diff --check`:
+  **PASS**. The optional reference-capture preflight is `NOT_RUN` because its
+  local manifest is unavailable.
+- PR #452 hosted Repository and WASM browser checks: **PASS** in run
+  `33664274355`. The protected-path Review policy check failed closed in run
+  `33664274159` because the sole maintainer cannot create a non-self approval;
+  the documented live `enforce_admins=false` exception remains in force after
+  the independent review receipt was recorded.
+- Merge remains pending; no controlled legacy runtime, audiovisual, balance,
+  or human-play claim is inferred from these checks.
 
 ## 3. Enduring invariants
 
