@@ -3,6 +3,17 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.340]
+
+- Routed each successful Blaster ordinary and aimed direct target hit through
+  the existing typed Plasma path. Blue Armor's catalog-defined 20% Plasma
+  resistance now applies before flat protection, while raw damage, one-cell
+  cost, recharge timer, aimed-fire action cost, no-reload policy, event order,
+  and rejection boundaries remain unchanged. Focused same-seed, aimed-fire,
+  replay, and stale-semantics tests verify the contract; callback timing,
+  broader resistance aggregation, and audiovisual parity remain open. Gameplay
+  semantics advance from `141` to `142`.
+
 ## [0.2.339]
 
 - Routed each successful Laser Rifle ordinary-fire and already implemented
