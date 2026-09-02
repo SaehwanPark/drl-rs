@@ -2,7 +2,7 @@
 
 Last reviewed: 2026-09-02
 Baseline branch: `main`
-Baseline merge commit: `9132d82`
+Baseline merge commit: `3f059d3`
 Latest pull request inspected: `#450`
 Baseline project version: `0.2.334`
 
@@ -217,7 +217,8 @@ invariants into accepted architecture/ADRs as appropriate, and update the
 roadmap and active specification from verified evidence.
 
 Re-audit before broad M9 migration resumes, or when a new stop-gate candidate
-is selected. The current audited tree is `main` at `9132d82` (PR #450, version
+is selected. The current audited tree is `main` at `3f059d3` (PR #450 docs
+reconciliation, version
 `0.2.334`); local checks, independent review, and hosted Repository/WASM
 checks passed for the delivered bounded Standard BFG 9000 direct-Plasma,
 Rocket Launcher direct-Fire, and Rocket Launcher ground-item slices and their

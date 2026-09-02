@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-09-02
-Current project version: `0.2.334`
+Current project version: `0.2.335`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.334)
+## 3. Current Progress Summary (`VERSION` 0.2.335)
 
 ### Delivered Foundations
 
@@ -1304,6 +1304,13 @@ verification item uses explicit status semantics:
   weapon path remain unchanged. Independent review and hosted Repository/WASM
   checks pass; the documented solo-maintainer Review-policy exception remains
   in force.
+- **Active M9 Nuclear BFG 9000 direct Plasma classification (`0.2.335`):** The
+  bounded follow-up branch routes only the Nuclear BFG 9000 direct target
+  damage through the existing typed Plasma path, so Blue Armor's catalog-defined
+  20% resistance applies before flat protection. Raw damage, exact-hit behavior,
+  RNG order, the already delivered radius-8 splash/item effects, recharge,
+  overload, and every other direct weapon path remain unchanged pending
+  implementation and review.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
@@ -1311,6 +1318,15 @@ verification item uses explicit status semantics:
   optional detached signatures, cache invalidation, and checkout binding.
 
 ### Active & Open Work
+
+- **Active Slice — M9 Nuclear BFG 9000 direct Plasma classification (`0.2.335`):**
+  The bounded branch from audited `main` `3f059d3` routes only the Nuclear BFG
+  9000 direct target damage through typed Plasma mitigation. Blue Armor's
+  catalog-defined 20% resistance applies before flat protection; raw damage,
+  exact-hit behavior, RNG state, splash/item behavior, recharge, overload,
+  rejection boundaries, and boundary projections remain unchanged. The
+  implementation, independent review, hosted checks, and merge checkpoint are
+  pending.
 
 - **Delivered Slice — M9 Standard BFG 9000 direct Plasma classification
   (`0.2.334`):** PR #450 merged as `9132d82`; implementation head `dbbe5e6`
@@ -1371,15 +1387,15 @@ verification item uses explicit status semantics:
   broader legacy resistance aggregation, direct Fire classification, controlled
   runtime, audiovisual parity, and balance remain open or `NOT_RUN`.
 
-- **Latest Audited Checkpoint:** `main` merge commit `9132d82` (PR #450,
-  version `0.2.334`). The Standard BFG 9000 direct-Plasma implementation head
-  `dbbe5e6` has an independent determinism-review PASS receipt; local and
-  hosted Repository/WASM checks pass. The hosted Review policy check failed
-  closed because the sole maintainer cannot create a non-self approval, so the
-  documented live `enforce_admins=false` exception was used. Controlled human,
-  audiovisual, and reference-capture surfaces remain `NOT_RUN` where
-  prerequisites are unavailable. The preceding Rocket Launcher direct-Fire
-  implementation head
+- **Latest Audited Checkpoint:** `main` docs checkpoint `3f059d3` (PR #450,
+  version `0.2.334`). The preceding Standard BFG 9000 direct-Plasma
+  implementation head `dbbe5e6` has an independent determinism-review PASS
+  receipt; local and hosted Repository/WASM checks pass. The hosted Review
+  policy check failed closed because the sole maintainer cannot create a
+  non-self approval, so the documented live `enforce_admins=false` exception
+  was used. Controlled human, audiovisual, and reference-capture surfaces
+  remain `NOT_RUN` where prerequisites are unavailable. The preceding Rocket
+  Launcher direct-Fire implementation head
   `a0a0fcd` has an independent determinism-review PASS receipt; local and
   hosted Repository/WASM checks pass. The hosted Review policy check failed
   closed because the sole maintainer cannot create a non-self approval, so the
@@ -1963,6 +1979,11 @@ scripting.
   workspace, hosted Repository/WASM, and independent determinism-review
   evidence; broader direct Plasma and SPLASMA-divisor behavior remain open or
   `NOT_RUN`.
+- [ ] Nuclear BFG 9000 direct target damage is classified as typed `Plasma`, so
+  Blue Armor's catalog-defined 20% resistance applies before flat protection;
+  raw damage, exact-hit behavior, RNG order, splash/item effects, recharge,
+  overload, and other direct weapons remain unchanged until this bounded branch
+  is reviewed and merged.
 - [x] Typed double/combat shotguns preserve pinned shell relation, clips,
   damage/range scalars, descriptions, replay kinds, and `SPRITE_DSHOTGUN`/
   `SPRITE_CSHOTGUN` slots; callbacks and spread/falloff remain open.
