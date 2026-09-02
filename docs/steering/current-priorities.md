@@ -2,9 +2,9 @@
 
 Last reviewed: 2026-09-02
 Baseline branch: `main`
-Baseline merge commit: `530794c`
-Latest pull request inspected: `#445`
-Baseline project version: `0.2.329`
+Baseline merge commit: `7fb27e1`
+Latest pull request inspected: `#446`
+Baseline project version: `0.2.330`
 
 ## Purpose
 
@@ -217,11 +217,12 @@ invariants into accepted architecture/ADRs as appropriate, and update the
 roadmap and active specification from verified evidence.
 
 Re-audit before broad M9 migration resumes, or when a new stop-gate candidate
-is selected. The current audited tree is `main` at `530794c` (PR #445, version
-`0.2.329`); local checks, independent review, and hosted Repository/WASM
-checks passed for the delivered bounded Red Armor Fire-mitigation slice. Its
-protected-path Review policy check failed closed for the sole maintainer and
-was merged under the live `enforce_admins=false` exception; the preceding
-replay-file, JSON, Rocket Launcher, and Blue Armor slices used the same
-documented exception. Human, audiovisual, performance, and reference-capture
-surfaces remain `NOT_RUN` where prerequisites are unavailable.
+is selected. The current audited tree is `main` at `7fb27e1` (PR #446, version
+`0.2.330`); local checks, independent review, and hosted Repository/WASM
+checks passed for the delivered bounded Anti-Freak Jackal Fire-mitigation
+slice. Its protected-path Review policy check failed closed for the sole
+maintainer and was merged under the live `enforce_admins=false` exception; the
+preceding replay-file, JSON, Rocket Launcher, Blue Armor, and Red Armor slices
+used the same documented exception. Human, audiovisual, performance, and
+reference-capture surfaces remain `NOT_RUN` where prerequisites are
+unavailable.

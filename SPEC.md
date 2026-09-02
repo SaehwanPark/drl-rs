@@ -4,8 +4,7 @@ Last reviewed: 2026-09-02
 Current project version: `0.2.330`
 Audited starting checkpoint: `main` at `402ea05` (PR #445 Red Armor merge
 and steering baseline reconciled)
-Delivery checkpoint: **in progress** on temporary branch
-`codex/anti-freak-fire-resistance`
+Delivery checkpoint: `main` merge commit `7fb27e1` (PR #446, merged)
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -25,7 +24,7 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 
 ## 2. Active implementation slice: M9 — Anti-Freak Jackal Fire mitigation
 
-Slice status: **in progress** on the temporary branch above.
+Slice status: **delivered and verified** at the delivery checkpoint above.
 
 ### 2.1 Objective
 
@@ -100,7 +99,7 @@ At audited starting revision `402ea05` (version `0.2.329`):
   unarmored amount remains the raw roll.
 - [x] Existing Anti-Freak rejection/rollback, replay, MCP, metrics/audio/render,
   and BrowserSession parity tests pass without new wire or RNG behavior.
-- [ ] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
+- [x] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
   hosted checks, and an attributable independent determinism review pass on the
   final implementation commit.
 
@@ -123,8 +122,20 @@ human play; those surfaces remain open or `NOT_RUN` in the roadmap.
 
 ### 2.8 Delivery evidence
 
-- Implementation and delivery evidence will be recorded here after the
-  independent review, hosted checks, merge, and post-merge reconciliation.
+- Independent determinism review of final head
+  `de4b0fdc6d95054a7d4aa2cd78e46f6e59def630`: **PASS** by
+  `/root/red_armor_review`; the follow-up directly asserts equal final RNG
+  state across same-seed armored/unarmored replays.
+- Local workspace tests, clippy, formatting, version check, repository checks,
+  and native/headless browser checks: **PASS**. The optional reference-capture
+  preflight is `NOT_RUN` because its local manifest is unavailable.
+- PR #446 hosted Repository checks and WASM browser checks: **PASS** in run
+  `33647734129`. The protected-path Review policy check failed closed under the
+  documented solo-maintainer `enforce_admins=false` exception; administrator
+  merge was used after the review receipt was recorded.
+- Merge checkpoint: `7fb27e1`; the temporary implementation branch was removed
+  locally and remotely. No controlled legacy runtime, audiovisual, balance, or
+  human-play claim is inferred from these checks.
 
 ## 3. Enduring invariants
 

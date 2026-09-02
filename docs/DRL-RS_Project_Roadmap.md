@@ -1265,6 +1265,14 @@ verification item uses explicit status semantics:
   explicit non-Fire preservation. Broader legacy resistance aggregation,
   direct Fire classification, and other resistance families remain out of
   scope.
+- **M9 Anti-Freak Jackal Fire mitigation (`0.2.330`, delivered in PR #446):**
+  The existing radius-1 Anti-Freak actor splash now routes through typed Fire
+  damage, so Red Armor's catalog-defined 25% resistance applies before flat
+  protection. Same-seed replay coverage proves the armored and unarmored
+  paths share the raw `5d3` roll sequence; fanout geometry, knockback,
+  ground-ammo threshold, event ordering, and rejection boundaries remain
+  unchanged. Broader legacy resistance aggregation and direct Fire
+  classification remain out of scope.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
@@ -1273,16 +1281,27 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active slice — M9 Anti-Freak Jackal Fire mitigation (`0.2.330`):** The
-  temporary branch `codex/anti-freak-fire-resistance` routes the existing
-  radius-1 Anti-Freak explosion through typed Fire damage so Red Armor's
-  catalog-defined 25% resistance applies before flat protection. Same-seed
-  replay coverage preserves the established fanout, RNG order, knockback,
-  ground-ammo threshold, and event ordering; review, hosted checks, merge, and
-  post-merge reconciliation remain open.
+- **Delivered Slice — M9 Anti-Freak Jackal Fire mitigation (`0.2.330`):** PR
+  #446 merged as `7fb27e1`. The exact final implementation head
+  `de4b0fdc6d95054a7d4aa2cd78e46f6e59def630` routes the existing radius-1
+  Anti-Freak actor splash through typed Fire damage so Red Armor's
+  catalog-defined 25% resistance applies before flat protection. The
+  independent determinism review returned PASS; local and hosted Repository/
+  WASM checks pass, while the documented solo-maintainer Review-policy
+  exception was used. Same-seed replay coverage proves the raw roll sequence;
+  broader legacy resistance aggregation, direct Fire classification, controlled
+  runtime, audiovisual parity, and balance remain open or `NOT_RUN`.
 
-- **Latest Audited Checkpoint:** `main` merge commit `530794c` (PR #445,
-  version `0.2.329`). The Red Armor implementation head
+- **Latest Audited Checkpoint:** `main` merge commit `7fb27e1` (PR #446,
+  version `0.2.330`). The Anti-Freak implementation head
+  `49eda1fa38d483db3515f5ff2b37b2bd4b3b41b1` and final evidence/docs head
+  `de4b0fdc6d95054a7d4aa2cd78e46f6e59def630` have an independent
+  determinism-review PASS receipt; local and hosted Repository/WASM checks
+  pass. The hosted Review policy check failed closed because the sole
+  maintainer cannot create a non-self approval, so the documented live
+  `enforce_admins=false` exception was used. Controlled human, audiovisual,
+  and reference-capture surfaces remain `NOT_RUN` where prerequisites are
+  unavailable. The Red Armor implementation head
   `3370713fc66c1585fafa2a0d7fe8d6357902becf` and final docs-only branch head
   `4688048a426d273c13b6ca9d4b3e842c37371d8b` both have independent
   determinism-review PASS receipts; local and hosted Repository/WASM checks
@@ -1378,6 +1397,16 @@ verification item uses explicit status semantics:
   resistance aggregation, direct Fire classification, other resistance
   families, controlled runtime, audiovisual parity, and balance remain open or
   `NOT_RUN`.
+- **Delivered Slice — M9 Anti-Freak Jackal Fire mitigation (`0.2.330`):** PR
+  #446 merged as `7fb27e1`. Final head `de4b0fdc6d95054a7d4aa2cd78e46f6e59def630`
+  routes the radius-1 actor splash through typed Fire mitigation, preserving
+  the established `5d3` fanout/RNG order, knockback, ground-ammo threshold,
+  event ordering, and rejection safety while applying Red Armor's catalog
+  25% resistance before flat protection. The independent determinism review
+  returned PASS; local and hosted Repository/WASM checks pass, and the
+  protected-path Review-policy exception is recorded above. Broader legacy
+  resistance aggregation, direct Fire classification, controlled runtime,
+  audiovisual parity, and balance remain open or `NOT_RUN`.
 - **Process Gate (M0, closed):** Keep `SPEC.md` bounded to one active slice and
   require an attributable independent determinism-review disposition for every
   replay-visible or legacy-fidelity slice. PR #436 records and enforces the
@@ -2116,11 +2145,10 @@ scripting.
   emits `GroundItemDestroyed` after damage, and preserves direct-core, replay,
   generic MCP JSON, and BrowserSession parity; terrain/cell destruction,
   callback state/timing, runtime, and audiovisual parity remain open.
-- [ ] Anti-Freak Jackal's existing Fire splash is being routed through the
-  typed damage path so Red Armor's catalog-defined `25%` Fire resistance is
-  applied before flat protection; same-seed replay proof is present on the
-  active branch, while review, hosted checks, merge, and post-merge evidence
-  remain open.
+- [x] Anti-Freak Jackal's existing Fire splash routes through the typed damage
+  path so Red Armor's catalog-defined `25%` Fire resistance is applied before
+  flat protection; same-seed replay proof and equal final RNG state are
+  verified, while broader legacy resistance aggregation remains open.
 - [x] Malek's Armor has an immutable behavior profile for its
   delay-50/cadence-5/amount-1 durability-recharge fragment; the dedicated
   transition remains authoritative and armor resistance/degradation, runtime,
