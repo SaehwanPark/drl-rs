@@ -212,7 +212,8 @@ pub use rng::GameRng;
 pub use rocket_launcher::{
   ROCKET_LAUNCHER_EXPLOSION_DAMAGE_DICE, ROCKET_LAUNCHER_EXPLOSION_DAMAGE_DIE_SIDES,
   ROCKET_LAUNCHER_EXPLOSION_DELAY, ROCKET_LAUNCHER_EXPLOSION_KNOCKBACK,
-  ROCKET_LAUNCHER_EXPLOSION_RADIUS, apply_distance_falloff, radius_four_blast_positions,
+  ROCKET_LAUNCHER_EXPLOSION_RADIUS, ROCKET_LAUNCHER_GROUND_ITEM_DESTRUCTION_THRESHOLD,
+  apply_distance_falloff, radius_four_blast_positions,
   roll_explosion_damage as roll_rocket_launcher_explosion_damage,
 };
 pub use scenario::{Scenario, ScenarioRunner};

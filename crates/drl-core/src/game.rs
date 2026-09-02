@@ -57,8 +57,8 @@ use crate::pump_action::{PUMP_ACTION_COST, ReloadTransition};
 use crate::rng::GameRng;
 use crate::rocket_launcher::{
   ROCKET_LAUNCHER_EXPLOSION_DELAY, ROCKET_LAUNCHER_EXPLOSION_KNOCKBACK,
-  ROCKET_LAUNCHER_EXPLOSION_RADIUS, radius_four_blast_positions,
-  roll_explosion_damage as roll_rocket_launcher_explosion_damage,
+  ROCKET_LAUNCHER_EXPLOSION_RADIUS, ROCKET_LAUNCHER_GROUND_ITEM_DESTRUCTION_THRESHOLD,
+  radius_four_blast_positions, roll_explosion_damage as roll_rocket_launcher_explosion_damage,
 };
 use crate::scheduler::{ACTION_THRESHOLD, Scheduler};
 use crate::subtle_knife::{SUBTLE_KNIFE_TARGET_DAMAGE, SubtleKnifeError};
@@ -96,7 +96,6 @@ struct ActorSplashPolicy {
 /// Typed ground-item policy applied after each blast cell's actor processing.
 #[derive(Clone, Copy)]
 enum GroundItemSplashPolicy {
-  None,
   LooseAmmo { threshold: u32 },
   Any { threshold: u32 },
 }
@@ -2339,7 +2338,8 @@ impl Game {
 
   /// Resolves the bounded Rocket Launcher radius-4 actor splash immediately
   /// after its schedule event. The legacy delay remains presentation metadata;
-  /// terrain, item, and pending-explosion state are separate work.
+  /// terrain and pending-explosion state are separate work; the bounded
+  /// ground-item threshold is applied in the shared splash policy.
   fn execute_rocket_launcher_splash(
     &mut self,
     source_id: drl_protocol::EntityId,
@@ -2356,7 +2356,9 @@ impl Game {
         damage_type: DamageType::Fire,
         knockback: ROCKET_LAUNCHER_EXPLOSION_KNOCKBACK,
         distance_falloff: true,
-        ground_item: GroundItemSplashPolicy::None,
+        ground_item: GroundItemSplashPolicy::Any {
+          threshold: ROCKET_LAUNCHER_GROUND_ITEM_DESTRUCTION_THRESHOLD,
+        },
       },
       events,
     )
@@ -2504,7 +2506,6 @@ impl Game {
       }
 
       let destroyed_item = match policy.ground_item {
-        GroundItemSplashPolicy::None => None,
         GroundItemSplashPolicy::LooseAmmo { threshold } if damage > threshold => {
           self.state.world.destroy_ground_ammo_at(blast_position)
         }

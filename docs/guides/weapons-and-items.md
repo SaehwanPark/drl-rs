@@ -27,7 +27,7 @@ description: "Comprehensive armory encyclopedia: ballistic firearms, energy weap
 - **Minigun**: Heavy 8-barrel rotary machine gun. Chews through ammo at 8 rounds per salvo, with first-level 6-projectile, second-level 8-projectile, and third-level 12-projectile chainfire bursts for open combat corridors.
 
 ### 4. Heavy Rocket & Explosive Launchers
-- **Rocket Launcher**: High-explosive ordnance firing single rockets with a bounded radius-4 actor splash.
+- **Rocket Launcher**: High-explosive ordnance firing single rockets with a bounded radius-4 Fire splash; post-falloff damage above 10 destroys one lowest-ID ordinary ground item per blast cell.
 - **Missile Launcher**: Multi-tube launcher holding up to 4 rockets for continuous area-of-effect suppression.
 - **Anti-Freak Jackal**: Unique aimed-fire sidearm whose successful hit resolves a
   radius-1 `5d3` Fire splash; Red Armor's typed 25% Fire resistance applies

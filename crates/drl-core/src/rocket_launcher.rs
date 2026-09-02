@@ -14,6 +14,8 @@ pub const ROCKET_LAUNCHER_EXPLOSION_DELAY: u32 = 40;
 pub const ROCKET_LAUNCHER_EXPLOSION_RADIUS: u32 = 4;
 /// Legacy default explosion knockback strength.
 pub const ROCKET_LAUNCHER_EXPLOSION_KNOCKBACK: u32 = 8;
+/// Legacy threshold above which a Rocket Launcher blast destroys a ground item.
+pub const ROCKET_LAUNCHER_GROUND_ITEM_DESTRUCTION_THRESHOLD: u32 = 10;
 
 /// Returns the bounded radius-4 blast cells in deterministic order.
 #[must_use]
@@ -39,6 +41,12 @@ pub const fn apply_distance_falloff(damage: u32, distance: u32) -> u32 {
     value => value,
   };
   damage / divisor
+}
+
+/// Returns whether a post-falloff blast result destroys a representable item.
+#[must_use]
+pub const fn should_destroy_ground_item(damage: u32) -> bool {
+  damage > ROCKET_LAUNCHER_GROUND_ITEM_DESTRUCTION_THRESHOLD
 }
 
 /// Converts a rolled explosion result to the pinned integer knockback distance.
@@ -91,6 +99,12 @@ mod tests {
     assert_eq!(apply_distance_falloff(36, 2), 36);
     assert_eq!(apply_distance_falloff(36, 3), 18);
     assert_eq!(apply_distance_falloff(36, 4), 18);
+  }
+
+  #[test]
+  fn ground_item_destruction_uses_strict_legacy_threshold() {
+    assert!(!should_destroy_ground_item(10));
+    assert!(should_destroy_ground_item(11));
   }
 
   #[test]

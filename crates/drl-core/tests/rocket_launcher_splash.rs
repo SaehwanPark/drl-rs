@@ -50,11 +50,6 @@ fn rocket_launcher_hit_schedules_and_fans_out_with_falloff() {
     .world_mut()
     .spawn_monster(outside, "Outside Target", 500, 0, (0, 0))
     .unwrap();
-  let ammo_id = game.world_mut().allocate_item_id();
-  game
-    .world_mut()
-    .spawn_ground_item(Position::new(7, 9), Item::ammo_rockets(ammo_id, 2))
-    .unwrap();
   game
     .world_mut()
     .player_mut()
@@ -107,12 +102,6 @@ fn rocket_launcher_hit_schedules_and_fans_out_with_falloff() {
     game.world().player().unwrap().hp().current,
     50 - expected_player_splash.unwrap()
   );
-  assert_eq!(
-    game.world().ground_items().get(&ammo_id).unwrap().1.count(),
-    2,
-    "the bounded actor-only resolver must not destroy ground items"
-  );
-
   let attack_index = events
     .iter()
     .position(|event| {

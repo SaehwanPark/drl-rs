@@ -1,9 +1,9 @@
 # Rocket Launcher typed behavior-profile evidence
 
-Status: delivered typed profile plus a bounded actor-only radius-4 direct-hit
-fanout in `0.2.327`. Rocket-jump, projectile/cell/ground-item explosion
-callbacks, exact delayed timing/accuracy, controlled runtime comparison, and
-audiovisual parity remain `NOT_RUN`.
+Status: delivered typed profile plus a bounded radius-4 direct-hit fanout and
+thresholded ground-item destruction in `0.2.332`. Rocket-jump,
+projectile/cell/feature-item explosion callbacks, exact delayed timing/accuracy,
+controlled runtime comparison, and audiovisual parity remain `NOT_RUN`.
 
 ## Pinned source
 
@@ -24,9 +24,10 @@ at revision `17d9be1204751899b2d69d8d3a2dde247bd0cc5c`.
   a successful projectile hit.
 - `src/dflevel.pas:991-1095` iterates clear in-bounds cells, rolls damage per
   cell, applies distance falloff `(distance + 1) div 2`, de-duplicates actors,
-  applies radial knockback using the weapon's default knockback, and then
-  applies actor damage. The same routine can mutate terrain and ground items;
-  those branches are intentionally not claimed by the Rust slice.
+  applies radial knockback using the weapon's default knockback, applies actor
+  damage, and destroys a non-feature item when the post-falloff damage exceeds
+  `10`. Terrain/content and feature-item branches remain outside the current
+  Rust vocabulary.
 
 ## DRL-Rust boundary
 
@@ -38,10 +39,13 @@ event ordering, and transactional clip consumption. On a successful direct hit,
 `drl_core::rocket_launcher` supplies the typed radius-4 geometry, one `6d6`
 roll per clear cell, legacy distance falloff, and `damage / 8` radial
 knockback. `Game` emits `RocketLauncherExplosionScheduled` as presentation
-metadata and immediately resolves the bounded actor-only fanout: the source is
-not self-safe, actors are processed once, and normal death/drop handling is
-retained. Ground items, terrain mutation, projectile routing, delayed queues,
-rocket-jump, and generic legacy callbacks are not reimplemented.
+metadata and immediately resolves the bounded fanout: the source is not
+self-safe, actors are processed once, and normal death/drop handling is
+retained. A post-falloff damage result greater than `10` removes at most the
+lowest-ID represented ground item after actor processing through the existing
+`GroundItemDestroyed` event. Terrain mutation, feature-item markers,
+projectile routing, delayed queues, rocket-jump, and generic legacy callbacks
+are not reimplemented.
 
 The current-Rust behavior is covered by direct-core, replay/scenario,
 MCP/audio/metrics/render, BrowserSession, and workspace tests. A controlled

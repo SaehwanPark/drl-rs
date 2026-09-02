@@ -3,6 +3,18 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.332]
+
+- Added the bounded Rocket Launcher ground-item explosion effect. After
+  post-falloff `6d6` damage exceeds `10`, the radius-4 Fire fanout removes at
+  most the lowest-ID ordinary ground item per clear cell after actor
+  processing, while preserving geometry, typed mitigation, event ordering,
+  rejection boundaries, and RNG state. Same-seed direct/replay coverage
+  verifies deterministic item selection; terrain/content callbacks,
+  feature-item markers, delayed queues, projectile routing, rocket-jump, and
+  audiovisual parity remain open. Gameplay semantics advance from `133` to
+  `134`.
+
 ## [0.2.331]
 
 - Routed Charch's Null Pointer radius-1 actor splash through typed Plasma
