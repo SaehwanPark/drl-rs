@@ -1,7 +1,7 @@
 //! Item domain models, weapon properties, armor, ammunition, and consumables.
 
 use drl_protocol::{
-  ActionCost, AmmoType, EquipmentSlot, HitPoints, ItemArchetype, ItemCategory, ItemId,
+  ActionCost, AmmoType, DamageType, EquipmentSlot, HitPoints, ItemArchetype, ItemCategory, ItemId,
   ItemSpawnKind, ItemView, WeaponFireMode,
 };
 
@@ -55,6 +55,7 @@ pub struct ArmorProperties {
   pub protection: u32,
   pub durability: u32,
   pub max_durability: u32,
+  pub plasma_resistance: u32,
   medical_repair: MedicalRepairState,
   lava_recharge: LavaRechargeState,
   malek_recharge: MalekRechargeState,
@@ -68,9 +69,26 @@ impl ArmorProperties {
       protection,
       durability,
       max_durability,
+      plasma_resistance: 0,
       medical_repair: MedicalRepairState::new(),
       lava_recharge: LavaRechargeState::new(),
       malek_recharge: MalekRechargeState::new(),
+    }
+  }
+
+  /// Adds the catalog-defined Plasma resistance to this armor instance.
+  #[must_use]
+  pub const fn with_plasma_resistance(mut self, plasma_resistance: u32) -> Self {
+    self.plasma_resistance = plasma_resistance;
+    self
+  }
+
+  /// Returns the resistance for one typed damage family.
+  #[must_use]
+  pub const fn resistance(&self, damage_type: DamageType) -> u32 {
+    match damage_type {
+      DamageType::Plasma => self.plasma_resistance,
+      DamageType::Physical | DamageType::Acid | DamageType::Fire => 0,
     }
   }
 
@@ -1034,7 +1052,11 @@ impl Item {
         protection,
         durability,
         max_durability,
-      } => ItemKind::Armor(ArmorProperties::new(protection, durability, max_durability)),
+        plasma_resistance,
+      } => ItemKind::Armor(
+        ArmorProperties::new(protection, durability, max_durability)
+          .with_plasma_resistance(plasma_resistance),
+      ),
       ItemDefinitionKind::PhaseDevice => ItemKind::PhaseDevice,
     };
     Self::new(id, definition.name, definition.description, item_kind)

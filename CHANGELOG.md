@@ -3,6 +3,16 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.328]
+
+- Added the bounded Blue Armor Plasma-resistance path. The catalog now records
+  Blue Armor's documented 20% Plasma resistance, typed BFG actor splash damage
+  applies deterministic integer mitigation before flat armor protection, and
+  non-Plasma/direct-hit paths retain their prior behavior. The broader legacy
+  resistance stack, direct Plasma classification, and other resistance families
+  remain open. Gameplay semantics advance from `129` to `130`; core, replay,
+  browser, and workspace verification remain required for delivery.
+
 ## [0.2.327]
 
 - Delivered the bounded Rocket Launcher direct-hit explosion branch. A

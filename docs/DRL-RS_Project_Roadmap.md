@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-09-02
-Current project version: `0.2.327`
+Current project version: `0.2.328`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.327)
+## 3. Current Progress Summary (`VERSION` 0.2.328)
 
 ### Delivered Foundations
 
@@ -1251,6 +1251,11 @@ verification item uses explicit status semantics:
   render, BrowserSession, full workspace, and hosted Repository/WASM checks
   pass; terrain, ground items, delayed queues, projectile routing, rocket-jump,
   controlled runtime, and audiovisual parity remain open or `NOT_RUN`.
+- **Active M9 Blue Armor Plasma mitigation (`0.2.328`, pending)**: The next
+  bounded fidelity slice carries the documented Blue Armor 20% Plasma
+  resistance from the item catalog into typed actor-splash damage before flat
+  armor protection. Broader legacy resistance aggregation, direct Plasma
+  classification, and other resistance families remain out of scope.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
@@ -1269,6 +1274,10 @@ verification item uses explicit status semantics:
   and reference-capture surfaces remain `NOT_RUN` where prerequisites are
   unavailable. The checkpointed progression audit is
   [`docs/steering/audit-2026-08-30-post-0.2.318.md`](steering/audit-2026-08-30-post-0.2.318.md).
+- **Active Slice Branch:** `codex/blue-armor-plasma-resistance` starts from
+  `626e242` and targets the catalog-backed Blue Armor Plasma-mitigation
+  behavior described in `SPEC.md`; delivery remains pending until its checks
+  and independent review complete.
 - **Steering Disposition — Gate A closed:** Preserve the deterministic core,
   explicit RNG/replay identities, typed content, observation boundary, and
   browser/MCP projections. M10 now binds browser command histories to their

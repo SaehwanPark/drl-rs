@@ -37,6 +37,7 @@ pub enum ItemDefinitionKind {
     protection: u32,
     durability: u32,
     max_durability: u32,
+    plasma_resistance: u32,
   },
   /// The special phase-shift consumable.
   PhaseDevice,
@@ -778,6 +779,7 @@ const GREEN_ARMOR: ItemDefinition = ItemDefinition {
     protection: 5,
     durability: 100,
     max_durability: 100,
+    plasma_resistance: 0,
   },
 };
 
@@ -789,6 +791,7 @@ const BLUE_ARMOR: ItemDefinition = ItemDefinition {
     protection: 2,
     durability: 100,
     max_durability: 100,
+    plasma_resistance: 20,
   },
 };
 
@@ -800,6 +803,7 @@ const RED_ARMOR: ItemDefinition = ItemDefinition {
     protection: 4,
     durability: 100,
     max_durability: 100,
+    plasma_resistance: 0,
   },
 };
 
@@ -811,6 +815,7 @@ const ONYX_ARMOR: ItemDefinition = ItemDefinition {
     protection: 2,
     durability: 100,
     max_durability: 100,
+    plasma_resistance: 0,
   },
 };
 
@@ -822,6 +827,7 @@ const PHASESHIFT_ARMOR: ItemDefinition = ItemDefinition {
     protection: 2,
     durability: 100,
     max_durability: 100,
+    plasma_resistance: 0,
   },
 };
 
@@ -833,6 +839,7 @@ const GOTHIC_ARMOR: ItemDefinition = ItemDefinition {
     protection: 6,
     durability: 200,
     max_durability: 200,
+    plasma_resistance: 0,
   },
 };
 
@@ -844,6 +851,7 @@ const MALEKS_ARMOR: ItemDefinition = ItemDefinition {
     protection: 3,
     durability: 100,
     max_durability: 100,
+    plasma_resistance: 0,
   },
 };
 
@@ -855,6 +863,7 @@ const CYBERNETIC_ARMOR: ItemDefinition = ItemDefinition {
     protection: 7,
     durability: 100,
     max_durability: 100,
+    plasma_resistance: 0,
   },
 };
 
@@ -866,6 +875,7 @@ const NECROARMOR: ItemDefinition = ItemDefinition {
     protection: 6,
     durability: 100,
     max_durability: 100,
+    plasma_resistance: 0,
   },
 };
 
@@ -877,6 +887,7 @@ const MEDICAL_POWERARMOR: ItemDefinition = ItemDefinition {
     protection: 6,
     durability: 100,
     max_durability: 100,
+    plasma_resistance: 0,
   },
 };
 
@@ -888,6 +899,7 @@ const LAVA_ARMOR: ItemDefinition = ItemDefinition {
     protection: 4,
     durability: 100,
     max_durability: 100,
+    plasma_resistance: 0,
   },
 };
 
@@ -899,6 +911,7 @@ const SHIELDED_ARMOR: ItemDefinition = ItemDefinition {
     protection: 2,
     durability: 100,
     max_durability: 100,
+    plasma_resistance: 0,
   },
 };
 
@@ -1494,6 +1507,7 @@ mod tests {
         protection: 5,
         durability: 100,
         max_durability: 100,
+        plasma_resistance: 0,
       }
     );
     assert_eq!(
@@ -1506,6 +1520,7 @@ mod tests {
         protection: 2,
         durability: 100,
         max_durability: 100,
+        plasma_resistance: 20,
       }
     );
     assert_eq!(
@@ -1514,6 +1529,7 @@ mod tests {
         protection: 4,
         durability: 100,
         max_durability: 100,
+        plasma_resistance: 0,
       }
     );
     assert_eq!(
@@ -1522,6 +1538,7 @@ mod tests {
         protection: 2,
         durability: 100,
         max_durability: 100,
+        plasma_resistance: 0,
       }
     );
     assert_eq!(
@@ -1530,6 +1547,7 @@ mod tests {
         protection: 2,
         durability: 100,
         max_durability: 100,
+        plasma_resistance: 0,
       }
     );
     assert_eq!(
@@ -1538,6 +1556,7 @@ mod tests {
         protection: 6,
         durability: 200,
         max_durability: 200,
+        plasma_resistance: 0,
       }
     );
     assert_eq!(
@@ -1546,6 +1565,7 @@ mod tests {
         protection: 3,
         durability: 100,
         max_durability: 100,
+        plasma_resistance: 0,
       }
     );
     assert_eq!(
@@ -1554,6 +1574,7 @@ mod tests {
         protection: 7,
         durability: 100,
         max_durability: 100,
+        plasma_resistance: 0,
       }
     );
     assert_eq!(
@@ -1562,6 +1583,7 @@ mod tests {
         protection: 6,
         durability: 100,
         max_durability: 100,
+        plasma_resistance: 0,
       }
     );
     assert_eq!(
@@ -1570,6 +1592,7 @@ mod tests {
         protection: 6,
         durability: 100,
         max_durability: 100,
+        plasma_resistance: 0,
       }
     );
     assert_eq!(
@@ -1578,6 +1601,7 @@ mod tests {
         protection: 4,
         durability: 100,
         max_durability: 100,
+        plasma_resistance: 0,
       }
     );
     assert_eq!(
@@ -1586,6 +1610,7 @@ mod tests {
         protection: 2,
         durability: 100,
         max_durability: 100,
+        plasma_resistance: 0,
       }
     );
     assert_eq!(

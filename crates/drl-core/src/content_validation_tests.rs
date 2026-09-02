@@ -136,6 +136,31 @@ fn rejects_ammo_pack_amount_above_capacity() {
   );
 }
 
+#[test]
+fn rejects_resistance_above_one_hundred_percent() {
+  let invalid = ItemDefinition {
+    kind: ItemDefinitionKind::Armor {
+      protection: 2,
+      durability: 100,
+      max_durability: 100,
+      plasma_resistance: 101,
+    },
+    archetype: drl_protocol::ItemArchetype::BlueArmor,
+    name: "test armor",
+    description: "test",
+  };
+  assert_eq!(
+    validate_item_definition(&invalid),
+    Err(ContentValidationError::InvalidRange {
+      table: "item",
+      key: "test armor",
+      field: "plasma_resistance",
+      minimum: 101,
+      maximum: 100,
+    })
+  );
+}
+
 fn test_level() -> LevelDefinition {
   LevelDefinition {
     key: "test",

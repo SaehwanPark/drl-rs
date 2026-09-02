@@ -1,3 +1,4 @@
+use drl_core::apply_damage_resistance;
 use drl_core::bfg10k::{radius_two_blast_positions, roll_explosion_damage};
 use drl_core::game::Game;
 use drl_core::item::Item;
@@ -100,6 +101,44 @@ fn bfg10k_radius_two_splash_hits_each_actor_once_in_stable_order() {
     })
     .count();
   assert_eq!(plasma_damage_events, 10);
+}
+
+#[test]
+fn blue_armor_mitigates_bfg10k_plasma_splash_after_direct_damage() {
+  let center = Position::new(6, 4);
+  let mut plain = equipped_bfg10k(27_105);
+  let plain_target = plain
+    .world_mut()
+    .spawn_monster(center, "Plain Target", 500, 0, (1, 7))
+    .unwrap();
+  let plain_events = plain
+    .step(Command::AttackRanged(center))
+    .expect("unarmored BFG 10K direct fire should resolve");
+
+  let mut armored = equipped_bfg10k(27_105);
+  let armored_target = armored
+    .world_mut()
+    .spawn_monster(center, "Blue Target", 500, 0, (1, 7))
+    .unwrap();
+  let armor_id = armored.world_mut().allocate_item_id();
+  armored
+    .world_mut()
+    .get_actor_mut(armored_target)
+    .unwrap()
+    .equipment_mut()
+    .equip(EquipmentSlot::Armor, Item::blue_armor(armor_id))
+    .unwrap();
+  let armored_events = armored
+    .step(Command::AttackRanged(center))
+    .expect("Blue Armor BFG 10K direct fire should resolve");
+
+  let plain_splash = environment_damage_for(&plain_events, plain_target)[0];
+  let armored_splash = environment_damage_for(&armored_events, armored_target)[0];
+  let expected_armored = apply_damage_resistance(plain_splash, 20)
+    .saturating_sub(2)
+    .max(1);
+  assert_eq!(armored_splash, expected_armored);
+  assert!(armored_splash < plain_splash);
 }
 
 #[test]
