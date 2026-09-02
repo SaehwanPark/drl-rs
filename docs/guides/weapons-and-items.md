@@ -38,7 +38,7 @@ description: "Comprehensive armory encyclopedia: ballistic firearms, energy weap
 ## ⚡ Energy & Plasma Weaponry
 
 - **Blaster**: Self-charging micro-cell energy pistol. Holds 10 energy charges; automatically regenerates charges over time. Supports Aimed Fire.
-- **Laser Rifle**: Long-range beam projector firing a 5-cell precision coherent light volley with first-level 4-projectile, second-level 5-projectile, and third-, fourth-, fifth-, sixth-, and seventh-level 7-projectile chainfire bursts.
+- **Laser Rifle**: Long-range beam projector firing a 5-cell precision coherent light volley with typed direct Plasma damage (so Blue Armor's 20% Plasma resistance applies before flat protection), first-level 4-projectile, second-level 5-projectile, and third-, fourth-, fifth-, sixth-, and seventh-level 7-projectile chainfire bursts.
 - **Plasma Rifle**: Rapid-fire energy rifle discharging 6-cell plasma bolts with typed direct Plasma damage (so Blue Armor's 20% Plasma resistance applies before flat protection), thermal splash damage, and first-level 4-projectile plus second-level 6-projectile chainfire bursts.
 - **Nuclear Plasma Rifle**: Experimental nuclear core plasma rifle with typed direct Plasma damage (so Blue Armor's 20% Plasma resistance applies before flat protection). It has a 24-cell clip, first-, second-, third-, fourth-, fifth-, sixth-, and seventh-level 4/6/9/9/9/9/9-projectile chainfire (four, six, nine, nine, nine, nine, and nine cells), and continuous internal power recharge.
 - **BFG 9000**: The ultimate bio-force weapon. Fires a massive 40-cell typed Plasma ball with a typed direct hit and radius-8 splash, plus massive 16-tile kinetic knockback.
@@ -52,7 +52,7 @@ description: "Comprehensive armory encyclopedia: ballistic firearms, energy weap
 | Armor | Protection | Special Mechanics & Behavior |
 |---|---|---|
 | **Green Armor** | 30% Damage Reduction | Standard combat security vest. Durable and lightweight. |
-| **Blue Armor** | 2 flat protection; 20% Plasma resistance on typed Plasma Rifle/Nuclear Plasma Rifle/BFG 10K/Standard/Nuclear BFG direct/fanout and Null Pointer fanouts | Heavy kevlar and ceramic plate suit. Broader resistance aggregation remains open. |
+| **Blue Armor** | 2 flat protection; 20% Plasma resistance on typed Laser Rifle/Plasma Rifle/Nuclear Plasma Rifle/BFG 10K/Standard/Nuclear BFG direct/fanout and Null Pointer fanouts | Heavy kevlar and ceramic plate suit. Broader resistance aggregation remains open. |
 | **Red Armor** | 4 flat protection; 25% Fire resistance on typed Rocket direct/splash and Anti-Freak fanouts | High-grade armor that reduces typed Fire damage before flat protection. Broader resistance aggregation remains open. |
 | **Lava Armor** | 75% Thermal Reduction | Self-repairing suit. Standing in lava tiles recharges durability over time. |
 | **Malek's Armor** | 60% All-round Reduction | Ancient demonic power armor. Slowly regenerates durability over time. |

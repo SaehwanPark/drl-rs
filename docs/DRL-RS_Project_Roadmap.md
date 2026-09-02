@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-09-02
-Current project version: `0.2.338`
+Current project version: `0.2.339`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.338)
+## 3. Current Progress Summary (`VERSION` 0.2.339)
 
 ### Delivered Foundations
 
@@ -1339,16 +1339,32 @@ verification item uses explicit status semantics:
   checks pass under the documented solo-maintainer Review-policy exception;
   higher chainfire levels, spread/routing, overload/nuke effects, SPLASMA
   divisors, broader resistance aggregation, and audiovisual parity remain open.
+- **M9 Laser Rifle direct Plasma classification (`0.2.339`, active):** Each
+  successful ordinary-fire and already implemented first-through-seventh-level
+  chainfire direct target hit is being routed through typed Plasma mitigation
+  so Blue Armor's catalog-defined 20% resistance applies before flat
+  protection. The five-projectile volley, chainfire counts, clip costs,
+  warm-up state, replay/MCP/browser projections, and rejection boundaries are
+  in scope; higher chainfire levels, spread/routing, SPLASMA divisors, broader
+  resistance aggregation, and audiovisual parity remain open.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
   manifests with SHA-256 sidecars,
   optional detached signatures, cache invalidation, and checkout binding.
 
-### Delivered Slices & Open Work
+### Active & Open Work
 
-No slice is active after PR #454; the next bounded slice will be selected after
-the current stop-condition check.
+- **Active Slice — M9 Laser Rifle direct Plasma classification (`0.2.339`):**
+  Temporary branch `codex/laser-rifle-direct-plasma-classification` starts at
+  audited main checkpoint `48f0bb3` (version `0.2.338`). The implementation
+  routes successful ordinary-fire and first-through-seventh-level chainfire
+  direct target hits through typed Plasma mitigation while preserving raw
+  damage, clip costs, warm-up state, RNG/replay identities, event ordering,
+  rejection boundaries, and boundary projections. Focused verification is
+  complete locally; independent review, hosted checks, and merge are pending.
+  Higher chainfire levels, spread/routing, SPLASMA divisors, broader resistance
+  aggregation, and audiovisual parity remain outside this slice.
 
 - **Delivered Slice — M9 Nuclear Plasma Rifle direct Plasma classification
   (`0.2.338`):** PR #454 merged as `6c6387c`; implementation head `3f1601e`
@@ -1460,8 +1476,10 @@ the current stop-condition check.
   broader legacy resistance aggregation, direct Fire classification, controlled
   runtime, audiovisual parity, and balance remain open or `NOT_RUN`.
 
-- **Latest Audited Checkpoint:** `main` merge commit `6c6387c` (version
-  `0.2.338`). The Nuclear Plasma Rifle direct-Plasma implementation head
+- **Latest Audited Checkpoint:** `main` at `48f0bb3` (version `0.2.338`), with
+  active Laser Rifle direct-Plasma work on
+  `codex/laser-rifle-direct-plasma-classification`. The Nuclear Plasma Rifle
+  direct-Plasma implementation head
   `3f1601e` has an independent determinism-review PASS receipt; local and
   hosted Repository/WASM checks pass. The hosted Review-policy check failed
   closed because the sole maintainer cannot create a non-self approval, so the
@@ -2100,6 +2118,15 @@ scripting.
   #454 (`6c6387c`);
   higher chainfire levels, spread/routing, overload/nuke effects, SPLASMA
   divisors, and broader direct Plasma behavior remain open or `NOT_RUN`.
+- [ ] Laser Rifle ordinary-fire and first-through-seventh-level chainfire
+  direct target damage is classified as typed `Plasma`, so Blue Armor's
+  catalog-defined 20% resistance applies before flat protection while raw
+  rolls, clip costs, warm-up state, RNG order, event ordering, rejection
+  boundaries, and MCP/BrowserSession projections remain unchanged. Focused
+  direct/chainfire/replay tests, independent review, and hosted Repository/WASM
+  evidence are in progress; higher chainfire levels, spread/routing, SPLASMA
+  divisors, broader resistance aggregation, and audiovisual parity remain open
+  or `NOT_RUN`.
 - [x] Typed double/combat shotguns preserve pinned shell relation, clips,
   damage/range scalars, descriptions, replay kinds, and `SPRITE_DSHOTGUN`/
   `SPRITE_CSHOTGUN` slots; callbacks and spread/falloff remain open.

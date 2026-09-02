@@ -2,7 +2,8 @@
 
 Status: delivered typed ordinary-fire five-shot profile and first-, second-,
 third-, fourth-, fifth-, sixth-, and seventh-level chainfire execution in
-`0.2.307`; higher chainfire levels,
+`0.2.307`. Project `0.2.339` adds typed Plasma classification for successful
+direct ordinary and bounded chainfire target hits; higher chainfire levels,
 spread/routing, controlled legacy runtime comparison, and audiovisual parity
 remain `NOT_RUN`.
 
@@ -13,9 +14,9 @@ Evidence is pinned to revision
 `doom-the-roughlike-original`:
 
 - `bin/data/drl/items/eitems.lua:289-326` defines `ulaser` as an exotic ranged
-  weapon using the `cell` family, with a 40-cell capacity and `shots = 5`. No
-  `shotcost` field is declared; only the alternate chainfire perk is attached
-  during creation.
+  weapon using the `cell` family, with a 40-cell capacity, `damage = "1d7"`,
+  `damagetype = DAMAGE_PLASMA`, and `shots = 5`. No `shotcost` field is
+  declared; only the alternate chainfire perk is attached during creation.
 - `src/dfitem.pas:247-255` loads the declared `Shots` and `ShotCost` fields,
   defaulting absent values to zero.
 - `src/dfitem.pas:627-634` clamps the effective per-projectile cost to at
@@ -35,7 +36,11 @@ ordered `AttackEffect::ProjectileCount(5)`, one-cell ordinary cost, and
 projectile/cell levels (the seven/seven profile covers bounded warm-up levels
 two through six). The existing ranged command path remains execution authority
 for target/LOS/range and death-drop preflight, damage RNG, event ordering, and
-transactional clip consumption. Direct integration tests verify five ordered
+transactional clip consumption. In `0.2.339`, successful Laser Rifle direct
+ordinary and first-through-seventh chainfire target hits select the existing
+typed Plasma path, so Blue Armor's 20% resistance applies before flat
+protection without changing raw rolls, clip costs, warm-up, or RNG order.
+Direct integration tests verify five ordered
 ordinary events, four-, five-, and seven-ordered chainfire events, four-, five-,
 and seven-cell chainfire consumption, atomic below-cost rejection, warm-up
 reset/advancement through level seven, and deterministic replay.

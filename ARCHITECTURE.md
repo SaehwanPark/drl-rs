@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-09-02
-Current project version: `0.2.338`
+Current project version: `0.2.339`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -68,6 +68,9 @@ the state with saturating arithmetic, and ordinary fire resets it; MCP and
 browser projections call this same model. BFG 10K additionally records its
 typed exact-hit, delayed-explosion, radius-2 actor fanout, and thresholded
 ordinary-ammo destruction;
+Laser Rifle additionally records its typed direct Plasma target path alongside
+the five-projectile ordinary-fire, one-cell-per-projectile, and first-through-
+seventh chainfire fragments;
 Plasma Rifle additionally records its typed direct Plasma target path alongside
 the six-projectile ordinary-fire, one-cell-per-projectile, and first/second
 chainfire fragments;
