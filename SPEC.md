@@ -24,8 +24,8 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 
 ## 2. Active implementation slice: M9 — Plasma Rifle direct Plasma classification
 
-Slice status: **in progress** on temporary branch
-`codex/plasma-rifle-direct-plasma-classification`.
+Slice status: **delivered and verified** at implementation head `566e315`;
+merge checkpoint is pending PR #453.
 
 ### 2.1 Objective
 
@@ -94,20 +94,20 @@ At audited starting revision `1429ffd` (version `0.2.336`):
 
 ### 2.5 Acceptance criteria
 
-- [ ] Plasma Rifle direct ordinary and chainfire hits emit typed Plasma damage
+- [x] Plasma Rifle direct ordinary and chainfire hits emit typed Plasma damage
   and Blue Armor reduces the applied amounts using the existing deterministic
   resistance-before-flat protection formula.
-- [ ] An unarmored control preserves all successful raw direct damage amounts,
+- [x] An unarmored control preserves all successful raw direct damage amounts,
   while
   the same seed keeps the raw rolls and final RNG state identical between
   armored and unarmored targets.
-- [ ] Direct replay and repeated replay runs produce identical game state,
+- [x] Direct replay and repeated replay runs produce identical game state,
   event stream, and typed direct-volley projection; stale semantics `138` is
   rejected before execution.
-- [ ] Existing Plasma Rifle chainfire, rejection/rollback, replay, MCP,
+- [x] Existing Plasma Rifle chainfire, rejection/rollback, replay, MCP,
   metrics/audio/render, and BrowserSession parity tests pass without new wire
   or RNG behavior.
-- [ ] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
+- [x] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
   hosted checks, and an attributable independent determinism review pass on the
   final implementation commit.
 
@@ -132,11 +132,22 @@ audiovisual parity, or human play.
 
 ### 2.8 Delivery evidence
 
-Delivery evidence is pending implementation, local/hosted verification,
-independent review, and merge. The optional reference-capture preflight remains
-`NOT_RUN` when its local manifest is unavailable; controlled legacy runtime,
-audiovisual, balance, and human-play surfaces remain outside this slice's
-evidence boundary.
+Delivery evidence is complete for implementation head `566e315`; merge is
+pending PR #453:
+
+- Independent determinism review: **PASS** by `/root/rocket_review`; no
+  actionable findings were identified for `1429ffd..566e315`.
+- Focused and locked workspace tests, Clippy, formatting, version check,
+  repository checks, native/headless browser checks, and `git diff --check`:
+  **PASS**. The optional reference-capture preflight is `NOT_RUN` because its
+  local manifest is unavailable.
+- PR #453 hosted Repository and WASM browser checks: **PASS** in run
+  `33667987163`. The protected-path Review policy check failed closed in run
+  `33667987234` because the sole maintainer cannot create a non-self approval;
+  the documented live `enforce_admins=false` exception remains in force after
+  the independent review receipt was recorded.
+- Merge checkpoint: pending PR #453. No controlled legacy runtime,
+  audiovisual, balance, or human-play claim is inferred from these checks.
 
 ## 3. Enduring invariants
 
