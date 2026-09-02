@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-09-02
-Current project version: `0.2.334`
+Current project version: `0.2.335`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -323,7 +323,8 @@ Presentation Boundary
     terrain/content mutation, delayed timing/state-machine parity, and
     projectile routing remain separate policy work.
     Nuclear BFG 9000 opts into the same typed exact-hit policy without changing
-    its recharge or alternate-overload state; its direct-target hit now emits
+    its recharge or alternate-overload state; its direct-target hit now uses
+    typed Plasma mitigation and emits
     one typed `NuclearBfg9000ExplosionScheduled` event with delay 33, radius 8,
     and knockback 16, then resolves the bounded immediate radius-8 fanout
     through the shared deterministic blast geometry. The firing actor is

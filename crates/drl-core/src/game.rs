@@ -1996,6 +1996,8 @@ impl Game {
           Some(DamageType::Fire)
         } else if weapon_is_bfg9000 {
           Some(DamageType::Plasma)
+        } else if weapon_is_nuclear_bfg9000 {
+          Some(DamageType::Plasma)
         } else {
           None
         };

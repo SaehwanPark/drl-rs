@@ -3,6 +3,18 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.335]
+
+- Routed Nuclear BFG 9000 direct target damage through the existing typed
+  Plasma path. Blue Armor's catalog-defined 20% Plasma resistance now applies
+  before flat protection on the direct hit, while the existing radius-8 splash,
+  ground-item effect, exact-hit behavior, recharge, overload, raw damage, RNG
+  order, rejection boundaries, and other direct weapon paths remain unchanged.
+  Focused same-seed direct and replay tests verify typed events, deterministic
+  mitigation, and stale-semantics rejection; the SPLASMA armor divisor,
+  broader resistance aggregation, delayed timing, and audiovisual parity remain
+  open. Gameplay semantics advance from `136` to `137`.
+
 ## [0.2.334]
 
 - Routed Standard BFG 9000 direct target damage through the existing typed
