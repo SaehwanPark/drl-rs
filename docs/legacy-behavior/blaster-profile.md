@@ -2,8 +2,10 @@
 
 Status: delivered typed behavior profile and `0.2.243` direct-core/
 `BrowserSession` ordinary-fire boundary plus the `0.2.246` aimed-fire vertical
-slice; exact legacy callback state/timing, controlled runtime comparison, and
-audiovisual parity remain `NOT_RUN`.
+slice. Project `0.2.340` adds typed Plasma classification for successful
+ordinary and aimed direct hits, with Blue Armor resistance before flat
+protection; exact legacy callback state/timing, controlled runtime comparison,
+and audiovisual parity remain `NOT_RUN`.
 
 ## Pinned source
 
@@ -40,6 +42,8 @@ accuracy, doubled action cost), and the typed periodic recharge fragment (delay
 JSON/catalog and `BrowserSession` tests verify the aimed boundary without a new
 callback registry or replay-wire field.
 
-The profile intentionally does not claim the legacy aimed-fire callback state,
+The direct ranged boundary now maps the legacy `DAMAGE_PLASMA` family to the
+existing typed Plasma path without changing raw rolls, recharge, action cost,
+or replay/RNG identities. The profile intentionally does not claim the legacy aimed-fire callback state,
 manual-reload policy beyond the existing `IF_NORELOAD` boundary, or other
 deferred weapon behavior. Those remain separate evidence-backed slices.

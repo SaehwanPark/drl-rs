@@ -1,10 +1,10 @@
 # Specification
 
 Last reviewed: 2026-09-02
-Current project version: `0.2.339`
-Audited starting checkpoint: `main` at `48f0bb3` (Nuclear Plasma direct-Plasma
-slice and canonical documentation reconciliation)
-Delivery checkpoint: `main` merge commit `af78fd5` (PR #455, merged)
+Current project version: `0.2.340`
+Audited starting checkpoint: `main` at `2a089c6` (Laser Rifle direct-Plasma
+delivery and canonical documentation reconciliation)
+Previous delivery checkpoint: `main` merge commit `af78fd5` (PR #455, merged)
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -22,54 +22,53 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 - `INCONCLUSIVE` — **Evidence unresolved**: available evidence cannot support
   the claim.
 
-## 2. Active implementation slice: M9 — Laser Rifle direct Plasma classification
+## 2. Active implementation slice: M9 — Blaster direct Plasma classification
 
-Slice status: **delivered and verified** at implementation head `c88ebc4`;
-merge checkpoint is `af78fd5` (PR #455, merged).
+Slice status: **in progress** on temporary branch
+`codex/blaster-direct-plasma-classification`.
 
 ### 2.1 Objective
 
-Complete the Laser Rifle direct-hit damage-family branch. The pinned legacy
-record declares `1d7 DAMAGE_PLASMA`; after each successful ordinary or already
-implemented chainfire hit, route only the Laser Rifle target damage through the
-existing typed Plasma path so catalog-defined Blue Armor resistance applies
-before flat protection. Preserve the already-delivered five-projectile volley,
-first-through-seventh chainfire progression, event ordering, death/drop
-handling, and transaction boundary.
+Complete the Blaster direct-hit damage-family branch. The pinned legacy record
+declares `2d4 DAMAGE_PLASMA`; after each successful ordinary or aimed hit, route
+only the Blaster target damage through the existing typed Plasma path so
+catalog-defined Blue Armor resistance applies before flat protection. Preserve
+the already-delivered one-projectile shot, aimed-fire action cost, recharge
+timer, event ordering, death/drop handling, and transaction boundary.
 
 This is a bounded vertical fidelity slice. It changes the direct
 `DamageApplied` event from unclassified to `Some(DamageType::Plasma)` only for
-Laser Rifle hits and leaves every other direct weapon path unchanged.
+Blaster hits and leaves every other direct weapon path unchanged.
 
 ### 2.2 Audited starting point
 
-At audited starting revision `48f0bb3` (version `0.2.338`):
+At audited starting revision `2a089c6` (version `0.2.339`):
 
-- The Laser Rifle record (`eitems.lua:289-326`) declares a five-projectile
-  `1d7 DAMAGE_PLASMA` weapon, while `dfbeing.pas:2536-2549` passes the item
-  damage type into direct `ApplyDamage` and `dfbeing.pas:2162-2182` maps Plasma
+- The Blaster record (`eitems.lua:135-169`) declares a one-projectile `2d4
+  DAMAGE_PLASMA` weapon, while `dfbeing.pas:2536-2549` passes the item damage
+  type into direct `ApplyDamage` and `dfbeing.pas:2162-2182` maps Plasma
   families to plasma resistance.
 - Rust already has typed Plasma actor damage, catalog-defined Blue Armor 20%
-  Plasma resistance, and a typed `DamageApplied` event field. The Laser Rifle
-  five-projectile ordinary volley and first-through-seventh chainfire
-  transitions are already implemented and projected through core, replay, MCP,
-  and browser boundaries.
+  Plasma resistance, and a typed `DamageApplied` event field. The Blaster
+  one-projectile ordinary shot, aimed-fire command, recharge transition, and
+  no-reload rejection are already implemented and projected through core,
+  replay, MCP, and browser boundaries.
 - The shared direct ranged path called untyped `World::apply_damage` and
-  emitted `damage_type: None` for each Laser Rifle direct volley hit.
+  emitted `damage_type: None` for each Blaster direct hit.
 
 ### 2.3 Scope and ownership
 
-- **Roadmap:** M9 vertical canonical-fidelity completion of the Laser Rifle
+- **Roadmap:** M9 vertical canonical-fidelity completion of the Blaster
   damage-family branch.
 - **Primary owner:** `Game`'s typed ranged execution boundary selects Plasma for
-  the Laser Rifle direct target; `World` and `Actor` retain the existing
+  the Blaster direct target; `World` and `Actor` retain the existing
   resistance and flat-protection formulas. Boundary crates remain projections.
-- **Content registration:** the existing Laser Rifle catalog definition remains
+- **Content registration:** the existing Blaster catalog definition remains
   the single source of its identity and damage range; no duplicate weapon table
   or callback registry is introduced.
-- **Project version:** implementation advances `VERSION` from `0.2.338` to
-  `0.2.339`.
-- **Replay/RNG:** gameplay semantics advance from `140` to `141`; replay wire,
+- **Project version:** implementation advances `VERSION` from `0.2.339` to
+  `0.2.340`.
+- **Replay/RNG:** gameplay semantics advance from `141` to `142`; replay wire,
   RNG sampling (`1`), generator semantics (`2`), and ruleset identity
   (`drl-rs-ruleset-v1`) remain unchanged. Typed mitigation consumes no RNG.
 - **Protocol/boundaries:** no new wire event or schema is needed; the existing
@@ -77,37 +76,37 @@ At audited starting revision `48f0bb3` (version `0.2.338`):
 
 ### 2.4 Review and branch contract
 
-- Every successful Laser Rifle ordinary or chainfire target hit emits
+- Every successful Blaster ordinary or aimed target hit emits
   `DamageApplied` with
   `damage_type: Some(DamageType::Plasma)` and applies the existing Plasma
   resistance before flat protection.
 - The raw `AttackOutcome` results and one-roll-per-projectile RNG stream remain
   unchanged; `AttackOutcome::is_lethal` retains its existing raw-damage
   contract, while actual actor death remains authoritative in `World`.
-- Laser Rifle's five-projectile ordinary volley, first-through-seventh
-  chainfire counts, clip costs, warm-up state, event ordering, and final RNG
-  state remain unchanged. Other direct weapons and BFG/rocket fanouts retain
-  their existing typed or untyped paths.
+- Blaster's one-projectile ordinary/aimed shot, one-cell cost, recharge timer,
+  no-reload policy, event ordering, and final RNG state remain unchanged. Other
+  direct weapons and BFG/rocket fanouts retain their existing typed or untyped
+  paths.
 - Other direct weapons retain their untyped damage events and prior mitigation.
 - The existing core transaction guard still owns command rejection and exact
   state/RNG restoration; this slice adds no queue, callback, or new clone.
 
 ### 2.5 Acceptance criteria
 
-- [x] Laser Rifle direct ordinary and chainfire hits emit typed Plasma damage
+- [ ] Blaster direct ordinary and aimed hits emit typed Plasma damage
   and Blue Armor reduces the applied amounts using the existing deterministic
   resistance-before-flat protection formula.
-- [x] An unarmored control preserves all successful raw direct damage amounts,
+- [ ] An unarmored control preserves all successful raw direct damage amounts,
   while
   the same seed keeps the raw rolls and final RNG state identical between
   armored and unarmored targets.
-- [x] Direct replay and repeated replay runs produce identical game state,
-  event stream, and typed direct-volley projection; stale semantics `140` is
+- [ ] Direct replay and repeated replay runs produce identical game state,
+  event stream, and typed direct-shot projection; stale semantics `141` is
   rejected before execution.
-- [x] Existing Laser Rifle chainfire, rejection/rollback, replay, MCP,
+- [ ] Existing Blaster aimed/recharge/no-reload rejection/rollback, replay, MCP,
   metrics/audio/render, and BrowserSession parity tests pass without new wire
   or RNG behavior.
-- [x] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
+- [ ] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
   hosted checks, and an attributable independent determinism review pass on the
   final implementation commit.
 
@@ -115,32 +114,29 @@ At audited starting revision `48f0bb3` (version `0.2.338`):
 
 - No direct Plasma classification for other weapons, generic resistance
   aggregation, legacy armor durability degradation, or SPLASMA divisors.
-- No Laser Rifle higher chainfire levels,
-  spread/routing, delayed queue, terrain/content mutation, callback recreation,
-  or runtime/audiovisual parity changes beyond the direct target classification.
+- No Blaster recharge timing/state changes, aimed accuracy/action-cost changes,
+  manual-reload policy changes, spread/routing, delayed queue, terrain/content
+  mutation, callback recreation, or runtime/audiovisual parity changes beyond
+  the direct target classification.
 - No change to the replay wire schema, RNG sampling algorithm, generator
   semantics, ruleset identity, or unrelated event projections.
 
 ### 2.7 Evidence boundary
 
-This slice proves the current-Rust Laser Rifle direct
-ordinary/chainfire Plasma events and Blue Armor mitigation policy, plus replay
-determinism and stable state/RNG behavior. It does not prove controlled legacy
-runtime, exact timing or accuracy, higher chainfire levels, spread/routing,
-terrain/content behavior, broader resistance aggregation, durability, balance,
-audiovisual parity, or human play.
+This slice will prove the current-Rust Blaster direct ordinary/aimed Plasma
+events and Blue Armor mitigation policy, plus replay determinism and stable
+state/RNG behavior. It does not prove controlled legacy runtime, exact recharge
+cadence or accuracy, manual callback state, spread/routing, terrain/content
+behavior, broader resistance aggregation, durability, balance, audiovisual
+parity, or human play.
 
 ### 2.8 Delivery evidence
 
-Delivery evidence: implementation head `c88ebc4` merged in PR #455 as
-`af78fd5`. Focused Laser Rifle direct-Plasma tests (3/3), existing Laser Rifle
-chainfire tests (24/24), Laser Rifle browser-boundary tests (2/2), the full
-workspace suite, strict Clippy, version/repository/diff gates, and hosted
-Repository and WASM checks pass. The independent determinism review returned
-PASS. The hosted Review-policy check remains the documented solo-maintainer
-exception; the optional reference-capture preflight is `NOT_RUN` because its
-local manifest is unavailable. Controlled legacy runtime, audiovisual, balance,
-and human-play surfaces remain outside this slice's evidence boundary.
+Delivery evidence is pending implementation, local/hosted verification,
+independent review, and merge. The optional reference-capture preflight remains
+`NOT_RUN` when its local manifest is unavailable; controlled legacy runtime,
+audiovisual, balance, and human-play surfaces remain outside this slice's
+evidence boundary.
 
 ## 3. Enduring invariants
 

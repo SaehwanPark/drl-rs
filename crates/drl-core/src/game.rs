@@ -1741,6 +1741,7 @@ impl Game {
       ammo_cost,
       null_pointer_item_id,
       weapon_is_railgun,
+      weapon_is_blaster,
       weapon_is_laser_rifle,
       weapon_is_plasma_rifle,
       weapon_is_nuclear_plasma_rifle,
@@ -1816,6 +1817,7 @@ impl Game {
       let null_pointer_item_id =
         (weapon.archetype() == drl_protocol::ItemArchetype::NullPointer).then_some(weapon.id());
       let weapon_is_railgun = weapon.archetype() == drl_protocol::ItemArchetype::Railgun;
+      let weapon_is_blaster = weapon.archetype() == drl_protocol::ItemArchetype::Blaster;
       let weapon_is_laser_rifle = weapon.archetype() == drl_protocol::ItemArchetype::LaserRifle;
       let weapon_is_plasma_rifle = weapon.archetype() == drl_protocol::ItemArchetype::PlasmaRifle;
       let weapon_is_nuclear_plasma_rifle =
@@ -1833,6 +1835,7 @@ impl Game {
         ammo_cost,
         null_pointer_item_id,
         weapon_is_railgun,
+        weapon_is_blaster,
         weapon_is_laser_rifle,
         weapon_is_plasma_rifle,
         weapon_is_nuclear_plasma_rifle,
@@ -2004,7 +2007,8 @@ impl Game {
 
         let direct_damage_type = if weapon_is_rocket_launcher {
           Some(DamageType::Fire)
-        } else if weapon_is_plasma_rifle
+        } else if weapon_is_blaster
+          || weapon_is_plasma_rifle
           || weapon_is_laser_rifle
           || weapon_is_nuclear_plasma_rifle
           || weapon_is_bfg10k

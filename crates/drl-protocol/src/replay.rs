@@ -137,10 +137,11 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// recharge/overload, Revenant's Launcher exact-hit resolution, Nuclear Plasma
 /// first- through seventh-level chainfire plus alternate overload/recharge, the
 /// `IF_NORELOAD` policy, Blaster recharge, Laser Rifle's first- through
-/// seventh-level chainfire, the prior Malek's Armor, Missile Launcher, and
+/// seventh-level chainfire, Blaster's typed Plasma direct target damage, the
+/// prior Malek's Armor, Missile Launcher, and
 /// Combat Shotgun policies, and the typed ordinary-fire cost policies through
 /// Laser Rifle.
-pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 141;
+pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 142;
 
 /// Procedural-generation semantics identifier expected for replays that carry
 /// a procedural generation configuration. Version 2 includes the exact

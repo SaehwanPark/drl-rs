@@ -37,7 +37,7 @@ description: "Comprehensive armory encyclopedia: ballistic firearms, energy weap
 
 ## ⚡ Energy & Plasma Weaponry
 
-- **Blaster**: Self-charging micro-cell energy pistol. Holds 10 energy charges; automatically regenerates charges over time. Supports Aimed Fire.
+- **Blaster**: Self-charging micro-cell energy pistol with typed direct Plasma damage (so Blue Armor's 20% Plasma resistance applies before flat protection). Holds 10 energy charges; automatically regenerates charges over time. Supports Aimed Fire.
 - **Laser Rifle**: Long-range beam projector firing a 5-cell precision coherent light volley with typed direct Plasma damage (so Blue Armor's 20% Plasma resistance applies before flat protection), first-level 4-projectile, second-level 5-projectile, and third-, fourth-, fifth-, sixth-, and seventh-level 7-projectile chainfire bursts.
 - **Plasma Rifle**: Rapid-fire energy rifle discharging 6-cell plasma bolts with typed direct Plasma damage (so Blue Armor's 20% Plasma resistance applies before flat protection), thermal splash damage, and first-level 4-projectile plus second-level 6-projectile chainfire bursts.
 - **Nuclear Plasma Rifle**: Experimental nuclear core plasma rifle with typed direct Plasma damage (so Blue Armor's 20% Plasma resistance applies before flat protection). It has a 24-cell clip, first-, second-, third-, fourth-, fifth-, sixth-, and seventh-level 4/6/9/9/9/9/9-projectile chainfire (four, six, nine, nine, nine, nine, and nine cells), and continuous internal power recharge.
