@@ -681,6 +681,27 @@ mod tests {
   }
 
   #[test]
+  fn red_armor_mitigates_fire_before_flat_protection() {
+    let mut actor = Actor::new(EntityId::new(1), Position::new(0, 0), "Marine", true);
+    actor
+      .equipment_mut()
+      .equip(EquipmentSlot::Armor, Item::red_armor(ItemId::new(10)))
+      .unwrap();
+
+    let (fire_taken, _) = actor.take_damage_typed(10, DamageType::Fire);
+    assert_eq!(
+      fire_taken, 4,
+      "25% resistance leaves 8, then Red Armor blocks 4"
+    );
+
+    let (plasma_taken, _) = actor.take_damage_typed(10, DamageType::Plasma);
+    assert_eq!(
+      plasma_taken, 6,
+      "Red Armor does not resist Plasma in this slice"
+    );
+  }
+
+  #[test]
   fn test_actor_energy_spending() {
     let mut actor = Actor::new(EntityId::new(1), Position::new(0, 0), "Marine", true);
     actor.set_energy(1500);

@@ -26,9 +26,11 @@ mod tests {
   use super::apply_damage_resistance;
 
   #[test]
-  fn rounds_blue_armor_plasma_resistance_without_float_math() {
+  fn rounds_typed_resistance_without_float_math() {
     assert_eq!(apply_damage_resistance(10, 20), 8);
     assert_eq!(apply_damage_resistance(11, 20), 9);
+    assert_eq!(apply_damage_resistance(10, 25), 8);
+    assert_eq!(apply_damage_resistance(11, 25), 8);
   }
 
   #[test]

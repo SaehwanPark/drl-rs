@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.329]
+
+- Added the bounded Red Armor Fire-resistance path. The catalog now records
+  Red Armor's documented 25% Fire resistance, typed Rocket actor splash damage
+  applies deterministic integer mitigation before flat armor protection, and
+  Blue Armor Plasma/non-Fire paths retain their prior behavior. The broader
+  legacy resistance stack, direct Fire classification, and other resistance
+  families remain open. Gameplay semantics advance from `130` to `131`.
+
 ## [0.2.328]
 
 - Added the bounded Blue Armor Plasma-resistance path. The catalog now records

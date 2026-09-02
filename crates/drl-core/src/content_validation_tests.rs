@@ -144,6 +144,7 @@ fn rejects_resistance_above_one_hundred_percent() {
       durability: 100,
       max_durability: 100,
       plasma_resistance: 101,
+      fire_resistance: 0,
     },
     archetype: drl_protocol::ItemArchetype::BlueArmor,
     name: "test armor",
@@ -155,6 +156,32 @@ fn rejects_resistance_above_one_hundred_percent() {
       table: "item",
       key: "test armor",
       field: "plasma_resistance",
+      minimum: 101,
+      maximum: 100,
+    })
+  );
+}
+
+#[test]
+fn rejects_fire_resistance_above_one_hundred_percent() {
+  let invalid = ItemDefinition {
+    kind: ItemDefinitionKind::Armor {
+      protection: 4,
+      durability: 100,
+      max_durability: 100,
+      plasma_resistance: 0,
+      fire_resistance: 101,
+    },
+    archetype: drl_protocol::ItemArchetype::RedArmor,
+    name: "test red armor",
+    description: "test",
+  };
+  assert_eq!(
+    validate_item_definition(&invalid),
+    Err(ContentValidationError::InvalidRange {
+      table: "item",
+      key: "test red armor",
+      field: "fire_resistance",
       minimum: 101,
       maximum: 100,
     })
