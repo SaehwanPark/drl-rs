@@ -1,10 +1,11 @@
 # Standard BFG 9000 delayed explosion evidence
 
-Status: active bounded typed direct Plasma classification plus delivered
+Status: delivered bounded typed direct Plasma classification plus delivered
 schedule metadata, immediate actor fanout, and thresholded ordinary ground-item
-destruction (the schedule/fanout/item portions landed in `0.2.269`); delayed
-timing/state-machine parity, controlled runtime comparison, browser capture,
-and audiovisual parity remain `NOT_RUN`.
+destruction (the schedule/fanout/item portions landed in `0.2.269`; the direct
+classification landed in `0.2.334`, PR #450). Delayed timing/state-machine
+parity, controlled runtime comparison, browser capture, and audiovisual parity
+remain `NOT_RUN`.
 
 ## Pinned source
 

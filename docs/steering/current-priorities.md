@@ -2,9 +2,9 @@
 
 Last reviewed: 2026-09-02
 Baseline branch: `main`
-Baseline merge commit: `5242e3c`
-Latest pull request inspected: `#449`
-Baseline project version: `0.2.333`
+Baseline merge commit: `9132d82`
+Latest pull request inspected: `#450`
+Baseline project version: `0.2.334`
 
 ## Purpose
 
@@ -217,10 +217,11 @@ invariants into accepted architecture/ADRs as appropriate, and update the
 roadmap and active specification from verified evidence.
 
 Re-audit before broad M9 migration resumes, or when a new stop-gate candidate
-is selected. The current audited tree is `main` at `5242e3c` (PR #449, version
-`0.2.333`); local checks, independent review, and hosted Repository/WASM
-checks passed for the delivered bounded Rocket Launcher direct-Fire and
-ground-item slices and their preceding Null Pointer Plasma-mitigation slice.
+is selected. The current audited tree is `main` at `9132d82` (PR #450, version
+`0.2.334`); local checks, independent review, and hosted Repository/WASM
+checks passed for the delivered bounded Standard BFG 9000 direct-Plasma,
+Rocket Launcher direct-Fire, and Rocket Launcher ground-item slices and their
+preceding Null Pointer Plasma-mitigation slice.
 The protected-path Review policy check failed closed for the sole maintainer
 and was merged under the live `enforce_admins=false` exception; the preceding replay-file, JSON, Rocket
 Launcher actor fanout, Blue Armor, Red Armor, and Anti-Freak slices used the

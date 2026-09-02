@@ -1,9 +1,9 @@
 # Development Steering
 
 Last reviewed: 2026-09-02
-Repository baseline reviewed: `5242e3c`
-Latest pull request inspected: `#449`
-Project version at review: `0.2.333`
+Repository baseline reviewed: `9132d82`
+Latest pull request inspected: `#450`
+Project version at review: `0.2.334`
 
 ## Purpose
 
@@ -69,6 +69,8 @@ the delivered Null Pointer Plasma-mitigation slice adds
 [`null-pointer-plasma-resistance-profile.md`](../legacy-behavior/null-pointer-plasma-resistance-profile.md).
 The delivered Rocket Launcher direct-Fire and ground-item slices are documented in
 [`rocket-launcher-profile.md`](../legacy-behavior/rocket-launcher-profile.md).
+The delivered Standard BFG 9000 direct-Plasma slice is documented in
+[`bfg9000-explosion.md`](../legacy-behavior/bfg9000-explosion.md).
 
 
 ## Agent harness
