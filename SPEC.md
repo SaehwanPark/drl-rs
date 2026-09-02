@@ -4,7 +4,7 @@ Last reviewed: 2026-09-02
 Current project version: `0.2.328`
 Audited starting checkpoint: `main` at
 `626e242` (PR #443 Rocket Launcher merge checkpoint reconciled)
-Delivery checkpoint: pending on the active implementation branch
+Delivery checkpoint: `main` at `cc625da` (PR #444, merged)
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -24,7 +24,7 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 
 ## 2. Active implementation slice: M9 — Blue Armor Plasma mitigation
 
-Slice status: **in progress** from the audited starting checkpoint above.
+Slice status: **delivered and verified** at the delivery checkpoint above.
 
 ### 2.1 Objective
 
@@ -85,13 +85,13 @@ At audited starting revision `626e242` (version `0.2.327`):
 
 ### 2.5 Acceptance criteria
 
-- [ ] Blue Armor’s catalog resistance is carried into `ArmorProperties` and a
+- [x] Blue Armor’s catalog resistance is carried into `ArmorProperties` and a
   pure typed mitigation helper covers rounding, minimum-one, and zero cases.
-- [ ] BFG Plasma actor splash routes through typed mitigation; Blue Armor
+- [x] BFG Plasma actor splash routes through typed mitigation; Blue Armor
   reduces the same deterministic hit while non-Plasma paths remain unchanged.
-- [ ] Existing rejection/rollback, replay, MCP, metrics/audio/render, and
+- [x] Existing rejection/rollback, replay, MCP, metrics/audio/render, and
   BrowserSession parity tests pass without new wire or RNG behavior.
-- [ ] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
+- [x] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
   and an attributable independent determinism review pass on the final
   implementation commit.
 
@@ -106,11 +106,26 @@ At audited starting revision `626e242` (version `0.2.327`):
 
 ### 2.7 Evidence boundary
 
-This slice will prove the current-Rust Blue Armor mitigation branch for typed
-Plasma actor splash and its stable boundary projections. It will not prove
+This slice proves the current-Rust Blue Armor mitigation branch for typed
+Plasma actor splash and its stable boundary projections. It does not prove
 legacy body-zone aggregation, direct Plasma classification, other resistance
 families, controlled legacy runtime, audiovisual parity, balance, or human
 play; those surfaces remain open or `NOT_RUN` in the roadmap.
+
+### 2.8 Delivery evidence
+
+- Independent determinism review of exact implementation head `04afd3f`:
+  **PASS**. A prior wording concern on `b8f9318` was closed by `04afd3f`.
+- Local workspace tests, clippy, formatting, repository checks, version check,
+  and web checks: **PASS**. Optional reference-capture preflight: `NOT_RUN`
+  because its local manifest is unavailable.
+- PR #444 hosted Repository checks and WASM browser checks: **PASS**. The
+  protected-path Review policy check failed closed under the documented
+  solo-maintainer `enforce_admins=false` exception; administrator merge was
+  used after the review receipt was recorded.
+- Merge checkpoint: `cc625da`; the temporary implementation branch was
+  removed locally and remotely. No runtime, audiovisual, balance, or legacy
+  controlled-runtime claim is inferred from these checks.
 
 ## 3. Enduring invariants
 

@@ -1251,11 +1251,13 @@ verification item uses explicit status semantics:
   render, BrowserSession, full workspace, and hosted Repository/WASM checks
   pass; terrain, ground items, delayed queues, projectile routing, rocket-jump,
   controlled runtime, and audiovisual parity remain open or `NOT_RUN`.
-- **Active M9 Blue Armor Plasma mitigation (`0.2.328`, pending)**: The next
-  bounded fidelity slice carries the documented Blue Armor 20% Plasma
-  resistance from the item catalog into typed actor-splash damage before flat
-  armor protection. Broader legacy resistance aggregation, direct Plasma
-  classification, and other resistance families remain out of scope.
+- **M9 Blue Armor Plasma mitigation (`0.2.328`, delivered in PR #444):** The
+  catalog-defined Blue Armor 20% Plasma resistance now flows through
+  `ArmorProperties` into the typed BFG actor-splash path before flat armor
+  protection, with deterministic integer rounding, minimum-one handling, and
+  explicit non-Plasma preservation. Broader legacy resistance aggregation,
+  direct Plasma classification, and other resistance families remain out of
+  scope.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
@@ -1264,20 +1266,15 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Latest Audited Checkpoint:** `main` merge commit
-  `41de1e9`, merged PR #443, and project version `0.2.327`. Repository and
-  WASM/browser hosted checks pass for the delivered Rocket Launcher slice, and
-  the exact branch head `16a9836` has an independent determinism-review PASS;
-  the hosted Review policy check failed closed because the sole maintainer
-  cannot create a non-self approval, so the documented live
+- **Latest Audited Checkpoint:** `main` merge commit `cc625da`, merged PR #444,
+  and project version `0.2.328`. The exact implementation head `04afd3f` has
+  an independent determinism-review PASS; local and hosted Repository/WASM
+  checks pass. The hosted Review policy check failed closed because the sole
+  maintainer cannot create a non-self approval, so the documented live
   `enforce_admins=false` exception was used. Controlled human, audiovisual,
   and reference-capture surfaces remain `NOT_RUN` where prerequisites are
   unavailable. The checkpointed progression audit is
   [`docs/steering/audit-2026-08-30-post-0.2.318.md`](steering/audit-2026-08-30-post-0.2.318.md).
-- **Active Slice Branch:** `codex/blue-armor-plasma-resistance` starts from
-  `626e242` and targets the catalog-backed Blue Armor Plasma-mitigation
-  behavior described in `SPEC.md`; delivery remains pending until its checks
-  and independent review complete.
 - **Steering Disposition — Gate A closed:** Preserve the deterministic core,
   explicit RNG/replay identities, typed content, observation boundary, and
   browser/MCP projections. M10 now binds browser command histories to their
@@ -1343,6 +1340,16 @@ verification item uses explicit status semantics:
   solo-maintainer Review-policy exception was used. Terrain/ground-item
   effects, delayed queues, projectile routing, rocket-jump, runtime captures,
   and audiovisual parity remain open or `NOT_RUN`.
+- **Delivered Slice — M9 Blue Armor Plasma mitigation (`0.2.328`):** PR #444
+  merged as `cc625da`. The exact final implementation head `04afd3f` carries
+  the catalog-defined 20% Blue Armor Plasma resistance into typed BFG
+  actor-splash damage before flat protection, with deterministic rounding,
+  minimum-one handling, and non-Plasma preservation. Local and hosted
+  Repository/WASM checks pass, and the independent determinism review returns
+  PASS; the protected-path Review policy exception is recorded above. Broader
+  resistance aggregation, direct Plasma classification, other resistance
+  families, controlled runtime, audiovisual parity, and balance remain open or
+  `NOT_RUN`.
 - **Process Gate (M0, closed):** Keep `SPEC.md` bounded to one active slice and
   require an attributable independent determinism-review disposition for every
   replay-visible or legacy-fidelity slice. PR #436 records and enforces the
@@ -1731,8 +1738,10 @@ scripting.
 - [x] Typed base 10mm-chain and shell-box ammo-pack boundaries preserve pinned
   amount/capacity, replay kinds, descriptions, and atlas slots.
 - [x] Typed blue armor preserves pinned protection, description, replay kind,
-  shared armor atlas slot, and pure blue presentation tint; legacy resistance
-  and movement modifiers remain explicit migration gaps.
+  shared armor atlas slot, and pure blue presentation tint; its catalog-defined
+  20% Plasma resistance now mitigates typed BFG actor splash before flat
+  protection in `0.2.328`; broader resistance and movement modifiers remain
+  explicit migration gaps.
 - [x] Typed red armor preserves pinned protection, description, replay kind,
   shared armor atlas slot, and pure red presentation tint; legacy resistance
   and movement modifiers remain explicit migration gaps.
