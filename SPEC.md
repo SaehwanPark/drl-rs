@@ -4,7 +4,7 @@ Last reviewed: 2026-09-02
 Current project version: `0.2.338`
 Audited starting checkpoint: `main` at `0f5c047` (Plasma Rifle direct-Plasma
 slice and canonical documentation reconciliation)
-Previous delivery checkpoint: `main` merge commit `dff7cb2` (PR #453, merged)
+Delivery checkpoint: `main` merge commit `6c6387c` (PR #454, merged)
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -24,8 +24,8 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 
 ## 2. Active implementation slice: M9 — Nuclear Plasma Rifle direct Plasma classification
 
-Slice status: **in progress** on temporary branch
-`codex/nuclear-plasma-direct-plasma-classification`.
+Slice status: **delivered and verified** at implementation head `3f1601e`;
+merge checkpoint is `6c6387c` (PR #454, merged).
 
 ### 2.1 Objective
 
@@ -95,7 +95,7 @@ At audited starting revision `0f5c047` (version `0.2.337`):
 
 ### 2.5 Acceptance criteria
 
-- [ ] Nuclear Plasma Rifle direct ordinary and chainfire hits emit typed Plasma damage
+- [x] Nuclear Plasma Rifle direct ordinary and chainfire hits emit typed Plasma damage
   and Blue Armor reduces the applied amounts using the existing deterministic
   resistance-before-flat protection formula.
 - [x] An unarmored control preserves all successful raw direct damage amounts,
@@ -105,10 +105,10 @@ At audited starting revision `0f5c047` (version `0.2.337`):
 - [x] Direct replay and repeated replay runs produce identical game state,
   event stream, and typed direct-volley projection; stale semantics `139` is
   rejected before execution.
-- [ ] Existing Nuclear Plasma Rifle chainfire, rejection/rollback, replay, MCP,
+- [x] Existing Nuclear Plasma Rifle chainfire, rejection/rollback, replay, MCP,
   metrics/audio/render, and BrowserSession parity tests pass without new wire
   or RNG behavior.
-- [ ] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
+- [x] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
   hosted checks, and an attributable independent determinism review pass on the
   final implementation commit.
 
@@ -124,7 +124,7 @@ At audited starting revision `0f5c047` (version `0.2.337`):
 
 ### 2.7 Evidence boundary
 
-This slice will prove the current-Rust Nuclear Plasma Rifle direct
+This slice proves the current-Rust Nuclear Plasma Rifle direct
 ordinary/chainfire Plasma events and Blue Armor mitigation policy, plus replay
 determinism and stable state/RNG behavior. It does not prove controlled legacy
 runtime, exact timing or accuracy, overload/nuke effects, higher chainfire
@@ -134,11 +134,15 @@ audiovisual parity, or human play.
 
 ### 2.8 Delivery evidence
 
-Delivery evidence is pending implementation, local/hosted verification,
-independent review, and merge. The optional reference-capture preflight remains
-`NOT_RUN` when its local manifest is unavailable; controlled legacy runtime,
-audiovisual, balance, and human-play surfaces remain outside this slice's
-evidence boundary.
+Delivery evidence: implementation head `3f1601e` merged in PR #454 as
+`6c6387c`. Focused Nuclear Plasma direct-Plasma tests (3/3), existing
+chainfire tests (22/22), Nuclear Plasma browser-boundary tests (3/3), the full
+workspace suite, strict Clippy, version/repository gates, and hosted Repository
+and WASM checks pass. The independent determinism review returned PASS. The
+hosted Review-policy check remains the documented solo-maintainer exception;
+the optional reference-capture preflight is `NOT_RUN` because its local
+manifest is unavailable. Controlled legacy runtime, audiovisual, balance, and
+human-play surfaces remain outside this slice's evidence boundary.
 
 ## 3. Enduring invariants
 

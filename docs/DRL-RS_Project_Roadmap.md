@@ -1329,34 +1329,40 @@ verification item uses explicit status semantics:
   checks pass under the documented solo-maintainer Review-policy exception;
   higher chainfire levels, overcharge, spread/routing, SPLASMA divisors,
   broader resistance aggregation, and audiovisual parity remain open.
-- **M9 Nuclear Plasma Rifle direct Plasma classification (`0.2.338`, active):**
-  Each successful ordinary-fire and already implemented chainfire direct target
-  hit is being routed through typed Plasma mitigation so Blue Armor resistance
-  applies before flat protection. The six-projectile volley, first-through-
-  seventh chainfire counts, clip costs, warm-up state, periodic recharge,
-  alternate overload, replay/MCP/browser projections, and rejection boundaries
-  are in scope; higher chainfire levels, spread/routing, overload/nuke effects,
-  SPLASMA divisors, broader resistance aggregation, and audiovisual parity
-  remain open.
+- **M9 Nuclear Plasma Rifle direct Plasma classification (`0.2.338`, delivered
+  in PR #454):** Each successful ordinary-fire and already implemented
+  chainfire direct target hit now uses typed Plasma mitigation so Blue Armor
+  resistance applies before flat protection. The six-projectile volley,
+  first-through-seventh chainfire counts, clip costs, warm-up state, periodic
+  recharge, alternate overload, replay/MCP/browser projections, and rejection
+  boundaries remain unchanged. Independent review and hosted Repository/WASM
+  checks pass under the documented solo-maintainer Review-policy exception;
+  higher chainfire levels, spread/routing, overload/nuke effects, SPLASMA
+  divisors, broader resistance aggregation, and audiovisual parity remain open.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
   manifests with SHA-256 sidecars,
   optional detached signatures, cache invalidation, and checkout binding.
 
-### Active & Open Work
+### Delivered Slices & Open Work
 
-- **Active Slice — M9 Nuclear Plasma Rifle direct Plasma classification
-  (`0.2.338`):** Temporary branch
-  `codex/nuclear-plasma-direct-plasma-classification` starts at audited main
-  checkpoint `0f5c047` (version `0.2.337`). The implementation routes
-  successful ordinary-fire and first-through-seventh-level chainfire direct
-  target hits through typed Plasma mitigation while preserving raw damage,
-  clip costs, warm-up state, periodic recharge, alternate overload,
-  RNG/replay identities, event ordering, and boundary projections. Focused
-  verification and independent review are pending; higher chainfire levels,
-  spread/routing, overload/nuke effects, SPLASMA divisors, broader resistance
-  aggregation, and audiovisual parity remain outside this slice.
+No slice is active after PR #454; the next bounded slice will be selected after
+the current stop-condition check.
+
+- **Delivered Slice — M9 Nuclear Plasma Rifle direct Plasma classification
+  (`0.2.338`):** PR #454 merged as `6c6387c`; implementation head `3f1601e`
+  routes successful ordinary-fire and first-through-seventh-level chainfire
+  direct target hits through typed Plasma mitigation, so Blue Armor's
+  catalog-defined 20% resistance applies before flat protection. Raw damage,
+  six-projectile volley and chainfire clip costs, warm-up state, periodic
+  recharge, alternate overload, RNG/replay identities, event ordering,
+  rejection boundaries, and boundary projections remain unchanged. The
+  independent determinism review returned PASS; local and hosted
+  Repository/WASM checks pass under the documented solo-maintainer
+  Review-policy exception. Higher chainfire levels, spread/routing,
+  overload/nuke effects, SPLASMA divisors, broader resistance aggregation, and
+  audiovisual parity remain open or `NOT_RUN`.
 
 - **Delivered Slice — M9 Plasma Rifle direct Plasma classification
   (`0.2.337`):** PR #453 merged as `dff7cb2`; implementation head `566e315`
@@ -1454,8 +1460,15 @@ verification item uses explicit status semantics:
   broader legacy resistance aggregation, direct Fire classification, controlled
   runtime, audiovisual parity, and balance remain open or `NOT_RUN`.
 
-- **Latest Audited Checkpoint:** `main` merge commit `0f5c047` (version
-  `0.2.337`). The Plasma Rifle direct-Plasma implementation head `566e315`
+- **Latest Audited Checkpoint:** `main` merge commit `6c6387c` (version
+  `0.2.338`). The Nuclear Plasma Rifle direct-Plasma implementation head
+  `3f1601e` has an independent determinism-review PASS receipt; local and
+  hosted Repository/WASM checks pass. The hosted Review-policy check failed
+  closed because the sole maintainer cannot create a non-self approval, so the
+  documented live `enforce_admins=false` exception was used. Controlled human,
+  audiovisual, and reference-capture surfaces remain `NOT_RUN` where
+  prerequisites are unavailable. The preceding Plasma Rifle direct-Plasma
+  implementation head `566e315`
   and evidence/docs head `3926e0b` have an independent determinism-review PASS
   receipt; local and hosted Repository/WASM checks pass. The hosted Review
   policy check failed closed because the sole maintainer cannot create a
