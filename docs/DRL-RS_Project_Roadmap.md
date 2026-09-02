@@ -1289,12 +1289,13 @@ verification item uses explicit status semantics:
   geometry, Fire mitigation, event ordering, and rejection boundaries remain
   unchanged. Feature markers, terrain/content callbacks, delayed queues,
   projectile routing, rocket-jump, and audiovisual parity remain open.
-- **Active M9 Rocket Launcher direct Fire classification (`0.2.333`):** The
-  bounded follow-up branch routes only the direct Rocket Launcher target damage
-  through the existing typed Fire path, so Red Armor's catalog-defined 25%
-  resistance applies before flat protection. Raw damage, RNG order, the already
-  delivered splash/item effects, and every other direct weapon path remain
-  unchanged pending implementation and review.
+- **M9 Rocket Launcher direct Fire classification (`0.2.333`, delivered in PR
+  #449):** The direct Rocket Launcher target damage now uses the existing typed
+  Fire path, so Red Armor's catalog-defined 25% resistance applies before flat
+  protection. Raw damage, RNG order, the already delivered splash/item effects,
+  and every other direct weapon path remain unchanged. Independent review,
+  replay coverage, and hosted Repository/WASM checks pass; non-Rocket direct
+  Fire classification and broader resistance aggregation remain open.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
@@ -1303,13 +1304,16 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active Slice — M9 Rocket Launcher direct Fire classification (`0.2.333`):**
-  The bounded branch from audited `main` `c07a256` routes only the direct
-  Rocket Launcher target damage through typed Fire mitigation. Red Armor's
-  catalog-defined 25% resistance applies before flat protection; raw damage,
-  RNG state, splash/item behavior, rejection boundaries, and boundary
-  projections remain unchanged. Implementation, independent review, hosted
-  checks, and merge checkpoint are pending.
+- **Delivered Slice — M9 Rocket Launcher direct Fire classification (`0.2.333`):**
+  PR #449 merged as `5242e3c`. The implementation head `a0a0fcd` routes only the
+  direct Rocket Launcher target damage through typed Fire mitigation, so Red
+  Armor's catalog-defined 25% resistance applies before flat protection. Raw
+  damage, RNG state, splash/item behavior, rejection boundaries, and boundary
+  projections remain unchanged. The independent determinism review returned
+  PASS; local and hosted Repository/WASM checks pass under the documented
+  solo-maintainer Review-policy exception. Non-Rocket direct Fire
+  classification, broader resistance aggregation, and other legacy/runtime
+  surfaces remain open or `NOT_RUN`.
 
 - **Delivered Slice — M9 Rocket Launcher ground-item destruction (`0.2.332`):**
   PR #448 merged as `e902d71`. The exact implementation head
@@ -1347,15 +1351,18 @@ verification item uses explicit status semantics:
   broader legacy resistance aggregation, direct Fire classification, controlled
   runtime, audiovisual parity, and balance remain open or `NOT_RUN`.
 
-- **Latest Audited Checkpoint:** `main` merge commit `e902d71` (PR #448,
-  version `0.2.332`). The Rocket Launcher implementation head
-  `49f1451f59ce883a84cd10d0e01d8e3793540572` has an independent
-  determinism-review PASS receipt; local and hosted Repository/WASM checks
-  pass. The hosted Review policy check failed closed because the sole
-  maintainer cannot create a non-self approval, so the documented live
-  `enforce_admins=false` exception was used. Controlled human, audiovisual,
-  and reference-capture surfaces remain `NOT_RUN` where prerequisites are
-  unavailable. The preceding Null Pointer implementation head
+- **Latest Audited Checkpoint:** `main` merge commit `5242e3c` (PR #449,
+  version `0.2.333`). The Rocket Launcher direct-Fire implementation head
+  `a0a0fcd` has an independent determinism-review PASS receipt; local and
+  hosted Repository/WASM checks pass. The hosted Review policy check failed
+  closed because the sole maintainer cannot create a non-self approval, so the
+  documented live `enforce_admins=false` exception was used. Controlled human,
+  audiovisual, and reference-capture surfaces remain `NOT_RUN` where
+  prerequisites are unavailable. The preceding Rocket ground-item
+  implementation head `49f1451f59ce883a84cd10d0e01d8e3793540572` and merge
+  checkpoint `e902d71` retain their independent determinism-review PASS
+  receipt; local and hosted Repository/WASM checks pass under the same
+  documented exception. The preceding Null Pointer implementation head
   `0a066a829781fe98b3d9a3f0b2fa9d3b7e85a174` has an independent
   determinism-review PASS receipt; local and hosted Repository/WASM checks
   pass. The hosted Review policy check failed closed because the sole
@@ -1906,10 +1913,11 @@ scripting.
   than `10`, emits `GroundItemDestroyed` after actor processing, and preserves
   non-destructive cells; direct-core, replay, MCP, and BrowserSession parity
   are delivered in `0.2.332`.
-- [ ] Rocket Launcher direct target damage is classified as typed `Fire`, so
+- [x] Rocket Launcher direct target damage is classified as typed `Fire`, so
   Red Armor's catalog-defined 25% resistance applies before flat protection;
   raw damage, RNG order, splash/item effects, and other direct weapons remain
-  unchanged until this bounded branch is reviewed and merged.
+  unchanged. Direct-core/replay/MCP/BrowserSession parity and the merged
+  `0.2.333` delivery are recorded above.
 - [x] Typed chaingun preserves pinned 9mm relation, 40-round clip, `1d6`
   damage range, description, replay kind, and `SPRITE_CHAINGUN` slot;
   chainfire/burst effects and exact timing/accuracy remain open.

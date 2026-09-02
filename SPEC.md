@@ -4,7 +4,7 @@ Last reviewed: 2026-09-02
 Current project version: `0.2.333`
 Audited starting checkpoint: `main` at `c07a256` (Rocket ground-item slice
 and canonical documentation reconciliation)
-Delivery checkpoint: **pending** for the active branch
+Delivery checkpoint: `main` merge commit `5242e3c` (PR #449, merged)
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -24,8 +24,7 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 
 ## 2. Active implementation slice: M9 — Rocket Launcher direct Fire classification
 
-Slice status: **implementation in progress** on the temporary branch
-`codex/rocket-direct-fire-classification`.
+Slice status: **delivered and verified** at the delivery checkpoint above.
 
 ### 2.1 Objective
 
@@ -87,19 +86,19 @@ At audited starting revision `c07a256` (version `0.2.332`):
 
 ### 2.5 Acceptance criteria
 
-- [ ] Rocket Launcher direct hits emit typed Fire damage and Red Armor reduces
+- [x] Rocket Launcher direct hits emit typed Fire damage and Red Armor reduces
   the applied amount using the existing deterministic resistance-before-flat
   protection formula.
-- [ ] An unarmored control preserves the raw direct damage amount, while the
+- [x] An unarmored control preserves the raw direct damage amount, while the
   same seed keeps the raw roll and final RNG state identical between armored
   and unarmored targets.
-- [ ] Direct replay and repeated replay runs produce identical game state,
+- [x] Direct replay and repeated replay runs produce identical game state,
   event stream, and typed direct-hit projection; stale semantics `134` is
   rejected before execution.
-- [ ] Existing Rocket splash/ground-item, rejection/rollback, replay, MCP,
+- [x] Existing Rocket splash/ground-item, rejection/rollback, replay, MCP,
   metrics/audio/render, and BrowserSession parity tests pass without new wire
   or RNG behavior.
-- [ ] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
+- [x] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
   hosted checks, and an attributable independent determinism review pass on the
   final implementation commit.
 
@@ -122,9 +121,20 @@ aggregation, durability, balance, audiovisual parity, or human play.
 
 ### 2.8 Delivery evidence
 
-Pending implementation, local/hosted verification, independent review, and
-merge. The optional reference-capture preflight remains `NOT_RUN` unless its
-local manifest becomes available.
+- Independent determinism review of final head `a0a0fcd`: **PASS** by
+  `/root/rocket_review`; no actionable findings were identified.
+- Local workspace tests, clippy, formatting, version check, repository checks,
+  native/headless browser checks, and `git diff --check`: **PASS**. The optional
+  reference-capture preflight is `NOT_RUN` because its local manifest is
+  unavailable.
+- PR #449 hosted Repository and WASM browser checks: **PASS** in run
+  `33656765327`. The protected-path Review policy check failed closed in run
+  `33656765373` because the sole maintainer cannot create a non-self approval;
+  the documented live `enforce_admins=false` exception was used after the
+  independent review receipt was recorded.
+- Merge checkpoint: `5242e3c`; the temporary implementation branch was removed
+  locally and remotely. No controlled legacy runtime, audiovisual, balance, or
+  human-play claim is inferred from these checks.
 
 ## 3. Enduring invariants
 
