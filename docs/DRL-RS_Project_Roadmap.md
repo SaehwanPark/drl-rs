@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-09-02
-Current project version: `0.2.336`
+Current project version: `0.2.337`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.336)
+## 3. Current Progress Summary (`VERSION` 0.2.337)
 
 ### Delivered Foundations
 
@@ -1319,6 +1319,14 @@ verification item uses explicit status semantics:
   raw-damage, and RNG behavior remain unchanged. Independent review and
   hosted Repository/WASM checks pass; the documented solo-maintainer
   Review-policy exception remains in force.
+- **M9 Plasma Rifle direct Plasma classification (`0.2.337`, active):** Each
+  successful ordinary-fire and already implemented first/second-level chainfire
+  direct target hit is being routed through typed Plasma mitigation so Blue
+  Armor resistance applies before flat protection. The six-projectile volley,
+  chainfire clip costs, warm-up state, raw rolls, RNG order, event ordering,
+  replay/MCP/browser projections, and rejection boundaries are in scope;
+  higher chainfire levels, overcharge, spread/routing, SPLASMA divisors,
+  broader resistance aggregation, and audiovisual parity remain open.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
@@ -1326,6 +1334,17 @@ verification item uses explicit status semantics:
   optional detached signatures, cache invalidation, and checkout binding.
 
 ### Active & Open Work
+
+- **Active Slice — M9 Plasma Rifle direct Plasma classification (`0.2.337`):**
+  Temporary branch `codex/plasma-rifle-direct-plasma-classification` starts at
+  audited main checkpoint `1429ffd` (version `0.2.336`). The implementation
+  routes successful ordinary-fire and first/second-level chainfire direct
+  target hits through typed Plasma mitigation while preserving raw damage,
+  clip costs, warm-up state, RNG/replay identities, event ordering, and
+  boundary projections. Focused verification and independent review are
+  pending; higher chainfire levels, overcharge, spread/routing, SPLASMA
+  divisors, broader resistance aggregation, and audiovisual parity remain
+  outside this slice.
 
 - **Delivered Slice — M9 BFG 10K direct Plasma classification (`0.2.336`):**
   PR #452 merged as `0d8b56d`; implementation head `21c9df4` routes each
@@ -1410,8 +1429,8 @@ verification item uses explicit status semantics:
   broader legacy resistance aggregation, direct Fire classification, controlled
   runtime, audiovisual parity, and balance remain open or `NOT_RUN`.
 
-- **Latest Audited Checkpoint:** `main` merge commit `0d8b56d` (PR #452,
-  version `0.2.336`). The BFG 10K direct-Plasma implementation head `21c9df4`
+- **Latest Audited Checkpoint:** `main` merge commit `1429ffd` (version
+  `0.2.336`). The BFG 10K direct-Plasma implementation head `21c9df4`
   has an independent determinism-review PASS receipt; local and hosted
   Repository/WASM checks pass. The hosted Review policy check failed closed
   because the sole maintainer cannot create a non-self approval, so the
@@ -2019,6 +2038,14 @@ scripting.
   pass in merged PR #452 (`0d8b56d`); scatter, projectile routing, delayed
   timing, and broader direct Plasma/SPLASMA-divisor behavior remain open or
   `NOT_RUN`.
+- [ ] Plasma Rifle ordinary-fire and first/second-level chainfire direct target
+  damage is classified as typed `Plasma`, so Blue Armor's catalog-defined 20%
+  resistance applies before flat protection while raw rolls, clip costs,
+  warm-up state, RNG order, event ordering, rejection boundaries, and
+  MCP/BrowserSession projections remain unchanged. Focused direct/chainfire/
+  replay tests, independent review, and hosted Repository/WASM evidence are
+  in progress; higher chainfire levels, overcharge, spread/routing, SPLASMA
+  divisors, and broader direct Plasma behavior remain open or `NOT_RUN`.
 - [x] Typed double/combat shotguns preserve pinned shell relation, clips,
   damage/range scalars, descriptions, replay kinds, and `SPRITE_DSHOTGUN`/
   `SPRITE_CSHOTGUN` slots; callbacks and spread/falloff remain open.
