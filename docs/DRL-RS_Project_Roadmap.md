@@ -1885,13 +1885,13 @@ scripting.
 - [x] Typed rocket launcher preserves pinned rocket relation, one-shot clip,
   `6d6` damage range, description, replay kind, and `SPRITE_BAZOOKA` slot;
   its bounded actor-only radius-4 direct-hit fanout is delivered in `0.2.327`;
--  terrain/content callbacks, feature-item markers, projectile routing,
+  terrain/content callbacks, feature-item markers, projectile routing,
   rocket-jump, and exact accuracy/timing remain open.
-- [ ] Rocket Launcher radius-4 explosion destroys at most one lowest-ID
+- [x] Rocket Launcher radius-4 explosion destroys at most one lowest-ID
   ordinary ground item per clear blast cell when post-falloff damage is greater
   than `10`, emits `GroundItemDestroyed` after actor processing, and preserves
   non-destructive cells; direct-core, replay, MCP, and BrowserSession parity
-  remain required.
+  are delivered in `0.2.332`.
 - [x] Typed chaingun preserves pinned 9mm relation, 40-round clip, `1d6`
   damage range, description, replay kind, and `SPRITE_CHAINGUN` slot;
   chainfire/burst effects and exact timing/accuracy remain open.
