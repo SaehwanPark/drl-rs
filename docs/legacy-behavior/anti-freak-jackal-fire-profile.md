@@ -1,6 +1,6 @@
 # Anti-Freak Jackal typed Fire-mitigation evidence
 
-Status: active slice in `0.2.330`; the current branch routes the existing
+Status: delivered in `0.2.330`; the merged implementation routes the existing
 Anti-Freak radius-1 actor splash through the typed Fire damage path.
 
 ## Pinned source

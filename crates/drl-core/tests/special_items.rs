@@ -5103,6 +5103,68 @@ fn null_pointer_replay_is_deterministic() {
 }
 
 #[test]
+fn null_pointer_plasma_splash_respects_blue_armor_in_same_seed_replays() {
+  fn replay_with_armor(armor: Option<ItemSpawnKind>) -> ReplayLog {
+    let mut replay =
+      ReplayLog::new(25, 12, 12, Position::new(5, 5)).with_player_config(PlayerSpawnConfig {
+        hp: 500,
+        max_hp: 500,
+        speed: 100,
+        initial_items: Vec::new(),
+        equipped_weapon: Some(ItemSpawnKind::NullPointer),
+        equipped_armor: armor,
+        equipped_armor_durability: None,
+      });
+    replay.record_monster(MonsterSpawnSpec::new(
+      Position::new(6, 5),
+      "Blast Target",
+      500,
+      0,
+      (0, 0),
+    ));
+    replay.record_command(Command::AttackRanged(Position::new(6, 5)));
+    replay
+  }
+
+  let plain_replay = replay_with_armor(None);
+  let blue_replay = replay_with_armor(Some(ItemSpawnKind::BlueArmor));
+  let (plain_game, plain_events) = ReplayEngine::run(&plain_replay).unwrap();
+  let (blue_game, blue_events) = ReplayEngine::run(&blue_replay).unwrap();
+  let plain_player_id = plain_game.world().player_id().unwrap();
+  let blue_player_id = blue_game.world().player_id().unwrap();
+  let splash_damage = |events: &[GameEvent], player_id| {
+    events
+      .iter()
+      .find_map(|event| match event {
+        GameEvent::DamageApplied {
+          target_id,
+          amount,
+          source: DamageSource::Environment,
+          damage_type: Some(DamageType::Plasma),
+          ..
+        } if *target_id == player_id => Some(*amount),
+        _ => None,
+      })
+      .expect("player should receive typed Plasma splash")
+  };
+  let plain_damage = splash_damage(&plain_events, plain_player_id);
+  let blue_damage = splash_damage(&blue_events, blue_player_id);
+
+  assert_eq!(plain_player_id, blue_player_id);
+  assert_eq!(plain_damage, 10);
+  assert_eq!(
+    blue_damage,
+    apply_damage_resistance(plain_damage, 20)
+      .saturating_sub(2)
+      .max(1)
+  );
+  assert!(blue_damage < plain_damage);
+  assert_eq!(plain_game.rng(), blue_game.rng());
+  assert!(ReplayEngine::verify_determinism(&plain_replay).unwrap());
+  assert!(ReplayEngine::verify_determinism(&blue_replay).unwrap());
+}
+
+#[test]
 fn acid_spitter_reload_converts_acid_and_spends_score() {
   let mut game = Game::new_arena(904, 12, 12).unwrap();
   let player_id = game.world().player_id().unwrap();

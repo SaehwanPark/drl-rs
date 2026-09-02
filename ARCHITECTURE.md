@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-09-02
-Current project version: `0.2.330`
+Current project version: `0.2.331`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -367,16 +367,19 @@ Presentation Boundary
     Null Pointer target score branching uses the dedicated `null_pointer`
     transition and emits a typed hit plus deferred-explosion schedule event;
     its dedicated resolver applies fixed actor-only radius-1 Plasma splash
-    damage with stable deduplication and death/drop follow-up. Terrain/item
-    destruction, immunity, and exact delayed timing remain explicit gaps.
+    damage with stable deduplication and death/drop follow-up through the typed
+    world/armor path, so catalog-defined Blue Armor Plasma resistance applies
+    before flat protection. Terrain/item destruction, immunity, and exact
+    delayed timing remain explicit gaps.
     Legacy
     Acid/Lava entered-cell contact uses the dedicated `environment` classifier
     and applies the bounded raw baseline through environment damage/death
     events; Acid/Lava/Water movement uses the typed 1250-unit terrain cost,
     Mud movement uses the typed 1650-unit terrain cost, and Acid/Fire damage
     types are optionally projected. Blue Armor now carries its catalog-defined
-    20% Plasma resistance and Red Armor its catalog-defined 25% Fire
-    resistance through typed actor-splash damage, including Anti-Freak Fire;
+    20% Plasma resistance through typed BFG and Null Pointer actor-splash
+    damage, and Red Armor its catalog-defined 25% Fire resistance through
+    typed actor-splash damage, including Anti-Freak Fire;
     the broader legacy
     resistance stack, running modifiers,
     prepared-slot consumption,
