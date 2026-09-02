@@ -4,7 +4,7 @@ Last reviewed: 2026-09-02
 Current project version: `0.2.337`
 Audited starting checkpoint: `main` at `1429ffd` (BFG 10K direct-Plasma
 slice and canonical documentation reconciliation)
-Previous delivery checkpoint: `main` merge commit `0d8b56d` (PR #452, merged)
+Delivery checkpoint: `main` merge commit `dff7cb2` (PR #453, merged)
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
