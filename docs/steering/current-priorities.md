@@ -2,9 +2,9 @@
 
 Last reviewed: 2026-09-02
 Baseline branch: `main`
-Baseline merge commit: `af78fd5`
-Latest pull request inspected: `#455`
-Baseline project version: `0.2.339`
+Baseline merge commit: `d855725`
+Latest pull request inspected: `#456`
+Baseline project version: `0.2.340`
 
 ## Purpose
 
@@ -217,10 +217,10 @@ invariants into accepted architecture/ADRs as appropriate, and update the
 roadmap and active specification from verified evidence.
 
 Re-audit before broad M9 migration resumes, or when a new stop-gate candidate
-is selected. The current audited tree is `main` at `af78fd5` (PR #455 merge,
-version `0.2.339`); local checks, independent review, and hosted Repository/WASM
-checks passed for the delivered bounded Nuclear Plasma Rifle and Plasma Rifle
-direct-Plasma, BFG 10K,
+is selected. The current audited tree is `main` at `d855725` (PR #456 merge,
+version `0.2.340`); local checks, independent review, and hosted Repository/WASM
+checks passed for the delivered bounded Blaster, Laser Rifle, Nuclear Plasma
+Rifle and Plasma Rifle direct-Plasma, BFG 10K,
 Nuclear BFG 9000, and Standard BFG 9000 direct-Plasma slices, Rocket Launcher
 direct-Fire and ground-item slices, and their preceding Null Pointer
 Plasma-mitigation slice.

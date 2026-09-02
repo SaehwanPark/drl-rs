@@ -1,9 +1,9 @@
 # Development Steering
 
 Last reviewed: 2026-09-02
-Repository baseline reviewed: `af78fd5`
-Latest pull request inspected: `#455`
-Project version at review: `0.2.339`
+Repository baseline reviewed: `d855725`
+Latest pull request inspected: `#456`
+Project version at review: `0.2.340`
 
 ## Purpose
 
@@ -71,6 +71,8 @@ The delivered Rocket Launcher direct-Fire and ground-item slices are documented 
 [`rocket-launcher-profile.md`](../legacy-behavior/rocket-launcher-profile.md).
 The delivered Standard BFG 9000 direct-Plasma slice is documented in
 [`bfg9000-explosion.md`](../legacy-behavior/bfg9000-explosion.md).
+The delivered Blaster direct-Plasma slice is documented in
+[`blaster-profile.md`](../legacy-behavior/blaster-profile.md).
 
 
 ## Agent harness

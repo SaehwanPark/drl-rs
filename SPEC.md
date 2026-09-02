@@ -4,7 +4,7 @@ Last reviewed: 2026-09-02
 Current project version: `0.2.340`
 Audited starting checkpoint: `main` at `2a089c6` (Laser Rifle direct-Plasma
 delivery and canonical documentation reconciliation)
-Previous delivery checkpoint: `main` merge commit `af78fd5` (PR #455, merged)
+Delivery checkpoint: `main` merge commit `d855725` (PR #456, merged)
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -24,8 +24,8 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 
 ## 2. Active implementation slice: M9 — Blaster direct Plasma classification
 
-Slice status: **in progress** on temporary branch
-`codex/blaster-direct-plasma-classification`.
+Slice status: **delivered and verified** at implementation head `8e05aa5`;
+merge checkpoint is `d855725` (PR #456, merged).
 
 ### 2.1 Objective
 
@@ -93,20 +93,20 @@ At audited starting revision `2a089c6` (version `0.2.339`):
 
 ### 2.5 Acceptance criteria
 
-- [ ] Blaster direct ordinary and aimed hits emit typed Plasma damage
+- [x] Blaster direct ordinary and aimed hits emit typed Plasma damage
   and Blue Armor reduces the applied amounts using the existing deterministic
   resistance-before-flat protection formula.
-- [ ] An unarmored control preserves all successful raw direct damage amounts,
+- [x] An unarmored control preserves all successful raw direct damage amounts,
   while
   the same seed keeps the raw rolls and final RNG state identical between
   armored and unarmored targets.
-- [ ] Direct replay and repeated replay runs produce identical game state,
+- [x] Direct replay and repeated replay runs produce identical game state,
   event stream, and typed direct-shot projection; stale semantics `141` is
   rejected before execution.
-- [ ] Existing Blaster aimed/recharge/no-reload rejection/rollback, replay, MCP,
+- [x] Existing Blaster aimed/recharge/no-reload rejection/rollback, replay, MCP,
   metrics/audio/render, and BrowserSession parity tests pass without new wire
   or RNG behavior.
-- [ ] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
+- [x] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
   hosted checks, and an attributable independent determinism review pass on the
   final implementation commit.
 
@@ -123,7 +123,7 @@ At audited starting revision `2a089c6` (version `0.2.339`):
 
 ### 2.7 Evidence boundary
 
-This slice will prove the current-Rust Blaster direct ordinary/aimed Plasma
+This slice proves the current-Rust Blaster direct ordinary/aimed Plasma
 events and Blue Armor mitigation policy, plus replay determinism and stable
 state/RNG behavior. It does not prove controlled legacy runtime, exact recharge
 cadence or accuracy, manual callback state, spread/routing, terrain/content
@@ -132,11 +132,15 @@ parity, or human play.
 
 ### 2.8 Delivery evidence
 
-Delivery evidence is pending implementation, local/hosted verification,
-independent review, and merge. The optional reference-capture preflight remains
-`NOT_RUN` when its local manifest is unavailable; controlled legacy runtime,
-audiovisual, balance, and human-play surfaces remain outside this slice's
-evidence boundary.
+Delivery evidence: implementation head `8e05aa5` merged in PR #456 as
+`d855725`. Focused Blaster direct-Plasma tests (2/2), existing Blaster
+special-item tests (152/152), the full workspace suite, strict Clippy,
+version/repository/diff gates, and hosted Repository and WASM checks pass. The
+independent determinism review returned PASS. The hosted Review-policy check
+remains the documented solo-maintainer exception; the optional
+reference-capture preflight is `NOT_RUN` because its local manifest is
+unavailable. Controlled legacy runtime, audiovisual, balance, and human-play
+surfaces remain outside this slice's evidence boundary.
 
 ## 3. Enduring invariants
 
