@@ -27,7 +27,7 @@ description: "Comprehensive armory encyclopedia: ballistic firearms, energy weap
 - **Minigun**: Heavy 8-barrel rotary machine gun. Chews through ammo at 8 rounds per salvo, with first-level 6-projectile, second-level 8-projectile, and third-level 12-projectile chainfire bursts for open combat corridors.
 
 ### 4. Heavy Rocket & Explosive Launchers
-- **Rocket Launcher**: High-explosive ordnance firing single rockets with a radius-2 explosive splash.
+- **Rocket Launcher**: High-explosive ordnance firing single rockets with a bounded radius-4 actor splash.
 - **Missile Launcher**: Multi-tube launcher holding up to 4 rockets for continuous area-of-effect suppression.
 
 ---
@@ -48,7 +48,7 @@ description: "Comprehensive armory encyclopedia: ballistic firearms, energy weap
 | Armor | Protection | Special Mechanics & Behavior |
 |---|---|---|
 | **Green Armor** | 30% Damage Reduction | Standard combat security vest. Durable and lightweight. |
-| **Blue Armor** | 50% Damage Reduction | Heavy kevlar and ceramic plate suit. Superior ballistic resistance. |
+| **Blue Armor** | 2 flat protection; 20% Plasma resistance on typed BFG fanouts | Heavy kevlar and ceramic plate suit. Broader resistance aggregation remains open. |
 | **Lava Armor** | 75% Thermal Reduction | Self-repairing suit. Standing in lava tiles recharges durability over time. |
 | **Malek's Armor** | 60% All-round Reduction | Ancient demonic power armor. Slowly regenerates durability over time. |
 | **Medical Powerarmor** | 50% All-round Reduction | Equipped with automated trauma systems that stabilize player HP when critical. |
