@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-09-02
-Current project version: `0.2.336`
+Current project version: `0.2.337`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -68,6 +68,9 @@ the state with saturating arithmetic, and ordinary fire resets it; MCP and
 browser projections call this same model. BFG 10K additionally records its
 typed exact-hit, delayed-explosion, radius-2 actor fanout, and thresholded
 ordinary-ammo destruction;
+Plasma Rifle additionally records its typed direct Plasma target path alongside
+the six-projectile ordinary-fire, one-cell-per-projectile, and first/second
+chainfire fragments;
 Standard BFG 9000 records its typed exact-hit, one-projectile,
 forty-cell-per-shot, and delayed-explosion fragments plus its typed direct
 Plasma target path and bounded radius-8 actor fanout (one `10d6` Plasma roll per clear cell, source self-safety,
@@ -353,6 +356,13 @@ Presentation Boundary
     stack per clear cell when damage exceeds 10. Delayed timing, terrain/content
     and non-ammunition ground-item effects, splash immunity, scatter, and
     projectile routing remain separate policy work.
+    Plasma Rifle direct ordinary-fire and already implemented first/second-level
+    chainfire target hits now select the existing typed Plasma path, so Blue
+    Armor's catalog-defined 20% resistance applies before flat protection.
+    The six-projectile volley, clip costs, warm-up state, raw rolls, RNG order,
+    event ordering, and boundary projections remain unchanged; higher chainfire
+    levels, overcharge, spread/routing, and exact legacy timing remain separate
+    policy work.
     The pinned `IF_NORELOAD` families use an explicit item policy that rejects
     ordinary `Reload` before mutation; this remains separate from alternate
     reload and automatic recharge behavior.

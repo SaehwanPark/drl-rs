@@ -1,7 +1,8 @@
 # Plasma Rifle typed behavior-profile evidence
 
 Status: delivered typed six-projectile ordinary-fire volley and first- and
-second-level chainfire execution in `0.2.279`; higher chainfire levels,
+second-level chainfire execution in `0.2.279`; `0.2.337` now classifies its
+successful direct target hits as typed Plasma. Higher chainfire levels,
 overcharge, exact legacy timing, controlled runtime comparison, and
 audiovisual parity remain `NOT_RUN`.
 
@@ -40,6 +41,17 @@ Scenario/replay, MCP, and `BrowserSession` tests verify first-level four- and
 second-level six-ordered-attack events, deterministic state/effect parity,
 reload-backed clip restoration, and exact below-cost rejection.
 The existing reload path remains authoritative after the volley.
+
+Gameplay semantics `139` (project `0.2.337`) classifies each successful Plasma
+Rifle ordinary-fire and already implemented first/second-level chainfire direct
+target hit as `DamageType::Plasma`. The existing typed damage path therefore
+applies Blue Armor's catalog-defined 20% Plasma resistance before its flat
+protection, without changing the raw attack rolls, clip costs, warm-up state,
+event ordering, or replay/RNG identities. The legacy source declares
+`DAMAGE_PLASMA` and passes the item damage family into direct `ApplyDamage`; the
+current slice records the Rust boundary behavior only and does not claim exact
+legacy timing, accuracy, overcharge, higher-level chainfire, or audiovisual
+parity.
 
 Higher chainfire levels, overcharge, spread/routing, exact timing, controlled
 legacy runtime, browser capture, and audiovisual parity remain deferred and are
