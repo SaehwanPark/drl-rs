@@ -1258,11 +1258,13 @@ verification item uses explicit status semantics:
   explicit non-Plasma preservation. Broader legacy resistance aggregation,
   direct Plasma classification, and other resistance families remain out of
   scope.
-- **Active M9 Red Armor Fire mitigation (`0.2.329`, pending):** The next
-  bounded fidelity slice carries the documented Red Armor 25% Fire resistance
-  from the item catalog into typed Rocket actor-splash damage before flat armor
-  protection. Broader legacy resistance aggregation, direct Fire
-  classification, and other resistance families remain out of scope.
+- **M9 Red Armor Fire mitigation (`0.2.329`, delivered in PR #445):** The
+  catalog-defined Red Armor 25% Fire resistance now flows through
+  `ArmorProperties` into typed Rocket actor-splash damage before flat armor
+  protection, with deterministic integer rounding, minimum-one handling, and
+  explicit non-Fire preservation. Broader legacy resistance aggregation,
+  direct Fire classification, and other resistance families remain out of
+  scope.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
@@ -1271,19 +1273,17 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Latest Audited Checkpoint:** `main` docs-reconciled checkpoint `2dc55b6`
-  (after PR #444, version `0.2.328`). The exact Blue Armor implementation head
-  `04afd3f` has an independent determinism-review PASS; local and hosted
-  Repository/WASM checks pass. The hosted Review policy check failed closed
-  because the sole maintainer cannot create a non-self approval, so the
-  documented live `enforce_admins=false` exception was used. Controlled human,
-  audiovisual, and reference-capture surfaces remain `NOT_RUN` where
-  prerequisites are unavailable. The checkpointed progression audit is
+- **Latest Audited Checkpoint:** `main` merge commit `530794c` (PR #445,
+  version `0.2.329`). The Red Armor implementation head
+  `3370713fc66c1585fafa2a0d7fe8d6357902becf` and final docs-only branch head
+  `4688048a426d273c13b6ca9d4b3e842c37371d8b` both have independent
+  determinism-review PASS receipts; local and hosted Repository/WASM checks
+  pass. The hosted Review policy check failed closed because the sole
+  maintainer cannot create a non-self approval, so the documented live
+  `enforce_admins=false` exception was used. Controlled human, audiovisual,
+  and reference-capture surfaces remain `NOT_RUN` where prerequisites are
+  unavailable. The checkpointed progression audit is
   [`docs/steering/audit-2026-08-30-post-0.2.318.md`](steering/audit-2026-08-30-post-0.2.318.md).
-- **Active Slice Branch:** `codex/red-armor-fire-resistance` starts from
-  `2dc55b6` and targets the catalog-backed Red Armor Fire-mitigation behavior
-  described in `SPEC.md`; delivery remains pending until its checks and
-  independent review complete.
 - **Steering Disposition — Gate A closed:** Preserve the deterministic core,
   explicit RNG/replay identities, typed content, observation boundary, and
   browser/MCP projections. M10 now binds browser command histories to their
@@ -1357,6 +1357,17 @@ verification item uses explicit status semantics:
   Repository/WASM checks pass, and the independent determinism review returns
   PASS; the protected-path Review policy exception is recorded above. Broader
   resistance aggregation, direct Plasma classification, other resistance
+  families, controlled runtime, audiovisual parity, and balance remain open or
+  `NOT_RUN`.
+- **Delivered Slice — M9 Red Armor Fire mitigation (`0.2.329`):** PR #445
+  merged as `530794c`. The exact implementation head
+  `3370713fc66c1585fafa2a0d7fe8d6357902becf` carries the catalog-defined 25%
+  Red Armor Fire resistance into typed Rocket actor-splash damage before flat
+  protection, with deterministic rounding, minimum-one handling, and
+  non-Fire preservation. The independent review and docs-only follow-up both
+  returned PASS; local and hosted Repository/WASM checks pass, while the
+  documented solo-maintainer Review-policy exception was used. Broader
+  resistance aggregation, direct Fire classification, other resistance
   families, controlled runtime, audiovisual parity, and balance remain open or
   `NOT_RUN`.
 - **Process Gate (M0, closed):** Keep `SPEC.md` bounded to one active slice and
@@ -1752,8 +1763,10 @@ scripting.
   protection in `0.2.328`; broader resistance and movement modifiers remain
   explicit migration gaps.
 - [x] Typed red armor preserves pinned protection, description, replay kind,
-  shared armor atlas slot, and pure red presentation tint; legacy resistance
-  and movement modifiers remain explicit migration gaps.
+  shared armor atlas slot, and pure red presentation tint; its catalog-defined
+  25% Fire resistance now mitigates typed Rocket actor splash before flat
+  protection in `0.2.329`; broader resistance and movement modifiers remain
+  explicit migration gaps.
 - [x] Pinned `smed`/`lmed` descriptions and existing med-pack atlas slots are
   preserved; dynamic difficulty/perk healing formulas remain open.
 - [x] Typed plasma rifle preserves pinned cell relation, six-shot clip, `1d7`

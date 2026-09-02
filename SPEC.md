@@ -4,7 +4,7 @@ Last reviewed: 2026-09-02
 Current project version: `0.2.329`
 Audited starting checkpoint: `main` at `2dc55b6` (PR #444 Blue Armor merge
 and steering baseline reconciled)
-Delivery checkpoint: pending on the active implementation branch
+Delivery checkpoint: `main` merge commit `530794c` (PR #445, merged)
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -24,7 +24,7 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 
 ## 2. Active implementation slice: M9 — Red Armor Fire mitigation
 
-Slice status: **in progress** from the audited starting checkpoint above.
+Slice status: **delivered and verified** at the delivery checkpoint above.
 
 ### 2.1 Objective
 
@@ -87,14 +87,14 @@ At audited starting revision `2dc55b6` (version `0.2.328`):
 
 ### 2.5 Acceptance criteria
 
-- [ ] Red Armor’s catalog resistance is carried into `ArmorProperties` and a
+- [x] Red Armor’s catalog resistance is carried into `ArmorProperties` and a
   pure typed mitigation helper covers rounding, minimum-one, and zero cases.
-- [ ] Rocket Fire actor splash routes through typed mitigation; Red Armor
+- [x] Rocket Fire actor splash routes through typed mitigation; Red Armor
   reduces the same deterministic hit while Blue Armor Plasma and non-Fire
   paths remain unchanged.
-- [ ] Existing rejection/rollback, replay, MCP, metrics/audio/render, and
+- [x] Existing rejection/rollback, replay, MCP, metrics/audio/render, and
   BrowserSession parity tests pass without new wire or RNG behavior.
-- [ ] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
+- [x] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
   and an attributable independent determinism review pass on the final
   implementation commit.
 
@@ -109,11 +109,28 @@ At audited starting revision `2dc55b6` (version `0.2.328`):
 
 ### 2.7 Evidence boundary
 
-This slice will prove the current-Rust Red Armor mitigation branch for typed
+This slice proves the current-Rust Red Armor mitigation branch for typed
 Fire actor splash and its stable boundary projections. It will not prove
 legacy body-zone aggregation, direct Fire classification, other resistance
 families, controlled legacy runtime, audiovisual parity, balance, or human
 play; those surfaces remain open or `NOT_RUN` in the roadmap.
+
+### 2.8 Delivery evidence
+
+- Independent determinism review of implementation head
+  `3370713fc66c1585fafa2a0d7fe8d6357902becf`: **PASS**. The focused
+  follow-up review of docs-only steering reconciliation at final branch head
+  `4688048a426d273c13b6ca9d4b3e842c37371d8b`: **PASS**.
+- Local workspace tests, clippy, formatting, version check, repository checks,
+  and native/headless browser checks: **PASS**. The optional reference-capture
+  preflight is `NOT_RUN` because its local manifest is unavailable.
+- PR #445 hosted Repository checks and WASM browser checks: **PASS** in run
+  `33644720157`. The protected-path Review policy check failed closed under the
+  documented solo-maintainer `enforce_admins=false` exception; administrator
+  merge was used after the review receipt was recorded.
+- Merge checkpoint: `530794c`; the temporary implementation branch was removed
+  locally and remotely. No controlled legacy runtime, audiovisual, balance, or
+  human-play claim is inferred from these checks.
 
 ## 3. Enduring invariants
 
