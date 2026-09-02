@@ -2,6 +2,8 @@
 
 Status: delivered typed Nuclear Plasma Rifle ordinary-fire and first- through
 seventh-level chainfire support in `0.2.306`;
+`0.2.338` now classifies successful ordinary and already implemented chainfire
+direct target hits as typed Plasma;
 eighth-and-later chainfire levels,
 controlled legacy runtime comparison, and audiovisual parity remain `NOT_RUN`.
 Existing overload and periodic recharge evidence is retained in
@@ -49,6 +51,17 @@ ordinary/second-level or four first-level or nine third-/fourth-/fifth-/sixth-le
 chainfire cells are rejected before
 mutation, and the existing overload and periodic-recharge ownership are
 unchanged.
+
+Gameplay semantics `140` (project `0.2.338`) classifies each successful Nuclear
+Plasma Rifle ordinary-fire and already implemented chainfire direct target hit
+as `DamageType::Plasma`. The existing typed damage path therefore applies Blue
+Armor's catalog-defined 20% Plasma resistance before flat protection without
+changing raw attack rolls, clip costs, warm-up state, periodic recharge,
+alternate overload, event ordering, or replay/RNG identities. The legacy source
+declares `DAMAGE_PLASMA` and carries the item damage family into direct
+`ApplyDamage`; this slice records the current Rust boundary only and does not
+claim exact legacy timing, accuracy, higher-level chainfire, overload/nuke
+effects, or audiovisual parity.
 
 Eighth-and-later chainfire callback state, alternate target routing, exact
 timing, controlled runtime, browser capture, and audiovisual parity remain

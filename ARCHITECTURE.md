@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-09-02
-Current project version: `0.2.337`
+Current project version: `0.2.338`
 
 Status: Verified for current deterministic headless core, MCP tooling, and
 browser-playable WebGPU slice; full audiovisual parity remains planned.
@@ -105,8 +105,9 @@ Assault Shotgun records its typed ordinary single-shell reload and
 capped full-deficit reload fragments;
 Revenant's Launcher records its typed
 exact-hit attack fragment;
-Nuclear Plasma records its typed alternate-overload and periodic-recharge
-fragments; the BFG family profiles record exact-hit, typed projectile-count,
+Nuclear Plasma records its typed direct Plasma target path alongside its
+alternate-overload and periodic-recharge fragments; the BFG family profiles
+record exact-hit, typed projectile-count,
 ammunition-cost, and delayed-explosion metadata. Dedicated runtime command
 paths remain the execution authority; legacy partial-ammo fallback, rotational
 target routing, trait callbacks, scatter, and projectile routing are not
@@ -363,6 +364,14 @@ Presentation Boundary
     event ordering, and boundary projections remain unchanged; higher chainfire
     levels, overcharge, spread/routing, and exact legacy timing remain separate
     policy work.
+    Nuclear Plasma Rifle direct ordinary-fire and already implemented
+    first-through-seventh-level chainfire target hits now select the existing
+    typed Plasma path, so Blue Armor's catalog-defined 20% resistance applies
+    before flat protection. Its six-projectile volley, clip costs, warm-up
+    state, periodic recharge, alternate overload, raw rolls, RNG order, event
+    ordering, and boundary projections remain unchanged; higher chainfire
+    levels, spread/routing, overload/nuke effects, and exact legacy timing
+    remain separate policy work.
     The pinned `IF_NORELOAD` families use an explicit item policy that rejects
     ordinary `Reload` before mutation; this remains separate from alternate
     reload and automatic recharge behavior.

@@ -37,7 +37,8 @@ pub enum GameEvent {
     remaining_hp: u32,
     source: DamageSource,
     /// Optional typed damage family; populated for bounded environment hazards
-    /// while legacy/actor damage remains intentionally unclassified.
+    /// and actor weapon/effect paths whose resistance policy is modeled, while
+    /// other damage remains intentionally unclassified.
     damage_type: Option<DamageType>,
   },
   /// An actor was destroyed or killed.

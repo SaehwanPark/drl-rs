@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-09-02
-Current project version: `0.2.337`
+Current project version: `0.2.338`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.337)
+## 3. Current Progress Summary (`VERSION` 0.2.338)
 
 ### Delivered Foundations
 
@@ -1329,6 +1329,15 @@ verification item uses explicit status semantics:
   checks pass under the documented solo-maintainer Review-policy exception;
   higher chainfire levels, overcharge, spread/routing, SPLASMA divisors,
   broader resistance aggregation, and audiovisual parity remain open.
+- **M9 Nuclear Plasma Rifle direct Plasma classification (`0.2.338`, active):**
+  Each successful ordinary-fire and already implemented chainfire direct target
+  hit is being routed through typed Plasma mitigation so Blue Armor resistance
+  applies before flat protection. The six-projectile volley, first-through-
+  seventh chainfire counts, clip costs, warm-up state, periodic recharge,
+  alternate overload, replay/MCP/browser projections, and rejection boundaries
+  are in scope; higher chainfire levels, spread/routing, overload/nuke effects,
+  SPLASMA divisors, broader resistance aggregation, and audiovisual parity
+  remain open.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
@@ -1336,6 +1345,18 @@ verification item uses explicit status semantics:
   optional detached signatures, cache invalidation, and checkout binding.
 
 ### Active & Open Work
+
+- **Active Slice — M9 Nuclear Plasma Rifle direct Plasma classification
+  (`0.2.338`):** Temporary branch
+  `codex/nuclear-plasma-direct-plasma-classification` starts at audited main
+  checkpoint `0f5c047` (version `0.2.337`). The implementation routes
+  successful ordinary-fire and first-through-seventh-level chainfire direct
+  target hits through typed Plasma mitigation while preserving raw damage,
+  clip costs, warm-up state, periodic recharge, alternate overload,
+  RNG/replay identities, event ordering, and boundary projections. Focused
+  verification and independent review are pending; higher chainfire levels,
+  spread/routing, overload/nuke effects, SPLASMA divisors, broader resistance
+  aggregation, and audiovisual parity remain outside this slice.
 
 - **Delivered Slice — M9 Plasma Rifle direct Plasma classification
   (`0.2.337`):** PR #453 merged as `dff7cb2`; implementation head `566e315`
@@ -1433,7 +1454,7 @@ verification item uses explicit status semantics:
   broader legacy resistance aggregation, direct Fire classification, controlled
   runtime, audiovisual parity, and balance remain open or `NOT_RUN`.
 
-- **Latest Audited Checkpoint:** `main` merge commit `dff7cb2` (version
+- **Latest Audited Checkpoint:** `main` merge commit `0f5c047` (version
   `0.2.337`). The Plasma Rifle direct-Plasma implementation head `566e315`
   and evidence/docs head `3926e0b` have an independent determinism-review PASS
   receipt; local and hosted Repository/WASM checks pass. The hosted Review
@@ -2056,6 +2077,15 @@ scripting.
   in merged PR #453 (`dff7cb2`); higher chainfire levels, overcharge,
   spread/routing, SPLASMA divisors, and broader direct Plasma behavior remain
   open or `NOT_RUN`.
+- [ ] Nuclear Plasma Rifle ordinary-fire and first-through-seventh-level
+  chainfire direct target damage is classified as typed `Plasma`, so Blue
+  Armor's catalog-defined 20% resistance applies before flat protection while
+  raw rolls, clip costs, warm-up state, periodic recharge, alternate overload,
+  RNG order, event ordering, rejection boundaries, and MCP/BrowserSession
+  projections remain unchanged. Focused direct/chainfire/replay tests,
+  independent review, and hosted Repository/WASM evidence are in progress;
+  higher chainfire levels, spread/routing, overload/nuke effects, SPLASMA
+  divisors, and broader direct Plasma behavior remain open or `NOT_RUN`.
 - [x] Typed double/combat shotguns preserve pinned shell relation, clips,
   damage/range scalars, descriptions, replay kinds, and `SPRITE_DSHOTGUN`/
   `SPRITE_CSHOTGUN` slots; callbacks and spread/falloff remain open.
