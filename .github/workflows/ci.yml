@@ -30,6 +30,43 @@ jobs:
           DRL_VERSION_BASE: ${{ github.event.pull_request.base.sha || '' }}
         run: sh scripts/check-repository.sh
 
+  check-linux:
+    name: Repository checks (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install stable Rust
+        run: |
+          rustup toolchain install stable --profile minimal \
+            --component rustfmt \
+            --component clippy
+          rustup default stable
+      - name: Run repository checks
+        env:
+          DRL_VERSION_BASE: ${{ github.event.pull_request.base.sha || '' }}
+        run: sh scripts/check-repository.sh
+
+  # The Fedora checks run inside a Fedora container that the runner launches, so
+  # actions/checkout still uses the runner's own Node runtime and the evidence is a
+  # clean Fedora userland rather than the Ubuntu runner's packages.
+  fedora-dev:
+    name: Fedora 43 development host
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Run Fedora 43 development-host checks
+        run: |
+          docker run --rm \
+            --volume "$GITHUB_WORKSPACE":/src \
+            --workdir /src \
+            --env CARGO_TARGET_DIR=/tmp/drl-target \
+            fedora:43 \
+            sh -c 'dnf -q install -y git which rust cargo clippy rustfmt && git config --global --add safe.directory /src && sh scripts/check-fedora-dev.sh'
+
   web:
     name: WASM browser checks
     runs-on: ubuntu-latest
