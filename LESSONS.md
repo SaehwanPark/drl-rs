@@ -512,3 +512,19 @@ repository and WASM job has reached a passing terminal state.
 - **Prevention:** Before delegating a review, state the child model's context
   budget, cap what each read may pull, and check `status view='transcript'` plus
   the run's `meta.json` instead of guessing from a generic failure line.
+
+## Never pre-author an independent review verdict
+
+- **Context:** The slice template had a sentence asserting the independent review
+  "returned PASS", and it went into `SPEC.md` while that review was still
+  running, next to checked hosted-check boxes.
+- **Symptom:** The review came back `fix`, so the canonical slice claimed an
+  acceptance verdict and hosted-check status that did not exist, pinned to an
+  implementation head that later commits had already superseded.
+- **Resolution:** Replace the verdict sentence with an evidence ledger: one
+  bullet per gate naming the exact revision, command, host, and result; an
+  explicit `pending` for anything unfinished; and the first review's disposition
+  and findings kept as history alongside the corrections they caused.
+- **Prevention:** Write acceptance claims only after the run finishes, bind each
+  claim to a named commit, and re-run the gate whenever a later commit touches a
+  build input. A green run on an older commit is evidence about that commit only.

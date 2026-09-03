@@ -24,8 +24,9 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 
 ## 2. Active implementation slice: M8 — Modular browser shell
 
-Slice status: **delivered and verified** at implementation head `ccdee78`;
-merge checkpoint is pending in PR #457.
+Slice status: **open** — the implementation and the local verification in §2.8
+are delivered on branch `codex/drl-web-frontend-modularization` (PR #457, merge
+pending); the hosted checks and the independent re-review in §2.8 are not closed.
 
 ### 2.1 Objective
 
@@ -106,8 +107,13 @@ At audited starting revision `30ec8c6` (version `0.2.340`):
   and `scripts/test-offline-cache.sh` pass against the new module layout.
 - [x] `sh scripts/check-repository.sh` and `sh scripts/check-web.sh` pass on
   Fedora 43 x86-64.
-- [x] Formatting, version transition, hosted Repository and WASM checks, and an
-  attributable independent review pass on the final implementation commit.
+- [x] `cargo fmt --all -- --check` and `sh scripts/check-version.sh` pass on the
+  final commit.
+- [ ] Hosted Repository and WASM checks pass on the final implementation commit;
+  a green run on an earlier commit is not accepted (status recorded in §2.8).
+- [ ] An attributable independent review returns `pass` on the final commit. The
+  first read-only pass returned `fix` against `12d12a1`; the corrections are
+  recorded in §2.8 and a focused re-review is required.
 
 ### 2.6 Non-goals
 
@@ -131,19 +137,53 @@ or Linux CI coverage.
 
 ### 2.8 Delivery evidence
 
-Delivery evidence: implementation head `ccdee78` on branch
-`codex/drl-web-frontend-modularization` (PR #457). Fedora 43 x86-64 runs of
-`cargo check`/`cargo clippy`/`cargo test` for native and
-`wasm32-unknown-unknown`, the relocated 100-test native boundary set, the WASM
-headless Chrome test suite, and `scripts/check-repository.sh` plus
-`scripts/check-web.sh` pass. That web run records the browser boundary
-contracts (service worker, offline cache, controls, support classifier,
-diagnostics, accessibility shell), the 100-test native set, and the 2 WASM
-persistence tests in headless Chrome 152.0.7977.75 with ChromeDriver
-152.0.7977.75 (local wasm-pack 0.13.1; hosted CI pins 0.15.0). The independent
-review returned PASS. The hosted
-Review-policy check remains the documented solo-maintainer exception; reference
-captures and interactive Chromium acceptance are `NOT_RUN` for this slice.
+Evidence is bound to a named revision; a later commit does not inherit an
+earlier commit's checks.
+
+- **Implementation:** `ccdee78` (modularization) then document and script
+  corrections, on branch `codex/drl-web-frontend-modularization` against baseline
+  `30ec8c6` (`0.2.340`). Merge into `main` is **pending** in PR #457.
+- **Local verification, Fedora 43 x86-64 (GNOME/Wayland host):**
+  `sh scripts/check-repository.sh` exits `0`; `sh scripts/check-web.sh` exits
+  `0`, covering the service-worker, offline-cache, browser-control,
+  support-classifier, diagnostics, and accessibility contracts, the 100-test
+  native `drl-web` set, and the 2 WASM persistence tests in headless Chrome
+  152.0.7977.75 with ChromeDriver 152.0.7977.75 (local wasm-pack 0.13.1; hosted
+  CI pins 0.15.0). `cargo clippy -p drl-web --all-targets` is warning-free;
+  `cargo clippy -p drl-web --target wasm32-unknown-unknown --all-targets` reports
+  7 warnings, and the same command re-run at `30ec8c6` reproduces the identical 7,
+  so none is introduced here. Mechanical fidelity (shader SHA-256 and lengths,
+  `#[wasm_bindgen]` export signatures, item-name census, test-name diff,
+  platform-import census) is in `/tmp/fidelity.md`.
+- **Independent review, first pass:** read-only review of `30ec8c6..12d12a1` per
+  `.agents/skills/drl-determinism-review/SKILL.md`, disposition **`fix`**. It
+  confirmed behavior preservation at the inspected boundaries
+  (`BrowserSession::submit` rollback contract, quarantine-before-remove storage
+  order, export side-effect ordering, animation clock and `visibilitychange`
+  rebasing, `escape_html` and markup helpers, module and `cfg` reachability,
+  encapsulation census, gameplay semantics still `142`) and raised three
+  findings: (1) this slice pre-claimed its own review verdict and hosted-check
+  success against a stale implementation head and described PR #457 as shipped;
+  (2) the aggregate diagnostics grep let the incompatible-save contract survive
+  losing one intended owner; (3) `ARCHITECTURE.md` mis-described the remaining
+  `texture.rs` platform binding as an animation callback. All three are
+  corrected: this evidence ledger replaces the pre-authored verdict sentence, the
+  boundary scripts now assert each contract string on its owning module (with the
+  consumer asserted as the `== Some("Saved session incompatible")` comparison), and the architecture
+  text names the texture-cache error type. Negative control for finding 2: with
+  that literal removed from `wasm/shell_dom.rs`, both
+  `scripts/check-browser-diagnostics.sh` and `scripts/test-browser-controls.mjs`
+  exit non-zero; on the clean tree both pass.
+- **Independent re-review:** pending on the final commit; this slice does not
+  claim that verdict until it lands.
+- **Hosted checks:** pending on the final commit. An earlier revision of this
+  branch passed hosted Repository checks and WASM browser checks and failed the
+  Review-policy check closed as the documented solo-maintainer
+  `enforce_admins=false` exception; that run is not counted for acceptance here.
+- **`NOT_RUN`:** controlled legacy reference captures and interactive
+  Chromium/Wayland acceptance (no browser acceptance record is claimed beyond the
+  headless WASM suite above).
+
 ## 3. Enduring invariants
 
 The active slice must preserve:

@@ -19,8 +19,16 @@ const wasmShell = [
   "wasm/shell_dom.rs",
   "wasm/animation_loop.rs",
   "wasm/exports.rs",
-].map((name) => fs.readFileSync(`crates/drl-web/src/${name}`, "utf8"));
-const wasm = wasmShell.join("\n");
+].map((name) => [name, fs.readFileSync(`crates/drl-web/src/${name}`, "utf8")]);
+function read(name) {
+  const found = wasmShell.find(([candidate]) => candidate === name);
+  assert.ok(found, `the browser shell must keep crates/drl-web/src/${name}`);
+  return found[1];
+}
+// Contract strings are asserted on the module that owns them rather than on the
+// concatenated shell, so losing an intended owner fails the check.
+const wasmExports = read("wasm/exports.rs");
+const wasmShellDom = read("wasm/shell_dom.rs");
 const persistence = fs.readFileSync("crates/drl-web/src/persistence.rs", "utf8");
 const clearSaveHandler = bootstrap.match(
   /clearSaveButton\.addEventListener\("click", \(\) => \{([\s\S]*?)\n\}\);/,
@@ -49,9 +57,12 @@ assert.match(
   "the page must expose the confirmation dialog",
 );
 assert.match(bootstrap, /loadButton\.addEventListener\("click", \(\) => \{/);
-assert.match(wasm, /Saved session incompatible/);
+// The incompatible-save title is a producer/consumer pair: wasm/exports.rs writes the
+// diagnostics title and wasm/shell_dom.rs compares against it, so both must keep it.
+assert.match(wasmExports, /Saved session incompatible/);
+assert.match(wasmShellDom, /Some\("Saved session incompatible"\)/);
 assert.match(
-  wasm,
+  wasmExports,
   /Use Clear save to remove it, then save a new session from this build\./,
   "incompatible saves need an actionable recovery instruction",
 );

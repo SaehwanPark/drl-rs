@@ -472,8 +472,9 @@ Presentation Boundary
   - `animation`, `assets`, `dom`, `gpu`, `input`, `session`, `persistence` —
     browser-facing helpers with no `web_sys`, `js_sys`, `wasm_bindgen`, or
     `winit` reference, so the native test target exercises them directly.
-  - `texture` — base-texture vertex/pipeline construction; it keeps one
-    `wasm_bindgen::JsValue` binding for animation callbacks.
+  - `texture` — base-texture vertex/pipeline construction; its only remaining
+    platform reference is the `wasm_bindgen::JsValue` error type returned by GPU
+    texture-cache construction, not an animation callback.
   - `wasm/mod.rs` — WASM module map, shared thread-local shell state, and
     re-exports. `wasm/storage`, `textures`, `renderer`, `scene`, `app`,
     `shell_dom`, `animation_loop`, and `exports` own one browser responsibility
