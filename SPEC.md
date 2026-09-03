@@ -84,8 +84,8 @@ At audited starting revision `30ec8c6` (version `0.2.340`):
   `pub(crate)` visibility, `use`/`mod` declarations, and `use super::*;` in
   submodules.
 - The two WGSL shader constants are byte-identical to the pre-split strings
-  (1,706 and 482 characters), so pipeline behavior and the shader-retention
-  contract tests are unchanged.
+  (SHA-256 match over the 1,704- and 480-character shader texts), so pipeline
+  behavior and the shader-retention contract tests are unchanged.
 - All 100 native `drl-web` tests remain (97 relocated by name plus the 3
   existing `persistence` tests) and both `#[wasm_bindgen_test]` cases remain.
 - No gameplay semantics change: gameplay semantics stay `142`, and the replay
