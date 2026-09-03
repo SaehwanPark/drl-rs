@@ -111,11 +111,11 @@ At audited starting revision `30ec8c6` (version `0.2.340`):
   Fedora 43 x86-64.
 - [x] `cargo fmt --all -- --check` and `sh scripts/check-version.sh` pass on the
   final commit.
-- [ ] Hosted Repository and WASM checks pass on the final implementation commit;
-  a green run on an earlier commit is not accepted (status recorded in §2.8).
-- [ ] An attributable independent review returns `pass` on the final commit. The
-  first read-only pass returned `fix` against `12d12a1`; the corrections are
-  recorded in §2.8 and a focused re-review is required.
+- [x] Hosted `Repository checks` and `WASM browser checks` pass on `17af04f`; the
+  only later commit is the document-only ledger entry that records them.
+- [x] An attributable independent review returns `pass`: the fourth read-only pass
+  closes at `17af04f`. Passes 1-3 returned `fix` and their findings are recorded in
+  §2.8.
 
 ### 2.6 Non-goals
 
@@ -188,7 +188,23 @@ earlier commit's checks.
   at `crates/drl-web/src/texture.rs:44`; and `ARCHITECTURE.md` still described the
   contract scripts as allowing a string to move anywhere in the module set, which
   the owner-anchored scripts no longer permit.
-- **Independent review, third pass:** pending. This slice claims no verdict for it.
+- **Independent review, third pass (focused, `755bf55..6b67879`):** disposition
+  **`fix`**. It closed all four second-pass findings and withheld a slice-level pass
+  only because `SPEC.md` §2.3 and the `0.2.341` `CHANGELOG.md` entry still described
+  the boundary scripts as grepping the shell module set. Both were corrected in
+  `17af04f`.
+- **Independent review, fourth pass (narrow, `6b67879..17af04f`):** disposition
+  **`pass`**, which is this slice's final review verdict. The reviewer confirmed the
+  owner-anchored descriptions do not exceed script coverage, re-ran the spec
+  structure, version, diagnostics, and browser-control checks plus
+  `git diff --check`, and recorded that the full repository and web gates exited `0`
+  on the clean `6b67879` tree with documentation-only edits afterwards. Findings
+  closed across the four passes: premature acceptance claims, aggregate contract
+  grep, mis-described platform binding, stale version wording, unnamed verification
+  tree, and the two obsolete grep descriptions.
+- **Post-merge record:** the merge checkpoint and the final local-gate re-run are
+  recorded from the following slice's documents, because a commit cannot carry
+  evidence about its own merge.
 - **Hosted checks:** tracked per commit in PR #457 rather than asserted here. On
   `755bf55` hosted `Repository checks` passed and `WASM browser checks` were still
   running when this line was written; the `Review policy` check fails closed as the
