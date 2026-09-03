@@ -484,8 +484,11 @@ Presentation Boundary
   - `tests/` — one shared-helper module plus focused native boundary suites;
     `wasm_tests.rs` holds the `#[wasm_bindgen_test]` persistence round-trips.
   - Contract scripts (`scripts/check-browser-diagnostics.sh`,
-    `scripts/test-browser-controls.mjs`) grep this module set, so a contract
-    string may move between modules but must stay inside the shell set.
+    `scripts/test-browser-controls.mjs`) assert each browser contract string
+    against the single module that owns it, so a contract may not move to a
+    collaborating module and the producer/consumer pair for the incompatible-save
+    title (`wasm/exports.rs` writes it, `wasm/shell_dom.rs` compares against it)
+    must both keep it.
 - **Key Responsibilities**:
   - Browser session management (`BrowserSession`) and DOM/keyboard mapping.
   - The browser session submits commands to the same authoritative `Game` as

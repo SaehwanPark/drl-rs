@@ -1,7 +1,7 @@
 # Specification
 
-Last reviewed: 2026-09-02
-Current project version: `0.2.340`
+Last reviewed: 2026-09-03
+Current project version: `0.2.341`
 Audited starting checkpoint: `main` at `2a089c6` (Laser Rifle direct-Plasma
 delivery and canonical documentation reconciliation)
 Delivery checkpoint: `main` merge commit `d855725` (PR #456, merged)
@@ -144,8 +144,10 @@ earlier commit's checks.
   corrections, on branch `codex/drl-web-frontend-modularization` against baseline
   `30ec8c6` (`0.2.340`). Merge into `main` is **pending** in PR #457.
 - **Local verification, Fedora 43 x86-64 (GNOME/Wayland host):**
-  `sh scripts/check-repository.sh` exits `0`; `sh scripts/check-web.sh` exits
-  `0`, covering the service-worker, offline-cache, browser-control,
+  `sh scripts/check-repository.sh` and `sh scripts/check-web.sh` exit `0` against
+  `755bf55` plus the document-only edits carried by this ledger's commit; they are
+  re-run against the final commit and the post-merge checkpoint records that run.
+  They cover the service-worker, offline-cache, browser-control,
   support-classifier, diagnostics, and accessibility contracts, the 100-test
   native `drl-web` set, and the 2 WASM persistence tests in headless Chrome
   152.0.7977.75 with ChromeDriver 152.0.7977.75 (local wasm-pack 0.13.1; hosted
@@ -174,12 +176,22 @@ earlier commit's checks.
   that literal removed from `wasm/shell_dom.rs`, both
   `scripts/check-browser-diagnostics.sh` and `scripts/test-browser-controls.mjs`
   exit non-zero; on the clean tree both pass.
-- **Independent re-review:** pending on the final commit; this slice does not
-  claim that verdict until it lands.
-- **Hosted checks:** pending on the final commit. An earlier revision of this
-  branch passed hosted Repository checks and WASM browser checks and failed the
-  Review-policy check closed as the documented solo-maintainer
-  `enforce_admins=false` exception; that run is not counted for acceptance here.
+- **Independent review, second pass (focused, `12d12a1..755bf55`):** disposition
+  **`fix`**. It confirmed the scripts pass and that no previously-covered contract
+  string lost coverage, and found four wording-level leftovers, all corrected in
+  in this ledger's commit: `SPEC.md` and the roadmap still reported the project version
+  as `0.2.340`; this ledger did not name the tree its local runs were made against;
+  the roadmap still called the remaining `texture.rs` platform binding a callback,
+  contradicting `ARCHITECTURE.md` and the actual `Result<Self, JsValue>` error type
+  at `crates/drl-web/src/texture.rs:44`; and `ARCHITECTURE.md` still described the
+  contract scripts as allowing a string to move anywhere in the module set, which
+  the owner-anchored scripts no longer permit.
+- **Independent review, third pass:** pending. This slice claims no verdict for it.
+- **Hosted checks:** tracked per commit in PR #457 rather than asserted here. On
+  `755bf55` hosted `Repository checks` passed and `WASM browser checks` were still
+  running when this line was written; the `Review policy` check fails closed as the
+  documented solo-maintainer `enforce_admins=false` exception. A green hosted run
+  is accepted only for the commit that merges.
 - **`NOT_RUN`:** controlled legacy reference captures and interactive
   Chromium/Wayland acceptance (no browser acceptance record is claimed beyond the
   headless WASM suite above).

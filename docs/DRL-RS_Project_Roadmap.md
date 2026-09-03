@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
-Last reviewed: 2026-09-02
-Current project version: `0.2.340`
+Last reviewed: 2026-09-03
+Current project version: `0.2.341`
 
 ---
 
@@ -1358,18 +1358,19 @@ verification item uses explicit status semantics:
   Independent review and hosted Repository/WASM checks pass under the
   documented solo-maintainer Review-policy exception; recharge callback timing,
   broader resistance aggregation, and audiovisual parity remain open.
-- **M8 modular browser shell (`0.2.341`, in review as PR #457):** The 14,764-line
-  `crates/drl-web/src/lib.rs` is replaced by a 69-line module map plus focused
-  modules: `animation`/`assets`/`dom`/`gpu`/`input`/`session` helpers, a `wasm/`
-  shell that owns every `web_sys`/`winit`/`wasm_bindgen` touch point except one
-  `texture.rs` callback binding, and `tests/` boundary suites with shared
-  helpers. All 100 native `drl-web` tests and both WASM persistence tests
-  survive by name, the two WGSL shader constants stay byte-identical, and the
-  browser contract scripts now grep the shell module set. Native and
-  `wasm32-unknown-unknown` builds are warning-free; the 7 WASM-target Clippy
-  warnings reproduce at the baseline revision and stay open. Hosted checks and a
-  focused independent re-review are pending on the final commit; Linux CI,
-  `drl-desktop`, and Fedora/Wayland/Vulkan acceptance remain open.
+- **M8 modular browser shell (`0.2.341`, in review as PR #457):** The
+  14,764-line `crates/drl-web/src/lib.rs` is replaced by a 69-line module map plus
+  focused modules: `animation`/`assets`/`dom`/`gpu`/`input`/`session` helpers, a
+  `wasm/` shell that owns every `web_sys`/`winit`/`wasm_bindgen` touch point except
+  the `wasm_bindgen::JsValue` error type of the `texture.rs` GPU texture cache, and
+  `tests/` boundary suites with shared helpers. All 100 native `drl-web` tests and
+  both WASM persistence tests survive by name, the two WGSL shader constants stay
+  byte-identical, and the browser contract scripts now assert each contract string
+  against its owning module. Native and `wasm32-unknown-unknown` builds are
+  warning-free; the 7 WASM-target Clippy warnings reproduce at the baseline
+  revision and stay open. A third independent review pass and the hosted checks are
+  pending on the final commit; Linux CI, `drl-desktop`, and Fedora/Wayland/Vulkan
+  acceptance remain open.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
