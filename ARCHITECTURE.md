@@ -879,6 +879,21 @@ The repository enforces architectural boundaries via automated test suites:
 - **Repository Health**: `sh scripts/check-repository.sh` runs formatting,
   clippy, unit tests, integration tests, harness checks, and the SPEC structural
   guard that prevents a historical multi-slice ledger.
+- **Platform Coverage**: hosted CI verifies the repository contract suite on two
+  platforms — `Repository checks` on macOS and `Repository checks (Linux)` on
+  Ubuntu both run `sh scripts/check-repository.sh`. `WASM browser checks` runs the
+  web contracts and release packaging on Ubuntu. A separate
+  `Fedora 43 development host` job launches a `fedora:43` container from the Ubuntu
+  runner and runs `scripts/check-fedora-dev.sh`, which carries only the evidence the
+  generic jobs cannot: the platform-adjacent crates (`drl-render`, `drl-audio`,
+  `drl-web`) build natively on a clean Fedora userland with no extra system
+  packages, the `drl-core` and `drl-protocol` contracts pass there, and a capability
+  probe reports what the environment offers (`/dev/dri`, `libvulkan`,
+  `WAYLAND_DISPLAY`). The Fedora job does not duplicate the generic suite, and
+  because its container exposes no `/dev/dri` and no `libvulkan`, GPU and Wayland
+  acceptance stays `NOT_RUN` and belongs to a dedicated acceptance slice. Required
+  contexts stay `Repository checks`, `WASM browser checks`, and `Review policy`
+  until an explicit branch-protection change lists the new jobs.
 - **Asset Manifest**: `sh scripts/check-assets.sh` verifies graphics licensing
   and SHA-256 checksums.
 - **Release-rights Inventory**: `sh scripts/check-release-rights.sh` validates

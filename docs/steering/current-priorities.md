@@ -64,8 +64,8 @@ With the temporary control-plane gates closed, select work in this order:
      `drl-desktop`, then record Fedora/Wayland/Vulkan acceptance. `drl-web`
      is refactored rather than copied, and no gameplay or presentation-policy
      fork is introduced for Fedora.
-   - step 1 is in review as PR #457 (`0.2.341`, merge pending); Linux CI
-     evidence paths are the next selected slice once it merges.
+   - step 1 delivered in PR #457 (`0.2.341`, merged as `85e50c4`); step 2, Linux
+     and Fedora CI coverage, is in review as PR #458 (`0.2.342`).
 
 ## Development stop gates
 

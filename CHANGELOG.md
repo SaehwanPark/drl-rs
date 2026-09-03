@@ -3,6 +3,21 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.342]
+
+- Verified the whole repository contract suite on Linux: hosted CI now runs
+  `scripts/check-repository.sh` on both macOS and Ubuntu runners, so formatting,
+  Clippy, workspace and deterministic/replay tests, MCP transport checks, and
+  content/structural validation are covered on the platform the native shell will
+  target.
+- Added a targeted Fedora 43 development-host job and `scripts/check-fedora-dev.sh`:
+  it records the host and toolchain identity, proves `drl-render`, `drl-audio`, and
+  `drl-web` build on a clean Fedora userland with only `git`, `rust`, `cargo`,
+  `clippy`, and `rustfmt` installed, runs the `drl-core` and `drl-protocol`
+  contracts there, and probes `/dev/dri`, `libvulkan`, and `WAYLAND_DISPLAY` while
+  reporting GPU and Wayland acceptance as `NOT_RUN`. No system package prerequisites
+  were needed, and no gameplay, rendering, or persistence behavior changed.
+
 ## [0.2.341]
 
 - Split the 14,764-line `drl-web` crate root into focused modules: browser-facing
