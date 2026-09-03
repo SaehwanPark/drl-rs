@@ -496,3 +496,19 @@ repository and WASM job has reached a passing terminal state.
   a per-read line cap, and `toolBudget`/`timeoutMs`. Validate child options
   early: `toolBudget.block` must be `"*"` or an array of tool names, not a
   single bare name.
+
+## Match the reviewer to a context budget you actually have
+
+- **Context:** Subagent children inherit the parent's configured model, and this
+  workspace was running a local Vulkan-served model with a small context window.
+- **Symptom:** Bulk-review children failed twice for different-looking reasons:
+  one 30-minute timeout, then three lanes each ending `Context size has been
+  exceeded` after ~13 tool calls, with `Saved output: unavailable`.
+- **Resolution:** Read the run metadata (`attemptedModels`, `error`, `toolCount`)
+  before re-launching; either hand children pre-cut excerpts with a per-read
+  line cap, or delegate bulk reconciliation to a runner with its own larger
+  context (for example the read-only Codex CLI agent) and tell it to bound its
+  own diff reads.
+- **Prevention:** Before delegating a review, state the child model's context
+  budget, cap what each read may pull, and check `status view='transcript'` plus
+  the run's `meta.json` instead of guessing from a generic failure line.
