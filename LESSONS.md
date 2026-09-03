@@ -480,3 +480,19 @@ repository and WASM job has reached a passing terminal state.
   reproduce there, so the slice claims no fix and hides no regression.
 - **Prevention:** State the lint command, target, and baseline revision in the
   slice evidence, and keep tolerated lint debt out of unrelated slices.
+
+## Compute mechanical fidelity before delegating a large-move review
+
+- **Context:** A module split moved ~14,700 lines, and the first independent
+  review was one read-only pass asked to reconcile the whole before/after pair.
+- **Symptom:** The reviewer exhausted a 30-minute budget without a verdict,
+  because it re-derived counts by reading huge files instead of checking claims.
+- **Resolution:** Compute the mechanical invariants first (shader-digest and
+  length match, export-signature census, item-name census, test-name diff,
+  platform-API import counts), write them to one evidence file, then delegate
+  several narrow review lanes with tool budgets and a short per-lane timeout.
+- **Prevention:** Never delegate "verify this whole diff" for a bulk move; give
+  each lane a bounded file list, a reuse-instead-of-recompute evidence path,
+  a per-read line cap, and `toolBudget`/`timeoutMs`. Validate child options
+  early: `toolBudget.block` must be `"*"` or an array of tool names, not a
+  single bare name.
