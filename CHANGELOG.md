@@ -3,6 +3,19 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.341]
+
+- Split the 14,764-line `drl-web` crate root into focused modules: browser-facing
+  helpers (`animation`, `assets`, `dom`, `gpu`, `input`, `session`) and a `wasm/`
+  shell (`storage`, `textures`, `renderer`, `scene`, `app`, `shell_dom`,
+  `animation_loop`, `exports`), with the native boundary tests grouped under
+  `tests/`. `lib.rs` is now a module map plus the crate-internal re-export
+  surface, WGSL shader sources stay byte-identical, and the browser contract
+  scripts now assert each contract string against the single module that owns it,
+  covering both the producer and the consumer of the incompatible-save diagnostic.
+  No rendering,
+  persistence, input, or export signature changes; gameplay semantics stay `142`.
+
 ## [0.2.340]
 
 - Routed each successful Blaster ordinary and aimed direct target hit through

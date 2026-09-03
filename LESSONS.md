@@ -424,3 +424,107 @@ repository and WASM job has reached a passing terminal state.
   delivered outcomes in the roadmap, changelog, evidence notes, and Git.
 - **Prevention:** Add a structural check if the file again contains multiple
   active-slice headings or historical delivery ledgers.
+
+## Check every target before letting a fixer prune re-exports
+
+- **Context:** Splitting a large crate root into modules leaves a
+  `pub(crate) use` surface whose consumers are spread across `cfg(test)`,
+  `cfg(target_arch = "wasm32")`, and normal builds.
+- **Symptom:** After a native-only `cargo fix`, WASM-target builds failed with
+  "cannot find ... in the crate root" because the fixer deleted re-exports only
+  the WASM target resolved, silently narrowing the internal surface.
+- **Resolution:** Run `cargo check --all-targets` for every relevant target,
+  then re-inspect the re-export block against per-name usage before accepting
+  any automatic import cleanup; restore gated names and split them by the
+  target that resolves them.
+- **Prevention:** Treat `cargo fix`/`cargo clippy --fix` as unsafe on
+  target-gated crates: diff the re-export block against the intended module map
+  and keep the second target's check in the same verification pass.
+
+## Make mechanical source scanners monotonic and output-bounded
+
+- **Context:** A scripted line-range split of a 14,764-line source file walked
+  members to assign them to generated modules.
+- **Symptom:** The member scan rewound its own cursor after walking back over
+  attributes, so it looped while appending to an unbounded list until the
+  process was killed for memory exhaustion.
+- **Resolution:** Keep scanner cursors strictly monotonic, add a runaway guard,
+  and cap both resources and chatter: `timeout`, `ulimit -v`, and
+  `head`/`tail` on command logs so a stuck loop fails fast and legibly.
+- **Prevention:** Print counts instead of collected contents, bound every
+  generated collection, and prefer several small verified passes over one
+  pass that rewrites a whole file.
+
+## Keep source-grep boundary contracts pointed at a module set
+
+- **Context:** Browser boundary scripts asserted contracts by grepping the
+  single `drl-web` crate root for specific strings.
+- **Symptom:** Moving behavior between modules silently drops such coverage,
+  because the grep now matches nothing and a naive rewrite can pass by
+  accident while asserting less.
+- **Resolution:** Declare the owning module set in the script, `test -s` each
+  file, and grep the contract string across the set so a string may move but
+  must remain owned by the shell.
+- **Prevention:** When code moves, update the assertion script in the same
+  commit and confirm each individual contract string still resolves to exactly
+  one intended file.
+
+## Separate pre-existing lint debt from newly introduced warnings
+
+- **Context:** Modularized code inherits the lints of the code it moves, and a
+  reviewer cannot tell new warnings from old ones by count alone.
+- **Symptom:** WASM-target Clippy reported seven warnings after the split,
+  which looked like a regression.
+- **Resolution:** Re-run the exact lint command at the audited baseline
+  revision in a throwaway worktree, and record that the same seven warnings
+  reproduce there, so the slice claims no fix and hides no regression.
+- **Prevention:** State the lint command, target, and baseline revision in the
+  slice evidence, and keep tolerated lint debt out of unrelated slices.
+
+## Compute mechanical fidelity before delegating a large-move review
+
+- **Context:** A module split moved ~14,700 lines, and the first independent
+  review was one read-only pass asked to reconcile the whole before/after pair.
+- **Symptom:** The reviewer exhausted a 30-minute budget without a verdict,
+  because it re-derived counts by reading huge files instead of checking claims.
+- **Resolution:** Compute the mechanical invariants first (shader-digest and
+  length match, export-signature census, item-name census, test-name diff,
+  platform-API import counts), write them to one evidence file, then delegate
+  several narrow review lanes with tool budgets and a short per-lane timeout.
+- **Prevention:** Never delegate "verify this whole diff" for a bulk move; give
+  each lane a bounded file list, a reuse-instead-of-recompute evidence path,
+  a per-read line cap, and `toolBudget`/`timeoutMs`. Validate child options
+  early: `toolBudget.block` must be `"*"` or an array of tool names, not a
+  single bare name.
+
+## Match the reviewer to a context budget you actually have
+
+- **Context:** Subagent children inherit the parent's configured model, and this
+  workspace was running a local Vulkan-served model with a small context window.
+- **Symptom:** Bulk-review children failed twice for different-looking reasons:
+  one 30-minute timeout, then three lanes each ending `Context size has been
+  exceeded` after ~13 tool calls, with `Saved output: unavailable`.
+- **Resolution:** Read the run metadata (`attemptedModels`, `error`, `toolCount`)
+  before re-launching; either hand children pre-cut excerpts with a per-read
+  line cap, or delegate bulk reconciliation to a runner with its own larger
+  context (for example the read-only Codex CLI agent) and tell it to bound its
+  own diff reads.
+- **Prevention:** Before delegating a review, state the child model's context
+  budget, cap what each read may pull, and check `status view='transcript'` plus
+  the run's `meta.json` instead of guessing from a generic failure line.
+
+## Never pre-author an independent review verdict
+
+- **Context:** The slice template had a sentence asserting the independent review
+  "returned PASS", and it went into `SPEC.md` while that review was still
+  running, next to checked hosted-check boxes.
+- **Symptom:** The review came back `fix`, so the canonical slice claimed an
+  acceptance verdict and hosted-check status that did not exist, pinned to an
+  implementation head that later commits had already superseded.
+- **Resolution:** Replace the verdict sentence with an evidence ledger: one
+  bullet per gate naming the exact revision, command, host, and result; an
+  explicit `pending` for anything unfinished; and the first review's disposition
+  and findings kept as history alongside the corrections they caused.
+- **Prevention:** Write acceptance claims only after the run finishes, bind each
+  claim to a named commit, and re-run the gate whenever a later commit touches a
+  build input. A green run on an older commit is evidence about that commit only.

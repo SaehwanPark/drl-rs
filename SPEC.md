@@ -1,7 +1,7 @@
 # Specification
 
-Last reviewed: 2026-09-02
-Current project version: `0.2.340`
+Last reviewed: 2026-09-03
+Current project version: `0.2.341`
 Audited starting checkpoint: `main` at `2a089c6` (Laser Rifle direct-Plasma
 delivery and canonical documentation reconciliation)
 Delivery checkpoint: `main` merge commit `d855725` (PR #456, merged)
@@ -22,125 +22,197 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 - `INCONCLUSIVE` — **Evidence unresolved**: available evidence cannot support
   the claim.
 
-## 2. Active implementation slice: M9 — Blaster direct Plasma classification
+## 2. Active implementation slice: M8 — Modular browser shell
 
-Slice status: **delivered and verified** at implementation head `8e05aa5`;
-merge checkpoint is `d855725` (PR #456, merged).
+Slice status: **open** — the implementation and the local verification in §2.8
+are delivered on branch `codex/drl-web-frontend-modularization` (PR #457, merge
+pending); the hosted checks and the independent re-review in §2.8 are not closed.
 
 ### 2.1 Objective
 
-Complete the Blaster direct-hit damage-family branch. The pinned legacy record
-declares `2d4 DAMAGE_PLASMA`; after each successful ordinary or aimed hit, route
-only the Blaster target damage through the existing typed Plasma path so
-catalog-defined Blue Armor resistance applies before flat protection. Preserve
-the already-delivered one-projectile shot, aimed-fire action cost, recharge
-timer, event ordering, death/drop handling, and transaction boundary.
+Split the monolithic `crates/drl-web/src/lib.rs` browser module into focused
+modules so each browser responsibility (assets, DOM markup, GPU contracts,
+keyboard/input, session commands, persistence storage, renderer, scene
+projection, winit input app, animation loop, and WASM exports) is owned by one
+module, per audit 2026-09-02 §13 item 1.
 
-This is a bounded vertical fidelity slice. It changes the direct
-`DamageApplied` event from unclassified to `Some(DamageType::Plasma)` only for
-Blaster hits and leaves every other direct weapon path unchanged.
+This is a behavior-preserving modularization slice. It moves existing items,
+keeps the WGSL shader sources byte-identical, and keeps every browser contract
+string in the crate that now owns the behavior. It adds no native shell, no
+`drl-desktop` crate, no Linux CI change, and no new public API.
 
 ### 2.2 Audited starting point
 
-At audited starting revision `2a089c6` (version `0.2.339`):
+At audited starting revision `30ec8c6` (version `0.2.340`):
 
-- The Blaster record (`eitems.lua:135-169`) declares a one-projectile `2d4
-  DAMAGE_PLASMA` weapon, while `dfbeing.pas:2536-2549` passes the item damage
-  type into direct `ApplyDamage` and `dfbeing.pas:2162-2182` maps Plasma
-  families to plasma resistance.
-- Rust already has typed Plasma actor damage, catalog-defined Blue Armor 20%
-  Plasma resistance, and a typed `DamageApplied` event field. The Blaster
-  one-projectile ordinary shot, aimed-fire command, recharge transition, and
-  no-reload rejection are already implemented and projected through core,
-  replay, MCP, and browser boundaries.
-- The shared direct ranged path called untyped `World::apply_damage` and
-  emitted `damage_type: None` for each Blaster direct hit.
+- `crates/drl-web/src/lib.rs` held 14,764 lines: the crate-root re-export
+  surface, production session/DOM/GPU/asset helpers, the whole `wasm` shell
+  (storage, textures, renderer, scene, winit app, DOM shell, animation loop,
+  and `#[wasm_bindgen]` exports), 97 native boundary tests, and 2 WASM tests.
+- `scripts/check-browser-diagnostics.sh` and `scripts/test-browser-controls.mjs`
+  asserted browser contracts by grepping that single file, so any contract move
+  silently weakened the boundary checks.
+- Only `persistence.rs` and `texture.rs` were separate modules, and they reached
+  shared helpers through crate-root re-exports.
+- `cargo clippy -p drl-web --target wasm32-unknown-unknown --all-targets`
+  emitted 7 warnings (too-many-arguments, collapsible `if`, type complexity).
+  Re-running it at `30ec8c6` reproduces the same 7 warnings, so they pre-date
+  this slice and the web gate does not treat them as errors.
 
 ### 2.3 Scope and ownership
 
-- **Roadmap:** M9 vertical canonical-fidelity completion of the Blaster
-  damage-family branch.
-- **Primary owner:** `Game`'s typed ranged execution boundary selects Plasma for
-  the Blaster direct target; `World` and `Actor` retain the existing
-  resistance and flat-protection formulas. Boundary crates remain projections.
-- **Content registration:** the existing Blaster catalog definition remains
-  the single source of its identity and damage range; no duplicate weapon table
-  or callback registry is introduced.
-- **Project version:** implementation advances `VERSION` from `0.2.339` to
-  `0.2.340`.
-- **Replay/RNG:** gameplay semantics advance from `141` to `142`; replay wire,
-  RNG sampling (`1`), generator semantics (`2`), and ruleset identity
-  (`drl-rs-ruleset-v1`) remain unchanged. Typed mitigation consumes no RNG.
-- **Protocol/boundaries:** no new wire event or schema is needed; the existing
-  optional `DamageApplied.damage_type` projection carries `Plasma`.
+- **Roadmap:** M8/M13 browser-shell structure; the first step of the audit's
+  native-portability order, which requires refactoring `drl-web` rather than
+  copying it.
+- **Crate root:** `lib.rs` is now a 69-line module map plus the `pub(crate)`
+  surface that the shell and boundary tests resolve by crate-root name.
+- **Platform-independent browser helpers:** `animation`, `assets`, `dom`, `gpu`,
+  `input`, `session` plus the existing `persistence` and `texture` modules.
+- **Browser shell:** `wasm/mod.rs` keeps the module map, shared thread-local
+  shell state, and re-exports; `wasm/storage`, `textures`, `renderer`, `scene`,
+  `app`, `shell_dom`, `animation_loop`, and `exports` own one responsibility
+  each.
+- **Boundary tests:** `tests/mod.rs` holds shared helpers and imports; 11
+  focused test modules and `wasm_tests.rs` own the cases.
+- **Contract scripts:** both boundary scripts assert each browser contract string
+  against the single module that owns it, replacing the previous grep of one
+  `lib.rs`; the incompatible-save title is checked on both its producer
+  (`wasm/exports.rs`) and its consumer (`wasm/shell_dom.rs`).
+- **Project version:** implementation advances `VERSION` from `0.2.340` to
+  `0.2.341`.
 
 ### 2.4 Review and branch contract
 
-- Every successful Blaster ordinary or aimed target hit emits
-  `DamageApplied` with
-  `damage_type: Some(DamageType::Plasma)` and applies the existing Plasma
-  resistance before flat protection.
-- The raw `AttackOutcome` results and one-roll-per-projectile RNG stream remain
-  unchanged; `AttackOutcome::is_lethal` retains its existing raw-damage
-  contract, while actual actor death remains authoritative in `World`.
-- Blaster's one-projectile ordinary/aimed shot, one-cell cost, recharge timer,
-  no-reload policy, event ordering, and final RNG state remain unchanged. Other
-  direct weapons and BFG/rocket fanouts retain their existing typed or untyped
-  paths.
-- Other direct weapons retain their untyped damage events and prior mitigation.
-- The existing core transaction guard still owns command rejection and exact
-  state/RNG restoration; this slice adds no queue, callback, or new clone.
+- Every moved item keeps its original body; the only intended text changes are
+  `pub(crate)` visibility, `use`/`mod` declarations, and `use super::*;` in
+  submodules.
+- The two WGSL shader constants are byte-identical to the pre-split strings
+  (SHA-256 match over the 1,704- and 480-character shader texts), so pipeline
+  behavior and the shader-retention contract tests are unchanged.
+- All 100 native `drl-web` tests remain (97 relocated by name plus the 3
+  existing `persistence` tests) and both `#[wasm_bindgen_test]` cases remain.
+- No gameplay semantics change: gameplay semantics stay `142`, and the replay
+  wire, RNG sampling, generator semantics, and ruleset identity are untouched.
+- `crates/drl-web/**` stays a protected review path; this slice relies on the
+  documented solo-maintainer Review-policy exception.
 
 ### 2.5 Acceptance criteria
 
-- [x] Blaster direct ordinary and aimed hits emit typed Plasma damage
-  and Blue Armor reduces the applied amounts using the existing deterministic
-  resistance-before-flat protection formula.
-- [x] An unarmored control preserves all successful raw direct damage amounts,
-  while
-  the same seed keeps the raw rolls and final RNG state identical between
-  armored and unarmored targets.
-- [x] Direct replay and repeated replay runs produce identical game state,
-  event stream, and typed direct-shot projection; stale semantics `141` is
-  rejected before execution.
-- [x] Existing Blaster aimed/recharge/no-reload rejection/rollback, replay, MCP,
-  metrics/audio/render, and BrowserSession parity tests pass without new wire
-  or RNG behavior.
-- [x] Formatting, clippy, `sh scripts/check-repository.sh`, version transition,
-  hosted checks, and an attributable independent determinism review pass on the
-  final implementation commit.
+- [x] `cargo check -p drl-web --all-targets` and
+  `cargo clippy -p drl-web --all-targets -- -D warnings` pass with zero warnings.
+- [x] `cargo check -p drl-web --target wasm32-unknown-unknown --all-targets`
+  passes with zero warnings, and WASM-target clippy reports only the 7
+  pre-existing warnings reproduced at `30ec8c6`.
+- [x] The relocated boundary test set passes unchanged (100 native tests).
+- [x] `scripts/check-browser-diagnostics.sh`, `scripts/test-browser-controls.sh`,
+  `scripts/check-browser-accessibility.sh`, `scripts/check-service-worker.sh`,
+  and `scripts/test-offline-cache.sh` pass against the new module layout.
+- [x] `sh scripts/check-repository.sh` and `sh scripts/check-web.sh` pass on
+  Fedora 43 x86-64.
+- [x] `cargo fmt --all -- --check` and `sh scripts/check-version.sh` pass on the
+  final commit.
+- [x] Hosted `Repository checks` and `WASM browser checks` pass on `17af04f`; the
+  only later commit is the document-only ledger entry that records them.
+- [x] An attributable independent review returns `pass`: the fourth read-only pass
+  closes at `17af04f`. Passes 1-3 returned `fix` and their findings are recorded in
+  §2.8.
 
 ### 2.6 Non-goals
 
-- No direct Plasma classification for other weapons, generic resistance
-  aggregation, legacy armor durability degradation, or SPLASMA divisors.
-- No Blaster recharge timing/state changes, aimed accuracy/action-cost changes,
-  manual-reload policy changes, spread/routing, delayed queue, terrain/content
-  mutation, callback recreation, or runtime/audiovisual parity changes beyond
-  the direct target classification.
-- No change to the replay wire schema, RNG sampling algorithm, generator
-  semantics, ruleset identity, or unrelated event projections.
+- No Linux CI or Fedora job change, no `drl-desktop` crate, no native desktop
+  window, and no Fedora/Wayland/Vulkan acceptance claim.
+- No change to rendering equations, persistence codec, save/quarantine policy,
+  DOM markup, input mapping, animation cadence, or any `#[wasm_bindgen]` export
+  signature.
+- No cleanup of the 7 pre-existing WASM-target clippy warnings and no split of
+  the large content-parity test modules beyond the current per-suite grouping.
 
 ### 2.7 Evidence boundary
 
-This slice proves the current-Rust Blaster direct ordinary/aimed Plasma
-events and Blue Armor mitigation policy, plus replay determinism and stable
-state/RNG behavior. It does not prove controlled legacy runtime, exact recharge
-cadence or accuracy, manual callback state, spread/routing, terrain/content
-behavior, broader resistance aggregation, durability, balance, audiovisual
-parity, or human play.
+This slice proves module-boundary equivalence for the browser shell on the
+Fedora 43 x86-64 host: both target builds, the full native test set, the
+browser contract scripts, and byte-identical shader sources. It does not prove
+new browser runtime behavior beyond the existing headless Chrome WASM tests, no
+new interactive Chromium acceptance record is claimed, controlled legacy
+captures remain `NOT_RUN`, and nothing in this slice demonstrates native desktop
+or Linux CI coverage.
 
 ### 2.8 Delivery evidence
 
-Delivery evidence: implementation head `8e05aa5` merged in PR #456 as
-`d855725`. Focused Blaster direct-Plasma tests (2/2), existing Blaster
-special-item tests (152/152), the full workspace suite, strict Clippy,
-version/repository/diff gates, and hosted Repository and WASM checks pass. The
-independent determinism review returned PASS. The hosted Review-policy check
-remains the documented solo-maintainer exception; the optional
-reference-capture preflight is `NOT_RUN` because its local manifest is
-unavailable. Controlled legacy runtime, audiovisual, balance, and human-play
-surfaces remain outside this slice's evidence boundary.
+Evidence is bound to a named revision; a later commit does not inherit an
+earlier commit's checks.
+
+- **Implementation:** `ccdee78` (modularization) then document and script
+  corrections, on branch `codex/drl-web-frontend-modularization` against baseline
+  `30ec8c6` (`0.2.340`). Merge into `main` is **pending** in PR #457.
+- **Local verification, Fedora 43 x86-64 (GNOME/Wayland host):**
+  `sh scripts/check-repository.sh` and `sh scripts/check-web.sh` exit `0` against
+  `755bf55` plus the document-only edits carried by this ledger's commit; they are
+  re-run against the final commit and the post-merge checkpoint records that run.
+  They cover the service-worker, offline-cache, browser-control,
+  support-classifier, diagnostics, and accessibility contracts, the 100-test
+  native `drl-web` set, and the 2 WASM persistence tests in headless Chrome
+  152.0.7977.75 with ChromeDriver 152.0.7977.75 (local wasm-pack 0.13.1; hosted
+  CI pins 0.15.0). `cargo clippy -p drl-web --all-targets` is warning-free;
+  `cargo clippy -p drl-web --target wasm32-unknown-unknown --all-targets` reports
+  7 warnings, and the same command re-run at `30ec8c6` reproduces the identical 7,
+  so none is introduced here. Mechanical fidelity (shader SHA-256 and lengths,
+  `#[wasm_bindgen]` export signatures, item-name census, test-name diff,
+  platform-import census) is in `/tmp/fidelity.md`.
+- **Independent review, first pass:** read-only review of `30ec8c6..12d12a1` per
+  `.agents/skills/drl-determinism-review/SKILL.md`, disposition **`fix`**. It
+  confirmed behavior preservation at the inspected boundaries
+  (`BrowserSession::submit` rollback contract, quarantine-before-remove storage
+  order, export side-effect ordering, animation clock and `visibilitychange`
+  rebasing, `escape_html` and markup helpers, module and `cfg` reachability,
+  encapsulation census, gameplay semantics still `142`) and raised three
+  findings: (1) this slice pre-claimed its own review verdict and hosted-check
+  success against a stale implementation head and described PR #457 as shipped;
+  (2) the aggregate diagnostics grep let the incompatible-save contract survive
+  losing one intended owner; (3) `ARCHITECTURE.md` mis-described the remaining
+  `texture.rs` platform binding as an animation callback. All three are
+  corrected: this evidence ledger replaces the pre-authored verdict sentence, the
+  boundary scripts now assert each contract string on its owning module (with the
+  consumer asserted as the `== Some("Saved session incompatible")` comparison), and the architecture
+  text names the texture-cache error type. Negative control for finding 2: with
+  that literal removed from `wasm/shell_dom.rs`, both
+  `scripts/check-browser-diagnostics.sh` and `scripts/test-browser-controls.mjs`
+  exit non-zero; on the clean tree both pass.
+- **Independent review, second pass (focused, `12d12a1..755bf55`):** disposition
+  **`fix`**. It confirmed the scripts pass and that no previously-covered contract
+  string lost coverage, and found four wording-level leftovers, all corrected in
+  in this ledger's commit: `SPEC.md` and the roadmap still reported the project version
+  as `0.2.340`; this ledger did not name the tree its local runs were made against;
+  the roadmap still called the remaining `texture.rs` platform binding a callback,
+  contradicting `ARCHITECTURE.md` and the actual `Result<Self, JsValue>` error type
+  at `crates/drl-web/src/texture.rs:44`; and `ARCHITECTURE.md` still described the
+  contract scripts as allowing a string to move anywhere in the module set, which
+  the owner-anchored scripts no longer permit.
+- **Independent review, third pass (focused, `755bf55..6b67879`):** disposition
+  **`fix`**. It closed all four second-pass findings and withheld a slice-level pass
+  only because `SPEC.md` §2.3 and the `0.2.341` `CHANGELOG.md` entry still described
+  the boundary scripts as grepping the shell module set. Both were corrected in
+  `17af04f`.
+- **Independent review, fourth pass (narrow, `6b67879..17af04f`):** disposition
+  **`pass`**, which is this slice's final review verdict. The reviewer confirmed the
+  owner-anchored descriptions do not exceed script coverage, re-ran the spec
+  structure, version, diagnostics, and browser-control checks plus
+  `git diff --check`, and recorded that the full repository and web gates exited `0`
+  on the clean `6b67879` tree with documentation-only edits afterwards. Findings
+  closed across the four passes: premature acceptance claims, aggregate contract
+  grep, mis-described platform binding, stale version wording, unnamed verification
+  tree, and the two obsolete grep descriptions.
+- **Post-merge record:** the merge checkpoint and the final local-gate re-run are
+  recorded from the following slice's documents, because a commit cannot carry
+  evidence about its own merge.
+- **Hosted checks:** tracked per commit in PR #457 rather than asserted here. On
+  `755bf55` hosted `Repository checks` passed and `WASM browser checks` were still
+  running when this line was written; the `Review policy` check fails closed as the
+  documented solo-maintainer `enforce_admins=false` exception. A green hosted run
+  is accepted only for the commit that merges.
+- **`NOT_RUN`:** controlled legacy reference captures and interactive
+  Chromium/Wayland acceptance (no browser acceptance record is claimed beyond the
+  headless WASM suite above).
 
 ## 3. Enduring invariants
 
