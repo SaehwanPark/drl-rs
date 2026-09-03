@@ -11,7 +11,9 @@ documented in this file.
   `animation_loop`, `exports`), with the native boundary tests grouped under
   `tests/`. `lib.rs` is now a module map plus the crate-internal re-export
   surface, WGSL shader sources stay byte-identical, and the browser contract
-  scripts grep the shell module set instead of one file. No rendering,
+  scripts now assert each contract string against the single module that owns it,
+  covering both the producer and the consumer of the incompatible-save diagnostic.
+  No rendering,
   persistence, input, or export signature changes; gameplay semantics stay `142`.
 
 ## [0.2.340]

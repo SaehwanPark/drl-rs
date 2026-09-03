@@ -74,8 +74,10 @@ At audited starting revision `30ec8c6` (version `0.2.340`):
   each.
 - **Boundary tests:** `tests/mod.rs` holds shared helpers and imports; 11
   focused test modules and `wasm_tests.rs` own the cases.
-- **Contract scripts:** both boundary scripts now grep the shell module set
-  instead of one file.
+- **Contract scripts:** both boundary scripts assert each browser contract string
+  against the single module that owns it, replacing the previous grep of one
+  `lib.rs`; the incompatible-save title is checked on both its producer
+  (`wasm/exports.rs`) and its consumer (`wasm/shell_dom.rs`).
 - **Project version:** implementation advances `VERSION` from `0.2.340` to
   `0.2.341`.
 
