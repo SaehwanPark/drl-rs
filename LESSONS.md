@@ -424,3 +424,59 @@ repository and WASM job has reached a passing terminal state.
   delivered outcomes in the roadmap, changelog, evidence notes, and Git.
 - **Prevention:** Add a structural check if the file again contains multiple
   active-slice headings or historical delivery ledgers.
+
+## Check every target before letting a fixer prune re-exports
+
+- **Context:** Splitting a large crate root into modules leaves a
+  `pub(crate) use` surface whose consumers are spread across `cfg(test)`,
+  `cfg(target_arch = "wasm32")`, and normal builds.
+- **Symptom:** After a native-only `cargo fix`, WASM-target builds failed with
+  "cannot find ... in the crate root" because the fixer deleted re-exports only
+  the WASM target resolved, silently narrowing the internal surface.
+- **Resolution:** Run `cargo check --all-targets` for every relevant target,
+  then re-inspect the re-export block against per-name usage before accepting
+  any automatic import cleanup; restore gated names and split them by the
+  target that resolves them.
+- **Prevention:** Treat `cargo fix`/`cargo clippy --fix` as unsafe on
+  target-gated crates: diff the re-export block against the intended module map
+  and keep the second target's check in the same verification pass.
+
+## Make mechanical source scanners monotonic and output-bounded
+
+- **Context:** A scripted line-range split of a 14,764-line source file walked
+  members to assign them to generated modules.
+- **Symptom:** The member scan rewound its own cursor after walking back over
+  attributes, so it looped while appending to an unbounded list until the
+  process was killed for memory exhaustion.
+- **Resolution:** Keep scanner cursors strictly monotonic, add a runaway guard,
+  and cap both resources and chatter: `timeout`, `ulimit -v`, and
+  `head`/`tail` on command logs so a stuck loop fails fast and legibly.
+- **Prevention:** Print counts instead of collected contents, bound every
+  generated collection, and prefer several small verified passes over one
+  pass that rewrites a whole file.
+
+## Keep source-grep boundary contracts pointed at a module set
+
+- **Context:** Browser boundary scripts asserted contracts by grepping the
+  single `drl-web` crate root for specific strings.
+- **Symptom:** Moving behavior between modules silently drops such coverage,
+  because the grep now matches nothing and a naive rewrite can pass by
+  accident while asserting less.
+- **Resolution:** Declare the owning module set in the script, `test -s` each
+  file, and grep the contract string across the set so a string may move but
+  must remain owned by the shell.
+- **Prevention:** When code moves, update the assertion script in the same
+  commit and confirm each individual contract string still resolves to exactly
+  one intended file.
+
+## Separate pre-existing lint debt from newly introduced warnings
+
+- **Context:** Modularized code inherits the lints of the code it moves, and a
+  reviewer cannot tell new warnings from old ones by count alone.
+- **Symptom:** WASM-target Clippy reported seven warnings after the split,
+  which looked like a regression.
+- **Resolution:** Re-run the exact lint command at the audited baseline
+  revision in a throwaway worktree, and record that the same seven warnings
+  reproduce there, so the slice claims no fix and hides no regression.
+- **Prevention:** State the lint command, target, and baseline revision in the
+  slice evidence, and keep tolerated lint debt out of unrelated slices.

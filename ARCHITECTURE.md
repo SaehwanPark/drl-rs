@@ -466,6 +466,25 @@ Presentation Boundary
 
 ### `drl-web` — Browser Shell & WebGPU Presentation
 - **Role**: WASM `cdylib` / `rlib` browser host, WebGPU renderer, and PWA shell.
+- **Module map** (behavior ownership since `0.2.341`):
+  - `lib.rs` — module map plus the `pub(crate)` surface that the shell and the
+    boundary tests resolve by crate-root name; it owns no browser behavior.
+  - `animation`, `assets`, `dom`, `gpu`, `input`, `session`, `persistence` —
+    browser-facing helpers with no `web_sys`, `js_sys`, `wasm_bindgen`, or
+    `winit` reference, so the native test target exercises them directly.
+  - `texture` — base-texture vertex/pipeline construction; it keeps one
+    `wasm_bindgen::JsValue` binding for animation callbacks.
+  - `wasm/mod.rs` — WASM module map, shared thread-local shell state, and
+    re-exports. `wasm/storage`, `textures`, `renderer`, `scene`, `app`,
+    `shell_dom`, `animation_loop`, and `exports` own one browser responsibility
+    each and are the only code that touches `web_sys`/`winit`/`wasm_bindgen`
+    exports. `wasm/storage` is `pub(crate)` so the persistence boundary tests
+    reach quarantine and save/read paths by module path.
+  - `tests/` — one shared-helper module plus focused native boundary suites;
+    `wasm_tests.rs` holds the `#[wasm_bindgen_test]` persistence round-trips.
+  - Contract scripts (`scripts/check-browser-diagnostics.sh`,
+    `scripts/test-browser-controls.mjs`) grep this module set, so a contract
+    string may move between modules but must stay inside the shell set.
 - **Key Responsibilities**:
   - Browser session management (`BrowserSession`) and DOM/keyboard mapping.
   - The browser session submits commands to the same authoritative `Game` as

@@ -1,6 +1,6 @@
 # Near-Term Development Steering
 
-Last reviewed: 2026-09-02
+Last reviewed: 2026-09-03
 Baseline branch: `main`
 Baseline merge commit: `d855725`
 Latest pull request inspected: `#456`
@@ -58,6 +58,14 @@ With the temporary control-plane gates closed, select work in this order:
      `NOT_RUN`.
 4. **Resume broad content and platform expansion**
    - only after the applicable gates below close.
+   - the platform track follows the order in
+     [`audit-2026-09-02.md`](audit-2026-09-02.md) §13: modularize `drl-web`,
+     establish Linux CI, define the native frontend boundary, create
+     `drl-desktop`, then record Fedora/Wayland/Vulkan acceptance. `drl-web`
+     is refactored rather than copied, and no gameplay or presentation-policy
+     fork is introduced for Fedora.
+   - step 1 shipped in PR #457 (`0.2.341`); Linux CI evidence paths are the
+     next selected slice.
 
 ## Development stop gates
 
