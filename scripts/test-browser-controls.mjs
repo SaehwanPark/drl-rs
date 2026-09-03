@@ -3,7 +3,24 @@ import fs from "node:fs";
 
 const bootstrap = fs.readFileSync("web/bootstrap.js", "utf8");
 const index = fs.readFileSync("web/index.html", "utf8");
-const wasm = fs.readFileSync("crates/drl-web/src/lib.rs", "utf8");
+// The browser shell is a module map plus focused modules; contracts are checked
+// across the whole shell rather than one monolithic source file.
+const wasmShell = [
+  "lib.rs",
+  "session.rs",
+  "input.rs",
+  "dom.rs",
+  "gpu.rs",
+  "wasm/mod.rs",
+  "wasm/storage.rs",
+  "wasm/renderer.rs",
+  "wasm/scene.rs",
+  "wasm/app.rs",
+  "wasm/shell_dom.rs",
+  "wasm/animation_loop.rs",
+  "wasm/exports.rs",
+].map((name) => fs.readFileSync(`crates/drl-web/src/${name}`, "utf8"));
+const wasm = wasmShell.join("\n");
 const persistence = fs.readFileSync("crates/drl-web/src/persistence.rs", "utf8");
 const clearSaveHandler = bootstrap.match(
   /clearSaveButton\.addEventListener\("click", \(\) => \{([\s\S]*?)\n\}\);/,
