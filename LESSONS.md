@@ -18,6 +18,25 @@ truth.
 - **Prevention:** Keep source provenance for each payload field in the slice
   evidence and test the complete event tuple at every boundary.
 
+## Keep legacy damage subtypes inside typed mitigation policy
+
+- **Context:** The protocol exposes a shared Plasma family while legacy combat
+  distinguishes `DAMAGE_PLASMA` from `DAMAGE_SPLASMA` for armor protection.
+- **Symptom:** Adding a new public damage enum or routing every Plasma event
+  through one helper either expands the wire contract or changes already-
+  delivered direct and splash behavior.
+- **Cause:** The legacy subtype is an internal mitigation rule, not a distinct
+  fair-observation or event family for this bounded slice.
+- **Resolution:** Keep `DamageType::Plasma` on the public event and add a
+  narrowly named core helper for SPLASMA-style fanout: apply catalog resistance
+  first, then integer-floor one-third armor protection, then the existing
+  minimum-one rule. Route only the Null Pointer splash through it and advance
+  gameplay semantics.
+- **Prevention:** Before reusing a typed damage path, compare the legacy
+  subtype's full mitigation order and divisor with the existing Rust policy;
+  preserve the public vocabulary unless the boundary itself observably
+  distinguishes the subtype.
+
 ## Keep direct and splash damage sampling distinct
 
 - **Context:** Typed weapon definitions expose compact minimum/maximum damage

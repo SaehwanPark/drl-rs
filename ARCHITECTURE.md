@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-09-04
-Current project version: `0.2.344`
+Current project version: `0.2.345`
 
 Status: Verified for current deterministic headless core, MCP tooling,
 browser-playable WebGPU slice, and the thin native frontend boundary; full
@@ -97,7 +97,9 @@ one-projectile ordinary-fire and one-round 9mm ammo-cost fragments; Railgun
 records its typed one-projectile ordinary-fire and five-cell ammo-cost
 fragments; Null Pointer records its typed one-projectile ordinary-fire and
 ten-cell ammo-cost fragments alongside its target-score, deferred explosion,
-and actor-only radius-1 splash fragments; Tristar Blaster records its typed three-projectile ordinary-fire and
+and actor-only radius-1 splash fragments; its SPLASMA-style splash mitigation
+applies family resistance before one-third of equipped armor protection while
+preserving the public Plasma event family; Tristar Blaster records its typed three-projectile ordinary-fire and
 five-cell per-projectile ammo-cost fragments; Pistol
 records its typed one-projectile ordinary-fire, one-round 9mm ammo-cost, and
 Pistol/Combat Pistol aimed-fire (+3 accuracy, 2× action-cost) fragments; Rocket Launcher records

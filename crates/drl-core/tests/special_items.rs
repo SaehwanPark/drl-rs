@@ -5103,7 +5103,7 @@ fn null_pointer_replay_is_deterministic() {
 }
 
 #[test]
-fn null_pointer_plasma_splash_respects_blue_armor_in_same_seed_replays() {
+fn null_pointer_splasma_splash_uses_one_third_armor_protection_in_same_seed_replays() {
   fn replay_with_armor(armor: Option<ItemSpawnKind>) -> ReplayLog {
     let mut replay =
       ReplayLog::new(25, 12, 12, Position::new(5, 5)).with_player_config(PlayerSpawnConfig {
@@ -5155,9 +5155,10 @@ fn null_pointer_plasma_splash_respects_blue_armor_in_same_seed_replays() {
   assert_eq!(
     blue_damage,
     apply_damage_resistance(plain_damage, 20)
-      .saturating_sub(2)
+      .saturating_sub(2u32 / 3)
       .max(1)
   );
+  assert_eq!(blue_damage, 8);
   assert!(blue_damage < plain_damage);
   assert_eq!(plain_game.rng(), blue_game.rng());
   assert!(ReplayEngine::verify_determinism(&plain_replay).unwrap());

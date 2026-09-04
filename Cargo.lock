@@ -390,7 +390,7 @@ checksum = "d8b14ccef22fc6f5a8f4d7d768562a182c04ce9a3b3157b91390b52ddfdf1a76"
 
 [[package]]
 name = "drl-app"
-version = "0.2.344"
+version = "0.2.345"
 dependencies = [
  "drl-core",
  "drl-mcp",
@@ -399,14 +399,14 @@ dependencies = [
 
 [[package]]
 name = "drl-assets"
-version = "0.2.344"
+version = "0.2.345"
 dependencies = [
  "drl-protocol",
 ]
 
 [[package]]
 name = "drl-audio"
-version = "0.2.344"
+version = "0.2.345"
 dependencies = [
  "drl-protocol",
  "js-sys",
@@ -417,14 +417,14 @@ dependencies = [
 
 [[package]]
 name = "drl-core"
-version = "0.2.344"
+version = "0.2.345"
 dependencies = [
  "drl-protocol",
 ]
 
 [[package]]
 name = "drl-desktop"
-version = "0.2.344"
+version = "0.2.345"
 dependencies = [
  "drl-core",
  "drl-protocol",
@@ -436,7 +436,7 @@ dependencies = [
 
 [[package]]
 name = "drl-mcp"
-version = "0.2.344"
+version = "0.2.345"
 dependencies = [
  "drl-core",
  "drl-protocol",
@@ -444,11 +444,11 @@ dependencies = [
 
 [[package]]
 name = "drl-protocol"
-version = "0.2.344"
+version = "0.2.345"
 
 [[package]]
 name = "drl-render"
-version = "0.2.344"
+version = "0.2.345"
 dependencies = [
  "drl-assets",
  "drl-core",
@@ -457,7 +457,7 @@ dependencies = [
 
 [[package]]
 name = "drl-script"
-version = "0.2.344"
+version = "0.2.345"
 dependencies = [
  "drl-core",
  "drl-protocol",
@@ -465,7 +465,7 @@ dependencies = [
 
 [[package]]
 name = "drl-web"
-version = "0.2.344"
+version = "0.2.345"
 dependencies = [
  "drl-assets",
  "drl-audio",

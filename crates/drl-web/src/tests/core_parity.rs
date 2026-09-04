@@ -719,7 +719,7 @@ fn null_pointer_vertical_browser_boundary_matches_direct_core_presentation() {
       speed: 100,
       initial_items: Vec::new(),
       equipped_weapon: Some(ItemSpawnKind::NullPointer),
-      equipped_armor: None,
+      equipped_armor: Some(ItemSpawnKind::BlueArmor),
       equipped_armor_durability: None,
     });
   setup_replay.record_monster(
@@ -747,7 +747,7 @@ fn null_pointer_vertical_browser_boundary_matches_direct_core_presentation() {
     speed: 100,
     initial_items: Vec::new(),
     equipped_weapon: Some(ItemSpawnKind::NullPointer),
-    equipped_armor: None,
+    equipped_armor: Some(ItemSpawnKind::BlueArmor),
     equipped_armor_durability: None,
   });
   assert_eq!(
@@ -795,7 +795,6 @@ fn null_pointer_vertical_browser_boundary_matches_direct_core_presentation() {
           drl_protocol::GameEvent::DamageApplied {
             source: drl_protocol::DamageSource::Environment,
             damage_type: Some(drl_protocol::DamageType::Plasma),
-            amount: 10,
             ..
           }
         )
@@ -803,6 +802,30 @@ fn null_pointer_vertical_browser_boundary_matches_direct_core_presentation() {
       .count(),
     2
   );
+  assert!(expected_events.iter().any(|event| {
+    matches!(
+      event,
+      drl_protocol::GameEvent::DamageApplied {
+        target_id: resolved_target,
+        amount: 10,
+        source: drl_protocol::DamageSource::Environment,
+        damage_type: Some(drl_protocol::DamageType::Plasma),
+        ..
+      } if *resolved_target == target_id
+    )
+  }));
+  assert!(expected_events.iter().any(|event| {
+    matches!(
+      event,
+      drl_protocol::GameEvent::DamageApplied {
+        target_id: resolved_target,
+        amount: 8,
+        source: drl_protocol::DamageSource::Environment,
+        damage_type: Some(drl_protocol::DamageType::Plasma),
+        ..
+      } if *resolved_target == player_id
+    )
+  }));
   assert_eq!(
     step.effects,
     drl_render::effect_timeline_for_observations(&step.before, &step.after, &expected_events,)
