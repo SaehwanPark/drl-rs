@@ -3,6 +3,18 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.344]
+
+- Classified successful Anti-Freak Jackal ordinary and aimed direct target
+  damage as typed `Fire`, so Red Armor's catalog-defined 25% Fire resistance
+  applies before flat protection. Existing raw damage rolls, one-round clip
+  cost, aimed-fire action cost, radius-1 splash, event ordering, rejection
+  atomicity, replay identities, and browser/core parity remain unchanged.
+  Focused same-seed direct/replay coverage verifies the typed event and RNG
+  stream; controlled legacy runtime, browser capture, audiovisual parity, and
+  broader resistance aggregation remain open or `NOT_RUN`. Gameplay semantics
+  advance from `142` to `143`.
+
 ## [0.2.343]
 
 - Added the thin native `drl-desktop` `winit`/`wgpu` preview boundary (PR #460,

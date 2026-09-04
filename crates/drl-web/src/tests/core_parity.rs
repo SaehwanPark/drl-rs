@@ -272,10 +272,10 @@ fn trigun_aimed_fire_vertical_browser_boundary_matches_direct_core() {
 
 #[test]
 fn anti_freak_jackal_aimed_fire_vertical_browser_boundary_matches_direct_core() {
-  let player_position = Position::new(1, 1);
-  let target_position = Position::new(3, 1);
+  let player_position = Position::new(2, 2);
+  let target_position = Position::new(6, 2);
   let mut setup_replay =
-    ReplayLog::new(2_269, 8, 4, player_position).with_player_config(PlayerSpawnConfig {
+    ReplayLog::new(46_004, 12, 8, player_position).with_player_config(PlayerSpawnConfig {
       hp: 50,
       max_hp: 50,
       speed: 100,
@@ -307,6 +307,16 @@ fn anti_freak_jackal_aimed_fire_vertical_browser_boundary_matches_direct_core() 
     .expect("browser Anti-Freak aimed command");
   assert_eq!(step.events, expected_events);
   assert_eq!(step.after, direct.observe_player());
+  assert!(expected_events.iter().any(|event| {
+    matches!(
+      event,
+      drl_protocol::GameEvent::DamageApplied {
+        source: drl_protocol::DamageSource::Actor(_),
+        damage_type: Some(drl_protocol::DamageType::Fire),
+        ..
+      }
+    )
+  }));
   assert_eq!(
     step.effects,
     drl_render::effect_timeline_for_observations(&step.before, &step.after, &expected_events,)

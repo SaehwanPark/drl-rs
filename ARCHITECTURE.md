@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-09-04
-Current project version: `0.2.343`
+Current project version: `0.2.344`
 
 Status: Verified for current deterministic headless core, MCP tooling,
 browser-playable WebGPU slice, and the thin native frontend boundary; full
@@ -52,7 +52,8 @@ mode and score-cost fragments; Jackhammer records its typed Burst/Single mode
 and score-cost fragments; Lava Armor records its typed terrain-gated
 durability-recharge fragment; Malek's Armor records its typed durability-recharge
 fragment; Blaster records its typed one-projectile ordinary-fire, one-cell cost,
-shared aimed-fire (+3 accuracy, 2× action-cost), and periodic-recharge fragments;
+shared aimed-fire (+3 accuracy, 2× action-cost), periodic-recharge, and direct
+Plasma target-path fragments;
 Missile Launcher records its typed ordinary single-rocket reload and capped
 full-deficit reload fragments; Combat Shotgun records its typed pump-only
 chamber action (200 units), ordinary single-shell reload, and capped full-deficit
@@ -106,6 +107,10 @@ bounded radius-4 fanout (one `6d6` Fire roll per clear cell, legacy distance
 falloff, radial `damage / 8` knockback, source self-damage, and one lowest-ID
 ordinary ground-item destruction when post-falloff damage exceeds `10`; terrain
 mutation remains separate policy work);
+Anti-Freak Jackal records its typed one-projectile ordinary-fire, one-round
+ammo-cost, aimed-fire, direct Fire target path, and delayed radius-1 splash
+fragments; its direct and splash actor routes use typed Fire mitigation while
+terrain mutation remains separate policy work;
 Assault Shotgun records its typed ordinary single-shell reload and
 capped full-deficit reload fragments;
 Revenant's Launcher records its typed
@@ -272,8 +277,9 @@ Presentation Boundary
     radius-1 geometry, typed 5d3 Fire splash rolls, radial knockback policy, and
     bounded ground-ammo destruction; the Anti-Freak actor route uses the shared
     typed world/armor mitigation path so catalog-defined Red Armor Fire
-    resistance applies before flat protection; Railgun's dedicated resolver owns clear-ray
-    traversal and shared-damage piercing;
+    resistance applies before flat protection for both direct and splash hits;
+    Railgun's dedicated resolver owns clear-ray traversal and shared-damage
+    piercing;
     Nuclear Plasma's profile records its six-projectile ordinary-fire and
     six-cell cost fragments alongside its typed first-, second-, third-,
     fourth-, fifth-, sixth-, and seventh-level chainfire, overload, and recharge fragments.

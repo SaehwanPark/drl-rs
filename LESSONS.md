@@ -206,6 +206,24 @@ truth.
   revisions, local and hosted results, explicit NOT_RUN surfaces, and a clean
   branch check before measuring usage or selecting more work.
 
+## Bind slice evidence to the actual merge base
+
+- **Context:** A temporary branch can start after a post-merge documentation
+  follow-up, even when the earlier merge revision is still the most prominent
+  checkpoint in the roadmap.
+- **Symptom:** Scope/evidence artifacts and a version check can cite the older
+  merge instead of the commit the branch actually diverged from; the check may
+  still pass because the project version did not change in between.
+- **Cause:** The branch lineage was recorded from the preceding feature merge
+  before checking the repository's current `main` tip.
+- **Resolution:** Compare `git merge-base HEAD main` with `git rev-parse main`
+  before finalizing artifacts, then use that exact merge base for the
+  `DRL_VERSION_BASE` version check and predecessor fields. This slice corrected
+  its evidence from the older frontend merge to the actual `main` commit.
+- **Prevention:** Treat `git merge-base HEAD main` as authoritative for every
+  temporary slice; record the full revision in `00-scope.md`, `01-evidence.md`,
+  and later handoff artifacts before claiming the version transition.
+
 ## Bind review receipts to the final PR metadata
 
 - **Context:** A required-review policy may inspect API metadata rather than
