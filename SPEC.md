@@ -4,7 +4,7 @@ Last reviewed: 2026-09-04
 Current project version: `0.2.343`
 Audited starting checkpoint: `main` at `5f747a0` (Linux and Fedora CI
 coverage reconciliation)
-Delivery checkpoint: **open** on branch `codex/native-frontend-boundary`
+Delivery checkpoint: **merged** in PR #460 as `ee38357`
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -24,8 +24,8 @@ the claim.
 
 ## 2. Active implementation slice: native frontend boundary
 
-Slice status: **ready for merge** on branch `codex/native-frontend-boundary`,
-based on `main` at `5f747a0` (`0.2.342`); final candidate revision is `058011a`
+Slice status: **delivered** on `main` merge `ee38357` (PR #460), based on
+`main` at `5f747a0` (`0.2.342`); implementation candidate revision was `058011a`
 (`0.2.343`).
 
 ### 2.1 Objective
@@ -144,9 +144,13 @@ from intent:
   before its timeout (`INCONCLUSIVE`); no interactive Fedora 43 GNOME/Mutter
   Wayland/Mesa/RADV Vulkan or macOS Metal acceptance is claimed, and those
   surfaces remain `NOT_RUN`.
-- Final diff `5f747a0..058011a` and independent review of correction range
-  `20a6bb6..058011a` are recorded as `PASS`; no hosted workflow result is
-  inferred before the pull request runs.
+- Final implementation diff `5f747a0..058011a` and independent review of
+  correction range `20a6bb6..058011a` are recorded as `PASS`. Hosted CI run
+  `33892975163` passed `Repository checks`, `Repository checks (Linux)`,
+  `Fedora 43 development host`, and `WASM browser checks`. The hosted Review
+  policy run `33892975327` failed closed because the sole-maintainer repository
+  has no independent GitHub approver; PR #460 was merged with the documented
+  administrator exception after the independent local review PASS.
 
 ## 3. Enduring invariants
 

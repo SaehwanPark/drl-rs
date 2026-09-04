@@ -5,7 +5,8 @@ documented in this file.
 
 ## [0.2.343]
 
-- Added the thin native `drl-desktop` `winit`/`wgpu` preview boundary. It
+- Added the thin native `drl-desktop` `winit`/`wgpu` preview boundary (PR #460,
+  merged as `ee38357`). It
   instantiates caller-supplied deterministic scenarios, maps physical keyboard
   input to existing semantic commands, handles physical framebuffer resize and
   Vulkan/Metal surface lifecycle, and renders the shared `drl-render`
