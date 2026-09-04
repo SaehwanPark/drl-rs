@@ -22,7 +22,9 @@ pub fn command_for_key(key: KeyCode, observation: &PlayerObservation) -> Option<
   }
 
   match key {
-    KeyCode::Period | KeyCode::Numpad5 | KeyCode::Space => Some(Command::Wait),
+    KeyCode::Period | KeyCode::Numpad5 | KeyCode::NumpadDecimal | KeyCode::Space => {
+      Some(Command::Wait)
+    }
     KeyCode::KeyG => Some(Command::Pickup),
     KeyCode::KeyR => Some(Command::Reload),
     KeyCode::BracketRight => Some(Command::Descend),
@@ -94,6 +96,10 @@ mod tests {
     assert_eq!(
       command_for_key(KeyCode::ArrowUp, &observation),
       Some(Command::Move(Direction::North))
+    );
+    assert_eq!(
+      command_for_key(KeyCode::NumpadDecimal, &observation),
+      Some(Command::Wait)
     );
     assert_eq!(
       command_for_key(KeyCode::Space, &observation),
