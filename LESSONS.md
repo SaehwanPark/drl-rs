@@ -528,3 +528,20 @@ repository and WASM job has reached a passing terminal state.
 - **Prevention:** Write acceptance claims only after the run finishes, bind each
   claim to a named commit, and re-run the gate whenever a later commit touches a
   build input. A green run on an older commit is evidence about that commit only.
+
+## Launch the distro container from the runner, not as the job container
+
+- **Context:** Adding a Fedora 43 job to the Ubuntu-hosted CI, the obvious shape is
+  `runs-on: ubuntu-latest` with `container: image: fedora:43`.
+- **Symptom:** `actions/checkout` needs a Node runtime inside the job image, and a
+  bare distro image does not guarantee one; the failure appears as a checkout error
+  in the new job, not as a repository problem.
+- **Resolution:** Check out on the runner, then start the distro container yourself
+  (`docker run --rm --volume "$GITHUB_WORKSPACE":/src --workdir /src
+  --env CARGO_TARGET_DIR=/tmp/drl-target fedora:43 sh -c '... && sh
+  scripts/check-fedora-dev.sh'`). The runner keeps its own Node runtime and the
+  crate build writes outside the mounted worktree.
+- **Prevention:** Prove a container job by running the exact invocation locally
+  (podman) before committing the workflow, keep `CARGO_TARGET_DIR` inside the
+  container, and let the check script install nothing so missing prerequisites stay
+  visible as workflow provisioning facts.

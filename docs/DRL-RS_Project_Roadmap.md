@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-09-03
-Current project version: `0.2.341`
+Current project version: `0.2.342`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.341)
+## 3. Current Progress Summary (`VERSION` 0.2.342)
 
 ### Delivered Foundations
 
@@ -1358,7 +1358,7 @@ verification item uses explicit status semantics:
   Independent review and hosted Repository/WASM checks pass under the
   documented solo-maintainer Review-policy exception; recharge callback timing,
   broader resistance aggregation, and audiovisual parity remain open.
-- **M8 modular browser shell (`0.2.341`, in review as PR #457):** The
+- **M8 modular browser shell (`0.2.341`, delivered in PR #457):** The
   14,764-line `crates/drl-web/src/lib.rs` is replaced by a 69-line module map plus
   focused modules: `animation`/`assets`/`dom`/`gpu`/`input`/`session` helpers, a
   `wasm/` shell that owns every `web_sys`/`winit`/`wasm_bindgen` touch point except
@@ -1368,8 +1368,21 @@ verification item uses explicit status semantics:
   byte-identical, and the browser contract scripts now assert each contract string
   against its owning module. Native and `wasm32-unknown-unknown` builds are
   warning-free; the 7 WASM-target Clippy warnings reproduce at the baseline
-  revision and stay open. A third independent review pass and the hosted checks are
-  pending on the final commit; Linux CI, `drl-desktop`, and Fedora/Wayland/Vulkan
+  revision and stay open. Four independent review passes closed the slice (final
+  `pass` at `17af04f`) and PR #457 merged as `85e50c4`; `drl-desktop` and
+  Fedora/Wayland/Vulkan acceptance remain open.
+- **Linux and Fedora CI coverage (`0.2.342`, in review as PR #458):**
+  `scripts/check-repository.sh` now runs on Ubuntu as well as macOS, so the
+  repository contract suite is exercised on Linux (both new jobs pass on `c308167`;
+  the merging commit's run is recorded as a checkpoint later). A targeted Fedora 43
+  job runs `scripts/check-fedora-dev.sh` inside a Fedora container launched by the
+  runner: it records host and toolchain identity, builds `drl-render`, `drl-audio`,
+  and `drl-web` on a clean Fedora userland provisioned with `git`, `which`, `rust`,
+  `cargo`, `clippy`, and `rustfmt`, runs the `drl-core` and `drl-protocol` contracts,
+  and probes `/dev/dri`, `libvulkan`, and `WAYLAND_DISPLAY` while holding GPU and
+  Wayland acceptance at `NOT_RUN`. No additional project-specific native-library
+  package was needed, and the Fedora job deliberately does not repeat the full
+  generic suite. Native frontend boundary, `drl-desktop`, and Fedora/Wayland/Vulkan
   acceptance remain open.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
@@ -1379,11 +1392,26 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **No temporary slice is active.** The Blaster direct Plasma slice is
-  delivered and its canonical evidence is recorded below. The next bounded M9
-  candidate remains subject to a fresh steering re-audit; recharge callback
-  timing/state, spread/routing, SPLASMA divisors, broader resistance
-  aggregation, controlled runtime, and audiovisual parity remain open.
+- **Active slice — platform track step 2, Linux and Fedora CI coverage
+  (`0.2.342`, in review as PR #458):** `SPEC.md` §2 is the active slice and its
+  acceptance status lives there.
+- **Closed slices.** The Blaster direct Plasma slice is delivered and its canonical
+  evidence is recorded below, as is the M8 modular browser shell delivered in
+  PR #457. The next bounded M9 candidate remains subject to a fresh steering
+  re-audit; recharge callback timing/state, spread/routing, SPLASMA divisors,
+  broader resistance aggregation, controlled runtime, and audiovisual parity remain
+  open.
+
+- **Delivered Slice — M8 modular browser shell (`0.2.341`):** PR #457 merged as
+  `85e50c4`; implementation head `20464fd` splits the 14,764-line `drl-web` crate
+  root into a 69-line module map with focused native, WASM, and test modules while
+  preserving every `#[wasm_bindgen]` export signature, both WGSL shader constants
+  byte-for-byte, and all 100 native and 2 WASM tests by name. Independent review
+  took four passes: pass 1 (`30ec8c6..12d12a1`), pass 2 (`12d12a1..755bf55`), and
+  pass 3 (`755bf55..6b67879`) returned `fix`; pass 4 (`6b67879..17af04f`) returned
+  `pass`. Local `check-repository.sh` and `check-web.sh` exit `0` on the clean
+  `6b67879` tree and hosted Repository and WASM checks pass on `20464fd`.
+  Interactive Chromium acceptance and controlled legacy captures stay `NOT_RUN`.
 
 - **Delivered Slice — M9 Blaster direct Plasma classification (`0.2.340`):**
   PR #456 merged as `d855725`; implementation head `8e05aa5` routes successful
@@ -1521,8 +1549,14 @@ verification item uses explicit status semantics:
   broader legacy resistance aggregation, direct Fire classification, controlled
   runtime, audiovisual parity, and balance remain open or `NOT_RUN`.
 
-- **Latest Audited Checkpoint:** `main` at `d855725` (version `0.2.340`), with
-  Blaster direct-Plasma delivered in PR #456. Its implementation head
+- **Latest Audited Checkpoint:** `main` at `85e50c4` (version `0.2.341`), the M8
+  modular browser shell delivered in PR #457. Its implementation head `20464fd` has
+  an independent determinism-review PASS receipt from the fourth pass; local Fedora
+  43 repository and web gates and hosted Repository/WASM checks pass. The hosted
+  Review-policy check fails closed because the sole maintainer cannot create a
+  non-self approval, so the documented live `enforce_admins=false` exception was
+  used. The previous audited checkpoint was `main` at `d855725` (version `0.2.340`),
+  with Blaster direct-Plasma delivered in PR #456. Its implementation head
   `8e05aa5` has an independent determinism-review PASS receipt; local and
   hosted Repository/WASM checks pass. The hosted Review-policy check failed
   closed because the sole maintainer cannot create a non-self approval, so the
