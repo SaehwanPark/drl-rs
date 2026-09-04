@@ -24,7 +24,7 @@ use drl_assets::AtlasTextureSource;
 use drl_protocol::{Command, ItemId, PlayerObservation, Position};
 use drl_render::{
   AnimationPlayback, MinimapState, ParticleDecalSprite, ParticleDecalStore, PixelViewport,
-  RenderScene, scene_clear_color, shade_color,
+  RenderScene, scene_clear_color,
 };
 use std::cell::RefCell;
 use wasm_bindgen::prelude::*;

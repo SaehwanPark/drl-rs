@@ -5,12 +5,14 @@
 //! presentation timing can never advance the simulation.
 
 mod animation;
+mod geometry;
 mod minimap;
 mod outline;
 mod particle_decal;
 mod particle_decal_plan;
 
 pub use animation::{AnimationPlayback, animation_frame_index_at_elapsed};
+pub use geometry::{SceneQuad, scene_quad_plan};
 pub use minimap::{MinimapCell, MinimapMarker, MinimapState};
 pub use outline::outline_mask_composite;
 pub use particle_decal::{ParticleDecalStorageError, ParticleDecalStore};
@@ -70,6 +72,29 @@ pub struct PresentationStep {
   pub events: Vec<GameEvent>,
   pub effects: Vec<EffectSpan>,
   pub after: PlayerObservation,
+}
+
+impl PresentationStep {
+  /// Builds the shared presentation boundary for one accepted command.
+  ///
+  /// Both browser and native shells use this constructor so effect filtering
+  /// remains observation-based and cannot become a platform-specific policy.
+  #[must_use]
+  pub fn from_transition(
+    before: PlayerObservation,
+    command: Command,
+    events: Vec<GameEvent>,
+    after: PlayerObservation,
+  ) -> Self {
+    let effects = effect_timeline_for_observations(&before, &after, &events);
+    Self {
+      before,
+      command,
+      events,
+      effects,
+      after,
+    }
+  }
 }
 
 /// Bounded, deterministic presentation effects derived from simulation events.

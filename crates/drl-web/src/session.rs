@@ -9,8 +9,7 @@ use drl_protocol::{
   PlayerObservation, Position, ReplayLog,
 };
 use drl_render::{
-  ParticleDecalSprite, ParticleDecalStorageError, ParticleDecalStore, PresentationStep,
-  RenderScene, effect_timeline_for_observations,
+  ParticleDecalSprite, ParticleDecalStorageError, ParticleDecalStore, PresentationStep, RenderScene,
 };
 
 use crate::persistence::{self, SnapshotError};
@@ -142,14 +141,9 @@ impl BrowserSession {
         self.last_error = None;
         self.commands.push(command);
         let after = self.observation();
-        let effects = effect_timeline_for_observations(&before, &after, &events);
-        Ok(PresentationStep {
-          before,
-          command,
-          events,
-          effects,
-          after,
-        })
+        Ok(PresentationStep::from_transition(
+          before, command, events, after,
+        ))
       }
       Err(error) => {
         let message = error.to_string();
