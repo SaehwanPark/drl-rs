@@ -1,10 +1,10 @@
 # Specification
 
-Last reviewed: 2026-09-03
+Last reviewed: 2026-09-04
 Current project version: `0.2.342`
 Audited starting checkpoint: `main` at `85e50c4` (M8 modular browser shell,
 PR #457, and canonical documentation reconciliation)
-Delivery checkpoint: `main` merge commit `85e50c4` (PR #457, merged)
+Delivery checkpoint: `main` merge commit `4aaa010` (PR #458, merged)
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -24,9 +24,8 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 
 ## 2. Active implementation slice: Linux and Fedora CI coverage
 
-Slice status: **open** — the jobs and the Fedora development-host script exist on
-branch `codex/linux-ci-checks`; the final independent review is closed, but the
-hosted merge-commit run and merge checkpoint in §2.8 are not closed.
+Slice status: **delivered and verified** at `main` merge commit `4aaa010` (PR #458);
+the main-branch CI run and the final independent review are recorded in §2.8.
 
 ### 2.1 Objective
 
@@ -80,8 +79,8 @@ At audited starting revision `85e50c4` (version `0.2.341`):
 
 ### 2.4 Review and branch contract
 
-- Branch `codex/linux-ci-checks` from `main` at `85e50c4`; one PR carries the
-  whole slice.
+- Branch `codex/linux-ci-checks` from `main` at `85e50c4`; PR #458 carries the
+  whole slice and merged as `4aaa010`.
 - `Review policy` passes for this slice: it changes no protected review path, so
   no non-self review is demanded. The solo-maintainer `enforce_admins=false`
   exception recorded in `CHANGELOG.md` and the roadmap checkpoints was needed for
@@ -106,11 +105,13 @@ At audited starting revision `85e50c4` (version `0.2.341`):
 - [x] Exactly one patch version transition `0.2.341` to `0.2.342`, consistent in
   `VERSION`, `Cargo.toml`, and `Cargo.lock` (`scripts/check-version.sh`).
 - [x] `sh scripts/check-repository.sh` exits `0` on the Fedora 43 host against
-  `c308167` plus the document-only edits in this ledger's commit.
-- [ ] Hosted `Repository checks (Linux)` and `Fedora 43 development host` pass on
-  the commit that merges. All five PR checks pass on `96e6fcf` (the Linux job has
-  59 test-binary summaries and 1088 assertions); the merging commit's own run is
-  still required.
+  PR head `24d9100` (`/tmp/loop2-final-repo-pass.log`); the merge added no source
+  changes.
+- [x] Hosted `Repository checks (Linux)` and `Fedora 43 development host` pass on
+  merge commit `4aaa010`; main CI run `33879774696` completed successfully, with
+  `Repository checks`, `Repository checks (Linux)`, `Fedora 43 development host`,
+  and `WASM browser checks` all passing. The PR head `24d9100` also had all five
+  checks pass, including `Review policy`.
 - [x] An attributable independent review returns `pass` on this slice: the final
   read-only review of the correction range `c308167..96e6fcf` issued the slice-level
   disposition `pass` and found no remaining findings.
@@ -145,7 +146,8 @@ Evidence is bound to a named revision; a later commit does not inherit an earlie
 commit's checks.
 
 - **Implementation:** branch `codex/linux-ci-checks` from `main` at `85e50c4`
-  (`0.2.341`, the PR #457 merge checkpoint). Merge into `main` is pending.
+  (`0.2.341`, the PR #457 merge checkpoint); PR #458 merged this slice as
+  `4aaa010` on `main`.
 - **Fedora container proof, Fedora 43 host (podman, `fedora:43`):**
   `sh scripts/check-fedora-dev.sh` exits `0` (`/tmp/fedora-dev-probe.log` for the
   script-level run and `/tmp/fedora-ci-shape.log` for the exact workflow
@@ -156,21 +158,23 @@ commit's checks.
   `vulkan=library-absent`, `wayland_session=absent`,
   `gpu_and_wayland_acceptance=NOT_RUN`.
 - **Local host gates:** `sh scripts/check-repository.sh` exits `0` on the Fedora 43
-  host against `c308167` plus the document-only edits carried by this ledger's
-  commit (`/tmp/loop2-repo.log` and the re-run recorded in the PR).
-- **Hosted observation:** all five PR checks pass on `96e6fcf`: `Repository checks`
-  (macOS), `Repository checks (Linux)`, `Fedora 43 development host`, `WASM browser
-  checks`, and `Review policy`. The Linux job log shows 59 `test result: ok.`
-  summaries and 1088 passing assertions, so the added coverage really runs the
-  workspace suite rather than exiting vacuously. The earlier `c308167` run also
-  passed all five checks; the merging commit's own run is still required.
+  host against PR head `24d9100` (`/tmp/loop2-final-repo-pass.log`); the merge
+  commit changes no source files, and the closure documentation preserves the
+  passing SPEC structure and version contract.
+- **Hosted merge observation:** main CI run `33879774696` for merge commit
+  `4aaa010` completed successfully. Its `Repository checks`, `Repository checks
+  (Linux)`, `Fedora 43 development host`, and `WASM browser checks` jobs all pass;
+  the PR head `24d9100` also passed those four jobs plus `Review policy`. The Linux
+  job log for the PR head shows 59 `test result: ok.` summaries and 1088 passing
+  assertions, so the added coverage runs the workspace suite rather than exiting
+  vacuously.
 - **Independent review:** the final read-only review of `c308167..96e6fcf` issued
   the slice-level disposition **`pass`**, explicitly closing all four prior
   findings: premature hosted/review claims, stale active/version/checkpoint
   wording, and Fedora package-language overstatement. No crate source, gameplay,
   replay, RNG, or browser-boundary file changed in the correction range.
-- **Hosted checks:** tracked per commit in the PR; a green branch-head run does not
-  substitute for the merge-commit checkpoint.
+- **Hosted checks:** the merge-commit checkpoint is closed by main CI run
+  `33879774696`; future workflow changes require their own commit-bound evidence.
 - **`NOT_RUN`:** GPU, Vulkan, Wayland, and interactive browser acceptance;
   controlled legacy reference captures.
 

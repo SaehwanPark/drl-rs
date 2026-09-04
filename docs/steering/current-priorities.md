@@ -1,6 +1,6 @@
 # Near-Term Development Steering
 
-Last reviewed: 2026-09-03
+Last reviewed: 2026-09-04
 Baseline branch: `main`
 Baseline merge commit: `d855725`
 Latest pull request inspected: `#456`
@@ -65,7 +65,9 @@ With the temporary control-plane gates closed, select work in this order:
      is refactored rather than copied, and no gameplay or presentation-policy
      fork is introduced for Fedora.
    - step 1 delivered in PR #457 (`0.2.341`, merged as `85e50c4`); step 2, Linux
-     and Fedora CI coverage, is in review as PR #458 (`0.2.342`).
+     and Fedora CI coverage, delivered in PR #458 (`0.2.342`, merged as `4aaa010`).
+     The next selected platform step is the native frontend boundary; no new slice
+     is active in this task.
 
 ## Development stop gates
 

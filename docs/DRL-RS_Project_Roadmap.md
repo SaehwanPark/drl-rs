@@ -1,6 +1,6 @@
 # DRL-Rust Project Roadmap
 
-Last reviewed: 2026-09-03
+Last reviewed: 2026-09-04
 Current project version: `0.2.342`
 
 ---
@@ -1371,11 +1371,12 @@ verification item uses explicit status semantics:
   revision and stay open. Four independent review passes closed the slice (final
   `pass` at `17af04f`) and PR #457 merged as `85e50c4`; `drl-desktop` and
   Fedora/Wayland/Vulkan acceptance remain open.
-- **Linux and Fedora CI coverage (`0.2.342`, in review as PR #458):**
+- **Linux and Fedora CI coverage (`0.2.342`, delivered in PR #458):**
   `scripts/check-repository.sh` now runs on Ubuntu as well as macOS, so the
-  repository contract suite is exercised on Linux (both new jobs pass on `c308167`;
-  the merging commit's run is recorded as a checkpoint later). A targeted Fedora 43
-  job runs `scripts/check-fedora-dev.sh` inside a Fedora container launched by the
+  repository contract suite is exercised on Linux. PR head `24d9100` passed both
+  added jobs, and main merge commit `4aaa010` passed `Repository checks (Linux)` and
+  `Fedora 43 development host` in CI run `33879774696`. A targeted Fedora 43 job
+  runs `scripts/check-fedora-dev.sh` inside a Fedora container launched by the
   runner: it records host and toolchain identity, builds `drl-render`, `drl-audio`,
   and `drl-web` on a clean Fedora userland provisioned with `git`, `which`, `rust`,
   `cargo`, `clippy`, and `rustfmt`, runs the `drl-core` and `drl-protocol` contracts,
@@ -1392,15 +1393,22 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active slice — platform track step 2, Linux and Fedora CI coverage
-  (`0.2.342`, in review as PR #458):** `SPEC.md` §2 is the active slice and its
-  acceptance status lives there.
-- **Closed slices.** The Blaster direct Plasma slice is delivered and its canonical
-  evidence is recorded below, as is the M8 modular browser shell delivered in
-  PR #457. The next bounded M9 candidate remains subject to a fresh steering
-  re-audit; recharge callback timing/state, spread/routing, SPLASMA divisors,
+- **No temporary slice is active.** Linux and Fedora CI coverage is delivered in
+  PR #458 as `4aaa010`; its final acceptance evidence is recorded in `SPEC.md` §2.
+  The next platform-track step is the native frontend boundary, but it awaits a
+  fresh steering selection. The next bounded M9 candidate likewise remains subject
+  to re-audit; recharge callback timing/state, spread/routing, SPLASMA divisors,
   broader resistance aggregation, controlled runtime, and audiovisual parity remain
   open.
+
+- **Delivered Slice — Linux and Fedora CI coverage (`0.2.342`):** PR #458 merged as
+  `4aaa010`; main CI run `33879774696` passed `Repository checks`, `Repository checks
+  (Linux)`, `Fedora 43 development host`, and `WASM browser checks`. The PR head
+  `24d9100` also passed `Review policy`. Local `check-repository.sh` passed on
+  `24d9100`; the Fedora probe and targeted `drl-core`/`drl-protocol` contracts passed
+  in a clean `fedora:43` container, with GPU and Wayland acceptance remaining
+  `NOT_RUN`. The independent review returned `pass` on the final correction range;
+  interactive Chromium acceptance and controlled legacy captures remain `NOT_RUN`.
 
 - **Delivered Slice — M8 modular browser shell (`0.2.341`):** PR #457 merged as
   `85e50c4`; implementation head `20464fd` splits the 14,764-line `drl-web` crate
@@ -1549,13 +1557,15 @@ verification item uses explicit status semantics:
   broader legacy resistance aggregation, direct Fire classification, controlled
   runtime, audiovisual parity, and balance remain open or `NOT_RUN`.
 
-- **Latest Audited Checkpoint:** `main` at `85e50c4` (version `0.2.341`), the M8
-  modular browser shell delivered in PR #457. Its implementation head `20464fd` has
-  an independent determinism-review PASS receipt from the fourth pass; local Fedora
-  43 repository and web gates and hosted Repository/WASM checks pass. The hosted
-  Review-policy check fails closed because the sole maintainer cannot create a
-  non-self approval, so the documented live `enforce_admins=false` exception was
-  used. The previous audited checkpoint was `main` at `d855725` (version `0.2.340`),
+- **Latest Audited Checkpoint:** `main` at `4aaa010` (version `0.2.342`), Linux
+  and Fedora CI coverage delivered in PR #458. Main CI run `33879774696` passed
+  `Repository checks`, `Repository checks (Linux)`, `Fedora 43 development host`,
+  and `WASM browser checks`; the PR's Review-policy check also passed because no
+  protected path changed. The independent review returned `pass` on the final
+  correction range, and the live solo-maintainer `enforce_admins=false` exception
+  remains documented for protected-path slices. The previous audited checkpoint
+  was `main` at `85e50c4` (version `0.2.341`), the M8 modular browser shell delivered
+  in PR #457. Its implementation head `20464fd` has
   with Blaster direct-Plasma delivered in PR #456. Its implementation head
   `8e05aa5` has an independent determinism-review PASS receipt; local and
   hosted Repository/WASM checks pass. The hosted Review-policy check failed
