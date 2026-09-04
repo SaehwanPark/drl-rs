@@ -1419,16 +1419,26 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active Slice — M9 Null Pointer SPLASMA armor divisor (`0.2.345`):**
-  Branch `feat/null-pointer-splasma-divisor` carries the pinned legacy
-  one-third armor-protection rule into the existing typed Plasma fanout. The
-  candidate preserves fixed `10d1` sampling, geometry, event ordering,
-  rejection atomicity, replay identities apart from gameplay semantics `144`,
-  and BrowserSession/direct-core parity; merge and hosted-check evidence are
-  pending. The next platform-track item remains Fedora 43 GNOME/Mutter
+- **No temporary implementation slice is active.** Null Pointer's SPLASMA
+  divisor is delivered in PR #462 as `8e0d5f1`; no subsequent slice is
+  selected. The next platform-track item remains Fedora 43 GNOME/Mutter
   Wayland/Mesa/RADV Vulkan interactive acceptance. Broader resistance
   aggregation, controlled runtime, and audiovisual parity remain open or
   `NOT_RUN`.
+
+- **Delivered Slice — M9 Null Pointer SPLASMA armor divisor (`0.2.345`):**
+  PR #462 merged as `8e0d5f1`; candidate `1f86369` carries the pinned legacy
+  one-third armor-protection rule into the existing typed Plasma fanout.
+  Blue Armor's 20% resistance is applied before integer-floor one-third flat
+  protection, changing fixed `10d1` splash damage from 6 to 8 while retaining
+  the public Plasma event. Geometry/order/de-duplication, score/schedule,
+  death/drop behavior, rejection atomicity, replay identities apart from
+  gameplay semantics `144`, and direct-core/MCP JSON/BrowserSession parity
+  remain intact. The independent determinism review returned PASS; hosted
+  Repository, Linux, Fedora, and WASM checks passed in run `33921025782`,
+  while Review policy run `33921025763` failed closed under the documented
+  solo-maintainer exception. Controlled legacy runtime, audiovisual/reference
+  captures, browser capture, and human acceptance remain `NOT_RUN`.
 
 - **Delivered Slice — M9 Anti-Freak Jackal direct Fire classification
   (`0.2.344`):** PR #461 merged as `48c122e`; candidate `7d7b94c` routes
@@ -2546,13 +2556,14 @@ scripting.
   unchanged. Focused direct/replay/invalid-target coverage and independent
   review pass in `0.2.344`; controlled runtime, audiovisual parity, and
   broader resistance aggregation remain open or `NOT_RUN`.
-- [ ] Null Pointer's typed Plasma radius-1 fanout applies the pinned legacy
+- [x] Null Pointer's typed Plasma radius-1 fanout applies the pinned legacy
   SPLASMA one-third armor-protection divisor after resistance while preserving
   its fixed `10d1` roll, geometry, event ordering, rejection atomicity,
-  replay, and BrowserSession parity. The active `0.2.345` candidate is pending
-  hosted checks and merge; body-zone aggregation,
-  controlled runtime, audiovisual parity, and browser capture remain open or
-  `NOT_RUN`.
+  replay, and BrowserSession parity. PR #462 merged as `8e0d5f1` after the
+  independent review PASS and hosted Repository, Linux, Fedora, and WASM
+  checks passed; the Review policy check failed closed under the documented
+  solo-maintainer exception. Body-zone aggregation, controlled runtime,
+  audiovisual parity, and browser capture remain open or `NOT_RUN`.
 - [x] Malek's Armor has an immutable behavior profile for its
   delay-50/cadence-5/amount-1 durability-recharge fragment; the dedicated
   transition remains authoritative and armor resistance/degradation, runtime,

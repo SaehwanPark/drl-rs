@@ -3,7 +3,7 @@
 Last reviewed: 2026-09-04
 Current project version: `0.2.345`
 Audited starting checkpoint: `main` at `32f54e5` (Anti-Freak delivery reconciliation)
-Delivery checkpoint: **open** on the candidate branch; merge evidence is pending
+Delivery checkpoint: **merged** in PR #462 as `8e0d5f1`
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -23,9 +23,9 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 
 ## 2. Active implementation slice: M9 Null Pointer SPLASMA armor divisor
 
-Slice status: **candidate verified locally; hosted checks and merge pending** on
-temporary branch `feat/null-pointer-splasma-divisor`, based on `main` commit
-`32f54e5` (`0.2.344`).
+Slice status: **delivered and verified** in PR #462; no subsequent slice is
+selected. The temporary branch `feat/null-pointer-splasma-divisor` was based
+on `main` commit `32f54e5` (`0.2.344`).
 
 ### 2.1 Objective
 
@@ -116,7 +116,7 @@ death/drop behavior, replay identities, and boundary projections.
 
 ### 2.6 Delivery evidence
 
-Evidence bound to the current candidate:
+Evidence bound to the merged candidate:
 
 - focused Null Pointer SPLASMA-divisor, actor minimum-one, core replay,
   rejection, MCP JSON, and BrowserSession parity tests: PASS;
@@ -131,8 +131,13 @@ Evidence bound to the current candidate:
 - `sh scripts/check-spec-structure.sh` and `git diff --check`: PASS;
 - fresh independent determinism review: PASS, reviewer mission
   `b46272de-d36c-499f-9c27-1146bf0f4db6`, against the current review packet;
-- hosted Repository, Linux, Fedora, WASM, Review-policy, and merge results:
-  pending for the single PR;
+- hosted Repository, Linux, Fedora, and WASM checks: PASS in CI run
+  `33921025782`;
+- hosted Review policy: FAIL closed in run `33921025763` because the sole
+  maintainer cannot create a non-self approval; the documented live
+  `enforce_admins=false` exception was used;
+- PR #462 merged as `8e0d5f1` with exact head
+  `1f86369922ff03f0f0234518109c04db20cc9ea1`;
 - explicit `NOT_RUN` records remain for controlled legacy runtime,
   native interactive Wayland/Vulkan or Metal acceptance, audiovisual/reference
   captures, browser capture, and human gameplay.

@@ -1,9 +1,9 @@
 # Development Steering
 
 Last reviewed: 2026-09-04
-Repository baseline reviewed: `48c122e`
-Latest pull request inspected: `#461`
-Project version at review: `0.2.344`
+Repository baseline reviewed: `8e0d5f1`
+Latest pull request inspected: `#462`
+Project version at review: `0.2.345`
 
 ## Purpose
 

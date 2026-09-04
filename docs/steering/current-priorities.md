@@ -2,9 +2,9 @@
 
 Last reviewed: 2026-09-04
 Baseline branch: `main`
-Baseline merge commit: `48c122e`
-Latest pull request inspected: `#461`
-Baseline project version: `0.2.344`
+Baseline merge commit: `8e0d5f1`
+Latest pull request inspected: `#462`
+Baseline project version: `0.2.345`
 
 ## Purpose
 
@@ -230,14 +230,14 @@ invariants into accepted architecture/ADRs as appropriate, and update the
 roadmap and active specification from verified evidence.
 
 Re-audit before broad M9 migration resumes, or when a new stop-gate candidate
-is selected. The current audited tree is `main` at `48c122e` (PR #461 merge,
-version `0.2.344`); local workspace/Clippy/repository/web/version/SPEC checks
+is selected. The current audited tree is `main` at `8e0d5f1` (PR #462 merge,
+version `0.2.345`); local workspace/Clippy/repository/web/version/SPEC checks
 pass, the independent determinism review is PASS, and hosted Repository,
-Linux, Fedora, and WASM checks pass in run `33914631227`. The protected-path
-Review policy check `33914631806` failed closed because the sole maintainer
+Linux, Fedora, and WASM checks pass in run `33921025782`. The protected-path
+Review policy check `33921025763` failed closed because the sole maintainer
 cannot create a non-self approval and was merged under the live
-`enforce_admins=false` exception. The next bounded vertical candidate is the
-Null Pointer SPLASMA armor divisor; platform interactive acceptance,
-controlled legacy runtime, human, audiovisual, performance, and
+`enforce_admins=false` exception. The Null Pointer SPLASMA armor divisor is
+delivered; no subsequent bounded candidate is selected. Platform interactive
+acceptance, controlled legacy runtime, human, audiovisual, performance, and
 reference-capture surfaces remain `NOT_RUN` where prerequisites are
 unavailable.
