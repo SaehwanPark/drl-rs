@@ -25,8 +25,8 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 ## 2. Active implementation slice: Linux and Fedora CI coverage
 
 Slice status: **open** — the jobs and the Fedora development-host script exist on
-branch `codex/linux-ci-checks`; the hosted runs and the independent review in §2.8
-are not closed.
+branch `codex/linux-ci-checks`; the final independent review is closed, but the
+hosted merge-commit run and merge checkpoint in §2.8 are not closed.
 
 ### 2.1 Objective
 
@@ -108,11 +108,12 @@ At audited starting revision `85e50c4` (version `0.2.341`):
 - [x] `sh scripts/check-repository.sh` exits `0` on the Fedora 43 host against
   `c308167` plus the document-only edits in this ledger's commit.
 - [ ] Hosted `Repository checks (Linux)` and `Fedora 43 development host` pass on
-  the commit that merges. Both pass on `c308167` (`Repository checks (Linux)` in
-  1m7s with 59 test-binary summaries and 1088 assertions, `Fedora 43 development
-  host` in 52s) and `Review policy` also passes here; the merging commit's own run
-  is still required.
-- [ ] An attributable independent review returns `pass` on this slice.
+  the commit that merges. All five PR checks pass on `96e6fcf` (the Linux job has
+  59 test-binary summaries and 1088 assertions); the merging commit's own run is
+  still required.
+- [x] An attributable independent review returns `pass` on this slice: the final
+  read-only review of the correction range `c308167..96e6fcf` issued the slice-level
+  disposition `pass` and found no remaining findings.
 
 ### 2.6 Non-goals
 
@@ -157,14 +158,19 @@ commit's checks.
 - **Local host gates:** `sh scripts/check-repository.sh` exits `0` on the Fedora 43
   host against `c308167` plus the document-only edits carried by this ledger's
   commit (`/tmp/loop2-repo.log` and the re-run recorded in the PR).
-- **Hosted observation:** on `c308167`, `Repository checks` (macOS),
-  `Repository checks (Linux)`, `Fedora 43 development host`, `WASM browser checks`,
-  and `Review policy` all pass. The Linux job log shows 59 `test result: ok.`
+- **Hosted observation:** all five PR checks pass on `96e6fcf`: `Repository checks`
+  (macOS), `Repository checks (Linux)`, `Fedora 43 development host`, `WASM browser
+  checks`, and `Review policy`. The Linux job log shows 59 `test result: ok.`
   summaries and 1088 passing assertions, so the added coverage really runs the
-  workspace suite rather than exiting vacuously. The merging commit's own run is
-  still required.
-- **Independent review:** pending; this slice claims no verdict until it lands.
-- **Hosted checks:** tracked per commit in the PR rather than asserted here.
+  workspace suite rather than exiting vacuously. The earlier `c308167` run also
+  passed all five checks; the merging commit's own run is still required.
+- **Independent review:** the final read-only review of `c308167..96e6fcf` issued
+  the slice-level disposition **`pass`**, explicitly closing all four prior
+  findings: premature hosted/review claims, stale active/version/checkpoint
+  wording, and Fedora package-language overstatement. No crate source, gameplay,
+  replay, RNG, or browser-boundary file changed in the correction range.
+- **Hosted checks:** tracked per commit in the PR; a green branch-head run does not
+  substitute for the merge-commit checkpoint.
 - **`NOT_RUN`:** GPU, Vulkan, Wayland, and interactive browser acceptance;
   controlled legacy reference captures.
 
