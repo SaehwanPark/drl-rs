@@ -1385,7 +1385,7 @@ verification item uses explicit status semantics:
   package was needed, and the Fedora job deliberately does not repeat the full
   generic suite. Native frontend boundary, `drl-desktop`, and Fedora/Wayland/Vulkan
   acceptance remain open.
-- **Native frontend boundary (`0.2.343`, in progress):** The branch
+- **Native frontend boundary (`0.2.343`, ready for merge):** The branch
   `codex/native-frontend-boundary` adds a thin `drl-desktop` `winit`/`wgpu`
   shell around caller-supplied `drl-core::Scenario` values, a fair
   `DesktopSession`, physical framebuffer resize handling, and native Vulkan/
@@ -1394,7 +1394,9 @@ verification item uses explicit status semantics:
   is shared across both session boundaries. Headless session, rejection, input,
   viewport, and geometry tests pass; interactive window acceptance, native asset
   compositing/nearest-neighbor sampling, Fedora Wayland/Vulkan proof, macOS Metal
-  proof, and broader desktop productization remain open or `NOT_RUN`.
+  proof, and broader desktop productization remain open or `NOT_RUN`. Final
+  candidate `058011a` passed the independent correction-range review; merge and
+  hosted workflow evidence remain open.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
@@ -1403,13 +1405,15 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active slice — native frontend boundary.** Branch
+- **Active slice — native frontend boundary, ready for merge.** Branch
   `codex/native-frontend-boundary` is based on `main` at `5f747a0` and expands
-  `SPEC.md` §2. It defines the shared `drl-render` geometry boundary and the
-  thin `drl-desktop` native shell without changing gameplay or replay semantics.
-  The next M9 candidate remains subject to re-audit; recharge callback
-  timing/state, spread/routing, SPLASMA divisors, broader resistance aggregation,
-  controlled runtime, and audiovisual parity remain open.
+  `SPEC.md` §2. Final candidate `058011a` defines the shared `drl-render`
+  geometry boundary and the thin `drl-desktop` native shell without changing
+  gameplay or replay semantics; independent review returned `PASS`. Merge and
+  hosted workflow evidence remain open. The next M9 candidate remains subject
+  to re-audit; recharge callback timing/state, spread/routing, SPLASMA divisors,
+  broader resistance aggregation, controlled runtime, and audiovisual parity
+  remain open.
 
 - **Delivered Slice — Linux and Fedora CI coverage (`0.2.342`):** PR #458 merged as
   `4aaa010`; main CI run `33879774696` passed `Repository checks`, `Repository checks
@@ -3935,12 +3939,12 @@ Final release readiness, documentation, and static distribution.
 Validate a thin native frontend without expanding the browser-first 1.0 release
 commitment or duplicating browser gameplay/presentation policy.
 
-- [ ] Define the native frontend boundary over `Command`, fair observations,
+- [x] Define the native frontend boundary over `Command`, fair observations,
   `PresentationStep`, `RenderScene`, and `drl-render`'s shared integer geometry
-  plan (`0.2.343`, in progress pending final review/merge).
-- [ ] Add the minimal `drl-desktop` `winit`/`wgpu` window, keyboard, physical
+  plan (`0.2.343`, final candidate `058011a`, ready for merge).
+- [x] Add the minimal `drl-desktop` `winit`/`wgpu` window, keyboard, physical
   resize, and Vulkan/Metal pipeline scaffold with a display-independent demo
-  validator (`0.2.343`).
+  validator (`0.2.343`, final candidate `058011a`).
 - [ ] Fedora 43 GNOME/Mutter Wayland/Mesa/RADV Vulkan interactive rendering,
   input, resize, and integer pixel-scaling acceptance.
 - [ ] macOS/Metal acceptance of the same desktop implementation.

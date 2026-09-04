@@ -24,8 +24,9 @@ the claim.
 
 ## 2. Active implementation slice: native frontend boundary
 
-Slice status: **in progress** on branch `codex/native-frontend-boundary`,
-based on `main` at `5f747a0` (`0.2.342`); candidate code version is `0.2.343`.
+Slice status: **ready for merge** on branch `codex/native-frontend-boundary`,
+based on `main` at `5f747a0` (`0.2.342`); final candidate revision is `058011a`
+(`0.2.343`).
 
 ### 2.1 Objective
 
@@ -89,8 +90,8 @@ simulation. The slice is an architectural proof and not a desktop release.
   pass locally. Hosted CI and interactive Fedora Wayland/Vulkan or macOS Metal
   window acceptance are recorded separately; unavailable capture surfaces
   remain `NOT_RUN`.
-- [ ] An attributable independent review of the final correction range returns
-  `pass` before the slice is accepted.
+- [x] An attributable independent review of the final correction range
+  `20a6bb6..058011a` returns `PASS`; the final review is merge-gating evidence.
 
 ### 2.4 Semantic and boundary impact
 
@@ -123,18 +124,29 @@ simulation. The slice is an architectural proof and not a desktop release.
 
 ### 2.6 Delivery evidence
 
-Evidence will be bound to the final named revision rather than inferred from
-intent. The final record must include:
+Evidence is bound to final candidate revision `058011a` rather than inferred
+from intent:
 
-- implementation and focused test commands with outputs;
-- `sh scripts/check-repository.sh`, `scripts/check-web.sh`, and
-  `scripts/check-version.sh` results where the host can run them;
-- the native launch/capability result, with Fedora 43 GNOME/Mutter Wayland
-  Mesa/RADV Vulkan and macOS Metal separately labeled `PASS`, `FAIL`,
-  `INCONCLUSIVE`, or `NOT_RUN`;
-- final diff and independent-review disposition;
-- any hosted workflow result, without treating hosted checks as a substitute
-  for the independent review.
+- `cargo test --locked -p drl-render -p drl-desktop -p drl-web`, workspace
+  Clippy with `-D warnings`, and `cargo run --locked -p drl-desktop -- --validate`
+  pass; the focused suites report 82 `drl-render`, 9 `drl-desktop`, and 100
+  native `drl-web` tests passing.
+- `sh scripts/check-repository.sh` passes, including the SPEC structural,
+  version (`0.2.343`), harness, rights, replay/MCP, full workspace, and
+  desktop tests. `sh scripts/check-web.sh` passes with 2 WASM browser tests;
+  the only output warning is the available newer `wasm-pack` release.
+- `DRL_VERSION_BASE=5f747a0 sh scripts/check-version.sh` passes. The local
+  `sh scripts/check-fedora-dev.sh` passes after native `drl-desktop` compilation
+  and deterministic core/protocol tests; the host capability probe reports
+  `dri=device-present`, `vulkan=library-present`, and `WAYLAND_DISPLAY=wayland-0`
+  but correctly records GPU/Wayland acceptance as `NOT_RUN`.
+- A bounded native launch probe did not emit an immediate startup diagnostic
+  before its timeout (`INCONCLUSIVE`); no interactive Fedora 43 GNOME/Mutter
+  Wayland/Mesa/RADV Vulkan or macOS Metal acceptance is claimed, and those
+  surfaces remain `NOT_RUN`.
+- Final diff `5f747a0..058011a` and independent review of correction range
+  `20a6bb6..058011a` are recorded as `PASS`; no hosted workflow result is
+  inferred before the pull request runs.
 
 ## 3. Enduring invariants
 
