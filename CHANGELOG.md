@@ -3,6 +3,20 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.343]
+
+- Added the thin native `drl-desktop` `winit`/`wgpu` preview boundary. It
+  instantiates caller-supplied deterministic scenarios, maps physical keyboard
+  input to existing semantic commands, handles physical framebuffer resize and
+  Vulkan/Metal surface lifecycle, and renders the shared `drl-render`
+  `SceneQuad` scene/target geometry plans. `PresentationStep` construction and
+  the browser fallback now share renderer-owned visibility/inset policy; no native persistence,
+  audio, asset compositor, gameplay branch, or desktop-release claim is added.
+  Headless desktop/render tests, native compilation, the display-independent
+  demo validator, Fedora host checks, and the existing browser contracts pass;
+  interactive Fedora Wayland/Vulkan and macOS Metal acceptance remain
+  `NOT_RUN`.
+
 ## [0.2.342]
 
 - Added full Linux repository verification: hosted CI runs

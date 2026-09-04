@@ -28,9 +28,9 @@ printf 'rustc=%s\n' "$(rustc -vV | sed -n 's/^version: //p')"
 printf 'cargo=%s\n' "$(cargo -V)"
 
 printf '== platform-adjacent crates build without extra system packages\n'
-# drl-render and drl-audio sit next to the future native shell; drl-web is checked
-# natively here so a platform-only regression cannot hide behind the WASM target.
-cargo check --locked -p drl-render -p drl-audio -p drl-web
+# The renderer, audio, browser, and native shell crates are checked natively
+# here so a platform-only regression cannot hide behind the WASM target.
+cargo check --locked -p drl-render -p drl-audio -p drl-web -p drl-desktop
 
 printf '== deterministic kernel contracts\n'
 cargo test --locked -p drl-core -p drl-protocol

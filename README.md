@@ -7,7 +7,7 @@
 
 **drl-rs** is a ground-up, deterministic Rust reimplementation of [Doom the Roguelike (DRL)](https://drl.chaosforge.org/), originally created by Kornel Kisielewicz and [ChaosForge](https://chaosforge.org/).
 
-The project delivers a pure, deterministic headless simulation core, an interactive browser-playable slice rendered with WebGPU, and a native Model Context Protocol (MCP) server for automated AI agent playtesting.
+The project delivers a pure, deterministic headless simulation core, an interactive browser-playable slice rendered with WebGPU, a thin native `winit`/`wgpu` preview boundary, and a native Model Context Protocol (MCP) server for automated AI agent playtesting.
 
 📖 **[Explore the Full Documentation Portal](https://saehwanpark.github.io/drl-rs/)**
 
@@ -18,6 +18,7 @@ The project delivers a pure, deterministic headless simulation core, an interact
 - **Strict Simulation Determinism**: Pure PRNG rejection sampling (`GameRng`), explicit command-driven turn execution, zero ambient state, and bit-exact replay reproducibility.
 - **Transactional Command Safety**: All state-mutating commands are protected by atomic transaction guards. Rejected commands (e.g. empty clips, blocked moves, out-of-range targets) are guaranteed no-ops (`before == after`). `drl-core::Game::step` owns one full-state rollback snapshot per command; `BrowserSession` adds no outer simulation snapshot, while MCP legal-action clones remain explicit fair-observation admission probes.
 - **WebGPU Browser Edition**: High-performance pixel-art graphics rendered via native WebGPU shaders in desktop Chromium browsers, with an accessible HTML shell and offline PWA service worker caching.
+- **Native Frontend Boundary**: A small `drl-desktop` preview consumes the same fair observations, semantic commands, `PresentationStep`, `RenderScene`, and shared integer geometry plan as the browser without copying `drl-web`.
 - **Semantics-Bound Browser Saves**: V3 local saves bind the fixed-content, gameplay, RNG-sampling, generator, and ruleset identities; incompatible or provenance-free histories are rejected safely with a clear recovery path.
 - **Model Context Protocol (MCP) Interface**: Full stdio JSON-RPC 2.0 tool suite (`step`, `observe`, `list_actions`, `verify_replay`) allowing AI assistants (Claude, Antigravity, custom agents) to play and evaluate scenarios. The zero-dependency JSON boundary accepts valid UTF-16 surrogate-pair escapes and rejects malformed surrogate or raw-control input before dispatch.
 - **Replay-File Verification CLI**: The native `drl-rs replay verify [path|-]` command reads the exact canonical V2 replay envelope from a bounded UTF-8 file or stdin and performs a deterministic double-run check with stable diagnostics.
@@ -36,7 +37,19 @@ sh scripts/serve-web.sh
 ```
 Open [http://127.0.0.1:8000](http://127.0.0.1:8000) in Google Chrome or Microsoft Edge with WebGPU enabled.
 
-### 2. ⌨️ Terminal & Headless CLI
+### 2. 🖥️ Native Desktop Preview
+Run the thin native `winit`/`wgpu` geometry preview on a configured desktop display:
+```bash
+cargo run -p drl-desktop
+
+# Validate the deterministic fixture without opening a window
+cargo run -p drl-desktop -- --validate
+```
+The preview is an architectural incubation boundary, not a packaged desktop
+release; Fedora Wayland/Vulkan and macOS Metal acceptance remain separately
+tracked.
+
+### 3. ⌨️ Terminal & Headless CLI
 Run the standalone executable for interactive demos and batch procedural cohort studies:
 ```bash
 # Run headless demo suite
@@ -58,7 +71,7 @@ DRL_BENCH_RUST_VERSION="$(rustc --version)" \
 cargo bench --locked -p drl-core --bench transaction
 ```
 
-### 3. 🤖 AI Agent via Model Context Protocol (MCP)
+### 4. 🤖 AI Agent via Model Context Protocol (MCP)
 Start the stdio JSON-RPC MCP server:
 ```bash
 cargo run -p drl-app --bin drl-rs -- --mcp
@@ -80,7 +93,8 @@ crates/
   ├── drl-assets     # Platform-neutral sprite atlas identifiers, UVs, and provenance
   ├── drl-render     # Pure presentation layer and GPU composition planning
   ├── drl-audio      # Semantic sound cue mappings and Web Audio procedural synthesizer
-  └── drl-web        # Browser WASM entry point, WebGPU pipeline, DOM shell, and offline PWA
+  ├── drl-web        # Browser WASM entry point, WebGPU pipeline, DOM shell, and offline PWA
+  └── drl-desktop    # Thin native winit/wgpu preview and shared scene boundary
 ```
 
 ---

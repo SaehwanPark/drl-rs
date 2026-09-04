@@ -2,9 +2,9 @@
 
 Last reviewed: 2026-09-04
 Baseline branch: `main`
-Baseline merge commit: `d855725`
-Latest pull request inspected: `#456`
-Baseline project version: `0.2.340`
+Baseline merge commit: `5f747a0`
+Latest pull request inspected: `#459`
+Baseline project version: `0.2.342`
 
 ## Purpose
 
@@ -66,8 +66,9 @@ With the temporary control-plane gates closed, select work in this order:
      fork is introduced for Fedora.
    - step 1 delivered in PR #457 (`0.2.341`, merged as `85e50c4`); step 2, Linux
      and Fedora CI coverage, delivered in PR #458 (`0.2.342`, merged as `4aaa010`).
-     The next selected platform step is the native frontend boundary; no new slice
-     is active in this task.
+     Step 3 is the active native frontend boundary slice on branch
+     `codex/native-frontend-boundary`; it defines the shared scene/session contract
+     and the thin `drl-desktop` scaffold without opening native productization.
 
 ## Development stop gates
 

@@ -1,10 +1,11 @@
 # Architecture
 
-Last reviewed: 2026-09-02
-Current project version: `0.2.340`
+Last reviewed: 2026-09-04
+Current project version: `0.2.343`
 
-Status: Verified for current deterministic headless core, MCP tooling, and
-browser-playable WebGPU slice; full audiovisual parity remains planned.
+Status: Verified for current deterministic headless core, MCP tooling,
+browser-playable WebGPU slice, and the thin native frontend boundary; full
+native productization and audiovisual parity remain planned.
 
 Near-term architecture corrections and migration constraints are tracked in
 [`docs/steering/`](docs/steering/README.md). Steering may identify a documented
@@ -21,7 +22,8 @@ invariants:
 
 - **Functional Core, Imperative Shell**: Pure, deterministic game logic in
   `drl-core`; all side effects (WebGPU, Web Audio, DOM, MCP, I/O) are confined
-  to the outer boundary crates (`drl-web`, `drl-audio`, `drl-app`).
+  to the outer boundary crates (`drl-web`, `drl-desktop`, `drl-audio`,
+  `drl-app`).
 - **Strict Determinism & Replayability**: Seedable PRNG (`GameRng`), explicit
   command-driven turn execution, zero ambient state, and bit-exact replay
   verification within a declared compatible gameplay-semantics/ruleset
@@ -135,6 +137,7 @@ drl-core::Game::step (deterministic simulation authority)
   ▼
 Presentation Boundary
   ├─► drl-render::RenderScene ──► drl-web WebGPU Canvas
+  │                              └─► drl-desktop wgpu Surface
   └─► drl-audio::AudioCue   ──► drl-audio Web Audio Mixer
 ```
 
@@ -152,7 +155,8 @@ Presentation Boundary
    candidates in a bounded order, then waits when all are blocked; it does not
    perform broad pathfinding.
 3. **One-Way Presentation**: Presentation layers (`drl-render`, `drl-audio`,
-   `drl-web`) consume observations and events only. Rendering, animation, audio,
+   `drl-web`, `drl-desktop`) consume observations and events only. Rendering,
+   animation, audio,
    tab visibility, viewport resize, or GPU device loss **never** advance the
    simulation or alter PRNG streams.
 4. **Atomic Rejection Contract — Active Correction Gate**: A rejected command
@@ -454,6 +458,10 @@ Presentation Boundary
   - Particles & Decals: Burst origins, directions, range sampling, decal cell
     mapping, decal placement/eligibility, `ParticleDecalInsertion`, and
     caller-bounded `ParticleDecalStore`.
+  - Shared Fallback Geometry: `SceneQuad`, `scene_quad_plan`, and
+    `target_quad_plan` preserve the deterministic colored scene/target fallback,
+    fair visibility predicate, inset policy, and integer viewport draw order for
+    browser and native shells.
 - **Dependencies**: Depends on `drl-protocol` and `drl-assets`. No GPU or window
   dependencies.
 
@@ -535,6 +543,22 @@ Presentation Boundary
     startup.
 - **Dependencies**: Depends on `drl-protocol`, `drl-render`, `drl-assets`,
   `drl-audio`, and web-sys/wasm-bindgen.
+
+### `drl-desktop` — Native Preview Shell
+- **Role**: Thin native `winit`/`wgpu` boundary for the pre-1.0 desktop
+  incubation path; it is not a second game implementation.
+- **Key Responsibilities**:
+  - Instantiate caller-supplied `drl-core::Scenario` values through
+    `DesktopSession` and submit only semantic `drl-protocol::Command` values.
+  - Project fair observations into the shared `drl-render::RenderScene` and
+    `PresentationStep` contracts; rejected commands remain core-owned.
+  - Own native window/event-loop, physical framebuffer resize, Vulkan/Metal
+    surface/device/pipeline setup, and rendering of `SceneQuad` geometry.
+  - Keep asset upload/compositing, persistence, audio, menus, packaging,
+    accessibility, and broader platform acceptance outside this scaffold.
+- **Dependencies**: Depends on `drl-core`, `drl-protocol`, `drl-render`,
+  `winit`, `wgpu`, and the small native async bootstrap helper `pollster`.
+  It does not depend on `drl-web`.
 
 ### `drl-mcp` — Model Context Protocol Server
 - **Role**: Zero-dependency JSON-RPC 2.0 MCP server for AI agents and test
@@ -887,7 +911,7 @@ The repository enforces architectural boundaries via automated test suites:
   separate `Fedora 43 development host` job launches a `fedora:43` container from
   the Ubuntu runner and runs `scripts/check-fedora-dev.sh`, which carries only the
   evidence the generic jobs cannot: the platform-adjacent crates (`drl-render`,
-  `drl-audio`, `drl-web`) build natively on a clean Fedora userland provisioned with
+  `drl-audio`, `drl-web`, `drl-desktop`) build natively on a clean Fedora userland provisioned with
   `git`, `which`, `rust`, `cargo`, `clippy`, and `rustfmt`, with no additional
   project-specific native-library package needed; the `drl-core` and `drl-protocol`
   contracts pass there; and a capability probe reports what the environment offers

@@ -23,8 +23,8 @@ pub use textures::load_texture_source;
 use drl_assets::AtlasTextureSource;
 use drl_protocol::{Command, ItemId, PlayerObservation, Position};
 use drl_render::{
-  AnimationPlayback, MinimapState, ParticleDecalSprite, ParticleDecalStore, PixelViewport,
-  RenderScene, scene_clear_color, shade_color,
+  AnimationPlayback, MinimapState, ParticleDecalSprite, ParticleDecalStore, RenderScene,
+  scene_clear_color,
 };
 use std::cell::RefCell;
 use wasm_bindgen::prelude::*;
