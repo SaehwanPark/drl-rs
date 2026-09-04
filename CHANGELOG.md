@@ -5,18 +5,19 @@ documented in this file.
 
 ## [0.2.342]
 
-- Configured full Linux repository verification: hosted CI now runs
+- Added full Linux repository verification: hosted CI runs
   `scripts/check-repository.sh` on both macOS and Ubuntu runners, so formatting,
   Clippy, workspace and deterministic/replay tests, MCP transport checks, and
   content/structural validation are exercised on the platform the native shell will
-  target. The Linux job passes on `c308167`; the merge checkpoint records the
-  merging commit's own run.
+  target. The Linux job passes on merge commit `4aaa010` in main CI run
+  `33879774696`.
 - Added a targeted Fedora 43 development-host job and `scripts/check-fedora-dev.sh`:
   it records the host and toolchain identity, proves `drl-render`, `drl-audio`, and
   `drl-web` build on a clean Fedora userland provisioned with `git`, `which`, `rust`,
   `cargo`, `clippy`, and `rustfmt`, runs the `drl-core` and `drl-protocol` contracts
   there, and probes `/dev/dri`, `libvulkan`, and `WAYLAND_DISPLAY` while reporting
-  GPU and Wayland acceptance as `NOT_RUN`. Beyond that toolchain set no
+  GPU and Wayland acceptance as `NOT_RUN`. The Fedora job passes on merge commit
+  `4aaa010` in main CI run `33879774696`; beyond that toolchain set no
   project-specific native-library prerequisite was needed, and no gameplay,
   rendering, or persistence behavior changed.
 
