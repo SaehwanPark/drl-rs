@@ -12,7 +12,7 @@ mod particle_decal;
 mod particle_decal_plan;
 
 pub use animation::{AnimationPlayback, animation_frame_index_at_elapsed};
-pub use geometry::{SceneQuad, scene_quad_plan};
+pub use geometry::{SceneQuad, scene_quad_plan, target_quad_plan};
 pub use minimap::{MinimapCell, MinimapMarker, MinimapState};
 pub use outline::outline_mask_composite;
 pub use particle_decal::{ParticleDecalStorageError, ParticleDecalStore};

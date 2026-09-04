@@ -65,6 +65,7 @@ impl DesktopApp {
       Ok(()) => {}
       Err(RenderError::Surface(SurfaceStatus::Lost | SurfaceStatus::Outdated)) => {
         renderer.resize(window.inner_size());
+        window.request_redraw();
       }
       Err(RenderError::Surface(SurfaceStatus::Timeout | SurfaceStatus::Occluded)) => {}
       Err(error) => {

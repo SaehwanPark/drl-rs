@@ -1,10 +1,11 @@
 # Architecture
 
-Last reviewed: 2026-09-02
-Current project version: `0.2.340`
+Last reviewed: 2026-09-04
+Current project version: `0.2.343`
 
-Status: Verified for current deterministic headless core, MCP tooling, and
-browser-playable WebGPU slice; full audiovisual parity remains planned.
+Status: Verified for current deterministic headless core, MCP tooling,
+browser-playable WebGPU slice, and the thin native frontend boundary; full
+native productization and audiovisual parity remain planned.
 
 Near-term architecture corrections and migration constraints are tracked in
 [`docs/steering/`](docs/steering/README.md). Steering may identify a documented
@@ -457,8 +458,9 @@ Presentation Boundary
   - Particles & Decals: Burst origins, directions, range sampling, decal cell
     mapping, decal placement/eligibility, `ParticleDecalInsertion`, and
     caller-bounded `ParticleDecalStore`.
-  - Shared Fallback Geometry: `SceneQuad` and `scene_quad_plan` preserve the
-    deterministic colored scene fallback and integer viewport draw order for
+  - Shared Fallback Geometry: `SceneQuad`, `scene_quad_plan`, and
+    `target_quad_plan` preserve the deterministic colored scene/target fallback,
+    fair visibility predicate, inset policy, and integer viewport draw order for
     browser and native shells.
 - **Dependencies**: Depends on `drl-protocol` and `drl-assets`. No GPU or window
   dependencies.

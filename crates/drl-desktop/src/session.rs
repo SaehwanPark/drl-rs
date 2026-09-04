@@ -1,5 +1,7 @@
 //! Native session adapter over the deterministic core.
 
+use std::fmt::{Debug, Formatter};
+
 use drl_core::{Game, Scenario};
 use drl_protocol::{Command, CommandError, PlayerObservation};
 use drl_render::{PresentationStep, RenderScene};
@@ -21,10 +23,19 @@ pub fn demo_scenario() -> Result<Scenario, String> {
 }
 
 /// Native-facing simulation boundary that exposes no hidden world state.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct DesktopSession {
   game: Game,
   last_error: Option<String>,
+}
+
+impl Debug for DesktopSession {
+  fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
+    formatter
+      .debug_struct("DesktopSession")
+      .field("last_error", &self.last_error)
+      .finish()
+  }
 }
 
 impl DesktopSession {
@@ -124,6 +135,16 @@ mod tests {
         .visible_actors
         .iter()
         .any(|actor| !actor.is_player)
+    );
+  }
+
+  #[test]
+  fn debug_output_does_not_expose_authoritative_game_state() {
+    let session =
+      DesktopSession::new(&demo_scenario().expect("demo scenario")).expect("desktop session");
+    assert_eq!(
+      format!("{session:?}"),
+      "DesktopSession { last_error: None }"
     );
   }
 }

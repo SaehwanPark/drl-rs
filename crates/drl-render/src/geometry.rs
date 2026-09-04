@@ -49,12 +49,40 @@ fn append_quad(
   }
 }
 
+fn append_target_quads(plan: &mut Vec<SceneQuad>, viewport: PixelViewport, scene: &RenderScene) {
+  for &target in &scene.target_positions {
+    append_quad(plan, viewport, target, 0.08, [1.0, 0.82, 0.18, 0.35]);
+  }
+}
+
+/// Builds target-overlay geometry from the same renderer-owned policy used by
+/// the colored fallback. Textured frontends use this bounded subset after
+/// their atlas compositor has drawn the observed scene.
+#[must_use]
+pub fn target_quad_plan(
+  scene: &RenderScene,
+  canvas_width: u32,
+  canvas_height: u32,
+) -> Vec<SceneQuad> {
+  let viewport = PixelViewport::fit(
+    scene.map_width,
+    scene.map_height,
+    canvas_width,
+    canvas_height,
+  );
+  let mut plan = Vec::new();
+  append_target_quads(&mut plan, viewport, scene);
+  plan
+}
+
 /// Builds the deterministic colored geometry fallback consumed by browser and
 /// native frontend shells.
 ///
 /// Draw order is tiles, items, actors, then target overlays. The source scene
 /// is already a fair `RenderScene`; this function does not inspect simulation
-/// state or infer hidden entities.
+/// state or infer hidden entities. Tiles outside the observed/explored set are
+/// omitted to preserve the fair presentation boundary for manually built
+/// scenes as well as observation-derived scenes.
 #[must_use]
 pub fn scene_quad_plan(
   scene: &RenderScene,
@@ -69,7 +97,9 @@ pub fn scene_quad_plan(
   );
   let mut plan = Vec::new();
   for tile in &scene.tiles {
-    append_quad(&mut plan, viewport, tile.position, 0.0, tile_color(tile));
+    if tile.visible || tile.explored {
+      append_quad(&mut plan, viewport, tile.position, 0.0, tile_color(tile));
+    }
   }
   for item in &scene.items {
     append_quad(
@@ -88,9 +118,7 @@ pub fn scene_quad_plan(
     };
     append_quad(&mut plan, viewport, actor.position, 0.18, color);
   }
-  for &target in &scene.target_positions {
-    append_quad(&mut plan, viewport, target, 0.08, [1.0, 0.82, 0.18, 0.35]);
-  }
+  append_target_quads(&mut plan, viewport, scene);
   plan
 }
 
@@ -192,15 +220,18 @@ mod tests {
     assert_eq!(plan[1].color[3], 1.0);
     assert_eq!(plan[2].color, [0.25, 0.75, 0.95, 1.0]);
     assert_eq!(plan[3].color, [1.0, 0.82, 0.18, 0.35]);
+    assert_eq!(target_quad_plan(&sample_scene(), 30, 20), vec![plan[3]]);
   }
 
   #[test]
-  fn plan_preserves_the_fair_scene_tile_order() {
+  fn plan_omits_unobserved_scene_tiles() {
     let mut scene = sample_scene();
     scene.tiles[1].visible = false;
     scene.tiles[1].explored = false;
     let plan = scene_quad_plan(&scene, 30, 20);
-    assert_eq!(plan.len(), 4);
-    assert_eq!(plan[1].rect.x, 10);
+    assert_eq!(plan.len(), 3);
+    assert_eq!(plan[0].rect.x, 0);
+    assert_eq!(plan[1].inset_fraction, 0.18);
+    assert_eq!(plan[2].inset_fraction, 0.08);
   }
 }
