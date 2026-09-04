@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-09-04
-Current project version: `0.2.343`
+Current project version: `0.2.344`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.343)
+## 3. Current Progress Summary (`VERSION` 0.2.344)
 
 ### Delivered Foundations
 
@@ -1414,6 +1414,17 @@ verification item uses explicit status semantics:
   spread/routing, SPLASMA divisors, broader resistance aggregation, controlled
   runtime, and audiovisual parity remain open.
 
+- **Delivered Slice — M9 Anti-Freak Jackal direct Fire classification
+  (`0.2.344`):** The temporary branch routes successful ordinary and aimed
+  Anti-Freak Jackal direct target hits through typed Fire mitigation, so Red
+  Armor's catalog-defined 25% resistance applies before flat protection. Raw
+  damage/RNG order, one-round clip cost, aimed action cost, existing radius-1
+  splash behavior, event ordering, rejection atomicity, replay identities, and
+  browser/direct parity remain intact. Focused direct/replay/invalid-target
+  coverage and an independent determinism review pass; hosted checks and merge
+  identity are recorded at PR handoff, while controlled legacy runtime,
+  audiovisual/reference captures, and human acceptance remain `NOT_RUN`.
+
 - **Delivered Slice — Linux and Fedora CI coverage (`0.2.342`):** PR #458 merged as
   `4aaa010`; main CI run `33879774696` passed `Repository checks`, `Repository checks
   (Linux)`, `Fedora 43 development host`, and `WASM browser checks`. The PR head
@@ -2569,6 +2580,13 @@ scripting.
   path so Red Armor's catalog-defined `25%` Fire resistance is applied before
   flat protection; same-seed replay proof and equal final RNG state are
   verified, while broader legacy resistance aggregation remains open.
+- [x] Anti-Freak Jackal ordinary and aimed direct target damage routes through
+  typed `Fire` mitigation, so Red Armor's catalog-defined `25%` resistance is
+  applied before flat protection while raw rolls, clip/action costs, splash
+  behavior, rejection atomicity, replay, and BrowserSession parity remain
+  unchanged. Focused direct/replay/invalid-target coverage and independent
+  review pass in `0.2.344`; controlled runtime, audiovisual parity, and
+  broader resistance aggregation remain open or `NOT_RUN`.
 - [x] Malek's Armor has an immutable behavior profile for its
   delay-50/cadence-5/amount-1 durability-recharge fragment; the dedicated
   transition remains authoritative and armor resistance/degradation, runtime,

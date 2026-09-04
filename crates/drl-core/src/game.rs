@@ -2005,7 +2005,7 @@ impl Game {
           continue;
         }
 
-        let direct_damage_type = if weapon_is_rocket_launcher {
+        let direct_damage_type = if weapon_is_rocket_launcher || weapon_is_anti_freak_jackal {
           Some(DamageType::Fire)
         } else if weapon_is_blaster
           || weapon_is_plasma_rifle
