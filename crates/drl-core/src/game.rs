@@ -2696,7 +2696,7 @@ impl Game {
         continue;
       };
 
-      let (taken, lethal, death_cause) = self.state.world.apply_damage_typed(
+      let (taken, lethal, death_cause) = self.state.world.apply_damage_splash_typed(
         target_id,
         NULL_POINTER_EXPLOSION_DAMAGE,
         DamageSource::Environment,

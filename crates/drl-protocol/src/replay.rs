@@ -21,9 +21,10 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// Gameplay semantics identifier expected by the current replay engine.
 ///
 /// This advances independently from the wire/schema and RNG-sampling versions
-/// when other deterministic simulation rules change. Version `143` includes
-/// Anti-Freak Jackal's typed Fire classification on direct target damage;
-/// version `142` includes Blaster's typed Plasma classification on direct target
+/// when other deterministic simulation rules change. Version `144` includes
+/// the Null Pointer legacy SPLASMA one-third armor-protection divisor; version
+/// `143` includes Anti-Freak Jackal's typed Fire classification on direct
+/// target damage; version `142` includes Blaster's typed Plasma classification on direct target
 /// damage; version `141` includes Laser Rifle's typed Plasma classification on
 /// direct target damage; version `140` includes Nuclear Plasma Rifle's typed
 /// Plasma classification on direct target damage; version `139` includes
@@ -144,7 +145,7 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// prior Malek's Armor, Missile Launcher, and
 /// Combat Shotgun policies, and the typed ordinary-fire cost policies through
 /// Laser Rifle.
-pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 143;
+pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 144;
 
 /// Procedural-generation semantics identifier expected for replays that carry
 /// a procedural generation configuration. Version 2 includes the exact
@@ -169,9 +170,11 @@ pub struct ReplayMetadata {
   /// Engine crate version string.
   pub engine_version: String,
   /// Gameplay semantics version required to interpret the command history.
-  /// Version 143 includes Anti-Freak Jackal's typed Fire classification on
-  /// direct target damage; version 142 includes Blaster's typed Plasma
-  /// classification on direct target damage; version 141 includes Laser
+  /// Version 144 includes the Null Pointer legacy SPLASMA one-third
+  /// armor-protection divisor; version 143 includes Anti-Freak Jackal's typed
+  /// Fire classification on direct target damage; version 142 includes
+  /// Blaster's typed Plasma classification on direct target damage; version 141
+  /// includes Laser
   /// Rifle's typed Plasma classification on direct target damage; version 140
   /// includes Nuclear Plasma Rifle's typed Plasma classification on direct
   /// target damage; version 139 includes Plasma Rifle's typed Plasma

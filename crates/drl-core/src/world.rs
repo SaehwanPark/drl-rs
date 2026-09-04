@@ -520,6 +520,36 @@ impl World {
     Ok((taken, lethal, death_cause))
   }
 
+  /// Applies typed legacy SPLASMA-style damage, dividing the equipped armor
+  /// protection by three after family resistance and before the minimum-one
+  /// rule. The public event still carries the supplied Plasma family.
+  pub fn apply_damage_splash_typed(
+    &mut self,
+    target_id: EntityId,
+    amount: u32,
+    source: drl_protocol::DamageSource,
+    damage_type: DamageType,
+  ) -> Result<(u32, bool, Option<drl_protocol::DeathCause>), CommandError> {
+    let target = self
+      .actors
+      .get_mut(&target_id)
+      .ok_or(CommandError::EntityNotFound(target_id))?;
+
+    let (taken, lethal) = target.take_damage_splash_typed(amount, damage_type);
+    let death_cause = if lethal {
+      match source {
+        drl_protocol::DamageSource::Actor(attacker_id) => {
+          Some(drl_protocol::DeathCause::MeleeAttack { attacker_id })
+        }
+        drl_protocol::DamageSource::Environment => Some(drl_protocol::DeathCause::Environment),
+      }
+    } else {
+      None
+    };
+
+    Ok((taken, lethal, death_cause))
+  }
+
   /// Applies fixed internal damage without armor mitigation.
   pub fn apply_internal_damage(
     &mut self,

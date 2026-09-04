@@ -1,9 +1,9 @@
 # Specification
 
 Last reviewed: 2026-09-04
-Current project version: `0.2.344`
-Audited starting checkpoint: `main` at `48c122e` (PR #461 merge)
-Delivery checkpoint: **merged** in PR #461 as `48c122e`
+Current project version: `0.2.345`
+Audited starting checkpoint: `main` at `32f54e5` (Anti-Freak delivery reconciliation)
+Delivery checkpoint: **open** on the candidate branch; merge evidence is pending
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -23,9 +23,9 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 
 ## 2. Active implementation slice: M9 Null Pointer SPLASMA armor divisor
 
-Slice status: **selected for implementation** on temporary branch
-`feat/null-pointer-splasma-divisor`, based on `main` commit `48c122e`
-(`0.2.344`).
+Slice status: **candidate verified locally; hosted checks and merge pending** on
+temporary branch `feat/null-pointer-splasma-divisor`, based on `main` commit
+`32f54e5` (`0.2.344`).
 
 ### 2.1 Objective
 
@@ -58,26 +58,26 @@ death/drop behavior, replay identities, and boundary projections.
 
 ### 2.3 Observable acceptance criteria
 
-- [ ] Successful Null Pointer splash actor damage remains a typed Plasma event
+- [x] Successful Null Pointer splash actor damage remains a typed Plasma event
   and applies Plasma resistance before `floor(armor_protection / 3)` flat
   protection, with minimum-one behavior and no-armor preservation.
-- [ ] A same-seed Blue-Armored/unarmored Null Pointer splash pair has equal
+- [x] A same-seed Blue-Armored/unarmored Null Pointer splash pair has equal
   fixed raw damage and final RNG state; with current Blue Armor (`20%`, `2`
   protection), a positive `10d1` splash applies `8` damage rather than the
   ordinary typed-Plasma flat-protection result.
-- [ ] Radius-1 center/neighbor order, actor de-duplication, death/drop and
+- [x] Radius-1 center/neighbor order, actor de-duplication, death/drop and
   game-over follow-up, schedule/event ordering, score transition, and fixed
   `10d1` no-RNG behavior remain unchanged.
-- [ ] Direct Plasma mitigation, Anti-Freak/Rocket Fire mitigation, and other
+- [x] Direct Plasma mitigation, Anti-Freak/Rocket Fire mitigation, and other
   splash policies remain unchanged; the change does not add a public wire,
   command, snapshot, generator, ruleset, or content-registration identity.
-- [ ] Rejected Null Pointer invocations remain exact-state atomic, and
+- [x] Rejected Null Pointer invocations remain exact-state atomic, and
   direct-core, replay/MCP, and BrowserSession event/state/effect/scene parity
   remains valid.
-- [ ] `drl-core` remains platform-independent and the implementation/review
+- [x] `drl-core` remains platform-independent and the implementation/review
   distinguish current-Rust behavior from legacy runtime, audiovisual, balance,
   and human-play claims.
-- [ ] Focused tests, repository/web/version/spec checks, and an independent
+- [x] Focused tests, repository/web/version/spec checks, and an independent
   determinism review pass; unavailable native/legacy/capture surfaces remain
   explicitly `NOT_RUN`.
 
@@ -116,19 +116,26 @@ death/drop behavior, replay identities, and boundary projections.
 
 ### 2.6 Delivery evidence
 
-Evidence will be bound to the final candidate and appended before merge:
+Evidence bound to the current candidate:
 
-- focused Null Pointer SPLASMA-divisor tests, existing core/MCP/web suites,
-  replay determinism, rejection atomicity, and BrowserSession parity;
-- `cargo test --workspace --locked`, Clippy, formatting, repository/web checks,
-  `DRL_VERSION_BASE=48c122e sh scripts/check-version.sh`, and SPEC structure;
-- an independent determinism review tied to the final head;
-- hosted Repository, Linux, Fedora, WASM, and Review-policy results, including
-  the documented solo-maintainer exception if the protected review receipt is
-  unavailable;
-- explicit `NOT_RUN` records for missing reference captures, native
-  interactive acceptance, controlled legacy runtime, audiovisual comparison,
-  and human gameplay.
+- focused Null Pointer SPLASMA-divisor, actor minimum-one, core replay,
+  rejection, MCP JSON, and BrowserSession parity tests: PASS;
+- `cargo fmt --all -- --check`: PASS;
+- `cargo test --workspace --locked`: PASS;
+- `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`:
+  PASS;
+- `sh scripts/check-repository.sh`: PASS;
+- `sh scripts/check-web.sh`: PASS, including the local headless Chromium/WASM
+  contract tests;
+- `DRL_VERSION_BASE=32f54e5 sh scripts/check-version.sh`: PASS (`0.2.345`);
+- `sh scripts/check-spec-structure.sh` and `git diff --check`: PASS;
+- fresh independent determinism review: PASS, reviewer mission
+  `b46272de-d36c-499f-9c27-1146bf0f4db6`, against the current review packet;
+- hosted Repository, Linux, Fedora, WASM, Review-policy, and merge results:
+  pending for the single PR;
+- explicit `NOT_RUN` records remain for controlled legacy runtime,
+  native interactive Wayland/Vulkan or Metal acceptance, audiovisual/reference
+  captures, browser capture, and human gameplay.
 
 ## 3. Enduring invariants
 

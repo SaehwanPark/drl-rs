@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-09-04
-Current project version: `0.2.344`
+Current project version: `0.2.345`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.344)
+## 3. Current Progress Summary (`VERSION` 0.2.345)
 
 ### Delivered Foundations
 
@@ -1419,13 +1419,16 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **No temporary implementation slice is active.** Anti-Freak direct Fire
-  classification is delivered in PR #461 as `48c122e`; the next selected
-  vertical M9 slice is the Null Pointer SPLASMA armor divisor. The next
-  platform-track item remains Fedora 43 GNOME/Mutter Wayland/Mesa/RADV Vulkan
-  interactive acceptance. Recharge callback timing/state, spread/routing,
-  broader resistance aggregation, controlled runtime, and audiovisual parity
-  remain open.
+- **Active Slice — M9 Null Pointer SPLASMA armor divisor (`0.2.345`):**
+  Branch `feat/null-pointer-splasma-divisor` carries the pinned legacy
+  one-third armor-protection rule into the existing typed Plasma fanout. The
+  candidate preserves fixed `10d1` sampling, geometry, event ordering,
+  rejection atomicity, replay identities apart from gameplay semantics `144`,
+  and BrowserSession/direct-core parity; merge and hosted-check evidence are
+  pending. The next platform-track item remains Fedora 43 GNOME/Mutter
+  Wayland/Mesa/RADV Vulkan interactive acceptance. Broader resistance
+  aggregation, controlled runtime, and audiovisual parity remain open or
+  `NOT_RUN`.
 
 - **Delivered Slice — M9 Anti-Freak Jackal direct Fire classification
   (`0.2.344`):** PR #461 merged as `48c122e`; candidate `7d7b94c` routes
@@ -2543,6 +2546,13 @@ scripting.
   unchanged. Focused direct/replay/invalid-target coverage and independent
   review pass in `0.2.344`; controlled runtime, audiovisual parity, and
   broader resistance aggregation remain open or `NOT_RUN`.
+- [ ] Null Pointer's typed Plasma radius-1 fanout applies the pinned legacy
+  SPLASMA one-third armor-protection divisor after resistance while preserving
+  its fixed `10d1` roll, geometry, event ordering, rejection atomicity,
+  replay, and BrowserSession parity. The active `0.2.345` candidate is pending
+  hosted checks and merge; body-zone aggregation,
+  controlled runtime, audiovisual parity, and browser capture remain open or
+  `NOT_RUN`.
 - [x] Malek's Armor has an immutable behavior profile for its
   delay-50/cadence-5/amount-1 durability-recharge fragment; the dedicated
   transition remains authoritative and armor resistance/degradation, runtime,

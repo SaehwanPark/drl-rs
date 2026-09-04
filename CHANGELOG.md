@@ -3,6 +3,18 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.345]
+
+- Applied the pinned legacy SPLASMA armor divisor to Null Pointer's typed
+  Plasma radius-1 splash: Blue Armor's 20% Plasma resistance is followed by
+  one-third of its flat protection (`2 / 3 = 0`), so the fixed `10d1` hit deals
+  8 damage rather than 6 while preserving the public `DamageType::Plasma`
+  event. Geometry, fixed-damage RNG, ordering, rejection atomicity, replay
+  identities, and browser/core parity remain unchanged. Focused same-seed and
+  boundary tests pass; controlled legacy runtime, audiovisual parity, browser
+  capture, and broader resistance aggregation remain open or `NOT_RUN`.
+  Gameplay semantics advance from `143` to `144`.
+
 ## [0.2.344]
 
 - Classified successful Anti-Freak Jackal ordinary and aimed direct target

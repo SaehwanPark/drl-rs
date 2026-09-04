@@ -10,6 +10,8 @@ use crate::malek_armor::MalekRechargeOutcome;
 use crate::subtle_knife::{SubtleKnifeCost, SubtleKnifeError, SubtleKnifeTransition, TiredStatus};
 use crate::trigun::{TrigunCost, TrigunError, TrigunTransition};
 
+const SPLASMA_ARMOR_PROTECTION_DIVISOR: u32 = 3;
+
 /// Simulation actor instance.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Actor {
@@ -243,6 +245,28 @@ impl Actor {
   /// equipped catalog-derived armor instance rather than from an archetype
   /// match in combat code.
   pub fn take_damage_typed(&mut self, raw_amount: u32, damage_type: DamageType) -> (u32, bool) {
+    let flat_protection = self.armor_protection();
+    self.take_damage_typed_with_flat_protection(raw_amount, damage_type, flat_protection)
+  }
+
+  /// Applies typed legacy SPLASMA-style damage. The family resistance is
+  /// applied before one-third of the equipped armor protection, matching the
+  /// pinned explosion policy without changing the public damage type event.
+  pub fn take_damage_splash_typed(
+    &mut self,
+    raw_amount: u32,
+    damage_type: DamageType,
+  ) -> (u32, bool) {
+    let flat_protection = self.armor_protection() / SPLASMA_ARMOR_PROTECTION_DIVISOR;
+    self.take_damage_typed_with_flat_protection(raw_amount, damage_type, flat_protection)
+  }
+
+  fn take_damage_typed_with_flat_protection(
+    &mut self,
+    raw_amount: u32,
+    damage_type: DamageType,
+    flat_protection: u32,
+  ) -> (u32, bool) {
     if !self.is_alive {
       return (0, false);
     }
@@ -255,11 +279,20 @@ impl Actor {
       return (0, false);
     }
     let resisted_amount = crate::resistance::apply_damage_resistance(raw_amount, resistance);
-    self.apply_protected_damage(resisted_amount)
+    self.apply_protected_damage_amount(resisted_amount, flat_protection)
   }
 
   fn apply_protected_damage(&mut self, raw_amount: u32) -> (u32, bool) {
-    let net_amount = raw_amount.saturating_sub(self.armor_protection()).max(1);
+    let protection = self.armor_protection();
+    self.apply_protected_damage_amount(raw_amount, protection)
+  }
+
+  fn apply_protected_damage_amount(
+    &mut self,
+    raw_amount: u32,
+    flat_protection: u32,
+  ) -> (u32, bool) {
+    let net_amount = raw_amount.saturating_sub(flat_protection).max(1);
     let taken = self.hp.take_damage(net_amount);
     if let Some(armor) = self
       .equipment
@@ -677,6 +710,40 @@ mod tests {
     assert_eq!(
       fire_taken, 8,
       "Blue Armor does not resist Fire in this slice"
+    );
+  }
+
+  #[test]
+  fn splash_plasma_uses_one_third_flat_protection_without_changing_direct_plasma() {
+    let mut direct_actor = Actor::new(EntityId::new(1), Position::new(0, 0), "Marine", true);
+    direct_actor
+      .equipment_mut()
+      .equip(EquipmentSlot::Armor, Item::blue_armor(ItemId::new(10)))
+      .unwrap();
+    let (direct_taken, _) = direct_actor.take_damage_typed(10, DamageType::Plasma);
+    assert_eq!(direct_taken, 6);
+
+    let mut splash_actor = Actor::new(EntityId::new(2), Position::new(0, 0), "Marine", true);
+    splash_actor
+      .equipment_mut()
+      .equip(EquipmentSlot::Armor, Item::blue_armor(ItemId::new(11)))
+      .unwrap();
+    let (splash_taken, _) = splash_actor.take_damage_splash_typed(10, DamageType::Plasma);
+    assert_eq!(splash_taken, 8);
+
+    let mut unarmored_actor = Actor::new(EntityId::new(3), Position::new(0, 0), "Marine", true);
+    let (unarmored_taken, _) = unarmored_actor.take_damage_splash_typed(10, DamageType::Plasma);
+    assert_eq!(unarmored_taken, 10);
+
+    let mut minimum_actor = Actor::new(EntityId::new(4), Position::new(0, 0), "Marine", true);
+    minimum_actor
+      .equipment_mut()
+      .equip(EquipmentSlot::Armor, Item::green_armor(ItemId::new(12)))
+      .unwrap();
+    let (minimum_taken, _) = minimum_actor.take_damage_splash_typed(1, DamageType::Plasma);
+    assert_eq!(
+      minimum_taken, 1,
+      "SPLASMA keeps the minimum-one damage rule"
     );
   }
 
