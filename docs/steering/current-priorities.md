@@ -2,9 +2,9 @@
 
 Last reviewed: 2026-09-04
 Baseline branch: `main`
-Baseline merge commit: `ee38357`
-Latest pull request inspected: `#460`
-Baseline project version: `0.2.343`
+Baseline merge commit: `48c122e`
+Latest pull request inspected: `#461`
+Baseline project version: `0.2.344`
 
 ## Purpose
 
@@ -230,16 +230,14 @@ invariants into accepted architecture/ADRs as appropriate, and update the
 roadmap and active specification from verified evidence.
 
 Re-audit before broad M9 migration resumes, or when a new stop-gate candidate
-is selected. The current audited tree is `main` at `d855725` (PR #456 merge,
-version `0.2.340`); local checks, independent review, and hosted Repository/WASM
-checks passed for the delivered bounded Blaster, Laser Rifle, Nuclear Plasma
-Rifle and Plasma Rifle direct-Plasma, BFG 10K,
-Nuclear BFG 9000, and Standard BFG 9000 direct-Plasma slices, Rocket Launcher
-direct-Fire and ground-item slices, and their preceding Null Pointer
-Plasma-mitigation slice.
-The protected-path Review policy check failed closed for the sole maintainer
-and was merged under the live `enforce_admins=false` exception; the preceding replay-file, JSON, Rocket
-Launcher actor fanout, Blue Armor, Red Armor, and Anti-Freak slices used the
-same documented exception. Human, audiovisual, performance, and
+is selected. The current audited tree is `main` at `48c122e` (PR #461 merge,
+version `0.2.344`); local workspace/Clippy/repository/web/version/SPEC checks
+pass, the independent determinism review is PASS, and hosted Repository,
+Linux, Fedora, and WASM checks pass in run `33914631227`. The protected-path
+Review policy check `33914631806` failed closed because the sole maintainer
+cannot create a non-self approval and was merged under the live
+`enforce_admins=false` exception. The next bounded vertical candidate is the
+Null Pointer SPLASMA armor divisor; platform interactive acceptance,
+controlled legacy runtime, human, audiovisual, performance, and
 reference-capture surfaces remain `NOT_RUN` where prerequisites are
 unavailable.

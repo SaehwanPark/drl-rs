@@ -1399,6 +1399,18 @@ verification item uses explicit status semantics:
   `ee38357` and hosted CI run `33892975163` passed Repository, Linux, Fedora,
   and WASM checks. The Review policy check failed closed under the documented
   solo-maintainer exception.
+- **M9 Anti-Freak Jackal direct Fire classification (`0.2.344`, delivered in
+  PR #461):** Successful ordinary and aimed direct target hits now use typed
+  Fire mitigation, so Red Armor's catalog-defined 25% resistance applies
+  before flat protection. Raw damage/RNG order, clip/action costs, existing
+  radius-1 splash behavior, event ordering, rejection atomicity, replay
+  identities, and BrowserSession/direct-core parity remain unchanged. Candidate
+  `7d7b94c` passed local workspace/Clippy/repository/web/version checks and the
+  independent determinism review; hosted Repository, Linux, Fedora, and WASM
+  checks passed in run `33914631227`, while Review policy run `33914631806`
+  failed closed under the documented solo-maintainer exception. Controlled
+  legacy runtime, audiovisual/reference captures, and human acceptance remain
+  `NOT_RUN`.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
@@ -1407,23 +1419,26 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **No temporary implementation slice is active.** Native frontend boundary
-  work is delivered in PR #460 as `ee38357`; the next platform-track item is
-  Fedora 43 GNOME/Mutter Wayland/Mesa/RADV Vulkan interactive acceptance. The
-  next M9 candidate remains subject to re-audit; recharge callback timing/state,
-  spread/routing, SPLASMA divisors, broader resistance aggregation, controlled
-  runtime, and audiovisual parity remain open.
+- **No temporary implementation slice is active.** Anti-Freak direct Fire
+  classification is delivered in PR #461 as `48c122e`; the next selected
+  vertical M9 slice is the Null Pointer SPLASMA armor divisor. The next
+  platform-track item remains Fedora 43 GNOME/Mutter Wayland/Mesa/RADV Vulkan
+  interactive acceptance. Recharge callback timing/state, spread/routing,
+  broader resistance aggregation, controlled runtime, and audiovisual parity
+  remain open.
 
 - **Delivered Slice — M9 Anti-Freak Jackal direct Fire classification
-  (`0.2.344`):** The temporary branch routes successful ordinary and aimed
-  Anti-Freak Jackal direct target hits through typed Fire mitigation, so Red
-  Armor's catalog-defined 25% resistance applies before flat protection. Raw
-  damage/RNG order, one-round clip cost, aimed action cost, existing radius-1
-  splash behavior, event ordering, rejection atomicity, replay identities, and
-  browser/direct parity remain intact. Focused direct/replay/invalid-target
-  coverage and an independent determinism review pass; hosted checks and merge
-  identity are recorded at PR handoff, while controlled legacy runtime,
-  audiovisual/reference captures, and human acceptance remain `NOT_RUN`.
+  (`0.2.344`):** PR #461 merged as `48c122e`; candidate `7d7b94c` routes
+  successful ordinary and aimed Anti-Freak Jackal direct target hits through
+  typed Fire mitigation, so Red Armor's catalog-defined 25% resistance applies
+  before flat protection. Raw damage/RNG order, one-round clip cost, aimed
+  action cost, existing radius-1 splash behavior, event ordering, rejection
+  atomicity, replay identities, and browser/direct parity remain intact. The
+  independent determinism review returned PASS; hosted Repository, Linux,
+  Fedora, and WASM checks passed in run `33914631227`, while Review policy run
+  `33914631806` failed closed under the documented solo-maintainer exception.
+  Controlled legacy runtime, audiovisual/reference captures, and human
+  acceptance remain `NOT_RUN`.
 
 - **Delivered Slice — Linux and Fedora CI coverage (`0.2.342`):** PR #458 merged as
   `4aaa010`; main CI run `33879774696` passed `Repository checks`, `Repository checks
@@ -1581,77 +1596,18 @@ verification item uses explicit status semantics:
   broader legacy resistance aggregation, direct Fire classification, controlled
   runtime, audiovisual parity, and balance remain open or `NOT_RUN`.
 
-- **Latest Audited Checkpoint:** `main` at `4aaa010` (version `0.2.342`), Linux
-  and Fedora CI coverage delivered in PR #458. Main CI run `33879774696` passed
-  `Repository checks`, `Repository checks (Linux)`, `Fedora 43 development host`,
-  and `WASM browser checks`; the PR's Review-policy check also passed because no
-  protected path changed. The independent review returned `pass` on the final
-  correction range, and the live solo-maintainer `enforce_admins=false` exception
-  remains documented for protected-path slices. The previous audited checkpoint
-  was `main` at `85e50c4` (version `0.2.341`), the M8 modular browser shell delivered
-  in PR #457. Its implementation head `20464fd` has
-  with Blaster direct-Plasma delivered in PR #456. Its implementation head
-  `8e05aa5` has an independent determinism-review PASS receipt; local and
-  hosted Repository/WASM checks pass. The hosted Review-policy check failed
-  closed because the sole maintainer cannot create a non-self approval, so the
-  documented live `enforce_admins=false` exception was used. The Laser Rifle
-  direct-Plasma implementation head `c88ebc4` has an independent determinism-review PASS
-  receipt; local and hosted Repository/WASM checks pass. The hosted
-  Review-policy check failed closed because the sole maintainer cannot create a
-  non-self approval, so the documented live `enforce_admins=false` exception
-  was used. The Nuclear Plasma Rifle
-  direct-Plasma implementation head
-  `3f1601e` has an independent determinism-review PASS receipt; local and
-  hosted Repository/WASM checks pass. The hosted Review-policy check failed
-  closed because the sole maintainer cannot create a non-self approval, so the
-  documented live `enforce_admins=false` exception was used. Controlled human,
-  audiovisual, and reference-capture surfaces remain `NOT_RUN` where
-  prerequisites are unavailable. The preceding Plasma Rifle direct-Plasma
-  implementation head `566e315`
-  and evidence/docs head `3926e0b` have an independent determinism-review PASS
-  receipt; local and hosted Repository/WASM checks pass. The hosted Review
-  policy check failed closed because the sole maintainer cannot create a
-  non-self approval, so the documented live `enforce_admins=false` exception
-  was used. The preceding BFG 10K direct-Plasma implementation head `21c9df4`
-  has an independent determinism-review PASS receipt; local and hosted
-  Repository/WASM checks pass. The hosted Review policy check failed closed
-  because the sole maintainer cannot create a non-self approval, so the
-  documented live `enforce_admins=false` exception was used. Controlled human,
-  audiovisual, and reference-capture surfaces remain `NOT_RUN` where
-  prerequisites are unavailable. The preceding Nuclear BFG 9000
-  direct-Plasma implementation head `d2f1236`, the preceding Standard BFG 9000
-  direct-Plasma implementation head `dbbe5e6`, and the preceding Rocket
-  Launcher direct-Fire implementation head
-  `a0a0fcd` has an independent determinism-review PASS receipt; local and
-  hosted Repository/WASM checks pass. The hosted Review policy check failed
-  closed because the sole maintainer cannot create a non-self approval, so the
-  documented live `enforce_admins=false` exception was used. Controlled human,
-  audiovisual, and reference-capture surfaces remain `NOT_RUN` where
-  prerequisites are unavailable. The preceding Rocket ground-item
-  implementation head `49f1451f59ce883a84cd10d0e01d8e3793540572` and merge
-  checkpoint `e902d71` retain their independent determinism-review PASS
-  receipt; local and hosted Repository/WASM checks pass under the same
-  documented exception. The preceding Null Pointer implementation head
-  `0a066a829781fe98b3d9a3f0b2fa9d3b7e85a174` has an independent
-  determinism-review PASS receipt; local and hosted Repository/WASM checks
-  pass. The hosted Review policy check failed closed because the sole
-  maintainer cannot create a non-self approval, so the documented live
-  `enforce_admins=false` exception was used. Controlled human, audiovisual,
-  and reference-capture surfaces remain `NOT_RUN` where prerequisites are
-  unavailable. The preceding Anti-Freak implementation head
-  `49eda1fa38d483db3515f5ff2b37b2bd4b3b41b1` and final evidence/docs head
-  `de4b0fdc6d95054a7d4aa2cd78e46f6e59def630` retain their independent
-  determinism-review PASS receipt; local and hosted Repository/WASM checks
-  pass. The Red Armor implementation head
-  `3370713fc66c1585fafa2a0d7fe8d6357902becf` and final docs-only branch head
-  `4688048a426d273c13b6ca9d4b3e842c37371d8b` both have independent
-  determinism-review PASS receipts; local and hosted Repository/WASM checks
-  pass. The hosted Review policy check failed closed because the sole
-  maintainer cannot create a non-self approval, so the documented live
-  `enforce_admins=false` exception was used. Controlled human, audiovisual,
-  and reference-capture surfaces remain `NOT_RUN` where prerequisites are
-  unavailable. The checkpointed progression audit is
-  [`docs/steering/audit-2026-08-30-post-0.2.318.md`](steering/audit-2026-08-30-post-0.2.318.md).
+- **Latest Audited Checkpoint:** `main` at `48c122e` (version `0.2.344`),
+  merging PR #461. Candidate `7d7b94c` and the merged tree pass local
+  workspace/Clippy/repository/web/version/SPEC checks; the independent
+  determinism review returned PASS. Hosted run `33914631227` passed
+  `Repository checks`, `Repository checks (Linux)`, `Fedora 43 development
+  host`, and `WASM browser checks`. Review policy run `33914631806` failed
+  closed because the sole maintainer cannot create a non-self approval; the
+  documented live `enforce_admins=false` exception was used. Earlier delivered
+  platform and direct-Plasma slices retain the detailed evidence in the entries
+  above. Controlled human, audiovisual, and reference-capture surfaces remain
+  `NOT_RUN` where prerequisites are unavailable. The checkpointed progression
+  audit is [`docs/steering/audit-2026-08-30-post-0.2.318.md`](steering/audit-2026-08-30-post-0.2.318.md).
 - **Steering Disposition — Gate A closed:** Preserve the deterministic core,
   explicit RNG/replay identities, typed content, observation boundary, and
   browser/MCP projections. M10 now binds browser command histories to their
