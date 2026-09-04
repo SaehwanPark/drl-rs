@@ -1,10 +1,10 @@
 # Specification
 
 Last reviewed: 2026-09-03
-Current project version: `0.2.341`
-Audited starting checkpoint: `main` at `2a089c6` (Laser Rifle direct-Plasma
-delivery and canonical documentation reconciliation)
-Delivery checkpoint: `main` merge commit `d855725` (PR #456, merged)
+Current project version: `0.2.342`
+Audited starting checkpoint: `main` at `85e50c4` (M8 modular browser shell,
+PR #457, and canonical documentation reconciliation)
+Delivery checkpoint: `main` merge commit `85e50c4` (PR #457, merged)
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -82,9 +82,10 @@ At audited starting revision `85e50c4` (version `0.2.341`):
 
 - Branch `codex/linux-ci-checks` from `main` at `85e50c4`; one PR carries the
   whole slice.
-- The solo-maintainer `enforce_admins=false` Review-policy exception applies as
-  recorded in `CHANGELOG.md` and the roadmap checkpoint entries; the
-  `Review policy` check fails closed by design.
+- `Review policy` passes for this slice: it changes no protected review path, so
+  no non-self review is demanded. The solo-maintainer `enforce_admins=false`
+  exception recorded in `CHANGELOG.md` and the roadmap checkpoints was needed for
+  PR #457, whose `crates/drl-web/**` changes are protected.
 - The two new jobs are informative at first: they join the required-context list
   only through an explicit branch-protection change, which this slice records
   rather than assumes.
@@ -92,9 +93,10 @@ At audited starting revision `85e50c4` (version `0.2.341`):
 ### 2.5 Acceptance criteria
 
 - [x] `sh scripts/check-fedora-dev.sh` exits `0` in a clean `fedora:43` container
-  with only `git`, `which`, `rust`, `cargo`, `clippy`, and `rustfmt` installed: no
-  extra system package was needed, `drl-core` and `drl-protocol` report 760
-  passing assertions across 42 test binaries, and the probe prints
+  with the Fedora toolchain packages `git`, `which`, `rust`, `cargo`, `clippy`, and
+  `rustfmt` installed: no additional project-specific native-library package was
+  required, `drl-core` and `drl-protocol` report 760 passing assertions across 42
+  test binaries, and the probe prints
   `dri=absent vulkan=library-absent wayland_session=absent
   gpu_and_wayland_acceptance=NOT_RUN`.
 - [x] The proven container invocation is the exact invocation the workflow uses
@@ -103,10 +105,13 @@ At audited starting revision `85e50c4` (version `0.2.341`):
   `check-linux`, `fedora-dev`, and `web`.
 - [x] Exactly one patch version transition `0.2.341` to `0.2.342`, consistent in
   `VERSION`, `Cargo.toml`, and `Cargo.lock` (`scripts/check-version.sh`).
-- [ ] `sh scripts/check-repository.sh` exits `0` on the Fedora 43 host at the
-  final commit of this slice (recorded in §2.8).
+- [x] `sh scripts/check-repository.sh` exits `0` on the Fedora 43 host against
+  `c308167` plus the document-only edits in this ledger's commit.
 - [ ] Hosted `Repository checks (Linux)` and `Fedora 43 development host` pass on
-  the commit that merges; a green run on an earlier commit is not accepted.
+  the commit that merges. Both pass on `c308167` (`Repository checks (Linux)` in
+  1m7s with 59 test-binary summaries and 1088 assertions, `Fedora 43 development
+  host` in 52s) and `Review policy` also passes here; the merging commit's own run
+  is still required.
 - [ ] An attributable independent review returns `pass` on this slice.
 
 ### 2.6 Non-goals
@@ -124,8 +129,9 @@ At audited starting revision `85e50c4` (version `0.2.341`):
 ### 2.7 Evidence boundary
 
 This slice proves that the repository contract suite is runnable on Linux and that
-a clean Fedora 43 userland builds the platform-adjacent crates and passes the
-`drl-core`/`drl-protocol` contracts with no extra system packages. It does not
+a clean Fedora 43 userland, provisioned with its toolchain packages, builds the
+platform-adjacent crates and passes the `drl-core`/`drl-protocol` contracts without
+an additional project-specific native-library package. It does not
 prove any GPU, Wayland, or display behavior: the Fedora container has no `/dev/dri`
 and no `libvulkan`, so those remain `NOT_RUN` here and belong to the
 Fedora/Wayland/Vulkan acceptance slice. The Linux job runs the same suite as the
@@ -142,13 +148,21 @@ commit's checks.
 - **Fedora container proof, Fedora 43 host (podman, `fedora:43`):**
   `sh scripts/check-fedora-dev.sh` exits `0` (`/tmp/fedora-dev-probe.log` for the
   script-level run and `/tmp/fedora-ci-shape.log` for the exact workflow
-  invocation). Toolchain: `rustc 1.98.0 (Fedora 1.98.0-1.fc43)` from `dnf`; no
-  extra system package installed. Capability probe: `dri=absent`,
+  invocation). Toolchain: `rustc 1.98.0 (Fedora 1.98.0-1.fc43)` from `dnf`; the
+  workflow provisions `git`, `which`, `rust`, `cargo`, `clippy`, and `rustfmt`, with
+  no additional project-specific native-library package needed. Capability probe:
+  `dri=absent`,
   `vulkan=library-absent`, `wayland_session=absent`,
   `gpu_and_wayland_acceptance=NOT_RUN`.
-- **Local host gates:** pending on the final commit of this slice; the previous
-  slice's identical gates exited `0` (`/tmp/final3-repo.log`,
-  `/tmp/final3-web.log`) but describe `6b67879`, not this commit.
+- **Local host gates:** `sh scripts/check-repository.sh` exits `0` on the Fedora 43
+  host against `c308167` plus the document-only edits carried by this ledger's
+  commit (`/tmp/loop2-repo.log` and the re-run recorded in the PR).
+- **Hosted observation:** on `c308167`, `Repository checks` (macOS),
+  `Repository checks (Linux)`, `Fedora 43 development host`, `WASM browser checks`,
+  and `Review policy` all pass. The Linux job log shows 59 `test result: ok.`
+  summaries and 1088 passing assertions, so the added coverage really runs the
+  workspace suite rather than exiting vacuously. The merging commit's own run is
+  still required.
 - **Independent review:** pending; this slice claims no verdict until it lands.
 - **Hosted checks:** tracked per commit in the PR rather than asserted here.
 - **`NOT_RUN`:** GPU, Vulkan, Wayland, and interactive browser acceptance;

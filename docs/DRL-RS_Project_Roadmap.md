@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-09-03
-Current project version: `0.2.341`
+Current project version: `0.2.342`
 
 ---
 
@@ -1373,14 +1373,17 @@ verification item uses explicit status semantics:
   Fedora/Wayland/Vulkan acceptance remain open.
 - **Linux and Fedora CI coverage (`0.2.342`, in review as PR #458):**
   `scripts/check-repository.sh` now runs on Ubuntu as well as macOS, so the
-  repository contract suite is verified on Linux. A targeted Fedora 43 job runs
-  `scripts/check-fedora-dev.sh` inside a Fedora container launched by the runner:
-  it records host and toolchain identity, builds `drl-render`, `drl-audio`, and
-  `drl-web` on a clean Fedora userland with no extra system packages, runs the
-  `drl-core` and `drl-protocol` contracts, and probes `/dev/dri`, `libvulkan`, and
-  `WAYLAND_DISPLAY` while holding GPU and Wayland acceptance at `NOT_RUN`. The
-  Fedora job deliberately does not repeat the full generic suite. Native frontend
-  boundary, `drl-desktop`, and Fedora/Wayland/Vulkan acceptance remain open.
+  repository contract suite is exercised on Linux (both new jobs pass on `c308167`;
+  the merging commit's run is recorded as a checkpoint later). A targeted Fedora 43
+  job runs `scripts/check-fedora-dev.sh` inside a Fedora container launched by the
+  runner: it records host and toolchain identity, builds `drl-render`, `drl-audio`,
+  and `drl-web` on a clean Fedora userland provisioned with `git`, `which`, `rust`,
+  `cargo`, `clippy`, and `rustfmt`, runs the `drl-core` and `drl-protocol` contracts,
+  and probes `/dev/dri`, `libvulkan`, and `WAYLAND_DISPLAY` while holding GPU and
+  Wayland acceptance at `NOT_RUN`. No additional project-specific native-library
+  package was needed, and the Fedora job deliberately does not repeat the full
+  generic suite. Native frontend boundary, `drl-desktop`, and Fedora/Wayland/Vulkan
+  acceptance remain open.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
@@ -1389,11 +1392,15 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **No temporary slice is active.** The Blaster direct Plasma slice is
-  delivered and its canonical evidence is recorded below. The next bounded M9
-  candidate remains subject to a fresh steering re-audit; recharge callback
-  timing/state, spread/routing, SPLASMA divisors, broader resistance
-  aggregation, controlled runtime, and audiovisual parity remain open.
+- **Active slice — platform track step 2, Linux and Fedora CI coverage
+  (`0.2.342`, in review as PR #458):** `SPEC.md` §2 is the active slice and its
+  acceptance status lives there.
+- **Closed slices.** The Blaster direct Plasma slice is delivered and its canonical
+  evidence is recorded below, as is the M8 modular browser shell delivered in
+  PR #457. The next bounded M9 candidate remains subject to a fresh steering
+  re-audit; recharge callback timing/state, spread/routing, SPLASMA divisors,
+  broader resistance aggregation, controlled runtime, and audiovisual parity remain
+  open.
 
 - **Delivered Slice — M8 modular browser shell (`0.2.341`):** PR #457 merged as
   `85e50c4`; implementation head `20464fd` splits the 14,764-line `drl-web` crate
