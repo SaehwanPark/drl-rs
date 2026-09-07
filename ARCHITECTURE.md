@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-09-07
-Current project version: `0.2.347`
+Current project version: `0.2.348`
 
 Status: Verified for current deterministic headless core, MCP tooling,
 browser-playable WebGPU slice, and the thin native frontend boundary; full
@@ -54,8 +54,8 @@ durability-recharge fragment; Malek's Armor records its typed durability-recharg
 fragment; Blaster records its typed one-projectile ordinary-fire, one-cell cost,
 shared aimed-fire (+3 accuracy, 2× action-cost), periodic-recharge, and direct
 Plasma target-path fragments;
-Missile Launcher records its typed ordinary single-rocket reload and capped
-full-deficit reload fragments; Combat Shotgun records its typed pump-only
+Missile Launcher records its typed ordinary single-rocket reload, capped
+full-deficit reload, and direct Fire target-path fragments; Combat Shotgun records its typed pump-only
 chamber action (200 units), ordinary single-shell reload, and capped full-deficit
 reload fragments; Double Shotgun records its typed two-projectile dual-shot and
 two-shell ammo-cost fragments; Super Shotgun records its typed two-projectile

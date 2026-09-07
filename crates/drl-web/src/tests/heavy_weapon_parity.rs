@@ -1034,6 +1034,15 @@ fn missile_launcher_single_shell_reload_browser_boundary_matches_direct_core() {
     drl_core::ReplayEngine::run(&command_replay).expect("vertical command replay");
   assert_eq!(replayed, direct);
   assert_eq!(replay_events, all_events);
+  assert!(all_events.iter().any(|event| {
+    matches!(
+      event,
+      drl_protocol::GameEvent::DamageApplied {
+        damage_type: Some(drl_protocol::DamageType::Fire),
+        ..
+      }
+    )
+  }));
   assert!(drl_core::ReplayEngine::verify_determinism(&command_replay).unwrap());
 }
 
