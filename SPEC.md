@@ -4,7 +4,7 @@ Last reviewed: 2026-09-07
 Current project version: `0.2.347`
 Audited starting checkpoint: `main` at `9449e78` (Plasma Shotgun fidelity
 checklist reconciliation)
-Delivery checkpoint: **active implementation on temporary branch**
+Delivery checkpoint: **merged** in PR #464 as `347109c`
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -24,8 +24,9 @@ the claim.
 
 ## 2. Active implementation slice: M9 Tristar Blaster direct Plasma classification
 
-Slice status: **active** on temporary branch `feat/tristar-blaster-direct-plasma`,
-based on `main` commit `9449e78` (`0.2.346`).
+Slice status: **delivered and verified** in PR #464; no subsequent slice is
+selected. The temporary branch `feat/tristar-blaster-direct-plasma` was based
+on `main` commit `9449e78` (`0.2.346`).
 
 ### 2.1 Objective
 
@@ -58,25 +59,25 @@ without reopening Gates A, B, C, or D.
 
 ### 2.3 Observable acceptance criteria
 
-- [ ] Successful Tristar Blaster direct hits emit three ordered
+- [x] Successful Tristar Blaster direct hits emit three ordered
   `DamageApplied` events with `DamageType::Plasma`; Blue Armor applies its 20%
   resistance before the existing flat protection, while raw rolls and the RNG
   stream match an unarmored run.
-- [ ] A same-seed unarmored/Blue-Armored direct pair preserves three
+- [x] A same-seed unarmored/Blue-Armored direct pair preserves three
   projectiles, the fifteen-cell clip cost, equal raw damage and final RNG state,
   and lower typed damage amounts for the armored target.
-- [ ] Existing attack, damage, action-cost, and turn-event ordering remains
+- [x] Existing attack, damage, action-cost, and turn-event ordering remains
   unchanged; spread, routing, delayed explosion, and knockback policy are not
   silently added.
-- [ ] Invalid target, blocked line-of-sight, and below-fifteen-cell commands
+- [x] Invalid target, blocked line-of-sight, and below-fifteen-cell commands
   reject before clip/RNG mutation and preserve exact pre/post `Game` identity.
-- [ ] Replay determinism and direct-core/MCP JSON/BrowserSession event, state,
+- [x] Replay determinism and direct-core/MCP JSON/BrowserSession event, state,
   observation, effect, and scene parity remain valid; stale gameplay-semantics
   `145` metadata is rejected after the semantics advance to `146`.
-- [ ] `drl-core` remains platform-independent, no hidden world state crosses a
+- [x] `drl-core` remains platform-independent, no hidden world state crosses a
   boundary, and no legacy runtime/audiovisual or human-play parity claim is
   made.
-- [ ] Focused tests, repository checks, web checks, version/spec checks, and an
+- [x] Focused tests, repository checks, web checks, version/spec checks, and an
   independent determinism review pass; unavailable native, controlled legacy,
   audiovisual/reference-capture, and human surfaces remain explicitly
   `NOT_RUN`.
@@ -116,22 +117,28 @@ without reopening Gates A, B, C, or D.
 
 ### 2.6 Delivery evidence
 
-Evidence is bound to the active candidate branch; the commit, hosted checks,
-and merge revision will be reconciled at handoff:
+Evidence is bound to the merged candidate:
 
 - focused `drl-core`, `drl-mcp`, and `drl-web` tests pass, including three-hit
   direct Plasma mitigation, replay, rejection, JSON, and browser parity;
-- `cargo fmt --all -- --check`, `cargo test --workspace --locked`,
-  `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`,
-  `sh scripts/check-repository.sh`, `sh scripts/check-web.sh`,
+- `cargo fmt --all -- --check`, `cargo test --locked --workspace --jobs 1
+  -- --test-threads=1`, `cargo clippy --workspace --all-targets --all-features
+  -- -D warnings`, `sh scripts/check-repository.sh`, `sh scripts/check-web.sh`,
   `DRL_VERSION_BASE=9449e78 sh scripts/check-version.sh`,
   `sh scripts/check-spec-structure.sh`, and `git diff --check` pass;
-- an attributable independent determinism review returns `PASS` after any
-  focused correction pass;
-- hosted PR checks and the eventual merge revision are not yet available on
-  this active temporary branch; Fedora/Wayland/Vulkan, macOS/Metal, controlled
-  legacy runtime, audiovisual/reference captures, browser capture, and human
-  gameplay acceptance remain `NOT_RUN` or outside this slice.
+- an attributable independent determinism review returns `PASS` after the
+  focused Clippy correction pass;
+- hosted Repository, Linux, Fedora, and WASM browser checks: `PASS` in CI run
+  `34093450402`;
+- hosted Review policy: `FAIL` closed in run `34093448757` because the sole
+  maintainer cannot create a non-self approval; the documented live
+  `enforce_admins=false` exception was used;
+- PR #464 merged as `347109c` with exact head
+  `62b2023e263882c0741936408437ea415f005a51`;
+- explicit `NOT_RUN` records remain for Fedora/Wayland/Vulkan interactive
+  acceptance, macOS/Metal native interactive acceptance, controlled legacy
+  runtime, audiovisual/reference captures, browser capture, and human
+  gameplay acceptance.
 
 ## 3. Enduring invariants
 

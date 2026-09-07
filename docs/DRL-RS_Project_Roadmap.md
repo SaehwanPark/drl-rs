@@ -1423,14 +1423,17 @@ verification item uses explicit status semantics:
   under the documented solo-maintainer exception. Spread, falloff, knockback,
   controlled legacy runtime, audiovisual/reference captures, browser capture,
   and human acceptance remain open or `NOT_RUN`.
-- **M9 Tristar Blaster direct Plasma classification (`0.2.347`, active
-  temporary slice):** The pinned `DAMAGE_PLASMA` family now routes successful
-  ordinary direct target hits through the existing typed Plasma path, so Blue
-  Armor's catalog-defined 20% resistance applies before flat protection across
-  the existing three-projectile volley. The fifteen-cell cost, event ordering,
-  rejection atomicity, replay identities, MCP JSON, and BrowserSession/direct-
-  core parity remain unchanged. Focused tests and local checks are in progress;
-  spread, routing, delayed effects, knockback, controlled legacy runtime,
+- **M9 Tristar Blaster direct Plasma classification (`0.2.347`, delivered in
+  PR #464):** Successful ordinary direct target hits now use the existing typed
+  Plasma path, so Blue Armor's catalog-defined 20% resistance applies before
+  flat protection across the existing three-projectile volley. The fifteen-cell
+  cost, raw damage/RNG order, event ordering, rejection atomicity, replay
+  identities, MCP JSON, and BrowserSession/direct-core parity remain unchanged.
+  Candidate head `62b2023` passed local workspace/Clippy/repository/web/version/
+  SPEC checks and the independent determinism review; hosted Repository, Linux,
+  Fedora, and WASM checks passed in run `34093450402`, while Review policy run
+  `34093448757` failed closed under the documented solo-maintainer exception.
+  Spread, routing, delayed effects, knockback, controlled legacy runtime,
   audiovisual/reference captures, browser capture, and human acceptance remain
   open or `NOT_RUN`.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
@@ -1441,13 +1444,14 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active temporary slice — M9 Tristar Blaster direct Plasma classification
-  (`0.2.347`):** Branch `feat/tristar-blaster-direct-plasma` is based on
-  `main` at `9449e78` (`0.2.346`). Implementation and focused core/MCP/
-  BrowserSession coverage are in progress; hosted checks and the merge revision
-  are not yet available. Spread, routing, delayed effects, knockback,
-  controlled legacy runtime, audiovisual/reference capture, browser capture,
-  and human acceptance remain open or `NOT_RUN`.
+- **No temporary implementation slice is active.** Tristar Blaster direct
+  Plasma classification is delivered in PR #464 as `347109c`; candidate head
+  `62b2023` passed local and hosted Repository/Linux/Fedora/WASM checks plus the
+  independent determinism review. The next platform-track item remains Fedora
+  43 GNOME/Mutter Wayland/Mesa/RADV Vulkan interactive acceptance. Spread,
+  routing, delayed effects, knockback, controlled legacy runtime,
+  audiovisual/reference capture, browser capture, and human acceptance remain
+  open or `NOT_RUN`.
 
 - **Delivered Slice — M9 Plasma Shotgun direct Plasma classification
   (`0.2.346`):** PR #463 merged as `87683d6`; candidate `be0287b` routes
@@ -1642,12 +1646,12 @@ verification item uses explicit status semantics:
   broader legacy resistance aggregation, direct Fire classification, controlled
   runtime, audiovisual parity, and balance remain open or `NOT_RUN`.
 
-- **Latest Audited Checkpoint:** `main` at `87683d6` (version `0.2.346`),
-  merging PR #463. Candidate `be0287b` and the merged tree pass local
+- **Latest Audited Checkpoint:** `main` at `347109c` (version `0.2.347`),
+  merging PR #464. Candidate head `62b2023` and the merged tree pass local
   workspace/Clippy/repository/web/version/SPEC checks; the independent
-  determinism review returned PASS. Hosted run `34078165900` passed
+  determinism review returned PASS. Hosted run `34093450402` passed
   `Repository checks`, `Repository checks (Linux)`, `Fedora 43 development
-  host`, and `WASM browser checks`. Review policy run `34078165839` failed
+  host`, and `WASM browser checks`. Review policy run `34093448757` failed
   closed because the sole maintainer cannot create a non-self approval; the
   documented live `enforce_admins=false` exception was used. Earlier delivered
   platform and direct-Plasma slices retain the detailed evidence in the entries
@@ -2266,13 +2270,13 @@ scripting.
   and hosted Repository/WASM evidence pass in merged PR #463 (`87683d6`);
   spread, falloff, knockback, controlled runtime, and audiovisual parity remain
   open or `NOT_RUN`.
-- [ ] Tristar Blaster ordinary direct target damage is classified as typed
+- [x] Tristar Blaster ordinary direct target damage is classified as typed
   `Plasma`, so Blue Armor's catalog-defined 20% resistance applies before flat
   protection across its three-projectile volley while its fifteen-cell cost,
   raw damage/RNG order, event ordering, rejection boundaries, and MCP/
   BrowserSession projections remain unchanged. Focused direct/replay/rejection
-  tests are in progress; spread, routing, delayed effects, knockback,
-  controlled runtime, and audiovisual parity remain open or `NOT_RUN`.
+  tests pass; spread, routing, delayed effects, knockback, controlled runtime,
+  and audiovisual parity remain open or `NOT_RUN`.
 - [x] Typed double/combat shotguns preserve pinned shell relation, clips,
   damage/range scalars, descriptions, replay kinds, and `SPRITE_DSHOTGUN`/
   `SPRITE_CSHOTGUN` slots; callbacks and spread/falloff remain open.
