@@ -1,9 +1,10 @@
 # Specification
 
-Last reviewed: 2026-09-04
-Current project version: `0.2.345`
-Audited starting checkpoint: `main` at `32f54e5` (Anti-Freak delivery reconciliation)
-Delivery checkpoint: **merged** in PR #462 as `8e0d5f1`
+Last reviewed: 2026-09-06
+Current project version: `0.2.346`
+Audited starting checkpoint: `main` at `5814e26` (Null Pointer SPLASMA
+reconciliation documentation follow-up)
+Delivery checkpoint: **active implementation on temporary branch**
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -14,133 +15,122 @@ roadmap, changelog, evidence notes, and Git rather than accumulating here.
 ## 1. Status vocabulary
 
 - `[x]` — **Delivered and verified**: supported by checked implementation and
-  evidence.
+evidence.
 - `[ ]` — **Open**: required by the active slice and not yet delivered.
 - `NOT_RUN` — **Environment unavailable**: prerequisites were unavailable; no
-  pass or failure is inferred.
+pass or failure is inferred.
 - `INCONCLUSIVE` — **Evidence unresolved**: available evidence cannot support
-  the claim.
+the claim.
 
-## 2. Active implementation slice: M9 Null Pointer SPLASMA armor divisor
+## 2. Active implementation slice: M9 Plasma Shotgun direct Plasma classification
 
-Slice status: **delivered and verified** in PR #462; no subsequent slice is
-selected. The temporary branch `feat/null-pointer-splasma-divisor` was based
-on `main` commit `32f54e5` (`0.2.344`).
+Slice status: **implemented and locally verified** on temporary branch
+`feat/plasma-shotgun-direct-plasma`, based on `main` commit `5814e26`
+(`0.2.345`).
 
 ### 2.1 Objective
 
-Close one bounded M9 canonical-fidelity branch by carrying the pinned legacy
-`DAMAGE_SPLASMA` armor-value divisor into the existing Null Pointer radius-1
-actor splash. For that splash only, apply the catalog-defined Plasma resistance
-first, then subtract the current equipped armor protection divided by three
-using integer floor arithmetic, with the existing minimum-one rule. Preserve
-the fixed `10d1` roll, geometry, actor de-duplication, event ordering,
-death/drop behavior, replay identities, and boundary projections.
+Complete one bounded M9 vertical canonical-fidelity branch by carrying the
+pinned Plasma Shotgun `DAMAGE_PLASMA` classification into the existing Rust
+typed direct-damage path. A successful ordinary direct hit must apply Blue
+Armor's catalog-defined Plasma resistance before flat protection while
+preserving the existing one-projectile hit roll, three-cell clip cost, event
+ordering, replay metadata, and boundary projections.
+
+This is eligible vertical canonical-fidelity work under the current steering
+priority. It does not continue a chainfire plateau and does not reopen Gates A,
+B, C, or D.
 
 ### 2.2 Scope and ownership
 
-- Keep `NullPointer` target-score handling and the existing generic radius-1
-  splash resolver authoritative; add only the explicit SPLASMA mitigation
-  policy needed by its actor damage call.
-- Reuse `ArmorProperties` and the typed resistance helper. The divisor applies
-  to the current Rust armor protection value after resistance; no new armor
-  slots, body zones, callbacks, or mutable registries are introduced.
-- Keep the public `DamageType::Plasma` event classification and wire shape;
-  the legacy Plasma/SPLASMA distinction is an internal mitigation policy for
-  this bounded path, not a new protocol enum.
-- Add focused unarmored/Blue-Armored, same-seed, replay, rejection, and
-  direct-core/BrowserSession parity coverage, plus a regression proving direct
-  Plasma and other splash paths are unchanged.
-- Update the Null Pointer evidence/profile, architecture ownership summary,
-  weapon/item guide if needed, changelog, roadmap, and replay semantics
+- Use the existing `ItemArchetype::PlasmaShotgun` and generic ranged execution;
+  add no command, callback registry, content registration path, or public wire
+  field.
+- Keep `Game`/`World` as the execution authority for direct damage and retain
+  the existing generic ranged validation, RNG sampling, and transactional clip
+  mutation.
+- Add focused direct ordinary, same-seed armored, replay/stale-semantics,
+  rejection, MCP JSON, and BrowserSession parity coverage.
+- Update the pinned Plasma Shotgun evidence/profile, architecture ownership
+  summary, user-facing weapon guide, changelog, roadmap, and replay-semantics
   comments only after verification.
-- Transition code version exactly once from `0.2.344` to `0.2.345`.
+- Transition code version exactly once from `0.2.345` to `0.2.346`.
 
 ### 2.3 Observable acceptance criteria
 
-- [x] Successful Null Pointer splash actor damage remains a typed Plasma event
-  and applies Plasma resistance before `floor(armor_protection / 3)` flat
-  protection, with minimum-one behavior and no-armor preservation.
-- [x] A same-seed Blue-Armored/unarmored Null Pointer splash pair has equal
-  fixed raw damage and final RNG state; with current Blue Armor (`20%`, `2`
-  protection), a positive `10d1` splash applies `8` damage rather than the
-  ordinary typed-Plasma flat-protection result.
-- [x] Radius-1 center/neighbor order, actor de-duplication, death/drop and
-  game-over follow-up, schedule/event ordering, score transition, and fixed
-  `10d1` no-RNG behavior remain unchanged.
-- [x] Direct Plasma mitigation, Anti-Freak/Rocket Fire mitigation, and other
-  splash policies remain unchanged; the change does not add a public wire,
-  command, snapshot, generator, ruleset, or content-registration identity.
-- [x] Rejected Null Pointer invocations remain exact-state atomic, and
-  direct-core, replay/MCP, and BrowserSession event/state/effect/scene parity
-  remains valid.
-- [x] `drl-core` remains platform-independent and the implementation/review
-  distinguish current-Rust behavior from legacy runtime, audiovisual, balance,
-  and human-play claims.
-- [x] Focused tests, repository/web/version/spec checks, and an independent
-  determinism review pass; unavailable native/legacy/capture surfaces remain
-  explicitly `NOT_RUN`.
+- [x] Successful Plasma Shotgun direct hits emit `DamageApplied` with
+  `DamageType::Plasma`; Blue Armor applies its 20% resistance before the
+  existing flat protection, while the raw roll and RNG stream match an
+  unarmored run.
+- [x] A same-seed unarmored/Blue-Armored direct pair preserves one projectile,
+  the three-cell clip cost, equal raw damage and final RNG state, and a lower
+  typed damage amount for the armored target.
+- [x] Existing attack, damage, action-cost, and turn-event ordering remains
+  unchanged; spread, falloff, and knockback policy are not silently added.
+- [x] Invalid target, blocked line-of-sight, and below-three-cell commands
+  reject before clip/RNG mutation and preserve exact pre/post `Game` identity.
+- [x] Replay determinism and direct-core/MCP JSON/BrowserSession event, state,
+  observation, effect, and scene parity remain valid; stale gameplay-semantics
+  `144` metadata is rejected after the semantics advance to `145`.
+- [x] `drl-core` remains platform-independent, no hidden world state crosses a
+  boundary, and no legacy runtime/audiovisual or human-play parity claim is
+  made.
+- [x] Focused tests, repository checks, web checks, version/spec checks, and an
+  independent determinism review pass; unavailable native, controlled legacy,
+  audiovisual/reference-capture, and human surfaces remain explicitly
+  `NOT_RUN`.
 
 ### 2.4 Semantic and boundary impact
 
-- **Damage policy:** This is the first bounded use of the legacy SPLASMA
-  armor-value divisor. Resistance uses the existing deterministic rounded
-  percentage helper; the effective flat protection is
-  `armor.protection / 3` after resistance, and minimum-one damage remains in
-  force.
-- **Command atomicity:** No new rejection branch is intended. Existing
+- **Damage policy:** The pinned `upshotgun` definition carries
+  `DAMAGE_PLASMA`. The existing typed actor path applies Blue Armor's catalog
+  resistance before flat protection; no new resistance family or body-zone
+  aggregation is introduced.
+- **Command atomicity:** No new rejection branch is intended. Existing generic
   validation and rollback must preserve exact `Game` identity, including RNG,
-  for Null Pointer invoke/attack paths.
-- **RNG/replay:** The fixed `10d1` splash roll and all sampling order remain
-  unchanged. Advance gameplay semantics from `143` to `144`; wire/schema,
-  RNG-sampling, generator, and ruleset identities remain unchanged.
-- **Content/catalog:** No content definition or registration changes. The
-  existing Null Pointer and Blue Armor catalog entries remain authoritative.
-- **Presentation:** `DamageApplied` retains the existing `Some(Plasma)` event
-  shape; only the authoritative amount for the bounded Null Pointer splash can
-  change when armor is equipped.
-- **Rights/evidence:** The pinned Pascal source supports the family mapping and
-  divisor. Controlled legacy runtime, audiovisual, browser-capture, balance,
-  and human acceptance remain `NOT_RUN` unless their prerequisites exist.
+  for Plasma Shotgun direct commands.
+- **RNG/replay:** Only the damage interpretation changes; sampling order and
+  the one-projectile/three-cell policy remain unchanged. Advance gameplay
+  semantics from `144` to `145`; wire/schema, RNG-sampling, generator, and
+  ruleset identities remain unchanged.
+- **Content/catalog:** No definition or registration changes; the existing
+  Plasma Shotgun and Blue Armor catalog entries remain authoritative.
+- **Presentation:** `DamageApplied` retains its existing shape and gains the
+  already-supported `Some(Plasma)` classification on this direct path; MCP,
+  browser, render, and audio projections remain thin consumers.
+- **Rights/evidence:** The pinned source supports the damage-family
+  classification. Controlled legacy runtime, balance, audiovisual, browser
+  capture, and human acceptance remain `NOT_RUN` unless prerequisites exist.
 
 ### 2.5 Non-goals
 
-- No direct Plasma divisor-2 migration, broader resistance aggregation,
-  innate/weapon/boots/body-zone bonuses, armor durability/degradation, shield
-  callbacks, or resistance families not represented by the current catalog.
-- No changes to BFG, Anti-Freak, Rocket, or other explosion paths in this
-  slice; their existing typed behavior remains regression coverage.
-- No delayed queue, terrain/cell or ground-item effects, splash immunity,
-  projectile routing, runtime Lua/callback recreation, asset/audio work,
-  balance validation, or human/browser audiovisual parity claim.
+- No Plasma Shotgun spread/routing, falloff, knockback, exact timing/accuracy,
+  alternate fire/reload, callback recreation, terrain/cell mutation, delayed
+  queue, or broader resistance aggregation.
+- No changes to Plasma Rifle, BFG, Blaster, Null Pointer, or other already
+  classified paths beyond regression coverage.
+- No new protocol enum, command, snapshot, generator, ruleset, or content
+  identity; no claim of controlled legacy runtime, audiovisual, browser-capture,
+  balance, or human-play parity.
 
 ### 2.6 Delivery evidence
 
-Evidence bound to the merged candidate:
+Evidence is bound to the active candidate branch; the commit, hosted checks,
+and merge revision will be reconciled at handoff:
 
-- focused Null Pointer SPLASMA-divisor, actor minimum-one, core replay,
-  rejection, MCP JSON, and BrowserSession parity tests: PASS;
-- `cargo fmt --all -- --check`: PASS;
-- `cargo test --workspace --locked`: PASS;
-- `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`:
-  PASS;
-- `sh scripts/check-repository.sh`: PASS;
-- `sh scripts/check-web.sh`: PASS, including the local headless Chromium/WASM
-  contract tests;
-- `DRL_VERSION_BASE=32f54e5 sh scripts/check-version.sh`: PASS (`0.2.345`);
-- `sh scripts/check-spec-structure.sh` and `git diff --check`: PASS;
-- fresh independent determinism review: PASS, reviewer mission
-  `b46272de-d36c-499f-9c27-1146bf0f4db6`, against the current review packet;
-- hosted Repository, Linux, Fedora, and WASM checks: PASS in CI run
-  `33921025782`;
-- hosted Review policy: FAIL closed in run `33921025763` because the sole
-  maintainer cannot create a non-self approval; the documented live
-  `enforce_admins=false` exception was used;
-- PR #462 merged as `8e0d5f1` with exact head
-  `1f86369922ff03f0f0234518109c04db20cc9ea1`;
-- explicit `NOT_RUN` records remain for controlled legacy runtime,
-  native interactive Wayland/Vulkan or Metal acceptance, audiovisual/reference
-  captures, browser capture, and human gameplay.
+- focused `drl-core`, `drl-mcp`, and `drl-web` tests pass, including direct
+  Plasma Shotgun mitigation, replay, rejection, JSON, and browser parity;
+- `cargo fmt --all -- --check`, `cargo test --workspace --locked`,
+  `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`,
+  `sh scripts/check-repository.sh`, `sh scripts/check-web.sh`,
+  `DRL_VERSION_BASE=5814e26 sh scripts/check-version.sh`,
+  `sh scripts/check-spec-structure.sh`, and `git diff --check` pass;
+- an attributable independent determinism review returns `PASS` after any
+  focused correction pass;
+- hosted PR checks and the eventual merge revision are not yet available on
+  this active temporary branch; Fedora/Wayland/Vulkan, macOS/Metal, controlled
+  legacy runtime, audiovisual/reference captures, browser capture, and human
+  gameplay acceptance remain `NOT_RUN` or outside this slice.
 
 ## 3. Enduring invariants
 

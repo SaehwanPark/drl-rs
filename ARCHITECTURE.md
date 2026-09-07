@@ -1,7 +1,7 @@
 # Architecture
 
-Last reviewed: 2026-09-04
-Current project version: `0.2.345`
+Last reviewed: 2026-09-06
+Current project version: `0.2.346`
 
 Status: Verified for current deterministic headless core, MCP tooling,
 browser-playable WebGPU slice, and the thin native frontend boundary; full
@@ -90,9 +90,10 @@ lowest-ID ordinary ground-item destruction, and normal death/drop/game-over
 follow-up);
 Standard
 Shotgun records its typed one-cell knockback hit and one-shell ammo-cost
-fragments; Plasma Shotgun records its typed one-projectile ordinary-fire and
-three-cell ammo-cost fragments; Frag Shotgun records its typed one-projectile
-ordinary-fire and two-round 9mm ammo-cost fragments; Combat Pistol records its typed
+fragments; Plasma Shotgun records its typed one-projectile ordinary-fire,
+three-cell ammo-cost, and direct Plasma target-path fragments; Frag Shotgun
+records its typed one-projectile ordinary-fire and two-round 9mm ammo-cost
+fragments; Combat Pistol records its typed
 one-projectile ordinary-fire and one-round 9mm ammo-cost fragments; Railgun
 records its typed one-projectile ordinary-fire and five-cell ammo-cost
 fragments; Null Pointer records its typed one-projectile ordinary-fire and

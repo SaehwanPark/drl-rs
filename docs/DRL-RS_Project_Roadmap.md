@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
-Last reviewed: 2026-09-04
-Current project version: `0.2.345`
+Last reviewed: 2026-09-06
+Current project version: `0.2.346`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.345)
+## 3. Current Progress Summary (`VERSION` 0.2.346)
 
 ### Delivered Foundations
 
@@ -1411,6 +1411,17 @@ verification item uses explicit status semantics:
   failed closed under the documented solo-maintainer exception. Controlled
   legacy runtime, audiovisual/reference captures, and human acceptance remain
   `NOT_RUN`.
+- **M9 Plasma Shotgun direct Plasma classification (`0.2.346`, active temporary
+  slice):** The pinned `DAMAGE_PLASMA` family now routes successful ordinary
+  direct target hits through the existing typed Plasma path, so Blue Armor's
+  catalog-defined 20% resistance applies before flat protection. The existing
+  one-projectile `7d3` roll, three-cell cost, event ordering, rejection
+  atomicity, replay identities, MCP JSON, and BrowserSession/direct-core parity
+  remain unchanged. Focused core/replay/rejection/JSON/browser tests,
+  repository/web/version/spec checks, and an independent determinism review
+  pass locally; hosted checks and merge are pending. Spread, falloff,
+  knockback, controlled legacy runtime, audiovisual/reference captures,
+  browser capture, and human acceptance remain open or `NOT_RUN`.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
@@ -1419,12 +1430,14 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **No temporary implementation slice is active.** Null Pointer's SPLASMA
-  divisor is delivered in PR #462 as `8e0d5f1`; no subsequent slice is
-  selected. The next platform-track item remains Fedora 43 GNOME/Mutter
-  Wayland/Mesa/RADV Vulkan interactive acceptance. Broader resistance
-  aggregation, controlled runtime, and audiovisual parity remain open or
-  `NOT_RUN`.
+- **Active temporary slice — M9 Plasma Shotgun direct Plasma classification
+  (`0.2.346`):** Branch `feat/plasma-shotgun-direct-plasma` is based on
+  `main` at `5814e26` (`0.2.345`). The typed direct-target implementation and
+  focused boundary coverage are locally verified, including the independent
+  determinism review; hosted checks and the merge revision are not yet
+  available. Spread, falloff, knockback, controlled legacy runtime,
+  audiovisual/reference capture, browser capture, and human acceptance remain
+  open or `NOT_RUN`.
 
 - **Delivered Slice — M9 Null Pointer SPLASMA armor divisor (`0.2.345`):**
   PR #462 merged as `8e0d5f1`; candidate `1f86369` carries the pinned legacy
