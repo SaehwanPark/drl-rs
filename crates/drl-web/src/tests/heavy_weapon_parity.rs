@@ -15,8 +15,7 @@ fn plasma_shotgun_vertical_browser_boundary_matches_direct_core() {
     equipped_armor_durability: None,
   };
   let target_position = Position::new(3, 1);
-  let mut setup_replay =
-    ReplayLog::new(2_252, 8, 4, player_position).with_player_config(player_config);
+  let mut setup_replay = ReplayLog::new(0, 8, 4, player_position).with_player_config(player_config);
   setup_replay.record_monster(MonsterSpawnSpec::new(
     target_position,
     "Static Target",
@@ -74,6 +73,17 @@ fn plasma_shotgun_vertical_browser_boundary_matches_direct_core() {
     step.effects,
     effect_timeline_for_observations(&step.before, &step.after, &expected_events,)
   );
+  assert!(expected_events.iter().any(|event| {
+    matches!(
+      event,
+      drl_protocol::GameEvent::DamageApplied {
+        target_id: event_target,
+        source: drl_protocol::DamageSource::Actor(_),
+        damage_type: Some(drl_protocol::DamageType::Plasma),
+        ..
+      } if *event_target == target_id
+    )
+  }));
   assert_eq!(browser.scene(), RenderScene::from_observation(&step.after));
   assert_eq!(
     expected_events

@@ -3,6 +3,18 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.346]
+
+- Classified successful Plasma Shotgun direct target damage as typed `Plasma`,
+  so Blue Armor's catalog-defined 20% Plasma resistance applies before flat
+  protection. The existing one-projectile `7d3` roll, three-cell clip cost,
+  event ordering, rejection atomicity, replay semantics, MCP JSON, and
+  BrowserSession/direct-core parity remain unchanged. Focused same-seed,
+  replay, rejection, JSON, and browser tests cover the contract; spread,
+  falloff, knockback, controlled legacy runtime, audiovisual parity, browser
+  capture, and broader resistance aggregation remain open or `NOT_RUN`.
+  Gameplay semantics advance from `144` to `145`.
+
 ## [0.2.345]
 
 - Applied the pinned legacy SPLASMA armor divisor to Null Pointer's typed

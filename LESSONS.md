@@ -96,6 +96,19 @@ truth.
   metadata before merging; document the new identity in `crates/drl-protocol`
   and reject older envelopes until an explicit migration exists.
 
+## Update every persisted-semantics fixture after a version bump
+
+- **Context:** A gameplay-semantics change affects native snapshots, WASM
+  storage tests, replay fixtures, and boundary tokens even when the wire
+  grammar is unchanged.
+- **Symptom:** Native tests pass while browser acceptance still uses the old
+  semantics marker and the intended stale-history rejection is never exercised.
+- **Resolution:** Search the whole repository for the previous marker, update
+  current-valid fixtures, preserve intentionally stale rejection cases, and
+  run both native and WASM web checks.
+- **Prevention:** Treat every semantics bump as a persisted-history fixture
+  census, not only a protocol-constant edit.
+
 ## Do not confuse callback results with dispatch success
 
 - **Context:** Legacy Lua perks can return `true` or `false` from action hooks
