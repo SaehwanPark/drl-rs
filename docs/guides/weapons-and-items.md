@@ -28,7 +28,7 @@ description: "Comprehensive armory encyclopedia: ballistic firearms, energy weap
 
 ### 4. Heavy Rocket & Explosive Launchers
 - **Rocket Launcher**: High-explosive ordnance firing single rockets with a typed direct Fire hit and bounded radius-4 Fire splash; Red Armor's typed 25% Fire resistance applies to direct and splash damage, while post-falloff damage above 10 destroys one lowest-ID ordinary ground item per blast cell.
-- **Missile Launcher**: Multi-tube launcher holding up to 4 rockets for continuous area-of-effect suppression.
+- **Missile Launcher**: Multi-tube launcher holding up to 4 rockets for continuous area-of-effect suppression with typed direct Fire damage (so Red Armor's 25% Fire resistance applies before flat protection) and single-rocket tactical reload.
 - **Anti-Freak Jackal**: Unique aimed-fire sidearm whose successful direct hit
   and radius-1 `5d3` splash use typed `Fire` damage; Red Armor's typed 25% Fire
   resistance applies before its flat protection on both paths.
@@ -55,7 +55,7 @@ description: "Comprehensive armory encyclopedia: ballistic firearms, energy weap
 |---|---|---|
 | **Green Armor** | 30% Damage Reduction | Standard combat security vest. Durable and lightweight. |
 | **Blue Armor** | 2 flat protection; 20% Plasma resistance on typed Blaster/Plasma Shotgun/Tristar Blaster/Laser Rifle/Plasma Rifle/Nuclear Plasma Rifle/BFG 10K/Standard/Nuclear BFG direct/fanout and Null Pointer fanouts; Null Pointer fanouts apply one-third flat protection | Heavy kevlar and ceramic plate suit. Broader resistance aggregation remains open. |
-| **Red Armor** | 4 flat protection; 25% Fire resistance on typed Rocket direct/splash and Anti-Freak direct/splash | High-grade armor that reduces typed Fire damage before flat protection. Broader resistance aggregation remains open. |
+| **Red Armor** | 4 flat protection; 25% Fire resistance on typed Rocket direct/splash, Anti-Freak direct/splash, and Missile Launcher direct hits | High-grade armor that reduces typed Fire damage before flat protection. Broader resistance aggregation remains open. |
 | **Lava Armor** | 75% Thermal Reduction | Self-repairing suit. Standing in lava tiles recharges durability over time. |
 | **Malek's Armor** | 60% All-round Reduction | Ancient demonic power armor. Slowly regenerates durability over time. |
 | **Medical Powerarmor** | 50% All-round Reduction | Equipped with automated trauma systems that stabilize player HP when critical. |

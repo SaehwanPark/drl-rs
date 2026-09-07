@@ -1444,14 +1444,18 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **No temporary implementation slice is active.** Tristar Blaster direct
-  Plasma classification is delivered in PR #464 as `347109c`; candidate head
-  `62b2023` passed local and hosted Repository/Linux/Fedora/WASM checks plus the
-  independent determinism review. The next platform-track item remains Fedora
-  43 GNOME/Mutter Wayland/Mesa/RADV Vulkan interactive acceptance. Spread,
-  routing, delayed effects, knockback, controlled legacy runtime,
-  audiovisual/reference capture, browser capture, and human acceptance remain
-  open or `NOT_RUN`.
+- **Active Slice — M9 Missile Launcher direct Fire classification
+  (`0.2.348`):** Active candidate on temporary branch
+  `feat/missile-launcher-direct-fire` based on `main` at `99f7b09` (`0.2.347`).
+  Successful direct target damage uses typed `Fire` mitigation, so Red Armor's
+  catalog-defined 25% resistance applies before flat protection (4). The
+  4-rocket clip, raw `6d6` damage, RNG order, event ordering, rejection
+  atomicity, single-rocket reload, full alt-reload, replay semantics, MCP JSON,
+  and BrowserSession/direct-core parity remain unchanged. Radius-3 explosion
+  splash, ground-item destruction, rocket-jump, routing, delayed effects,
+  controlled legacy runtime, audiovisual/reference capture, browser capture,
+  and human acceptance remain open or `NOT_RUN`. The next platform-track item
+  remains Fedora 43 GNOME/Mutter Wayland/Mesa/RADV Vulkan interactive acceptance.
 
 - **Delivered Slice — M9 Plasma Shotgun direct Plasma classification
   (`0.2.346`):** PR #463 merged as `87683d6`; candidate `be0287b` routes
@@ -2277,6 +2281,14 @@ scripting.
   BrowserSession projections remain unchanged. Focused direct/replay/rejection
   tests pass; spread, routing, delayed effects, knockback, controlled runtime,
   and audiovisual parity remain open or `NOT_RUN`.
+- [ ] Missile Launcher ordinary direct target damage is classified as typed
+  `Fire`, so Red Armor's catalog-defined 25% resistance applies before flat
+  protection while its 4-rocket clip, raw damage/RNG order, event ordering,
+  single-rocket reload, rejection boundaries, and MCP/BrowserSession projections
+  remain unchanged. Focused direct/clip/reload/replay/rejection tests cover the
+  contract; radius-3 explosion splash, ground-item destruction, rocket-jump,
+  routing, delayed effects, controlled runtime, and audiovisual parity remain
+  open or `NOT_RUN`.
 - [x] Typed double/combat shotguns preserve pinned shell relation, clips,
   damage/range scalars, descriptions, replay kinds, and `SPRITE_DSHOTGUN`/
   `SPRITE_CSHOTGUN` slots; callbacks and spread/falloff remain open.
