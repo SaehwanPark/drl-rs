@@ -4,8 +4,7 @@ Last reviewed: 2026-09-07
 Current project version: `0.2.348`
 Audited starting checkpoint: `main` at `99f7b09` (distinguish Tristar
 volley attempts from hits, PR #466)
-Delivery checkpoint: active candidate on temporary branch
-`feat/missile-launcher-direct-fire`
+Delivery checkpoint: **merged** in PR #467 as `48e6981`
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -25,8 +24,9 @@ the claim.
 
 ## 2. Active implementation slice: M9 Missile Launcher direct Fire classification
 
-Slice status: **active candidate** on temporary branch
-`feat/missile-launcher-direct-fire` based on `main` at `99f7b09` (`0.2.347`).
+Slice status: **delivered and verified** in PR #467; no subsequent slice is
+selected. The temporary branch `feat/missile-launcher-direct-fire` was based
+on `main` commit `99f7b09` (`0.2.347`).
 
 ### 2.1 Objective
 
@@ -61,27 +61,27 @@ without reopening Gates A, B, C, or D.
 
 ### 2.3 Observable acceptance criteria
 
-- [ ] Successful Missile Launcher direct hits emit `DamageApplied` with
+- [x] Successful Missile Launcher direct hits emit `DamageApplied` with
   `DamageType::Fire`; Red Armor applies its 25% resistance before flat
   protection (4), while the raw roll and RNG stream match an unarmored run.
-- [ ] A same-seed unarmored/Red-Armored direct pair preserves one projectile,
+- [x] A same-seed unarmored/Red-Armored direct pair preserves one projectile,
   the one-rocket clip cost, equal raw damage and final RNG state, and a lower
   typed damage amount for the armored target; Blue Armor (0% fire resistance)
   applies only flat protection (2).
-- [ ] The 4-rocket clip allows four consecutive Fire attacks (clip 4 -> 3 -> 2
+- [x] The 4-rocket clip allows four consecutive Fire attacks (clip 4 -> 3 -> 2
   -> 1 -> 0); a 5th shot rejects atomically with `NoAmmoInClip` before
   clip/RNG mutation; ordinary single-rocket `Reload` restores 1 rocket and
   allows 1 follow-up shot.
-- [ ] Invalid target, blocked line-of-sight, out-of-range, and empty-clip
+- [x] Invalid target, blocked line-of-sight, out-of-range, and empty-clip
   commands reject before clip/RNG mutation and preserve exact pre/post `Game`
   identity.
-- [ ] Replay determinism and direct-core/MCP JSON/BrowserSession event, state,
+- [x] Replay determinism and direct-core/MCP JSON/BrowserSession event, state,
   observation, effect, and scene parity remain valid; stale gameplay-semantics
   `146` metadata is rejected after the semantics advance to `147`.
-- [ ] `drl-core` remains platform-independent, no hidden world state crosses a
+- [x] `drl-core` remains platform-independent, no hidden world state crosses a
   boundary, and no legacy runtime/audiovisual or human-play parity claim is
   made.
-- [ ] Focused tests, repository checks, web checks, version/spec checks, and an
+- [x] Focused tests, repository checks, web checks, version/spec checks, and an
   independent determinism review pass; unavailable native, controlled legacy,
   audiovisual/reference-capture, and human surfaces remain explicitly
   `NOT_RUN`.
@@ -122,23 +122,28 @@ without reopening Gates A, B, C, or D.
 
 ### 2.6 Delivery evidence
 
-Evidence is bound to the active candidate branch; the commit, hosted checks,
-and merge revision will be reconciled at handoff:
+Evidence is bound to the merged candidate:
 
 - focused `drl-core`, `drl-mcp`, and `drl-web` tests pass, including direct
   Missile Launcher Fire mitigation, clip depletion, single-rocket reload,
   replay, rejection, JSON, and browser parity;
-- `cargo fmt --all -- --check`, `cargo test --workspace --locked`,
-  `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`,
-  `sh scripts/check-repository.sh`, `sh scripts/check-web.sh`,
+- `cargo fmt --all -- --check`, `cargo test --locked --workspace --jobs 1
+  -- --test-threads=1`, `cargo clippy --workspace --all-targets --all-features
+  -- -D warnings`, `sh scripts/check-repository.sh`, `sh scripts/check-web.sh`,
   `DRL_VERSION_BASE=99f7b09 sh scripts/check-version.sh`,
   `sh scripts/check-spec-structure.sh`, and `git diff --check` pass;
-- an attributable independent determinism review returns `PASS` after any
-  focused correction pass;
-- hosted PR checks and the eventual merge revision are not yet available on
-  this active temporary branch; Fedora/Wayland/Vulkan, macOS/Metal, controlled
-  legacy runtime, audiovisual/reference captures, browser capture, and human
-  gameplay acceptance remain `NOT_RUN` or outside this slice.
+- an attributable independent determinism review returns `PASS`;
+- hosted Repository, Linux, Fedora, and WASM browser checks: `PASS` in CI run
+  `34124814610`;
+- hosted Review policy: `FAIL` closed in run `34124814576` because the sole
+  maintainer cannot create a non-self approval; the documented live
+  `enforce_admins=false` exception was used;
+- PR #467 merged as `48e6981` with exact head
+  `375c95c25608dfc270d4bc9f1ba9a341e3e6080a`;
+- explicit `NOT_RUN` records remain for Fedora/Wayland/Vulkan interactive
+  acceptance, macOS/Metal native interactive acceptance, controlled legacy
+  runtime, audiovisual/reference captures, browser capture, and human
+  gameplay acceptance.
 
 ## 3. Enduring invariants
 

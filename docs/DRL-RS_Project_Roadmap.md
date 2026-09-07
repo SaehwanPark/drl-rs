@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-09-07
-Current project version: `0.2.347`
+Current project version: `0.2.348`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.347)
+## 3. Current Progress Summary (`VERSION` 0.2.348)
 
 ### Delivered Foundations
 
@@ -1444,14 +1444,13 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active Slice — M9 Missile Launcher direct Fire classification
-  (`0.2.348`):** Active candidate on temporary branch
-  `feat/missile-launcher-direct-fire` based on `main` at `99f7b09` (`0.2.347`).
-  Successful direct target damage uses typed `Fire` mitigation, so Red Armor's
-  catalog-defined 25% resistance applies before flat protection (4). The
-  4-rocket clip, raw `6d6` damage, RNG order, event ordering, rejection
-  atomicity, single-rocket reload, full alt-reload, replay semantics, MCP JSON,
-  and BrowserSession/direct-core parity remain unchanged. Radius-3 explosion
+- **Delivered Slice — M9 Missile Launcher direct Fire classification
+  (`0.2.348`):** PR #467 merged as `48e6981`; candidate `375c95c` routes
+  successful ordinary direct target damage through typed Fire mitigation, so
+  Red Armor's catalog-defined 25% resistance applies before flat protection (4).
+  The 4-rocket clip, raw `6d6` damage, RNG order, event ordering, rejection
+  atomicity, single-rocket reload, full alt-reload, replay semantics (version `147`),
+  MCP JSON, and BrowserSession/direct-core parity remain intact. Radius-3 explosion
   splash, ground-item destruction, rocket-jump, routing, delayed effects,
   controlled legacy runtime, audiovisual/reference capture, browser capture,
   and human acceptance remain open or `NOT_RUN`. The next platform-track item
@@ -1650,18 +1649,18 @@ verification item uses explicit status semantics:
   broader legacy resistance aggregation, direct Fire classification, controlled
   runtime, audiovisual parity, and balance remain open or `NOT_RUN`.
 
-- **Latest Audited Checkpoint:** `main` at `347109c` (version `0.2.347`),
-  merging PR #464. Candidate head `62b2023` and the merged tree pass local
+- **Latest Audited Checkpoint:** `main` at `48e6981` (version `0.2.348`),
+  merging PR #467. Candidate head `375c95c` and the merged tree pass local
   workspace/Clippy/repository/web/version/SPEC checks; the independent
-  determinism review returned PASS. Hosted run `34093450402` passed
+  determinism review returned PASS. Hosted run `34124814610` passed
   `Repository checks`, `Repository checks (Linux)`, `Fedora 43 development
-  host`, and `WASM browser checks`. Review policy run `34093448757` failed
+  host`, and `WASM browser checks`. Review policy run `34124814576` failed
   closed because the sole maintainer cannot create a non-self approval; the
   documented live `enforce_admins=false` exception was used. Earlier delivered
-  platform and direct-Plasma slices retain the detailed evidence in the entries
-  above. Controlled human, audiovisual, and reference-capture surfaces remain
-  `NOT_RUN` where prerequisites are unavailable. The checkpointed progression
-  audit is [`docs/steering/audit-2026-08-30-post-0.2.318.md`](steering/audit-2026-08-30-post-0.2.318.md).
+  platform, direct-Plasma, and direct-Fire slices retain the detailed evidence
+  in the entries above. Controlled human, audiovisual, and reference-capture
+  surfaces remain `NOT_RUN` where prerequisites are unavailable. The
+  checkpointed progression audit is [`docs/steering/audit-2026-08-30-post-0.2.318.md`](steering/audit-2026-08-30-post-0.2.318.md).
 - **Steering Disposition — Gate A closed:** Preserve the deterministic core,
   explicit RNG/replay identities, typed content, observation boundary, and
   browser/MCP projections. M10 now binds browser command histories to their
@@ -2281,7 +2280,7 @@ scripting.
   BrowserSession projections remain unchanged. Focused direct/replay/rejection
   tests pass; spread, routing, delayed effects, knockback, controlled runtime,
   and audiovisual parity remain open or `NOT_RUN`.
-- [ ] Missile Launcher ordinary direct target damage is classified as typed
+- [x] Missile Launcher ordinary direct target damage is classified as typed
   `Fire`, so Red Armor's catalog-defined 25% resistance applies before flat
   protection while its 4-rocket clip, raw damage/RNG order, event ordering,
   single-rocket reload, rejection boundaries, and MCP/BrowserSession projections
