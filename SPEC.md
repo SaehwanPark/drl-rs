@@ -1,10 +1,10 @@
 # Specification
 
-Last reviewed: 2026-09-06
+Last reviewed: 2026-09-07
 Current project version: `0.2.346`
 Audited starting checkpoint: `main` at `5814e26` (Null Pointer SPLASMA
 reconciliation documentation follow-up)
-Delivery checkpoint: **active implementation on temporary branch**
+Delivery checkpoint: **merged** in PR #463 as `87683d6`
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -24,9 +24,9 @@ the claim.
 
 ## 2. Active implementation slice: M9 Plasma Shotgun direct Plasma classification
 
-Slice status: **implemented and locally verified** on temporary branch
-`feat/plasma-shotgun-direct-plasma`, based on `main` commit `5814e26`
-(`0.2.345`).
+Slice status: **delivered and verified** in PR #463; no subsequent slice is
+selected. The temporary branch `feat/plasma-shotgun-direct-plasma` was based
+on `main` commit `5814e26` (`0.2.345`).
 
 ### 2.1 Objective
 
@@ -115,8 +115,7 @@ B, C, or D.
 
 ### 2.6 Delivery evidence
 
-Evidence is bound to the active candidate branch; the commit, hosted checks,
-and merge revision will be reconciled at handoff:
+Evidence is bound to the merged candidate:
 
 - focused `drl-core`, `drl-mcp`, and `drl-web` tests pass, including direct
   Plasma Shotgun mitigation, replay, rejection, JSON, and browser parity;
@@ -127,10 +126,17 @@ and merge revision will be reconciled at handoff:
   `sh scripts/check-spec-structure.sh`, and `git diff --check` pass;
 - an attributable independent determinism review returns `PASS` after any
   focused correction pass;
-- hosted PR checks and the eventual merge revision are not yet available on
-  this active temporary branch; Fedora/Wayland/Vulkan, macOS/Metal, controlled
-  legacy runtime, audiovisual/reference captures, browser capture, and human
-  gameplay acceptance remain `NOT_RUN` or outside this slice.
+- hosted Repository, Linux, Fedora, and WASM checks: `PASS` in CI run
+  `34078165900`;
+- hosted Review policy: `FAIL` closed in run `34078165839` because the sole
+  maintainer cannot create a non-self approval; the documented live
+  `enforce_admins=false` exception was used;
+- PR #463 merged as `87683d6` with exact head
+  `be0287b60f284d77a6b4006956cf5ed19b6fc896`;
+- explicit `NOT_RUN` records remain for Fedora/Wayland/Vulkan interactive
+  acceptance, macOS/Metal native interactive acceptance, controlled legacy
+  runtime, audiovisual/reference captures, browser capture, and human
+  gameplay acceptance.
 
 ## 3. Enduring invariants
 

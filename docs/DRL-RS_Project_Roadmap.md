@@ -1,6 +1,6 @@
 # DRL-Rust Project Roadmap
 
-Last reviewed: 2026-09-06
+Last reviewed: 2026-09-07
 Current project version: `0.2.346`
 
 ---
@@ -1411,17 +1411,18 @@ verification item uses explicit status semantics:
   failed closed under the documented solo-maintainer exception. Controlled
   legacy runtime, audiovisual/reference captures, and human acceptance remain
   `NOT_RUN`.
-- **M9 Plasma Shotgun direct Plasma classification (`0.2.346`, active temporary
-  slice):** The pinned `DAMAGE_PLASMA` family now routes successful ordinary
-  direct target hits through the existing typed Plasma path, so Blue Armor's
-  catalog-defined 20% resistance applies before flat protection. The existing
-  one-projectile `7d3` roll, three-cell cost, event ordering, rejection
-  atomicity, replay identities, MCP JSON, and BrowserSession/direct-core parity
-  remain unchanged. Focused core/replay/rejection/JSON/browser tests,
-  repository/web/version/spec checks, and an independent determinism review
-  pass locally; hosted checks and merge are pending. Spread, falloff,
-  knockback, controlled legacy runtime, audiovisual/reference captures,
-  browser capture, and human acceptance remain open or `NOT_RUN`.
+- **M9 Plasma Shotgun direct Plasma classification (`0.2.346`, delivered in
+  PR #463):** Successful ordinary direct target hits now use the existing typed
+  Plasma path, so Blue Armor's catalog-defined 20% resistance applies before
+  flat protection. The existing one-projectile `7d3` roll, three-cell cost,
+  event ordering, rejection atomicity, replay identities, MCP JSON, and
+  BrowserSession/direct-core parity remain unchanged. Candidate `be0287b`
+  passed local repository/web/version/spec checks and the independent
+  determinism review; hosted Repository, Linux, Fedora, and WASM checks passed
+  in run `34078165900`, while Review policy run `34078165839` failed closed
+  under the documented solo-maintainer exception. Spread, falloff, knockback,
+  controlled legacy runtime, audiovisual/reference captures, browser capture,
+  and human acceptance remain open or `NOT_RUN`.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
@@ -1430,14 +1431,23 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **Active temporary slice — M9 Plasma Shotgun direct Plasma classification
-  (`0.2.346`):** Branch `feat/plasma-shotgun-direct-plasma` is based on
-  `main` at `5814e26` (`0.2.345`). The typed direct-target implementation and
-  focused boundary coverage are locally verified, including the independent
-  determinism review; hosted checks and the merge revision are not yet
-  available. Spread, falloff, knockback, controlled legacy runtime,
-  audiovisual/reference capture, browser capture, and human acceptance remain
-  open or `NOT_RUN`.
+- **No temporary implementation slice is active.** Plasma Shotgun direct
+  Plasma classification is delivered in PR #463 as `87683d6`; candidate
+  `be0287b` passed local and hosted Repository/Linux/Fedora/WASM checks plus
+  the independent determinism review. The next platform-track item remains
+  Fedora 43 GNOME/Mutter Wayland/Mesa/RADV Vulkan interactive acceptance.
+  Spread, falloff, knockback, controlled legacy runtime, audiovisual/reference
+  capture, browser capture, and human acceptance remain open or `NOT_RUN`.
+
+- **Delivered Slice — M9 Plasma Shotgun direct Plasma classification
+  (`0.2.346`):** PR #463 merged as `87683d6`; candidate `be0287b` routes
+  successful ordinary direct target damage through typed Plasma mitigation, so
+  Blue Armor's catalog-defined 20% resistance applies before flat protection.
+  The one-projectile `7d3` roll, three-cell cost, raw damage/RNG order,
+  event ordering, rejection atomicity, replay identities, MCP JSON, and
+  BrowserSession/direct-core parity remain intact. Controlled legacy runtime,
+  audiovisual/reference captures, browser capture, spread/falloff/knockback
+  parity, and human acceptance remain `NOT_RUN` or open.
 
 - **Delivered Slice — M9 Null Pointer SPLASMA armor divisor (`0.2.345`):**
   PR #462 merged as `8e0d5f1`; candidate `1f86369` carries the pinned legacy
@@ -1622,12 +1632,12 @@ verification item uses explicit status semantics:
   broader legacy resistance aggregation, direct Fire classification, controlled
   runtime, audiovisual parity, and balance remain open or `NOT_RUN`.
 
-- **Latest Audited Checkpoint:** `main` at `48c122e` (version `0.2.344`),
-  merging PR #461. Candidate `7d7b94c` and the merged tree pass local
+- **Latest Audited Checkpoint:** `main` at `87683d6` (version `0.2.346`),
+  merging PR #463. Candidate `be0287b` and the merged tree pass local
   workspace/Clippy/repository/web/version/SPEC checks; the independent
-  determinism review returned PASS. Hosted run `33914631227` passed
+  determinism review returned PASS. Hosted run `34078165900` passed
   `Repository checks`, `Repository checks (Linux)`, `Fedora 43 development
-  host`, and `WASM browser checks`. Review policy run `33914631806` failed
+  host`, and `WASM browser checks`. Review policy run `34078165839` failed
   closed because the sole maintainer cannot create a non-self approval; the
   documented live `enforce_admins=false` exception was used. Earlier delivered
   platform and direct-Plasma slices retain the detailed evidence in the entries

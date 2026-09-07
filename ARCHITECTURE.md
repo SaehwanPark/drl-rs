@@ -1,6 +1,6 @@
 # Architecture
 
-Last reviewed: 2026-09-06
+Last reviewed: 2026-09-07
 Current project version: `0.2.346`
 
 Status: Verified for current deterministic headless core, MCP tooling,
