@@ -95,12 +95,12 @@ fn tristar_blaster_mcp_json_matches_direct_core_typed_damage() {
     .expect("MCP event array");
   let mcp_damage = events
     .iter()
-    .filter_map(|event| {
-      (event.get("type").and_then(JsonValue::as_str) == Some("DamageApplied")
+    .filter(|event| {
+      event.get("type").and_then(JsonValue::as_str) == Some("DamageApplied")
         && event.get("target_id").and_then(JsonValue::as_u64) == Some(target_id.as_u64())
-        && event.get("damage_type").and_then(JsonValue::as_str) == Some("Plasma"))
-      .then(|| event.get("amount").and_then(JsonValue::as_u64).unwrap() as u32)
+        && event.get("damage_type").and_then(JsonValue::as_str) == Some("Plasma")
     })
+    .map(|event| event.get("amount").and_then(JsonValue::as_u64).unwrap() as u32)
     .collect::<Vec<_>>();
   assert_eq!(mcp_damage, expected_damage);
   assert_eq!(
