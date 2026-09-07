@@ -1,7 +1,8 @@
-# Tristar Blaster ordinary-fire volley evidence
+# Tristar Blaster typed direct behavior-profile evidence
 
-Status: active ordinary-fire volley profile target for `0.2.225`; spread,
-explosion, and presentation behavior remain explicitly deferred.
+Status: delivered ordinary-fire volley profile and `0.2.347` typed direct
+Plasma mitigation; spread, routing, delayed effects, knockback, and
+presentation behavior remain explicitly deferred.
 
 The pinned legacy revision is
 `17d9be1204751899b2d69d8d3a2dde247bd0cc5c` in the adjacent
@@ -10,9 +11,10 @@ The pinned legacy revision is
 ## Pinned declaration
 
 `bin/data/drl/items/eitems.lua:337-363` declares `utristar` as an exotic Cell
-weapon with a 45-cell clip, `shots = 3`, and `shotcost = 5`. Its spread and
-delayed explosion fields are retained as unresolved legacy behavior rather than
-being inferred by the current direct-target path.
+weapon with a 45-cell clip, `shots = 3`, `shotcost = 5`, and the
+`DAMAGE_PLASMA` family. Its spread and delayed explosion fields are retained as
+unresolved legacy behavior rather than being inferred by the current
+direct-target path.
 
 ## Projectile and cost derivation
 
@@ -28,5 +30,8 @@ cells (`3 × 5`) for one accepted command.
 per-projectile fragments; generic ranged execution remains authoritative for
 target/LOS/range checks, damage/RNG, event ordering, and transactional clip
 mutation. Clips below fifteen reject before clip or RNG mutation and are covered
-by exact `Game` equality. Spread routing, delayed explosion geometry, callback
-parity, and controlled runtime or audiovisual comparison remain `NOT_RUN`.
+by exact `Game` equality. In `0.2.347`, successful direct target damage is
+routed through the existing typed Plasma path, so Blue Armor's catalog-defined
+20% resistance applies before flat protection while raw rolls and RNG order
+remain unchanged. Spread routing, delayed explosion geometry, callback parity,
+and controlled runtime or audiovisual comparison remain `NOT_RUN`.
