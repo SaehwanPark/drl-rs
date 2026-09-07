@@ -365,6 +365,24 @@ repository and WASM job has reached a passing terminal state.
   burst weapons, choose seeds against the interleaved hit and damage draws,
   not only the first hit roll.
 
+## Distinguish volley attempts from successful hits
+
+- **Context:** A multi-projectile direct-fire test must cover typed damage without
+  assuming every projectile intersects its target under the chosen deterministic
+  seed.
+- **Symptom:** An all-three-hit assertion failed with one successful hit, even
+  though the volley still made three ordered attempts and every successful hit
+  carried the required typed Plasma classification.
+- **Cause:** Projectile hit checks and damage rolls consume an interleaved RNG
+  stream; a seed that is valid for the first hit need not produce hits for the
+  remaining attempts.
+- **Resolution:** Assert the fixed attempt count, clip cost, event/RNG ordering,
+  and typed damage on each emitted successful hit separately. Choose a convenient
+  seed only when an all-hit outcome is itself required by the acceptance claim.
+- **Prevention:** Name test helpers and expectations in terms of attempts versus
+  hits, and compare same-seed raw rolls/RNG state rather than inferring misses
+  from a missing damage event.
+
 ## Make bounded presentation storage fail explicitly
 
 - **Context:** Legacy particle callbacks append accepted decal requests, while

@@ -2,9 +2,9 @@
 
 Last reviewed: 2026-09-07
 Baseline branch: `main`
-Baseline merge commit: `87683d6`
-Latest pull request inspected: `#463`
-Baseline project version: `0.2.346`
+Baseline merge commit: `347109c`
+Latest pull request inspected: `#464`
+Baseline project version: `0.2.347`
 
 ## Purpose
 
@@ -230,13 +230,13 @@ invariants into accepted architecture/ADRs as appropriate, and update the
 roadmap and active specification from verified evidence.
 
 Re-audit before broad M9 migration resumes, or when a new stop-gate candidate
-is selected. The current audited tree is `main` at `87683d6` (PR #463 merge,
-version `0.2.346`); local workspace/Clippy/repository/web/version/SPEC checks
+is selected. The current audited tree is `main` at `347109c` (PR #464 merge,
+version `0.2.347`); local workspace/Clippy/repository/web/version/SPEC checks
 pass, the independent determinism review is PASS, and hosted Repository,
-Linux, Fedora, and WASM checks pass in run `34078165900`. The protected-path
-Review policy check `34078165839` failed closed because the sole maintainer
+Linux, Fedora, and WASM checks pass in run `34093450402`. The protected-path
+Review policy check `34093448757` failed closed because the sole maintainer
 cannot create a non-self approval and was merged under the live
-`enforce_admins=false` exception. The Plasma Shotgun direct Plasma
+`enforce_admins=false` exception. The Tristar Blaster direct Plasma
 classification is delivered; no subsequent bounded candidate is selected.
 Platform interactive acceptance, controlled legacy runtime, human,
 audiovisual, performance, and reference-capture surfaces remain `NOT_RUN`
