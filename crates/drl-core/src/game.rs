@@ -1743,6 +1743,7 @@ impl Game {
       weapon_is_railgun,
       weapon_is_blaster,
       weapon_is_plasma_shotgun,
+      weapon_is_tristar_blaster,
       weapon_is_laser_rifle,
       weapon_is_plasma_rifle,
       weapon_is_nuclear_plasma_rifle,
@@ -1821,6 +1822,8 @@ impl Game {
       let weapon_is_blaster = weapon.archetype() == drl_protocol::ItemArchetype::Blaster;
       let weapon_is_plasma_shotgun =
         weapon.archetype() == drl_protocol::ItemArchetype::PlasmaShotgun;
+      let weapon_is_tristar_blaster =
+        weapon.archetype() == drl_protocol::ItemArchetype::TristarBlaster;
       let weapon_is_laser_rifle = weapon.archetype() == drl_protocol::ItemArchetype::LaserRifle;
       let weapon_is_plasma_rifle = weapon.archetype() == drl_protocol::ItemArchetype::PlasmaRifle;
       let weapon_is_nuclear_plasma_rifle =
@@ -1840,6 +1843,7 @@ impl Game {
         weapon_is_railgun,
         weapon_is_blaster,
         weapon_is_plasma_shotgun,
+        weapon_is_tristar_blaster,
         weapon_is_laser_rifle,
         weapon_is_plasma_rifle,
         weapon_is_nuclear_plasma_rifle,
@@ -2013,6 +2017,7 @@ impl Game {
           Some(DamageType::Fire)
         } else if weapon_is_blaster
           || weapon_is_plasma_shotgun
+          || weapon_is_tristar_blaster
           || weapon_is_plasma_rifle
           || weapon_is_laser_rifle
           || weapon_is_nuclear_plasma_rifle

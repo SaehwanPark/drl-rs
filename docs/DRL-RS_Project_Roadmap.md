@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-09-07
-Current project version: `0.2.346`
+Current project version: `0.2.347`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.346)
+## 3. Current Progress Summary (`VERSION` 0.2.347)
 
 ### Delivered Foundations
 
@@ -1423,6 +1423,16 @@ verification item uses explicit status semantics:
   under the documented solo-maintainer exception. Spread, falloff, knockback,
   controlled legacy runtime, audiovisual/reference captures, browser capture,
   and human acceptance remain open or `NOT_RUN`.
+- **M9 Tristar Blaster direct Plasma classification (`0.2.347`, active
+  temporary slice):** The pinned `DAMAGE_PLASMA` family now routes successful
+  ordinary direct target hits through the existing typed Plasma path, so Blue
+  Armor's catalog-defined 20% resistance applies before flat protection across
+  the existing three-projectile volley. The fifteen-cell cost, event ordering,
+  rejection atomicity, replay identities, MCP JSON, and BrowserSession/direct-
+  core parity remain unchanged. Focused tests and local checks are in progress;
+  spread, routing, delayed effects, knockback, controlled legacy runtime,
+  audiovisual/reference captures, browser capture, and human acceptance remain
+  open or `NOT_RUN`.
 - **Evaluation & Release Hardening (M11, M12)**: Fixed-seed cohort reports with
   seed, summary, and telemetry integrity validation plus descriptive
   outcome/telemetry projections and a deterministic cohort-study CLI; release
@@ -1431,13 +1441,13 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **No temporary implementation slice is active.** Plasma Shotgun direct
-  Plasma classification is delivered in PR #463 as `87683d6`; candidate
-  `be0287b` passed local and hosted Repository/Linux/Fedora/WASM checks plus
-  the independent determinism review. The next platform-track item remains
-  Fedora 43 GNOME/Mutter Wayland/Mesa/RADV Vulkan interactive acceptance.
-  Spread, falloff, knockback, controlled legacy runtime, audiovisual/reference
-  capture, browser capture, and human acceptance remain open or `NOT_RUN`.
+- **Active temporary slice — M9 Tristar Blaster direct Plasma classification
+  (`0.2.347`):** Branch `feat/tristar-blaster-direct-plasma` is based on
+  `main` at `9449e78` (`0.2.346`). Implementation and focused core/MCP/
+  BrowserSession coverage are in progress; hosted checks and the merge revision
+  are not yet available. Spread, routing, delayed effects, knockback,
+  controlled legacy runtime, audiovisual/reference capture, browser capture,
+  and human acceptance remain open or `NOT_RUN`.
 
 - **Delivered Slice — M9 Plasma Shotgun direct Plasma classification
   (`0.2.346`):** PR #463 merged as `87683d6`; candidate `be0287b` routes
@@ -2256,6 +2266,13 @@ scripting.
   and hosted Repository/WASM evidence pass in merged PR #463 (`87683d6`);
   spread, falloff, knockback, controlled runtime, and audiovisual parity remain
   open or `NOT_RUN`.
+- [ ] Tristar Blaster ordinary direct target damage is classified as typed
+  `Plasma`, so Blue Armor's catalog-defined 20% resistance applies before flat
+  protection across its three-projectile volley while its fifteen-cell cost,
+  raw damage/RNG order, event ordering, rejection boundaries, and MCP/
+  BrowserSession projections remain unchanged. Focused direct/replay/rejection
+  tests are in progress; spread, routing, delayed effects, knockback,
+  controlled runtime, and audiovisual parity remain open or `NOT_RUN`.
 - [x] Typed double/combat shotguns preserve pinned shell relation, clips,
   damage/range scalars, descriptions, replay kinds, and `SPRITE_DSHOTGUN`/
   `SPRITE_CSHOTGUN` slots; callbacks and spread/falloff remain open.

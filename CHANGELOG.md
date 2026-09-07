@@ -3,6 +3,19 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.347]
+
+- Classified successful Tristar Blaster direct target hits as typed `Plasma`,
+  so Blue Armor's catalog-defined 20% Plasma resistance applies before flat
+  protection across the existing three-projectile volley. The fifteen-cell
+  clip cost, raw damage/RNG order, event ordering, rejection atomicity, replay
+  semantics, MCP JSON, and BrowserSession/direct-core parity remain unchanged.
+  Focused same-seed, replay, rejection, JSON, and browser tests cover the
+  contract; spread, routing, delayed effects, knockback, controlled legacy
+  runtime, audiovisual parity, browser capture, and broader resistance
+  aggregation remain open or `NOT_RUN`. Gameplay semantics advance from `145`
+  to `146`.
+
 ## [0.2.346]
 
 - Classified successful Plasma Shotgun direct target damage as typed `Plasma`,
