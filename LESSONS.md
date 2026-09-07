@@ -383,6 +383,23 @@ repository and WASM job has reached a passing terminal state.
   hits, and compare same-seed raw rolls/RNG state rather than inferring misses
   from a missing damage event.
 
+## Decouple direct projectile damage classification from area-of-effect expansion
+
+- **Context:** When modeling weapons with both direct projectile hits and radius
+  explosion splash (such as the M9 Missile Launcher / `umbazooka`), direct damage
+  classification interacts with armor resistance before splash expansion.
+- **Symptom:** Deferring direct damage classification until full radius splash
+  mechanics are implemented delays canonical armor resistance interactions and
+  risks conflating direct target mitigation with area-of-effect fanout.
+- **Cause:** Legacy DRL executes the direct target hit with `DAMAGE_FIRE` before
+  triggering radius explosion events.
+- **Resolution:** Classify direct target damage as typed Fire first, verifying
+  Red Armor's 25% resistance and Blue Armor flat protection alongside clip
+  depletion and single-rocket reload atomicity, while explicitly bounding radius
+  splash to a subsequent vertical slice.
+- **Prevention:** Decouple direct impact resolution from splash expansion so each
+  semantic branch is verifiable, atomic, and replay-stable.
+
 ## Make bounded presentation storage fail explicitly
 
 - **Context:** Legacy particle callbacks append accepted decal requests, while
