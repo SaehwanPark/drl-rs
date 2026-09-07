@@ -54,3 +54,5 @@
   `x.y.z` transition, while documentation-only and setting-only changes do
   not bump the version. Run `scripts/check-version.sh`; CI supplies
   `DRL_VERSION_BASE` so the agent harness can enforce the transition.
+
+- You can spawn reviewer or worker subagents whenever necessary. Proactively delegate your work to subagents and let them do the work and report back when done (or when issues occur). Always think about what would be the most efficient way.
