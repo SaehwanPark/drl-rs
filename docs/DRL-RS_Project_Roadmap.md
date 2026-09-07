@@ -2151,9 +2151,9 @@ scripting.
   amount/capacity, replay kinds, descriptions, and atlas slots.
 - [x] Typed blue armor preserves pinned protection, description, replay kind,
   shared armor atlas slot, and pure blue presentation tint; its catalog-defined
-  20% Plasma resistance now mitigates typed BFG actor splash before flat
-  protection in `0.2.328`; broader resistance and movement modifiers remain
-  explicit migration gaps.
+  20% Plasma resistance now mitigates typed BFG actor splash and Plasma
+  Shotgun direct damage before flat protection in `0.2.346`; broader resistance
+  and movement modifiers remain explicit migration gaps.
 - [x] Typed red armor preserves pinned protection, description, replay kind,
   shared armor atlas slot, and pure red presentation tint; its catalog-defined
   25% Fire resistance now mitigates typed Rocket actor splash before flat
@@ -2248,6 +2248,14 @@ scripting.
   independent review, and hosted Repository/WASM evidence pass in merged PR
   #456 (`d855725`); recharge callback timing, broader resistance aggregation,
   and audiovisual parity remain open or `NOT_RUN`.
+- [x] Plasma Shotgun ordinary direct target damage is classified as typed
+  `Plasma`, so Blue Armor's catalog-defined 20% resistance applies before flat
+  protection while its one-projectile `7d3` roll, three-cell cost, RNG order,
+  event ordering, rejection boundaries, and MCP/BrowserSession projections
+  remain unchanged. Focused direct/replay/rejection tests, independent review,
+  and hosted Repository/WASM evidence pass in merged PR #463 (`87683d6`);
+  spread, falloff, knockback, controlled runtime, and audiovisual parity remain
+  open or `NOT_RUN`.
 - [x] Typed double/combat shotguns preserve pinned shell relation, clips,
   damage/range scalars, descriptions, replay kinds, and `SPRITE_DSHOTGUN`/
   `SPRITE_CSHOTGUN` slots; callbacks and spread/falloff remain open.
@@ -2990,8 +2998,10 @@ scripting.
 - [x] Plasma Shotgun's delivered one-projectile ordinary-fire contract has a
   deterministic direct-core/BrowserSession boundary check covering identical
   events, fair observations, render effects, scene projections, three-cell clip
-  consumption, and replay determinism; controlled legacy runtime, browser
-  capture, spread/falloff, knockback, and audiovisual parity remain open.
+  consumption, and replay determinism; its direct target damage is typed Plasma
+  with Blue Armor mitigation and stale-semantics rejection covered in merged
+  PR #463 (`87683d6`). Controlled legacy runtime, browser capture,
+  spread/falloff, knockback, and audiovisual parity remain open.
 - [x] Blaster's delivered one-projectile ordinary-fire contract has a
   deterministic direct-core/BrowserSession boundary check covering identical
   events, fair observations, render effects, scene projections, one-cell clip
