@@ -59,10 +59,11 @@ without reopening Gates A, B, C, or D.
 
 ### 2.3 Observable acceptance criteria
 
-- [x] Successful Tristar Blaster direct hits emit three ordered
-  `DamageApplied` events with `DamageType::Plasma`; Blue Armor applies its 20%
-  resistance before the existing flat protection, while raw rolls and the RNG
-  stream match an unarmored run.
+- [x] Across the existing three-projectile volley, every successful Tristar
+  Blaster direct hit emits an ordered `DamageApplied` event with
+  `DamageType::Plasma`; Blue Armor applies its 20% resistance before the
+  existing flat protection, while raw rolls and the RNG stream match an
+  unarmored run.
 - [x] A same-seed unarmored/Blue-Armored direct pair preserves three
   projectiles, the fifteen-cell clip cost, equal raw damage and final RNG state,
   and lower typed damage amounts for the armored target.
@@ -119,8 +120,9 @@ without reopening Gates A, B, C, or D.
 
 Evidence is bound to the merged candidate:
 
-- focused `drl-core`, `drl-mcp`, and `drl-web` tests pass, including three-hit
-  direct Plasma mitigation, replay, rejection, JSON, and browser parity;
+- focused `drl-core`, `drl-mcp`, and `drl-web` tests pass, including
+  three-projectile successful-hit Plasma mitigation, replay, rejection, JSON,
+  and browser parity;
 - `cargo fmt --all -- --check`, `cargo test --locked --workspace --jobs 1
   -- --test-threads=1`, `cargo clippy --workspace --all-targets --all-features
   -- -D warnings`, `sh scripts/check-repository.sh`, `sh scripts/check-web.sh`,
