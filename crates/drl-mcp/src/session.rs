@@ -1841,6 +1841,40 @@ fn replay_log_for_scenario(scenario: &Scenario) -> ReplayLog {
 #[cfg(test)]
 mod tests {
   use super::*;
+  use drl_core::grid::Map;
+  use drl_core::item::Item;
+  use drl_core::world::World;
+  use drl_protocol::LevelId;
+
+  #[test]
+  fn player_observation_json_does_not_disclose_hidden_ground_items() {
+    let mut map = Map::simple_arena(20, 20);
+    for y in 0..20 {
+      map.set_tile(Position::new(10, y), drl_core::grid::Tile::Wall);
+    }
+    let mut world = World::new(LevelId::new(1), map);
+    world
+      .spawn_player(Position::new(5, 5), "Marine")
+      .expect("player fixture should spawn");
+    let hidden = Position::new(15, 6);
+    let before =
+      player_observation_to_json(&world.create_player_observation(drl_protocol::Turn::zero()));
+    let item_id = world.allocate_item_id();
+    world
+      .spawn_ground_item(hidden, Item::small_medpack(item_id))
+      .expect("hidden item fixture should spawn");
+    let after =
+      player_observation_to_json(&world.create_player_observation(drl_protocol::Turn::zero()));
+
+    assert_eq!(before, after);
+    let JsonValue::Object(after_map) = after else {
+      panic!("player observation must serialize as an object");
+    };
+    let Some(JsonValue::Array(ground_items)) = after_map.get("ground_items") else {
+      panic!("player observation must contain ground_items");
+    };
+    assert!(ground_items.is_empty());
+  }
 
   fn assert_bfg10k_volley_events(
     events: &[GameEvent],

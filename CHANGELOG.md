@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.349]
+
+- Player observations now expose live ground items only while their tiles are
+  currently visible. Explored terrain remains remembered, but hidden item
+  additions, removals, and count changes cannot cross the fair observation or
+  MCP boundary; focused visibility and reveal regressions cover the contract.
+  No remembered-item, protocol, renderer, or legacy-parity policy was added.
+
 ## [0.2.348]
 
 - Classified successful Missile Launcher direct target hits as typed `Fire`, so

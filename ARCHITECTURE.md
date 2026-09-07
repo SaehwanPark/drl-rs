@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-09-07
-Current project version: `0.2.348`
+Current project version: `0.2.349`
 
 Status: Verified for current deterministic headless core, MCP tooling,
 browser-playable WebGPU slice, and the thin native frontend boundary; full
@@ -30,8 +30,9 @@ invariants:
   boundary. Cross-version archival compatibility requires explicit versioning;
   see the replay/RNG steering decision.
 - **Fair Information Boundaries**: Frontends and AI agents consume only fair
-  `PlayerObservation` views (active FOV, explored fog memory, visible entities);
-  internal `World` state is never exposed to clients.
+  `PlayerObservation` views (active FOV, explored fog memory, visible entities,
+  and live ground items only on currently visible tiles); internal `World` state
+  is never exposed to clients.
 - **Zero External Dependencies in Core**: `drl-core` and `drl-protocol` are pure
   Rust crates with zero dependencies on WebGPU, Web Audio, DOM, filesystem,
   network, or MCP libraries.

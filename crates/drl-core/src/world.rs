@@ -621,7 +621,10 @@ impl World {
     let ground_items: Vec<GroundItemView> = self
       .ground_items
       .values()
-      .filter(|(pos, _)| self.explored_tiles.contains(pos))
+      // Explored terrain is remembered, but live item state is not. Only
+      // expose items while their tile is currently visible to preserve the
+      // fair-information boundary used by bots and MCP clients.
+      .filter(|(pos, _)| visible_positions.contains(pos))
       .map(|(pos, item)| GroundItemView {
         position: *pos,
         item: item.to_view(),
@@ -837,5 +840,74 @@ mod tests {
     let omni_ids: Vec<EntityId> = omni.actors.iter().map(|a| a.id).collect();
     assert!(omni_ids.contains(&m1_id));
     assert!(omni_ids.contains(&m2_id));
+
+    // Explored-but-hidden item state must not leak through player observations.
+    let hidden = Position::new(15, 6);
+    let before = world.create_player_observation(Turn::zero());
+    let mut hidden_world = world.clone();
+    let hidden_world_item_id = hidden_world.allocate_item_id();
+    hidden_world
+      .spawn_ground_item(hidden, Item::small_medpack(hidden_world_item_id))
+      .unwrap();
+    assert_eq!(
+      before,
+      hidden_world.create_player_observation(Turn::zero()),
+      "hidden item differences must not affect fair observations"
+    );
+
+    let first_hidden_id = world.allocate_item_id();
+    world
+      .spawn_ground_item(hidden, Item::small_medpack(first_hidden_id))
+      .unwrap();
+    let after_addition = world.create_player_observation(Turn::zero());
+    assert_eq!(before.ground_items, after_addition.ground_items);
+    assert!(
+      after_addition
+        .ground_items
+        .iter()
+        .all(|item| item.position != hidden)
+    );
+
+    // Adding a second hidden item, removing one, and replacing the remaining
+    // item are all unobservable while the tile remains outside the FOV.
+    let second_hidden_id = world.allocate_item_id();
+    world
+      .spawn_ground_item(hidden, Item::small_medpack(second_hidden_id))
+      .unwrap();
+    let after_count_change = world.create_player_observation(Turn::zero());
+    assert_eq!(after_addition.ground_items, after_count_change.ground_items);
+    assert_eq!(world.destroy_ground_item_at(hidden), Some(first_hidden_id));
+    let after_removal = world.create_player_observation(Turn::zero());
+    assert_eq!(after_count_change.ground_items, after_removal.ground_items);
+    assert_eq!(world.destroy_ground_item_at(hidden), Some(second_hidden_id));
+    let replacement_id = world.allocate_item_id();
+    world
+      .spawn_ground_item(hidden, Item::small_medpack(replacement_id))
+      .unwrap();
+    let after_replacement = world.create_player_observation(Turn::zero());
+    assert_eq!(before.ground_items, after_replacement.ground_items);
+
+    // Debug/omniscient observations retain the live hidden item.
+    let omni_with_hidden = world.create_omniscient_observation(Turn::zero());
+    assert!(
+      omni_with_hidden
+        .ground_items
+        .iter()
+        .any(|item| item.position == hidden)
+    );
+
+    // Once visibility returns, the current item is legitimately revealed.
+    world
+      .player_mut()
+      .unwrap()
+      .set_position(Position::new(15, 5));
+    world.update_visibility();
+    let revealed = world.create_player_observation(Turn::zero());
+    assert!(
+      revealed
+        .ground_items
+        .iter()
+        .any(|item| item.position == hidden)
+    );
   }
 }
