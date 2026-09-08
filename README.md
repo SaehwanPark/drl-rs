@@ -81,7 +81,7 @@ cargo run -p drl-app --bin drl-rs -- --mcp
 
 ## 🏛️ Workspace Architecture
 
-drl-rs follows a strict **Functional Core, Imperative Shell** design pattern across 9 focused crates:
+drl-rs follows a strict **Functional Core, Imperative Shell** design pattern across 10 focused crates:
 
 ```text
 crates/
@@ -120,6 +120,7 @@ Detailed guides and specifications are hosted on the **[DRL-rs Documentation Por
 - `SPEC.md`: Active implementation milestone slice.
 - `ARCHITECTURE.md`: Verified current architecture invariants.
 - `CHANGELOG.md`: Contributor and user-visible change history.
+- [`docs/release-readiness.md`](docs/release-readiness.md): Compact public-release status and open gates.
 - `docs/DRL-RS_Project_Roadmap.md`: Canonical project roadmap and milestone gates.
 - `docs/steering/README.md`: Active steering decisions and stop gates.
 - `scripts/check-spec-structure.sh`: Structural guard for the one-slice

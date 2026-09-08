@@ -3955,7 +3955,9 @@ diagnostics.
 
 ### M13 — Browser-First 1.0 Release
 
-Final release readiness, documentation, and static distribution.
+Final release readiness, documentation, and static distribution. The compact
+current status is summarized in [`docs/release-readiness.md`](release-readiness.md);
+this section remains authoritative for individual acceptance criteria.
 
 - [ ] Production static HTTPS deployment for desktop Chromium (Chrome/Edge) with
   WebGPU.

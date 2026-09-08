@@ -71,3 +71,4 @@ Explore our curated documentation sections:
 - [**Determinism & ECS Core Architecture**]({{ '/guides/architecture-and-determinism.html' | relative_url }}): Headless architecture, transaction guards, functional core/imperative shell design, and WebGPU presentation boundaries.
 - [**Asset Licensing Policy**]({{ '/reference/asset-licensing.html' | relative_url }}): Legacy asset provenance, rights boundaries, and redistribution clearance.
 - [**Versioning Policy**]({{ '/reference/versioning.html' | relative_url }}): Semantic `x.y.z` release and PR version verification policy.
+- [**Public Release Readiness**]({{ '/release-readiness.html' | relative_url }}): Current entry points, verified evidence, and open 1.0 gates.

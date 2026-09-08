@@ -14,51 +14,51 @@ changelog, evidence notes, and Git.
 - `NOT_RUN` — prerequisites unavailable; no pass or failure is inferred.
 - `INCONCLUSIVE` — available evidence cannot support the claim.
 
-## 2. Active implementation slice: executable-module version classification (audit F3)
+## 2. Active implementation slice: public release-readiness entry point (audit feedback)
 
-Slice status: **delivered and verified locally**. This is the third
-remediation slice recommended by `docs/project-audit-2026-09-07.md` and is
-bounded to version-policy classification and its fixture coverage. F1 and F2
-are delivered in commits `0af1bed` and `ae8a451`.
+Slice status: **delivered and verified locally**. This bounded documentation
+slice follows the audit's recommendation to make M12/M13 release gaps visible
+at the product entry point. The audit remediation findings F1/F2/F3 are
+delivered in commits `0af1bed`, `ae8a451`, and `578702e`.
 
 ### 2.1 Objective
 
-Ensure shipped executable JavaScript modules with the `.mjs` suffix are treated
-as code by `scripts/check-version.sh`. A runtime `.mjs` change must require
-exactly one valid version transition, while documentation-only and
-settings-only changes remain valid without a bump.
+Publish one compact, linked release-readiness summary that states what can be
+run today, which public-release gates remain open or `NOT_RUN`, and which checks
+support each claim. Correct the README workspace count from nine to ten crates
+without duplicating a second roadmap or acceptance checklist.
 
 ### 2.2 Scope and acceptance
 
-- [x] Classify `.mjs` as executable code in the version checker.
-- [x] Add repeatable temporary-Git fixtures proving an `.mjs` behavior change
-  fails without a bump and passes with exactly one allowed transition.
-- [x] Cover ordinary Rust and shell code as code, and documentation/settings
-  changes as non-code; reject an unnecessary bump for non-code changes.
-- [x] Run the fixture suite through the repository verification path without
-  changing gameplay, replay, RNG, MCP, browser behavior, or release metadata.
+- [x] Add `docs/release-readiness.md` with current version, supported entry
+  points, verified local evidence, open M12/M13 blockers, and explicit
+  `NOT_RUN`/`INCONCLUSIVE` labels.
+- [x] Link the summary from the README and documentation portal.
+- [x] Correct the README architecture statement to ten workspace crates.
+- [x] Keep the summary compact and linked to the canonical roadmap, audit,
+  release-rights policy, and browser acceptance records rather than copying
+  their full checklists.
+- [x] Preserve code, gameplay, replay, RNG, MCP, browser behavior, and version;
+  documentation-only changes did not bump `VERSION`.
 
 ### 2.3 Non-goals
 
-No version-policy redesign, semantic-version carry behavior change, package
-release, browser productization, or gameplay/content work is part of this slice.
-The release-readiness gaps and independent review operating model remain open
-outside F3.
+No deployment, signing-key custody, WCAG or screen-reader certification,
+audiovisual/reference capture, external MCP compatibility, native interactive
+acceptance, or gameplay/content implementation is claimed or delivered here.
+Those remain named release gates in the roadmap.
 
 ### 2.4 Delivery evidence
 
-- `sh scripts/test-version.sh`: PASS for `.mjs`, Rust, shell,
-  documentation, settings, no-bump, exact-bump, and over-bump fixtures.
-- `DRL_VERSION_BASE=ae8a451 sh scripts/check-version.sh`: PASS for the exact
-  `0.2.350` -> `0.2.351` code transition.
-- `sh scripts/check-agent-harness.sh`: PASS; the fixture suite is now part of
-  the harness verification path.
-- `sh scripts/check-spec-structure.sh`, `cargo fmt --all -- --check`, and
-  `git diff --check`: PASS.
-- No gameplay, replay, RNG, MCP, browser behavior, or release metadata changed
-  beyond the required canonical version projection.
-- Unavailable native, browser-capture, controlled-legacy, audiovisual, and
-  human acceptance remain `NOT_RUN`.
+- `DRL_VERSION_BASE=578702e sh scripts/check-version.sh`: PASS with no version
+  transition for the documentation-only diff.
+- `sh scripts/check-spec-structure.sh` and `git diff --check`: PASS.
+- README, portal, roadmap, audit, release-rights, and browser-acceptance links
+  were checked against the repository paths; the summary labels the full-suite
+  and hosted/runtime gaps `INCONCLUSIVE` or `NOT_RUN` rather than claiming
+  release readiness.
+- No code, gameplay, replay, RNG, MCP, browser behavior, or release metadata
+  changed.
 
 ## 3. Enduring invariants
 
