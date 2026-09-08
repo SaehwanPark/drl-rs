@@ -2,8 +2,9 @@
 
 use crate::json::JsonValue;
 use crate::protocol::{
-  DRL_MCP_VERSION, JsonRpcError, JsonRpcRequest, JsonRpcResponse, MCP_PROTOCOL_VERSION,
-  SERVER_NAME, ToolDefinition, error_codes,
+  DRL_MCP_VERSION, JsonRpcError, JsonRpcRequest, JsonRpcResponse, MAX_MCP_BATCH_REQUESTS,
+  MAX_MCP_FRAME_BYTES, MAX_MCP_JSON_DEPTH, MCP_PROTOCOL_VERSION, SERVER_NAME, ToolDefinition,
+  error_codes,
 };
 use crate::resources::{get_all_resource_definitions, read_resource};
 use crate::session::McpSession;
@@ -27,6 +28,61 @@ enum LifecyclePhase {
 
 const TOOLS_PAGE_SIZE: usize = 4;
 const RESOURCES_PAGE_SIZE: usize = 2;
+
+enum StdioFrame {
+  EndOfInput,
+  Complete(Vec<u8>),
+  Oversized,
+}
+
+/// Reads one newline-delimited frame without allocating beyond the boundary.
+/// Oversized frames are drained through their delimiter so the next frame can
+/// be handled without carrying any partial JSON into the parser.
+fn read_stdio_frame(reader: &mut impl BufRead) -> io::Result<StdioFrame> {
+  let mut frame = Vec::new();
+  loop {
+    let available = reader.fill_buf()?;
+    if available.is_empty() {
+      return if frame.is_empty() {
+        Ok(StdioFrame::EndOfInput)
+      } else {
+        Ok(StdioFrame::Complete(frame))
+      };
+    }
+
+    if let Some(newline) = available.iter().position(|byte| *byte == b'\n') {
+      let segment_len = newline + 1;
+      if frame.len().saturating_add(segment_len) > MAX_MCP_FRAME_BYTES {
+        reader.consume(segment_len);
+        return Ok(StdioFrame::Oversized);
+      }
+      frame.extend_from_slice(&available[..segment_len]);
+      reader.consume(segment_len);
+      return Ok(StdioFrame::Complete(frame));
+    }
+
+    let available_len = available.len();
+    if frame.len().saturating_add(available_len) > MAX_MCP_FRAME_BYTES {
+      reader.consume(available_len);
+      loop {
+        let remaining = reader.fill_buf()?;
+        if remaining.is_empty() {
+          break;
+        }
+        if let Some(newline) = remaining.iter().position(|byte| *byte == b'\n') {
+          reader.consume(newline + 1);
+          break;
+        }
+        let remaining_len = remaining.len();
+        reader.consume(remaining_len);
+      }
+      return Ok(StdioFrame::Oversized);
+    }
+
+    frame.extend_from_slice(available);
+    reader.consume(available_len);
+  }
+}
 
 impl Default for McpServer {
   fn default() -> Self {
@@ -307,40 +363,85 @@ impl McpServer {
 
   /// Runs the MCP JSON-RPC server over stdio streams until EOF.
   pub fn run_stdio(&mut self, mut reader: impl BufRead, mut writer: impl Write) -> io::Result<()> {
-    let mut line = String::new();
-    while reader.read_line(&mut line)? > 0 {
-      let trimmed = line.trim();
-      if !trimmed.is_empty() {
-        if let Ok(JsonValue::Array(batch)) = JsonValue::parse(trimmed) {
-          let response = self.handle_batch(batch);
-          if let Some(response) = response {
-            writer.write_all(response.as_bytes())?;
-            writer.write_all(b"\n")?;
-            writer.flush()?;
-          }
-          line.clear();
+    loop {
+      let frame = match read_stdio_frame(&mut reader)? {
+        StdioFrame::EndOfInput => break,
+        StdioFrame::Complete(frame) => frame,
+        StdioFrame::Oversized => {
+          let response = JsonRpcResponse::error(
+            JsonValue::Null,
+            JsonRpcError::new(
+              error_codes::PARSE_ERROR,
+              format!("Request exceeds maximum frame size of {MAX_MCP_FRAME_BYTES} bytes"),
+            ),
+          )
+          .to_json_string();
+          writer.write_all(response.as_bytes())?;
+          writer.write_all(b"\n")?;
+          writer.flush()?;
           continue;
         }
-        // Parse once at the transport boundary so valid notifications can
-        // mutate the session without producing a JSON-RPC response. An
-        // explicit `id: null` is a request and still receives a response;
-        // malformed input is also routed through the normal parse-error path.
-        let is_notification = JsonRpcRequest::parse(trimmed)
-          .map(|request| request.id.is_none())
-          .unwrap_or(false);
-        let resp = self.handle_request(trimmed);
-        if !is_notification {
-          writer.write_all(resp.as_bytes())?;
+      };
+
+      let input = match String::from_utf8(frame) {
+        Ok(input) => input,
+        Err(_) => {
+          let response = JsonRpcResponse::error(
+            JsonValue::Null,
+            JsonRpcError::new(error_codes::PARSE_ERROR, "Request is not valid UTF-8"),
+          )
+          .to_json_string();
+          writer.write_all(response.as_bytes())?;
+          writer.write_all(b"\n")?;
+          writer.flush()?;
+          continue;
+        }
+      };
+      let trimmed = input.trim();
+      if trimmed.is_empty() {
+        continue;
+      }
+
+      if let Ok(JsonValue::Array(batch)) = JsonValue::parse_with_limits(trimmed, MAX_MCP_JSON_DEPTH)
+      {
+        let response = self.handle_batch(batch);
+        if let Some(response) = response {
+          writer.write_all(response.as_bytes())?;
           writer.write_all(b"\n")?;
           writer.flush()?;
         }
+        continue;
       }
-      line.clear();
+      // Parse once at the transport boundary so valid notifications can
+      // mutate the session without producing a JSON-RPC response. An
+      // explicit `id: null` is a request and still receives a response;
+      // malformed input is also routed through the normal parse-error path.
+      let is_notification = JsonRpcRequest::parse(trimmed)
+        .map(|request| request.id.is_none())
+        .unwrap_or(false);
+      let resp = self.handle_request(trimmed);
+      if !is_notification {
+        writer.write_all(resp.as_bytes())?;
+        writer.write_all(b"\n")?;
+        writer.flush()?;
+      }
     }
     Ok(())
   }
 
   fn handle_batch(&mut self, batch: Vec<JsonValue>) -> Option<String> {
+    if batch.len() > MAX_MCP_BATCH_REQUESTS {
+      return Some(
+        JsonRpcResponse::error(
+          JsonValue::Null,
+          JsonRpcError::new(
+            error_codes::INVALID_REQUEST,
+            format!("Batch exceeds maximum request count of {MAX_MCP_BATCH_REQUESTS}"),
+          ),
+        )
+        .to_json_string(),
+      );
+    }
     if batch.is_empty() {
       return Some(self.handle_request("[]"));
     }
@@ -352,7 +453,9 @@ impl McpServer {
         .map(|request| request.id.is_none())
         .unwrap_or(false);
       let response = self.handle_request(&raw);
-      if !is_notification && let Ok(value) = JsonValue::parse(&response) {
+      if !is_notification
+        && let Ok(value) = JsonValue::parse_with_limits(&response, MAX_MCP_JSON_DEPTH)
+      {
         responses.push(value);
       }
     }
@@ -745,5 +848,100 @@ mod tests {
         .and_then(JsonValue::as_i64),
       Some(error_codes::INVALID_REQUEST as i64)
     );
+  }
+
+  #[test]
+  fn stdio_rejects_deep_frames_and_recovers_for_the_next_request() {
+    let deep = format!(
+      "{{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"ping\",\"params\":{}0{}}}",
+      "[".repeat(MAX_MCP_JSON_DEPTH + 8),
+      "]".repeat(MAX_MCP_JSON_DEPTH + 8)
+    );
+    let requests = format!("{deep}\n{{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"ping\"}}\n");
+    let mut server = McpServer::new();
+    let mut output = Vec::new();
+    server
+      .run_stdio(std::io::Cursor::new(requests), &mut output)
+      .expect("bounded parse errors must not abort stdio");
+
+    let responses: Vec<_> = String::from_utf8(output)
+      .unwrap()
+      .lines()
+      .map(JsonValue::parse)
+      .collect::<Result<_, _>>()
+      .unwrap();
+    assert_eq!(responses.len(), 2);
+    assert_eq!(
+      responses[0]
+        .get("error")
+        .and_then(|error| error.get("code"))
+        .and_then(JsonValue::as_i64),
+      Some(error_codes::PARSE_ERROR as i64)
+    );
+    assert!(responses[1].get("result").is_some());
+  }
+
+  #[test]
+  fn stdio_rejects_oversized_frames_after_draining_and_recovers() {
+    let mut requests = vec![b'x'; MAX_MCP_FRAME_BYTES + 1];
+    requests.extend_from_slice(b"\n{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"ping\"}\n");
+    let mut server = McpServer::new();
+    let mut output = Vec::new();
+    server
+      .run_stdio(std::io::Cursor::new(requests), &mut output)
+      .expect("oversized frames must be drained without aborting");
+
+    let responses: Vec<_> = String::from_utf8(output)
+      .unwrap()
+      .lines()
+      .map(JsonValue::parse)
+      .collect::<Result<_, _>>()
+      .unwrap();
+    assert_eq!(responses.len(), 2);
+    assert_eq!(
+      responses[0]
+        .get("error")
+        .and_then(|error| error.get("code"))
+        .and_then(JsonValue::as_i64),
+      Some(error_codes::PARSE_ERROR as i64)
+    );
+    assert!(responses[1].get("result").is_some());
+  }
+
+  #[test]
+  fn oversized_batch_is_rejected_without_executing_members() {
+    let initialize = r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1"}}}"#;
+    let ping = r#"{"jsonrpc":"2.0","id":2,"method":"ping"}"#;
+    let mut members = vec![initialize.to_string()];
+    members.extend(std::iter::repeat_n(
+      ping.to_string(),
+      MAX_MCP_BATCH_REQUESTS,
+    ));
+    let requests = format!("[{}]\n{}\n", members.join(","), initialize);
+
+    let mut server = McpServer::new();
+    let mut output = Vec::new();
+    server
+      .run_stdio(std::io::Cursor::new(requests), &mut output)
+      .expect("over-limit batch must return a controlled response");
+    let responses: Vec<_> = String::from_utf8(output)
+      .unwrap()
+      .lines()
+      .map(JsonValue::parse)
+      .collect::<Result<_, _>>()
+      .unwrap();
+    assert_eq!(responses.len(), 2);
+    assert_eq!(
+      responses[0]
+        .get("error")
+        .and_then(|error| error.get("code"))
+        .and_then(JsonValue::as_i64),
+      Some(error_codes::INVALID_REQUEST as i64)
+    );
+    assert!(responses[1].get("result").is_some());
+    assert!(matches!(
+      server.lifecycle,
+      LifecyclePhase::AwaitingInitialized
+    ));
   }
 }

@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-09-07
-Current project version: `0.2.349`
+Current project version: `0.2.350`
 
 The roadmap owns milestone scope and ordering. This file expands exactly one
 active implementation slice; delivered history belongs in the roadmap,
@@ -14,55 +14,66 @@ changelog, evidence notes, and Git.
 - `NOT_RUN` — prerequisites unavailable; no pass or failure is inferred.
 - `INCONCLUSIVE` — available evidence cannot support the claim.
 
-## 2. Active implementation slice: fair ground-item observations (audit F1)
+## 2. Active implementation slice: bounded MCP framing (audit F2)
 
-Slice status: **delivered and verified locally**. This is the first remediation
-slice recommended by `docs/project-audit-2026-09-07.md` and is bounded to the
-observation boundary.
+Slice status: **delivered and verified locally**. This is the second
+remediation slice recommended by `docs/project-audit-2026-09-07.md` and is
+bounded to external MCP transport and JSON parsing. F1 fair ground-item
+observations is delivered in `0af1bed`.
 
 ### 2.1 Objective
 
-Ensure player observations and their MCP projection never disclose live ground
-items outside the player's current field of view. Explored terrain remains
-remembered, but hidden item state is not memory. When visibility returns, the
-current items are observable again.
+Prevent malformed, oversized, or deeply nested MCP requests from aborting the
+server or mutating the active session. Enforce finite byte and JSON-depth limits
+at every external request entry point, bound batch cardinality, and preserve
+controlled recovery for rejected frames where the transport remains usable.
 
 ### 2.2 Scope and acceptance
 
-- [x] Filter player-observation ground items by current visibility, not merely
-  `explored_tiles`.
-- [x] Add regression coverage for hidden item addition, removal, and count
-  changes; two worlds with identical visible state and observation memory but
-  different hidden items produce identical fair observations.
-- [x] Verify legitimate reveal after the player regains visibility and preserve
-  omniscient/debug observations.
-- [x] Confirm MCP JSON is identical for identical fair observations and contains
-  no hidden item entries.
-- [x] Preserve command atomicity, deterministic RNG/replay behavior, and the
-  existing simulation/protocol/presentation boundaries.
+- [x] Define documented MCP frame-byte, JSON-depth, and batch-count limits.
+- [x] Enforce frame bytes while reading stdio input rather than allocating an
+  unbounded line; oversized frames receive a controlled parse error and are
+  drained through their newline so the next valid frame can be processed.
+- [x] Route single requests, batches, and in-process `handle_request` calls
+  through bounded JSON parsing; no external path uses unlimited recursion.
+- [x] Reject over-limit batches without executing any member and preserve the
+  session/lifecycle state.
+- [x] Add shallow boundary, deep nesting, oversized-frame, recovery, and batch
+  fixtures, including a subprocess regression against the shipped `--mcp`
+  binary proving stack overflow cannot terminate the test runner.
+- [x] Preserve valid MCP lifecycle, notification, batch ordering, and tool
+  behavior; no gameplay, replay, RNG, observation, or wire-schema semantics
+  change.
 
-### 2.3 Explicit non-goals
+### 2.3 Transport decision and non-goals
 
-No remembered item snapshot, protocol schema change, MCP framing change, content
-migration, renderer redesign, or claim of visual/legacy parity is part of this
-slice. F2 (bounded MCP framing) and F3 (`.mjs` version classification) remain
-separate subsequent slices.
+A frame exceeding the byte limit is rejected with a JSON-RPC parse error using a
+`null` ID, drained to its newline, and processing continues. An unterminated
+oversized frame is drained to EOF and then processing ends. This slice does not
+change JSON grammar, tool validation, lifecycle rules, session persistence,
+MCP protocol version, or browser/native frontend behavior.
 
 ### 2.4 Delivery evidence
 
-- `cargo test --locked -p drl-core --lib`: 197 passed, including hidden item
-  addition, removal, count-change, two-world, omniscient, and reveal coverage.
-- `cargo test --locked -p drl-mcp --lib`: 84 passed, including JSON parity and
-  an empty serialized `ground_items` assertion for hidden state.
-- `sh scripts/check-web.sh`: PASS (browser/library and headless Chrome checks).
+- `cargo test --locked -p drl-mcp --lib`: 89 passed, including depth, frame,
+  recovery, batch, lifecycle, and existing tool/projection coverage.
+- `cargo test --locked -p drl-app --tests`: 15 unit tests and 1 subprocess test
+  passed; the shipped `--mcp` binary returned controlled errors for deep input
+  and continued to a valid request.
+- `cargo clippy --locked -p drl-mcp -p drl-app --all-targets --all-features
+  -- -D warnings`: PASS.
 - `cargo fmt --all -- --check`, `sh scripts/check-version.sh`,
-  `sh scripts/check-spec-structure.sh`, and `git diff --check`: PASS.
-- `sh scripts/check-repository.sh`: INCOMPLETE; it reached the workspace
-  integration suite after all preceding script contracts passed, but the local
-  run was aborted before completion. No full-suite pass is claimed.
-- Read-focused determinism review: PASS by owner inspection of the world/MCP
-  producer and consumer boundary; no command, RNG, replay, or schema path was
-  changed. A separate reviewer was unavailable because the checkout was dirty.
+  `sh scripts/check-spec-structure.sh`, `git diff --check`, and
+  `sh scripts/test-mcp-stdio.sh`: PASS.
+- `sh scripts/check-repository.sh`: INCOMPLETE; the local run passed all
+  preceding contracts and workspace tests through `laser_rifle_chainfire`,
+  then exceeded the 30-minute execution allowance. No full-suite pass is
+  claimed.
+- Read-focused determinism review: owner inspection passes for the producer /
+  consumer transport boundary, parser limits, batch rejection, recovery, and
+  session non-mutation; no gameplay, replay, RNG, observation, or wire
+  semantics were changed. Delegated reviewer attempts were unavailable in the
+  agent harness, so no independent sign-off is claimed.
 - Unavailable native, browser-capture, controlled-legacy, audiovisual, and
   human acceptance remain `NOT_RUN`.
 

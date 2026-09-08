@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-09-07
-Current project version: `0.2.349`
+Current project version: `0.2.350`
 
 Status: Verified for current deterministic headless core, MCP tooling,
 browser-playable WebGPU slice, and the thin native frontend boundary; full
@@ -620,6 +620,11 @@ Presentation Boundary
     escapes, rejects lone/mismatched surrogate code units, and rejects raw
     `U+0000..U+001F` controls inside strings before MCP dispatch. Escaped
     controls remain valid; full external-client compatibility is still open.
+  - Every external request path applies a 1 MiB frame limit, 64-level JSON
+    depth limit, and 64-member batch limit. Stdio reads and drains oversized
+    frames before returning a controlled parse error, preserving the active
+    session for subsequent frames; in-process requests use the same parser
+    limits.
   - JSON-RPC request IDs are limited to strings, numbers, or explicit `null`;
     boolean, array, and object IDs return `-32600` before dispatch, while
     omitted IDs remain notifications.

@@ -9,6 +9,13 @@ pub const MCP_PROTOCOL_VERSION: &str = "2024-11-05";
 pub const DRL_MCP_VERSION: &str = env!("CARGO_PKG_VERSION");
 /// Server identifier.
 pub const SERVER_NAME: &str = "drl-mcp";
+/// Maximum UTF-8 bytes accepted for one MCP stdio frame or in-process request.
+/// The newline delimiter is included when a frame is read from stdio.
+pub const MAX_MCP_FRAME_BYTES: usize = 1024 * 1024;
+/// Maximum JSON nesting depth accepted at the MCP boundary.
+pub const MAX_MCP_JSON_DEPTH: usize = 64;
+/// Maximum number of requests in one JSON-RPC batch.
+pub const MAX_MCP_BATCH_REQUESTS: usize = 64;
 
 /// Standard JSON-RPC 2.0 error codes.
 pub mod error_codes {
@@ -45,9 +52,20 @@ pub struct JsonRpcRequest {
 }
 
 impl JsonRpcRequest {
-  /// Parses a JSON-RPC 2.0 request from raw JSON string.
+  /// Parses a JSON-RPC 2.0 request using the MCP boundary limits.
   pub fn parse(input: &str) -> Result<Self, JsonRpcError> {
-    let root = JsonValue::parse(input)
+    Self::parse_with_limits(input, MAX_MCP_JSON_DEPTH)
+  }
+
+  /// Parses a JSON-RPC 2.0 request with a finite nesting limit.
+  pub fn parse_with_limits(input: &str, max_depth: usize) -> Result<Self, JsonRpcError> {
+    if input.len() > MAX_MCP_FRAME_BYTES {
+      return Err(JsonRpcError::new(
+        error_codes::PARSE_ERROR,
+        format!("Request exceeds maximum frame size of {MAX_MCP_FRAME_BYTES} bytes"),
+      ));
+    }
+    let root = JsonValue::parse_with_limits(input, max_depth)
       .map_err(|e| JsonRpcError::new(error_codes::PARSE_ERROR, format!("Parse error: {e}")))?;
 
     let obj = root.as_object().ok_or_else(|| {
@@ -282,6 +300,28 @@ mod tests {
       let raw = format!(r#"{{"jsonrpc":"2.0","id":{id},"method":"ping"}}"#);
       assert!(JsonRpcRequest::parse(&raw).is_ok());
     }
+  }
+
+  #[test]
+  fn request_parser_rejects_deep_nesting_without_recursing_unbounded() {
+    let nested = format!(
+      "{{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"ping\",\"params\":{}0{}}}",
+      "[".repeat(MAX_MCP_JSON_DEPTH + 8),
+      "]".repeat(MAX_MCP_JSON_DEPTH + 8)
+    );
+    let error = JsonRpcRequest::parse(&nested).expect_err("depth limit must reject input");
+    assert_eq!(error.code, error_codes::PARSE_ERROR);
+    assert!(error.message.contains("maximum depth"));
+  }
+
+  #[test]
+  fn request_parser_rejects_oversized_frames_before_json_decode() {
+    let mut oversized = String::with_capacity(MAX_MCP_FRAME_BYTES + 1);
+    oversized.push('{');
+    oversized.extend(std::iter::repeat_n(' ', MAX_MCP_FRAME_BYTES));
+    let error = JsonRpcRequest::parse(&oversized).expect_err("byte limit must reject input");
+    assert_eq!(error.code, error_codes::PARSE_ERROR);
+    assert!(error.message.contains("maximum frame size"));
   }
 
   #[test]

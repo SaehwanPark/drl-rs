@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.350]
+
+- Bounded MCP stdio and in-process request parsing to 1 MiB frames, 64 JSON
+  nesting levels, and 64 batch members. Oversized frames are drained and
+  reported without mutating the session, deep requests return controlled parse
+  errors, and valid requests recover afterward. Added boundary, batch, and
+  shipped-binary subprocess regressions; MCP lifecycle, tool, replay, RNG, and
+  wire semantics remain unchanged.
+
 ## [0.2.349]
 
 - Player observations now expose live ground items only while their tiles are

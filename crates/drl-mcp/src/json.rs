@@ -133,8 +133,8 @@ impl JsonValue {
   /// Parses JSON with a caller-selected maximum nesting depth.
   ///
   /// The default [`Self::parse`] entry point preserves the historical
-  /// unlimited-depth behavior for protocol callers. File-facing boundaries
-  /// should select a finite limit before accepting untrusted input.
+  /// unlimited-depth behavior for trusted/internal values. External protocol
+  /// boundaries must select a finite limit before accepting untrusted input.
   pub fn parse_with_limits(input: &str, max_depth: usize) -> Result<Self, String> {
     let mut parser = JsonParser::new(input, max_depth);
     let value = parser.parse_value()?;
