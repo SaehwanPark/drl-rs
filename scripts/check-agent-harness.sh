@@ -166,6 +166,7 @@ for path in \
   scripts/check-branch-protection.sh \
   scripts/test-branch-protection.sh \
   scripts/check-version.sh \
+  scripts/test-version.sh \
   scripts/check-web.sh
 do
   require_file "$path"
@@ -227,6 +228,7 @@ require_text ".agents/skills/drl-milestone-delivery/SKILL.md" "scripts/check-ver
 require_text ".agents/skills/drl-milestone-delivery/SKILL.md" "steering-gates.md"
 
 sh scripts/check-version.sh "${DRL_VERSION_BASE:-}"
+sh scripts/test-version.sh
 
 if [ "$failures" -ne 0 ]; then
   printf '%s\n' "Agent harness validation failed with $failures issue(s)." >&2

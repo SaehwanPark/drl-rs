@@ -3,6 +3,13 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.351]
+
+- Fixed the release version classifier to treat executable `.mjs` modules as
+  code. Added temporary-Git fixtures proving runtime module, Rust, and shell
+  changes require exactly one version transition while documentation and
+  settings changes do not; the fixture suite now runs in the agent harness.
+
 ## [0.2.350]
 
 - Bounded MCP stdio and in-process request parsing to 1 MiB frames, 64 JSON

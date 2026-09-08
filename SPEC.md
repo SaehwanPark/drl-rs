@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-09-07
-Current project version: `0.2.350`
+Current project version: `0.2.351`
 
 The roadmap owns milestone scope and ordering. This file expands exactly one
 active implementation slice; delivered history belongs in the roadmap,
@@ -14,66 +14,49 @@ changelog, evidence notes, and Git.
 - `NOT_RUN` — prerequisites unavailable; no pass or failure is inferred.
 - `INCONCLUSIVE` — available evidence cannot support the claim.
 
-## 2. Active implementation slice: bounded MCP framing (audit F2)
+## 2. Active implementation slice: executable-module version classification (audit F3)
 
-Slice status: **delivered and verified locally**. This is the second
+Slice status: **delivered and verified locally**. This is the third
 remediation slice recommended by `docs/project-audit-2026-09-07.md` and is
-bounded to external MCP transport and JSON parsing. F1 fair ground-item
-observations is delivered in `0af1bed`.
+bounded to version-policy classification and its fixture coverage. F1 and F2
+are delivered in commits `0af1bed` and `ae8a451`.
 
 ### 2.1 Objective
 
-Prevent malformed, oversized, or deeply nested MCP requests from aborting the
-server or mutating the active session. Enforce finite byte and JSON-depth limits
-at every external request entry point, bound batch cardinality, and preserve
-controlled recovery for rejected frames where the transport remains usable.
+Ensure shipped executable JavaScript modules with the `.mjs` suffix are treated
+as code by `scripts/check-version.sh`. A runtime `.mjs` change must require
+exactly one valid version transition, while documentation-only and
+settings-only changes remain valid without a bump.
 
 ### 2.2 Scope and acceptance
 
-- [x] Define documented MCP frame-byte, JSON-depth, and batch-count limits.
-- [x] Enforce frame bytes while reading stdio input rather than allocating an
-  unbounded line; oversized frames receive a controlled parse error and are
-  drained through their newline so the next valid frame can be processed.
-- [x] Route single requests, batches, and in-process `handle_request` calls
-  through bounded JSON parsing; no external path uses unlimited recursion.
-- [x] Reject over-limit batches without executing any member and preserve the
-  session/lifecycle state.
-- [x] Add shallow boundary, deep nesting, oversized-frame, recovery, and batch
-  fixtures, including a subprocess regression against the shipped `--mcp`
-  binary proving stack overflow cannot terminate the test runner.
-- [x] Preserve valid MCP lifecycle, notification, batch ordering, and tool
-  behavior; no gameplay, replay, RNG, observation, or wire-schema semantics
-  change.
+- [x] Classify `.mjs` as executable code in the version checker.
+- [x] Add repeatable temporary-Git fixtures proving an `.mjs` behavior change
+  fails without a bump and passes with exactly one allowed transition.
+- [x] Cover ordinary Rust and shell code as code, and documentation/settings
+  changes as non-code; reject an unnecessary bump for non-code changes.
+- [x] Run the fixture suite through the repository verification path without
+  changing gameplay, replay, RNG, MCP, browser behavior, or release metadata.
 
-### 2.3 Transport decision and non-goals
+### 2.3 Non-goals
 
-A frame exceeding the byte limit is rejected with a JSON-RPC parse error using a
-`null` ID, drained to its newline, and processing continues. An unterminated
-oversized frame is drained to EOF and then processing ends. This slice does not
-change JSON grammar, tool validation, lifecycle rules, session persistence,
-MCP protocol version, or browser/native frontend behavior.
+No version-policy redesign, semantic-version carry behavior change, package
+release, browser productization, or gameplay/content work is part of this slice.
+The release-readiness gaps and independent review operating model remain open
+outside F3.
 
 ### 2.4 Delivery evidence
 
-- `cargo test --locked -p drl-mcp --lib`: 89 passed, including depth, frame,
-  recovery, batch, lifecycle, and existing tool/projection coverage.
-- `cargo test --locked -p drl-app --tests`: 15 unit tests and 1 subprocess test
-  passed; the shipped `--mcp` binary returned controlled errors for deep input
-  and continued to a valid request.
-- `cargo clippy --locked -p drl-mcp -p drl-app --all-targets --all-features
-  -- -D warnings`: PASS.
-- `cargo fmt --all -- --check`, `sh scripts/check-version.sh`,
-  `sh scripts/check-spec-structure.sh`, `git diff --check`, and
-  `sh scripts/test-mcp-stdio.sh`: PASS.
-- `sh scripts/check-repository.sh`: INCOMPLETE; the local run passed all
-  preceding contracts and workspace tests through `laser_rifle_chainfire`,
-  then exceeded the 30-minute execution allowance. No full-suite pass is
-  claimed.
-- Read-focused determinism review: owner inspection passes for the producer /
-  consumer transport boundary, parser limits, batch rejection, recovery, and
-  session non-mutation; no gameplay, replay, RNG, observation, or wire
-  semantics were changed. Delegated reviewer attempts were unavailable in the
-  agent harness, so no independent sign-off is claimed.
+- `sh scripts/test-version.sh`: PASS for `.mjs`, Rust, shell,
+  documentation, settings, no-bump, exact-bump, and over-bump fixtures.
+- `DRL_VERSION_BASE=ae8a451 sh scripts/check-version.sh`: PASS for the exact
+  `0.2.350` -> `0.2.351` code transition.
+- `sh scripts/check-agent-harness.sh`: PASS; the fixture suite is now part of
+  the harness verification path.
+- `sh scripts/check-spec-structure.sh`, `cargo fmt --all -- --check`, and
+  `git diff --check`: PASS.
+- No gameplay, replay, RNG, MCP, browser behavior, or release metadata changed
+  beyond the required canonical version projection.
 - Unavailable native, browser-capture, controlled-legacy, audiovisual, and
   human acceptance remain `NOT_RUN`.
 

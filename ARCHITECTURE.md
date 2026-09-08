@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-09-07
-Current project version: `0.2.350`
+Current project version: `0.2.351`
 
 Status: Verified for current deterministic headless core, MCP tooling,
 browser-playable WebGPU slice, and the thin native frontend boundary; full

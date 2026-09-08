@@ -57,6 +57,7 @@ def is_code_path(path):
         ".css",
         ".html",
         ".js",
+        ".mjs",
         ".py",
         ".rs",
         ".sh",
