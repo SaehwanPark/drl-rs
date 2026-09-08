@@ -4,6 +4,35 @@ set -eu
 
 cd "$(dirname "$0")/.."
 
+# Keep the temporary solo-maintainer exception attributable and time-bounded.
+# These are documentation-contract checks; they do not turn an exception into
+# an independent approval or query remote GitHub settings.
+decision_doc=docs/steering/decisions/required-review-and-branch-protection.md
+pr_template=.github/pull_request_template.md
+for required in \
+  "Temporary solo-maintainer exception" \
+  "2026-12-31" \
+  "repository maintainer /" \
+  "An exception record is \`INCONCLUSIVE\`" \
+  "Protected-path work should stop at expiry"
+do
+  grep -F "$required" "$decision_doc" >/dev/null || {
+    printf 'Review-policy exception contract missing from %s: %s\\n' "$decision_doc" "$required" >&2
+    exit 1
+  }
+done
+for required in \
+  "Exception reason:" \
+  "Exact current head SHA:" \
+  "Accountable maintainer / release owner:" \
+  'Exception expiry (`2026-12-31`):'
+do
+  grep -F "$required" "$pr_template" >/dev/null || {
+    printf 'Review-policy exception field missing from %s: %s\\n' "$pr_template" "$required" >&2
+    exit 1
+  }
+done
+
 temp_root=${TMPDIR:-/tmp}/drl-review-policy.$$
 umask 077
 mkdir "$temp_root"

@@ -1,6 +1,6 @@
 # Public release readiness
 
-**Current version:** `0.2.352`
+**Current version:** `0.2.353`
 **Status:** **Not release-ready**
 
 This is a compact product-entry summary, not a replacement for the
@@ -50,7 +50,8 @@ library tests:
 - complete deterministic headless/MCP tooling and external-client compatibility;
 - rights-cleared Linux legacy runtime captures and capture-to-game comparison;
 - an eligible independent reviewer path before the temporary solo-maintainer
-  branch-protection exception can be removed.
+  branch-protection exception expires on `2026-12-31`; any interim exception
+  record is `INCONCLUSIVE`, not an independent review pass.
 
 See the M3, M12, and M13 sections of the roadmap for authoritative acceptance
 criteria and the [browser acceptance records](acceptance/) for environment-

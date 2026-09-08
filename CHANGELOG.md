@@ -3,6 +3,14 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.353]
+
+- Made the temporary solo-maintainer review exception explicit and
+  time-bounded through 2026-12-31. Added document-contract fixtures requiring
+  the current head, hosted policy result, accountable release owner, follow-up,
+  and expiry; exceptions remain `INCONCLUSIVE` and never satisfy the
+  independent determinism receipt.
+
 ## [0.2.352]
 
 - Added browser startup asset-pack diagnostics for required graphics and

@@ -73,7 +73,29 @@ external contributors. `scripts/check-branch-protection.sh` inspects the live
 API response and accepts only this documented setting plus the required review
 and status controls.
 
-### 4. Deterministic fixtures
+### 4. Temporary solo-maintainer exception
+
+Until an eligible independent reviewer is available, the repository maintainer
+may use the documented solo-maintainer branch-protection setting only through a
+bounded exception record. The exception expires on **2026-12-31** and must not
+be renewed implicitly. The accountable role is the **repository maintainer /
+release owner**.
+
+Every exception record must include:
+
+- the pull-request number and exact current head SHA;
+- the protected paths and the hosted `Review policy: FAIL` evidence;
+- the reason an eligible independent reviewer was unavailable;
+- the exact repository/browser/version/focused checks inspected; and
+- the reviewer-recruitment follow-up owner and date before the expiry.
+
+An exception record is `INCONCLUSIVE` for determinism review. It is never
+reported as `drl-determinism-review: PASS`, never satisfies the hosted review
+policy, and cannot be used after the expiry without a new steering decision.
+Protected-path work should stop at expiry until an eligible reviewer path is
+available.
+
+### 5. Deterministic fixtures
 
 Both policy scripts accept explicit fixture environment variables, and their
 fixture scripts run as part of the repository contract. Fixture execution is

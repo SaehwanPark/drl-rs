@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-09-07
-Current project version: `0.2.352`
+Current project version: `0.2.353`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.352)
+## 3. Current Progress Summary (`VERSION` 0.2.353)
 
 ### Delivered Foundations
 
@@ -1444,6 +1444,12 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
+- **M0/M13 review-exception process (`0.2.353`):** The temporary
+  solo-maintainer exception now has an accountable release-owner role,
+  required current-head/hosted-failure/check/follow-up evidence, and a fixed
+  `2026-12-31` expiry. Review-policy fixtures reject treating the exception as
+  an independent `drl-determinism-review: PASS`; eligible reviewer recruitment
+  and live branch settings remain open or `NOT_RUN`.
 - **M12 browser asset-pack diagnostics (`0.2.352`):** The browser startup
   probe reports required graphics and optional HQ/LQ audio and bitmap-font
   markers in an accessible status region, with procedural Web Audio and

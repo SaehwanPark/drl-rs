@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-09-07
-Current project version: `0.2.352`
+Current project version: `0.2.353`
 
 The roadmap owns milestone scope and ordering. This file expands exactly one
 active implementation slice; delivered history belongs in the roadmap,
@@ -14,57 +14,58 @@ changelog, evidence notes, and Git.
 - `NOT_RUN` — prerequisites unavailable; no pass or failure is inferred.
 - `INCONCLUSIVE` — available evidence cannot support the claim.
 
-## 2. Active implementation slice: browser asset-pack diagnostics (M12)
+## 2. Active implementation slice: attributable review exception process (M0/M13)
 
-Slice status: **delivered and verified locally**. This is a bounded named M12
-release-hardening slice selected after the audit remediation and
-release-readiness summary work. It improves the public browser entry point
-without changing simulation semantics.
+Slice status: **delivered and verified locally**. This bounded control-plane
+slice follows audit recommendation 1: make the temporary solo-maintainer review
+exception explicit, attributable, and time-bounded before selecting another
+protected gameplay slice. F1/F2/F3 and the M12 asset diagnostics slice are
+delivered locally.
 
 ### 2.1 Objective
 
-Report the presence of required graphics and optional HQ/LQ audio and bitmap
-font packs during browser startup. Missing optional packs must state the
-procedural-audio and DOM/browser-text fallbacks; missing required graphics must
-remain visible as a startup problem rather than an implied release pass.
+Document and enforce the information required when an eligible independent
+reviewer is unavailable: reason, responsible maintainer, current head, expiry,
+and follow-up owner. Keep the normal independent-review receipt mandatory for
+protected paths; the exception is not a passing review and cannot silently
+satisfy the hosted policy.
 
 ### 2.2 Scope and acceptance
 
-- [x] Add a small browser-only asset-pack probe with explicit pack paths,
-  required/optional classification, safe fetch failure handling, and stable
-  user-facing summary text.
-- [x] Show the summary in an accessible startup status region without stealing
-  focus or blocking gameplay; preserve existing graphics/audio diagnostics.
-- [x] Add deterministic mocked-fetch fixtures for all-present, optional-missing,
-  required-missing, and fetch-failure states.
-- [x] Run the fixture through `sh scripts/check-web.sh` and keep release-rights
-  policy unchanged: optional legacy audio/fonts remain external/unbundled.
-- [x] Preserve core, replay, RNG, MCP, save, service-worker, and gameplay
-  behavior; advance the code version exactly once from `0.2.351` to `0.2.352`.
+- [x] Add an explicit exception section to the required-review decision with a
+  fixed expiry of `2026-12-31`, a named accountable role, and required evidence.
+- [x] Add PR-template fields for exception reason, current head, expiry, and
+  reviewer-recruitment follow-up; preserve the exact independent receipt.
+- [x] Link the process from the compact release-readiness summary and steering
+  status, clearly distinguishing `PASS`, `INCONCLUSIVE`, and exception use.
+- [x] Add fixture/document checks so the exception cannot be documented as an
+  independent approval and the expiry remains visible.
+- [x] Preserve code, gameplay, replay, RNG, MCP, and browser behavior; the
+  document-check fixture is a code-path change and advances `VERSION` exactly
+  once from `0.2.352` to `0.2.353`.
 
 ### 2.3 Non-goals
 
-No audio decoding, font rendering, asset bundling, production HTTPS/PWA
-installation, WCAG certification, legacy audiovisual parity, or native frontend
-change is included. A probe result is a diagnostic, not proof that an optional
-pack is rights-cleared or that a browser environment is supported.
+No GitHub branch-protection mutation, remote reviewer recruitment, gameplay or
+content change, claim of hosted CI success, or conversion of an exception into
+an independent determinism-review receipt is included.
 
 ### 2.4 Delivery evidence
 
-- `node scripts/test-asset-status.mjs`: PASS for all-present,
-  optional-missing, required-missing, network failure, and unavailable-fetch
-  states.
-- `sh scripts/check-web.sh`: PASS, including static service-worker/manifest,
-  browser diagnostics, assets/render/audio/web tests, and headless Chrome.
-- `sh scripts/check-service-worker.sh`, `sh scripts/check-browser-diagnostics.sh`,
-  `node scripts/test-browser-controls.mjs`, `cargo fmt --all -- --check`,
-  `sh scripts/check-spec-structure.sh`, and `git diff --check`: PASS.
-- `DRL_VERSION_BASE=10ebd81 sh scripts/check-version.sh`: PASS for the exact
-  `0.2.351` -> `0.2.352` code transition.
-- Release-rights policy remains unchanged: optional legacy audio and fonts are
-  detected but not copied into the distributable bundle.
-- Unavailable runtime, reference-capture, audiovisual, native, and human
-  acceptance remain `NOT_RUN`.
+- `sh scripts/test-review-policy.sh`: PASS; existing policy fixtures still
+  distinguish independent receipts, stale reviews, author self-approval, and
+  the new exception-document contract.
+- `sh scripts/check-agent-harness.sh`: PASS, including version and policy
+  fixtures.
+- `DRL_VERSION_BASE=6f370b1 sh scripts/check-version.sh`: PASS for the exact
+  `0.2.352` -> `0.2.353` code transition.
+- `sh scripts/check-spec-structure.sh`, `cargo fmt --all -- --check`, and
+  `git diff --check`: PASS.
+- The decision, PR template, steering status, and release-readiness summary
+  all identify the accountable role and `2026-12-31` expiry; the exception is
+  explicitly `INCONCLUSIVE` and never a review receipt.
+- Remote GitHub settings, eligible reviewer recruitment, and hosted CI remain
+  `NOT_RUN`.
 
 ## 3. Enduring invariants
 

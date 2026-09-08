@@ -27,6 +27,20 @@ the pull-request author.
 
 Review run / artifact:
 
+If an eligible independent reviewer is unavailable, do **not** enter the
+receipt above. Record the bounded exception instead:
+
+- Exception reason:
+- Exact current head SHA:
+- Hosted `Review policy` result:
+- Checks inspected:
+- Accountable maintainer / release owner:
+- Reviewer-recruitment follow-up and date:
+- Exception expiry (`2026-12-31`):
+
+The exception is `INCONCLUSIVE`, does not satisfy the hosted policy, and must
+not be used after its expiry without a new steering decision.
+
 ## Evidence boundary and follow-up
 
 - Legacy, browser, audiovisual, performance, or cross-version evidence that is

@@ -82,8 +82,11 @@ version, and subprocess checks pass. The full workspace repository check
 remains `INCONCLUSIVE` locally because it exceeded the execution allowance;
 remote CI and independent review sign-off are not inferred. The next selected
 slice must therefore be one bounded, player-impacting vertical canonical
-behavior branch with an attributable independent determinism review or an
-explicitly recorded unavailable-review exception.
+behavior branch with an attributable independent determinism review. If an
+eligible reviewer is unavailable, the exception process in the required-review
+decision must record the current head, hosted failure, accountable release
+owner, follow-up, and `2026-12-31` expiry; that exception remains
+`INCONCLUSIVE` and is not a review pass.
 
 ## Development stop gates
 
