@@ -19,7 +19,7 @@ test "$wasm_pack_version" = "0.15.0" || {
 }
 
 wasm-pack build crates/drl-web --target web --release --out-dir "$dist/pkg"
-cp web/index.html web/bootstrap.js web/browser-support.mjs web/offline-cache.mjs web/manifest.webmanifest "$dist/"
+cp web/index.html web/bootstrap.js web/asset-status.mjs web/browser-support.mjs web/offline-cache.mjs web/manifest.webmanifest "$dist/"
 mkdir -p "$dist/assets/legacy/drl"
 cp -R assets/legacy/drl/graphics "$dist/assets/legacy/drl/"
 python3 - "$dist" web/service-worker.js VERSION <<'PY'

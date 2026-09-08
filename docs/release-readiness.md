@@ -1,6 +1,6 @@
 # Public release readiness
 
-**Current version:** `0.2.351`  
+**Current version:** `0.2.352`
 **Status:** **Not release-ready**
 
 This is a compact product-entry summary, not a replacement for the

@@ -1,7 +1,7 @@
 # Specification
 
 Last reviewed: 2026-09-07
-Current project version: `0.2.351`
+Current project version: `0.2.352`
 
 The roadmap owns milestone scope and ordering. This file expands exactly one
 active implementation slice; delivered history belongs in the roadmap,
@@ -14,51 +14,57 @@ changelog, evidence notes, and Git.
 - `NOT_RUN` — prerequisites unavailable; no pass or failure is inferred.
 - `INCONCLUSIVE` — available evidence cannot support the claim.
 
-## 2. Active implementation slice: public release-readiness entry point (audit feedback)
+## 2. Active implementation slice: browser asset-pack diagnostics (M12)
 
-Slice status: **delivered and verified locally**. This bounded documentation
-slice follows the audit's recommendation to make M12/M13 release gaps visible
-at the product entry point. The audit remediation findings F1/F2/F3 are
-delivered in commits `0af1bed`, `ae8a451`, and `578702e`.
+Slice status: **delivered and verified locally**. This is a bounded named M12
+release-hardening slice selected after the audit remediation and
+release-readiness summary work. It improves the public browser entry point
+without changing simulation semantics.
 
 ### 2.1 Objective
 
-Publish one compact, linked release-readiness summary that states what can be
-run today, which public-release gates remain open or `NOT_RUN`, and which checks
-support each claim. Correct the README workspace count from nine to ten crates
-without duplicating a second roadmap or acceptance checklist.
+Report the presence of required graphics and optional HQ/LQ audio and bitmap
+font packs during browser startup. Missing optional packs must state the
+procedural-audio and DOM/browser-text fallbacks; missing required graphics must
+remain visible as a startup problem rather than an implied release pass.
 
 ### 2.2 Scope and acceptance
 
-- [x] Add `docs/release-readiness.md` with current version, supported entry
-  points, verified local evidence, open M12/M13 blockers, and explicit
-  `NOT_RUN`/`INCONCLUSIVE` labels.
-- [x] Link the summary from the README and documentation portal.
-- [x] Correct the README architecture statement to ten workspace crates.
-- [x] Keep the summary compact and linked to the canonical roadmap, audit,
-  release-rights policy, and browser acceptance records rather than copying
-  their full checklists.
-- [x] Preserve code, gameplay, replay, RNG, MCP, browser behavior, and version;
-  documentation-only changes did not bump `VERSION`.
+- [x] Add a small browser-only asset-pack probe with explicit pack paths,
+  required/optional classification, safe fetch failure handling, and stable
+  user-facing summary text.
+- [x] Show the summary in an accessible startup status region without stealing
+  focus or blocking gameplay; preserve existing graphics/audio diagnostics.
+- [x] Add deterministic mocked-fetch fixtures for all-present, optional-missing,
+  required-missing, and fetch-failure states.
+- [x] Run the fixture through `sh scripts/check-web.sh` and keep release-rights
+  policy unchanged: optional legacy audio/fonts remain external/unbundled.
+- [x] Preserve core, replay, RNG, MCP, save, service-worker, and gameplay
+  behavior; advance the code version exactly once from `0.2.351` to `0.2.352`.
 
 ### 2.3 Non-goals
 
-No deployment, signing-key custody, WCAG or screen-reader certification,
-audiovisual/reference capture, external MCP compatibility, native interactive
-acceptance, or gameplay/content implementation is claimed or delivered here.
-Those remain named release gates in the roadmap.
+No audio decoding, font rendering, asset bundling, production HTTPS/PWA
+installation, WCAG certification, legacy audiovisual parity, or native frontend
+change is included. A probe result is a diagnostic, not proof that an optional
+pack is rights-cleared or that a browser environment is supported.
 
 ### 2.4 Delivery evidence
 
-- `DRL_VERSION_BASE=578702e sh scripts/check-version.sh`: PASS with no version
-  transition for the documentation-only diff.
-- `sh scripts/check-spec-structure.sh` and `git diff --check`: PASS.
-- README, portal, roadmap, audit, release-rights, and browser-acceptance links
-  were checked against the repository paths; the summary labels the full-suite
-  and hosted/runtime gaps `INCONCLUSIVE` or `NOT_RUN` rather than claiming
-  release readiness.
-- No code, gameplay, replay, RNG, MCP, browser behavior, or release metadata
-  changed.
+- `node scripts/test-asset-status.mjs`: PASS for all-present,
+  optional-missing, required-missing, network failure, and unavailable-fetch
+  states.
+- `sh scripts/check-web.sh`: PASS, including static service-worker/manifest,
+  browser diagnostics, assets/render/audio/web tests, and headless Chrome.
+- `sh scripts/check-service-worker.sh`, `sh scripts/check-browser-diagnostics.sh`,
+  `node scripts/test-browser-controls.mjs`, `cargo fmt --all -- --check`,
+  `sh scripts/check-spec-structure.sh`, and `git diff --check`: PASS.
+- `DRL_VERSION_BASE=10ebd81 sh scripts/check-version.sh`: PASS for the exact
+  `0.2.351` -> `0.2.352` code transition.
+- Release-rights policy remains unchanged: optional legacy audio and fonts are
+  detected but not copied into the distributable bundle.
+- Unavailable runtime, reference-capture, audiovisual, native, and human
+  acceptance remain `NOT_RUN`.
 
 ## 3. Enduring invariants
 

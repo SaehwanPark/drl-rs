@@ -1,9 +1,11 @@
 import init, { boot, clear_save, dispatch_inventory, load, resize, restart as restart_game, save, set_muted, set_volume, unlock_audio } from "./pkg/drl_web.js";
 import { browserSupportDiagnostic } from "./browser-support.mjs";
+import { formatAssetPackStatus, inspectAssetPacks } from "./asset-status.mjs";
 import { registerOfflineCache } from "./offline-cache.mjs";
 
 const status = document.querySelector("#game-status");
 const diagnostics = document.querySelector("#game-diagnostics");
+const assetStatus = document.querySelector("#asset-status");
 const diagnosticTitle = document.querySelector("#diagnostics-title");
 const diagnosticDetail = document.querySelector("#diagnostics-detail");
 const diagnosticAction = document.querySelector("#diagnostics-action");
@@ -100,6 +102,8 @@ start.addEventListener("click", async () => {
     return;
   }
   try {
+    const assetPacks = await inspectAssetPacks();
+    assetStatus.textContent = formatAssetPackStatus(assetPacks);
     await init();
     clearDiagnostic();
     const result = await boot();

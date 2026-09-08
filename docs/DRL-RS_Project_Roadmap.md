@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-09-07
-Current project version: `0.2.351`
+Current project version: `0.2.352`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.351)
+## 3. Current Progress Summary (`VERSION` 0.2.352)
 
 ### Delivered Foundations
 
@@ -1444,6 +1444,13 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
+- **M12 browser asset-pack diagnostics (`0.2.352`):** The browser startup
+  probe reports required graphics and optional HQ/LQ audio and bitmap-font
+  markers in an accessible status region, with procedural Web Audio and
+  DOM/browser-text fallbacks for missing optional packs. Mocked-fetch fixtures,
+  browser/static checks, and headless Chrome checks pass; optional legacy
+  audio/fonts remain external and rights-excluded. Production HTTPS/PWA,
+  WCAG/screen-reader, and audiovisual acceptance remain open or `NOT_RUN`.
 - **Audit remediation — executable-module version classification (`0.2.351`):**
   Commit `578702e` classifies `.mjs` as executable code in
   `scripts/check-version.sh` and adds temporary-Git positive/negative fixtures
@@ -3942,9 +3949,10 @@ diagnostics.
 - [ ] Production key custody, secret provisioning, rotation, and trust-root
   policy.
 - [ ] Dynamic WCAG 2.1 AA and screen-reader accessibility acceptance.
-- [ ] Client-side asset pack detection and diagnostic status in startup panel
-  (reporting presence of graphics, HQ/LQ audio, and bitmap fonts with automatic
-  procedural synthesis fallback).
+- [x] Client-side asset pack detection and diagnostic status in the startup
+  panel reports required graphics plus optional HQ/LQ audio and bitmap fonts;
+  missing optional packs retain procedural Web Audio and DOM/browser-text
+  fallbacks (`0.2.352`).
 - [x] Real-world browser service-worker installation, offline navigation, and
   reload acceptance on the local desktop Chromium target; OS-level install
   prompts and production HTTPS deployment remain M13 scope.

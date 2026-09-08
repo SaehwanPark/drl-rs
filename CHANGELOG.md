@@ -3,6 +3,15 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.352]
+
+- Added browser startup asset-pack diagnostics for required graphics and
+  optional HQ/LQ audio and bitmap fonts. Missing optional packs now report the
+  procedural Web Audio and DOM/browser-text fallbacks without blocking play;
+  missing graphics remain visible as a rendering warning. Deterministic mocked
+  fetch fixtures cover present, missing, and failure states; release-rights
+  exclusions and gameplay/browser simulation semantics remain unchanged.
+
 ## [0.2.351]
 
 - Fixed the release version classifier to treat executable `.mjs` modules as

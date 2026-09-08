@@ -9,6 +9,7 @@ sh scripts/test-service-worker.sh
 sh scripts/test-offline-cache.sh
 sh scripts/test-browser-controls.sh
 node scripts/test-browser-support.mjs
+node scripts/test-asset-status.mjs
 sh scripts/check-browser-diagnostics.sh
 sh scripts/check-browser-accessibility.sh
 

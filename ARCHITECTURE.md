@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-09-07
-Current project version: `0.2.351`
+Current project version: `0.2.352`
 
 Status: Verified for current deterministic headless core, MCP tooling,
 browser-playable WebGPU slice, and the thin native frontend boundary; full
@@ -551,7 +551,10 @@ Presentation Boundary
   - Accessibility and Support: Accessible DOM shell, keyboard/numpad
     navigation, focused diagnostics panel, and a pure browser-environment
     classifier that rejects insecure contexts or missing WebGPU before WASM
-    startup.
+    startup. The startup asset-pack probe reports required graphics and
+    optional HQ/LQ audio and bitmap-font markers without entering simulation;
+    missing optional packs retain procedural Web Audio and DOM/browser-text
+    fallbacks.
 - **Dependencies**: Depends on `drl-protocol`, `drl-render`, `drl-assets`,
   `drl-audio`, and web-sys/wasm-bindgen.
 
