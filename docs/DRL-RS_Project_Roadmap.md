@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-09-07
-Current project version: `0.2.348`
+Current project version: `0.2.351`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.348)
+## 3. Current Progress Summary (`VERSION` 0.2.351)
 
 ### Delivered Foundations
 
@@ -1444,6 +1444,23 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
+- **Audit remediation — executable-module version classification (`0.2.351`):**
+  Commit `578702e` classifies `.mjs` as executable code in
+  `scripts/check-version.sh` and adds temporary-Git positive/negative fixtures
+  for `.mjs`, Rust, shell, documentation, and settings changes. The fixture
+  suite runs through `check-agent-harness.sh`; exact `0.2.350` -> `0.2.351`
+  transition and structural/version checks pass.
+- **Audit remediation — bounded MCP framing (`0.2.350`):** Commit `ae8a451`
+  bounds external requests to 1 MiB frames, 64 JSON levels, and 64 batch
+  members; oversized frames are drained and rejected without session mutation,
+  deep frames recover, and the shipped `--mcp` subprocess regression passes.
+  Focused MCP/app tests and MCP stdio contracts pass; the full workspace check
+  remains incomplete under the local execution allowance.
+- **Audit remediation — fair ground-item observations (`0.2.349`):** Commit
+  `0af1bed` exposes live ground items only on currently visible tiles while
+  retaining omniscient/debug views. Core/MCP regressions cover hidden addition,
+  removal, count changes, two-world equality, JSON non-disclosure, and reveal.
+
 - **Delivered Slice — M9 Missile Launcher direct Fire classification
   (`0.2.348`):** PR #467 merged as `48e6981`; candidate `375c95c` routes
   successful ordinary direct target damage through typed Fire mitigation, so
@@ -1649,18 +1666,16 @@ verification item uses explicit status semantics:
   broader legacy resistance aggregation, direct Fire classification, controlled
   runtime, audiovisual parity, and balance remain open or `NOT_RUN`.
 
-- **Latest Audited Checkpoint:** `main` at `48e6981` (version `0.2.348`),
-  merging PR #467. Candidate head `375c95c` and the merged tree pass local
-  workspace/Clippy/repository/web/version/SPEC checks; the independent
-  determinism review returned PASS. Hosted run `34124814610` passed
-  `Repository checks`, `Repository checks (Linux)`, `Fedora 43 development
-  host`, and `WASM browser checks`. Review policy run `34124814576` failed
-  closed because the sole maintainer cannot create a non-self approval; the
-  documented live `enforce_admins=false` exception was used. Earlier delivered
-  platform, direct-Plasma, and direct-Fire slices retain the detailed evidence
-  in the entries above. Controlled human, audiovisual, and reference-capture
-  surfaces remain `NOT_RUN` where prerequisites are unavailable. The
-  checkpointed progression audit is [`docs/steering/audit-2026-08-30-post-0.2.318.md`](steering/audit-2026-08-30-post-0.2.318.md).
+- **Latest Audited Checkpoint:** The 2026-09-07 project audit began at
+  `48e6981` / `0.2.348`; remediation commits `0af1bed`, `ae8a451`, and
+  `578702e` close findings F1, F2, and F3 respectively. Focused core/MCP/app,
+  web, version, harness, and subprocess checks pass; the full workspace
+  repository check remains `INCONCLUSIVE` locally because it exceeded the
+  execution allowance during integration tests. No remote CI, independent
+  review sign-off, native interactive, controlled legacy, audiovisual,
+  reference-capture, or human acceptance claim is inferred. The checkpointed
+  progression audit is
+  [`docs/project-audit-2026-09-07.md`](project-audit-2026-09-07.md).
 - **Steering Disposition — Gate A closed:** Preserve the deterministic core,
   explicit RNG/replay identities, typed content, observation boundary, and
   browser/MCP projections. M10 now binds browser command histories to their

@@ -72,6 +72,19 @@ With the temporary control-plane gates closed, select work in this order:
      productization. The next platform item is Fedora 43 GNOME/Mutter
      Wayland/Mesa/RADV Vulkan interactive acceptance, which remains `NOT_RUN`.
 
+### Audit remediation status
+
+The 2026-09-07 project audit findings are now addressed in three bounded
+commits: F1 fair ground-item observations (`0af1bed`, `0.2.349`), F2 bounded
+MCP framing/parsing (`ae8a451`, `0.2.350`), and F3 executable `.mjs` version
+classification (`578702e`, `0.2.351`). Focused core/MCP/app, browser, harness,
+version, and subprocess checks pass. The full workspace repository check
+remains `INCONCLUSIVE` locally because it exceeded the execution allowance;
+remote CI and independent review sign-off are not inferred. The next selected
+slice must therefore be one bounded, player-impacting vertical canonical
+behavior branch with an attributable independent determinism review or an
+explicitly recorded unavailable-review exception.
+
 ## Development stop gates
 
 ### Gate A — Persistent histories bind their interpreter (closed)
