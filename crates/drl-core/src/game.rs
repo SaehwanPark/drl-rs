@@ -1753,6 +1753,7 @@ impl Game {
       weapon_is_anti_freak_jackal,
       weapon_is_rocket_launcher,
       weapon_is_missile_launcher,
+      weapon_is_revenants_launcher,
     ) = {
       let player = self
         .state
@@ -1838,6 +1839,8 @@ impl Game {
         weapon.archetype() == drl_protocol::ItemArchetype::RocketLauncher;
       let weapon_is_missile_launcher =
         weapon.archetype() == drl_protocol::ItemArchetype::MissileLauncher;
+      let weapon_is_revenants_launcher =
+        weapon.archetype() == drl_protocol::ItemArchetype::RevenantsLauncher;
       (
         props.fire_cost,
         shot_count,
@@ -1856,6 +1859,7 @@ impl Game {
         weapon_is_anti_freak_jackal,
         weapon_is_rocket_launcher,
         weapon_is_missile_launcher,
+        weapon_is_revenants_launcher,
       )
     };
 
@@ -2017,24 +2021,26 @@ impl Game {
           continue;
         }
 
-        let direct_damage_type =
-          if weapon_is_rocket_launcher || weapon_is_anti_freak_jackal || weapon_is_missile_launcher
-          {
-            Some(DamageType::Fire)
-          } else if weapon_is_blaster
-            || weapon_is_plasma_shotgun
-            || weapon_is_tristar_blaster
-            || weapon_is_plasma_rifle
-            || weapon_is_laser_rifle
-            || weapon_is_nuclear_plasma_rifle
-            || weapon_is_bfg10k
-            || weapon_is_bfg9000
-            || weapon_is_nuclear_bfg9000
-          {
-            Some(DamageType::Plasma)
-          } else {
-            None
-          };
+        let direct_damage_type = if weapon_is_rocket_launcher
+          || weapon_is_anti_freak_jackal
+          || weapon_is_missile_launcher
+          || weapon_is_revenants_launcher
+        {
+          Some(DamageType::Fire)
+        } else if weapon_is_blaster
+          || weapon_is_plasma_shotgun
+          || weapon_is_tristar_blaster
+          || weapon_is_plasma_rifle
+          || weapon_is_laser_rifle
+          || weapon_is_nuclear_plasma_rifle
+          || weapon_is_bfg10k
+          || weapon_is_bfg9000
+          || weapon_is_nuclear_bfg9000
+        {
+          Some(DamageType::Plasma)
+        } else {
+          None
+        };
         let (taken, actual_lethal, death_cause) = if let Some(damage_type) = direct_damage_type {
           self.state.world.apply_damage_typed(
             target_monster_id,

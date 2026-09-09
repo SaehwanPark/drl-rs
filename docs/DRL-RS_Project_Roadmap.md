@@ -1444,6 +1444,16 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
+- **M9 Revenant's Launcher direct Fire classification (`0.2.354`):** Active
+  candidate on `feat/revenants-launcher-direct-fire` routes successful ordinary
+  direct target damage through typed Fire mitigation, so Red Armor's
+  catalog-defined 25% resistance applies before flat protection (4). The
+  existing exact-hit policy, one-rocket clip, raw `7d6` damage, RNG order,
+  event ordering, rejection atomicity, single-rocket reload, replay semantics
+  (version `148`), MCP JSON, and BrowserSession/direct-core parity remain
+  intact. Homing, projectile routing, radius-3 delayed explosion, controlled
+  legacy runtime, audiovisual/reference capture, browser capture, and human
+  acceptance remain open or `NOT_RUN`.
 - **M0/M13 review-exception process (`0.2.353`):** The temporary
   solo-maintainer exception now has an accountable release-owner role,
   required current-head/hosted-failure/check/follow-up evidence, and a fixed
