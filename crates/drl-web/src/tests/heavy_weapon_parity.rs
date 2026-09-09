@@ -2793,6 +2793,15 @@ fn revenants_launcher_exact_hit_browser_boundary_matches_direct_core() {
     drl_core::ReplayEngine::run(&command_replay).expect("Revenant exact-hit command replay");
   assert_eq!(replayed, direct);
   assert_eq!(replay_events, expected_events);
+  assert!(expected_events.iter().any(|event| {
+    matches!(
+      event,
+      drl_protocol::GameEvent::DamageApplied {
+        damage_type: Some(drl_protocol::DamageType::Fire),
+        ..
+      }
+    )
+  }));
   assert!(drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism"));
 }
 

@@ -1,7 +1,7 @@
 # Architecture
 
-Last reviewed: 2026-09-07
-Current project version: `0.2.353`
+Last reviewed: 2026-09-08
+Current project version: `0.2.354`
 
 Status: Verified for current deterministic headless core, MCP tooling,
 browser-playable WebGPU slice, and the thin native frontend boundary; full
@@ -119,7 +119,7 @@ terrain mutation remains separate policy work;
 Assault Shotgun records its typed ordinary single-shell reload and
 capped full-deficit reload fragments;
 Revenant's Launcher records its typed
-exact-hit attack fragment;
+exact-hit attack and direct Fire target-path fragments;
 Nuclear Plasma records its typed direct Plasma target path alongside its
 alternate-overload and periodic-recharge fragments; the BFG family profiles
 record exact-hit, typed projectile-count,
@@ -307,7 +307,8 @@ Presentation Boundary
     Assault Shotgun's immutable profile records the ordered reload fragments;
     its dedicated planner remains responsible for reserve, deficit, cost, and
     transactional validation.
-    Revenant's Launcher's immutable profile records the exact-hit fragment;
+    Revenant's Launcher's immutable profile records the exact-hit and typed
+direct Fire target-path fragments;
     dedicated combat resolution remains responsible for LOS, range, clip,
     damage RNG, and event ordering.
     The exotic Missile Launcher uses the explicit single-shell reload policy,
@@ -357,9 +358,10 @@ Presentation Boundary
     secondary chains, terrain/content mutation, delayed timing/state-machine
     parity, projectile routing, NukeRun, and the recharge/overload effects
     remain separate policy work.
-    Revenant’s Launcher opts into the same typed exact-hit policy without
-    changing its one-rocket clip or damage policy; homing, projectile routing,
-    delayed explosions, and timing remain separate policy work.
+    Revenant’s Launcher opts into the same typed exact-hit policy and typed
+    direct Fire mitigation without changing its one-rocket clip or damage
+    policy; homing, projectile routing, delayed explosions, and timing remain
+    separate policy work.
     Nuclear BFG 9000 shares the typed forty-cell shot-cost policy with the
     standard BFG while preserving its exact-hit, recharge, and overload state;
     projectile routing, explosions, and NukeRun remain separate policy work.

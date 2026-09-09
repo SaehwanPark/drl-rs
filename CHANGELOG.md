@@ -3,6 +3,20 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.354]
+
+- Classified successful Revenant's Launcher direct target hits as typed `Fire`,
+  so Red Armor's catalog-defined 25% Fire resistance applies before flat
+  protection (4). The existing exact-hit policy, one-rocket-per-shot cost from
+  its one-rocket clip, raw `7d6` damage, RNG order, event ordering, rejection
+  atomicity, single-rocket reload, replay semantics, MCP JSON, and
+  BrowserSession/direct-core parity remain unchanged. Focused same-seed,
+  single-shot clip depletion, single-rocket reload, rejection, replay, JSON,
+  and browser tests cover the contract; homing, projectile routing, radius-3
+  delayed explosion, controlled legacy runtime, audiovisual parity, browser
+  capture, and broader resistance aggregation remain open or `NOT_RUN`.
+  Gameplay semantics advance from `147` to `148`.
+
 ## [0.2.353]
 
 - Made the temporary solo-maintainer review exception explicit and
