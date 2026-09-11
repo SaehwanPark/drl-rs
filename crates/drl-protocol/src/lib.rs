@@ -31,7 +31,8 @@ pub use replay::{
 pub use scenario::{ScenarioFixture, ScenarioMap};
 pub use types::{
   ActionCost, AttackOutcome, DamageSource, DamageType, DeathCause, Direction, EntityId, HitPoints,
-  ItemId, LevelId, MonsterDefinition, MonsterKind, Position, Speed, Target, Turn,
+  ItemId, LevelId, MegaBusterMorphMode, MonsterDefinition, MonsterKind, Position, Speed, Target,
+  Turn,
 };
 
 /// Returns the protocol schema version for DRL-Rust.

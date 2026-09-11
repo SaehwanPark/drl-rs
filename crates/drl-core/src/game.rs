@@ -41,6 +41,7 @@ use crate::item::Item;
 use crate::jackhammer::{JACKHAMMER_MODE_SCORE_COST, JackhammerTransition};
 use crate::level_definition::standard_procedural;
 use crate::malek_armor::MalekRechargeOutcome;
+use crate::mega_buster::mode_for_target_damage_type;
 use crate::missile_launcher::{
   MISSILE_LAUNCHER_EXPLOSION_DELAY, MISSILE_LAUNCHER_EXPLOSION_KNOCKBACK,
   MISSILE_LAUNCHER_EXPLOSION_RADIUS, MISSILE_LAUNCHER_GROUND_ITEM_DESTRUCTION_THRESHOLD,
@@ -1750,6 +1751,7 @@ impl Game {
       fire_cost,
       shot_count,
       ammo_cost,
+      mega_buster_item_id,
       null_pointer_item_id,
       weapon_is_railgun,
       weapon_is_blaster,
@@ -1831,6 +1833,8 @@ impl Game {
 
       let null_pointer_item_id =
         (weapon.archetype() == drl_protocol::ItemArchetype::NullPointer).then_some(weapon.id());
+      let mega_buster_item_id =
+        (weapon.archetype() == drl_protocol::ItemArchetype::MegaBuster).then_some(weapon.id());
       let weapon_is_railgun = weapon.archetype() == drl_protocol::ItemArchetype::Railgun;
       let weapon_is_blaster = weapon.archetype() == drl_protocol::ItemArchetype::Blaster;
       let weapon_is_plasma_shotgun =
@@ -1856,6 +1860,7 @@ impl Game {
         props.fire_cost,
         shot_count,
         ammo_cost,
+        mega_buster_item_id,
         null_pointer_item_id,
         weapon_is_railgun,
         weapon_is_blaster,
@@ -2048,7 +2053,14 @@ impl Game {
           continue;
         }
 
-        let direct_damage_type = if weapon_is_rocket_launcher
+        let direct_damage_type = if mega_buster_item_id.is_some() {
+          self
+            .state
+            .world
+            .get_actor(player_id)
+            .and_then(|actor| actor.equipment().weapon())
+            .and_then(Item::weapon_damage_type)
+        } else if weapon_is_rocket_launcher
           || weapon_is_anti_freak_jackal
           || weapon_is_missile_launcher
           || weapon_is_revenants_launcher
@@ -2178,6 +2190,9 @@ impl Game {
               attacker_id: player_id,
             }),
           });
+          if let Some(item_id) = mega_buster_item_id {
+            self.apply_mega_buster_kill_morph(player_id, item_id, target_monster_id, events);
+          }
           if let Some(drop_kind) = death_drop {
             self.spawn_death_drop(target_monster_id, death_position, drop_kind, events)?;
           }
@@ -2221,6 +2236,45 @@ impl Game {
     } else {
       fire_cost
     })
+  }
+
+  /// Applies the bounded Mega Buster post-kill transition.
+  ///
+  /// The target is inspected while its equipment still exists, after the
+  /// lethal direct damage has marked it dead and after `ActorDied` has been
+  /// emitted. The transition is intentionally absent from splash and
+  /// environment paths; callers invoke this helper only for a direct Mega
+  /// Buster projectile.
+  fn apply_mega_buster_kill_morph(
+    &mut self,
+    player_id: drl_protocol::EntityId,
+    item_id: drl_protocol::ItemId,
+    target_id: drl_protocol::EntityId,
+    events: &mut Vec<GameEvent>,
+  ) {
+    let target_damage_type = self
+      .state
+      .world
+      .get_actor(target_id)
+      .and_then(|target| target.equipment().weapon())
+      .and_then(Item::weapon_damage_type);
+    let mode = mode_for_target_damage_type(target_damage_type);
+    let transition = self
+      .state
+      .world
+      .get_actor_mut(player_id)
+      .and_then(|player| player.equipment_mut().weapon_mut())
+      .filter(|weapon| weapon.id() == item_id)
+      .and_then(|weapon| weapon.apply_mega_buster_morph(mode));
+    if let Some((previous, current)) = transition {
+      events.push(GameEvent::MegaBusterMorphed {
+        entity_id: player_id,
+        item_id,
+        target_id,
+        previous,
+        current,
+      });
+    }
   }
 
   /// Resolves one Railgun shot across every living actor on a clear ray.

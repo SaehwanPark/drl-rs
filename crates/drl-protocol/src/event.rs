@@ -4,7 +4,7 @@ use crate::item::EquipmentSlot;
 use crate::item::WeaponFireMode;
 use crate::types::{
   ActionCost, AttackOutcome, DamageSource, DamageType, DeathCause, EntityId, HitPoints, ItemId,
-  LevelId, Position, Turn,
+  LevelId, MegaBusterMorphMode, Position, Turn,
 };
 
 /// Game event emitted deterministically by the simulation core.
@@ -45,6 +45,18 @@ pub enum GameEvent {
   ActorDied {
     entity_id: EntityId,
     cause: DeathCause,
+  },
+  /// A lethal direct Mega Buster hit changed the weapon's future profile.
+  ///
+  /// This event is emitted after `ActorDied` and before any configured death
+  /// drop, matching the legacy kill callback boundary while keeping splash or
+  /// environment deaths out of the trigger path.
+  MegaBusterMorphed {
+    entity_id: EntityId,
+    item_id: ItemId,
+    target_id: EntityId,
+    previous: MegaBusterMorphMode,
+    current: MegaBusterMorphMode,
   },
   /// An actor paid action cost / energy.
   ActionCostPaid {

@@ -5,7 +5,7 @@ use crate::generator::LevelGeneratorConfig;
 use crate::item::Item;
 use crate::scheduler::ACTION_THRESHOLD;
 use drl_protocol::{
-  Command, CommandError, EpisodeMetrics, EquipmentSlot, GameEvent, HitPoints, MonsterKind,
+  Command, CommandError, EpisodeMetrics, EquipmentSlot, GameEvent, HitPoints, ItemId, MonsterKind,
   Position, ReplayExecutionError, ReplayLog, RunOutcome, Speed, Turn,
 };
 
@@ -110,6 +110,14 @@ impl ReplayEngine {
         return Err(format!(
           "Monster '{}' position {:?} is out of map bounds",
           monster.name, monster.position
+        ));
+      }
+      if let Some(weapon_kind) = monster.equipped_weapon
+        && !Item::from_spawn_kind(ItemId::new(0), weapon_kind).is_weapon()
+      {
+        return Err(format!(
+          "Monster '{}' equipped_weapon must identify a weapon item",
+          monster.name
         ));
       }
     }
@@ -263,11 +271,24 @@ impl ReplayEngine {
         )
         .with_death_drop(monster.death_drop)
         .with_boss(monster.is_boss);
-      let actor = if let Some(kind) = MonsterKind::from_name(&monster.name) {
+      let mut actor = if let Some(kind) = MonsterKind::from_name(&monster.name) {
         actor.with_monster_kind(kind)
       } else {
         actor
       };
+      if let Some(weapon_kind) = monster.equipped_weapon {
+        let item_id = game.world_mut().allocate_item_id();
+        let weapon = Item::from_spawn_kind(item_id, weapon_kind);
+        actor
+          .equipment_mut()
+          .equip(EquipmentSlot::Weapon, weapon)
+          .map_err(|error| ReplayExecutionError {
+            turn: Turn::zero(),
+            command_index: 0,
+            command: Command::Wait,
+            error,
+          })?;
+      }
       game.world_mut().actors_mut().insert(id, actor);
     }
 
@@ -387,7 +408,7 @@ fn validate_replay_structure(replay: &ReplayLog) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use drl_protocol::{Command, Direction, Position};
+  use drl_protocol::{Command, Direction, EntityId, ItemArchetype, ItemSpawnKind, Position};
 
   #[test]
   fn test_replay_determinism() {
@@ -412,8 +433,8 @@ mod tests {
   fn test_replay_validation_rejects_incompatible_semantics() {
     let mut replay = ReplayLog::new(1234, 10, 10, Position::new(1, 1));
     // Version 105 predates BFG 10K's thirteenth-level chainfire effect and must
-    // be interpreted by the version-150 engine.
-    assert_eq!(drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION, 150);
+    // be interpreted by the version-151 engine.
+    assert_eq!(drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION, 151);
     assert_eq!(
       drl_protocol::CURRENT_RNG_SAMPLING_SEMANTICS_VERSION,
       crate::rng::RNG_SAMPLING_SEMANTICS_VERSION
@@ -454,5 +475,38 @@ mod tests {
     let err = ReplayEngine::run_with_diagnostics(&replay).unwrap_err();
     assert_eq!(err.command_index, 0);
     assert_eq!(err.command, Command::Move(Direction::West));
+  }
+
+  #[test]
+  fn replay_reconstructs_optional_monster_weapon_with_stable_item_id() {
+    let mut replay = ReplayLog::new(1, 8, 8, Position::new(1, 1));
+    replay.record_monster(
+      drl_protocol::MonsterSpawnSpec::new(Position::new(4, 4), "Target", 100, 0, (0, 0))
+        .with_equipped_weapon(Some(ItemSpawnKind::MegaBuster)),
+    );
+
+    let (game, _) = ReplayEngine::run(&replay).expect("replay with equipped target weapon");
+    let target = game
+      .world()
+      .get_actor(EntityId::new(2))
+      .expect("first replay monster");
+    let weapon = target
+      .equipment()
+      .weapon()
+      .expect("target weapon reconstructed");
+    assert_eq!(weapon.id(), drl_protocol::ItemId::new(4));
+    assert_eq!(weapon.archetype(), ItemArchetype::MegaBuster);
+  }
+
+  #[test]
+  fn replay_rejects_non_weapon_monster_equipment() {
+    let mut replay = ReplayLog::new(1, 8, 8, Position::new(1, 1));
+    replay.record_monster(
+      drl_protocol::MonsterSpawnSpec::new(Position::new(4, 4), "Target", 100, 0, (0, 0))
+        .with_equipped_weapon(Some(ItemSpawnKind::LargeMedPack)),
+    );
+
+    let error = ReplayEngine::validate(&replay).expect_err("non-weapon target equipment");
+    assert!(error.contains("equipped_weapon must identify a weapon"));
   }
 }

@@ -1,7 +1,7 @@
 //! Core domain types: coordinates, directions, IDs, and turns.
 
 use crate::replay::ItemSpawnKind;
-use std::ops::Add;
+use std::{fmt, ops::Add};
 
 /// 2D integer grid position in level coordinates.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
@@ -383,6 +383,54 @@ pub enum DamageType {
   Plasma,
   Acid,
   Fire,
+}
+
+/// Typed post-kill profile selected by the Mega Buster.
+///
+/// This is a protocol value rather than a core-only implementation detail so
+/// deterministic morph events can cross replay, MCP, audio, and rendering
+/// boundaries without relying on debug formatting.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum MegaBusterMorphMode {
+  /// Ordinary bullet-like physical damage and the total-selector fallback.
+  Bullet,
+  /// Fire profile (radius metadata is owned by the core profile).
+  Fire,
+  /// Acid profile (radius metadata is owned by the core profile).
+  Acid,
+  /// Plasma profile.
+  Plasma,
+}
+
+impl MegaBusterMorphMode {
+  /// Stable wire identifier for this morph mode.
+  #[must_use]
+  pub const fn stable_name(self) -> &'static str {
+    match self {
+      Self::Bullet => "bullet",
+      Self::Fire => "fire",
+      Self::Acid => "acid",
+      Self::Plasma => "plasma",
+    }
+  }
+
+  /// Parses a stable wire identifier.
+  #[must_use]
+  pub fn from_stable_name(name: &str) -> Option<Self> {
+    match name {
+      "bullet" => Some(Self::Bullet),
+      "fire" => Some(Self::Fire),
+      "acid" => Some(Self::Acid),
+      "plasma" => Some(Self::Plasma),
+      _ => None,
+    }
+  }
+}
+
+impl fmt::Display for MegaBusterMorphMode {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    f.write_str(self.stable_name())
+  }
 }
 
 /// Source that caused damage or destruction.

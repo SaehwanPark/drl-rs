@@ -247,13 +247,14 @@ roadmap and active specification from verified evidence.
 
 Re-audit before broad M9 migration resumes, or when a new stop-gate candidate
 is selected. The audited starting tree for the current slice was
-`codex/revenants-launcher-radius3` at `7f66f08` (version `0.2.355`); the
-Missile Launcher radius-3 Fire fanout is delivered on
-`codex/missile-launcher-radius3` (version `0.2.356`) with an independent
-`drl-determinism-review: PASS` and passing local repository evidence. The
-current Rust helper deliberately retains center-first/Chebyshev geometry while
-the legacy 37-cell metric/traversal is tracked as explicit follow-up work.
-Platform interactive acceptance, controlled legacy runtime, human,
-audiovisual, performance, and reference-capture surfaces remain `NOT_RUN`
-where prerequisites are unavailable. The next bounded candidate is the
-Mega Buster post-kill morph, subject to a new SPEC slice and review receipt.
+`codex/mega-buster-kill-morph` at `264d4b4` (version `0.2.356`); the bounded
+Mega Buster post-kill typed morph is delivered on that branch with an explicit
+target-equipment topology, pure profile selector, and fresh independent
+`drl-determinism-review: PASS` receipt. The preceding Missile Launcher radius-3 Fire
+fanout is delivered on `codex/missile-launcher-radius3` (version `0.2.356`) with
+an independent `drl-determinism-review: PASS`. Exact Mega Buster dice,
+radius-one execution, legacy timing/accuracy, same-volley mutation, and
+presentation remain explicit follow-up work. Platform interactive acceptance,
+controlled legacy runtime, human, audiovisual, performance, and
+reference-capture surfaces remain `NOT_RUN` where prerequisites are
+unavailable.

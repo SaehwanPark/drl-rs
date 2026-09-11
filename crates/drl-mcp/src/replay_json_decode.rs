@@ -5,9 +5,9 @@ use crate::replay_json::{
   MAX_CONTENT_PER_ROOM, MAX_PROCEDURAL_ROOMS, MAX_REPLAY_DIMENSION, MAX_ROOM_SIZE,
 };
 use drl_protocol::{
-  Command, Direction, EquipmentSlot, ItemArchetype, ItemSpawnKind, ItemSpawnSpec, MonsterSpawnSpec,
-  PlayerSpawnConfig, Position, ProceduralGenerationConfig, ReplayLog, ReplayMetadata,
-  ReplayVersion, TileKind,
+  Command, Direction, EquipmentSlot, ItemArchetype, ItemId, ItemSpawnKind, ItemSpawnSpec,
+  MonsterSpawnSpec, PlayerSpawnConfig, Position, ProceduralGenerationConfig, ReplayLog,
+  ReplayMetadata, ReplayVersion, TileKind,
 };
 use std::collections::BTreeMap;
 
@@ -186,6 +186,18 @@ fn parse_procedural_config(value: &JsonValue) -> Result<ProceduralGenerationConf
 fn parse_monster(value: &JsonValue, index: usize) -> Result<MonsterSpawnSpec, String> {
   let context = format!("initial_monsters[{index}]");
   let object = object(value, &context)?;
+  let equipped_weapon = match object.get("equipped_weapon") {
+    None | Some(JsonValue::Null) => None,
+    Some(value) => {
+      let weapon = item_kind(value, &format!("{context}.equipped_weapon"))?;
+      if !drl_core::Item::from_spawn_kind(ItemId::new(0), weapon).is_weapon() {
+        return Err(format!(
+          "{context}.equipped_weapon must identify a weapon item"
+        ));
+      }
+      Some(weapon)
+    }
+  };
   Ok(MonsterSpawnSpec {
     position: parse_position(
       required(object, "position")?,
@@ -215,6 +227,7 @@ fn parse_monster(value: &JsonValue, index: usize) -> Result<MonsterSpawnSpec, St
     death_drop: nullable(object, "death_drop", |value| {
       item_kind(value, &format!("{context}.death_drop"))
     })?,
+    equipped_weapon,
   })
 }
 

@@ -271,7 +271,7 @@ fn revenants_launcher_splash_death_drop_preflight_is_atomic() {
 
 #[test]
 fn revenants_launcher_radius_three_replay_is_deterministic_and_versioned() {
-  assert_eq!(CURRENT_GAMEPLAY_SEMANTICS_VERSION, 150);
+  assert_eq!(CURRENT_GAMEPLAY_SEMANTICS_VERSION, 151);
 
   let center = Position::new(6, 8);
   let player_start = Position::new(2, 8);
@@ -375,7 +375,7 @@ fn revenants_launcher_radius_three_runs_through_scenario_runner() {
       .expect("ScenarioRunner should execute Revenant's Launcher fanout");
 
   assert_eq!(replay.commands, vec![Command::AttackRanged(center)]);
-  assert_eq!(replay.metadata.gameplay_semantics_version, 150);
+  assert_eq!(replay.metadata.gameplay_semantics_version, 151);
   assert!(events.iter().any(|event| matches!(
     event,
     GameEvent::RevenantsLauncherExplosionScheduled {

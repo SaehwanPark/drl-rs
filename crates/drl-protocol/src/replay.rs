@@ -21,9 +21,10 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// Gameplay semantics identifier expected by the current replay engine.
 ///
 /// This advances independently from the wire/schema and RNG-sampling versions
-/// when other deterministic simulation rules change. Version `150` includes
-/// Missile Launcher's 6d6 radius-3 Fire fanout after its typed direct target
-/// damage; version `149` includes Revenant's Launcher's bounded radius-3 Fire
+/// when other deterministic simulation rules change. Version `151` includes
+/// Mega Buster's post-kill typed profile morph from explicit target equipment;
+/// version `150` includes Missile Launcher's 6d6 radius-3 Fire fanout after its
+/// typed direct target damage; version `149` includes Revenant's Launcher's bounded radius-3 Fire
 /// fanout after its typed direct target damage; version `148` includes
 /// Revenant's Launcher's typed Fire classification on direct target damage;
 /// version `147` includes Missile Launcher's typed Fire classification on
@@ -154,7 +155,7 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// prior Malek's Armor, Missile Launcher, and
 /// Combat Shotgun policies, and the typed ordinary-fire cost policies through
 /// Laser Rifle.
-pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 150;
+pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 151;
 
 /// Procedural-generation semantics identifier expected for replays that carry
 /// a procedural generation configuration. Version 2 includes the exact
@@ -179,8 +180,9 @@ pub struct ReplayMetadata {
   /// Engine crate version string.
   pub engine_version: String,
   /// Gameplay semantics version required to interpret the command history.
-  /// Version 150 includes Missile Launcher's 6d6 radius-3 Fire fanout after
-  /// typed direct target damage; version 149 includes Revenant's Launcher's
+  /// Version 151 includes Mega Buster's post-kill typed profile morph from
+  /// explicit target equipment; version 150 includes Missile Launcher's 6d6
+  /// radius-3 Fire fanout after typed direct target damage; version 149 includes Revenant's Launcher's
   /// bounded radius-3 Fire fanout after typed direct target damage; version
   /// 148 includes Revenant's Launcher's typed Fire classification on direct
   /// target damage; version 147 includes Missile Launcher's typed Fire
@@ -455,6 +457,12 @@ pub struct MonsterSpawnSpec {
   pub death_drop: Option<ItemSpawnKind>,
   /// Whether this target is a boss for target-dependent item behavior.
   pub is_boss: bool,
+  /// Optional catalog-backed weapon equipped by this monster at spawn.
+  ///
+  /// The field is omitted by older replay JSON and defaults to no weapon;
+  /// callers should provide a weapon-family spawn kind rather than custom
+  /// combat payloads so reconstruction remains deterministic.
+  pub equipped_weapon: Option<ItemSpawnKind>,
 }
 
 impl MonsterSpawnSpec {
@@ -478,6 +486,7 @@ impl MonsterSpawnSpec {
       accuracy: 65,
       death_drop: None,
       is_boss: false,
+      equipped_weapon: None,
     }
   }
 
@@ -501,6 +510,14 @@ impl MonsterSpawnSpec {
   #[must_use]
   pub const fn with_boss(mut self, is_boss: bool) -> Self {
     self.is_boss = is_boss;
+    self
+  }
+
+  /// Equips a catalog-backed weapon on this monster during replay/scenario
+  /// reconstruction. `None` preserves the default unarmed target.
+  #[must_use]
+  pub const fn with_equipped_weapon(mut self, weapon: Option<ItemSpawnKind>) -> Self {
+    self.equipped_weapon = weapon;
     self
   }
 }
