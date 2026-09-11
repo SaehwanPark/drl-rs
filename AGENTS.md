@@ -54,6 +54,7 @@
   `x.y.z` transition, while documentation-only and setting-only changes do
   not bump the version. Run `scripts/check-version.sh`; CI supplies
   `DRL_VERSION_BASE` so the agent harness can enforce the transition.
+- Be aware the usage limits of AI subscripts you use and when the limits are reset. You may check with `codexbar` to know the used percentages and/or when the limits are reset. See `codexbar.md` for details and default policy.
 
 ## Subagents
 
