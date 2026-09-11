@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-09-11
-Current project version: `0.2.355`
+Current project version: `0.2.356`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.355)
+## 3. Current Progress Summary (`VERSION` 0.2.356)
 
 ### Delivered Foundations
 
@@ -1456,10 +1456,25 @@ verification item uses explicit status semantics:
   `149`. Homing, projectile routing, pending delayed-explosion timing,
   terrain/feature callbacks, controlled legacy runtime, audiovisual/reference
   capture, browser capture, and human acceptance remain open or `NOT_RUN`.
-- **M9 Missile Launcher radius-3 Fire fanout (next candidate):** The existing
-  typed direct Fire/reload branch remains delivered; radius-3 splash geometry,
-  item policy, rocket-jump behavior, and its cross-boundary schedule contract
-  require a separate bounded slice and independent review.
+- **Delivered M9 Missile Launcher radius-3 Fire fanout (`0.2.356`):** The
+  typed direct Fire/reload branch now emits a distinct delay-40/radius-3/
+  knockback-8 schedule event and immediately resolves one ordered `6d6` Fire
+  roll per clear blast cell with integer distance falloff, actor de-duplication,
+  radial `damage / 8` knockback, source self-damage, and strict `>10`
+  ordinary ground-item destruction. Resolved misses emit the same schedule and
+  splash without direct damage; splash death-drop destinations are preflighted
+  before clip/RNG mutation. Focused core hit/miss, threshold, rejection,
+  replay/version, MCP JSON, and BrowserSession/direct-core parity tests pass
+  locally; gameplay semantics advance from `149` to `150`. The bounded helper
+  intentionally retains current Rust center-first/Chebyshev geometry; exact
+  legacy metric/traversal, pending delayed timing, terrain/feature callbacks,
+  rocket-jump, controlled legacy runtime, audiovisual/reference capture,
+  browser capture, and human acceptance remain open or `NOT_RUN`.
+- **M9 Mega Buster kill morph (next candidate):** The ordinary typed
+  three-projectile volley remains delivered. A future bounded slice must add a
+  typed post-kill weapon morph/state transition from legacy evidence, with
+  explicit replay semantics, event/boundary projections, and atomic
+  post-commit ordering; no callback-shaped runtime registry is inferred.
 - **M0/M13 review-exception process (`0.2.353`):** The temporary
   solo-maintainer exception now has an accountable release-owner role,
   required current-head/hosted-failure/check/follow-up evidence, and a fixed
@@ -2324,14 +2339,17 @@ scripting.
   BrowserSession projections remain unchanged. Focused direct/replay/rejection
   tests pass; spread, routing, delayed effects, knockback, controlled runtime,
   and audiovisual parity remain open or `NOT_RUN`.
-- [x] Missile Launcher ordinary direct target damage is classified as typed
-  `Fire`, so Red Armor's catalog-defined 25% resistance applies before flat
-  protection while its 4-rocket clip, raw damage/RNG order, event ordering,
-  single-rocket reload, rejection boundaries, and MCP/BrowserSession projections
-  remain unchanged. Focused direct/clip/reload/replay/rejection tests cover the
-  contract; radius-3 explosion splash, ground-item destruction, rocket-jump,
-  routing, delayed effects, controlled runtime, and audiovisual parity remain
-  open or `NOT_RUN`.
+- [x] Missile Launcher ordinary direct target damage and the bounded radius-3
+  Fire fanout are typed: Red Armor's catalog-defined 25% resistance applies
+  before flat protection on direct and splash paths; the 4-rocket clip,
+  one-projectile cost, raw RNG order, hit/miss schedule event, center-first
+  clear-cell `6d6` rolls, falloff, actor de-duplication, radial knockback,
+  source self-damage, strict `>10` ordinary ground-item destruction, and
+  death-drop preflight are covered by focused core tests. Replay semantics,
+  MCP JSON, audio/metrics/render projections, and BrowserSession/direct-core
+  parity are verified in `0.2.356`; exact legacy metric/traversal, pending
+  timing, rocket-jump, routing, controlled runtime, and audiovisual parity
+  remain open or `NOT_RUN`.
 - [x] Typed double/combat shotguns preserve pinned shell relation, clips,
   damage/range scalars, descriptions, replay kinds, and `SPRITE_DSHOTGUN`/
   `SPRITE_CSHOTGUN` slots; callbacks and spread/falloff remain open.
@@ -3101,10 +3119,12 @@ scripting.
   direct-core, replay/MCP JSON/catalog, and BrowserSession parity are verified,
   and empty-clip rejection is atomic while exact legacy callback state/timing,
   runtime, capture, and audiovisual parity remain open.
-- [x] Missile Launcher has an immutable behavior profile for ordinary
-  single-rocket reload and capped full-deficit reload (`2,500` score-count
-  units); dedicated reload/planner paths remain authoritative and rocket-jump,
-  explosion, runtime, and audiovisual parity remain open.
+- [x] Missile Launcher has an immutable behavior profile for one-projectile/
+  one-rocket ordinary fire, typed direct Fire, delay-40/radius-3/knockback-8
+  scheduling, ordinary single-rocket reload, and capped full-deficit reload
+  (`2,500` score-count units). Dedicated reload/planner and bounded splash
+  paths remain authoritative; exact legacy metric/traversal, pending timing,
+  rocket-jump, runtime, and audiovisual parity remain open.
 - [x] Combat Shotgun has an immutable behavior profile for ordinary
   pump-only chamber action (`200` action units), single-shell reload, and capped
   full-deficit reload (`2,500` score-count units); dedicated reload/planner and
@@ -3814,16 +3834,21 @@ scripting.
   reload is delivered in `0.2.171`, and Combat Shotgun alternate full reload
   with chamber reset is delivered in `0.2.172`; partial reserve policy and
   controlled legacy runtime comparison remain open.
-- [x] Missile Launcher ordinary reload preserves the pinned `IF_SINGLERELOAD`
-  policy: one rocket loads per accepted command, full/no-reserve rejection is
-  atomic, and scenario/replay/browser-boundary parity is verified; rocket-jump,
-  explosion, and controlled legacy runtime comparison remain open.
+- [x] Missile Launcher ordinary reload and the bounded radius-3 Fire fanout
+  preserve the pinned `IF_SINGLERELOAD` policy and typed splash contract: one
+  rocket loads per accepted command, full/no-reserve rejection is atomic, and
+  accepted hit/miss shots consume ordered clear-cell `6d6` rolls after the
+  delay-40/radius-3/knockback-8 schedule. Scenario/replay/MCP/BrowserSession
+  parity and splash death-drop preflight are verified; exact legacy
+  metric/traversal, pending timing, rocket-jump, and controlled runtime
+  comparison remain open.
 - [x] Missile Launcher alternate/full reload preserves the pinned
   `perk_altreload_full` policy: one accepted command fills a complete,
   sufficiently supplied deficit, consumes exact loose-rocket reserve, caps the
   action cost at 2,500 units, rejects full/under-supplied clips atomically, and
-  has scenario/replay/MCP/BrowserSession boundary parity; rocket-jump,
-  explosion, and controlled legacy runtime comparison remain open.
+  has scenario/replay/MCP/BrowserSession boundary parity. Radius-three splash
+  behavior is delivered in `0.2.356`; exact legacy timing/metric, rocket-jump,
+  and controlled legacy runtime comparison remain open.
 - [x] Nuclear Plasma Rifle periodic recharge is behavior-covered by an
   explicit delay-40/cadence-2/amount-1 policy: one cell returns at accepted
   command tick 42, then every two ticks below capacity, with scenario/replay

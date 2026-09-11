@@ -6295,7 +6295,7 @@ fn missile_launcher_vertical_scenario_preserves_single_shell_reload_and_replay()
   let mut scenario = Scenario::from_ascii(
     "MissileLauncherSingleShellVertical",
     "Missile Launcher single-shell reload after deterministic clip depletion",
-    "########\n#@.h...#\n#......#\n########\n",
+    "########\n#@.h#..#\n#......#\n########\n",
   )
   .unwrap();
   scenario.seed = 1;
@@ -6303,8 +6303,8 @@ fn missile_launcher_vertical_scenario_preserves_single_shell_reload_and_replay()
   scenario.monsters[0].hp = 1_000;
   scenario.monsters[0].speed = 1;
   scenario.player_config = Some(PlayerSpawnConfig {
-    hp: 50,
-    max_hp: 50,
+    hp: 5_000,
+    max_hp: 5_000,
     speed: 100,
     initial_items: vec![ItemSpawnKind::AmmoRockets(2)],
     equipped_weapon: Some(ItemSpawnKind::MissileLauncher),
@@ -6388,7 +6388,7 @@ fn missile_launcher_alt_reload_vertical_scenario_preserves_full_reload_and_repla
   let mut scenario = Scenario::from_ascii(
     "MissileLauncherAltReloadVertical",
     "Missile Launcher alternate full reload after clip depletion",
-    "########\n#@.h...#\n#......#\n########\n",
+    "########\n#@.h#..#\n#......#\n########\n",
   )
   .unwrap();
   scenario.seed = 1;
@@ -6396,8 +6396,8 @@ fn missile_launcher_alt_reload_vertical_scenario_preserves_full_reload_and_repla
   scenario.monsters[0].hp = 1_000;
   scenario.monsters[0].speed = 1;
   scenario.player_config = Some(PlayerSpawnConfig {
-    hp: 50,
-    max_hp: 50,
+    hp: 5_000,
+    max_hp: 5_000,
     speed: 100,
     initial_items: vec![ItemSpawnKind::AmmoRockets(4)],
     equipped_weapon: Some(ItemSpawnKind::MissileLauncher),

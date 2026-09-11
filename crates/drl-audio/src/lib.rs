@@ -77,6 +77,7 @@ pub fn cues_for_events(events: &[GameEvent]) -> Vec<AudioCue> {
       | GameEvent::AntiFreakJackalExplosionScheduled { .. }
       | GameEvent::RocketLauncherExplosionScheduled { .. }
       | GameEvent::RevenantsLauncherExplosionScheduled { .. }
+      | GameEvent::MissileLauncherExplosionScheduled { .. }
       | GameEvent::Bfg10kExplosionScheduled { .. }
       | GameEvent::Bfg9000ExplosionScheduled { .. }
       | GameEvent::NuclearBfg9000ExplosionScheduled { .. }
