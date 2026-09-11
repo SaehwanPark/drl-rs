@@ -68,6 +68,12 @@ description: "Comprehensive armory encyclopedia: ballistic firearms, energy weap
 - **Trigun**: Legendary triple-barrel handgun. Supports **Alt-Reload** for a high-risk, catastrophic level-clearing energy detonation.
 - **Subtle Knife**: Interdimensional blade. Can be **Invoked** to cut through space and instantly sever adjacent enemy lifelines.
 - **Grammaton Beretta**: Dual-action cleric firearm supporting Single, 3-round Burst, and Full-Auto firing modes.
+- **Mega Buster**: Three-projectile 9mm artifact with a 60-round clip and
+  three rounds per projectile. A confirmed lethal direct hit morphs its future
+  typed profile from explicit target weapon equipment: Bullet/Physical,
+  Fire, Acid, or Plasma. The bounded Rust profiles retain legacy `1d8`,
+  `4d2`, `4d2`, and `1d10` provenance; Fire/Acid radius-one execution and
+  exact dice/timing remain follow-up work.
 - **Acid Spitter**: Bio-organic corrosive projector. Uses environmental acid pools to reload corrosive bio-rounds.
 - **Null Pointer**: Experimental glitch weapon. Applies a fixed `10d1` typed Plasma splash to visible actors; Blue Armor's catalog-defined 20% Plasma resistance applies before one-third of its flat protection for this SPLASMA-style fanout.
 - **Phase Device**: Emergency teleportation device. Instantly relocates the user to a clear floor tile away from danger.

@@ -1,8 +1,8 @@
 # Mega Buster typed behavior-profile evidence
 
-Status: delivered typed ordinary-fire volley/cost profile for `0.2.227`;
-the kill morph callback, controlled legacy runtime comparison, and audiovisual
-parity remain `NOT_RUN`.
+Status: delivered bounded typed post-kill morph and ordinary-fire volley/cost
+profile for `0.2.357`; exact legacy dice/splash/timing behavior, controlled
+legacy runtime comparison, and audiovisual parity remain `NOT_RUN`.
 
 ## Pinned source
 
@@ -20,8 +20,11 @@ Evidence is pinned to revision
   resolved shot count and per-shot cost before firing.
 
 The legacy `ammo` family is mapped to Rust `Ammo9mm` by the existing typed item
-catalog. The kill callback at `uitems.lua:359-435` mutates weapon properties
-after a kill and is outside this ordinary-fire contract.
+catalog. The kill callback at `uitems.lua:359-435` reads the defeated target's
+equipped weapon damage family (defaulting to Bullet), maps it to Bullet/Fire/
+Acid/Plasma, and mutates the Mega Buster only when the resulting mode changes.
+`src/dfbeing.pas:1785-1824` pins the callback after lethal damage marks the
+victim dying and before inventory drops.
 
 ## DRL-Rust boundary
 
@@ -32,6 +35,14 @@ execution remains the authority for target/LOS/range validation, damage RNG,
 event ordering, and transactional nine-round clip consumption. The profile
 does not add a command, replay wire field, RNG algorithm, or callback registry.
 
-The direct-target path intentionally leaves the kill morph callback, spread or
-projectile routing, exact timing/accuracy, controlled legacy runtime capture,
-and audiovisual parity outside this slice.
+The bounded direct-target path now stores a typed `MegaBusterMorphMode` on the
+Mega Buster and emits `GameEvent::MegaBusterMorphed` after `ActorDied` and before
+`ItemDropped`. Optional target equipment is represented by
+`MonsterSpawnSpec.equipped_weapon` and reconstructed with deterministic item
+IDs in Scenario/ReplayEngine/MCP replay JSON. Bullet/Physical, Fire, Acid, and
+Plasma profiles retain legacy `1d8`, `4d2`, `4d2`, and `1d10` provenance while
+using current Rust ranges `(1,8)`, `(4,8)`, `(4,8)`, and `(1,10)`.
+
+Fire/Acid radius-one execution, exact dice distribution, legacy
+accuracy/miss/timing/presentation, same-volley mutation, controlled runtime,
+and audiovisual parity remain explicit follow-up or `NOT_RUN` work.

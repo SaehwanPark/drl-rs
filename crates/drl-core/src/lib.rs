@@ -34,6 +34,7 @@ pub mod jackhammer;
 pub mod level_definition;
 pub mod loot_definition;
 pub mod malek_armor;
+pub mod mega_buster;
 pub mod missile_launcher;
 pub mod monster_roll_definition;
 pub mod nuclear_bfg9000;
@@ -193,6 +194,17 @@ pub use jackhammer::{JACKHAMMER_MODE_SCORE_COST, JackhammerTransition};
 pub use level_definition::{LEVEL_DEFINITIONS, LevelDefinition, standard_procedural};
 pub use malek_armor::{
   MALEK_ARMOR_RECHARGE_AMOUNT, MALEK_ARMOR_RECHARGE_DELAY, MALEK_ARMOR_RECHARGE_TICK,
+};
+pub use mega_buster::{
+  MEGA_BUSTER_ACID_DAMAGE_DICE, MEGA_BUSTER_ACID_DAMAGE_DIE_SIDES, MEGA_BUSTER_ACID_DAMAGE_RANGE,
+  MEGA_BUSTER_ACID_PROFILE, MEGA_BUSTER_ACID_RADIUS, MEGA_BUSTER_BULLET_DAMAGE_DICE,
+  MEGA_BUSTER_BULLET_DAMAGE_DIE_SIDES, MEGA_BUSTER_BULLET_DAMAGE_RANGE, MEGA_BUSTER_BULLET_PROFILE,
+  MEGA_BUSTER_BULLET_RADIUS, MEGA_BUSTER_FIRE_DAMAGE_DICE, MEGA_BUSTER_FIRE_DAMAGE_DIE_SIDES,
+  MEGA_BUSTER_FIRE_DAMAGE_RANGE, MEGA_BUSTER_FIRE_PROFILE, MEGA_BUSTER_FIRE_RADIUS,
+  MEGA_BUSTER_PLASMA_DAMAGE_DICE, MEGA_BUSTER_PLASMA_DAMAGE_DIE_SIDES,
+  MEGA_BUSTER_PLASMA_DAMAGE_RANGE, MEGA_BUSTER_PLASMA_PROFILE, MEGA_BUSTER_PLASMA_RADIUS,
+  MegaBusterMorphMode, MegaBusterMorphProfile, profile_for_target_damage_type,
+  profile_for_target_type,
 };
 pub use missile_launcher::{
   MISSILE_LAUNCHER_ALT_RELOAD_CAP, MISSILE_LAUNCHER_EXPLOSION_DAMAGE_DICE,

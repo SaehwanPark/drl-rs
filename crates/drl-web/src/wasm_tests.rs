@@ -43,7 +43,7 @@ fn v3_storage_round_trip_and_rejection_quarantine_are_bounded() {
     .expect("restore V3 snapshot");
   assert_eq!(restored, expected);
 
-  let rejected_token = token.replace(":150:", ":149:");
+  let rejected_token = token.replace(":151:", ":150:");
   storage
     .set_item(crate::wasm::SAVE_STORAGE_KEY, &rejected_token)
     .expect("write rejected active save");
@@ -54,7 +54,7 @@ fn v3_storage_round_trip_and_rejection_quarantine_are_bounded() {
   assert_eq!(
     error,
     SnapshotError::UnsupportedGameplaySemantics {
-      found: 149,
+      found: 150,
       expected: drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION,
     }
   );

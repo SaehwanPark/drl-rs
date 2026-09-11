@@ -3,6 +3,20 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.357]
+
+- Delivered the bounded Mega Buster post-kill typed morph. A confirmed lethal
+  direct hit now selects Bullet/Physical, Fire, Acid, or Plasma from explicit
+  target weapon equipment, stores the resulting profile for future shots, and
+  emits `MegaBusterMorphed` after `ActorDied` and before a configured drop when
+  the mode changes. Target equipment is replay/scenario/MCP-JSON visible only
+  as explicit setup topology with deterministic item IDs; three-projectile,
+  nine-round, clip, reload, and action-cost rules remain unchanged. Gameplay
+  semantics advance from `150` to `151`. Exact `4d2` distribution, Fire/Acid
+  radius-one execution, legacy timing/accuracy, same-volley mutation,
+  audiovisual parity, controlled legacy runtime, browser capture, and human
+  acceptance remain open or `NOT_RUN`.
+
 ## [0.2.356]
 
 - Completed the bounded Missile Launcher's radius-3 Fire fanout. Accepted

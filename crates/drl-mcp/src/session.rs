@@ -902,6 +902,26 @@ pub fn game_event_to_json(event: &GameEvent) -> JsonValue {
       map.insert("entity_id".to_string(), JsonValue::from(entity_id.as_u64()));
       map.insert("cause".to_string(), JsonValue::from(format!("{cause:?}")));
     }
+    GameEvent::MegaBusterMorphed {
+      entity_id,
+      item_id,
+      target_id,
+      previous,
+      current,
+    } => {
+      map.insert("type".to_string(), JsonValue::from("MegaBusterMorphed"));
+      map.insert("entity_id".to_string(), JsonValue::from(entity_id.as_u64()));
+      map.insert("item_id".to_string(), JsonValue::from(item_id.as_u64()));
+      map.insert("target_id".to_string(), JsonValue::from(target_id.as_u64()));
+      map.insert(
+        "previous".to_string(),
+        JsonValue::from(previous.stable_name()),
+      );
+      map.insert(
+        "current".to_string(),
+        JsonValue::from(current.stable_name()),
+      );
+    }
     GameEvent::ItemPickedUp {
       entity_id,
       item_name,
@@ -2491,6 +2511,32 @@ mod tests {
       map.get("damage_type").and_then(JsonValue::as_str),
       Some("Acid")
     );
+  }
+
+  #[test]
+  fn mega_buster_morph_event_projects_stable_modes_to_mcp_json() {
+    let value = game_event_to_json(&GameEvent::MegaBusterMorphed {
+      entity_id: drl_protocol::EntityId::new(1),
+      item_id: ItemId::new(2),
+      target_id: drl_protocol::EntityId::new(3),
+      previous: drl_protocol::MegaBusterMorphMode::Bullet,
+      current: drl_protocol::MegaBusterMorphMode::Fire,
+    });
+    let JsonValue::Object(map) = value else {
+      panic!("event projection must be an object");
+    };
+    assert_eq!(
+      map.get("type").and_then(JsonValue::as_str),
+      Some("MegaBusterMorphed")
+    );
+    assert_eq!(map.get("entity_id").and_then(JsonValue::as_i64), Some(1));
+    assert_eq!(map.get("item_id").and_then(JsonValue::as_i64), Some(2));
+    assert_eq!(map.get("target_id").and_then(JsonValue::as_i64), Some(3));
+    assert_eq!(
+      map.get("previous").and_then(JsonValue::as_str),
+      Some("bullet")
+    );
+    assert_eq!(map.get("current").and_then(JsonValue::as_str), Some("fire"));
   }
 
   #[test]
