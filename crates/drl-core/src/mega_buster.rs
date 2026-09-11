@@ -8,6 +8,8 @@
 
 use drl_protocol::{DamageType, ItemArchetype};
 
+use crate::rng::GameRng;
+
 pub use drl_protocol::MegaBusterMorphMode;
 
 /// Damage dice used by the bounded Bullet Mega Buster profile.
@@ -78,8 +80,8 @@ pub const fn profile_for_mode(mode: MegaBusterMorphMode) -> MegaBusterMorphProfi
 ///
 /// `damage_range` is retained alongside the dice shape because existing Rust
 /// weapon instances expose a `(min, max)` damage range, while the Fire and
-/// Acid profiles also need their explicit `4d2` provenance for a future
-/// distribution-preserving execution path.
+/// Acid profiles also retain their explicit `4d2` provenance for
+/// distribution-preserving execution.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct MegaBusterMorphProfile {
   /// Selected morph family.
@@ -113,6 +115,24 @@ impl MegaBusterMorphProfile {
   #[must_use]
   pub const fn maximum_damage(self) -> u32 {
     self.damage_range.1
+  }
+
+  /// Rolls this profile's explicit damage dice.
+  ///
+  /// Each die consumes one [`GameRng`] sample, including the four independent
+  /// dice in the Fire and Acid profiles.  Keeping the roll here, next to the
+  /// immutable profile, prevents callers from accidentally replacing `4d2`
+  /// with a uniform `(4..=8)` range while preserving deterministic replay
+  /// consumption.
+  pub fn roll_damage(self, rng: &mut GameRng) -> u32 {
+    assert!(
+      self.damage_dice > 0 && self.damage_die_sides > 0,
+      "Mega Buster damage profiles must contain positive dice"
+    );
+
+    (0..self.damage_dice)
+      .map(|_| rng.gen_range(0..self.damage_die_sides) + 1)
+      .sum()
   }
 }
 
@@ -273,6 +293,38 @@ mod tests {
         profile.maximum_damage(),
         profile.damage_dice * profile.damage_die_sides
       );
+    }
+  }
+
+  #[test]
+  fn roll_damage_uses_one_rng_draw_per_explicit_die() {
+    for profile in [
+      MEGA_BUSTER_BULLET_PROFILE,
+      MEGA_BUSTER_FIRE_PROFILE,
+      MEGA_BUSTER_ACID_PROFILE,
+      MEGA_BUSTER_PLASMA_PROFILE,
+    ] {
+      let mut actual_rng = GameRng::from_seed(0x4d_45_47_41);
+      let mut expected_rng = actual_rng.clone();
+      let expected_damage = (0..profile.damage_dice)
+        .map(|_| expected_rng.gen_range(0..profile.damage_die_sides) + 1)
+        .sum();
+
+      assert_eq!(profile.roll_damage(&mut actual_rng), expected_damage);
+      assert_eq!(actual_rng, expected_rng);
+    }
+  }
+
+  #[test]
+  fn fire_and_acid_rolls_never_leave_their_four_d_two_bounds() {
+    for profile in [MEGA_BUSTER_FIRE_PROFILE, MEGA_BUSTER_ACID_PROFILE] {
+      let mut rng = GameRng::from_seed(0x4d_45_47_41);
+      for _ in 0..256 {
+        assert!(
+          (profile.minimum_damage()..=profile.maximum_damage())
+            .contains(&profile.roll_damage(&mut rng))
+        );
+      }
     }
   }
 }

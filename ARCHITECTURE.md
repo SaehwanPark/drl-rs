@@ -301,9 +301,12 @@ Presentation Boundary
     fourth-, fifth-, sixth-, and seventh-level chainfire, overload, and recharge fragments.
     Mega Buster's direct lethal path reads only explicit target equipment,
     emits `GameEvent::MegaBusterMorphed` after `ActorDied` and before a death
-    drop, and preserves its clip/reload/action/projectile/ammo rules. Fire/Acid
-    radius-one execution, exact dice distribution, legacy same-volley mutation,
-    and presentation timing remain deferred. Profiles describe
+    drop, and preserves its clip/reload/action/projectile/ammo rules; exact
+    dice shapes (1d8, 4d2, 4d2, 1d10) consume one deterministic RNG sample
+    per die, and Fire/Acid modes emit delay-40/radius-one/knockback-8 schedule
+    metadata before immediate center-first radius-one fanout on both hits and
+    misses. Legacy same-volley mutation, traversal metrics, and delayed queue
+    remain deferred. Profiles describe
     behavior without string keys or runtime callbacks; dedicated transition
     modules remain the execution authority.
     Missile Launcher's immutable profile records one-projectile/one-rocket

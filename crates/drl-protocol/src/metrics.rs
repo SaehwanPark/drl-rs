@@ -109,6 +109,7 @@ impl EpisodeMetrics {
         }
       }
       GameEvent::MegaBusterMorphed { .. } => {}
+      GameEvent::MegaBusterExplosionScheduled { .. } => {}
       GameEvent::ItemPickedUp { entity_id, .. } => {
         if *entity_id == player_id {
           self.items_picked_up += 1;

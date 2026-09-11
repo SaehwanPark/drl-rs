@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
 Last reviewed: 2026-09-11
-Current project version: `0.2.357`
+Current project version: `0.2.358`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.357)
+## 3. Current Progress Summary (`VERSION` 0.2.358)
 
 ### Delivered Foundations
 
@@ -1470,6 +1470,20 @@ verification item uses explicit status semantics:
   legacy metric/traversal, pending delayed timing, terrain/feature callbacks,
   rocket-jump, controlled legacy runtime, audiovisual/reference capture,
   browser capture, and human acceptance remain open or `NOT_RUN`.
+- **Delivered M9 Mega Buster exact dice and Fire/Acid radius-one fanout (`0.2.358`):**
+  Each Mega Buster profile now consumes one deterministic RNG sample per die
+  (`1d8`, `4d2`, `4d2`, `1d10`), matching its legacy dice distribution while
+  preserving bounded inclusive damage ranges and typed Physical, Fire, Acid, and
+  Plasma mitigation. Fire and Acid modes emit a typed delay-40/radius-one/
+  knockback-8 schedule event and immediately resolve the shared center-first
+  radius-one environmental splash helper on both hits and misses, rolling
+  independent `4d2` damage per clear blast cell. Ordinary fire retains its
+  three-projectile early-stop and nine-ammo contract without same-volley morph
+  mutation, and all radius-one death-drop destinations are preflighted before
+  clip/RNG mutation. Replay gameplay semantics advance from `151` to `152`.
+  Focused core, MCP, and BrowserSession parity tests pass; legacy traversal
+  metrics, delayed queue, same-volley mutation, controlled legacy runtime,
+  audiovisual, and human acceptance remain open or `NOT_RUN`.
 - **Delivered M9 Mega Buster post-kill typed morph (`0.2.357`):** A confirmed
   post-mitigation lethal direct Mega Buster hit now selects a total
   Bullet/Physical, Fire, Acid, or Plasma profile from optional explicit target
@@ -1484,9 +1498,9 @@ verification item uses explicit status semantics:
   timing, legacy same-volley mutation, controlled runtime, audiovisual or
   human-play parity. The independent determinism review and local repository
   evidence are recorded in the slice handoff.
-- **M9 next bounded candidate:** Exact Mega Buster dice/splash execution or the
-  next unresolved heavy-weapon branch should be selected only after the
-  remaining stop gates and evidence boundaries are re-audited.
+- **M9 next bounded candidate:** The next unresolved heavy-weapon or exotic
+  branch should be selected only after the remaining stop gates and evidence
+  boundaries are re-audited.
 - **M0/M13 review-exception process (`0.2.353`):** The temporary
   solo-maintainer exception now has an accountable release-owner role,
   required current-head/hosted-failure/check/follow-up evidence, and a fixed

@@ -1,11 +1,11 @@
 # Specification
 
 Last reviewed: 2026-09-11
-Current project version: `0.2.357`
-Audited starting checkpoint: `codex/mega-buster-kill-morph` at `264d4b4`
-(`0.2.356`)
+Current project version: `0.2.358`
+Audited starting checkpoint: `codex/mega-buster-fanout` at `81a37ce`
+(`0.2.357`)
 Delivery checkpoint: active implementation on branch
-`codex/mega-buster-kill-morph`
+`codex/mega-buster-fanout`
 
 The [Roadmap](docs/DRL-RS_Project_Roadmap.md) owns milestone scope, ordering,
 and progress. [`docs/steering/current-priorities.md`](docs/steering/current-priorities.md)
@@ -23,97 +23,119 @@ pass or failure is inferred.
 - `INCONCLUSIVE` — **Evidence unresolved**: available evidence cannot support
 the claim.
 
-## 2. Active implementation slice: M9 Mega Buster post-kill typed morph
+## 2. Active implementation slice: M9 Mega Buster exact dice and radius-one fanout
 
-Slice status: **delivered and verified locally** on `codex/mega-buster-kill-morph`,
-based on `264d4b4` (`0.2.356`).
+Slice status: **delivered and verified** on `codex/mega-buster-fanout`, based on
+`81a37ce` (`0.2.357`).
 
 ### 2.1 Objective
 
-Complete one bounded M9 vertical canonical-fidelity branch for the Mega
-Buster's post-kill morph. After a confirmed post-mitigation lethal direct hit
-from a Mega Buster, read the defeated target's optional equipped weapon
-metadata, select one total typed profile (Bullet, Fire, Acid, or Plasma), and
-store that profile on the killer's Mega Buster for future commands. Emit a
-stable morph event only when the selected mode differs from the current mode.
-Preserve the existing three-projectile, nine-ammo, clip, reload, and action
-cost rules. This slice records Fire/Acid radius-one and legacy `4d2` metadata,
-but does not execute their explosion fanout, delayed queue, or presentation.
+Complete one bounded M9 vertical canonical-fidelity branch after the delivered
+Mega Buster morph state. Execute each current Mega profile with its explicit
+`NdM` dice shape (`1d8`, `4d2`, `1d10`) using one deterministic RNG draw per
+die. Fire and Acid modes additionally emit a typed radius-one explosion
+schedule event and immediately resolve the existing Rust splash helper with
+one independent `4d2` roll per eligible cell. Preserve the current Rust
+direct-hit-plus-environmental-splash convention, including fanout after a
+miss, while keeping the prior direct-only morph trigger and ordinary
+three-projectile early-stop behavior.
 
-This is bounded state/protocol work under the current steering priority. It
-does not reopen Gates A, B, C, or D and does not claim whole-game completion.
+Preserve the existing three-projectile, nine-ammo, clip, reload, action-cost,
+target-equipment, replay, MCP, and browser contracts. Treat explosion delay as
+event metadata; do not add a pending scheduler. This bounded slice does not
+claim exact legacy radius geometry/traversal, delayed timing, accuracy/miss
+rules, same-volley mutation, audiovisual parity, or whole-game completion.
+
+This remains bounded work under the current steering priority. It does not
+reopen Gates A, B, C, or D.
 
 ### 2.2 Scope and ownership
 
 - Keep the existing `ItemArchetype::MegaBuster` and generic ranged execution;
   add no command, callback registry, or second content catalog.
-- Keep `Game`/`World` as the execution authority for lethal resolution, RNG
-  order, event ordering, and transactional item mutation. Use a pure total
-  morph selector so the post-commit transition cannot fail.
+- Keep `Game`/`World` as the execution authority for lethal/splash resolution,
+  RNG order, event ordering, and transactional item mutation. Use a pure total
+  morph selector and immutable profile snapshot so post-commit transitions
+  cannot fail or reread mutable state unexpectedly.
 - Store morph state on `Item`, expose typed immutable profiles, and add an
   optional `MonsterSpawnSpec.equipped_weapon` that is reconstructed by
   Scenario/ReplayEngine and round-tripped by MCP replay JSON.
-- Add `GameEvent::MegaBusterMorphed` and exhaustive MCP, audio, metrics, render,
-  and browser projections without leaking hidden target state.
-- Add focused pure-profile, direct lethal/nonlethal/miss, target-topology,
-  replay/scenario, MCP JSON, rollback, and BrowserSession parity tests.
+- Add `GameEvent::MegaBusterExplosionScheduled` with stable mode-independent
+  fields and exhaustive MCP, audio, metrics, render, and browser projections;
+  retain the delivered `MegaBusterMorphed` event without leaking hidden target
+  state.
+- Add focused exact-dice, direct hit/miss, radius-one geometry/fanout,
+  target-topology, replay/scenario, MCP JSON, rollback, and BrowserSession
+  parity tests.
 - Update the pinned evidence/profile, architecture ownership summary,
   user-facing weapon guide, changelog, roadmap, steering status, and
   replay-semantics comments only after verification.
-- Transition code version exactly once from `0.2.356` to `0.2.357` and gameplay
-  semantics from `150` to `151`.
+- Transition code version exactly once from `0.2.357` to `0.2.358` and gameplay
+  semantics from `151` to `152`.
 
 ### 2.3 Observable acceptance criteria
 
-- [x] A confirmed post-mitigation lethal direct Mega Buster hit selects the
-  defeated target's optional equipped weapon damage family; missing,
-  unsupported, and Physical families fall back to Bullet.
-- [x] The selected profile is stored on the Mega Buster without changing its
-  archetype, clip, reload, action cost, three-projectile count, or nine-ammo
-  cost. Future direct shots observe the new bounded damage range and typed
-  damage family.
-- [x] `MegaBusterMorphed` is emitted at most once per lethal direct hit and only
-  when the mode changes; misses, nonlethal hits, non-Mega weapons, splash-only
-  deaths, and same-mode kills emit no morph event.
-- [x] Event ordering is pinned as `AttackResolved < DamageApplied < ActorDied <
-  MegaBusterMorphed < ItemDropped`; rejected commands preserve exact state and
-  RNG because morph selection and application are total and post-commit.
-- [x] Optional target equipment is represented in Scenario, ReplayEngine, and
-  MCP replay JSON with deterministic item IDs; direct and replay executions
-  agree for Bullet, Fire, Acid, Plasma, and fallback branches, and stale
-  gameplay-semantics `150` metadata is rejected after advancing to `151`.
-- [x] MCP JSON, audio, metrics, render, and BrowserSession projections are
-  exhaustive and fair-observation-safe; no hidden target equipment crosses a
-  boundary.
+- [x] Each Mega profile rolls its explicit dice shape (`1d8`, `4d2`, `4d2`,
+  `1d10`) with one deterministic RNG draw per die, and the exposed bounded
+  damage range remains consistent with those shapes.
+- [x] Fire and Acid projectiles emit a typed delay-40/radius-one/knockback-8
+  schedule event and resolve immediate radius-one fanout with one independent
+  `4d2` roll per eligible cell; Bullet and Plasma remain direct-only.
+- [x] Fire and Acid fanout follows the current Rust direct-plus-environment
+  convention on both hits and misses, uses stable center-first geometry, and
+  carries typed Fire/Acid damage through direct and splash events.
+- [x] The Mega Buster profile is snapshotted per projectile; ordinary fire
+  retains three-projectile early-stop and nine-ammo semantics without
+  same-volley morph mutation, and clip/reload/action behavior remains intact.
+- [x] All possible radius-one death-drop destinations are preflighted before
+  clip/RNG mutation; rejected commands preserve exact game state and RNG.
+- [x] `MegaBusterExplosionScheduled` is exhaustive across MCP JSON, audio,
+  metrics, render, BrowserSession, and fair-observation boundaries, with stable
+  owner/item/target/profile fields and no hidden target disclosure.
+- [x] Direct and replay executions agree for exact Bullet/Fire/Acid/Plasma
+  profiles, target topology, and deterministic event/RNG/state sequences;
+  semantics `152` is accepted and stale `151` metadata is rejected.
+- [x] The delivered direct-only post-kill morph contract remains intact:
+  splash-only deaths do not morph, and `MegaBusterMorphed` stays ordered after
+  `ActorDied` and before a configured drop.
 - [x] `drl-core` remains platform-independent and no legacy runtime,
-  audiovisual, browser-capture, balance, or human-play parity claim is made.
-- [x] Focused tests, repository checks, version/spec checks, and an independent
-  determinism review pass; unavailable native, controlled legacy,
+  audiovisual, browser-capture, balance, or human-play parity claim is made;
+  exact legacy timing/accuracy/traversal and same-volley mutation remain
+  explicitly deferred.
+- [x] Focused tests, repository checks, version/spec checks, and a fresh
+  independent determinism review pass; unavailable native, controlled legacy,
   audiovisual/reference-capture, and human surfaces remain `NOT_RUN`.
 
 ### 2.4 Semantic and boundary impact
 
 - **Damage policy:** The pinned legacy profiles are Bullet `1d8`, Fire `4d2`,
-  Acid `4d2`, and Plasma `1d10`; current Rust stores bounded inclusive ranges
-  `(1,8)`, `(4,8)`, `(4,8)`, and `(1,10)` with typed Physical/Fire/Acid/Plasma
-  mitigation. Exact dice distribution remains a follow-up.
+  Acid `4d2`, and Plasma `1d10`; current Rust now consumes one deterministic
+  draw per die and exposes bounded inclusive ranges `(1,8)`, `(4,8)`, `(4,8)`,
+  and `(1,10)` with typed Physical/Fire/Acid/Plasma mitigation.
 - **Morph trigger/order:** Only a direct Mega Buster hit whose final damage is
-  lethal can morph. The transition is inserted after `ActorDied` marks the
-  victim dead and before inventory/death-drop processing, matching the legacy
-  `OnKill` boundary; splash/environment deaths never infer a Mega source.
+  lethal can morph. The delivered transition remains after `ActorDied` marks
+  the victim dead and before inventory/death-drop processing; splash/environment
+  deaths never infer a Mega source.
+- **Explosion policy:** Fire/Acid emit delay-40/radius-one/knockback-8 metadata
+  and apply immediate current-Rust fanout using the shared center-first helper.
+  Direct damage and splash damage are both retained by this bounded convention;
+  the direct target is already dead before fanout when lethal. There is no
+  pending explosion queue.
 - **State preservation:** Morph changes only the Mega Buster's bounded damage
   profile and typed mode. Clip, reload, action, projectile count, and ammo cost
   remain the existing catalog values.
-- **RNG/replay:** Morph selection is pure and consumes no RNG. Advance gameplay
-  semantics from `150` to `151`; wire/schema, generator, and ruleset identities
+- **RNG/replay:** Morph selection is pure and consumes no RNG; exact Mega rolls
+  consume one sample per die in deterministic event order. Advance gameplay
+  semantics from `151` to `152`; wire/schema, generator, and ruleset identities
   remain unchanged. Replays carry target equipment explicitly rather than
   inferring it from monster kind or scalar damage.
 - **Content/catalog:** Existing weapon catalog entries remain authoritative;
   target equipment is an optional replay/scenario topology field and allocates
   deterministic item IDs.
-- **Presentation:** `MegaBusterMorphed` is a thin protocol/MCP, audio, metrics,
-  render, and browser projection. No presentation callback mutates simulation
-  state.
+- **Presentation:** `MegaBusterMorphed` and
+  `MegaBusterExplosionScheduled` are thin protocol/MCP, audio, metrics, render,
+  and browser projections. Delay remains metadata; no presentation callback
+  mutates simulation state.
 - **Rights/evidence:** Static legacy evidence supports target-weapon mapping,
   profile values, and post-lethal/pre-drop callback order. Controlled legacy
   runtime, balance, audiovisual, browser capture, and human acceptance remain
@@ -121,9 +143,10 @@ does not reopen Gates A, B, C, or D and does not claim whole-game completion.
 
 ### 2.5 Non-goals
 
-- No Fire/Acid radius-one splash execution, delayed-explosion queue, projectile
-  routing, exact `4d2` distribution, legacy accuracy/miss timing, colors,
-  sprites, callback registry, same-volley mutation, or audiovisual parity.
+- No delayed-explosion queue, projectile routing, legacy accuracy/miss timing,
+  colors, sprites, callback registry, same-volley mutation, or audiovisual
+  parity. The immediate current-Rust Fire/Acid fanout is bounded and does not
+  claim exact legacy radius traversal or delayed execution.
 - No inference from `MonsterKind`, scalar ranged damage, or hidden target state;
   unsupported target families remain the explicit Bullet fallback.
 - No changes to other weapon behavior beyond regression coverage, and no claim
@@ -135,14 +158,15 @@ Evidence will be bound to the delivered branch; hosted checks and merge
 revision remain outside this local handoff:
 
 - focused core, scenario/replay, MCP, audio/metrics/render, and web tests cover
-  all morph branches, event ordering, rollback atomicity, and topology parity;
+  exact profile rolls, Fire/Acid fanout, morph ordering, rollback atomicity,
+  and topology parity;
 - `cargo fmt --all -- --check`, `cargo test --workspace --locked`,
   `cargo clippy --workspace --all-targets --all-features --locked -- -D warnings`,
   `sh scripts/check-repository.sh`, the static/browser-library portions of
   `sh scripts/check-web.sh`,
-  `DRL_VERSION_BASE=264d4b4 sh scripts/check-version.sh`,
+  `DRL_VERSION_BASE=81a37ce sh scripts/check-version.sh`,
   `sh scripts/check-spec-structure.sh`, and `git diff --check` pass;
-- an attributable independent determinism review returns `PASS` for this
+- an attributable fresh independent determinism review returns `PASS` for this
   bounded scope;
 - hosted checks are not yet available on this branch; Fedora/Wayland/Vulkan,
   macOS/Metal, controlled legacy runtime, audiovisual/reference captures,
