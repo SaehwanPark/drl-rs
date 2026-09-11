@@ -5,8 +5,7 @@ use drl_mcp::JsonValue;
 use drl_mcp::McpServer;
 use drl_mcp::replay_json;
 use drl_protocol::{
-  Command, DamageSource, DamageType, ItemSpawnKind, MonsterSpawnSpec, PlayerSpawnConfig, Position,
-  ReplayLog,
+  Command, DamageType, ItemSpawnKind, MonsterSpawnSpec, PlayerSpawnConfig, Position, ReplayLog,
 };
 
 fn ready_server() -> McpServer {
@@ -57,7 +56,7 @@ fn missile_launcher_mcp_json_matches_direct_core_typed_damage() {
       drl_protocol::GameEvent::DamageApplied {
         target_id: event_target,
         amount,
-        source: DamageSource::Actor(_),
+        source: _,
         damage_type: Some(DamageType::Fire),
         ..
       } if *event_target == target_id => Some(*amount),
@@ -65,6 +64,16 @@ fn missile_launcher_mcp_json_matches_direct_core_typed_damage() {
     })
     .collect::<Vec<_>>();
   assert!(!expected_damage.is_empty());
+  assert!(expected_events.iter().any(|event| matches!(
+    event,
+    drl_protocol::GameEvent::MissileLauncherExplosionScheduled {
+      target_id: event_target,
+      delay: 40,
+      radius: 3,
+      knockback: 8,
+      ..
+    } if *event_target == target_id
+  )));
 
   let mut server = ready_server();
   let setup_json = replay_json::to_json_value(&setup).to_compact_string();

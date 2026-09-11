@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-09-11
-Current project version: `0.2.355`
+Current project version: `0.2.356`
 
 Status: Verified for current deterministic headless core, MCP tooling,
 browser-playable WebGPU slice, and the thin native frontend boundary; full
@@ -56,7 +56,13 @@ fragment; Blaster records its typed one-projectile ordinary-fire, one-cell cost,
 shared aimed-fire (+3 accuracy, 2× action-cost), periodic-recharge, and direct
 Plasma target-path fragments;
 Missile Launcher records its typed ordinary single-rocket reload, capped
-full-deficit reload, and direct Fire target-path fragments; Combat Shotgun records its typed pump-only
+full-deficit reload, typed direct Fire target-path, and delay-40/radius-3/
+knockback-8 schedule fragments; its bounded resolver consumes one ordered
+`6d6` Fire roll per clear blast cell with shared integer distance falloff,
+radial `damage / 8` knockback, source self-damage, and strict `>10` ordinary
+ground-item destruction. It reuses the current center-first clockwise
+clear-cell helper and Chebyshev distance; exact legacy radius metric/order,
+pending timing, and rocket-jump remain separate work. Combat Shotgun records its typed pump-only
 chamber action (200 units), ordinary single-shell reload, and capped full-deficit
 reload fragments; Double Shotgun records its typed two-projectile dual-shot and
 two-shell ammo-cost fragments; Super Shotgun records its typed two-projectile
@@ -294,9 +300,15 @@ Presentation Boundary
     Profiles describe
     behavior without string keys or runtime callbacks; dedicated transition
     modules remain the execution authority.
-    Missile Launcher's immutable profile records ordinary `Reload` and
-    capped `FullReload` fragments; its dedicated planner remains responsible
-    for reserve, deficit, cost, and transactional validation.
+    Missile Launcher's immutable profile records one-projectile/one-rocket
+    ordinary fire, typed Fire direct damage, delay-40/radius-3/knockback-8
+    schedule, ordinary `Reload`, and capped `FullReload` fragments; its
+    dedicated planner remains responsible for reload reserve, deficit, cost,
+    and transactional validation while the bounded splash resolver owns clear
+    cell order, 6d6 rolls, falloff, de-duplication, knockback, source safety,
+    and ground-item handling. Schedule delay remains presentation metadata;
+    no pending explosion queue, exact legacy metric/order, or rocket-jump is
+    inferred.
     Combat Shotgun's immutable profile records the ordered pump-only chamber
     action and reload fragments; its dedicated planner and pump-action state
     remain responsible for reserve, deficit, chamber, cost, and transactional

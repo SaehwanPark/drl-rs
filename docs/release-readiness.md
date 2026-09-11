@@ -1,6 +1,6 @@
 # Public release readiness
 
-**Current version:** `0.2.355`
+**Current version:** `0.2.356`
 **Status:** **Not release-ready**
 
 This is a compact product-entry summary, not a replacement for the
@@ -30,6 +30,7 @@ build succeeds; the named acceptance evidence is required.
 | --- | --- | --- |
 | Fair observations | F1 core/MCP tests cover hidden ground-item addition, removal, count changes, two-world equality, JSON non-disclosure, omniscient views, and reveal (`0af1bed`). | PASS |
 | Revenant's Launcher radius-3 fanout | Focused core geometry/fanout, threshold, atomic rejection, replay/version, MCP JSON, and BrowserSession/direct-core parity tests pass on `codex/revenants-launcher-radius3`; independent determinism review reconciled the MCP fixture correction with no remaining implementation findings. | PASS (bounded local scope) |
+| Missile Launcher's radius-3 fanout | Focused core hit/miss geometry/fanout, threshold, atomic rejection, replay/version, MCP JSON, and BrowserSession/direct-core parity tests pass on `codex/missile-launcher-radius3`; `/root/missile_determinism_review` independently returned `PASS` with no remaining implementation findings. | PASS (bounded local scope) |
 | MCP safety | F2 MCP library tests, app tests, bounded stdio contracts, and the shipped-binary deep-input subprocess regression (`ae8a451`). | PASS |
 | Version policy | `.mjs`, Rust, shell, documentation, settings, exact-bump, and over-bump temporary-Git fixtures (`578702e`). | PASS |
 | Browser checks | Static service-worker/support/accessibility contracts and native web-library tests pass; the WASM headless phase is `NOT_RUN` because available ChromeDriver 153 does not match installed Chrome 152. | PASS / limited scope |

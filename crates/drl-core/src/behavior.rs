@@ -16,7 +16,10 @@ use crate::jackhammer::JACKHAMMER_MODE_SCORE_COST;
 use crate::malek_armor::{
   MALEK_ARMOR_RECHARGE_AMOUNT, MALEK_ARMOR_RECHARGE_DELAY, MALEK_ARMOR_RECHARGE_TICK,
 };
-use crate::missile_launcher::MISSILE_LAUNCHER_ALT_RELOAD_CAP;
+use crate::missile_launcher::{
+  MISSILE_LAUNCHER_ALT_RELOAD_CAP, MISSILE_LAUNCHER_EXPLOSION_DELAY,
+  MISSILE_LAUNCHER_EXPLOSION_KNOCKBACK, MISSILE_LAUNCHER_EXPLOSION_RADIUS,
+};
 use crate::null_pointer::{
   NULL_POINTER_BOSS_SCORE_COST, NULL_POINTER_EXPLOSION_DELAY, NULL_POINTER_EXPLOSION_RADIUS,
   NULL_POINTER_MIN_SCORE_COUNT, NULL_POINTER_TARGET_SCORE_COST,
@@ -1308,14 +1311,32 @@ const ACID_SPITTER_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
 pub const ACID_SPITTER_BEHAVIOR: BehaviorProfile =
   BehaviorProfile::new(ACID_SPITTER_BEHAVIOR_SPECS);
 
+/// Current Rust projectile count for an ordinary Missile Launcher shot.
+pub const MISSILE_LAUNCHER_PROJECTILE_COUNT: u32 = 1;
+/// Current Rust per-projectile clip cost for a Missile Launcher shot.
+pub const MISSILE_LAUNCHER_SHOT_COST: u32 = 1;
+
 const MISSILE_LAUNCHER_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Attack(AttackEffect::ProjectileCount(
+    MISSILE_LAUNCHER_PROJECTILE_COUNT,
+  )),
+  BehaviorSpec::Cost(ResourceCost::Ammo {
+    ammo_type: AmmoType::Rocket,
+    amount: MISSILE_LAUNCHER_SHOT_COST,
+  }),
+  BehaviorSpec::Hit(HitEffect::ScheduleExplosion {
+    delay: MISSILE_LAUNCHER_EXPLOSION_DELAY,
+    radius: MISSILE_LAUNCHER_EXPLOSION_RADIUS,
+    knockback: Some(MISSILE_LAUNCHER_EXPLOSION_KNOCKBACK),
+  }),
   BehaviorSpec::Alternate(AlternateAction::Reload),
   BehaviorSpec::Alternate(AlternateAction::FullReload {
     cost_cap: MISSILE_LAUNCHER_ALT_RELOAD_CAP,
   }),
 ];
 
-/// Immutable typed profile for the current Missile Launcher reload policies.
+/// Immutable typed profile for the current Missile Launcher fire and reload
+/// policies.
 pub const MISSILE_LAUNCHER_BEHAVIOR: BehaviorProfile =
   BehaviorProfile::new(MISSILE_LAUNCHER_BEHAVIOR_SPECS);
 
@@ -2397,6 +2418,18 @@ mod tests {
     assert_eq!(
       MISSILE_LAUNCHER_BEHAVIOR.specs(),
       &[
+        BehaviorSpec::Attack(AttackEffect::ProjectileCount(
+          MISSILE_LAUNCHER_PROJECTILE_COUNT,
+        )),
+        BehaviorSpec::Cost(ResourceCost::Ammo {
+          ammo_type: AmmoType::Rocket,
+          amount: MISSILE_LAUNCHER_SHOT_COST,
+        }),
+        BehaviorSpec::Hit(HitEffect::ScheduleExplosion {
+          delay: MISSILE_LAUNCHER_EXPLOSION_DELAY,
+          radius: MISSILE_LAUNCHER_EXPLOSION_RADIUS,
+          knockback: Some(MISSILE_LAUNCHER_EXPLOSION_KNOCKBACK),
+        }),
         BehaviorSpec::Alternate(AlternateAction::Reload),
         BehaviorSpec::Alternate(AlternateAction::FullReload {
           cost_cap: MISSILE_LAUNCHER_ALT_RELOAD_CAP,

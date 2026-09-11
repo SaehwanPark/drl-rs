@@ -21,11 +21,12 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// Gameplay semantics identifier expected by the current replay engine.
 ///
 /// This advances independently from the wire/schema and RNG-sampling versions
-/// when other deterministic simulation rules change. Version `149` includes
-/// Revenant's Launcher's bounded radius-3 Fire fanout after its typed direct
-/// target damage; version `148` includes Revenant's Launcher's typed Fire
-/// classification on direct target damage; version `147` includes Missile
-/// Launcher's typed Fire classification on
+/// when other deterministic simulation rules change. Version `150` includes
+/// Missile Launcher's 6d6 radius-3 Fire fanout after its typed direct target
+/// damage; version `149` includes Revenant's Launcher's bounded radius-3 Fire
+/// fanout after its typed direct target damage; version `148` includes
+/// Revenant's Launcher's typed Fire classification on direct target damage;
+/// version `147` includes Missile Launcher's typed Fire classification on
 /// direct target damage; version `146` includes Tristar Blaster's typed
 /// Plasma classification on direct target damage; version `145` includes
 /// Plasma Shotgun's typed Plasma classification on direct target damage;
@@ -153,7 +154,7 @@ pub const CURRENT_RNG_SAMPLING_SEMANTICS_VERSION: u32 = 1;
 /// prior Malek's Armor, Missile Launcher, and
 /// Combat Shotgun policies, and the typed ordinary-fire cost policies through
 /// Laser Rifle.
-pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 149;
+pub const CURRENT_GAMEPLAY_SEMANTICS_VERSION: u32 = 150;
 
 /// Procedural-generation semantics identifier expected for replays that carry
 /// a procedural generation configuration. Version 2 includes the exact
@@ -178,11 +179,12 @@ pub struct ReplayMetadata {
   /// Engine crate version string.
   pub engine_version: String,
   /// Gameplay semantics version required to interpret the command history.
-  /// Version 149 includes Revenant's Launcher's bounded radius-3 Fire fanout
-  /// after typed direct target damage; version 148 includes Revenant's
-  /// Launcher's typed Fire classification on direct target damage; version
-  /// 147 includes Missile Launcher's typed Fire classification on direct
-  /// target damage; version 146 includes
+  /// Version 150 includes Missile Launcher's 6d6 radius-3 Fire fanout after
+  /// typed direct target damage; version 149 includes Revenant's Launcher's
+  /// bounded radius-3 Fire fanout after typed direct target damage; version
+  /// 148 includes Revenant's Launcher's typed Fire classification on direct
+  /// target damage; version 147 includes Missile Launcher's typed Fire
+  /// classification on direct target damage; version 146 includes
   /// Tristar Blaster's typed Plasma classification on direct target damage;
   /// version 145 includes Plasma Shotgun's typed Plasma classification on
   /// direct target damage; version 144 includes the Null Pointer legacy

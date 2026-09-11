@@ -170,6 +170,12 @@ fn missile_launcher_multi_round_clip_depletion_and_rejection_atomicity() {
   let seed = 46_101;
   let target_position = Position::new(6, 6);
   let mut game = equipped_missile_launcher(seed);
+  // Keep the repeated-shot target pinned in place while still exercising the
+  // real radius-three splash/knockback path.
+  game
+    .world_mut()
+    .map_mut()
+    .set_tile(Position::new(7, 6), Tile::Wall);
   let target_id = configure_direct_target(&mut game, target_position);
 
   // Initial clip is 4.
@@ -226,6 +232,10 @@ fn missile_launcher_single_reload_integration() {
   let seed = 46_102;
   let target_position = Position::new(5, 6);
   let mut game = equipped_missile_launcher(seed);
+  game
+    .world_mut()
+    .map_mut()
+    .set_tile(Position::new(6, 6), Tile::Wall);
   let target_id = configure_direct_target(&mut game, target_position);
 
   // Deplete all 4 rockets.
@@ -347,7 +357,8 @@ fn missile_launcher_rejection_paths_preserve_exact_game_identity() {
 #[test]
 fn missile_launcher_replay_determinism_and_stale_semantics_rejection() {
   let player_position = Position::new(2, 2);
-  let target_position = Position::new(5, 2);
+  // The east arena boundary pins the repeated target after splash knockback.
+  let target_position = Position::new(10, 2);
   let player_config = PlayerSpawnConfig {
     hp: 100,
     max_hp: 100,
@@ -393,9 +404,9 @@ fn missile_launcher_replay_determinism_and_stale_semantics_rejection() {
   );
   assert!(ReplayEngine::verify_determinism(&replay).unwrap());
 
-  // Stale semantics 146 is rejected.
+  // Stale semantics 149 (before the radius-three fanout) is rejected.
   let mut stale_replay = replay;
-  stale_replay.metadata.gameplay_semantics_version = 146;
+  stale_replay.metadata.gameplay_semantics_version = 149;
   let err = ReplayEngine::validate(&stale_replay).unwrap_err();
   assert!(err.contains("unsupported gameplay semantics version"));
 }

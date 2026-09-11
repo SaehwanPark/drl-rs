@@ -3,6 +3,22 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.356]
+
+- Completed the bounded Missile Launcher's radius-3 Fire fanout. Accepted
+  hits retain typed direct Fire damage, emit a distinct delay-40/radius-3/
+  knockback-8 schedule event, and immediately resolve one ordered `6d6` Fire
+  roll per clear blast cell with integer distance falloff, actor de-duplication,
+  radial `damage / 8` knockback, source self-damage, and strict `>10` ordinary
+  ground-item destruction. Resolved misses emit the same schedule and splash
+  without direct damage. Splash death-drop destinations are preflighted before
+  clip/RNG mutation; replay semantics advance from `149` to `150`, and focused
+  core, MCP, and BrowserSession/direct-core parity tests pass. The bounded
+  helper intentionally retains current Rust center-first/Chebyshev geometry;
+  exact legacy metric/traversal, pending timing, rocket-jump, controlled
+  runtime, audiovisual/reference capture, browser capture, and human
+  acceptance remain open or `NOT_RUN`.
+
 ## [0.2.355]
 
 - Completed the bounded Revenant's Launcher radius-3 Fire fanout. Successful
