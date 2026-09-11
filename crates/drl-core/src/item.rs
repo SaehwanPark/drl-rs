@@ -2,7 +2,7 @@
 
 use drl_protocol::{
   ActionCost, AmmoType, DamageType, EquipmentSlot, HitPoints, ItemArchetype, ItemCategory, ItemId,
-  ItemSpawnKind, ItemView, WeaponFireMode,
+  ItemSpawnKind, ItemView, MegaBusterMorphMode, WeaponFireMode,
 };
 
 use crate::behavior::{
@@ -14,6 +14,7 @@ use crate::behavior::{
 };
 use crate::item_definition::{ItemDefinitionKind, definition_for_spawn_kind};
 use crate::malek_armor::{MalekRechargeOutcome, MalekRechargeState};
+use crate::mega_buster::{damage_type_for_archetype, profile_for_mode};
 use crate::pump_action::{PumpActionState, ReloadTransition};
 
 /// Physical properties for a weapon instance.
@@ -190,6 +191,7 @@ pub struct Item {
   kind: ItemKind,
   pump_action: Option<PumpActionState>,
   weapon_recharge: Option<WeaponRechargeState>,
+  mega_buster_morph: Option<MegaBusterMorphMode>,
 }
 
 impl Item {
@@ -209,6 +211,7 @@ impl Item {
       kind,
       pump_action: None,
       weapon_recharge: None,
+      mega_buster_morph: None,
     }
   }
 
@@ -245,6 +248,8 @@ impl Item {
   #[must_use]
   fn with_archetype(mut self, archetype: ItemArchetype) -> Self {
     self.archetype = archetype;
+    self.mega_buster_morph =
+      (archetype == ItemArchetype::MegaBuster).then_some(MegaBusterMorphMode::Bullet);
     if archetype == ItemArchetype::CombatShotgun {
       self.pump_action = Some(PumpActionState::new());
     }
@@ -467,6 +472,62 @@ impl Item {
       ItemKind::Weapon(props) => Some(props),
       _ => None,
     }
+  }
+
+  /// Returns the current typed Mega Buster profile, when this is a Mega Buster.
+  #[must_use]
+  pub const fn mega_buster_morph(&self) -> Option<MegaBusterMorphMode> {
+    self.mega_buster_morph
+  }
+
+  /// Applies a typed Mega Buster profile transition.
+  ///
+  /// The profile updates future direct damage while preserving clip capacity,
+  /// current clip, projectile count, and all reload/action behavior. A
+  /// non-Mega item or an idempotent transition returns `None`.
+  pub fn apply_mega_buster_morph(
+    &mut self,
+    mode: MegaBusterMorphMode,
+  ) -> Option<(MegaBusterMorphMode, MegaBusterMorphMode)> {
+    if self.archetype != ItemArchetype::MegaBuster {
+      return None;
+    }
+    let previous = self
+      .mega_buster_morph
+      .unwrap_or(MegaBusterMorphMode::Bullet);
+    if previous == mode {
+      return None;
+    }
+    let profile = profile_for_mode(mode);
+    let properties = self.weapon_properties_mut()?;
+    properties.damage = profile.damage_range;
+    self.mega_buster_morph = Some(mode);
+    Some((previous, mode))
+  }
+
+  /// Returns the typed damage family for this equipped weapon.
+  ///
+  /// Mega Buster uses its current morph profile; all other catalog weapons
+  /// use the centralized archetype mapping. Non-weapons return `None`.
+  #[must_use]
+  pub fn weapon_damage_type(&self) -> Option<DamageType> {
+    if !matches!(&self.kind, ItemKind::Weapon(_)) {
+      return None;
+    }
+    if self.archetype == ItemArchetype::MegaBuster {
+      return Some(
+        match self
+          .mega_buster_morph
+          .unwrap_or(MegaBusterMorphMode::Bullet)
+        {
+          MegaBusterMorphMode::Bullet => DamageType::Physical,
+          MegaBusterMorphMode::Fire => DamageType::Fire,
+          MegaBusterMorphMode::Acid => DamageType::Acid,
+          MegaBusterMorphMode::Plasma => DamageType::Plasma,
+        },
+      );
+    }
+    Some(damage_type_for_archetype(self.archetype))
   }
 
   /// Returns mutable weapon properties if this item is a weapon.

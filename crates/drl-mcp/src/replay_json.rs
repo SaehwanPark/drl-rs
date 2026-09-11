@@ -183,28 +183,37 @@ fn procedural_config_to_json(config: &ProceduralGenerationConfig) -> JsonValue {
 }
 
 fn monster_to_json(monster: &MonsterSpawnSpec) -> JsonValue {
-  object([
-    ("position", position_to_json(monster.position)),
-    ("name", JsonValue::from(monster.name.as_str())),
-    ("hp", JsonValue::from(monster.hp)),
-    ("speed", JsonValue::from(monster.speed)),
-    ("melee_damage", damage_to_json(monster.melee_damage)),
-    (
-      "ranged_damage",
-      monster
-        .ranged_damage
-        .map_or(JsonValue::Null, damage_to_json),
-    ),
-    ("ranged_range", JsonValue::from(monster.ranged_range)),
-    ("accuracy", JsonValue::from(monster.accuracy)),
-    ("is_boss", JsonValue::from(monster.is_boss)),
-    (
-      "death_drop",
-      monster
-        .death_drop
-        .map_or(JsonValue::Null, item_kind_to_json),
-    ),
-  ])
+  let mut map = BTreeMap::new();
+  map.insert("position".to_string(), position_to_json(monster.position));
+  map.insert("name".to_string(), JsonValue::from(monster.name.as_str()));
+  map.insert("hp".to_string(), JsonValue::from(monster.hp));
+  map.insert("speed".to_string(), JsonValue::from(monster.speed));
+  map.insert(
+    "melee_damage".to_string(),
+    damage_to_json(monster.melee_damage),
+  );
+  map.insert(
+    "ranged_damage".to_string(),
+    monster
+      .ranged_damage
+      .map_or(JsonValue::Null, damage_to_json),
+  );
+  map.insert(
+    "ranged_range".to_string(),
+    JsonValue::from(monster.ranged_range),
+  );
+  map.insert("accuracy".to_string(), JsonValue::from(monster.accuracy));
+  map.insert("is_boss".to_string(), JsonValue::from(monster.is_boss));
+  map.insert(
+    "death_drop".to_string(),
+    monster
+      .death_drop
+      .map_or(JsonValue::Null, item_kind_to_json),
+  );
+  if let Some(weapon) = monster.equipped_weapon {
+    map.insert("equipped_weapon".to_string(), item_kind_to_json(weapon));
+  }
+  JsonValue::Object(map)
 }
 
 fn item_spec_to_json(spec: &drl_protocol::ItemSpawnSpec) -> JsonValue {
@@ -448,7 +457,8 @@ mod tests {
     replay.record_monster(
       MonsterSpawnSpec::new(Position::new(6, 7), "Imp", 20, 100, (3, 8))
         .with_ranged_combat((2, 5), 7, 70)
-        .with_death_drop(Some(ItemSpawnKind::LargeMedPack)),
+        .with_death_drop(Some(ItemSpawnKind::LargeMedPack))
+        .with_equipped_weapon(Some(ItemSpawnKind::MegaBuster)),
     );
     replay.record_item(drl_protocol::ItemSpawnSpec::new(
       Position::new(2, 3),
@@ -496,6 +506,16 @@ mod tests {
     assert!(value.get("player_config").is_some());
     assert!(value.get("procedural_config").is_some());
     assert!(value.get("initial_monsters").is_some());
+    assert_eq!(
+      value
+        .get("initial_monsters")
+        .and_then(JsonValue::as_array)
+        .and_then(|monsters| monsters.first())
+        .and_then(|monster| monster.get("equipped_weapon"))
+        .and_then(|weapon| weapon.get("kind"))
+        .and_then(JsonValue::as_str),
+      Some("mega_buster")
+    );
     assert!(value.get("initial_items").is_some());
     assert!(value.get("custom_tiles").is_some());
     assert_eq!(
@@ -505,6 +525,39 @@ mod tests {
         .map(Vec::len),
       Some(12)
     );
+  }
+
+  #[test]
+  fn replay_export_omits_absent_monster_equipment() {
+    let mut replay = ReplayLog::new(42, 8, 8, Position::new(1, 1));
+    replay.record_monster(MonsterSpawnSpec::new(
+      Position::new(3, 3),
+      "Target",
+      20,
+      100,
+      (1, 2),
+    ));
+
+    let value = to_json_value(&replay);
+    let monster = value
+      .get("initial_monsters")
+      .and_then(JsonValue::as_array)
+      .and_then(|monsters| monsters.first())
+      .expect("monster JSON");
+    assert!(monster.get("equipped_weapon").is_none());
+    assert_eq!(from_json_value(&value).unwrap(), replay);
+  }
+
+  #[test]
+  fn replay_import_rejects_non_weapon_monster_equipment() {
+    let mut replay = ReplayLog::new(42, 8, 8, Position::new(1, 1));
+    replay.record_monster(
+      MonsterSpawnSpec::new(Position::new(3, 3), "Target", 20, 100, (1, 2))
+        .with_equipped_weapon(Some(ItemSpawnKind::LargeMedPack)),
+    );
+
+    let error = from_json_value(&to_json_value(&replay)).expect_err("non-weapon equipment");
+    assert!(error.contains("equipped_weapon must identify a weapon"));
   }
 
   #[test]

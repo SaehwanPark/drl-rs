@@ -332,7 +332,7 @@ impl Scenario {
     // Spawn monsters
     for monster in &self.monsters {
       let id = game.world_mut().allocate_entity_id();
-      let actor = Actor::new(id, monster.position, &monster.name, false)
+      let mut actor = Actor::new(id, monster.position, &monster.name, false)
         .with_stats(
           HitPoints::full(monster.hp),
           Speed::new(monster.speed),
@@ -343,6 +343,11 @@ impl Scenario {
         )
         .with_death_drop(monster.death_drop)
         .with_boss(monster.is_boss);
+      if let Some(weapon_kind) = monster.equipped_weapon {
+        let item_id = game.world_mut().allocate_item_id();
+        let weapon = Item::from_spawn_kind(item_id, weapon_kind);
+        actor.equipment_mut().equip(EquipmentSlot::Weapon, weapon)?;
+      }
       game.world_mut().actors_mut().insert(id, actor);
     }
 
@@ -564,7 +569,7 @@ impl ScenarioRunner {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use drl_protocol::Direction;
+  use drl_protocol::{Direction, EntityId, ItemArchetype, ItemSpawnKind};
 
   #[test]
   fn test_scenario_ascii_parsing_and_instantiation() {
@@ -619,5 +624,33 @@ mod tests {
     assert!(game.world().level_id().0 > 1);
     assert_eq!(replay.commands.len(), 5);
     assert!(!events.is_empty());
+  }
+
+  #[test]
+  fn scenario_instantiation_reconstructs_optional_monster_weapon() {
+    let mut scenario = Scenario::from_ascii(
+      "Target weapon",
+      "Monster equipment",
+      "#####\n#@..#\n#...#\n#####",
+    )
+    .unwrap();
+    scenario.monsters.push(
+      MonsterSpawnSpec::new(Position::new(2, 2), "Target", 100, 0, (0, 0))
+        .with_equipped_weapon(Some(ItemSpawnKind::MegaBuster)),
+    );
+
+    let game = scenario.instantiate().expect("scenario with target weapon");
+    let target = game
+      .world()
+      .get_actor(EntityId::new(2))
+      .expect("scenario monster");
+    assert_eq!(
+      target.equipment().weapon().map(|item| item.archetype()),
+      Some(ItemArchetype::MegaBuster)
+    );
+    assert_eq!(
+      target.equipment().weapon().map(|item| item.id()),
+      Some(drl_protocol::ItemId::new(4))
+    );
   }
 }

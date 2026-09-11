@@ -20,7 +20,7 @@ fn snapshot_round_trip_replays_fixed_session_deterministically() {
   let token = session.snapshot_token().expect("snapshot encoding");
   assert_eq!(
     token,
-    "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:150:1:2:drl-rs-ruleset-v1:4:mr;mr;mr;p"
+    "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:151:1:2:drl-rs-ruleset-v1:4:mr;mr;mr;p"
   );
 
   let mut restored = BrowserSession::new().expect("fixed session");
@@ -36,7 +36,7 @@ fn v3_snapshot_round_trips_empty_history() {
   let token = session.snapshot_token().expect("snapshot encoding");
   assert_eq!(
     token,
-    "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:150:1:2:drl-rs-ruleset-v1:0:"
+    "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:151:1:2:drl-rs-ruleset-v1:0:"
   );
   let decoded = persistence::decode_snapshot_with_format(&token).expect("snapshot decoding");
   assert_eq!(decoded.format, persistence::SnapshotFormat::V3);
@@ -99,28 +99,28 @@ fn snapshot_rejects_corruption_and_unknown_versions() {
 fn snapshot_rejects_each_incompatible_identity_before_restore() {
   let cases = [
     (
-      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:149:1:2:drl-rs-ruleset-v1:0:",
+      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:150:1:2:drl-rs-ruleset-v1:0:",
       SnapshotError::UnsupportedGameplaySemantics {
-        found: 149,
+        found: 150,
         expected: drl_protocol::CURRENT_GAMEPLAY_SEMANTICS_VERSION,
       },
     ),
     (
-      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:150:0:2:drl-rs-ruleset-v1:0:",
+      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:151:0:2:drl-rs-ruleset-v1:0:",
       SnapshotError::UnsupportedRngSamplingSemantics {
         found: 0,
         expected: drl_protocol::CURRENT_RNG_SAMPLING_SEMANTICS_VERSION,
       },
     ),
     (
-      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:150:1:1:drl-rs-ruleset-v1:0:",
+      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:151:1:1:drl-rs-ruleset-v1:0:",
       SnapshotError::UnsupportedGeneratorSemantics {
         found: 1,
         expected: drl_protocol::CURRENT_GENERATOR_SEMANTICS_VERSION,
       },
     ),
     (
-      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:150:1:2:legacy-ruleset:0:",
+      "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:151:1:2:legacy-ruleset:0:",
       SnapshotError::UnsupportedRuleset {
         found: "legacy-ruleset".to_string(),
         expected: drl_protocol::CURRENT_RULESET_ID.to_string(),
@@ -144,9 +144,9 @@ fn snapshot_rejects_noncanonical_v3_numbers_and_count_mismatches() {
   for token in [
     "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:0143:1:2:drl-rs-ruleset-v1:0:",
     "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:+143:1:2:drl-rs-ruleset-v1:0:",
-    "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:150:1:2:drl-rs-ruleset-v1:01:w",
-    "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:150:1:2:drl-rs-ruleset-v1:2:w",
-    "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:150:1:2:drl-rs-ruleset-v1:1:é",
+    "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:151:1:2:drl-rs-ruleset-v1:01:w",
+    "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:151:1:2:drl-rs-ruleset-v1:2:w",
+    "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:151:1:2:drl-rs-ruleset-v1:1:é",
   ] {
     assert_eq!(
       session.restore_snapshot(token),
@@ -177,7 +177,7 @@ fn late_replay_failure_keeps_the_active_session_unchanged() {
     .submit(Command::Move(Direction::East))
     .expect("legal command");
   let before = session.clone();
-  let token = "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:150:1:2:drl-rs-ruleset-v1:2:mr;x";
+  let token = "DRL-RUST-BROWSER-SAVE/3:fixed-m4-v1:151:1:2:drl-rs-ruleset-v1:2:mr;x";
 
   assert_eq!(
     session.restore_snapshot(token),

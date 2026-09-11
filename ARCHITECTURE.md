@@ -1,7 +1,7 @@
 # Architecture
 
 Last reviewed: 2026-09-11
-Current project version: `0.2.356`
+Current project version: `0.2.357`
 
 Status: Verified for current deterministic headless core, MCP tooling,
 browser-playable WebGPU slice, and the thin native frontend boundary; full
@@ -48,7 +48,9 @@ Typed behavior profiles remain immutable compile-time descriptions. Acid Spitter
 records its typed one-projectile ordinary-fire and ten-rocket ammo-cost
 fragments alongside its Acid-to-Water terrain-reload and score-cost fragments;
 Mega Buster records its typed three-projectile ordinary-fire and three-round
-per-projectile ammo-cost fragments; Grammaton records its typed Single/Burst/Auto
+per-projectile ammo-cost fragments. Its `mega_buster` transition module also
+owns the total Bullet/Fire/Acid/Plasma post-kill profile selector, while the
+item instance retains the current morph for future direct shots; Grammaton records its typed Single/Burst/Auto
 mode and score-cost fragments; Jackhammer records its typed Burst/Single mode
 and score-cost fragments; Lava Armor records its typed terrain-gated
 durability-recharge fragment; Malek's Armor records its typed durability-recharge
@@ -297,7 +299,11 @@ Presentation Boundary
     Nuclear Plasma's profile records its six-projectile ordinary-fire and
     six-cell cost fragments alongside its typed first-, second-, third-,
     fourth-, fifth-, sixth-, and seventh-level chainfire, overload, and recharge fragments.
-    Profiles describe
+    Mega Buster's direct lethal path reads only explicit target equipment,
+    emits `GameEvent::MegaBusterMorphed` after `ActorDied` and before a death
+    drop, and preserves its clip/reload/action/projectile/ammo rules. Fire/Acid
+    radius-one execution, exact dice distribution, legacy same-volley mutation,
+    and presentation timing remain deferred. Profiles describe
     behavior without string keys or runtime callbacks; dedicated transition
     modules remain the execution authority.
     Missile Launcher's immutable profile records one-projectile/one-rocket

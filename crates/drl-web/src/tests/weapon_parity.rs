@@ -487,6 +487,67 @@ fn mega_buster_vertical_browser_boundary_matches_direct_core() {
 }
 
 #[test]
+fn mega_buster_kill_morph_browser_boundary_matches_direct_core() {
+  let player_position = Position::new(2, 6);
+  let target_position = Position::new(7, 6);
+  let mut setup_replay =
+    ReplayLog::new(46_306, 16, 12, player_position).with_player_config(PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: Vec::new(),
+      equipped_weapon: Some(ItemSpawnKind::MegaBuster),
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    });
+  setup_replay.record_monster(
+    MonsterSpawnSpec::new(target_position, "Rocket Target", 1, 0, (0, 0))
+      .with_equipped_weapon(Some(ItemSpawnKind::RocketLauncher))
+      .with_death_drop(Some(ItemSpawnKind::SmallMedPack)),
+  );
+
+  let (initial, setup_events) =
+    drl_core::ReplayEngine::run(&setup_replay).expect("Mega Buster morph setup");
+  assert!(setup_events.is_empty());
+  let target_id = initial
+    .world()
+    .actors()
+    .values()
+    .find(|actor| !actor.is_player())
+    .expect("target")
+    .id();
+
+  let command = Command::AttackRanged(target_position);
+  let mut direct = initial.clone();
+  let mut browser = BrowserSession::from_game(initial);
+  let expected_events = direct.step(command).expect("direct morph command");
+  let step = browser.submit(command).expect("browser morph command");
+  assert_eq!(step.events, expected_events);
+  assert_eq!(step.after, direct.observe_player());
+  assert_eq!(
+    step.effects,
+    effect_timeline_for_observations(&step.before, &step.after, &expected_events)
+  );
+  assert_eq!(browser.scene(), RenderScene::from_observation(&step.after));
+  assert!(expected_events.iter().any(|event| matches!(
+    event,
+    drl_protocol::GameEvent::MegaBusterMorphed {
+      target_id: event_target,
+      current: drl_protocol::MegaBusterMorphMode::Fire,
+      ..
+    } if *event_target == target_id
+  )));
+
+  let mut command_replay = setup_replay;
+  command_replay.record_command(command);
+  let (replayed, replay_events) =
+    drl_core::ReplayEngine::run(&command_replay).expect("morph replay");
+  assert_eq!(replay_events, expected_events);
+  assert_eq!(replayed, direct);
+  assert!(drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism"));
+}
+
+#[test]
 fn super_shotgun_vertical_browser_boundary_matches_direct_core() {
   let player_position = Position::new(1, 1);
   let player_config = PlayerSpawnConfig {
