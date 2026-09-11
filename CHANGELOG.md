@@ -3,6 +3,24 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.358]
+
+- Delivered M9 Mega Buster exact profile dice and Fire/Acid radius-one fanout.
+  Each profile now rolls its explicit dice shape (`1d8`, `4d2`, `4d2`, `1d10`)
+  with one deterministic RNG sample per die while preserving bounded inclusive
+  damage ranges and typed Physical/Fire/Acid/Plasma mitigation. Fire and Acid
+  projectiles emit a typed delay-40/radius-one/knockback-8 schedule event and
+  immediately resolve center-first radius-one environmental splash on both hits
+  and misses, consuming one independent `4d2` roll per clear cell. Direct
+  lethal morph remains direct-only, ordinary fire preserves three-projectile
+  early-stop and nine-round ammo semantics without same-volley morph mutation,
+  and all possible radius-one death-drop destinations are preflighted before
+  clip/RNG mutation. Replay gameplay semantics advance from `151` to `152`, and
+  focused core, MCP, and BrowserSession/direct-core parity tests pass. Legacy
+  metric/traversal, delayed queue, same-volley mutation, controlled legacy
+  runtime, audiovisual parity, browser capture, and human acceptance remain
+  open or `NOT_RUN`.
+
 ## [0.2.357]
 
 - Delivered the bounded Mega Buster post-kill typed morph. A confirmed lethal

@@ -41,7 +41,7 @@ use crate::item::Item;
 use crate::jackhammer::{JACKHAMMER_MODE_SCORE_COST, JackhammerTransition};
 use crate::level_definition::standard_procedural;
 use crate::malek_armor::MalekRechargeOutcome;
-use crate::mega_buster::mode_for_target_damage_type;
+use crate::mega_buster::{MegaBusterMorphProfile, mode_for_target_damage_type, profile_for_mode};
 use crate::missile_launcher::{
   MISSILE_LAUNCHER_EXPLOSION_DELAY, MISSILE_LAUNCHER_EXPLOSION_KNOCKBACK,
   MISSILE_LAUNCHER_EXPLOSION_RADIUS, MISSILE_LAUNCHER_GROUND_ITEM_DESTRUCTION_THRESHOLD,
@@ -105,11 +105,24 @@ struct ActorSplashPolicy {
   ground_item: GroundItemSplashPolicy,
 }
 
+/// Legacy Mega Buster explosion metadata retained as immediate-resolution
+/// event fields in this bounded slice.
+const MEGA_BUSTER_EXPLOSION_DELAY: u32 = 40;
+const MEGA_BUSTER_EXPLOSION_RADIUS: u32 = 1;
+const MEGA_BUSTER_EXPLOSION_KNOCKBACK: u32 = 8;
+const MEGA_BUSTER_EXPLOSION_GROUND_ITEM_DESTRUCTION_THRESHOLD: u32 = 10;
+
 /// Typed ground-item policy applied after each blast cell's actor processing.
 #[derive(Clone, Copy)]
 enum GroundItemSplashPolicy {
   LooseAmmo { threshold: u32 },
   Any { threshold: u32 },
+}
+
+/// Fire and Acid Mega Buster splash cells share the same explicit 4d2 shape.
+/// The caller supplies the snapshot's typed damage family separately.
+fn roll_mega_buster_splash_damage(rng: &mut GameRng) -> u32 {
+  profile_for_mode(drl_protocol::MegaBusterMorphMode::Fire).roll_damage(rng)
 }
 
 impl Game {
@@ -1752,6 +1765,7 @@ impl Game {
       shot_count,
       ammo_cost,
       mega_buster_item_id,
+      mega_buster_profile,
       null_pointer_item_id,
       weapon_is_railgun,
       weapon_is_blaster,
@@ -1835,6 +1849,18 @@ impl Game {
         (weapon.archetype() == drl_protocol::ItemArchetype::NullPointer).then_some(weapon.id());
       let mega_buster_item_id =
         (weapon.archetype() == drl_protocol::ItemArchetype::MegaBuster).then_some(weapon.id());
+      // Snapshot the immutable profile before any projectile/RNG mutation.
+      // Ordinary Mega Buster fire stops after its first lethal projectile, and
+      // chainfire's fixed dead-target continuations must not reread a morph
+      // transition from the mutable item instance.
+      let mega_buster_profile = (weapon.archetype() == drl_protocol::ItemArchetype::MegaBuster)
+        .then(|| {
+          profile_for_mode(
+            weapon
+              .mega_buster_morph()
+              .unwrap_or(drl_protocol::MegaBusterMorphMode::Bullet),
+          )
+        });
       let weapon_is_railgun = weapon.archetype() == drl_protocol::ItemArchetype::Railgun;
       let weapon_is_blaster = weapon.archetype() == drl_protocol::ItemArchetype::Blaster;
       let weapon_is_plasma_shotgun =
@@ -1861,6 +1887,7 @@ impl Game {
         shot_count,
         ammo_cost,
         mega_buster_item_id,
+        mega_buster_profile,
         null_pointer_item_id,
         weapon_is_railgun,
         weapon_is_blaster,
@@ -1889,7 +1916,8 @@ impl Game {
     {
       self.validate_death_drop_position(target_pos)?;
     }
-    if weapon_is_anti_freak_jackal
+    if mega_buster_profile.is_some_and(|profile| profile.radius > 0)
+      || weapon_is_anti_freak_jackal
       || null_pointer_item_id.is_some()
       || weapon_is_bfg10k
       || weapon_is_bfg9000
@@ -2007,17 +2035,29 @@ impl Game {
             .get_actor(target_monster_id)
             .ok_or(CommandError::EntityNotFound(target_monster_id))?;
 
-          let outcome = CombatResolver::resolve_ranged_attack_with_accuracy(
-            player,
-            target_monster,
-            distance,
-            if aimed {
-              PISTOL_AIMED_ACCURACY_BONUS
-            } else {
-              0
-            },
-            &mut self.state.rng,
-          );
+          let accuracy_bonus = if aimed {
+            PISTOL_AIMED_ACCURACY_BONUS
+          } else {
+            0
+          };
+          let outcome = if let Some(profile) = mega_buster_profile {
+            CombatResolver::resolve_ranged_attack_with_profile_and_accuracy(
+              player,
+              target_monster,
+              distance,
+              accuracy_bonus,
+              profile,
+              &mut self.state.rng,
+            )
+          } else {
+            CombatResolver::resolve_ranged_attack_with_accuracy(
+              player,
+              target_monster,
+              distance,
+              accuracy_bonus,
+              &mut self.state.rng,
+            )
+          };
           let damage = match outcome {
             AttackOutcome::Hit { damage, .. } => damage,
             _ => 0,
@@ -2040,6 +2080,16 @@ impl Game {
         }
 
         if damage == 0 {
+          if let Some(profile) = mega_buster_profile.filter(|profile| profile.radius > 0) {
+            self.emit_mega_buster_explosion(
+              player_id,
+              mega_buster_item_id.expect("Mega Buster profile has an item id"),
+              target_monster_id,
+              profile,
+              events,
+            );
+            self.execute_mega_buster_splash(player_id, target_pos, profile, events)?;
+          }
           if weapon_is_missile_launcher {
             events.push(GameEvent::MissileLauncherExplosionScheduled {
               entity_id: player_id,
@@ -2053,13 +2103,8 @@ impl Game {
           continue;
         }
 
-        let direct_damage_type = if mega_buster_item_id.is_some() {
-          self
-            .state
-            .world
-            .get_actor(player_id)
-            .and_then(|actor| actor.equipment().weapon())
-            .and_then(Item::weapon_damage_type)
+        let direct_damage_type = if let Some(profile) = mega_buster_profile {
+          Some(profile.damage_type)
         } else if weapon_is_rocket_launcher
           || weapon_is_anti_freak_jackal
           || weapon_is_missile_launcher
@@ -2107,7 +2152,16 @@ impl Game {
           damage_type: direct_damage_type,
         });
 
-        if weapon_is_missile_launcher {
+        if let Some(profile) = mega_buster_profile.filter(|profile| profile.radius > 0) {
+          self.emit_mega_buster_explosion(
+            player_id,
+            mega_buster_item_id.expect("Mega Buster profile has an item id"),
+            target_monster_id,
+            profile,
+            events,
+          );
+          self.execute_mega_buster_splash(player_id, target_pos, profile, events)?;
+        } else if weapon_is_missile_launcher {
           events.push(GameEvent::MissileLauncherExplosionScheduled {
             entity_id: player_id,
             target_id: target_monster_id,
@@ -2577,6 +2631,60 @@ impl Game {
       },
       events,
     )
+  }
+
+  /// Resolves a bounded Mega Buster Fire/Acid radius-one fanout immediately
+  /// after its schedule event. The profile is copied from the projectile's
+  /// pre-fire snapshot, while each blast cell consumes an independent 4d2
+  /// damage roll. Delay is event metadata; no pending queue is introduced.
+  fn execute_mega_buster_splash(
+    &mut self,
+    source_id: drl_protocol::EntityId,
+    center: Position,
+    profile: MegaBusterMorphProfile,
+    events: &mut Vec<GameEvent>,
+  ) -> Result<(), CommandError> {
+    debug_assert!(matches!(
+      profile.mode,
+      drl_protocol::MegaBusterMorphMode::Fire | drl_protocol::MegaBusterMorphMode::Acid
+    ));
+    self.execute_actor_splash(
+      source_id,
+      center,
+      radius_one_blast_positions(self.state.world.map(), center),
+      ActorSplashPolicy {
+        roll_damage: roll_mega_buster_splash_damage,
+        source_self_safe: false,
+        damage_type: profile.damage_type,
+        knockback: MEGA_BUSTER_EXPLOSION_KNOCKBACK,
+        distance_falloff: false,
+        ground_item: GroundItemSplashPolicy::Any {
+          threshold: MEGA_BUSTER_EXPLOSION_GROUND_ITEM_DESTRUCTION_THRESHOLD,
+        },
+      },
+      events,
+    )
+  }
+
+  /// Emits the typed Mega Buster explosion metadata before immediate fanout.
+  fn emit_mega_buster_explosion(
+    &self,
+    entity_id: drl_protocol::EntityId,
+    item_id: drl_protocol::ItemId,
+    target_id: drl_protocol::EntityId,
+    profile: MegaBusterMorphProfile,
+    events: &mut Vec<GameEvent>,
+  ) {
+    debug_assert!(profile.radius > 0);
+    events.push(GameEvent::MegaBusterExplosionScheduled {
+      entity_id,
+      item_id,
+      target_id,
+      delay: MEGA_BUSTER_EXPLOSION_DELAY,
+      radius: MEGA_BUSTER_EXPLOSION_RADIUS,
+      knockback: MEGA_BUSTER_EXPLOSION_KNOCKBACK,
+      damage_type: profile.damage_type,
+    });
   }
 
   /// Resolves the bounded BFG 10K radius-2 actor splash immediately after its

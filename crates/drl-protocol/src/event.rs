@@ -58,6 +58,21 @@ pub enum GameEvent {
     previous: MegaBusterMorphMode,
     current: MegaBusterMorphMode,
   },
+  /// A Fire or Acid Mega Buster projectile scheduled its bounded explosion.
+  ///
+  /// The delay is event metadata only in the current slice; the simulation
+  /// resolves the radius-one fanout immediately after emitting this event.
+  /// The typed damage family is carried explicitly so presentation and MCP
+  /// projections do not infer it from the item's mutable state.
+  MegaBusterExplosionScheduled {
+    entity_id: EntityId,
+    item_id: ItemId,
+    target_id: EntityId,
+    delay: u32,
+    radius: u32,
+    knockback: u32,
+    damage_type: DamageType,
+  },
   /// An actor paid action cost / energy.
   ActionCostPaid {
     entity_id: EntityId,

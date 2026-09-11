@@ -547,6 +547,234 @@ fn mega_buster_kill_morph_browser_boundary_matches_direct_core() {
   assert!(drl_core::ReplayEngine::verify_determinism(&command_replay).expect("replay determinism"));
 }
 
+fn assert_mega_buster_fanout_browser_boundary_parity(
+  target_weapon: ItemSpawnKind,
+  expected_mode: drl_protocol::MegaBusterMorphMode,
+  expected_damage_type: drl_protocol::DamageType,
+) {
+  let player_position = Position::new(2, 6);
+  let morph_target_position = Position::new(3, 6);
+  let fanout_center = Position::new(8, 6);
+  let fanout_neighbor = Position::new(8, 5);
+  let mut setup_replay =
+    ReplayLog::new(46_306, 16, 12, player_position).with_player_config(PlayerSpawnConfig {
+      hp: 50,
+      max_hp: 50,
+      speed: 100,
+      initial_items: Vec::new(),
+      equipped_weapon: Some(ItemSpawnKind::MegaBuster),
+      equipped_armor: None,
+      equipped_armor_durability: None,
+    });
+  setup_replay.record_monster(
+    MonsterSpawnSpec::new(morph_target_position, "Morph Target", 1, 0, (0, 0))
+      .with_equipped_weapon(Some(target_weapon)),
+  );
+  setup_replay.record_monster(MonsterSpawnSpec::new(
+    fanout_center,
+    "Fanout Center",
+    500,
+    0,
+    (0, 0),
+  ));
+  setup_replay.record_monster(MonsterSpawnSpec::new(
+    fanout_neighbor,
+    "Fanout Neighbor",
+    500,
+    0,
+    (0, 0),
+  ));
+
+  let (initial, setup_events) =
+    drl_core::ReplayEngine::run(&setup_replay).expect("Mega Buster fanout setup");
+  assert!(setup_events.is_empty());
+  let player_id = initial.world().player_id().expect("player identity");
+  let mega_buster_id = initial
+    .world()
+    .player()
+    .expect("player")
+    .equipment()
+    .weapon()
+    .expect("Mega Buster")
+    .id();
+  let center_id = initial
+    .world()
+    .actors()
+    .values()
+    .find(|actor| actor.position() == fanout_center)
+    .expect("fanout center")
+    .id();
+  let neighbor_id = initial
+    .world()
+    .actors()
+    .values()
+    .find(|actor| actor.position() == fanout_neighbor)
+    .expect("fanout neighbor")
+    .id();
+
+  let morph_command = Command::AttackRanged(morph_target_position);
+  let fanout_command = Command::AttackRanged(fanout_center);
+  let mut direct = initial.clone();
+  let mut browser = BrowserSession::from_game(initial.clone());
+
+  let morph_events = direct
+    .step(morph_command)
+    .expect("direct Mega morph command");
+  let morph_step = browser
+    .submit(morph_command)
+    .expect("browser Mega morph command");
+  assert_eq!(morph_step.events, morph_events);
+  assert_eq!(morph_step.after, direct.observe_player());
+  assert_eq!(
+    morph_step.effects,
+    effect_timeline_for_observations(&morph_step.before, &morph_step.after, &morph_events)
+  );
+  assert_eq!(
+    browser.scene(),
+    RenderScene::from_observation(&morph_step.after)
+  );
+  assert!(morph_events.iter().any(|event| matches!(
+    event,
+    drl_protocol::GameEvent::MegaBusterMorphed {
+      entity_id,
+      item_id,
+      target_id,
+      current,
+      ..
+    } if *entity_id == player_id
+      && *item_id == mega_buster_id
+      && *target_id != center_id
+      && *current == expected_mode
+  )));
+
+  let fanout_events = direct
+    .step(fanout_command)
+    .expect("direct Mega Buster fanout command");
+  let fanout_step = browser
+    .submit(fanout_command)
+    .expect("browser Mega Buster fanout command");
+  assert_eq!(fanout_step.events, fanout_events);
+  assert_eq!(fanout_step.after, direct.observe_player());
+  assert_eq!(
+    fanout_step.effects,
+    effect_timeline_for_observations(&fanout_step.before, &fanout_step.after, &fanout_events)
+  );
+  assert_eq!(
+    browser.scene(),
+    RenderScene::from_observation(&fanout_step.after)
+  );
+
+  let schedules: Vec<_> = fanout_events
+    .iter()
+    .filter_map(|event| match event {
+      drl_protocol::GameEvent::MegaBusterExplosionScheduled {
+        entity_id,
+        item_id,
+        target_id,
+        delay,
+        radius,
+        knockback,
+        damage_type,
+      } => Some((
+        *entity_id,
+        *item_id,
+        *target_id,
+        *delay,
+        *radius,
+        *knockback,
+        *damage_type,
+      )),
+      _ => None,
+    })
+    .collect();
+  assert_eq!(
+    schedules.len(),
+    3,
+    "an ordinary Mega Buster command keeps its three-projectile volley"
+  );
+  assert!(schedules.iter().all(
+    |(entity_id, item_id, target_id, delay, radius, knockback, damage_type)| {
+      (
+        *entity_id,
+        *item_id,
+        *target_id,
+        *delay,
+        *radius,
+        *knockback,
+        *damage_type,
+      ) == (
+        player_id,
+        mega_buster_id,
+        center_id,
+        40,
+        1,
+        8,
+        expected_damage_type,
+      )
+    }
+  ));
+
+  let splash_targets: Vec<_> = fanout_events
+    .iter()
+    .filter_map(|event| match event {
+      drl_protocol::GameEvent::DamageApplied {
+        target_id,
+        source: drl_protocol::DamageSource::Environment,
+        damage_type: Some(damage_type),
+        ..
+      } if *damage_type == expected_damage_type => Some(*target_id),
+      _ => None,
+    })
+    .collect();
+  assert_eq!(
+    splash_targets.len(),
+    6,
+    "each of three projectiles applies center and neighbor radius-one damage"
+  );
+  assert_eq!(
+    splash_targets.iter().filter(|id| **id == center_id).count(),
+    3
+  );
+  assert_eq!(
+    splash_targets
+      .iter()
+      .filter(|id| **id == neighbor_id)
+      .count(),
+    3
+  );
+
+  let mut command_replay = setup_replay;
+  command_replay.record_command(morph_command);
+  command_replay.record_command(fanout_command);
+  let (replayed, replay_events) =
+    drl_core::ReplayEngine::run(&command_replay).expect("Mega Buster fanout replay");
+  let mut expected_events = morph_events;
+  expected_events.extend(fanout_events.clone());
+  assert_eq!(replay_events, expected_events);
+  assert_eq!(replayed, direct);
+  assert!(
+    drl_core::ReplayEngine::verify_determinism(&command_replay).expect("fanout replay determinism")
+  );
+}
+
+#[test]
+fn mega_buster_fire_fanout_browser_boundary_matches_direct_core() {
+  assert_mega_buster_fanout_browser_boundary_parity(
+    ItemSpawnKind::RocketLauncher,
+    drl_protocol::MegaBusterMorphMode::Fire,
+    drl_protocol::DamageType::Fire,
+  );
+}
+
+#[test]
+fn mega_buster_acid_fanout_browser_boundary_matches_direct_core() {
+  assert_mega_buster_fanout_browser_boundary_parity(
+    ItemSpawnKind::AcidSpitter,
+    drl_protocol::MegaBusterMorphMode::Acid,
+    drl_protocol::DamageType::Acid,
+  );
+}
+
 #[test]
 fn super_shotgun_vertical_browser_boundary_matches_direct_core() {
   let player_position = Position::new(1, 1);

@@ -1380,7 +1380,7 @@ pub fn effects_for_events(events: &[GameEvent]) -> Vec<PresentationEffect> {
       }),
       GameEvent::DamageApplied { .. } => Some(PresentationEffect::Hit),
       GameEvent::ActorDied { .. } => Some(PresentationEffect::Death),
-      GameEvent::MegaBusterMorphed { .. } => None,
+      GameEvent::MegaBusterMorphed { .. } | GameEvent::MegaBusterExplosionScheduled { .. } => None,
       GameEvent::ItemPickedUp { .. } => Some(PresentationEffect::Pickup),
       GameEvent::ItemDropped { .. } => Some(PresentationEffect::Drop),
       GameEvent::ItemEquipped { .. } | GameEvent::ItemUnequipped { .. } => {
@@ -1525,6 +1525,11 @@ fn event_entity_ids(event: &GameEvent) -> [Option<EntityId>; 2] {
       target_id,
       ..
     } => [Some(*entity_id), Some(*target_id)],
+    GameEvent::MegaBusterExplosionScheduled {
+      entity_id,
+      target_id,
+      ..
+    } => [Some(*entity_id), Some(*target_id)],
     GameEvent::AttackResolved {
       attacker_id,
       target_id,
@@ -1558,6 +1563,7 @@ fn event_is_observable(
     GameEvent::DamageApplied { .. }
       | GameEvent::ActorDied { .. }
       | GameEvent::MegaBusterMorphed { .. }
+      | GameEvent::MegaBusterExplosionScheduled { .. }
   ) {
     return ids.into_iter().flatten().any(|entity_id| {
       before

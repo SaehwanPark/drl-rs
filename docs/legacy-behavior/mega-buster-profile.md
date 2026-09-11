@@ -1,8 +1,9 @@
 # Mega Buster typed behavior-profile evidence
 
-Status: delivered bounded typed post-kill morph and ordinary-fire volley/cost
-profile for `0.2.357`; exact legacy dice/splash/timing behavior, controlled
-legacy runtime comparison, and audiovisual parity remain `NOT_RUN`.
+Status: delivered bounded typed post-kill morph, exact profile dice, Fire/Acid
+radius-one fanout, and ordinary-fire volley/cost profile for `0.2.358`; exact
+legacy timing/delayed queue, legacy traversal metrics, same-volley mutation,
+controlled legacy runtime comparison, and audiovisual parity remain `NOT_RUN`.
 
 ## Pinned source
 
@@ -39,10 +40,13 @@ The bounded direct-target path now stores a typed `MegaBusterMorphMode` on the
 Mega Buster and emits `GameEvent::MegaBusterMorphed` after `ActorDied` and before
 `ItemDropped`. Optional target equipment is represented by
 `MonsterSpawnSpec.equipped_weapon` and reconstructed with deterministic item
-IDs in Scenario/ReplayEngine/MCP replay JSON. Bullet/Physical, Fire, Acid, and
-Plasma profiles retain legacy `1d8`, `4d2`, `4d2`, and `1d10` provenance while
-using current Rust ranges `(1,8)`, `(4,8)`, `(4,8)`, and `(1,10)`.
+Bullet/Physical, Fire, Acid, and Plasma profiles consume one deterministic RNG
+sample per die (`1d8`, `4d2`, `4d2`, `1d10`) and expose bounded inclusive
+ranges `(1,8)`, `(4,8)`, `(4,8)`, and `(1,10)`. Fire and Acid projectiles emit
+a typed delay-40/radius-one/knockback-8 schedule event and immediately resolve
+center-first radius-one environmental splash on both hits and misses, with one
+independent `4d2` roll per eligible cell and preflighted death-drop validation.
 
-Fire/Acid radius-one execution, exact dice distribution, legacy
-accuracy/miss/timing/presentation, same-volley mutation, controlled runtime,
-and audiovisual parity remain explicit follow-up or `NOT_RUN` work.
+Legacy traversal metrics, delayed explosion queue, same-volley mutation,
+accuracy/timing, controlled runtime, and audiovisual parity remain explicit
+follow-up or `NOT_RUN` work.

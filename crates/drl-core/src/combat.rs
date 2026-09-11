@@ -6,6 +6,7 @@
 use drl_protocol::AttackOutcome;
 
 use crate::actor::Actor;
+use crate::mega_buster::MegaBusterMorphProfile;
 use crate::rng::GameRng;
 
 /// Pure combat resolution engine.
@@ -67,6 +68,49 @@ impl CombatResolver {
     } else {
       let damage = Self::roll_ranged_damage(attacker, rng)
         .expect("ranged damage was validated before hit resolution");
+      AttackOutcome::Hit {
+        damage,
+        is_lethal: damage >= defender.hp().current,
+      }
+    }
+  }
+
+  /// Resolves a ranged attack using an explicit typed damage profile.
+  ///
+  /// Hit determination and range validation intentionally match
+  /// [`Self::resolve_ranged_attack`].  Only the successful damage roll is
+  /// profile-driven; this lets Mega Buster morphs use their exact `NdM` dice
+  /// without changing the current Rust accuracy or miss policy.
+  pub fn resolve_ranged_attack_with_profile(
+    attacker: &Actor,
+    defender: &Actor,
+    distance: u32,
+    profile: MegaBusterMorphProfile,
+    rng: &mut GameRng,
+  ) -> AttackOutcome {
+    Self::resolve_ranged_attack_with_profile_and_accuracy(
+      attacker, defender, distance, 0, profile, rng,
+    )
+  }
+
+  /// Resolves a ranged attack with an explicit accuracy adjustment and damage
+  /// profile.
+  pub fn resolve_ranged_attack_with_profile_and_accuracy(
+    attacker: &Actor,
+    defender: &Actor,
+    distance: u32,
+    accuracy_bonus: i32,
+    profile: MegaBusterMorphProfile,
+    rng: &mut GameRng,
+  ) -> AttackOutcome {
+    if attacker.ranged_damage().is_none() || distance > attacker.ranged_range() {
+      return AttackOutcome::Miss;
+    }
+
+    if !Self::roll_ranged_hit_with_accuracy(attacker, distance, accuracy_bonus, rng) {
+      AttackOutcome::Miss
+    } else {
+      let damage = profile.roll_damage(rng);
       AttackOutcome::Hit {
         damage,
         is_lethal: damage >= defender.hp().current,
@@ -447,5 +491,64 @@ mod tests {
       .equip(EquipmentSlot::Weapon, Item::pistol(ItemId::new(5)))
       .unwrap();
     assert!(!pistol.ranged_exact_hit());
+  }
+
+  #[test]
+  fn profile_ranged_attack_preserves_hit_policy_and_consumes_profile_dice() {
+    let mut attacker = Actor::new(EntityId::new(1), Position::new(0, 0), "Marine", true);
+    attacker
+      .equipment_mut()
+      .equip(EquipmentSlot::Weapon, Item::mega_buster(ItemId::new(3)))
+      .expect("Mega Buster equips in the weapon slot");
+    let defender = Actor::new(EntityId::new(2), Position::new(1, 0), "Imp", false);
+    let profile = crate::mega_buster::MEGA_BUSTER_FIRE_PROFILE;
+
+    let mut expected_rng = GameRng::from_seed(0);
+    let expected_hit_roll = expected_rng.gen_range(0..100);
+    assert!(expected_hit_roll < 70, "seed must exercise the hit path");
+    let expected_damage = profile.roll_damage(&mut expected_rng);
+
+    let mut actual_rng = GameRng::from_seed(0);
+    let outcome = CombatResolver::resolve_ranged_attack_with_profile(
+      &attacker,
+      &defender,
+      1,
+      profile,
+      &mut actual_rng,
+    );
+
+    assert_eq!(
+      outcome,
+      AttackOutcome::Hit {
+        damage: expected_damage,
+        is_lethal: expected_damage >= defender.hp().current,
+      }
+    );
+    assert!((profile.minimum_damage()..=profile.maximum_damage()).contains(&expected_damage));
+    assert_eq!(actual_rng, expected_rng);
+  }
+
+  #[test]
+  fn profile_ranged_attack_keeps_out_of_range_rejection_rng_free() {
+    let mut attacker = Actor::new(EntityId::new(1), Position::new(0, 0), "Marine", true);
+    attacker
+      .equipment_mut()
+      .equip(EquipmentSlot::Weapon, Item::mega_buster(ItemId::new(3)))
+      .expect("Mega Buster equips in the weapon slot");
+    let defender = Actor::new(EntityId::new(2), Position::new(1, 0), "Imp", false);
+    let before = GameRng::from_seed(0);
+    let mut actual_rng = before.clone();
+
+    assert_eq!(
+      CombatResolver::resolve_ranged_attack_with_profile(
+        &attacker,
+        &defender,
+        9,
+        crate::mega_buster::MEGA_BUSTER_FIRE_PROFILE,
+        &mut actual_rng,
+      ),
+      AttackOutcome::Miss
+    );
+    assert_eq!(actual_rng, before);
   }
 }
