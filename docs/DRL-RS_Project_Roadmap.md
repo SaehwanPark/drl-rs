@@ -1,7 +1,7 @@
 # DRL-Rust Project Roadmap
 
-Last reviewed: 2026-09-07
-Current project version: `0.2.353`
+Last reviewed: 2026-09-11
+Current project version: `0.2.355`
 
 ---
 
@@ -52,7 +52,7 @@ verification item uses explicit status semantics:
 
 ---
 
-## 3. Current Progress Summary (`VERSION` 0.2.353)
+## 3. Current Progress Summary (`VERSION` 0.2.355)
 
 ### Delivered Foundations
 
@@ -1444,16 +1444,22 @@ verification item uses explicit status semantics:
 
 ### Active & Open Work
 
-- **M9 Revenant's Launcher direct Fire classification (`0.2.354`):** Active
-  candidate on `feat/revenants-launcher-direct-fire` routes successful ordinary
-  direct target damage through typed Fire mitigation, so Red Armor's
-  catalog-defined 25% resistance applies before flat protection (4). The
-  existing exact-hit policy, one-rocket clip, raw `7d6` damage, RNG order,
-  event ordering, rejection atomicity, single-rocket reload, replay semantics
-  (version `148`), MCP JSON, and BrowserSession/direct-core parity remain
-  intact. Homing, projectile routing, radius-3 delayed explosion, controlled
-  legacy runtime, audiovisual/reference capture, browser capture, and human
-  acceptance remain open or `NOT_RUN`.
+- **Delivered M9 Revenant's Launcher radius-3 Fire fanout (`0.2.355`):** The
+  typed exact-hit and direct Fire path now emits a distinct delay-40/radius-3/
+  knockback-8 schedule event and immediately resolves one ordered `7d6` Fire
+  roll per clear blast cell with legacy distance falloff, radial `damage / 8`
+  knockback, source self-damage, actor de-duplication, and strict `>10`
+  ordinary ground-item destruction. Splash death-drop destinations are
+  preflighted before clip/RNG mutation. Focused core geometry/fanout,
+  threshold, rejection, replay/version, MCP JSON, and BrowserSession/direct-
+  core parity tests pass locally; gameplay semantics advance from `148` to
+  `149`. Homing, projectile routing, pending delayed-explosion timing,
+  terrain/feature callbacks, controlled legacy runtime, audiovisual/reference
+  capture, browser capture, and human acceptance remain open or `NOT_RUN`.
+- **M9 Missile Launcher radius-3 Fire fanout (next candidate):** The existing
+  typed direct Fire/reload branch remains delivered; radius-3 splash geometry,
+  item policy, rocket-jump behavior, and its cross-boundary schedule contract
+  require a separate bounded slice and independent review.
 - **M0/M13 review-exception process (`0.2.353`):** The temporary
   solo-maintainer exception now has an accountable release-owner role,
   required current-head/hosted-failure/check/follow-up evidence, and a fixed
@@ -3155,9 +3161,12 @@ scripting.
   delayed explosion geometry, callback parity, exact legacy timing/accuracy,
   runtime, and audiovisual parity remain open.
 - [x] Revenant's Launcher has an immutable behavior profile for its pinned
-  exact-hit attack policy; dedicated combat execution remains authoritative and
-  homing, projectile routing, delayed explosions, runtime, and audiovisual
-  parity remain open.
+  exact-hit, typed direct Fire, and delay-40/radius-3/knockback-8 schedule
+  policy; dedicated combat execution resolves the bounded center-inclusive
+  `7d6` Fire fanout with falloff, radial knockback, actor de-duplication, and
+  thresholded ordinary ground-item destruction. Homing, projectile routing,
+  pending delayed-explosion timing, terrain/feature callbacks, runtime, and
+  audiovisual parity remain open.
 - [x] Assault Shotgun has an immutable behavior profile for ordinary
   single-shell reload and capped full-deficit reload (`2,500` score-count
   units); its dedicated planner remains authoritative and runtime, exact timing,

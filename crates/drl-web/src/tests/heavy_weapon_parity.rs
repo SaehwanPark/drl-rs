@@ -2806,6 +2806,143 @@ fn revenants_launcher_exact_hit_browser_boundary_matches_direct_core() {
 }
 
 #[test]
+fn revenants_launcher_radius_three_browser_boundary_matches_direct_core() {
+  let player_position = Position::new(2, 1);
+  let target_position = Position::new(5, 1);
+  let splash_target_position = Position::new(8, 1);
+  let player_config = PlayerSpawnConfig {
+    hp: 50,
+    max_hp: 50,
+    speed: 100,
+    initial_items: Vec::new(),
+    equipped_weapon: Some(ItemSpawnKind::RevenantsLauncher),
+    equipped_armor: None,
+    equipped_armor_durability: None,
+  };
+  let mut setup_replay = ReplayLog::new(0, 9, 4, player_position).with_player_config(player_config);
+  setup_replay.record_monster(MonsterSpawnSpec::new(
+    target_position,
+    "Static Target",
+    500,
+    1,
+    (2, 4),
+  ));
+  setup_replay.record_monster(MonsterSpawnSpec::new(
+    splash_target_position,
+    "Splash Target",
+    500,
+    1,
+    (2, 4),
+  ));
+
+  let (initial, setup_events) =
+    drl_core::ReplayEngine::run(&setup_replay).expect("Revenant radius-3 replay setup");
+  assert!(setup_events.is_empty());
+  let player_id = initial.world().player_id().expect("player identity");
+  let target_id = initial
+    .world()
+    .actors()
+    .values()
+    .find(|actor| actor.position() == target_position)
+    .expect("direct target")
+    .id();
+  let splash_target_id = initial
+    .world()
+    .actors()
+    .values()
+    .find(|actor| actor.position() == splash_target_position)
+    .expect("splash target")
+    .id();
+
+  let command = Command::AttackRanged(target_position);
+  let mut direct = initial.clone();
+  let expected_events = direct
+    .step(command)
+    .expect("direct Revenant radius-3 command");
+
+  let schedule_index = expected_events
+    .iter()
+    .position(|event| {
+      matches!(
+        event,
+        drl_protocol::GameEvent::RevenantsLauncherExplosionScheduled {
+          entity_id,
+          target_id: event_target,
+          delay: 40,
+          radius: 3,
+          knockback: 8,
+        } if *entity_id == player_id && *event_target == target_id
+      )
+    })
+    .expect("radius-3 explosion schedule event");
+  assert_eq!(
+    expected_events
+      .iter()
+      .filter(|event| {
+        matches!(
+          event,
+          drl_protocol::GameEvent::RevenantsLauncherExplosionScheduled { .. }
+        )
+      })
+      .count(),
+    1
+  );
+  assert!(
+    expected_events[..schedule_index]
+      .iter()
+      .any(|event| matches!(
+        event,
+        drl_protocol::GameEvent::DamageApplied {
+          target_id: event_target,
+          source: drl_protocol::DamageSource::Actor(source_id),
+          damage_type: Some(drl_protocol::DamageType::Fire),
+          ..
+        } if *source_id == player_id && *event_target == target_id
+      )),
+    "direct Revenant hit must remain typed Fire before its splash schedule"
+  );
+  assert!(
+    expected_events[schedule_index + 1..]
+      .iter()
+      .any(|event| matches!(
+        event,
+        drl_protocol::GameEvent::DamageApplied {
+          target_id: event_target,
+          source: drl_protocol::DamageSource::Environment,
+          damage_type: Some(drl_protocol::DamageType::Fire),
+          ..
+        } if *event_target == splash_target_id
+      )),
+    "radius-3 splash target must receive typed Fire damage"
+  );
+
+  let mut browser = BrowserSession::from_game(initial);
+  let step = browser
+    .submit(command)
+    .expect("browser Revenant radius-3 command");
+  assert_eq!(step.events, expected_events);
+  assert_eq!(step.after, direct.observe_player());
+  assert_eq!(
+    step.effects,
+    drl_render::effect_timeline_for_observations(&step.before, &step.after, &expected_events,)
+  );
+  assert_eq!(browser.scene(), RenderScene::from_observation(&step.after));
+  assert_eq!(browser.observation(), direct.observe_player());
+  assert_eq!(browser.replay_log().commands, vec![command]);
+
+  let mut command_replay = setup_replay;
+  command_replay.record_command(command);
+  let (replayed, replay_events) =
+    drl_core::ReplayEngine::run(&command_replay).expect("Revenant radius-3 command replay");
+  assert_eq!(replayed, direct);
+  assert_eq!(replay_events, expected_events);
+  assert!(
+    drl_core::ReplayEngine::verify_determinism(&command_replay)
+      .expect("Revenant radius-3 replay determinism")
+  );
+}
+
+#[test]
 fn bfg10k_exact_hit_browser_boundary_matches_direct_core() {
   let player_position = Position::new(2, 1);
   let target_position = Position::new(5, 1);

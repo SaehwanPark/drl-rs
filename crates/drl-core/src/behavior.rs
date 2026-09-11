@@ -22,6 +22,10 @@ use crate::null_pointer::{
   NULL_POINTER_MIN_SCORE_COUNT, NULL_POINTER_TARGET_SCORE_COST,
 };
 use crate::pump_action::PUMP_ACTION_COST;
+use crate::revenants_launcher::{
+  REVENANTS_LAUNCHER_EXPLOSION_DELAY, REVENANTS_LAUNCHER_EXPLOSION_KNOCKBACK,
+  REVENANTS_LAUNCHER_EXPLOSION_RADIUS,
+};
 use crate::rocket_launcher::{
   ROCKET_LAUNCHER_EXPLOSION_DELAY, ROCKET_LAUNCHER_EXPLOSION_KNOCKBACK,
   ROCKET_LAUNCHER_EXPLOSION_RADIUS,
@@ -491,10 +495,17 @@ const NULL_POINTER_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
 pub const NULL_POINTER_BEHAVIOR: BehaviorProfile =
   BehaviorProfile::new(NULL_POINTER_BEHAVIOR_SPECS);
 
-const REVENANTS_LAUNCHER_BEHAVIOR_SPECS: &[BehaviorSpec] =
-  &[BehaviorSpec::Attack(AttackEffect::ExactHit)];
+const REVENANTS_LAUNCHER_BEHAVIOR_SPECS: &[BehaviorSpec] = &[
+  BehaviorSpec::Attack(AttackEffect::ExactHit),
+  BehaviorSpec::Hit(HitEffect::ScheduleExplosion {
+    delay: REVENANTS_LAUNCHER_EXPLOSION_DELAY,
+    radius: REVENANTS_LAUNCHER_EXPLOSION_RADIUS,
+    knockback: Some(REVENANTS_LAUNCHER_EXPLOSION_KNOCKBACK),
+  }),
+];
 
-/// Immutable typed profile for Revenant's Launcher exact-hit policy.
+/// Immutable typed profile for Revenant's Launcher exact-hit and radius-3
+/// Fire explosion policy.
 pub const REVENANTS_LAUNCHER_BEHAVIOR: BehaviorProfile =
   BehaviorProfile::new(REVENANTS_LAUNCHER_BEHAVIOR_SPECS);
 
@@ -2406,7 +2417,14 @@ mod tests {
     );
     assert_eq!(
       REVENANTS_LAUNCHER_BEHAVIOR.specs(),
-      &[BehaviorSpec::Attack(AttackEffect::ExactHit)]
+      &[
+        BehaviorSpec::Attack(AttackEffect::ExactHit),
+        BehaviorSpec::Hit(HitEffect::ScheduleExplosion {
+          delay: REVENANTS_LAUNCHER_EXPLOSION_DELAY,
+          radius: REVENANTS_LAUNCHER_EXPLOSION_RADIUS,
+          knockback: Some(REVENANTS_LAUNCHER_EXPLOSION_KNOCKBACK),
+        }),
+      ]
     );
     assert_eq!(
       ASSAULT_SHOTGUN_BEHAVIOR.specs(),

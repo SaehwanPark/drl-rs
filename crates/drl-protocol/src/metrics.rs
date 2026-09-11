@@ -148,6 +148,7 @@ impl EpisodeMetrics {
       | GameEvent::NullPointerExplosionScheduled { .. }
       | GameEvent::AntiFreakJackalExplosionScheduled { .. }
       | GameEvent::RocketLauncherExplosionScheduled { .. }
+      | GameEvent::RevenantsLauncherExplosionScheduled { .. }
       | GameEvent::Bfg10kExplosionScheduled { .. }
       | GameEvent::Bfg9000ExplosionScheduled { .. }
       | GameEvent::NuclearBfg9000ExplosionScheduled { .. }

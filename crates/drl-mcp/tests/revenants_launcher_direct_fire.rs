@@ -1,12 +1,11 @@
-//! MCP JSON boundary coverage for Revenant's Launcher direct Fire damage.
+//! MCP JSON boundary coverage for Revenant's Launcher direct and splash Fire.
 
 use drl_core::ReplayEngine;
 use drl_mcp::JsonValue;
 use drl_mcp::McpServer;
 use drl_mcp::replay_json;
 use drl_protocol::{
-  Command, DamageSource, DamageType, ItemSpawnKind, MonsterSpawnSpec, PlayerSpawnConfig, Position,
-  ReplayLog,
+  Command, DamageType, ItemSpawnKind, MonsterSpawnSpec, PlayerSpawnConfig, Position, ReplayLog,
 };
 
 fn ready_server() -> McpServer {
@@ -53,13 +52,14 @@ fn revenants_launcher_mcp_json_matches_direct_core_typed_damage() {
   let expected_events = direct
     .step(command)
     .expect("direct Revenant's Launcher shot");
+  // The JSON boundary intentionally does not expose DamageSource, so compare
+  // the ordered direct and center-splash Fire amounts together.
   let expected_damage = expected_events
     .iter()
     .filter_map(|event| match event {
       drl_protocol::GameEvent::DamageApplied {
         target_id: event_target,
         amount,
-        source: DamageSource::Actor(_),
         damage_type: Some(DamageType::Fire),
         ..
       } if *event_target == target_id => Some(*amount),

@@ -43,6 +43,7 @@ pub mod null_pointer;
 pub mod pump_action;
 pub mod replay;
 pub mod resistance;
+pub mod revenants_launcher;
 pub mod rng;
 pub mod rocket_launcher;
 pub mod scenario;
@@ -208,6 +209,14 @@ pub use nuke::{NukeError, NukeState};
 pub use pump_action::PUMP_ACTION_COST;
 pub use replay::ReplayEngine;
 pub use resistance::apply_damage_resistance;
+pub use revenants_launcher::{
+  REVENANTS_LAUNCHER_EXPLOSION_DAMAGE_DICE, REVENANTS_LAUNCHER_EXPLOSION_DAMAGE_DIE_SIDES,
+  REVENANTS_LAUNCHER_EXPLOSION_DELAY, REVENANTS_LAUNCHER_EXPLOSION_KNOCKBACK,
+  REVENANTS_LAUNCHER_EXPLOSION_RADIUS, REVENANTS_LAUNCHER_GROUND_ITEM_DESTRUCTION_THRESHOLD,
+  knockback_distance as revenants_launcher_knockback_distance, radius_three_blast_positions,
+  roll_explosion_damage as roll_revenants_launcher_explosion_damage,
+  should_destroy_ground_item as should_destroy_revenants_launcher_ground_item,
+};
 pub use rng::GameRng;
 pub use rocket_launcher::{
   ROCKET_LAUNCHER_EXPLOSION_DAMAGE_DICE, ROCKET_LAUNCHER_EXPLOSION_DAMAGE_DIE_SIDES,
