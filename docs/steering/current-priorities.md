@@ -246,11 +246,14 @@ invariants into accepted architecture/ADRs as appropriate, and update the
 roadmap and active specification from verified evidence.
 
 Re-audit before broad M9 migration resumes, or when a new stop-gate candidate
-is selected. The current audited tree is `main` at `67d0985` (version
-`0.2.354`); the Revenant's Launcher radius-3 Fire fanout is the selected
-bounded follow-on candidate on `codex/revenants-launcher-radius3`. Its
-independent determinism review and final local/hosted evidence must be
-reconciled before promoting the slice to `main`. Platform interactive
-acceptance, controlled legacy runtime, human, audiovisual, performance, and
-reference-capture surfaces remain `NOT_RUN` where prerequisites are
-unavailable.
+is selected. The audited starting tree for the current slice was
+`codex/revenants-launcher-radius3` at `7f66f08` (version `0.2.355`); the
+Missile Launcher radius-3 Fire fanout is delivered on
+`codex/missile-launcher-radius3` (version `0.2.356`) with an independent
+`drl-determinism-review: PASS` and passing local repository evidence. The
+current Rust helper deliberately retains center-first/Chebyshev geometry while
+the legacy 37-cell metric/traversal is tracked as explicit follow-up work.
+Platform interactive acceptance, controlled legacy runtime, human,
+audiovisual, performance, and reference-capture surfaces remain `NOT_RUN`
+where prerequisites are unavailable. The next bounded candidate is the
+Mega Buster post-kill morph, subject to a new SPEC slice and review receipt.

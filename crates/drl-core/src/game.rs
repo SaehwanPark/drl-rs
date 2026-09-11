@@ -41,7 +41,13 @@ use crate::item::Item;
 use crate::jackhammer::{JACKHAMMER_MODE_SCORE_COST, JackhammerTransition};
 use crate::level_definition::standard_procedural;
 use crate::malek_armor::MalekRechargeOutcome;
-use crate::missile_launcher::{MissileLauncherReloadPlan, MissileLauncherTransition};
+use crate::missile_launcher::{
+  MISSILE_LAUNCHER_EXPLOSION_DELAY, MISSILE_LAUNCHER_EXPLOSION_KNOCKBACK,
+  MISSILE_LAUNCHER_EXPLOSION_RADIUS, MISSILE_LAUNCHER_GROUND_ITEM_DESTRUCTION_THRESHOLD,
+  MissileLauncherReloadPlan, MissileLauncherTransition,
+  radius_three_blast_positions as missile_launcher_radius_three_blast_positions,
+  roll_explosion_damage as roll_missile_launcher_explosion_damage,
+};
 use crate::nuclear_bfg9000::{
   NUCLEAR_BFG9000_GROUND_ITEM_DESTRUCTION_THRESHOLD,
   radius_eight_blast_positions as nuclear_bfg9000_radius_eight_blast_positions,
@@ -1884,6 +1890,7 @@ impl Game {
       || weapon_is_bfg9000
       || weapon_is_nuclear_bfg9000
       || weapon_is_rocket_launcher
+      || weapon_is_missile_launcher
       || weapon_is_revenants_launcher
     {
       let splash_positions = if weapon_is_bfg10k {
@@ -1894,6 +1901,8 @@ impl Game {
         nuclear_bfg9000_radius_eight_blast_positions(self.state.world.map(), target_pos)
       } else if weapon_is_rocket_launcher {
         radius_four_blast_positions(self.state.world.map(), target_pos)
+      } else if weapon_is_missile_launcher {
+        missile_launcher_radius_three_blast_positions(self.state.world.map(), target_pos)
       } else if weapon_is_revenants_launcher {
         radius_three_blast_positions(self.state.world.map(), target_pos)
       } else {
@@ -2026,6 +2035,16 @@ impl Game {
         }
 
         if damage == 0 {
+          if weapon_is_missile_launcher {
+            events.push(GameEvent::MissileLauncherExplosionScheduled {
+              entity_id: player_id,
+              target_id: target_monster_id,
+              delay: MISSILE_LAUNCHER_EXPLOSION_DELAY,
+              radius: MISSILE_LAUNCHER_EXPLOSION_RADIUS,
+              knockback: MISSILE_LAUNCHER_EXPLOSION_KNOCKBACK,
+            });
+            self.execute_missile_launcher_splash(player_id, target_pos, events)?;
+          }
           continue;
         }
 
@@ -2076,7 +2095,16 @@ impl Game {
           damage_type: direct_damage_type,
         });
 
-        if weapon_is_bfg10k {
+        if weapon_is_missile_launcher {
+          events.push(GameEvent::MissileLauncherExplosionScheduled {
+            entity_id: player_id,
+            target_id: target_monster_id,
+            delay: MISSILE_LAUNCHER_EXPLOSION_DELAY,
+            radius: MISSILE_LAUNCHER_EXPLOSION_RADIUS,
+            knockback: MISSILE_LAUNCHER_EXPLOSION_KNOCKBACK,
+          });
+          self.execute_missile_launcher_splash(player_id, target_pos, events)?;
+        } else if weapon_is_bfg10k {
           events.push(GameEvent::Bfg10kExplosionScheduled {
             entity_id: player_id,
             target_id: target_monster_id,
@@ -2433,6 +2461,35 @@ impl Game {
         distance_falloff: true,
         ground_item: GroundItemSplashPolicy::Any {
           threshold: ROCKET_LAUNCHER_GROUND_ITEM_DESTRUCTION_THRESHOLD,
+        },
+      },
+      events,
+    )
+  }
+
+  /// Resolves the bounded Missile Launcher radius-3 actor splash immediately
+  /// after its schedule event. The legacy delay remains presentation metadata;
+  /// pending-explosion state, rocket-jump, and exact legacy timing are separate
+  /// work. The current Rust policy is not source-self-safe and uses the shared
+  /// typed Fire/falloff/knockback/item-threshold resolver.
+  fn execute_missile_launcher_splash(
+    &mut self,
+    source_id: drl_protocol::EntityId,
+    center: Position,
+    events: &mut Vec<GameEvent>,
+  ) -> Result<(), CommandError> {
+    self.execute_actor_splash(
+      source_id,
+      center,
+      missile_launcher_radius_three_blast_positions(self.state.world.map(), center),
+      ActorSplashPolicy {
+        roll_damage: roll_missile_launcher_explosion_damage,
+        source_self_safe: false,
+        damage_type: DamageType::Fire,
+        knockback: MISSILE_LAUNCHER_EXPLOSION_KNOCKBACK,
+        distance_falloff: true,
+        ground_item: GroundItemSplashPolicy::Any {
+          threshold: MISSILE_LAUNCHER_GROUND_ITEM_DESTRUCTION_THRESHOLD,
         },
       },
       events,
