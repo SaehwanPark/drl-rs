@@ -3,6 +3,20 @@
 All notable contributor- and user-visible changes to DRL-Rust will be
 documented in this file.
 
+## [0.2.355]
+
+- Completed the bounded Revenant's Launcher radius-3 Fire fanout. Successful
+  exact-hit direct Fire now emits a distinct delay-40/radius-3/knockback-8
+  schedule event and resolves one ordered `7d6` roll per clear cell with
+  distance falloff, actor de-duplication, radial `damage / 8` knockback,
+  source self-damage, and strict `>10` ordinary ground-item destruction.
+  Splash death-drop destinations are preflighted before clip/RNG mutation;
+  replay semantics advance from `148` to `149`, and focused core, MCP, and
+  BrowserSession/direct-core parity tests pass. Homing, projectile routing,
+  pending delayed timing, terrain/feature callbacks, controlled legacy runtime,
+  audiovisual/reference capture, browser capture, and human acceptance remain
+  open or `NOT_RUN`.
+
 ## [0.2.354]
 
 - Classified successful Revenant's Launcher direct target hits as typed `Fire`,

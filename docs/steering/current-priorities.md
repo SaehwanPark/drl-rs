@@ -1,10 +1,10 @@
 # Near-Term Development Steering
 
-Last reviewed: 2026-09-07
+Last reviewed: 2026-09-11
 Baseline branch: `main`
-Baseline merge commit: `48e6981`
-Latest pull request inspected: `#467`
-Baseline project version: `0.2.348`
+Baseline merge commit: `67d0985`
+Latest pull request inspected: `#469`
+Baseline project version: `0.2.354`
 
 ## Purpose
 
@@ -246,14 +246,11 @@ invariants into accepted architecture/ADRs as appropriate, and update the
 roadmap and active specification from verified evidence.
 
 Re-audit before broad M9 migration resumes, or when a new stop-gate candidate
-is selected. The current audited tree is `main` at `48e6981` (PR #467 merge,
-version `0.2.348`); local workspace/Clippy/repository/web/version/SPEC checks
-pass, the independent determinism review is PASS, and hosted Repository,
-Linux, Fedora, and WASM checks pass in run `34124814610`. The protected-path
-Review policy check `34124814576` failed closed because the sole maintainer
-cannot create a non-self approval and was merged under the live
-`enforce_admins=false` exception. The Missile Launcher direct Fire
-classification is delivered; no subsequent bounded candidate is selected.
-Platform interactive acceptance, controlled legacy runtime, human,
-audiovisual, performance, and reference-capture surfaces remain `NOT_RUN`
-where prerequisites are unavailable.
+is selected. The current audited tree is `main` at `67d0985` (version
+`0.2.354`); the Revenant's Launcher radius-3 Fire fanout is the selected
+bounded follow-on candidate on `codex/revenants-launcher-radius3`. Its
+independent determinism review and final local/hosted evidence must be
+reconciled before promoting the slice to `main`. Platform interactive
+acceptance, controlled legacy runtime, human, audiovisual, performance, and
+reference-capture surfaces remain `NOT_RUN` where prerequisites are
+unavailable.

@@ -1,8 +1,9 @@
 # Revenant's Launcher typed behavior-profile evidence
 
-Status: delivered typed behavior profile for `0.2.213`; homing, projectile
-routing, delayed explosions, controlled legacy runtime comparison, and
-audiovisual parity remain `NOT_RUN`.
+Status: historical typed behavior profile delivered in `0.2.213`; the current
+Rust slice adds typed direct Fire in `0.2.354` and bounded radius-3 fanout in
+`0.2.355`. Homing, projectile routing, exact legacy timing, controlled legacy
+runtime comparison, and audiovisual parity remain `NOT_RUN`.
 
 ## Pinned source
 
@@ -21,10 +22,12 @@ at revision `17d9be1204751899b2d69d8d3a2dde247bd0cc5c`.
 ## DRL-Rust boundary
 
 The immutable `drl_core::behavior::REVENANTS_LAUNCHER_BEHAVIOR` profile records
-one `AttackEffect::ExactHit` fragment. Dedicated combat resolution remains
-execution authority for LOS/range/clip/action-cost validation, damage RNG, and
-ordered attack/damage events. No command, replay, RNG, or generic
-callback-dispatch surface is introduced by the profile.
+the exact-hit fragment and the current delay-40/radius-3/knockback-8 schedule
+metadata. Dedicated combat resolution remains execution authority for
+LOS/range/clip/action-cost validation, direct and splash damage RNG, ordered
+events, and the bounded radius-3 fanout. No command, replay, RNG, or generic
+callback-dispatch surface is introduced by the profile; the delay remains
+presentation metadata rather than a pending queue.
 
 Homing, projectile routing, delayed explosions, exact legacy timing, controlled
 runtime comparison, and audiovisual parity remain deferred and are not inferred

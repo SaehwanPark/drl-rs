@@ -7,6 +7,7 @@
 
 use drl_core::ReplayEngine;
 use drl_core::game::Game;
+use drl_core::grid::Tile;
 use drl_core::item::Item;
 use drl_core::resistance::apply_damage_resistance;
 use drl_protocol::{
@@ -163,9 +164,17 @@ fn revenants_launcher_direct_hit_is_typed_fire_and_armor_resists() {
 #[test]
 fn revenants_launcher_single_shot_clip_and_reload_preserve_fire() {
   let seed = 46_202;
-  let target_position = Position::new(5, 6);
+  // Keep the follow-up target against the arena's east wall so the new
+  // radius-3 center knockback cannot move it between the two shots.
+  let target_position = Position::new(10, 6);
   let mut game = equipped_revenants_launcher(seed);
   let target_id = configure_direct_target(&mut game, target_position);
+  // Bound center knockback for the two-shot reload fixture without changing
+  // the target's visibility or direct Fire assertions.
+  game
+    .world_mut()
+    .map_mut()
+    .set_tile(Position::new(11, 6), Tile::Wall);
 
   // Initial clip is 1.
   assert_eq!(
@@ -271,7 +280,10 @@ fn revenants_launcher_single_shot_clip_and_reload_preserve_fire() {
 #[test]
 fn revenants_launcher_direct_fire_replay_is_deterministic() {
   let player_position = Position::new(2, 2);
-  let target_position = Position::new(5, 2);
+  // The east-wall target remains addressable after each radius-3 center
+  // splash, allowing this legacy direct-fire replay fixture to retain its
+  // repeated command sequence.
+  let target_position = Position::new(10, 2);
   let player_config = PlayerSpawnConfig {
     hp: 100,
     max_hp: 100,

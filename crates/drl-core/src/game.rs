@@ -54,6 +54,11 @@ use crate::null_pointer::{
   NullPointerHitTransition,
 };
 use crate::pump_action::{PUMP_ACTION_COST, ReloadTransition};
+use crate::revenants_launcher::{
+  REVENANTS_LAUNCHER_EXPLOSION_DELAY, REVENANTS_LAUNCHER_EXPLOSION_KNOCKBACK,
+  REVENANTS_LAUNCHER_EXPLOSION_RADIUS, REVENANTS_LAUNCHER_GROUND_ITEM_DESTRUCTION_THRESHOLD,
+  radius_three_blast_positions, roll_explosion_damage as roll_revenants_launcher_explosion_damage,
+};
 use crate::rng::GameRng;
 use crate::rocket_launcher::{
   ROCKET_LAUNCHER_EXPLOSION_DELAY, ROCKET_LAUNCHER_EXPLOSION_KNOCKBACK,
@@ -1879,6 +1884,7 @@ impl Game {
       || weapon_is_bfg9000
       || weapon_is_nuclear_bfg9000
       || weapon_is_rocket_launcher
+      || weapon_is_revenants_launcher
     {
       let splash_positions = if weapon_is_bfg10k {
         radius_two_blast_positions(self.state.world.map(), target_pos)
@@ -1888,6 +1894,8 @@ impl Game {
         nuclear_bfg9000_radius_eight_blast_positions(self.state.world.map(), target_pos)
       } else if weapon_is_rocket_launcher {
         radius_four_blast_positions(self.state.world.map(), target_pos)
+      } else if weapon_is_revenants_launcher {
+        radius_three_blast_positions(self.state.world.map(), target_pos)
       } else {
         radius_one_blast_positions(self.state.world.map(), target_pos)
       };
@@ -2113,6 +2121,15 @@ impl Game {
             knockback: ROCKET_LAUNCHER_EXPLOSION_KNOCKBACK,
           });
           self.execute_rocket_launcher_splash(player_id, target_pos, events)?;
+        } else if weapon_is_revenants_launcher {
+          events.push(GameEvent::RevenantsLauncherExplosionScheduled {
+            entity_id: player_id,
+            target_id: target_monster_id,
+            delay: REVENANTS_LAUNCHER_EXPLOSION_DELAY,
+            radius: REVENANTS_LAUNCHER_EXPLOSION_RADIUS,
+            knockback: REVENANTS_LAUNCHER_EXPLOSION_KNOCKBACK,
+          });
+          self.execute_revenants_launcher_splash(player_id, target_pos, events)?;
         }
 
         if actual_lethal {
@@ -2416,6 +2433,35 @@ impl Game {
         distance_falloff: true,
         ground_item: GroundItemSplashPolicy::Any {
           threshold: ROCKET_LAUNCHER_GROUND_ITEM_DESTRUCTION_THRESHOLD,
+        },
+      },
+      events,
+    )
+  }
+
+  /// Resolves the bounded Revenant's Launcher radius-3 actor splash
+  /// immediately after its schedule event. The legacy delay remains
+  /// presentation metadata; pending-explosion state is separate work. Fire
+  /// damage, radial falloff, knockback, and ordinary ground-item destruction
+  /// use the shared splash policy.
+  fn execute_revenants_launcher_splash(
+    &mut self,
+    source_id: drl_protocol::EntityId,
+    center: Position,
+    events: &mut Vec<GameEvent>,
+  ) -> Result<(), CommandError> {
+    self.execute_actor_splash(
+      source_id,
+      center,
+      radius_three_blast_positions(self.state.world.map(), center),
+      ActorSplashPolicy {
+        roll_damage: roll_revenants_launcher_explosion_damage,
+        source_self_safe: false,
+        damage_type: DamageType::Fire,
+        knockback: REVENANTS_LAUNCHER_EXPLOSION_KNOCKBACK,
+        distance_falloff: true,
+        ground_item: GroundItemSplashPolicy::Any {
+          threshold: REVENANTS_LAUNCHER_GROUND_ITEM_DESTRUCTION_THRESHOLD,
         },
       },
       events,

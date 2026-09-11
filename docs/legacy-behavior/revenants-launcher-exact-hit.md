@@ -1,7 +1,8 @@
 # Revenant’s Launcher Exact-Hit Evidence
 
-Status: delivered typed behavior profile through `0.2.213`; homing,
-projectile routing, delayed explosions, controlled legacy runtime comparison,
+Status: historical exact-hit evidence through `0.2.213`; typed direct Fire was
+delivered in `0.2.354` and bounded radius-3 fanout in `0.2.355`. Homing,
+projectile routing, exact legacy timing, controlled legacy runtime comparison,
 and audiovisual parity remain `NOT_RUN`.
 
 Pinned legacy revision: `17d9be1204751899b2d69d8d3a2dde247bd0cc5c`.

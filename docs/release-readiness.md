@@ -1,6 +1,6 @@
 # Public release readiness
 
-**Current version:** `0.2.353`
+**Current version:** `0.2.355`
 **Status:** **Not release-ready**
 
 This is a compact product-entry summary, not a replacement for the
@@ -29,10 +29,11 @@ build succeeds; the named acceptance evidence is required.
 | Surface | Evidence | Status |
 | --- | --- | --- |
 | Fair observations | F1 core/MCP tests cover hidden ground-item addition, removal, count changes, two-world equality, JSON non-disclosure, omniscient views, and reveal (`0af1bed`). | PASS |
+| Revenant's Launcher radius-3 fanout | Focused core geometry/fanout, threshold, atomic rejection, replay/version, MCP JSON, and BrowserSession/direct-core parity tests pass on `codex/revenants-launcher-radius3`; independent determinism review reconciled the MCP fixture correction with no remaining implementation findings. | PASS (bounded local scope) |
 | MCP safety | F2 MCP library tests, app tests, bounded stdio contracts, and the shipped-binary deep-input subprocess regression (`ae8a451`). | PASS |
 | Version policy | `.mjs`, Rust, shell, documentation, settings, exact-bump, and over-bump temporary-Git fixtures (`578702e`). | PASS |
-| Browser checks | `sh scripts/check-web.sh` passed in the audit/remediation run; unavailable runtime/capture surfaces stay separate. | PASS / limited scope |
-| Full repository check | The local workspace check exceeded the execution allowance during integration tests. | INCONCLUSIVE |
+| Browser checks | Static service-worker/support/accessibility contracts and native web-library tests pass; the WASM headless phase is `NOT_RUN` because available ChromeDriver 153 does not match installed Chrome 152. | PASS / limited scope |
+| Full repository check | `sh scripts/check-repository.sh` passes locally, including workspace tests and repository policy fixtures. | PASS (local scope) |
 | Hosted CI and branch protection | Not independently queried for this checkpoint. | NOT_RUN |
 
 ## Open release gates

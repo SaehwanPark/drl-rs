@@ -1,7 +1,7 @@
 # Architecture
 
-Last reviewed: 2026-09-08
-Current project version: `0.2.354`
+Last reviewed: 2026-09-11
+Current project version: `0.2.355`
 
 Status: Verified for current deterministic headless core, MCP tooling,
 browser-playable WebGPU slice, and the thin native frontend boundary; full
@@ -118,8 +118,11 @@ fragments; its direct and splash actor routes use typed Fire mitigation while
 terrain mutation remains separate policy work;
 Assault Shotgun records its typed ordinary single-shell reload and
 capped full-deficit reload fragments;
-Revenant's Launcher records its typed
-exact-hit attack and direct Fire target-path fragments;
+Revenant's Launcher records its typed exact-hit and direct Fire target-path
+fragments plus delay-40/radius-3/knockback-8 schedule metadata; its dedicated
+resolver performs one ordered `7d6` Fire roll per clear blast cell with legacy
+distance falloff, radial integer `damage / 8` knockback, source self-damage,
+and thresholded lowest-ID ordinary ground-item destruction;
 Nuclear Plasma records its typed direct Plasma target path alongside its
 alternate-overload and periodic-recharge fragments; the BFG family profiles
 record exact-hit, typed projectile-count,
@@ -307,10 +310,12 @@ Presentation Boundary
     Assault Shotgun's immutable profile records the ordered reload fragments;
     its dedicated planner remains responsible for reserve, deficit, cost, and
     transactional validation.
-    Revenant's Launcher's immutable profile records the exact-hit and typed
-direct Fire target-path fragments;
+    Revenant's Launcher's immutable profile records exact-hit, typed direct
+    Fire target-path, and delay-40/radius-3/knockback-8 schedule fragments;
     dedicated combat resolution remains responsible for LOS, range, clip,
-    damage RNG, and event ordering.
+    damage RNG, event ordering, radius-3 clear-cell rolls, falloff, knockback,
+    and thresholded ground-item handling. The delay is presentation metadata;
+    no pending explosion queue is introduced.
     The exotic Missile Launcher uses the explicit single-shell reload policy,
     loading one rocket per accepted `Reload` while retaining the shared
     `WeaponReloaded` event and atomic rejection contract. Its alternate/full
@@ -359,9 +364,10 @@ direct Fire target-path fragments;
     parity, projectile routing, NukeRun, and the recharge/overload effects
     remain separate policy work.
     Revenant’s Launcher opts into the same typed exact-hit policy and typed
-    direct Fire mitigation without changing its one-rocket clip or damage
-    policy; homing, projectile routing, delayed explosions, and timing remain
-    separate policy work.
+    direct Fire mitigation, then resolves the bounded immediate radius-3 Fire
+    fanout through its dedicated deterministic splash resolver without changing
+    its one-rocket clip policy; homing, projectile routing, delayed queues,
+    and exact timing remain separate policy work.
     Nuclear BFG 9000 shares the typed forty-cell shot-cost policy with the
     standard BFG while preserving its exact-hit, recharge, and overload state;
     projectile routing, explosions, and NukeRun remain separate policy work.
