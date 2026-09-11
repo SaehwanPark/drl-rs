@@ -1,6 +1,6 @@
 # Public release readiness
 
-**Current version:** `0.2.357`
+**Current version:** `0.2.358`
 **Status:** **Not release-ready**
 
 This is a compact product-entry summary, not a replacement for the
@@ -32,6 +32,7 @@ build succeeds; the named acceptance evidence is required.
 | Revenant's Launcher radius-3 fanout | Focused core geometry/fanout, threshold, atomic rejection, replay/version, MCP JSON, and BrowserSession/direct-core parity tests pass on `codex/revenants-launcher-radius3`; independent determinism review reconciled the MCP fixture correction with no remaining implementation findings. | PASS (bounded local scope) |
 | Missile Launcher's radius-3 fanout | Focused core hit/miss geometry/fanout, threshold, atomic rejection, replay/version, MCP JSON, and BrowserSession/direct-core parity tests pass on `codex/missile-launcher-radius3`; `/root/missile_determinism_review` independently returned `PASS` with no remaining implementation findings. | PASS (bounded local scope) |
 | Mega Buster post-kill typed morph | Focused core profile/morph (including Null Pointer→Plasma regression), target-equipment topology, replay/scenario, MCP event projection, and BrowserSession/direct-core parity cover explicit Bullet/Fire/Acid/Plasma selection; `/root/mega_determinism_recheck` independently returned `PASS` with no remaining implementation findings. | PASS (bounded local scope) |
+| Mega Buster exact dice and Fire/Acid fanout | Focused core exact dice (1d8, 4d2, 4d2, 1d10), direct hit/miss Fire/Acid radius-one fanout, threshold, atomic rejection, replay/version, MCP JSON, and BrowserSession/direct-core parity tests pass on `codex/mega-buster-fanout`; independent determinism review returned `PASS` with no remaining implementation findings. | PASS (bounded local scope) |
 | MCP safety | F2 MCP library tests, app tests, bounded stdio contracts, and the shipped-binary deep-input subprocess regression (`ae8a451`). | PASS |
 | Version policy | `.mjs`, Rust, shell, documentation, settings, exact-bump, and over-bump temporary-Git fixtures (`578702e`). | PASS |
 | Browser checks | Static service-worker/support/accessibility contracts and native web-library tests pass; the WASM headless phase is `NOT_RUN` because available ChromeDriver 153 does not match installed Chrome 152. | PASS / limited scope |

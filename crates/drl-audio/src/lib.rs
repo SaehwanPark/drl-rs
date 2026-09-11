@@ -48,6 +48,7 @@ pub fn cues_for_events(events: &[GameEvent]) -> Vec<AudioCue> {
       }
       GameEvent::ActorDied { .. } => cues.push(AudioCue::Death),
       GameEvent::MegaBusterMorphed { .. } => {}
+      GameEvent::MegaBusterExplosionScheduled { .. } => {}
       GameEvent::ItemPickedUp { .. } => cues.push(AudioCue::Pickup),
       GameEvent::ItemDropped { .. } => cues.push(AudioCue::Drop),
       GameEvent::ItemEquipped { .. } | GameEvent::ItemUnequipped { .. } => {

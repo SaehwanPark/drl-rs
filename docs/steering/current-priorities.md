@@ -247,14 +247,14 @@ roadmap and active specification from verified evidence.
 
 Re-audit before broad M9 migration resumes, or when a new stop-gate candidate
 is selected. The audited starting tree for the current slice was
-`codex/mega-buster-kill-morph` at `264d4b4` (version `0.2.356`); the bounded
-Mega Buster post-kill typed morph is delivered on that branch with an explicit
-target-equipment topology, pure profile selector, and fresh independent
-`drl-determinism-review: PASS` receipt. The preceding Missile Launcher radius-3 Fire
-fanout is delivered on `codex/missile-launcher-radius3` (version `0.2.356`) with
-an independent `drl-determinism-review: PASS`. Exact Mega Buster dice,
-radius-one execution, legacy timing/accuracy, same-volley mutation, and
-presentation remain explicit follow-up work. Platform interactive acceptance,
-controlled legacy runtime, human, audiovisual, performance, and
-reference-capture surfaces remain `NOT_RUN` where prerequisites are
-unavailable.
+`codex/mega-buster-fanout` at `81a37ce` (version `0.2.357`); the bounded
+Mega Buster exact profile dice and Fire/Acid radius-one fanout is delivered on
+that branch (version `0.2.358`) with an explicit target-equipment topology,
+exact dice sampling, immediate center-first fanout, and fresh independent
+`drl-determinism-review: PASS` receipt. The preceding Mega Buster post-kill
+morph is delivered on `codex/mega-buster-kill-morph` (version `0.2.357`).
+Legacy traversal metrics, delayed explosion queue, same-volley mutation,
+timing/accuracy, and presentation remain explicit follow-up work. Platform
+interactive acceptance, controlled legacy runtime, human, audiovisual,
+performance, and reference-capture surfaces remain `NOT_RUN` where
+prerequisites are unavailable.

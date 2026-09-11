@@ -922,6 +922,30 @@ pub fn game_event_to_json(event: &GameEvent) -> JsonValue {
         JsonValue::from(current.stable_name()),
       );
     }
+    GameEvent::MegaBusterExplosionScheduled {
+      entity_id,
+      item_id,
+      target_id,
+      delay,
+      radius,
+      knockback,
+      damage_type,
+    } => {
+      map.insert(
+        "type".to_string(),
+        JsonValue::from("MegaBusterExplosionScheduled"),
+      );
+      map.insert("entity_id".to_string(), JsonValue::from(entity_id.as_u64()));
+      map.insert("item_id".to_string(), JsonValue::from(item_id.as_u64()));
+      map.insert("target_id".to_string(), JsonValue::from(target_id.as_u64()));
+      map.insert("delay".to_string(), JsonValue::from(*delay));
+      map.insert("radius".to_string(), JsonValue::from(*radius));
+      map.insert("knockback".to_string(), JsonValue::from(*knockback));
+      map.insert(
+        "damage_type".to_string(),
+        JsonValue::from(format!("{damage_type:?}")),
+      );
+    }
     GameEvent::ItemPickedUp {
       entity_id,
       item_name,
@@ -2537,6 +2561,36 @@ mod tests {
       Some("bullet")
     );
     assert_eq!(map.get("current").and_then(JsonValue::as_str), Some("fire"));
+  }
+
+  #[test]
+  fn mega_buster_explosion_event_projects_typed_payload_to_mcp_json() {
+    let value = game_event_to_json(&GameEvent::MegaBusterExplosionScheduled {
+      entity_id: drl_protocol::EntityId::new(1),
+      item_id: ItemId::new(2),
+      target_id: drl_protocol::EntityId::new(3),
+      delay: 40,
+      radius: 1,
+      knockback: 8,
+      damage_type: drl_protocol::DamageType::Fire,
+    });
+    let JsonValue::Object(map) = value else {
+      panic!("event projection must be an object");
+    };
+    assert_eq!(
+      map.get("type").and_then(JsonValue::as_str),
+      Some("MegaBusterExplosionScheduled")
+    );
+    assert_eq!(map.get("entity_id").and_then(JsonValue::as_i64), Some(1));
+    assert_eq!(map.get("item_id").and_then(JsonValue::as_i64), Some(2));
+    assert_eq!(map.get("target_id").and_then(JsonValue::as_i64), Some(3));
+    assert_eq!(map.get("delay").and_then(JsonValue::as_i64), Some(40));
+    assert_eq!(map.get("radius").and_then(JsonValue::as_i64), Some(1));
+    assert_eq!(map.get("knockback").and_then(JsonValue::as_i64), Some(8));
+    assert_eq!(
+      map.get("damage_type").and_then(JsonValue::as_str),
+      Some("Fire")
+    );
   }
 
   #[test]
